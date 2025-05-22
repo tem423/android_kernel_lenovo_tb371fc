@@ -15,8 +15,8 @@
  * more details.
  *
  */
-#ifndef 	_LINUX_NVT_TOUCH_H
-#define		_LINUX_NVT_TOUCH_H
+#ifndef _LINUX_NVT_TOUCH_H
+#define _LINUX_NVT_TOUCH_H
 
 #include <linux/delay.h>
 #include <linux/input.h>
@@ -24,12 +24,18 @@
 #include <linux/spi/spi.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
-
+/*Spinel code for charging by wangxin77 at 2023/03/06 start*/
+#include <linux/power_supply.h>
+/*Spinel code for charging by wangxin77 at 2023/03/06 end*/
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
 #endif
 
 #include "nt36xxx_mem_map.h"
+
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 start*/
+//#include "../../../nfc/ctn730/ctn730.h"
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 end*/
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
 #define HAVE_PROC_OPS
@@ -44,7 +50,15 @@
 #include <linux/platform_data/spi-mt65xx.h>
 #endif
 
+#define NVT_PEN_RAW 1
+#if NVT_PEN_RAW
+#include <linux/string.h>
+#include <linux/cdev.h>
+#include <linux/uaccess.h>
+#endif
+
 #define NVT_DEBUG 1
+
 //---GPIO number---
 #define NVTTOUCH_RST_PIN 980
 #define NVTTOUCH_INT_PIN 943
@@ -69,12 +83,15 @@
 #define NVT_ERR(fmt, args...)    pr_info("[%s] %s %d: " fmt, NVT_SPI_NAME, __func__, __LINE__, ##args)
 
 //---Input device info.---
-#define NVT_TS_NAME "mtk-tpd"
+#define NVT_TS_NAME "NVTCapacitiveTouchScreen"
 #define NVT_PEN_NAME "NVTCapacitivePen"
 
 //---Touch info.---
-#define TOUCH_DEFAULT_MAX_WIDTH 2944
-#define TOUCH_DEFAULT_MAX_HEIGHT 1840
+/* Spinel code for OSPINEL-2739 by zhangyd22 at 2023/4/12 start */
+#define TOUCH_DEFAULT_MAX_WIDTH 1840
+#define TOUCH_DEFAULT_MAX_HEIGHT 2944
+
+/* Spinel code for OSPINEL-2739 by zhangyd22 at 2023/4/12 end */
 #define TOUCH_MAX_FINGER_NUM 10
 #define TOUCH_KEY_NUM 0
 #if TOUCH_KEY_NUM > 0
@@ -88,26 +105,51 @@ extern const uint16_t touch_key_array[TOUCH_KEY_NUM];
 #define PEN_TILT_MAX (60)
 
 /* Enable only when module have tp reset pin and connected to host */
-#define NVT_TOUCH_SUPPORT_HW_RST 0
+#define NVT_TOUCH_SUPPORT_HW_RST 1
 
 //---Customerized func.---
 #define NVT_TOUCH_PROC 1
 #define NVT_TOUCH_EXT_PROC 1
 #define NVT_TOUCH_MP 1
-#define NVT_SAVE_TEST_DATA_IN_FILE 1
+#define NVT_SAVE_TEST_DATA_IN_FILE 0 //changed 1 to 0,closed it because kernel-6.1 not support mm_segment_t
 #define MT_PROTOCOL_B 1
+#define NVT_CUST_PROC_CMD 1
+#define NVT_EDGE_REJECT 1
+#define NVT_EDGE_GRID_ZONE 1
+#define NVT_PALM_MODE 1
+#define NVT_SUPPORT_PEN 1
 #define WAKEUP_GESTURE 1
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 start */
+#define NVT_DPR_SWITCH 1
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 end */
+/*Spinel code for charging by wangxin77 at 2023/03/06 start*/
+#define USB_DETECT_IN 1
+#define USB_DETECT_OUT 0
+#define CMD_CHARGER_ON	(0x53)
+#define CMD_CHARGER_OFF (0x51)
+/*Spinel code for charging by wangxin77 at 2023/03/06 end*/
 #if WAKEUP_GESTURE
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
 #define WAKEUP_OFF	0x00
 #define WAKEUP_ON	0x01
 extern bool nvt_gesture_flag;
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 end */
 extern const uint16_t gesture_key_array[];
 #endif
 #define BOOT_UPDATE_FIRMWARE 1
 extern char *BOOT_UPDATE_FIRMWARE_NAME;
 extern char *MP_UPDATE_FIRMWARE_NAME;
-//#define BOOT_UPDATE_FIRMWARE_NAME "novatek_ts_boe_fw.bin"
-//#define MP_UPDATE_FIRMWARE_NAME   "novatek_ts_boe_mp.bin"
+//#define BOOT_UPDATE_FIRMWARE_NAME "novatek_ts_fw_boe.bin"
+//#define MP_UPDATE_FIRMWARE_NAME   "novatek_ts_mp_boe.bin"
+
+/*Spinel code for Touching 10x resolution by zhangyd22 at 2023/05/04 start*/
+#define NVT_SUPER_RESOLUTION_N 10
+#if NVT_SUPER_RESOLUTION_N
+#define POINT_DATA_LEN 108
+#else
+#define POINT_DATA_LEN 65
+#endif
+/*Spinel code for Touching 10x resolution by zhangyd22 at 2023/05/04 end*/
 #define POINT_DATA_CHECKSUM 1
 #define POINT_DATA_CHECKSUM_LEN 65
 
@@ -126,19 +168,35 @@ extern char *MP_UPDATE_FIRMWARE_NAME;
 #define NVT_FLASH_END_FLAG_LEN 3
 #define NVT_FLASH_END_FLAG_ADDR (fw_need_write_size - NVT_FLASH_END_FLAG_LEN)
 #endif
+/* Spinel code for OSPINEL-3680 by zhangyd22 at 2023/5/11 start */
+#define NVT_HALL_CHECK 1
+#if NVT_HALL_CHECK
+#define NVT_HALL_WORK_DELAY 1000
+#endif
+/* Spinel code for OSPINEL-3680 by zhangyd22 at 2023/5/11 end */
+#if NVT_CUST_PROC_CMD
+struct edge_grid_zone_info {
+    uint8_t degree;
+    uint8_t direction;
+    uint16_t y1;
+    uint16_t y2;
+};
+#endif
 
 struct nvt_ts_data {
 	struct spi_device *client;
 	struct input_dev *input_dev;
 	struct delayed_work nvt_fwu_work;
 	uint16_t addr;
-	int8_t phys[32];
-#if defined(CONFIG_FB)
-	struct notifier_block fb_notif;
+	int8_t phys[32];/*
+#if defined(CONFIG_DRM_PANEL)
+	struct notifier_block drm_panel_notif;*/
+#if defined(CONFIG_DRM_MEDIATEK_V2)
+	struct notifier_block disp_notifier;
 #elif defined(_MSM_DRM_NOTIFY_H_)
 	struct notifier_block drm_notif;
-#elif defined(CONFIG_DRM_PANEL)
-	struct notifier_block drm_panel_notif;
+#elif defined(CONFIG_FB)
+	struct notifier_block fb_notif;
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 	struct early_suspend early_suspend;
 #endif
@@ -172,12 +230,38 @@ struct nvt_ts_data {
 	uint32_t chip_ver_trim_addr;
 	uint32_t swrst_sif_addr;
 	uint32_t crc_err_flag_addr;
+#ifdef CONFIG_PM
+	bool dev_pm_suspend;
+	struct completion dev_pm_resume_completion;
+#endif
+/*Spinel code for charging by wangxin77 at 2023/03/06 start*/
+	struct notifier_block charger_notif;
+	struct workqueue_struct *nvt_charger_notify_wq;
+	struct work_struct charger_notify_work;
+	int usb_plug_status;
+	int fw_update_stat;
+/*Spinel code for charging by wangxin77 at 2023/03/06 end*/
 #ifdef CONFIG_MTK_SPI
 	struct mt_chip_conf spi_ctrl;
 #endif
 #ifdef CONFIG_SPI_MT65XX
     struct mtk_chip_config spi_ctrl;
 #endif
+#if NVT_CUST_PROC_CMD
+	int32_t edge_reject_state;
+	struct edge_grid_zone_info edge_grid_zone_info;
+	uint8_t game_mode_state;
+	uint8_t pen_state;
+	uint8_t pen_version;
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 start */
+#if NVT_DPR_SWITCH
+	uint8_t fw_pen_state;
+#endif
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 end */
+#endif
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 start*/
+	uint8_t nfc_state;
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 end*/
 };
 
 #if NVT_TOUCH_PROC
@@ -215,7 +299,45 @@ typedef enum {
 	NVTWRITE = 0,
 	NVTREAD  = 1
 } NVT_SPI_RW;
+/* Spinel code for update kernel patch by zhangyd22 at 2023/4/6 start */
+#if NVT_PEN_RAW
+#define LENOVO_MAX_BUFFER 32
+#define MAX_IO_CONTROL_REPORT	16
 
+enum{
+    DATA_TYPE_RAW = 0
+};
+
+struct lenovo_pen_coords_buffer {
+	signed char status;
+	signed char tool_type;
+	signed char tilt_x;
+	signed char tilt_y;
+	unsigned long int x;
+	unsigned long int y;
+	unsigned long int p;
+};
+
+struct lenovo_pen_info {
+	unsigned char frame_no;
+	unsigned char data_type;
+	u16 frame_t;
+	struct lenovo_pen_coords_buffer coords;
+};
+
+struct io_pen_report {
+	unsigned char report_num;
+	unsigned char reserve[3];
+	struct lenovo_pen_info pen_info[MAX_IO_CONTROL_REPORT];
+};
+
+enum pen_status{
+	TS_NONE,
+	TS_RELEASE,
+	TS_TOUCH,
+};
+#endif
+/* Spinel code for update kernel patch by zhangyd22 at 2023/4/6 end */
 //---extern structures---
 extern struct nvt_ts_data *ts;
 
@@ -242,4 +364,12 @@ int32_t nvt_write_addr(uint32_t addr, uint8_t data);
 extern void nvt_esd_check_enable(uint8_t enable);
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
 
+#if NVT_PEN_RAW
+void nvt_lenovo_report(enum pen_status status, uint32_t pen_x, uint32_t pen_y, uint32_t pen_tilt_x, uint32_t pen_tilt_y, uint32_t pen_pressure);
+#endif
+
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 start*/
+int32_t nvt_support_pen_set_nfc(uint8_t state);
+int32_t nvt_support_pen_set(uint8_t state, uint8_t version);
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 end*/
 #endif /* _LINUX_NVT_TOUCH_H */
