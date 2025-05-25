@@ -1368,8 +1368,8 @@ static const struct proc_ops nvt_game_mode_fops = {
 };
 
 #else
-//static const struct file_operations nvt_game_mode_fops = {
-static const struct proc_ops nvt_game_mode_fops = {
+static const struct file_operations nvt_game_mode_fops = {
+// static const struct proc_ops nvt_game_mode_fops = {
 	.owner = THIS_MODULE,
 	.open = nvt_game_mode_open,
 	.read = seq_read,

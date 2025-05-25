@@ -2977,8 +2977,8 @@ Description:
 return:
 	Executive outcomes. 0---succeed.
 *******************************************************/
-//static int32_t nvt_ts_remove(struct spi_device *client)
-static void nvt_ts_remove(struct spi_device *client)
+static int32_t nvt_ts_remove(struct spi_device *client)
+// static void nvt_ts_remove(struct spi_device *client)
 {
 	NVT_LOG("Removing driver...\n");
 
