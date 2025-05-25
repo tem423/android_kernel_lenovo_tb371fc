@@ -847,17 +847,15 @@ info_retry:
 	ts->fw_ver = buf[1];
 	ts->x_num = buf[3];
 	ts->y_num = buf[4];
-  /* Spinel code for OSPINEL-2739 by zhangyd22 at 2023/4/12 start */
-	//ts->abs_x_max = (uint16_t)((buf[5] << 8) | buf[6]);
-	//ts->abs_y_max = (uint16_t)((buf[7] << 8) | buf[8]);
-  /* Spinel code for OSPINEL-2739 by zhangyd22 at 2023/4/12 end */
+	ts->abs_x_max = (uint16_t)((buf[5] << 8) | buf[6]);
+	ts->abs_y_max = (uint16_t)((buf[7] << 8) | buf[8]);
 	ts->max_button_num = buf[11];
 	ts->nvt_pid = (uint16_t)((buf[36] << 8) | buf[35]);
 	if (ts->pen_support) {
 		ts->x_gang_num = buf[37];
 		ts->y_gang_num = buf[38];
 	}
-	NVT_LOG("fw_ver=0x%02X, fw_type=0x%02X, PID=0x%04X\n", ts->fw_ver, buf[14], ts->nvt_pid);
+	NVT_LOG("fw_ver=0x%02X, fw_type=0x%02X, PID=0x%04X, ABS_X_MAX=%d, ABS_Y_MAX=%d\n", ts->fw_ver, buf[14], ts->nvt_pid, ts->abs_x_max, ts->abs_y_max);
 
 	ret = 0;
 out:
@@ -1767,8 +1765,8 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 			input_report_abs(ts->input_dev, ABS_MT_TRACKING_ID, input_id - 1);
 			input_report_key(ts->input_dev, BTN_TOUCH, 1);
 #endif /* MT_PROTOCOL_B */
-			input_report_abs(ts->input_dev, ABS_MT_POSITION_X, input_y);
-			input_report_abs(ts->input_dev, ABS_MT_POSITION_Y, (18400 - input_x));
+			input_report_abs(ts->input_dev, ABS_MT_POSITION_X, input_x);
+			input_report_abs(ts->input_dev, ABS_MT_POSITION_Y, input_y);
 
 			input_report_abs(ts->input_dev, ABS_MT_TOUCH_MAJOR, input_w);
 			input_report_abs(ts->input_dev, ABS_MT_PRESSURE, input_p);
@@ -1850,10 +1848,8 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 //				pr_info("x=%d,y=%d,p=%d,tx=%d,ty=%d,d=%d,b1=%d,b2=%d,bat=%d\n", pen_x, pen_y, pen_pressure,
 //						pen_tilt_x, pen_tilt_y, pen_distance, pen_btn1, pen_btn2, pen_battery);
 
-				//input_report_abs(ts->pen_input_dev, ABS_X, pen_x);
-				//input_report_abs(ts->pen_input_dev, ABS_Y, pen_y);
-				input_report_abs(ts->pen_input_dev, ABS_X, pen_y);
-				input_report_abs(ts->pen_input_dev, ABS_Y, (18400 - pen_x));
+				input_report_abs(ts->pen_input_dev, ABS_X, pen_x);
+				input_report_abs(ts->pen_input_dev, ABS_Y, pen_y);
 				input_report_abs(ts->pen_input_dev, ABS_PRESSURE, pen_pressure);
 				input_report_key(ts->pen_input_dev, BTN_TOUCH, !!pen_pressure);
 				input_report_abs(ts->pen_input_dev, ABS_TILT_X, pen_tilt_x);
@@ -2601,10 +2597,8 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 
 /*Spinel code for Touching 10x resolution by zhangyd22 at 2023/05/04 start*/
 #if NVT_SUPER_RESOLUTION_N
-//	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, 0, ts->abs_x_max * NVT_SUPER_RESOLUTION_N, 0, 0);
-//	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, 0, ts->abs_y_max * NVT_SUPER_RESOLUTION_N, 0, 0);
-	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, 0, 29440, 0, 0);
-	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, 0, 18400, 0, 0);
+	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, 0, ts->abs_x_max * NVT_SUPER_RESOLUTION_N, 0, 0);
+	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, 0, ts->abs_y_max * NVT_SUPER_RESOLUTION_N, 0, 0);
 #else /* #if NVT_SUPER_RESOLUTION_N */
 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, 0, ts->abs_x_max, 0, 0);
 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, 0, ts->abs_y_max, 0, 0);
@@ -2670,10 +2664,8 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		ts->pen_input_dev->propbit[0] = BIT(INPUT_PROP_DIRECT);
 /*Spinel code for Touching 10x resolution by zhangyd22 at 2023/05/04 start*/
 #if NVT_SUPER_RESOLUTION_N
-		//input_set_abs_params(ts->pen_input_dev, ABS_X, 0, ts->abs_x_max * NVT_SUPER_RESOLUTION_N, 0, 0);
-		//input_set_abs_params(ts->pen_input_dev, ABS_Y, 0, ts->abs_y_max * NVT_SUPER_RESOLUTION_N, 0, 0);
-		input_set_abs_params(ts->pen_input_dev, ABS_X, 0, 29440, 0, 0);
-		input_set_abs_params(ts->pen_input_dev, ABS_Y, 0, 18400, 0, 0);
+		input_set_abs_params(ts->pen_input_dev, ABS_X, 0, ts->abs_x_max * NVT_SUPER_RESOLUTION_N, 0, 0);
+		input_set_abs_params(ts->pen_input_dev, ABS_Y, 0, ts->abs_y_max * NVT_SUPER_RESOLUTION_N, 0, 0);
 #else /* #if NVT_SUPER_RESOLUTION_N */
 		if (ts->stylus_resol_double) {
 			input_set_abs_params(ts->pen_input_dev, ABS_X, 0, ts->abs_x_max * 2, 0, 0);
