@@ -30,7 +30,7 @@
 #define HALL_INPUT	"/dev/input/hall_dev"
 
 #include "./touchscreen/goodix/goodix_ts_core.h"
-extern void goodix_tp_reset(void);
+// extern void goodix_tp_reset(void);
 extern struct goodix_ts_core *cd_next;
 
 bool hall_disable_fp_pk = false;
@@ -72,7 +72,7 @@ static irqreturn_t hall_interrupt_handler(int irq, void *dev)
 		input_report_switch(data->hall_dev, SW_LID, 0);
 		//dev_dbg(&data->hall_dev->dev, "hall switch far\n");
 		if (cd_next&&cd_next->init_stage == CORE_INIT_STAGE2) {
-                        goodix_tp_reset();
+                        // goodix_tp_reset();
                 } else {
                         hall_dbg("tp probe, cannot reset");
                 }
