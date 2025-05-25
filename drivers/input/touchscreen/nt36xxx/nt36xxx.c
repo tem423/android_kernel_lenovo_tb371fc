@@ -26,10 +26,11 @@
 #include <linux/of_irq.h>
 #include "nt36xxx.h"
 #include <linux/jiffies.h>
-#include "mtk_disp_notify.h"
 
 #if defined(CONFIG_DRM_PANEL)
 #include <drm/drm_panel.h>
+#elif defined(CONFIG_DRM_MEDIATEK_V2)
+#include <linux/mtk_disp_notify.h>
 #elif defined(CONFIG_DRM_MSM)
 #include <linux/msm_drm_notify.h>
 #elif defined(CONFIG_FB)
@@ -131,12 +132,10 @@ static struct pinctrl_state *nt36672_touch_mode_lowpower;
 extern void kb_hid_suspend(void);
 extern void kb_hid_resume(void);
 /* Spinel code for OSPINEL-851 by gaobw1 at 2023/03/03 end */
-/*
 #if defined(CONFIG_DRM_PANEL)
 static struct drm_panel *active_panel;
 static int nvt_drm_panel_notifier_callback(struct notifier_block *self, unsigned long event, void *data);
-*/
-#if defined(CONFIG_DRM_MEDIATEK_V2)
+#elif defined(CONFIG_DRM_MEDIATEK_V2)
 static int nvt_disp_notifier_callback(struct notifier_block *nb, unsigned long event, void *v);
 #elif defined(_MSM_DRM_NOTIFY_H_)
 static int nvt_drm_notifier_callback(struct notifier_block *self, unsigned long event, void *data);
@@ -2790,7 +2789,7 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		goto err_mp_proc_init_failed;
 	}
 #endif
-
+*/
 #if defined(CONFIG_DRM_PANEL)
 	ts->drm_panel_notif.notifier_call = nvt_drm_panel_notifier_callback;
 	if (active_panel) {
@@ -2800,8 +2799,7 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 			goto err_register_drm_panel_notif_failed;
 		}
 	}
-*/
-#if defined(CONFIG_DRM_MEDIATEK_V2)
+#elif defined(CONFIG_DRM_MEDIATEK_V2)
 	//ts->fb_notif.notifier_call = nvt_fb_notifier_callback;
 	ts->disp_notifier.notifier_call = nvt_disp_notifier_callback;
 	//ret = fb_register_client(&ts->fb_notif);
@@ -2857,15 +2855,14 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 	nvt_irq_enable(true);
 
 	return 0;
-/*
+
 #if defined(CONFIG_DRM_PANEL)
 err_register_drm_panel_notif_failed:
 #elif defined(_MSM_DRM_NOTIFY_H_)
 	if (msm_drm_unregister_client(&ts->drm_notif))
 		NVT_ERR("Error occurred while unregistering drm_notifier.\n");
 err_register_drm_notif_failed:*/
-//#elif defined(CONFIG_FB)
-#if defined(CONFIG_FB)
+#elif defined(CONFIG_FB)
 	if (fb_unregister_client(&ts->fb_notif))
 		NVT_ERR("Error occurred while unregistering fb_notifier.\n");
 err_register_fb_notif_failed:
@@ -2986,10 +2983,10 @@ static void nvt_ts_remove(struct spi_device *client)
 	NVT_LOG("Removing driver...\n");
 
 #if defined(CONFIG_DRM_PANEL)
-/*	if (active_panel) {
+	if (active_panel) {
 		if (drm_panel_notifier_unregister(active_panel, &ts->drm_panel_notif))
 			NVT_ERR("Error occurred while unregistering drm_panel_notifier.\n");
-	}*/
+	}
 #elif defined(_MSM_DRM_NOTIFY_H_)
 	if (msm_drm_unregister_client(&ts->drm_notif))
 		NVT_ERR("Error occurred while unregistering drm_notifier.\n");
@@ -3076,10 +3073,10 @@ static void nvt_ts_shutdown(struct spi_device *client)
 	nvt_irq_enable(false);
 
 #if defined(CONFIG_DRM_PANEL)
-/*	if (active_panel) {
+	if (active_panel) {
 		if (drm_panel_notifier_unregister(active_panel, &ts->drm_panel_notif))
 			NVT_ERR("Error occurred while unregistering drm_panel_notifier.\n");
-	}*/
+	}
 #elif defined(_MSM_DRM_NOTIFY_H_)
 	if (msm_drm_unregister_client(&ts->drm_notif))
 		NVT_ERR("Error occurred while unregistering drm_notifier.\n");
@@ -3314,7 +3311,6 @@ static int32_t nvt_ts_resume(struct device *dev)
 	return 0;
 }
 
-/*
 #if defined(CONFIG_DRM_PANEL)
 static int nvt_drm_panel_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
 {
@@ -3350,8 +3346,7 @@ static int nvt_drm_panel_notifier_callback(struct notifier_block *self, unsigned
 	}
 	return 0;
 }
-*/
-#if defined(CONFIG_DRM_MEDIATEK_V2) 
+#elif defined(CONFIG_DRM_MEDIATEK_V2) 
 static int nvt_disp_notifier_callback(struct notifier_block *nb, unsigned long event, void *v)
 {
 	int *data = (int *)v;

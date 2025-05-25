@@ -188,10 +188,10 @@ struct nvt_ts_data {
 	struct input_dev *input_dev;
 	struct delayed_work nvt_fwu_work;
 	uint16_t addr;
-	int8_t phys[32];/*
+	int8_t phys[32];
 #if defined(CONFIG_DRM_PANEL)
-	struct notifier_block drm_panel_notif;*/
-#if defined(CONFIG_DRM_MEDIATEK_V2)
+	struct notifier_block drm_panel_notif;
+#elif defined(CONFIG_DRM_MEDIATEK_V2)
 	struct notifier_block disp_notifier;
 #elif defined(_MSM_DRM_NOTIFY_H_)
 	struct notifier_block drm_notif;
