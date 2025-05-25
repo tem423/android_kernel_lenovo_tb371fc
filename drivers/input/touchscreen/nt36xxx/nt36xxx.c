@@ -117,15 +117,15 @@ char *MP_UPDATE_FIRMWARE_NAME;
 #endif
 
 /* For SPI mode */
-#define PINCTRL_STATE_SPI_DEFAULT   "nt36532_spi_mode"
-#define PINCTRL_STATE_SPI_LOWPOWER_MODE   "nt36532_spi_lowpower_mode"
-#define PINCTRL_STATE_TOUCH_LOWPOWER_MODE   "nt36532_touch_lowpower_mode"
+// #define PINCTRL_STATE_SPI_DEFAULT   "nt36532_spi_mode"
+// #define PINCTRL_STATE_SPI_LOWPOWER_MODE   "nt36532_spi_lowpower_mode"
+// #define PINCTRL_STATE_TOUCH_LOWPOWER_MODE   "nt36532_touch_lowpower_mode"
 static struct pinctrl *nt36672_pinctrl;
-static struct pinctrl *nt36672_touch_pinctrl;
+// static struct pinctrl *nt36672_touch_pinctrl;
 
-static struct pinctrl_state *nt36672_spi_mode_default;
-static struct pinctrl_state *nt36672_spi_mode_lowpower;
-static struct pinctrl_state *nt36672_touch_mode_lowpower;
+// static struct pinctrl_state *nt36672_spi_mode_default;
+// static struct pinctrl_state *nt36672_spi_mode_lowpower;
+// static struct pinctrl_state *nt36672_touch_mode_lowpower;
 
 /* Spinel code for OSPINEL-851 by gaobw1 at 2023/03/03 start */
 //used to detect KB connection status and control screen off
@@ -2503,46 +2503,46 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		goto err_gpio_config_failed;
 	}
 
-	nt36672_touch_pinctrl = devm_pinctrl_get(&ts->client->dev);
-	if (IS_ERR_OR_NULL(nt36672_touch_pinctrl)) {
-		NVT_ERR("Failed to get pinctrl handler[need confirm]");
-		nt36672_touch_pinctrl = NULL;
-		goto err_gpio_config_failed;
-	}
+	// nt36672_touch_pinctrl = devm_pinctrl_get(&ts->client->dev);
+	// if (IS_ERR_OR_NULL(nt36672_touch_pinctrl)) {
+	// 	NVT_ERR("Failed to get pinctrl handler[need confirm]");
+	// 	nt36672_touch_pinctrl = NULL;
+	// 	goto err_gpio_config_failed;
+	// }
 
-	nt36672_touch_mode_lowpower = pinctrl_lookup_state(
-				nt36672_touch_pinctrl, PINCTRL_STATE_TOUCH_LOWPOWER_MODE);
-	if (IS_ERR_OR_NULL(nt36672_touch_mode_lowpower)) {
-		ret = PTR_ERR(nt36672_touch_mode_lowpower);
-		NVT_ERR("Failed to get pinctrl state:%s, r:%d",
-				PINCTRL_STATE_TOUCH_LOWPOWER_MODE, ret);
-		nt36672_touch_mode_lowpower = NULL;
-		goto err_pinctrl_failed;
-	}
+	// nt36672_touch_mode_lowpower = pinctrl_lookup_state(
+	// 			nt36672_touch_pinctrl, PINCTRL_STATE_TOUCH_LOWPOWER_MODE);
+	// if (IS_ERR_OR_NULL(nt36672_touch_mode_lowpower)) {
+	// 	ret = PTR_ERR(nt36672_touch_mode_lowpower);
+	// 	NVT_ERR("Failed to get pinctrl state:%s, r:%d",
+	// 			PINCTRL_STATE_TOUCH_LOWPOWER_MODE, ret);
+	// 	nt36672_touch_mode_lowpower = NULL;
+	// 	goto err_pinctrl_failed;
+	// }
 
-	nt36672_spi_mode_default = pinctrl_lookup_state(
-				nt36672_pinctrl, PINCTRL_STATE_SPI_DEFAULT);
-	if (IS_ERR_OR_NULL(nt36672_spi_mode_default)) {
-		ret = PTR_ERR(nt36672_spi_mode_default);
-		NVT_ERR("Failed to get pinctrl state:%s, r:%d",
-				PINCTRL_STATE_SPI_DEFAULT, ret);
-		nt36672_spi_mode_default = NULL;
-		goto err_pinctrl_failed;
-	}
+	// nt36672_spi_mode_default = pinctrl_lookup_state(
+	// 			nt36672_pinctrl, PINCTRL_STATE_SPI_DEFAULT);
+	// if (IS_ERR_OR_NULL(nt36672_spi_mode_default)) {
+	// 	ret = PTR_ERR(nt36672_spi_mode_default);
+	// 	NVT_ERR("Failed to get pinctrl state:%s, r:%d",
+	// 			PINCTRL_STATE_SPI_DEFAULT, ret);
+	// 	nt36672_spi_mode_default = NULL;
+	// 	goto err_pinctrl_failed;
+	// }
 
-	nt36672_spi_mode_lowpower = pinctrl_lookup_state(
-				nt36672_pinctrl, PINCTRL_STATE_SPI_LOWPOWER_MODE);
-	if (IS_ERR_OR_NULL(nt36672_spi_mode_lowpower)) {
-		ret = PTR_ERR(nt36672_spi_mode_lowpower);
-		NVT_ERR("Failed to get pinctrl state:%s, r:%d",
-				PINCTRL_STATE_SPI_LOWPOWER_MODE, ret);
-		nt36672_spi_mode_lowpower = NULL;
-		goto err_pinctrl_failed;
-	}
+	// nt36672_spi_mode_lowpower = pinctrl_lookup_state(
+	// 			nt36672_pinctrl, PINCTRL_STATE_SPI_LOWPOWER_MODE);
+	// if (IS_ERR_OR_NULL(nt36672_spi_mode_lowpower)) {
+	// 	ret = PTR_ERR(nt36672_spi_mode_lowpower);
+	// 	NVT_ERR("Failed to get pinctrl state:%s, r:%d",
+	// 			PINCTRL_STATE_SPI_LOWPOWER_MODE, ret);
+	// 	nt36672_spi_mode_lowpower = NULL;
+	// 	goto err_pinctrl_failed;
+	// }
 
-	ret = pinctrl_select_state(nt36672_pinctrl, nt36672_spi_mode_default);
-	if (ret < 0)
-		NVT_ERR("Failed to select default pinstate, r:%d", ret);
+	// ret = pinctrl_select_state(nt36672_pinctrl, nt36672_spi_mode_default);
+	// if (ret < 0)
+	// 	NVT_ERR("Failed to select default pinstate, r:%d", ret);
 
 	mutex_init(&ts->lock);
 	mutex_init(&ts->xbuf_lock);
@@ -3142,13 +3142,13 @@ static int32_t nvt_ts_suspend(struct device *dev)
 		return 0;
 	}
 
-	ret = pinctrl_select_state(nt36672_pinctrl, nt36672_spi_mode_lowpower);
-	if (ret < 0)
-		NVT_ERR("Failed to select lowpower pinstate, r:%d", ret);
+	// ret = pinctrl_select_state(nt36672_pinctrl, nt36672_spi_mode_lowpower);
+	// if (ret < 0)
+	// 	NVT_ERR("Failed to select lowpower pinstate, r:%d", ret);
 
-	ret = pinctrl_select_state(nt36672_touch_pinctrl, nt36672_touch_mode_lowpower);
-	if (ret < 0)
-		NVT_ERR("Failed to select default pinstate, r:%d", ret);
+	// ret = pinctrl_select_state(nt36672_touch_pinctrl, nt36672_touch_mode_lowpower);
+	// if (ret < 0)
+	// 	NVT_ERR("Failed to select default pinstate, r:%d", ret);
 
 /* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
 #if WAKEUP_GESTURE
@@ -3275,9 +3275,9 @@ static int32_t nvt_ts_resume(struct device *dev)
 
 	NVT_LOG("start\n");
 
-	ret = pinctrl_select_state(nt36672_pinctrl, nt36672_spi_mode_default);
-	if (ret < 0)
-		NVT_ERR("Failed to select default pinstate, r:%d", ret);
+	// ret = pinctrl_select_state(nt36672_pinctrl, nt36672_spi_mode_default);
+	// if (ret < 0)
+	// 	NVT_ERR("Failed to select default pinstate, r:%d", ret);
 
 	// please make sure display reset(RESX) sequence and mipi dsi cmds sent before this
 #if NVT_TOUCH_SUPPORT_HW_RST
