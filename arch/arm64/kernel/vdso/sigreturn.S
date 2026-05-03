@@ -21,17 +21,6 @@
 
 #include <linux/linkage.h>
 #include <asm/unistd.h>
-#include <asm/assembler.h>
-
-    .text
-    .globl __kernel_rt_sigreturn
-    .type __kernel_rt_sigreturn, %function
-__kernel_rt_sigreturn:
-    mov x8, #__NR_rt_sigreturn
-    svc #0
-    .size __kernel_rt_sigreturn, . - __kernel_rt_sigreturn
-	.text
-
 	nop
 ENTRY(__kernel_rt_sigreturn)
 	.cfi_startproc
