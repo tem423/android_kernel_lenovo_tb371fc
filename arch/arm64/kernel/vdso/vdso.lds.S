@@ -98,3 +98,4 @@ VERSION
  * Make the sigreturn code visible to the kernel.
  */
 VDSO_sigtramp		= __kernel_rt_sigreturn;
+vdso_offset_sigtramp = . - VDSO_LBASE;
