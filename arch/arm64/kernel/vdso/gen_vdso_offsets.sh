@@ -12,4 +12,4 @@
 #
 
 LC_ALL=C
-sed -n 's/^$[0-9a-fA-F]*$ . VDSO_$[a-zA-Z0-9_]*$$/#define vdso_offset_\2 0x\1/p'
+sed 's/^$[0-9a-fA-F]*$ . VDSO_$[a-zA-Z0-9_]*$$/#define vdso_offset_\2 0x\1/p'
