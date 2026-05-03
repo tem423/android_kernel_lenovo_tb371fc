@@ -42,6 +42,7 @@ SECTIONS
 	.note		: { *(.note.*) }		:text	:note
 
 	. = ALIGN(16);
+vdso_offset_sigtramp = . - VDSO_LBASE;
 
 	.text		: { *(.text*) }			:text	=0xd503201f
 	PROVIDE (__etext = .);
