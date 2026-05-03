@@ -17,8 +17,11 @@ obj-vdso := vgettimeofday.o note.o sigreturn.o
 targets := $(obj-vdso) vdso.so vdso.so.dbg
 obj-vdso := $(addprefix $(obj)/, $(obj-vdso))
 
-ldflags-y := -shared -nostdlib -soname=linux-vdso.so.1 --hash-style=sysv \
-		--build-id -n -T
+ifeq ($(LD),ld.lld)
+LDFLAGS_vdso.so.dbg := -shared -s -soname=linux-vdso.so.1 --hash-style=sysv --build-id -T
+else
+LDFLAGS_vdso.so.dbg := -shared -s -soname=linux-vdso.so.1 --hash-style=sysv --build-id -n -T
+endif
 ccflags-y += $(DISABLE_LTO)
 
 ccflags-y := -fno-common -fno-builtin -fno-stack-protector -ffixed-x18
