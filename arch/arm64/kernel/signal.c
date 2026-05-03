@@ -749,9 +749,7 @@ static void setup_return(struct pt_regs *regs, struct k_sigaction *ka,
 	if (ka->sa.sa_flags & SA_RESTORER)
 		sigtramp = ka->sa.sa_restorer;
 	else
-		//sigtramp = VDSO_SYMBOL(current->mm->context.vdso, sigtramp);
-    //else
-        //sigtramp = (void __user *)current->mm->context.vdso;
+		// sigtramp = VDSO_SYMBOL(current->mm->context.vdso, sigtramp);
 
 	regs->regs[30] = (unsigned long)sigtramp;
 }
