@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Build
-        uses: silime/kernel_build_action@main
+        uses: tem423/kernel_build_action@main
         with:
           kernel-url: https://github.com/tem423/linux-android-msm-lenovo-p12
           kernel-branch: tb371fc
