@@ -19,8 +19,8 @@ jobs:
           ccache: true
           ksu: false
           ksu-version: v0.9.5
-          # aosp
-          # aosp-gcc: true
+          aosp
+          aosp-gcc: true
           # aosp-clang: true
           # aosp-clang-version: r383902
           # ndk
