@@ -1,6 +1,6 @@
 name: Build Kernel test
 on:
-  dispatch
+  workflow_dispatch:
 
 jobs:
   build:
