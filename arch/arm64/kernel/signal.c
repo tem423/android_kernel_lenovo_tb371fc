@@ -749,7 +749,12 @@ static void setup_return(struct pt_regs *regs, struct k_sigaction *ka,
 	if (ka->sa.sa_flags & SA_RESTORER)
 		sigtramp = ka->sa.sa_restorer;
 	else
-		sigtramp = VDSO_SYMBOL(current->mm->context.vdso, sigtramp);
+		#ifdef vdso_offset_sigtramp
+sigtramp = VDSO_SYMBOL(current->mm->context.vdso, sigtramp);
+#else
+sigtramp = NULL; 
+#warning "VDSO sigtramp offset missing, using fallback"
+#endif
 
 	regs->regs[30] = (unsigned long)sigtramp;
 }
