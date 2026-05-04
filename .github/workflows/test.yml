@@ -30,5 +30,5 @@ jobs:
           other-clang-branch: main
           anykernel3: true
           bootimg-url: https://github.com/tem423/KernelSU_Action/releases/download/boot/boot.img
-          release: true
+          release: false
           access-token: ${{ secrets.GITHUB_TOKEN }}
