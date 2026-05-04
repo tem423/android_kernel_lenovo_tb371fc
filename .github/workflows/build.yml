@@ -1,8 +1,6 @@
 name: Build Kernel test
 on:
-  push:
-    branches:
-      - tb371fc
+  dispatch
 
 jobs:
   build:
