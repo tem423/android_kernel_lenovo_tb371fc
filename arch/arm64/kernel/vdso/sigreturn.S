@@ -21,6 +21,9 @@
 
 #include <linux/linkage.h>
 #include <asm/unistd.h>
+
+.text 
+
 	nop
 ENTRY(__kernel_rt_sigreturn)
 	.cfi_startproc
