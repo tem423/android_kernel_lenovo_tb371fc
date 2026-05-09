@@ -22,7 +22,7 @@
 #include <linux/linkage.h>
 #include <asm/unistd.h>
 
-.text 
+	.text
 
 	nop
 ENTRY(__kernel_rt_sigreturn)
