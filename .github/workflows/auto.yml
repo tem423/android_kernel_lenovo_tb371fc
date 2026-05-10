@@ -3,7 +3,7 @@ name: Android Kernel Build Action Auto
 on:
   push:
     branches:
-      - main
+      - tb371fc
 
 jobs:
   build-kernel:
