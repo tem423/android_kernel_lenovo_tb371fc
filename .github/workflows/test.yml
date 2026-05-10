@@ -1,6 +1,8 @@
 name: Android Kernel Build Action
 
 on:
+   push:
+  branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
