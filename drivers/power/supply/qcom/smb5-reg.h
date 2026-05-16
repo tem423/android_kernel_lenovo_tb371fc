@@ -1,6 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018-2020 The Linux Foundation. All rights reserved.
  */
 
 #ifndef __SMB5_CHARGER_REG_H
@@ -65,11 +65,13 @@ enum {
 #define CHARGING_PAUSE_CMD_BIT			BIT(0)
 
 #define CHGR_CFG2_REG				(CHGR_BASE + 0x51)
-#define CHARGER_EN_ITERM			BIT(3)
 #define RECHG_MASK				GENMASK(2, 1)
 #define VBAT_BASED_RECHG_BIT			BIT(2)
 #define SOC_BASED_RECHG_BIT			GENMASK(2, 1)
 #define CHARGER_INHIBIT_BIT			BIT(0)
+/*Linden code for JLINDEN-11589  by huyh10 at 20231025 start*/
+#define CURRENT_TERM_BIT			BIT(3)
+/*Linden code for JLINDEN-11589  by huyh10 at 20231025 end*/
 
 #define CHGR_FAST_CHARGE_CURRENT_CFG_REG	(CHGR_BASE + 0x61)
 
@@ -396,9 +398,10 @@ enum {
 #define TYPEC_CCOUT_VALUE_BIT			BIT(1)
 #define TYPEC_CCOUT_SRC_BIT			BIT(0)
 
-#define DEBUG_ACCESS_SRN_CFG_REG               (TYPEC_BASE + 0x4A)
-#define EN_DEBUG_ACCESS_SNK_BIT       		BIT(0)
-#define DAM_DIS_AICL_BIT       		BIT(3)
+/*Linden code for JLINDEN-5548  by huyh10 at 20230427 start*/
+#define TYPE_C_DEBUG_ACCESS_SINK_REG		(TYPEC_BASE + 0x4A)
+#define TYPEC_DEBUG_ACCESS_SINK_MASK		GENMASK(4, 0)
+/*Linden code for JLINDEN-5548  by huyh10 at 20230427 end*/
 
 #define DEBUG_ACCESS_SRC_CFG_REG		(TYPEC_BASE + 0x4C)
 #define EN_UNORIENTED_DEBUG_ACCESS_SRC_BIT	BIT(0)

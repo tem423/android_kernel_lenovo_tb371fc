@@ -6,6 +6,7 @@
 #define pr_fmt(fmt)	"QG-K: %s: " fmt, __func__
 
 #include <linux/alarmtimer.h>
+#include <linux/interrupt.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/power_supply.h>
@@ -14,6 +15,7 @@
 #include "fg-alg.h"
 #include "qg-sdam.h"
 #include "qg-core.h"
+#include "qg-iio.h"
 #include "qg-reg.h"
 #include "qg-util.h"
 #include "qg-defs.h"
@@ -35,7 +37,7 @@ static int qg_ss_feature;
 static ssize_t qg_ss_feature_show(struct device *dev, struct device_attribute
 				     *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "0x%4x\n", qg_ss_feature);
+	return scnprintf(buf, PAGE_SIZE, "0x%4x\n", qg_ss_feature);
 }
 
 static ssize_t qg_ss_feature_store(struct device *dev,
@@ -56,7 +58,7 @@ static int qg_delta_soc_interval_ms = 20000;
 static ssize_t soc_interval_ms_show(struct device *dev, struct device_attribute
 				     *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%d\n", qg_delta_soc_interval_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", qg_delta_soc_interval_ms);
 }
 
 static ssize_t soc_interval_ms_store(struct device *dev,
@@ -77,7 +79,7 @@ static int qg_fvss_delta_soc_interval_ms = 10000;
 static ssize_t fvss_delta_soc_interval_ms_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%d\n", qg_fvss_delta_soc_interval_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", qg_fvss_delta_soc_interval_ms);
 }
 
 static ssize_t fvss_delta_soc_interval_ms_store(struct device *dev,
@@ -98,7 +100,7 @@ static int qg_delta_soc_cold_interval_ms = 4000;
 static ssize_t soc_cold_interval_ms_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%d\n", qg_delta_soc_cold_interval_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", qg_delta_soc_cold_interval_ms);
 }
 
 static ssize_t soc_cold_interval_ms_store(struct device *dev,
@@ -119,7 +121,7 @@ static int qg_maint_soc_update_ms = 120000;
 static ssize_t maint_soc_update_ms_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%d\n", qg_maint_soc_update_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", qg_maint_soc_update_ms);
 }
 
 static ssize_t maint_soc_update_ms_store(struct device *dev,
@@ -141,7 +143,7 @@ static int qg_fvss_vbat_scaling = 1;
 static ssize_t fvss_vbat_scaling_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%d\n", qg_fvss_vbat_scaling);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", qg_fvss_vbat_scaling);
 }
 
 static ssize_t fvss_vbat_scaling_store(struct device *dev,
@@ -236,7 +238,7 @@ static int qg_process_tcss_soc(struct qpnp_qg *chip, int sys_soc)
 {
 	int rc, ibatt_diff = 0, ibat_inc_hyst = 0;
 	int qg_iterm_ua = (-1 * chip->dt.iterm_ma * 1000);
-	int soc_ibat, wt_ibat, wt_sys;
+	int soc_ibat, wt_ibat, wt_sys, val;
 	union power_supply_propval prop = {0, };
 
 	if (!chip->dt.tcss_enable && !(qg_ss_feature & QG_TCSS))
@@ -267,9 +269,8 @@ static int qg_process_tcss_soc(struct qpnp_qg *chip, int sys_soc)
 		chip->tcss_active = true;
 	}
 
-	rc = power_supply_get_property(chip->batt_psy,
-			POWER_SUPPLY_PROP_INPUT_CURRENT_LIMITED, &prop);
-	if (!rc && prop.intval) {
+	rc = qg_read_iio_chan(chip, INPUT_CURRENT_LIMITED, &val);
+	if (!rc && val) {
 		qg_dbg(chip, QG_DEBUG_SOC,
 			"Input limited sys_soc=%d soc_tcss=%d\n",
 					sys_soc, chip->soc_tcss);
@@ -438,6 +439,9 @@ static void get_next_update_time(struct qpnp_qg *chip)
 	soc_points /= chip->dt.delta_soc;
 
 	/* Lower the delta soc interval by half at cold */
+	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
+	rc = mm8013_get_temperature(chip, &batt_temp); /*qg_get_battery_temp(chip, &batt_temp);*/
+	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
 	rc = qg_get_battery_temp(chip, &batt_temp);
 	if (!rc && batt_temp < chip->dt.cold_temp_threshold)
 		min_delta_soc_interval_ms = qg_delta_soc_cold_interval_ms;
@@ -485,9 +489,8 @@ static bool is_scaling_required(struct qpnp_qg *chip)
 
 	if (chip->catch_up_soc > chip->msoc && input_present &&
 			(chip->charge_status != POWER_SUPPLY_STATUS_CHARGING &&
-			chip->charge_status != POWER_SUPPLY_STATUS_FULL
-			&& chip->msoc != 0))
-		/* USB is present, but not charging. Ignore when msoc = 0 */
+			chip->charge_status != POWER_SUPPLY_STATUS_FULL))
+		/* USB is present, but not charging */
 		return false;
 
 	return true;
@@ -551,12 +554,14 @@ static void update_msoc(struct qpnp_qg *chip)
 	/* update SDAM with the new MSOC */
 	sdam_soc = (chip->maint_soc > 0) ? chip->maint_soc : chip->msoc;
 	chip->sdam_data[SDAM_SOC] = sdam_soc;
-	rc = qg_sdam_write(SDAM_SOC, sdam_soc);
+	//rc = qg_sdam_write(SDAM_SOC, sdam_soc);
 	if (rc < 0)
 		pr_err("Failed to update SDAM with MSOC rc=%d\n", rc);
 
 	if (!chip->dt.cl_disable && chip->cl->active) {
-		rc = qg_get_battery_temp(chip, &batt_temp);
+		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
+		rc = mm8013_get_temperature(chip, &batt_temp); /*qg_get_battery_temp(chip, &batt_temp);*/
+		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
 		if (rc < 0) {
 			pr_err("Failed to read BATT_TEMP rc=%d\n", rc);
 		} else if (chip->batt_soc >= 0) {

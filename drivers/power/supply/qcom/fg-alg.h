@@ -1,12 +1,12 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  */
 
 #ifndef __FG_ALG_H__
 #define __FG_ALG_H__
 
-#include <linux/of_batterydata.h>
+#include "battery-profile-loader.h"
 #include "step-chg-jeita.h"
 
 #define BUCKET_COUNT		8
@@ -138,6 +138,7 @@ struct ttf {
 struct soh_profile {
 	struct device_node *bp_node;
 	struct power_supply *bms_psy;
+	struct iio_channel *iio_chan_list;
 	struct soh_range *soh_data;
 	int batt_id_kohms;
 	int profile_count;
@@ -166,5 +167,4 @@ int ttf_get_time_to_full(struct ttf *ttf, int *val);
 int ttf_tte_init(struct ttf *ttf);
 int soh_profile_init(struct device *dev, struct soh_profile *sp);
 int soh_profile_update(struct soh_profile *sp, int soh);
-
 #endif

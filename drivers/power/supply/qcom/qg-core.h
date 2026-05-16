@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2018-2021 The Linux Foundation. All rights reserved.
  */
@@ -9,6 +9,11 @@
 #include <linux/kernel.h>
 #include "fg-alg.h"
 #include "qg-defs.h"
+
+struct qg_config {
+	u32			qg_version;
+	u32			pmic_version;
+};
 
 struct qg_batt_props {
 	const char		*batt_type_str;
@@ -88,11 +93,14 @@ struct qg_esr_data {
 
 struct qpnp_qg {
 	struct device		*dev;
-	struct pmic_revid_data	*pmic_rev_id;
 	struct regmap		*regmap;
 	struct qpnp_vadc_chip	*vadc_dev;
 	struct soh_profile      *sp;
 	struct power_supply	*qg_psy;
+	struct iio_dev		*indio_dev;
+	struct iio_chan_spec	*iio_chan;
+	struct iio_channel	*int_iio_chans;
+	struct iio_channel	**ext_iio_chans;
 	struct class		*qg_class;
 	struct device		*qg_device;
 	struct cdev		qg_cdev;
@@ -126,10 +134,14 @@ struct qpnp_qg {
 	struct power_supply	*parallel_psy;
 	struct power_supply	*cp_psy;
 	struct qg_esr_data	esr_data[QG_MAX_ESR_COUNT];
+	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
+	struct power_supply	*mm8013_psy;
+	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
 
 	/* status variable */
 	u32			*debug_mask;
 	u32			qg_version;
+	u32			pmic_version;
 	bool			qg_device_open;
 	bool			profile_loaded;
 	bool			battery_missing;
@@ -146,6 +158,9 @@ struct qpnp_qg {
 	bool			tcss_active;
 	bool			bass_active;
 	bool			first_profile_load;
+	/*Linden code for JLINDEN-8201 by wanglc13 at 20230420 start*/
+	bool			first_boot_flag;
+	/*Linden code for JLINDEN-8201 by wanglc13 at 20230420 end*/
 	int			charge_status;
 	int			charge_type;
 	int			chg_iterm_ma;
@@ -164,7 +179,6 @@ struct qpnp_qg {
 	int			max_fcc_limit_ma;
 	int			bsoc_bass_entry;
 	int			qg_v_ibat;
-	int			qg_charge_counter;
 	u32			fifo_done_count;
 	u32			wa_flags;
 	u32			seq_no;
@@ -266,6 +280,13 @@ enum qg_wa_flags {
 enum qg_version {
 	QG_PMIC5,
 	QG_LITE,
+};
+
+enum pmic_version {
+	PM2250,
+	PM6150,
+	PMI632,
+	PM7250B,
 };
 
 enum qg_mode {
