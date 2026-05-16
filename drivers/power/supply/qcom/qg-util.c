@@ -16,7 +16,6 @@
 #include "qg-core.h"
 #include "qg-reg.h"
 #include "qg-defs.h"
-#include "qg-iio.h"
 #include "qg-util.h"
 
 static inline bool is_sticky_register(u32 addr)
@@ -310,10 +309,14 @@ bool is_input_present(struct qpnp_qg *chip)
 
 bool is_parallel_available(struct qpnp_qg *chip)
 {
-	if (is_chan_valid(chip, PARALLEL_CHARGING_ENABLED))
+	if (chip->parallel_psy)
 		return true;
 
-	return false;
+	chip->parallel_psy = power_supply_get_by_name("parallel");
+	if (!chip->parallel_psy)
+		return false;
+
+	return true;
 }
 
 bool is_cp_available(struct qpnp_qg *chip)
@@ -330,14 +333,17 @@ bool is_cp_available(struct qpnp_qg *chip)
 
 bool is_parallel_enabled(struct qpnp_qg *chip)
 {
-	int val = 0;
+	union power_supply_propval pval = {0, };
 
-	if (is_parallel_available(chip))
-		qg_read_iio_chan(chip, PARALLEL_CHARGING_ENABLED, &val);
-	else if (is_cp_available(chip))
-		qg_read_iio_chan(chip, CP_CHARGING_ENABLED, &val);
+	if (is_parallel_available(chip)) {
+		power_supply_get_property(chip->parallel_psy,
+			POWER_SUPPLY_PROP_CHARGING_ENABLED, &pval);
+	} else if (is_cp_available(chip)) {
+		power_supply_get_property(chip->cp_psy,
+			POWER_SUPPLY_PROP_CP_ENABLE, &pval);
+	}
 
-	return val ? true : false;
+	return pval.intval ? true : false;
 }
 
 int qg_write_monotonic_soc(struct qpnp_qg *chip, int msoc)
@@ -478,279 +484,3 @@ int qg_get_ibat_avg(struct qpnp_qg *chip, int *ibat_ua)
 
 	return 0;
 }
-
-bool is_chan_valid(struct qpnp_qg *chip,
-		enum qg_ext_iio_channels chan)
-{
-	int rc;
-
-	if (IS_ERR(chip->ext_iio_chans[chan]))
-		return false;
-
-	if (!chip->ext_iio_chans[chan]) {
-		chip->ext_iio_chans[chan] = iio_channel_get(chip->dev,
-					qg_ext_iio_chan_name[chan]);
-		if (IS_ERR(chip->ext_iio_chans[chan])) {
-			rc = PTR_ERR(chip->ext_iio_chans[chan]);
-			if (rc == -EPROBE_DEFER)
-				chip->ext_iio_chans[chan] = NULL;
-
-			pr_err("Failed to get IIO channel %s, rc=%d\n",
-				qg_ext_iio_chan_name[chan], rc);
-			return false;
-		}
-	}
-
-	return true;
-}
-
-int qg_read_iio_chan(struct qpnp_qg *chip,
-	enum qg_ext_iio_channels chan, int *val)
-{
-	int rc;
-
-	if (is_chan_valid(chip, chan)) {
-		rc = iio_read_channel_processed(
-				chip->ext_iio_chans[chan], val);
-		return (rc < 0) ? rc : 0;
-	}
-
-	return -EINVAL;
-}
-
-int qg_write_iio_chan(struct qpnp_qg *chip,
-	enum qg_ext_iio_channels chan, int val)
-{
-	if (is_chan_valid(chip, chan))
-		return iio_write_channel_raw(chip->ext_iio_chans[chan],
-						val);
-
-	return -EINVAL;
-}
-
-int qg_read_int_iio_chan(struct iio_channel *iio_chan_list, int chan_id,
-			int *val)
-{
-	int rc;
-
-	do {
-		if (iio_chan_list->channel->channel == chan_id) {
-			rc = iio_read_channel_processed(iio_chan_list,
-							val);
-			return (rc < 0) ? rc : 0;
-		}
-	} while (iio_chan_list++);
-
-	return -ENOENT;
-}
-
-int qg_read_range_data_from_node(struct device_node *node,
-		const char *prop_str, struct range_data *ranges,
-		int max_threshold, u32 max_value)
-{
-	int rc = 0, i, length, per_tuple_length, tuples;
-
-	if (!node || !prop_str || !ranges) {
-		pr_err("Invalid parameters passed\n");
-		return -EINVAL;
-	}
-
-	rc = of_property_count_elems_of_size(node, prop_str, sizeof(u32));
-	if (rc < 0) {
-		pr_err("Count %s failed, rc=%d\n", prop_str, rc);
-		return rc;
-	}
-
-	length = rc;
-	per_tuple_length = sizeof(struct range_data) / sizeof(u32);
-	if (length % per_tuple_length) {
-		pr_err("%s length (%d) should be multiple of %d\n",
-				prop_str, length, per_tuple_length);
-		return -EINVAL;
-	}
-	tuples = length / per_tuple_length;
-
-	if (tuples > MAX_STEP_CHG_ENTRIES) {
-		pr_err("too many entries(%d), only %d allowed\n",
-				tuples, MAX_STEP_CHG_ENTRIES);
-		return -EINVAL;
-	}
-
-	rc = of_property_read_u32_array(node, prop_str,
-			(u32 *)ranges, length);
-	if (rc) {
-		pr_err("Read %s failed, rc=%d\n", prop_str, rc);
-		return rc;
-	}
-
-	for (i = 0; i < tuples; i++) {
-		if (ranges[i].low_threshold >
-				ranges[i].high_threshold) {
-			pr_err("%s thresholds should be in ascendant ranges\n",
-						prop_str);
-			rc = -EINVAL;
-			goto clean;
-		}
-
-		if (i != 0) {
-			if (ranges[i - 1].high_threshold >
-					ranges[i].low_threshold) {
-				pr_err("%s thresholds should be in ascendant ranges\n",
-							prop_str);
-				rc = -EINVAL;
-				goto clean;
-			}
-		}
-
-		if (ranges[i].low_threshold > max_threshold)
-			ranges[i].low_threshold = max_threshold;
-		if (ranges[i].high_threshold > max_threshold)
-			ranges[i].high_threshold = max_threshold;
-		if (ranges[i].value > max_value)
-			ranges[i].value = max_value;
-	}
-
-	return rc;
-clean:
-	memset(ranges, 0, tuples * sizeof(struct range_data));
-	return rc;
-}
-
-/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-static bool is_mm8013_available(struct qpnp_qg *chip)
-{
-	if (!chip->mm8013_psy)
-		chip->mm8013_psy =
-			power_supply_get_by_name("mm8013_battery");
-
-	return !!chip->mm8013_psy;
-}
-
-int mm8013_get_capacity(struct qpnp_qg *chip, int *soc)
-{
-	union power_supply_propval prop = {0, };
-	int rc;
-
-	if (!is_mm8013_available(chip)) {
-		*soc = 50;
-		return 0;
-	}
-
-	rc = power_supply_get_property(chip->mm8013_psy,
-				POWER_SUPPLY_PROP_CAPACITY, &prop);
-	if (rc < 0) {
-		pr_err("mm8013:Failed to get battery capcity, rc=%d\n", rc);
-	} else {
-		*soc = prop.intval;
-	}
-
-	return rc;
-}
-
-int mm8013_get_temperature(struct qpnp_qg *chip, int *temp)
-{
-	union power_supply_propval prop = {0, };
-	int rc;
-
-	if (!is_mm8013_available(chip)) {
-		*temp = 250;
-		return 0;
-	}
-
-	rc = power_supply_get_property(chip->mm8013_psy,
-				POWER_SUPPLY_PROP_TEMP, &prop);
-	if (rc < 0) {
-		pr_err("mm8013:Failed to get battery temperature, rc=%d\n", rc);
-	} else {
-		*temp = prop.intval;
-	}
-
-	return rc;
-}
-
-int mm8013_get_current(struct qpnp_qg *chip, int *ibat_ua)
-{
-	union power_supply_propval prop = {0, };
-	int rc;
-
-	if (!is_mm8013_available(chip)) {
-		*ibat_ua = 0;
-		return 0;
-	}
-
-	rc = power_supply_get_property(chip->mm8013_psy,
-				POWER_SUPPLY_PROP_CURRENT_NOW, &prop);
-	if (rc < 0) {
-		pr_err("mm8013:Failed to get battery current, rc=%d\n", rc);
-	} else {
-		*ibat_ua = prop.intval;
-	}
-
-	return rc;
-}
-
-/*Linden code for JLINDEN-692 by zhoujj21 at 20230106 start*/
-int mm8013_get_current_avg(struct qpnp_qg *chip, int *ibat_ua)
-{
-	union power_supply_propval prop = {0, };
-	int rc;
-
-	if (!is_mm8013_available(chip)) {
-		*ibat_ua = 0;
-		return 0;
-	}
-
-	rc = power_supply_get_property(chip->mm8013_psy,
-				POWER_SUPPLY_PROP_CURRENT_AVG, &prop);
-	if (rc < 0) {
-		pr_err("mm8013:Failed to get battery current, rc=%d\n", rc);
-	} else {
-		*ibat_ua = prop.intval;
-	}
-
-	return rc;
-}
-/*Linden code for JLINDEN-692 by zhoujj21 at 20230106 end*/
-
-int mm8013_get_voltage(struct qpnp_qg *chip, int *vbat_uv)
-{
-	union power_supply_propval prop = {0, };
-	int rc;
-
-	if (!is_mm8013_available(chip)) {
-		*vbat_uv = 3700000;
-		return 0;
-	}
-
-	rc = power_supply_get_property(chip->mm8013_psy,
-				POWER_SUPPLY_PROP_VOLTAGE_NOW, &prop);
-	if (rc < 0) {
-		pr_err("mm8013:Failed to get battery voltage, rc=%d\n", rc);
-	} else {
-		*vbat_uv = prop.intval;
-	}
-
-	return rc;
-}
-
-int mm8013_get_cycle_count(struct qpnp_qg *chip, int *count)
-{
-	union power_supply_propval prop = {0, };
-	int rc;
-
-	if (!is_mm8013_available(chip)) {
-		*count = 1;
-		return 0;
-	}
-
-	rc = power_supply_get_property(chip->mm8013_psy,
-				POWER_SUPPLY_PROP_CYCLE_COUNT, &prop);
-	if (rc < 0) {
-		pr_err("mm8013:Failed to get battery cycle count, rc=%d\n", rc);
-	} else {
-		*count = prop.intval;
-	}
-
-	return rc;
-}
-/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/

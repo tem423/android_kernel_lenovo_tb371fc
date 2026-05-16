@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2018-2020 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
  */
 
 #define pr_fmt(fmt)	"QG-K: %s: " fmt, __func__
@@ -18,10 +18,6 @@
 #include "qg-battery-profile.h"
 #include "qg-profile-lib.h"
 #include "qg-defs.h"
-
-/*Linden code for JLINDEN-410 by kangkai4 at 20221207 start*/
-#define BATTERY_CAPACITY 7700
-/*Linden code for JLINDEN-410 by kangkai4 at 20221207 end*/
 
 struct qg_battery_data {
 	/* battery-data class node */
@@ -424,9 +420,6 @@ int qg_get_nominal_capacity(u32 *nom_cap_uah, int batt_temp, bool charging)
 	fcc_mah = CAP(QG_MIN_FCC_MAH, QG_MAX_FCC_MAH, fcc_mah);
 
 	*nom_cap_uah = fcc_mah * 1000;
-/*Linden code for JLINDEN-410 by kangkai4 at 20221207 start*/
-	*nom_cap_uah = BATTERY_CAPACITY * 1000;
-/*Linden code for JLINDEN-410 by kangkai4 at 20221207 end*/
 
 	return 0;
 }

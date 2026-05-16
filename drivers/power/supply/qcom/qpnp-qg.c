@@ -10,12 +10,12 @@
 #include <linux/cdev.h>
 #include <linux/device.h>
 #include <linux/interrupt.h>
-#include <linux/iio/iio.h>
 #include <linux/kernel.h>
 #include <linux/ktime.h>
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/of_irq.h>
+#include <linux/of_batterydata.h>
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/power_supply.h>
@@ -24,40 +24,18 @@
 #include <linux/timekeeping.h>
 #include <linux/uaccess.h>
 #include <linux/pmic-voter.h>
-#include <linux/poll.h>
 #include <linux/iio/consumer.h>
-#include <dt-bindings/iio/qti_power_supply_iio.h>
+#include <linux/qpnp/qpnp-revid.h>
 #include <uapi/linux/qg.h>
 #include <uapi/linux/qg-profile.h>
 #include "fg-alg.h"
 #include "qg-sdam.h"
 #include "qg-core.h"
-#include "qg-iio.h"
 #include "qg-reg.h"
 #include "qg-util.h"
 #include "qg-soc.h"
 #include "qg-battery-profile.h"
 #include "qg-defs.h"
-#include "battery-profile-loader.h"
-/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-#include "mm8013c06_battery.h"
-/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
-
-static const struct qg_config config[] = {
-	[PM2250]	= {QG_LITE, PM2250},
-	[PM6150]	= {QG_PMIC5, PM6150},
-	[PMI632]	= {QG_PMIC5, PMI632},
-	[PM7250B]	= {QG_PMIC5, PM7250B},
-};
-
-/*LINDEN code for JLINDEN-3198 wanglc13 at 20230228 start*/
-extern void smblib_update_rtc_soc(int soc);
-struct qpnp_qg *chip_backup = NULL;
-/*LINDEN code for JLINDEN-3198 wanglc13 at 20230228 end*/
-
-static const char *qg_get_battery_type(struct qpnp_qg *chip);
-static int qg_process_rt_fifo(struct qpnp_qg *chip);
-static int qg_load_battery_profile(struct qpnp_qg *chip);
 
 static int qg_debug_mask;
 
@@ -65,7 +43,7 @@ static int qg_esr_mod_count = 30;
 static ssize_t esr_mod_count_show(struct device *dev, struct device_attribute
 				     *attr, char *buf)
 {
-	return scnprintf(buf, PAGE_SIZE, "%d\n", qg_esr_mod_count);
+	return snprintf(buf, PAGE_SIZE, "%d\n", qg_esr_mod_count);
 }
 
 static ssize_t esr_mod_count_store(struct device *dev,
@@ -86,7 +64,7 @@ static int qg_esr_count = 3;
 static ssize_t esr_count_show(struct device *dev, struct device_attribute
 				 *attr, char *buf)
 {
-	return scnprintf(buf, PAGE_SIZE, "%d\n", qg_esr_count);
+	return snprintf(buf, PAGE_SIZE, "%d\n", qg_esr_count);
 }
 
 static ssize_t esr_count_store(struct device *dev, struct device_attribute
@@ -103,17 +81,6 @@ static ssize_t esr_count_store(struct device *dev, struct device_attribute
 }
 static DEVICE_ATTR_RW(esr_count);
 
-static ssize_t battery_type_show(struct device *dev,
-				struct device_attribute
-				*attr, char *buf)
-{
-	struct qpnp_qg *chip = dev_get_drvdata(dev);
-
-	return scnprintf(buf, PAGE_SIZE, "%s\n",
-			qg_get_battery_type(chip));
-}
-static DEVICE_ATTR_RO(battery_type);
-
 static struct attribute *qg_attrs[] = {
 	&dev_attr_esr_mod_count.attr,
 	&dev_attr_esr_count.attr,
@@ -123,10 +90,12 @@ static struct attribute *qg_attrs[] = {
 	&dev_attr_fvss_delta_soc_interval_ms.attr,
 	&dev_attr_fvss_vbat_scaling.attr,
 	&dev_attr_qg_ss_feature.attr,
-	&dev_attr_battery_type.attr,
 	NULL,
 };
 ATTRIBUTE_GROUPS(qg);
+
+static int qg_process_rt_fifo(struct qpnp_qg *chip);
+static int qg_load_battery_profile(struct qpnp_qg *chip);
 
 static bool is_battery_present(struct qpnp_qg *chip)
 {
@@ -278,6 +247,13 @@ static void qg_notify_charger(struct qpnp_qg *chip)
 	if (!chip->batt_psy)
 		return;
 
+	if (is_debug_batt_id(chip)) {
+		prop.intval = 1;
+		power_supply_set_property(chip->batt_psy,
+			POWER_SUPPLY_PROP_DEBUG_BATTERY, &prop);
+		return;
+	}
+
 	if (!chip->profile_loaded)
 		return;
 
@@ -336,20 +312,14 @@ static int qg_store_soc_params(struct qpnp_qg *chip)
 		pr_err("Failed to get RTC time, rc=%d\n", rc);
 	else
 		chip->sdam_data[SDAM_TIME_SEC] = rtc_sec;
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-	rc = mm8013_get_temperature(chip, &batt_temp);/*qg_get_battery_temp(chip, &batt_temp);*/
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+
+	rc = qg_get_battery_temp(chip, &batt_temp);
 	if (rc < 0)
 		pr_err("Failed to get battery-temp, rc = %d\n", rc);
 	else
 		chip->sdam_data[SDAM_TEMP] = (u32)batt_temp;
 
 	for (i = 0; i <= SDAM_TIME_SEC; i++) {
-		/*Linden code for JLINDEN-7025 by wanglc13 at 20230415 start*/
-		if(i == SDAM_SOC){
-			continue;
-		}
-		/*Linden code for JLINDEN-7025 by wanglc13 at 20230415 end*/
 		rc |= qg_sdam_write(i, chip->sdam_data[i]);
 		qg_dbg(chip, QG_DEBUG_STATUS, "SDAM write param %d value=%d\n",
 					i, chip->sdam_data[i]);
@@ -372,10 +342,10 @@ static int qg_config_s2_state(struct qpnp_qg *chip,
 	int rc, acc_interval, acc_length;
 	u8 fifo_length, reg = 0, state = S2_DEFAULT;
 
-	if ((chip->s2_state_mask & requested_state) && state_enable)
+	if ((chip->s2_state_mask & requested_state) && (state_enable == true))
 		return 0; /* No change in state */
 
-	if (!(chip->s2_state_mask & requested_state) && !state_enable)
+	if (!(chip->s2_state_mask & requested_state) && (state_enable == false))
 		return 0; /* No change in state */
 
 	if (state_enable)
@@ -738,9 +708,7 @@ static int qg_vbat_low_wa(struct qpnp_qg *chip)
 	u32 vbat_low_uv = 0;
 
 	if (chip->wa_flags & QG_VBAT_LOW_WA) {
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_temperature(chip, &temp); /*qg_get_battery_temp(chip, &temp);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+		rc = qg_get_battery_temp(chip, &temp);
 		if (rc < 0) {
 			pr_err("Failed to read batt_temp rc=%d\n", rc);
 			temp = 250;
@@ -779,9 +747,8 @@ static int qg_vbat_thresholds_config(struct qpnp_qg *chip)
 {
 	int rc, temp = 0, vbat_mv;
 	u8 reg;
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-	rc = mm8013_get_temperature(chip, &temp); /*qg_get_battery_temp(chip, &temp);*/
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+
+	rc = qg_get_battery_temp(chip, &temp);
 	if (rc < 0) {
 		pr_err("Failed to read batt_temp rc=%d\n", rc);
 		return rc;
@@ -1064,9 +1031,7 @@ static int qg_esr_estimate(struct qpnp_qg *chip)
 	 * Charge - enable ESR estimation if IBAT > MIN_IBAT.
 	 * Discharge - enable ESR estimation only if enabled via DT.
 	 */
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-	rc =  mm8013_get_current_avg(chip, &ibat); /*qg_get_battery_current(chip, &ibat);*/
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+	rc = qg_get_battery_current(chip, &ibat);
 	if (rc < 0)
 		return rc;
 	if (chip->charge_status == POWER_SUPPLY_STATUS_CHARGING &&
@@ -1082,9 +1047,7 @@ static int qg_esr_estimate(struct qpnp_qg *chip)
 		return 0;
 
 	/* Ignore ESR if battery-temp is below a threshold */
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-	rc = mm8013_get_temperature(chip, &temp); /*qg_get_battery_temp(chip, &temp);*/
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+	rc = qg_get_battery_temp(chip, &temp);
 	if (rc < 0)
 		return rc;
 	if (temp < chip->dt.esr_low_temp_threshold) {
@@ -1256,6 +1219,9 @@ static void process_udata_work(struct work_struct *work)
 
 	if (chip->udata.param[QG_V_IBAT].valid)
 		chip->qg_v_ibat = chip->udata.param[QG_V_IBAT].data;
+
+	if (chip->udata.param[QG_CHARGE_COUNTER].valid)
+		chip->qg_charge_counter = chip->udata.param[QG_CHARGE_COUNTER].data;
 
 	if (chip->udata.param[QG_SOC].valid ||
 			chip->udata.param[QG_SYS_SOC].valid) {
@@ -1695,29 +1661,6 @@ static int qg_store_batt_age_level(void *data, u32 batt_age_level)
 	return 0;
 }
 
-/*LINDEN code for JLINDEN-3198 wanglc13 at 20230228 start*/
-static int qg_store_batt_ui_soc(void *data, u32 batt_ui_soc)
-{
-	struct qpnp_qg *chip = data;
-	int rc;
-
-	if (!chip)
-		return -ENODEV;
-
-	if (chip->battery_missing)
-		return -ENODEV;
-
-	rc = qg_sdam_write(SDAM_SOC, batt_ui_soc);
-	pr_debug("jojo qg_store_batt_ui_soc, rc=%d,batt_ui_soc=%d \n", rc, batt_ui_soc);
-	if (rc < 0) {
-		pr_err("Error in writing batt_age_level, rc=%d\n", rc);
-		return rc;
-	}
-
-	return 0;
-}
-/*LINDEN code for JLINDEN-3198 wanglc13 at 20230228 end*/
-
 static int qg_get_cc_soc(void *data, int *cc_soc)
 {
 	struct qpnp_qg *chip = data;
@@ -1928,6 +1871,7 @@ static int qg_get_power(struct qpnp_qg *chip, int *val, bool average)
 
 static int qg_get_ttf_param(void *data, enum ttf_param param, int *val)
 {
+	union power_supply_propval prop = {0, };
 	struct qpnp_qg *chip = data;
 	int rc = 0;
 	int64_t temp = 0;
@@ -1945,25 +1889,20 @@ static int qg_get_ttf_param(void *data, enum ttf_param param, int *val)
 		rc = qg_get_battery_capacity(chip, val);
 		break;
 	case TTF_VBAT:
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_voltage(chip, val); /*qg_get_battery_voltage(chip, val);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+		rc = qg_get_battery_voltage(chip, val);
 		break;
 	case TTF_IBAT:
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_current_avg(chip, val); /*qg_get_battery_current(chip, val);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+		rc = qg_get_battery_current(chip, val);
 		break;
 	case TTF_FCC:
-		if (!chip->dt.cl_disable && chip->dt.cl_feedback_on)
-			rc = qg_get_learned_capacity(chip, &temp);
-		else
-			rc = qg_get_nominal_capacity((int *)&temp, 250,
-							true);
-		if (!rc) {
-			temp = div64_u64(temp, 1000);
-			*val  = div64_u64(chip->full_soc * temp,
-					QG_SOC_FULL);
+		if (chip->qg_psy) {
+			rc = power_supply_get_property(chip->qg_psy,
+				POWER_SUPPLY_PROP_CHARGE_FULL, &prop);
+			if (rc >= 0) {
+				temp = div64_u64(prop.intval, 1000);
+				*val  = div64_u64(chip->full_soc * temp,
+						QG_SOC_FULL);
+			}
 		}
 		break;
 	case TTF_MODE:
@@ -2049,9 +1988,7 @@ static int qg_reset(struct qpnp_qg *chip)
 	/* delay for master to settle */
 	msleep(20);
 
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-	mm8013_get_voltage(chip, &rc);/*qg_get_battery_voltage(chip, &rc);*/
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+	qg_get_battery_voltage(chip, &rc);
 	qg_get_battery_capacity(chip, &soc);
 	qg_dbg(chip, QG_DEBUG_STATUS, "VBAT=%duV SOC=%d\n", rc, soc);
 
@@ -2151,15 +2088,15 @@ static int qg_setprop_batt_age_level(struct qpnp_qg *chip, int batt_age_level)
 	return rc;
 }
 
-static int qg_iio_write_raw(struct iio_dev *indio_dev,
-		struct iio_chan_spec const *chan, int val1,
-		int val2, long mask)
+static int qg_psy_set_property(struct power_supply *psy,
+			       enum power_supply_property psp,
+			       const union power_supply_propval *pval)
 {
-	struct qpnp_qg *chip = iio_priv(indio_dev);
+	struct qpnp_qg *chip = power_supply_get_drvdata(psy);
 	int rc = 0;
 
-	switch (chan->channel) {
-	case PSY_IIO_CHARGE_FULL:
+	switch (psp) {
+	case POWER_SUPPLY_PROP_CHARGE_FULL:
 		if (chip->dt.cl_disable) {
 			pr_warn("Capacity learning disabled!\n");
 			return 0;
@@ -2168,225 +2105,262 @@ static int qg_iio_write_raw(struct iio_dev *indio_dev,
 			pr_warn("Capacity learning active!\n");
 			return 0;
 		}
-		if (val1 <= 0 || val1 > chip->cl->nom_cap_uah) {
+		if (pval->intval <= 0 || pval->intval > chip->cl->nom_cap_uah) {
 			pr_err("charge_full is out of bounds\n");
 			return -EINVAL;
 		}
 		mutex_lock(&chip->cl->lock);
-		rc = qg_store_learned_capacity(chip, val1);
+		rc = qg_store_learned_capacity(chip, pval->intval);
 		if (!rc)
-			chip->cl->learned_cap_uah = val1;
+			chip->cl->learned_cap_uah = pval->intval;
 		mutex_unlock(&chip->cl->lock);
 		break;
-	case PSY_IIO_SOH:
-		chip->soh = val1;
+	case POWER_SUPPLY_PROP_SOH:
+		chip->soh = pval->intval;
 		qg_dbg(chip, QG_DEBUG_STATUS, "SOH update: SOH=%d esr_actual=%d esr_nominal=%d\n",
 				chip->soh, chip->esr_actual, chip->esr_nominal);
 		if (chip->sp)
 			soh_profile_update(chip->sp, chip->soh);
 		break;
-	case PSY_IIO_CLEAR_SOH:
-		chip->first_profile_load = val1;
+	case POWER_SUPPLY_PROP_CLEAR_SOH:
+		chip->first_profile_load = pval->intval;
 		break;
-	case PSY_IIO_ESR_ACTUAL:
-		chip->esr_actual = val1;
+	case POWER_SUPPLY_PROP_ESR_ACTUAL:
+		chip->esr_actual = pval->intval;
 		break;
-	case PSY_IIO_ESR_NOMINAL:
-		chip->esr_nominal = val1;
+	case POWER_SUPPLY_PROP_ESR_NOMINAL:
+		chip->esr_nominal = pval->intval;
 		break;
-	case PSY_IIO_FG_RESET:
+	case POWER_SUPPLY_PROP_FG_RESET:
 		qg_reset(chip);
 		break;
-	case PSY_IIO_BATT_AGE_LEVEL:
-		rc = qg_setprop_batt_age_level(chip, val1);
+	case POWER_SUPPLY_PROP_BATT_AGE_LEVEL:
+		rc = qg_setprop_batt_age_level(chip, pval->intval);
 		break;
 	default:
-		pr_debug("Unsupported QG IIO chan %d\n", chan->channel);
-		rc = -EINVAL;
 		break;
 	}
-
-	if (rc < 0)
-		pr_err_ratelimited("Couldn't write IIO channel %d, rc = %d\n",
-			chan->channel, rc);
-
-	return rc;
+	return 0;
 }
 
-static int qg_iio_read_raw(struct iio_dev *indio_dev,
-		struct iio_chan_spec const *chan, int *val1,
-		int *val2, long mask)
+static int qg_psy_get_property(struct power_supply *psy,
+			       enum power_supply_property psp,
+			       union power_supply_propval *pval)
 {
-	struct qpnp_qg *chip = iio_priv(indio_dev);
-	int64_t temp = 0;
+	struct qpnp_qg *chip = power_supply_get_drvdata(psy);
 	int rc = 0;
+	int64_t temp = 0;
 
-	*val1 = 0;
+	pval->intval = 0;
 
-	switch (chan->channel) {
-	case PSY_IIO_CAPACITY:
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_capacity(chip, val1);/*qg_get_battery_capacity(chip, val1);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+	switch (psp) {
+	case POWER_SUPPLY_PROP_CAPACITY:
+		rc = qg_get_battery_capacity(chip, &pval->intval);
 		break;
-	case PSY_IIO_CAPACITY_RAW:
-		*val1 = chip->sys_soc;
+	case POWER_SUPPLY_PROP_CAPACITY_RAW:
+		pval->intval = chip->sys_soc;
 		break;
-	case PSY_IIO_REAL_CAPACITY:
-		rc = qg_get_battery_capacity_real(chip, val1);
+	case POWER_SUPPLY_PROP_REAL_CAPACITY:
+		rc = qg_get_battery_capacity_real(chip, &pval->intval);
 		break;
-	case PSY_IIO_VOLTAGE_NOW:
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_voltage(chip, val1); /*qg_get_battery_voltage(chip, val1);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+		rc = qg_get_battery_voltage(chip, &pval->intval);
 		break;
-	case PSY_IIO_CURRENT_NOW:
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_current_avg(chip, val1); /*qg_get_battery_current(chip, val1);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+	case POWER_SUPPLY_PROP_CURRENT_NOW:
+		rc = qg_get_battery_current(chip, &pval->intval);
 		break;
-	case PSY_IIO_VOLTAGE_OCV:
-		rc = qg_sdam_read(SDAM_OCV_UV, val1);
+	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
+		rc = qg_sdam_read(SDAM_OCV_UV, &pval->intval);
 		break;
-	case PSY_IIO_TEMP:
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_temperature(chip, val1); /*qg_get_battery_temp(chip, val1);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+	case POWER_SUPPLY_PROP_TEMP:
+		rc = qg_get_battery_temp(chip, &pval->intval);
 		break;
-	case PSY_IIO_RESISTANCE_ID:
-		*val1 = chip->batt_id_ohm;
+	case POWER_SUPPLY_PROP_RESISTANCE_ID:
+		pval->intval = chip->batt_id_ohm;
 		break;
-	case PSY_IIO_DEBUG_BATTERY:
-		*val1 = is_debug_batt_id(chip);
+	case POWER_SUPPLY_PROP_DEBUG_BATTERY:
+		pval->intval = is_debug_batt_id(chip);
 		break;
-	case PSY_IIO_RESISTANCE:
-		rc = qg_sdam_read(SDAM_RBAT_MOHM, val1);
+	case POWER_SUPPLY_PROP_RESISTANCE:
+		rc = qg_sdam_read(SDAM_RBAT_MOHM, &pval->intval);
 		if (!rc)
-			*val1 *= 1000;
+			pval->intval *= 1000;
 		break;
-	case PSY_IIO_SOC_REPORTING_READY:
-		*val1 = chip->soc_reporting_ready;
+	case POWER_SUPPLY_PROP_RESISTANCE_NOW:
+		pval->intval = chip->esr_last;
 		break;
-	case PSY_IIO_RESISTANCE_CAPACITIVE:
-		*val1 = chip->dt.rbat_conn_mohm;
+	case POWER_SUPPLY_PROP_SOC_REPORTING_READY:
+		pval->intval = chip->soc_reporting_ready;
 		break;
-	case PSY_IIO_VOLTAGE_MIN:
-		*val1 = chip->dt.vbatt_cutoff_mv * 1000;
+	case POWER_SUPPLY_PROP_RESISTANCE_CAPACITIVE:
+		pval->intval = chip->dt.rbat_conn_mohm;
 		break;
-	case PSY_IIO_VOLTAGE_MAX:
-		*val1 = chip->bp.float_volt_uv;
+	case POWER_SUPPLY_PROP_BATTERY_TYPE:
+		pval->strval = qg_get_battery_type(chip);
 		break;
-	case PSY_IIO_BATT_FULL_CURRENT:
-		*val1 = chip->dt.iterm_ma * 1000;
+	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
+		pval->intval = chip->dt.vbatt_cutoff_mv * 1000;
 		break;
-	case PSY_IIO_BATT_PROFILE_VERSION:
-		*val1 = chip->bp.qg_profile_version;
+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+		pval->intval = chip->bp.float_volt_uv;
 		break;
-	case PSY_IIO_CHARGE_COUNTER:
-		rc = qg_get_charge_counter(chip, val1);
+	case POWER_SUPPLY_PROP_BATT_FULL_CURRENT:
+		pval->intval = chip->dt.iterm_ma * 1000;
 		break;
-	case PSY_IIO_CHARGE_FULL:
+	case POWER_SUPPLY_PROP_BATT_PROFILE_VERSION:
+		pval->intval = chip->bp.qg_profile_version;
+		break;
+	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+		rc = qg_get_charge_counter(chip, &pval->intval);
+		break;
+	case POWER_SUPPLY_PROP_CHARGE_COUNTER_SHADOW:
+		pval->intval = chip->qg_charge_counter;
+		break;
+	case POWER_SUPPLY_PROP_CHARGE_FULL:
 		if (!chip->dt.cl_disable && chip->dt.cl_feedback_on)
 			rc = qg_get_learned_capacity(chip, &temp);
 		else
 			rc = qg_get_nominal_capacity((int *)&temp, 250, true);
 		if (!rc)
-			*val1 = (int)temp;
+			pval->intval = (int)temp;
 		break;
-	case PSY_IIO_CHARGE_FULL_DESIGN:
+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		rc = qg_get_nominal_capacity((int *)&temp, 250, true);
 		if (!rc)
-			*val1 = (int)temp;
+			pval->intval = (int)temp;
 		break;
-	case PSY_IIO_CYCLE_COUNT:
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_cycle_count(chip, val1); /*rc = get_cycle_count(chip->counter, val1);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+	case POWER_SUPPLY_PROP_CYCLE_COUNTS:
+		rc = get_cycle_counts(chip->counter, &pval->strval);
+		if (rc < 0)
+			pval->strval = NULL;
 		break;
-	case PSY_IIO_TIME_TO_FULL_AVG:
-		rc = ttf_get_time_to_full(chip->ttf, val1);
+	case POWER_SUPPLY_PROP_CYCLE_COUNT:
+		rc = get_cycle_count(chip->counter, &pval->intval);
 		break;
-	case PSY_IIO_TIME_TO_FULL_NOW:
-		rc = ttf_get_time_to_full(chip->ttf, val1);
+	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
+		rc = ttf_get_time_to_full(chip->ttf, &pval->intval);
 		break;
-	case PSY_IIO_TIME_TO_EMPTY_AVG:
-		rc = ttf_get_time_to_empty(chip->ttf, val1);
+	case POWER_SUPPLY_PROP_TIME_TO_FULL_NOW:
+		rc = ttf_get_time_to_full(chip->ttf, &pval->intval);
 		break;
-	case PSY_IIO_ESR_ACTUAL:
-		*val1 = (chip->esr_actual == -EINVAL) ?  -EINVAL :
+	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
+		rc = ttf_get_time_to_empty(chip->ttf, &pval->intval);
+		break;
+	case POWER_SUPPLY_PROP_ESR_ACTUAL:
+		pval->intval = (chip->esr_actual == -EINVAL) ?  -EINVAL :
 					(chip->esr_actual * 1000);
 		break;
-	case PSY_IIO_ESR_NOMINAL:
-		*val1 = (chip->esr_nominal == -EINVAL) ?  -EINVAL :
+	case POWER_SUPPLY_PROP_ESR_NOMINAL:
+		pval->intval = (chip->esr_nominal == -EINVAL) ?  -EINVAL :
 					(chip->esr_nominal * 1000);
 		break;
-	case PSY_IIO_SOH:
-		*val1 = chip->soh;
+	case POWER_SUPPLY_PROP_SOH:
+		pval->intval = chip->soh;
 		break;
-	case PSY_IIO_CLEAR_SOH:
-		*val1 = chip->first_profile_load;
+	case POWER_SUPPLY_PROP_CLEAR_SOH:
+		pval->intval = chip->first_profile_load;
 		break;
-	case PSY_IIO_CC_SOC:
-		rc = qg_get_cc_soc(chip, val1);
+	case POWER_SUPPLY_PROP_CC_SOC:
+		rc = qg_get_cc_soc(chip, &pval->intval);
 		break;
-	case PSY_IIO_FG_RESET:
-		*val1 = 0;
+	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
+		rc = qg_get_vbat_avg(chip, &pval->intval);
 		break;
-	case PSY_IIO_VOLTAGE_AVG:
-		rc = qg_get_vbat_avg(chip, val1);
+	case POWER_SUPPLY_PROP_CURRENT_AVG:
+		rc = qg_get_ibat_avg(chip, &pval->intval);
 		break;
-	case PSY_IIO_CURRENT_AVG:
-		rc = qg_get_ibat_avg(chip, val1);
+	case POWER_SUPPLY_PROP_POWER_NOW:
+		rc = qg_get_power(chip, &pval->intval, false);
 		break;
-	case PSY_IIO_POWER_NOW:
-		rc = qg_get_power(chip, val1, false);
+	case POWER_SUPPLY_PROP_POWER_AVG:
+		rc = qg_get_power(chip, &pval->intval, true);
 		break;
-	case PSY_IIO_POWER_AVG:
-		rc = qg_get_power(chip, val1, true);
+	case POWER_SUPPLY_PROP_SCALE_MODE_EN:
+		pval->intval = chip->fvss_active;
 		break;
-	case PSY_IIO_SCALE_MODE_EN:
-		*val1 = chip->fvss_active;
+	case POWER_SUPPLY_PROP_BATT_AGE_LEVEL:
+		pval->intval = chip->batt_age_level;
 		break;
-	case PSY_IIO_BATT_AGE_LEVEL:
-		*val1 = chip->batt_age_level;
-		break;
-	case PSY_IIO_FG_TYPE:
-		*val1 = chip->qg_mode;
+	case POWER_SUPPLY_PROP_FG_TYPE:
+		pval->intval = chip->qg_mode;
 		break;
 	default:
-		pr_debug("Unsupported QG IIO chan %d\n", chan->channel);
-		rc = -EINVAL;
+		pr_debug("Unsupported property %d\n", psp);
 		break;
 	}
 
-	if (rc < 0) {
-		pr_err_ratelimited("Couldn't read IIO channel %d, rc = %d\n",
-			chan->channel, rc);
-		return rc;
-	}
-
-	return IIO_VAL_INT;
+	return rc;
 }
 
-static int qg_iio_of_xlate(struct iio_dev *indio_dev,
-				const struct of_phandle_args *iiospec)
+static int qg_property_is_writeable(struct power_supply *psy,
+				enum power_supply_property psp)
 {
-	struct qpnp_qg *chip = iio_priv(indio_dev);
-	struct iio_chan_spec *iio_chan = chip->iio_chan;
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(qg_iio_psy_channels);
-					i++, iio_chan++)
-		if (iio_chan->channel == iiospec->args[0])
-			return i;
-
-	return -EINVAL;
+	switch (psp) {
+	case POWER_SUPPLY_PROP_CHARGE_FULL:
+	case POWER_SUPPLY_PROP_ESR_ACTUAL:
+	case POWER_SUPPLY_PROP_ESR_NOMINAL:
+	case POWER_SUPPLY_PROP_SOH:
+	case POWER_SUPPLY_PROP_FG_RESET:
+	case POWER_SUPPLY_PROP_BATT_AGE_LEVEL:
+	case POWER_SUPPLY_PROP_CLEAR_SOH:
+		return 1;
+	default:
+		break;
+	}
+	return 0;
 }
 
-static const struct iio_info qg_iio_info = {
-	.read_raw	= qg_iio_read_raw,
-	.write_raw	= qg_iio_write_raw,
-	.of_xlate	= qg_iio_of_xlate,
+static enum power_supply_property qg_psy_props[] = {
+	POWER_SUPPLY_PROP_CAPACITY,
+	POWER_SUPPLY_PROP_CAPACITY_RAW,
+	POWER_SUPPLY_PROP_REAL_CAPACITY,
+	POWER_SUPPLY_PROP_TEMP,
+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+	POWER_SUPPLY_PROP_VOLTAGE_OCV,
+	POWER_SUPPLY_PROP_CURRENT_NOW,
+	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+	POWER_SUPPLY_PROP_CHARGE_COUNTER_SHADOW,
+	POWER_SUPPLY_PROP_RESISTANCE,
+	POWER_SUPPLY_PROP_RESISTANCE_ID,
+	POWER_SUPPLY_PROP_RESISTANCE_NOW,
+	POWER_SUPPLY_PROP_SOC_REPORTING_READY,
+	POWER_SUPPLY_PROP_RESISTANCE_CAPACITIVE,
+	POWER_SUPPLY_PROP_DEBUG_BATTERY,
+	POWER_SUPPLY_PROP_BATTERY_TYPE,
+	POWER_SUPPLY_PROP_VOLTAGE_MIN,
+	POWER_SUPPLY_PROP_VOLTAGE_MAX,
+	POWER_SUPPLY_PROP_BATT_FULL_CURRENT,
+	POWER_SUPPLY_PROP_BATT_PROFILE_VERSION,
+	POWER_SUPPLY_PROP_CYCLE_COUNT,
+	POWER_SUPPLY_PROP_CYCLE_COUNTS,
+	POWER_SUPPLY_PROP_CHARGE_FULL,
+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+	POWER_SUPPLY_PROP_ESR_ACTUAL,
+	POWER_SUPPLY_PROP_ESR_NOMINAL,
+	POWER_SUPPLY_PROP_SOH,
+	POWER_SUPPLY_PROP_CLEAR_SOH,
+	POWER_SUPPLY_PROP_CC_SOC,
+	POWER_SUPPLY_PROP_FG_RESET,
+	POWER_SUPPLY_PROP_VOLTAGE_AVG,
+	POWER_SUPPLY_PROP_CURRENT_AVG,
+	POWER_SUPPLY_PROP_POWER_AVG,
+	POWER_SUPPLY_PROP_POWER_NOW,
+	POWER_SUPPLY_PROP_SCALE_MODE_EN,
+	POWER_SUPPLY_PROP_BATT_AGE_LEVEL,
+	POWER_SUPPLY_PROP_FG_TYPE,
+};
+
+static const struct power_supply_desc qg_psy_desc = {
+	.name = "bms",
+	.type = POWER_SUPPLY_TYPE_BMS,
+	.properties = qg_psy_props,
+	.num_properties = ARRAY_SIZE(qg_psy_props),
+	.get_property = qg_psy_get_property,
+	.set_property = qg_psy_set_property,
+	.property_is_writeable = qg_property_is_writeable,
 };
 
 #define DEFAULT_CL_BEGIN_IBAT_UA	(-100000)
@@ -2404,7 +2378,7 @@ static bool qg_cl_ok_to_begin(void *data)
 static int qg_charge_full_update(struct qpnp_qg *chip)
 {
 	union power_supply_propval prop = {0, };
-	int rc, recharge_soc, health, val;
+	int rc, recharge_soc, health;
 
 	if (!chip->dt.hold_soc_while_full)
 		goto out;
@@ -2417,12 +2391,13 @@ static int qg_charge_full_update(struct qpnp_qg *chip)
 	}
 	health = prop.intval;
 
-	rc = qg_read_iio_chan(chip, RECHARGE_SOC, &val);
-	if (rc < 0 || val < 0) {
+	rc = power_supply_get_property(chip->batt_psy,
+			POWER_SUPPLY_PROP_RECHARGE_SOC, &prop);
+	if (rc < 0 || prop.intval < 0) {
 		pr_debug("Failed to get recharge-soc\n");
 		recharge_soc = DEFAULT_RECHARGE_SOC;
 	} else {
-		recharge_soc = val;
+		recharge_soc = prop.intval;
 	}
 	chip->recharge_soc = recharge_soc;
 
@@ -2452,7 +2427,9 @@ static int qg_charge_full_update(struct qpnp_qg *chip)
 			input_present && chip->msoc <= recharge_soc &&
 			chip->charge_status != POWER_SUPPLY_STATUS_CHARGING) {
 			/* Force recharge */
-			rc = qg_write_iio_chan(chip, FORCE_RECHARGE, 0);
+			prop.intval = 0;
+			rc = power_supply_set_property(chip->batt_psy,
+				POWER_SUPPLY_PROP_FORCE_RECHARGE, &prop);
 			if (rc < 0)
 				pr_err("Failed to force recharge rc=%d\n", rc);
 			else
@@ -2675,12 +2652,8 @@ static void qg_status_change_work(struct work_struct *work)
 	struct qpnp_qg *chip = container_of(work,
 			struct qpnp_qg, qg_status_change_work);
 	union power_supply_propval prop = {0, };
-	int rc = 0, batt_temp = 0, val;
+	int rc = 0, batt_temp = 0;
 	bool input_present = false;
-/*Linden code for JLINDEN-8065  by kangkai4 at 20230419 start*/
-	static int last_soc = -1;
-	int now_soc = 0;
-/*Linden code for JLINDEN-8065  by kangkai4 at 20230419 end*/
 
 	if (!is_batt_available(chip)) {
 		pr_debug("batt-psy not available\n");
@@ -2705,11 +2678,12 @@ static void qg_status_change_work(struct work_struct *work)
 	else
 		chip->charge_status = prop.intval;
 
-	rc = qg_read_iio_chan(chip, CHARGE_DONE, &val);
+	rc = power_supply_get_property(chip->batt_psy,
+			POWER_SUPPLY_PROP_CHARGE_DONE, &prop);
 	if (rc < 0)
 		pr_err("Failed to get charge done status, rc=%d\n", rc);
 	else
-		chip->charge_done = val;
+		chip->charge_done = prop.intval;
 
 	qg_dbg(chip, QG_DEBUG_STATUS, "charge_status=%d charge_done=%d\n",
 			chip->charge_status, chip->charge_done);
@@ -2731,9 +2705,7 @@ static void qg_status_change_work(struct work_struct *work)
 			input_present);
 
 	if (!chip->dt.cl_disable) {
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-		rc = mm8013_get_temperature(chip, &batt_temp); /*qg_get_battery_temp(chip, &batt_temp);*/
-		/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+		rc = qg_get_battery_temp(chip, &batt_temp);
 		if (rc < 0) {
 			pr_err("Failed to read BATT_TEMP at PON rc=%d\n", rc);
 		} else if (chip->batt_soc >= 0) {
@@ -2742,24 +2714,6 @@ static void qg_status_change_work(struct work_struct *work)
 				input_present, false);
 		}
 	}
-	/*LINDEN code for JLINDEN-3198 wanglc13 at 20230228 start*/
-	rc = power_supply_get_property(chip->batt_psy,
-                POWER_SUPPLY_PROP_CAPACITY, &prop);
-	if (rc < 0) {
-		pr_err("jojo Failed to get capacity, rc=%d\n", rc);
-			/* update parameters to SDAM */
-		chip->sdam_data[SDAM_SOC] = chip->msoc;
-	} else {
-/*Linden code for JLINDEN-8065  by kangkai4 at 20230419 start*/
-		now_soc = prop.intval;
-		if (last_soc != now_soc ) {
-			rc = qg_store_batt_ui_soc(chip,prop.intval);
-			last_soc = now_soc;
-		}
-/*Linden code for JLINDEN-8065  by kangkai4 at 20230419 end*/
-	}
-	/*LINDEN code for JLINDEN-3198 wanglc13 at 20230228 end*/
-
 	rc = qg_charge_full_update(chip);
 	if (rc < 0)
 		pr_err("Failed in charge_full_update, rc=%d\n", rc);
@@ -2797,38 +2751,17 @@ static int qg_notifier_cb(struct notifier_block *nb,
 	return NOTIFY_OK;
 }
 
-static int qg_psy_get_property(struct power_supply *psy,
-			       enum power_supply_property psp,
-			       union power_supply_propval *pval)
-{
-	if (psp == POWER_SUPPLY_PROP_TYPE)
-		pval->intval = POWER_SUPPLY_TYPE_MAINS;
-
-	return 0;
-}
-
-static enum power_supply_property qg_psy_props[] = {
-	POWER_SUPPLY_PROP_TYPE,
-};
-
-static const struct power_supply_desc qg_psy_desc = {
-	.name = "bms",
-	.type = POWER_SUPPLY_TYPE_MAINS,
-	.properties = qg_psy_props,
-	.num_properties = ARRAY_SIZE(qg_psy_props),
-	.get_property = qg_psy_get_property,
-};
-
 static int qg_init_psy(struct qpnp_qg *chip)
 {
 	struct power_supply_config qg_psy_cfg = {};
 	int rc;
 
 	qg_psy_cfg.drv_data = chip;
+	qg_psy_cfg.of_node = chip->dev->of_node;
 	chip->qg_psy = devm_power_supply_register(chip->dev,
 				&qg_psy_desc, &qg_psy_cfg);
 	if (IS_ERR_OR_NULL(chip->qg_psy)) {
-		pr_err("Failed to register qg_psy, rc = %d\n",
+		pr_err("Failed to register qg_psy rc = %ld\n",
 				PTR_ERR(chip->qg_psy));
 		return -ENODEV;
 	}
@@ -2836,64 +2769,7 @@ static int qg_init_psy(struct qpnp_qg *chip)
 	chip->nb.notifier_call = qg_notifier_cb;
 	rc = power_supply_reg_notifier(&chip->nb);
 	if (rc < 0)
-		pr_err("Failed to register psy notifier rc = %d\n", rc);
-
-	return rc;
-}
-
-static int qg_init_iio_psy(struct qpnp_qg *chip,
-				struct platform_device *pdev)
-{
-	struct iio_dev *indio_dev = chip->indio_dev;
-	struct iio_chan_spec *chan;
-	int qg_num_iio_channels = ARRAY_SIZE(qg_iio_psy_channels);
-	int rc, i;
-
-	chip->iio_chan = devm_kcalloc(chip->dev, qg_num_iio_channels,
-				sizeof(*chip->iio_chan), GFP_KERNEL);
-	if (!chip->iio_chan)
-		return -ENOMEM;
-
-	chip->int_iio_chans = devm_kcalloc(chip->dev,
-				qg_num_iio_channels,
-				sizeof(*chip->int_iio_chans),
-				GFP_KERNEL);
-	if (!chip->int_iio_chans)
-		return -ENOMEM;
-
-	chip->ext_iio_chans = devm_kcalloc(chip->dev,
-				ARRAY_SIZE(qg_ext_iio_chan_name),
-				sizeof(*chip->ext_iio_chans),
-				GFP_KERNEL);
-	if (!chip->ext_iio_chans)
-		return -ENOMEM;
-
-	indio_dev->info = &qg_iio_info;
-	indio_dev->dev.parent = chip->dev;
-	indio_dev->dev.of_node = chip->dev->of_node;
-	indio_dev->name = "qpnp,qg";
-	indio_dev->modes = INDIO_DIRECT_MODE;
-	indio_dev->channels = chip->iio_chan;
-	indio_dev->num_channels = qg_num_iio_channels;
-
-	for (i = 0; i < qg_num_iio_channels; i++) {
-		chip->int_iio_chans[i].indio_dev = indio_dev;
-		chan = &chip->iio_chan[i];
-		chip->int_iio_chans[i].channel = chan;
-		chan->address = i;
-		chan->channel = qg_iio_psy_channels[i].channel_num;
-		chan->type = qg_iio_psy_channels[i].type;
-		chan->datasheet_name =
-			qg_iio_psy_channels[i].datasheet_name;
-		chan->extend_name =
-			qg_iio_psy_channels[i].datasheet_name;
-		chan->info_mask_separate =
-			qg_iio_psy_channels[i].info_mask;
-	}
-
-	rc = devm_iio_device_register(chip->dev, indio_dev);
-	if (rc)
-		pr_err("Failed to register QG IIO device, rc=%d\n", rc);
+		pr_err("Failed register psy notifier rc = %d\n", rc);
 
 	return rc;
 }
@@ -3089,25 +2965,8 @@ unregister_chrdev:
 
 #define BID_RPULL_OHM		100000
 #define BID_VREF_MV		1875
-/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-#define HQ_FMT_BATT_DATA     	160
-#define HQ_SWD_BATT_DATA    	180
 static int get_batt_id_ohm(struct qpnp_qg *chip, u32 *batt_id_ohm)
 {
-	int id = 0;
-
-	id = hq_batt_id_get();
-	if (id == HQ_BATTERY_FMT) {
-		*batt_id_ohm = HQ_FMT_BATT_DATA * 1000;
-	} else if (id == HQ_BATTERY_SWD) {
-		*batt_id_ohm = HQ_SWD_BATT_DATA * 1000;
-	} else {
-	    *batt_id_ohm = HQ_SWD_BATT_DATA * 1000;
-		pr_err("Failed to read BATT_ID, default swd batt\n");
-		return 0;
-	};
-
-#if 0
 	int rc, batt_id_mv;
 	int64_t denom;
 
@@ -3134,10 +2993,9 @@ static int get_batt_id_ohm(struct qpnp_qg *chip, u32 *batt_id_ohm)
 
 	qg_dbg(chip, QG_DEBUG_PROFILE, "batt_id_mv=%d, batt_id_ohm=%d\n",
 					batt_id_mv, *batt_id_ohm);
-#endif
+
 	return 0;
 }
-/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
 
 static int qg_load_battery_profile(struct qpnp_qg *chip)
 {
@@ -3252,7 +3110,7 @@ static int qg_load_battery_profile(struct qpnp_qg *chip)
 			return -ENOMEM;
 		}
 
-		rc = qg_read_range_data_from_node(profile_node,
+		rc = read_range_data_from_node(profile_node,
 				"qcom,step-chg-ranges",
 				chip->ttf->step_chg_cfg,
 				chip->bp.float_volt_uv,
@@ -3355,9 +3213,8 @@ static int qg_determine_pon_soc(struct qpnp_qg *chip)
 			qg_dbg(chip, QG_DEBUG_PON, "%s OCV=%d\n",
 					ocv[i].ocv_type, ocv[i].ocv_uv);
 	}
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-	rc = mm8013_get_temperature(chip, &batt_temp); /*qg_get_battery_temp(chip, &batt_temp);*/
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+
+	rc = qg_get_battery_temp(chip, &batt_temp);
 	if (rc < 0) {
 		pr_err("Failed to read BATT_TEMP at PON rc=%d\n", rc);
 		goto done;
@@ -3381,17 +3238,6 @@ static int qg_determine_pon_soc(struct qpnp_qg *chip)
 		pr_err("Failed to lookup S7_PON SOC rc=%d\n", rc);
 		goto done;
 	}
-
-	/*Linden code for JLINDEN-8201 by wanglc13 at 20230420 start*/
-	pr_err("jojo chip->first_profile_load=%d\n", chip->first_profile_load);
-	if (chip->first_boot_flag == false) {
-		soc = shutdown[SDAM_SOC];
-		smblib_update_rtc_soc(soc); //get sdam soc
-	} else {
-		soc = -2;
-		smblib_update_rtc_soc(soc); //get abnormal value fot soc
-	}
-	/*Linden code for JLINDEN-8201 by wanglc13 at 20230420 end*/
 
 	qg_dbg(chip, QG_DEBUG_PON, "Shutdown: Valid=%d SOC=%d OCV=%duV time=%dsecs temp=%d, time_now=%ldsecs temp_now=%d S7_soc=%d\n",
 			shutdown[SDAM_VALID],
@@ -3432,7 +3278,7 @@ static int qg_determine_pon_soc(struct qpnp_qg *chip)
 	qg_dbg(chip, QG_DEBUG_PON, "Using SHUTDOWN_SOC @ PON\n");
 
 use_pon_ocv:
-	if (use_pon_ocv) {
+	if (use_pon_ocv == true) {
 		if (chip->wa_flags & QG_PON_OCV_WA) {
 			if (ocv[S3_LAST_OCV].ocv_raw == FIFO_V_RESET_VAL) {
 				if (!ocv[SDAM_PON_OCV].ocv_uv) {
@@ -3542,28 +3388,30 @@ done:
 
 static int qg_set_wa_flags(struct qpnp_qg *chip)
 {
-	switch (chip->pmic_version) {
-	case PMI632:
+	switch (chip->pmic_rev_id->pmic_subtype) {
+	case PMI632_SUBTYPE:
 		chip->wa_flags |= QG_RECHARGE_SOC_WA;
 		if (!chip->dt.use_s7_ocv)
 			chip->wa_flags |= QG_PON_OCV_WA;
+		if (chip->pmic_rev_id->rev4 == PMI632_V1P0_REV4)
+			chip->wa_flags |= QG_VBAT_LOW_WA;
 		break;
-	case PM6150:
+	case PM6150_SUBTYPE:
 		chip->wa_flags |= QG_CLK_ADJUST_WA |
 				QG_RECHARGE_SOC_WA;
 		qg_esr_mod_count = 10;
 		break;
-	case PM7250B:
+	case PM7250B_SUBTYPE:
 		qg_esr_mod_count = 10;
 		break;
-	case PM2250:
+	case PM2250_SUBTYPE:
 		chip->wa_flags |= QG_CLK_ADJUST_WA |
 				QG_RECHARGE_SOC_WA |
 				QG_VBAT_LOW_WA;
 		break;
 	default:
-		pr_err("Unsupported PMIC version %d\n",
-			chip->pmic_version);
+		pr_err("Unsupported PMIC subtype %d\n",
+			chip->pmic_rev_id->pmic_subtype);
 		return -EINVAL;
 	}
 
@@ -3591,9 +3439,6 @@ static int qg_sanitize_sdam(struct qpnp_qg *chip)
 		if (!rc)
 			qg_dbg(chip, QG_DEBUG_PON, "First boot. SDAM initilized\n");
 		chip->first_profile_load = true;
-		/*Linden code for JLINDEN-8201 by wanglc13 at 20230420 start*/
-		chip->first_boot_flag = true;
-		/*Linden code for JLINDEN-8201 by wanglc13 at 20230420 end*/
 	} else {
 		/* SDAM has invalid value */
 		rc = qg_sdam_clear();
@@ -3602,9 +3447,6 @@ static int qg_sanitize_sdam(struct qpnp_qg *chip)
 			rc = qg_sdam_write(SDAM_MAGIC, SDAM_MAGIC_NUMBER);
 		}
 		chip->first_profile_load = true;
-		/*Linden code for JLINDEN-8201 by wanglc13 at 20230420 start*/
-		chip->first_boot_flag = true;
-		/*Linden code for JLINDEN-8201 by wanglc13 at 20230420 end*/
 	}
 
 	if (rc < 0)
@@ -3877,13 +3719,14 @@ static int qg_soh_batt_profile_init(struct qpnp_qg *chip)
 		chip->sp->bp_node = chip->batt_node;
 		chip->sp->last_batt_age_level = chip->batt_age_level;
 		chip->sp->bms_psy = chip->qg_psy;
-		chip->sp->iio_chan_list = chip->int_iio_chans;
 		rc = soh_profile_init(chip->dev, chip->sp);
-		if (rc < 0)
+		if (rc < 0) {
+			devm_kfree(chip->dev, chip->sp);
 			chip->sp = NULL;
-		else
+		} else {
 			qg_dbg(chip, QG_DEBUG_PROFILE, "SOH profile count: %d\n",
 				chip->sp->profile_count);
+		}
 	}
 
 	return rc;
@@ -4011,6 +3854,7 @@ static int qg_alg_init(struct qpnp_qg *chip)
 		dev_err(chip->dev, "Error in initializing cycle counter, rc:%d\n",
 			rc);
 		counter->data = NULL;
+		devm_kfree(chip->dev, counter);
 		return rc;
 	}
 
@@ -4031,6 +3875,8 @@ static int qg_alg_init(struct qpnp_qg *chip)
 			rc);
 		ttf->data = NULL;
 		counter->data = NULL;
+		devm_kfree(chip->dev, ttf);
+		devm_kfree(chip->dev, counter);
 		return rc;
 	}
 
@@ -4060,6 +3906,9 @@ static int qg_alg_init(struct qpnp_qg *chip)
 			rc);
 		counter->data = NULL;
 		cl->data = NULL;
+		devm_kfree(chip->dev, counter);
+		devm_kfree(chip->dev, ttf);
+		devm_kfree(chip->dev, cl);
 		return rc;
 	}
 
@@ -4314,7 +4163,7 @@ static int qg_parse_cl_dt(struct qpnp_qg *chip)
 static int qg_parse_dt(struct qpnp_qg *chip)
 {
 	int rc = 0;
-	struct device_node *child, *node = chip->dev->of_node;
+	struct device_node *revid_node, *child, *node = chip->dev->of_node;
 	u32 base, temp;
 	u8 type;
 
@@ -4322,6 +4171,28 @@ static int qg_parse_dt(struct qpnp_qg *chip)
 		pr_err("Failed to find device-tree node\n");
 		return -ENXIO;
 	}
+
+	revid_node = of_parse_phandle(node, "qcom,pmic-revid", 0);
+	if (!revid_node) {
+		pr_err("Missing qcom,pmic-revid property - driver failed\n");
+		return -EINVAL;
+	}
+
+	chip->pmic_rev_id = get_revid_data(revid_node);
+	of_node_put(revid_node);
+	if (IS_ERR_OR_NULL(chip->pmic_rev_id)) {
+		pr_err("Failed to get pmic_revid, rc=%ld\n",
+			PTR_ERR(chip->pmic_rev_id));
+		/*
+		 * the revid peripheral must be registered, any failure
+		 * here only indicates that the rev-id module has not
+		 * probed yet.
+		 */
+		return -EPROBE_DEFER;
+	}
+
+	qg_dbg(chip, QG_DEBUG_PON, "PMIC subtype %d Digital major %d\n",
+		chip->pmic_rev_id->pmic_subtype, chip->pmic_rev_id->rev4);
 
 	for_each_available_child_of_node(node, child) {
 		rc = of_property_read_u32(child, "reg", &base);
@@ -4505,7 +4376,7 @@ static int qg_parse_dt(struct qpnp_qg *chip)
 	else
 		chip->dt.esr_low_temp_threshold = (int)temp;
 
-	rc = of_property_read_u32(node, "qcom,shutdown_soc_threshold", &temp);
+	rc = of_property_read_u32(node, "qcom,shutdown-soc-threshold", &temp);
 	if (rc < 0)
 		chip->dt.shutdown_soc_threshold = -EINVAL;
 	else
@@ -4815,24 +4686,16 @@ static int qpnp_qg_probe(struct platform_device *pdev)
 {
 	int rc = 0, soc = 0, nom_cap_uah;
 	struct qpnp_qg *chip;
-	struct iio_dev *indio_dev;
-	struct qg_config *config;
 
-	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*chip));
-	if (!indio_dev)
+	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
+	if (!chip)
 		return -ENOMEM;
-
-	chip = iio_priv(indio_dev);
-	chip->indio_dev = indio_dev;
 
 	chip->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!chip->regmap) {
 		pr_err("Parent regmap is unavailable\n");
 		return -ENXIO;
 	}
-	/*LINDEN code for JLINDEN-3198 wanglc13 at 20230228 start*/
-	chip_backup = chip;
-	/*LINDEN code for JLINDEN-3198 wanglc13 at 20230228 end*/
 
 	/* ADC for BID & THERM */
 	chip->batt_id_chan = iio_channel_get(&pdev->dev, "batt-id");
@@ -4873,19 +4736,9 @@ static int qpnp_qg_probe(struct platform_device *pdev)
 	chip->esr_actual = -EINVAL;
 	chip->esr_nominal = -EINVAL;
 	chip->batt_age_level = -EINVAL;
+	chip->qg_charge_counter = -EINVAL;
 
-	config = (struct qg_config *)of_device_get_match_data(
-							&pdev->dev);
-	if (!config) {
-		pr_err("Failed to get QG config data\n");
-		return -EINVAL;
-	}
-
-	chip->qg_version = config->qg_version;
-	chip->pmic_version = config->pmic_version;
-
-	qg_dbg(chip, QG_DEBUG_PON, "QG version:%d PMIC version:%d",
-		chip->qg_version, chip->pmic_version);
+	chip->qg_version = (u8)of_device_get_match_data(&pdev->dev);
 
 	switch (chip->qg_version) {
 	case QG_LITE:
@@ -5010,15 +4863,9 @@ static int qpnp_qg_probe(struct platform_device *pdev)
 		goto fail_device;
 	}
 
-	rc = qg_init_iio_psy(chip, pdev);
-	if (rc < 0) {
-		pr_err("Failed to initialize QG IIO PSY, rc=%d\n", rc);
-		goto fail_votable;
-	}
-
 	rc = qg_init_psy(chip);
 	if (rc < 0) {
-		pr_err("Failed to initialize QG PSY, rc=%d\n", rc);
+		pr_err("Failed to initialize QG psy, rc=%d\n", rc);
 		goto fail_votable;
 	}
 
@@ -5039,9 +4886,8 @@ static int qpnp_qg_probe(struct platform_device *pdev)
 		pr_err("Failed to create sysfs files rc=%d\n", rc);
 		goto fail_votable;
 	}
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 start*/
-	mm8013_get_capacity(chip, &soc); /*qg_get_battery_capacity(chip, &soc);*/
-	/*Linden code for JLINDEN-212 by zhoujj21 at 20221108 end*/
+
+	qg_get_battery_capacity(chip, &soc);
 
 	pr_info("QG initialized! battery_profile=%s SOC=%d QG_subtype=%d QG_version=%s QG_mode=%s\n",
 			qg_get_battery_type(chip), soc, chip->qg_subtype,
@@ -5101,24 +4947,9 @@ static void qpnp_qg_shutdown(struct platform_device *pdev)
 }
 
 static const struct of_device_id match_table[] = {
-	{
-		.compatible = "qcom,qpnp-qg-lite",
-		.data = (void *)&config[PM2250],
-	},
-	{
-		.compatible = "qcom,pm6150-qg",
-		.data = (void *)&config[PM6150],
-	},
-	{
-		.compatible = "qcom,pmi632-qg",
-		.data = (void *)&config[PMI632],
-	},
-	{
-		.compatible = "qcom,pm7250b-qg",
-		.data = (void *)&config[PM7250B],
-	},
-	{
-	},
+	{ .compatible = "qcom,qpnp-qg", .data = (void *)QG_PMIC5, },
+	{ .compatible = "qcom,qpnp-qg-lite", .data = (void *)QG_LITE, },
+	{ },
 };
 
 static struct platform_driver qpnp_qg_driver = {

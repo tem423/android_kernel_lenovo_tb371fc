@@ -6,14 +6,11 @@
 #define pr_fmt(fmt)	"ALG: %s: " fmt, __func__
 
 #include <linux/err.h>
-#include <linux/iio/iio.h>
 #include <linux/kernel.h>
 #include <linux/mutex.h>
 #include <linux/power_supply.h>
-#include <linux/qti_power_supply.h>
 #include <linux/slab.h>
 #include <linux/sort.h>
-#include <dt-bindings/iio/qti_power_supply_iio.h>
 #include "fg-alg.h"
 
 #define FULL_SOC_RAW		255
@@ -265,7 +262,7 @@ int get_cycle_counts(struct cycle_counter *counter, const char **buf)
 			return -EINVAL;
 		}
 
-		len += scnprintf(counter->str_buf + len, 8, "%d ", rc);
+		len += snprintf(counter->str_buf + len, 8, "%d ", rc);
 	}
 
 	counter->str_buf[len] = '\0';
@@ -804,18 +801,6 @@ int cap_learning_init(struct cap_learning *cl)
 
 /* SOH based profile loading */
 
-static int write_int_iio_chan(struct iio_channel *iio_chan_list,
-						int chan_id, int val)
-{
-	do {
-		if (iio_chan_list->channel->channel == chan_id)
-			return iio_write_channel_raw(iio_chan_list,
-							val);
-	} while (iio_chan_list++);
-
-	return -ENOENT;
-}
-
 /**
  * soh_get_batt_age_level -
  * @sp: SOH profile object
@@ -849,9 +834,10 @@ static int soh_get_batt_age_level(struct soh_profile *sp, int soh,
  */
 int soh_profile_update(struct soh_profile *sp, int new_soh)
 {
+	union power_supply_propval pval = {0, };
 	int rc, batt_age_level = 0;
 
-	if (!sp || !sp->bms_psy || !sp->iio_chan_list)
+	if (!sp || !sp->bms_psy)
 		return -ENODEV;
 
 	if (new_soh <= 0)
@@ -869,8 +855,9 @@ int soh_profile_update(struct soh_profile *sp, int new_soh)
 		return rc;
 
 	if (batt_age_level != sp->last_batt_age_level) {
-		rc = write_int_iio_chan(sp->iio_chan_list,
-				PSY_IIO_BATT_AGE_LEVEL, batt_age_level);
+		pval.intval = batt_age_level;
+		rc = power_supply_set_property(sp->bms_psy,
+			POWER_SUPPLY_PROP_BATT_AGE_LEVEL, &pval);
 		if (rc < 0) {
 			pr_err("Couldn't set batt_age_level rc=%d\n", rc);
 			return rc;
@@ -899,8 +886,7 @@ int soh_profile_init(struct device *dev, struct soh_profile *sp)
 {
 	int rc, profile_count = 0;
 
-	if (!dev || !sp || !sp->bp_node || !sp->bms_psy ||
-		!sp->iio_chan_list)
+	if (!dev || !sp || !sp->bp_node || !sp->bms_psy)
 		return -ENODEV;
 
 	rc = of_batterydata_get_aged_profile_count(sp->bp_node,
@@ -920,6 +906,7 @@ int soh_profile_init(struct device *dev, struct soh_profile *sp)
 	if (rc < 0) {
 		pr_err("Couldn't read SOH data for profile loading, rc=%d\n",
 			rc);
+		devm_kfree(dev, sp->soh_data);
 		return rc;
 	}
 
@@ -1166,9 +1153,7 @@ static int get_time_to_full_locked(struct ttf *ttf, int *val)
 	}
 
 	ttf->clear_ibatt = false;
-/*Linden code for JLINDEN-415 by laixf3 at 20221117 start*/
-	ibatt_avg = ibatt_avg / MILLI_UNIT;
-/*Linden code for JLINDEN-415 by laixf3 at 20221117 end*/
+	ibatt_avg = -ibatt_avg / MILLI_UNIT;
 	vbatt_avg /= MILLI_UNIT;
 
 	rc = ttf->get_ttf_param(ttf->data, TTF_ITERM, &iterm);
@@ -1215,7 +1200,7 @@ static int get_time_to_full_locked(struct ttf *ttf, int *val)
 	pr_debug("TTF: i_cc2cv=%d\n", i_cc2cv);
 
 	/* if we are already in CV state then we can skip estimating CC */
-	if (charge_type == POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE)
+	if (charge_type == POWER_SUPPLY_CHARGE_TYPE_TAPER)
 		goto cv_estimate;
 
 	/* estimated SOC at the CC to CV transition */
@@ -1345,14 +1330,14 @@ static int get_time_to_full_locked(struct ttf *ttf, int *val)
 cv_estimate:
 	pr_debug("TTF: t_predicted_cc=%d\n", t_predicted);
 
-	if (charge_type == POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE)
+	if (charge_type == POWER_SUPPLY_CHARGE_TYPE_TAPER)
 		iterm = max(100, abs(iterm));
 	else
 		iterm = max(100, abs(iterm) + ttf->iterm_delta);
 
 	pr_debug("TTF: iterm=%d\n", iterm);
 
-	if (charge_type == POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE)
+	if (charge_type == POWER_SUPPLY_CHARGE_TYPE_TAPER)
 		tau = max(MILLI_UNIT, ibatt_avg * MILLI_UNIT / iterm);
 	else
 		tau = max(MILLI_UNIT, i_cc2cv * MILLI_UNIT / iterm);
@@ -1560,15 +1545,18 @@ int ttf_get_time_to_empty(struct ttf *ttf, int *val)
 		return 0;
 	}
 
+	mutex_lock(&ttf->lock);
 	rc = ttf_circ_buf_median(&ttf->ibatt, &ibatt_avg);
 	if (rc < 0) {
 		/* try to get instantaneous current */
 		rc = ttf->get_ttf_param(ttf->data, TTF_IBAT, &ibatt_avg);
 		if (rc < 0) {
 			pr_err("failed to get battery current, rc=%d\n", rc);
+			mutex_unlock(&ttf->lock);
 			return rc;
 		}
 	}
+	mutex_unlock(&ttf->lock);
 
 	ibatt_avg /= MILLI_UNIT;
 	/* clamp ibatt_avg to 100mA */
