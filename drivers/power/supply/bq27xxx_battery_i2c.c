@@ -23,7 +23,6 @@
 
 static DEFINE_IDR(battery_id);
 static DEFINE_MUTEX(battery_mutex);
-extern register_hardware_info(const char *name, const char *model);
 
 static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
 {
@@ -177,10 +176,7 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
 	di->bus.write = bq27xxx_battery_i2c_write;
 	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
 	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
-	ret = bq27xxx_battery_i2c_read(di, 0x0a, true);
-	if(ret < 0){
-		goto err_failed;
-	}
+
 	ret = bq27xxx_battery_setup(di);
 	if (ret)
 		goto err_failed;
@@ -199,10 +195,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
 			dev_err(&client->dev,
 				"Unable to register IRQ %d error %d\n",
 				client->irq, ret);
-			return ret;
+			bq27xxx_battery_teardown(di);
+			goto err_failed;
 		}
 	}
-	register_hardware_info("batteryinfo","i2c-fg");
+
 	return 0;
 
 err_mem:
@@ -220,7 +217,6 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
 {
 	struct bq27xxx_device_info *di = i2c_get_clientdata(client);
 
-	bq27xxx_battery_maintenance(di);
 	bq27xxx_battery_teardown(di);
 
 	mutex_lock(&battery_mutex);
@@ -252,6 +248,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
 	{ "bq27546", BQ27546 },
 	{ "bq27742", BQ27742 },
 	{ "bq27545", BQ27545 },
+	{ "bq27411", BQ27411 },
 	{ "bq27421", BQ27421 },
 	{ "bq27425", BQ27425 },
 	{ "bq27426", BQ27426 },
@@ -284,6 +281,7 @@ static const struct of_device_id bq27xxx_battery_i2c_of_match_table[] = {
 	{ .compatible = "ti,bq27546" },
 	{ .compatible = "ti,bq27742" },
 	{ .compatible = "ti,bq27545" },
+	{ .compatible = "ti,bq27411" },
 	{ .compatible = "ti,bq27421" },
 	{ .compatible = "ti,bq27425" },
 	{ .compatible = "ti,bq27426" },
