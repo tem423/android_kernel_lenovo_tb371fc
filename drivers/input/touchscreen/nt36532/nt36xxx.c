@@ -29,6 +29,7 @@
 
 #if defined(CONFIG_DRM_PANEL)
 #include <drm/drm_panel.h>
+#include <drm/drm_notifier_mi.h>
 #elif defined(CONFIG_DRM_MSM)
 #include <linux/msm_drm_notify.h>
 #elif defined(CONFIG_FB)
