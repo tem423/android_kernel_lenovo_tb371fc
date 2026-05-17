@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2010 - 2022 Novatek, Inc.
  *
- * $Revision: 102158 $
- * $Date: 2022-07-07 11:10:06 +0800 (週四, 07 七月 2022) $
+ * $Revision: 107378 $
+ * $Date: 2022-10-26 09:56:01 +0800 (週三, 26 十月 2022) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,31 @@
 #define NVT_RAW "nvt_raw"
 #define NVT_DIFF "nvt_diff"
 #define NVT_PEN_DIFF "nvt_pen_diff"
-#define NVT_XIAOMI_LOCKDOWN_INFO "tp_lockdown_info"
 
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+#if NVT_CUST_PROC_CMD
+#define PENEL_DIRECTION "panel_direction"
+#define GAME_MODE "game_mode"
+#define EDGE_GRID_ZONE "edge_grid_zone"
+#define SUPPORT_PEN "support_pen"
+#define GAME_MODE_PALM_CMD 0x79
+#define SUPPORT_PEN_CMD 0x7B
+#define NVT_EXT_CMD 0x7F
+
+#define GAME_MODE_NORMAL 0x00
+#define GAME_MODE_REMOVE 0x01
+#define GAME_MODE_ENHANCE  0x02
+#define NVT_EXT_CMD_EDGE_GRID_ZONE 0x01
+
+#define EDGE_REJECT_VERTICLE_CMD 0xBA
+#define EDGE_REJECT_LEFT_UP 0xBB
+#define EDGE_REJECT_RIGHT_UP 0xBC
+#endif
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
+
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+#define GESTURE_CONTROL "gesture_control"
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
 #define NORMAL_MODE 0x00
 #define TEST_MODE_2 0x22
 #define HANDSHAKING_HOST_READY 0xBB
@@ -48,8 +71,18 @@ static struct proc_dir_entry *NVT_proc_baseline_entry;
 static struct proc_dir_entry *NVT_proc_raw_entry;
 static struct proc_dir_entry *NVT_proc_diff_entry;
 static struct proc_dir_entry *NVT_proc_pen_diff_entry;
-static struct proc_dir_entry *NVT_proc_xiaomi_lockdown_info_entry;
-extern int dsi_panel_lockdown_info_read(unsigned char *plockdowninfo);
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+static struct proc_dir_entry *NVT_gesture_entry;
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
+
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+#if NVT_CUST_PROC_CMD
+static struct proc_dir_entry *NVT_proc_edge_reject_entry;
+static struct proc_dir_entry *NVT_proc_edge_grid_zone_entry;
+static struct proc_dir_entry *NVT_proc_game_mode_entry;
+static struct proc_dir_entry *NVT_proc_support_pen_entry;
+#endif
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
 
 /*******************************************************
 Description:
@@ -282,6 +315,27 @@ void nvt_get_mdata(int32_t *buf, uint8_t *m_x_num, uint8_t *m_y_num)
     *m_y_num = ts->y_num;
     memcpy(buf, xdata, ((ts->x_num * ts->y_num + TOUCH_KEY_NUM) * sizeof(int32_t)));
 }
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+static ssize_t gesture_control_write(struct file *file, const char __user *buffer,
+		size_t count, loff_t *pos)
+{
+	char input;
+	if (count > 0) {
+		if (get_user(input, buffer))
+			return -EFAULT;
+		if (input != '1')
+			nvt_gesture_flag = false;
+		else
+			nvt_gesture_flag = true;
+	}
+	return count;
+}
+static int gesture_control_show(struct seq_file *m, void *v)
+{
+	seq_printf(m, "%d\n", nvt_gesture_flag);
+	return 0;
+}
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
 
 /*******************************************************
 Description:
@@ -755,7 +809,27 @@ static const struct file_operations nvt_diff_fops = {
 	.release = seq_release,
 };
 #endif
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+static int32_t gesture_control_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, gesture_control_show, NULL);
+}
+#ifdef HAVE_PROC_OPS
+static const struct proc_ops gesture_control_fops = {
+	.proc_open = gesture_control_open,
+	.proc_read = seq_read,
+	.proc_write = gesture_control_write,
+};
+#else
+static const struct file_operations gesture_control_fops = {
+	.owner = THIS_MODULE,
+	.open = gesture_control_open,
+	.read = seq_read,
+	.write = gesture_control_write,
+};
+#endif
 
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
 /*******************************************************
 Description:
 	Novatek touchscreen /proc/nvt_pen_diff open function.
@@ -837,36 +911,491 @@ static const struct file_operations nvt_pen_diff_fops = {
 };
 #endif
 
-static int nvt_xiaomi_lockdown_info_show(struct seq_file *m, void *v)
-{
-	int ret;
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+#if NVT_CUST_PROC_CMD
+int32_t nvt_cmd_store(uint8_t u8Cmd){
+	int i, retry = 5;
+	uint8_t buf[3] = {0};
+	int32_t ret = 0;
 
-	ret = dsi_panel_lockdown_info_read(ts->lockdown_info);
-	if (ret < 0) {
-		NVT_ERR("can't get lockdown info");
-	} else {
-		seq_printf(m, "0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x\n",
-				ts->lockdown_info[0], ts->lockdown_info[1], ts->lockdown_info[2], ts->lockdown_info[3],
-				ts->lockdown_info[4], ts->lockdown_info[5], ts->lockdown_info[6], ts->lockdown_info[7]);
-
+	if (mutex_lock_interruptible(&ts->lock)) {
+		return -ERESTARTSYS;
 	}
+
+	//---set xdata index to EVENT BUF ADDR---
+	ret = nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_HOST_CMD);
+	if (ret < 0) {
+		NVT_ERR("Set event buffer index fail!\n");
+		mutex_unlock(&ts->lock);
+		return ret;
+	}
+
+	for (i = 0; i < retry; i++) {
+		//---set cmd status---
+		buf[0] = EVENT_MAP_HOST_CMD;
+		buf[1] = u8Cmd;
+		CTP_SPI_WRITE(ts->client, buf, 2);
+		msleep(20);
+		//---read cmd status---
+		buf[0] = EVENT_MAP_HOST_CMD;
+		buf[1] = 0xFF;
+		CTP_SPI_READ(ts->client, buf, 2);
+		if (buf[1] == 0x00)
+			break;
+	}
+
+	if (unlikely(i == retry)) {
+		NVT_LOG("send Cmd 0x%02X failed, buf[1]=0x%02X\n", u8Cmd, buf[1]);
+		ret = -1;
+	} else {
+		NVT_LOG("send Cmd 0x%02X success, tried %d times\n", u8Cmd, i);
+	}
+
+	mutex_unlock(&ts->lock);
+
+	return ret;
+}
+int32_t nvt_ext_cmd_store(uint8_t u8Cmd, uint8_t u8subCmd){
+	int i, retry = 5;
+	uint8_t buf[4] = {0};
+	int32_t ret = 0;
+
+	if (mutex_lock_interruptible(&ts->lock)) {
+		return -ERESTARTSYS;
+	}
+
+	//---set xdata index to EVENT BUF ADDR---
+	ret = nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_HOST_CMD);
+	if (ret < 0) {
+		NVT_ERR("Set event buffer index fail!\n");
+		mutex_unlock(&ts->lock);
+		return ret;
+	}
+
+	for (i = 0; i < retry; i++) {
+		//---set cmd status---
+		buf[0] = EVENT_MAP_HOST_CMD;
+		buf[1] = u8Cmd;
+		buf[2] = u8subCmd;
+		CTP_SPI_WRITE(ts->client, buf, 3);
+
+		msleep(20);
+
+		//---read cmd status---
+		buf[0] = EVENT_MAP_HOST_CMD;
+		buf[1] = 0xFF;
+		CTP_SPI_READ(ts->client, buf, 2);
+		if (buf[1] == 0x00)
+			break;
+	}
+
+	if (unlikely(i == retry)) {
+		NVT_LOG("send Cmd 0x%02X 0x%02X failed, buf[1]=0x%02X\n", u8Cmd, u8subCmd, buf[1]);
+		ret = -1;
+	} else {
+		NVT_LOG("send Cmd 0x%02X 0x%02X success, tried %d times\n", u8Cmd, u8subCmd, i);
+	}
+
+	mutex_unlock(&ts->lock);
+
+	return ret;
+}
+
+/*
+ *	/proc/panel_angle cmd_param
+ *      [0], 0 : panel rotate 0 degree
+ *			 1 : panel rotate 90 degree
+ *			 2 : panel rotate 180 degree
+ *			 3 : panel rotate 270 degree
+ *
+ */
+int32_t nvt_edge_reject_set(int32_t status) {
+	int ret = 0;
+
+	if((status == 0) || (status == 2))//rotate 0 or 180 degree
+		ret = nvt_cmd_store(EDGE_REJECT_VERTICLE_CMD);
+	else if(status == 1) //rotate 90 degree
+		ret = nvt_cmd_store(EDGE_REJECT_LEFT_UP);
+	else if(status == 3) //rotate 270 degree
+		ret = nvt_cmd_store(EDGE_REJECT_RIGHT_UP);
+
+	return ret;
+}
+
+static ssize_t nvt_edge_reject_store(struct file *file, const char *buffer, size_t count, loff_t *pos) {
+	char dbg[10] = { 0 };
+	int res = 0;
+	uint8_t state;
+
+	res = copy_from_user(dbg, (uint8_t *) buffer, sizeof(uint8_t));
+	if (res)
+		return -EINVAL;
+
+	res = kstrtou8(dbg, 16, &state);
+	if (res < 0)
+		return res;
+
+	ts->edge_reject_state = state;
+
+	nvt_edge_reject_set(ts->edge_reject_state);
+
+	return count;
+}
+
+static int nvt_edge_reject_show(struct seq_file *sfile, void *v) {
+
+	if((ts->edge_reject_state == 0) || (ts->edge_reject_state == 2))
+		seq_printf(sfile, "Vertical Direction!(0 or 180 degree)\n"); //rotate 0 or 180 degree
+	else if(ts->edge_reject_state == 1)
+		seq_printf(sfile, "Left Up Direction!(90 degree)\n"); //rotate 90 degree
+	else if(ts->edge_reject_state == 3)
+		seq_printf(sfile, "Right Up Direction!(270 degree)\n"); //rotate 270 degree
+	else
+		seq_printf(sfile, "Not Support!\n");
 
 	return 0;
 }
 
-static int32_t nvt_xiaomi_lockdown_info_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, nvt_xiaomi_lockdown_info_show, NULL);
+static int32_t nvt_edge_reject_open(struct inode *inode, struct file *file) {
+	return single_open(file, nvt_edge_reject_show, NULL);
 }
 
-static const struct file_operations nvt_xiaomi_lockdown_info_fops = {
+
+#ifdef HAVE_PROC_OPS
+static const struct proc_ops nvt_edge_reject_fops = {
+	.proc_open = nvt_edge_reject_open,
+	.proc_read = seq_read,
+	.proc_write = nvt_edge_reject_store,
+	.proc_lseek = seq_lseek,
+	.proc_release = seq_release,
+};
+#else
+static const struct file_operations nvt_edge_reject_fops = {
 	.owner = THIS_MODULE,
-	.open = nvt_xiaomi_lockdown_info_open,
+	.open = nvt_edge_reject_open,
 	.read = seq_read,
+	.write = nvt_edge_reject_store,
 	.llseek = seq_lseek,
-	.release = single_release,
+	.release = seq_release,
+};
+#endif
+
+/*
+ *	/proc/edge_grid_zone cmd_param
+ *      [0], 1 : panel rotate 0 degreee
+ *			 2 : panel rotate 90 degree
+ *			 3 : panel rotate 180 degree
+ *			 4 : panel rotate 270 degree
+ *
+ *		[1], 1 : floating view at left side
+ *		     2 : floating view at right side
+ *
+ *		[2], floating view start Y coordinate
+ *
+ *		[3], floating view end Y coordinate
+ *
+ */
+int32_t nvt_edge_grid_zone_set(uint8_t deg, uint8_t dir, uint16_t y1, uint16_t y2)
+{
+    int i, retry = 5;
+    uint8_t buf[12] = {0};
+
+    //---set xdata index to EVENT BUF ADDR---(set page)
+    nvt_set_page(ts->mmap->EVENT_BUF_ADDR);
+
+    for (i = 0; i < retry; i++) {
+        /*---set cmd status---*/
+        buf[0] = EVENT_MAP_HOST_CMD;
+        buf[1] = NVT_EXT_CMD;
+        buf[2] = NVT_EXT_CMD_EDGE_GRID_ZONE;
+        buf[3] = deg;
+        buf[4] = dir;
+        buf[5] = (uint8_t) (y1 & 0xFF);
+        buf[6] = (uint8_t) ((y1 >> 8) & 0xFF);
+        buf[7] = (uint8_t) (y2 & 0xFF);
+        buf[8] = (uint8_t) ((y2 >> 8) & 0xFF);
+        CTP_SPI_WRITE(ts->client, buf, 9);
+
+
+        msleep(20);
+
+        //---read cmd status---
+        buf[0] = EVENT_MAP_HOST_CMD;
+        buf[1] = 0xFF;
+        buf[2] = 0xFF;
+        buf[3] = 0xFF;
+        buf[4] = 0xFF;
+        buf[5] = 0xFF;
+        buf[6] = 0xFF;
+        buf[7] = 0xFF;
+        buf[8] = 0xFF;
+        CTP_SPI_READ(ts->client, buf, 9);
+        if (buf[1] == 0x00)
+            break;
+    }
+
+    if (unlikely(i == retry)) {
+        NVT_ERR("send Cmd 0x%02X 0x%02X failed, buf[1]=0x%02X\n",
+            NVT_EXT_CMD, NVT_EXT_CMD_EDGE_GRID_ZONE, buf[1]);
+        return -1;
+    } else {
+        NVT_LOG("send Cmd 0x%02X 0x%02X success, tried %d times\n",
+            NVT_EXT_CMD, NVT_EXT_CMD_EDGE_GRID_ZONE, i);
+    }
+
+    return 0;
+}
+static ssize_t nvt_edge_grid_zone_store(struct file *file, const char *buffer, size_t count, loff_t *pos) {
+    int32_t tmp[4];
+    uint8_t ret;
+    char buf[16] = { 0 };
+
+    ret = copy_from_user(buf, (uint8_t *) buffer, count);
+    if (ret)
+        return -EINVAL;
+
+    NVT_LOG("buf=%s\n", buf);
+
+    ret = sscanf(buf, "%d,%d,%d,%d",
+        tmp, tmp+1, tmp+2, tmp+3);
+
+    ts->edge_grid_zone_info.degree = (uint8_t) tmp[0];
+    ts->edge_grid_zone_info.direction = (uint8_t) tmp[1];
+    ts->edge_grid_zone_info.y1 = (uint16_t) tmp[2];
+    ts->edge_grid_zone_info.y2 = (uint16_t) tmp[3];
+
+    NVT_LOG("cmd_parm = %d,%d,%d,%d\n",
+        ts->edge_grid_zone_info.degree,
+        ts->edge_grid_zone_info.direction,
+        ts->edge_grid_zone_info.y1,
+        ts->edge_grid_zone_info.y2);
+
+    nvt_edge_grid_zone_set(ts->edge_grid_zone_info.degree,
+        ts->edge_grid_zone_info.direction,
+        ts->edge_grid_zone_info.y1,
+        ts->edge_grid_zone_info.y2);
+
+	return count;
+}
+static int nvt_edge_grid_zone_show(struct seq_file *sfile, void *v) {
+    seq_printf(sfile, "Edge Grid Zone %d,%d,%d,%d\n",
+        ts->edge_grid_zone_info.degree,
+        ts->edge_grid_zone_info.direction,
+        ts->edge_grid_zone_info.y1,
+        ts->edge_grid_zone_info.y2);
+    return 0;
+}
+static int32_t nvt_edge_grid_zone_open(struct inode *inode, struct file *file) {
+	return single_open(file, nvt_edge_grid_zone_show, NULL);
+}
+
+#ifdef HAVE_PROC_OPS
+static const struct file_operations nvt_edge_grid_zone_fops = {
+	.proc_open = nvt_edge_grid_zone_open,
+	.proc_read = seq_read,
+	.proc_write = nvt_edge_grid_zone_store,
+	.proc_lseek = seq_lseek,
+	.proc_release = seq_release,
+
+};
+#else
+static const struct file_operations nvt_edge_grid_zone_fops = {
+	.owner = THIS_MODULE,
+	.open = nvt_edge_grid_zone_open,
+	.read = seq_read,
+	.write = nvt_edge_grid_zone_store,
+	.llseek = seq_lseek,
+	.release = seq_release,
+};
+#endif
+
+/*
+ *	/proc/game_mode cmd_param
+ *      [0], 0 : normal mode
+ *			 1 : pen mode(enhance palm reject)
+ *			 2 : game mode(remove palm reject)
+ *
+ */
+int32_t nvt_game_mode_set(uint8_t status) {
+	int ret = 0;
+
+	if(status == 0)
+		ret = nvt_ext_cmd_store(GAME_MODE_PALM_CMD, GAME_MODE_NORMAL);
+	else if(status == 2)
+		ret = nvt_ext_cmd_store(GAME_MODE_PALM_CMD, GAME_MODE_REMOVE);
+	else if(status == 1)
+		ret = nvt_ext_cmd_store(GAME_MODE_PALM_CMD, GAME_MODE_ENHANCE);
+
+
+	return ret;
+}
+static ssize_t nvt_game_mode_store(struct file *file, const char *buffer, size_t count, loff_t *pos) {
+	char dbg[10] = { 0 };
+	uint8_t state;
+	uint8_t ret;
+
+	ret = copy_from_user(dbg, (uint8_t *) buffer, sizeof(uint8_t));
+	if (ret)
+		return -EINVAL;
+
+	ret = kstrtou8(dbg, 16, &state);
+	if (ret < 0)
+		return ret;
+
+	NVT_LOG("moto_apk_state %d!\n", state);
+	ts->game_mode_state = state;
+	nvt_game_mode_set(ts->game_mode_state);
+
+	return count;
+}
+static int nvt_game_mode_show(struct seq_file *sfile, void *v) {
+	seq_printf(sfile, "Game Mode state %d!\n", ts->game_mode_state);
+	return 0;
+}
+static int32_t nvt_game_mode_open(struct inode *inode, struct file *file) {
+	return single_open(file, nvt_game_mode_show, NULL);
+}
+
+#ifdef HAVE_PROC_OPS
+static const struct file_operations nvt_game_mode_fops = {
+	.proc_open = nvt_game_mode_open,
+	.proc_read = seq_read,
+	.proc_write = nvt_game_mode_store,
+	.proc_lseek = seq_lseek,
+	.proc_release = seq_release,
+
 };
 
+#else
+static const struct file_operations nvt_game_mode_fops = {
+	.owner = THIS_MODULE,
+	.open = nvt_game_mode_open,
+	.read = seq_read,
+	.write = nvt_game_mode_store,
+	.llseek = seq_lseek,
+	.release = seq_release,
+};
+#endif
+
+/*
+ *	/proc/support_pen cmd_param
+ *      [0], 0 : not support pen
+ *			 1 : support pen
+ *
+ */
+int32_t nvt_support_pen_set(uint8_t status) {
+	int ret = 0;
+
+	if(status == 0)
+		ret = nvt_ext_cmd_store(SUPPORT_PEN_CMD, 0x00);
+	else if(status == 1)
+		ret = nvt_ext_cmd_store(SUPPORT_PEN_CMD, 0x01);
+
+
+	return ret;
+}
+static ssize_t nvt_support_pen_store(struct file *file, const char *buffer, size_t count, loff_t *pos) {
+	char dbg[10] = { 0 };
+	uint8_t state;
+	uint8_t ret;
+
+	ret = copy_from_user(dbg, (uint8_t *) buffer, sizeof(uint8_t));
+	if (ret)
+		return -EINVAL;
+
+	ret = kstrtou8(dbg, 16, &state);
+	if (ret < 0)
+		return ret;
+
+	NVT_LOG("support pen state %d!\n", state);
+	ts->pen_state = state;
+	nvt_support_pen_set(ts->pen_state);
+
+	return count;
+}
+static int nvt_support_pen_show(struct seq_file *sfile, void *v) {
+	seq_printf(sfile, "Pen state %d!\n", ts->game_mode_state);
+	return 0;
+}
+static int32_t nvt_support_pen_open(struct inode *inode, struct file *file) {
+	return single_open(file, nvt_support_pen_show, NULL);
+}
+
+#ifdef HAVE_PROC_OPS
+static const struct file_operations nvt_support_pen_fops = {
+	.proc_open = nvt_support_pen_open,
+	.proc_read = seq_read,
+	.proc_write = nvt_support_pen_store,
+	.proc_lseek = seq_lseek,
+	.proc_release = seq_release,
+
+};
+
+#else
+static const struct file_operations nvt_support_pen_fops = {
+	.owner = THIS_MODULE,
+	.open = nvt_support_pen_open,
+	.read = seq_read,
+	.write = nvt_support_pen_store,
+	.llseek = seq_lseek,
+	.release = seq_release,
+};
+#endif
+
+#endif
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
+
+/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 start*/
+int32_t nvt_set_charger(uint8_t charger_on_off)
+{
+	uint8_t buf[8] = {0};
+	int32_t ret = 0;
+
+	NVT_LOG("nvt set charger: %d\n", charger_on_off);
+
+	msleep(20);
+
+	mutex_lock(&ts->lock);
+	//---set xdata index to EVENT BUF ADDR---
+	ret = nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_HOST_CMD);
+	if (ret < 0) {
+		NVT_ERR("nvt Set event buffer index fail!\n");
+		goto nvt_set_charger_out;
+	}
+
+	if (charger_on_off == 1) {
+		buf[0] = EVENT_MAP_HOST_CMD;
+		buf[1] = CMD_CHARGER_ON;
+		ret = CTP_SPI_WRITE(ts->client, buf, 2);
+		if (ret < 0) {
+			NVT_ERR("nvt Write set charger command fail!\n");
+			goto nvt_set_charger_out;
+		} else {
+			NVT_LOG("nvt set charger on cmd succeeded\n");
+		}
+	} else if (charger_on_off == 0) {
+		buf[0] = EVENT_MAP_HOST_CMD;
+		buf[1] = CMD_CHARGER_OFF;
+		ret = CTP_SPI_WRITE(ts->client, buf, 2);
+		if (ret < 0) {
+			NVT_ERR("nvt Write set charger command fail!\n");
+			goto nvt_set_charger_out;
+		} else {
+			NVT_LOG("nvt set charger off cmd succeeded\n");
+		}
+	} else {
+		NVT_ERR("nvt Invalid charger parameter!\n");
+		ret = -EINVAL;
+	}
+
+	nvt_set_charger_out:
+
+	mutex_unlock(&ts->lock);
+
+	return ret;
+}
+EXPORT_SYMBOL(nvt_set_charger);
+/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 end*/
 /*******************************************************
 Description:
 	Novatek touchscreen extra function proc. file node
@@ -909,6 +1438,15 @@ int32_t nvt_extra_proc_init(void)
 		NVT_LOG("create proc/%s Succeeded!\n", NVT_DIFF);
 	}
 
+	/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+	NVT_gesture_entry = proc_create(GESTURE_CONTROL, 0444, NULL, &gesture_control_fops);
+	if (NVT_gesture_entry == NULL) {
+		NVT_ERR("create proc/%s Failed!\n", GESTURE_CONTROL);
+		return -ENOMEM;
+	} else {
+		NVT_LOG("create proc/%s Succeeded!\n", GESTURE_CONTROL);
+	}
+	/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
 	if (ts->pen_support) {
 		NVT_proc_pen_diff_entry = proc_create(NVT_PEN_DIFF, 0444, NULL,&nvt_pen_diff_fops);
 		if (NVT_proc_pen_diff_entry == NULL) {
@@ -919,13 +1457,42 @@ int32_t nvt_extra_proc_init(void)
 		}
 	}
 
-	NVT_proc_xiaomi_lockdown_info_entry = proc_create(NVT_XIAOMI_LOCKDOWN_INFO, 0444, NULL, &nvt_xiaomi_lockdown_info_fops);
-	if (NVT_proc_xiaomi_lockdown_info_entry == NULL) {
-		NVT_ERR("create proc/%s Failed!\n", NVT_XIAOMI_LOCKDOWN_INFO);
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+#if NVT_CUST_PROC_CMD
+	NVT_proc_edge_reject_entry = proc_create(PENEL_DIRECTION, 0644, NULL, &nvt_edge_reject_fops);
+	if (NVT_proc_edge_reject_entry == NULL) {
+		NVT_ERR("create proc/%s Failed!\n", PENEL_DIRECTION);
 		return -ENOMEM;
 	} else {
-		NVT_LOG("create proc/%s Succeeded!\n", NVT_XIAOMI_LOCKDOWN_INFO);
+		NVT_LOG("create proc/%s Succeeded!\n", PENEL_DIRECTION);
 	}
+
+	NVT_proc_edge_grid_zone_entry = proc_create(EDGE_GRID_ZONE, 0644, NULL, &nvt_edge_grid_zone_fops);
+	if (NVT_proc_edge_grid_zone_entry == NULL) {
+		NVT_ERR("create proc/%s Failed!\n", EDGE_GRID_ZONE);
+		return -ENOMEM;
+	} else {
+		NVT_LOG("create proc/%s Succeeded!\n", EDGE_GRID_ZONE);
+	}
+
+
+	NVT_proc_game_mode_entry = proc_create(GAME_MODE, 0666, NULL, &nvt_game_mode_fops);
+	if (NVT_proc_game_mode_entry == NULL) {
+		NVT_ERR("create proc/%s Failed!\n", GAME_MODE);
+		return -ENOMEM;
+	} else {
+		NVT_LOG("create proc/%s Succeeded!\n", GAME_MODE);
+	}
+
+	NVT_proc_support_pen_entry = proc_create(SUPPORT_PEN, 0666, NULL, &nvt_support_pen_fops);
+	if (NVT_proc_support_pen_entry == NULL) {
+		NVT_ERR("create proc/%s Failed!\n", SUPPORT_PEN);
+		return -ENOMEM;
+	} else {
+		NVT_LOG("create proc/%s Succeeded!\n", SUPPORT_PEN);
+	}
+#endif
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
 
 	return 0;
 }
@@ -964,6 +1531,13 @@ void nvt_extra_proc_deinit(void)
 		NVT_LOG("Removed /proc/%s\n", NVT_DIFF);
 	}
 
+	/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+	if (NVT_gesture_entry != NULL) {
+		remove_proc_entry(GESTURE_CONTROL, NULL);
+		NVT_gesture_entry = NULL;
+		NVT_LOG("Removed /proc/%s\n", GESTURE_CONTROL);
+	}
+	/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
 	if (ts->pen_support) {
 		if (NVT_proc_pen_diff_entry != NULL) {
 			remove_proc_entry(NVT_PEN_DIFF, NULL);
@@ -971,5 +1545,32 @@ void nvt_extra_proc_deinit(void)
 			NVT_LOG("Removed /proc/%s\n", NVT_PEN_DIFF);
 		}
 	}
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+#if NVT_CUST_PROC_CMD
+	if (NVT_proc_edge_reject_entry != NULL) {
+		remove_proc_entry(PENEL_DIRECTION, NULL);
+		NVT_proc_edge_reject_entry = NULL;
+		NVT_LOG("Removed /proc/%s \n", PENEL_DIRECTION);
+	}
+
+	if (NVT_proc_edge_grid_zone_entry != NULL) {
+		remove_proc_entry(EDGE_GRID_ZONE, NULL);
+		NVT_proc_edge_grid_zone_entry = NULL;
+		NVT_LOG("Removed /proc/%s \n", EDGE_GRID_ZONE);
+	}
+
+	if (NVT_proc_game_mode_entry != NULL) {
+		remove_proc_entry(GAME_MODE, NULL);
+		NVT_proc_game_mode_entry = NULL;
+		NVT_LOG("Removed /proc/%s\n", GAME_MODE);
+	}
+
+	if (NVT_proc_support_pen_entry != NULL) {
+		remove_proc_entry(SUPPORT_PEN, NULL);
+		NVT_proc_support_pen_entry = NULL;
+		NVT_LOG("Removed /proc/%s\n", SUPPORT_PEN);
+	}
+#endif
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
 }
 #endif
