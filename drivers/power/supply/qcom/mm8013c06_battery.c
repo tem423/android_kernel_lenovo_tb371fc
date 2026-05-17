@@ -11,7 +11,7 @@
 #include <asm/unaligned.h>
 #include <linux/pm_runtime.h>
 #include "mm8013c06_battery.h"
-//#include <linux/hqsysfs.h>
+//#include <linux/hqsysfs_battery.h>
 /*Linden code for JLINDEN-17 by kangkai4 at 20221128 start*/
 #ifdef CONFIG_HQ_SYSFS_SUPPORT
 #include <linux/hqsysfs.h>
