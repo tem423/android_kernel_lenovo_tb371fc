@@ -2380,7 +2380,7 @@ CONFIG_TOUCHSCREEN_SYNAPTICS_TCM_DEVICE=y
 # CONFIG_TOUCHSCREEN_SYNAPTICS_TCM_RECOVERY is not set
 # CONFIG_TOUCHSCREEN_SYNAPTICS_TCM_ZEROFLASH is not set
 CONFIG_TOUCHSCREEN_SYNAPTICS_TCM_DIAGNOSTICS=y
-# CONFIG_TOUCHSCREEN_NT36532=y
+CONFIG_TOUCHSCREEN_NT36532=y
 CONFIG_INPUT_MISC=y
 # CONFIG_INPUT_AD714X is not set
 # CONFIG_INPUT_ATMEL_CAPTOUCH is not set
@@ -2801,6 +2801,7 @@ CONFIG_POWER_SUPPLY=y
 # CONFIG_BATTERY_SBS is not set
 # CONFIG_CHARGER_SBS is not set
 # CONFIG_MANAGER_SBS is not set
+# CONFIG_BATTERY_BQ27XXX is not set
 # CONFIG_BATTERY_MAX17040 is not set
 # CONFIG_BATTERY_MAX17042 is not set
 # CONFIG_CHARGER_ISP1704 is not set
@@ -6388,47 +6389,4 @@ CONFIG_CORESIGHT_REMOTE_ETM=y
 CONFIG_CORESIGHT_REMOTE_ETM_DEFAULT_ENABLE=0
 CONFIG_CORESIGHT_TGU=y
 # CONFIG_CORESIGHT_LINK_LATE_DISABLE is not set
-
-# ----------------------------------------------------------------------------#
-
-# ld.lld: error: undefined symbol: usb_is_plugin
-# >>> referenced by smb5-lib.c:7627 (../drivers/power/supply/qcom/smb5-lib.c:7627)
-# >>>               drivers/power/supply/qcom/smb5-lib.o:(smblib_usb_plugin_work) in archive built-in.a
-
-# CONFIG_TOUCHSCREEN_GOODIX_CHIPSET=y
-# CONFIG_TOUCHSCREEN_GOODIX_BRL=y
-# CONFIG_GOODIX_BRL_TOOLS=y
-# CONFIG_GOODIX_BRL_SPI=y
-# CONFIG_GOODIX_BRL_GESTURE=y
-# CONFIG_GOODIX_BRL_INSPECT=y
-
-# ----------------------------------------------------------------------------#
-
-# ld.lld: error: undefined symbol: hall_disable_fp_pk
-# >>> referenced by gf_spi.c:324 (../drivers/input/fingerprint/gf_spi.c:324)
-# >>>               drivers/input/fingerprint/gf_spi.o:(gf_irq) in archive built-in.a
-# >>> referenced by gf_spi.c:324 (../drivers/input/fingerprint/gf_spi.c:324)
-# >>>               drivers/input/fingerprint/gf_spi.o:(gf_irq) in archive built-in.a
-# >>> referenced by qpnp-power-on.c:988 (../drivers/input/misc/qpnp-power-on.c:988)
-# >>>               drivers/input/misc/qpnp-power-on.o:(qpnp_pon_input_dispatch) in archive built-in.a
-# >>> referenced 1 more times
-
 CONFIG_SENSORS_HALL=y
-
-# ----------------------------------------------------------------------------#
-
-# pm8150b_charger: smblib_get_prop_from_exfg: exfg not found
-# power_supply_get_property psy null
-
-CONFIG_BATTERY_BQ27XXX=y
-CONFIG_BATTERY_BQ27XXX_I2C=y
-
-# ----------------------------------------------------------------------------#
-
-# New Novatek Touchscreen Driver
-# taken from here
-# https://github.com/flitsmeister/android-os-kernel/blob/ed306e55b1ff9a96980edde7998fdff792b4b04e/drivers/input/touchscreen/NT36532
-# Found by dmesg logstring used as marker for commit lines
-# [get_tp_info]: tp_version [Vendor]:TIANMA, [TP-IC]:NT36532, [fw]:0x19
-
-CONFIG_TOUCHSCREEN_NT36XXX=y
