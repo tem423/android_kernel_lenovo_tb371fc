@@ -153,11 +153,11 @@ static const struct nvt_ts_mem_map NT36532_cascade_memory_map = {
 	.PEN_1D_DIFF_RING_X_ADDR  = 0x127F40,
 	.PEN_1D_DIFF_RING_Y_ADDR  = 0x127FC0,
 	.ENB_CASC_REG             = {.addr = 0x1FB12C, .mask = 0x01},
-	/*Spruce code for OSPURCET-814 by zenghui4 at 2023/1/19 start*/
+/*Spinel code for Touching 10x resolution by zhangyd22 at 2023/05/04 start*/
 	/* FW History */
 	.MMAP_HISTORY_EVENT0      = 0x121AFC,
 	.MMAP_HISTORY_EVENT1      = 0x121B3C,
-	/*Spruce code for OSPURCET-814 by zenghui4 at 2023/1/19 end*/
+/*Spinel code for Touching 10x resolution by zhangyd22 at 2023/05/04 end*/
 	/* Phase 2 Host Download */
 	.BOOT_RDY_ADDR            = 0x1FB50D,
 	.TX_AUTO_COPY_EN          = 0x1FC925,
@@ -207,9 +207,11 @@ static const struct nvt_ts_mem_map NT36532_single_memory_map = {
 	.PEN_1D_DIFF_RING_X_ADDR  = 0x126B00,
 	.PEN_1D_DIFF_RING_Y_ADDR  = 0x126B80,
 	.ENB_CASC_REG             = {.addr = 0x1FB12C, .mask = 0x01},
+/*Spinel code for Touching 10x resolution by zhangyd22 at 2023/05/04 start*/
 	/* FW History */
-	.MMAP_HISTORY_EVENT0      = 0x12292C,
-	.MMAP_HISTORY_EVENT1      = 0x12296C,
+	.MMAP_HISTORY_EVENT0      = 0x122930,
+	.MMAP_HISTORY_EVENT1      = 0x122970,
+/*Spinel code for Touching 10x resolution by zhangyd22 at 2023/05/04 end*/
 	/* Phase 2 Host Download */
 	.BOOT_RDY_ADDR            = 0x1FB50D,
 	.TX_AUTO_COPY_EN          = 0x1FC925,
