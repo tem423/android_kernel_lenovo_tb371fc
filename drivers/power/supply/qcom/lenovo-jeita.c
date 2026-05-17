@@ -226,6 +226,16 @@ static int get_jeita_setting_from_profile(struct lenovo_jeita_info *chip)
 	int batt_id_ohms, rc, hysteresis[2] = {0};
 	union power_supply_propval prop = {0, };
 
+	// ========== 新增：确保 BMS power supply 已就绪 ==========
+	if (!chip->bms_psy) {
+		chip->bms_psy = power_supply_get_by_name("bms");
+		if (!chip->bms_psy) {
+			pr_err("bms_psy not available, defer\n");
+			return -EPROBE_DEFER;
+		}
+	}
+	// ========== 新增结束 ==========
+
 	handle = of_get_property(chip->dev->of_node,
 			"qcom,battery-data", NULL);
 	if (!handle) {
@@ -365,15 +375,21 @@ static void get_config_work(struct work_struct *work)
 	rc = get_jeita_setting_from_profile(chip);
 
 	if (rc < 0) {
-		if (rc == -ENODEV || rc == -EBUSY) {
-			if (chip->get_config_retry_count++
-					< GET_CONFIG_RETRY_COUNT) {
-				pr_err("bms_psy is not ready, retry: %d\n",
-						chip->get_config_retry_count);
-				goto reschedule;
-			}
+	// ========== 修改：添加 -EPROBE_DEFER 支持 ==========
+	if (rc == -ENODEV || rc == -EBUSY || rc == -EPROBE_DEFER) {
+		if (chip->get_config_retry_count++
+				< GET_CONFIG_RETRY_COUNT) {
+			pr_err("bms_psy is not ready, retry: %d, rc=%d\n",
+					chip->get_config_retry_count, rc);
+			goto reschedule;
 		}
+	} else {
+		// 其他错误，标记配置无效
+		pr_err("Failed to get profile, rc=%d, disabling sw_jeita\n", rc);
+		chip->sw_jeita_cfg_valid = false;
 	}
+	// ========== 修改结束 ==========
+}
 
 	chip->config_is_read = true;
 	for (i = 0; i < JEITA_STEP; i++)
