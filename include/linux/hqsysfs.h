@@ -10,10 +10,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-
 #ifndef __HQ_SYSFS_HEAD__
 #define __HQ_SYSFS_HEAD__
-
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/fs.h>
@@ -35,69 +33,65 @@
 #include <linux/of_fdt.h>
 #endif
 #include <linux/atomic.h>
+#include <linux/init.h>
 
 #define MAX_HW_DEVICE_NAME (64)
 
 enum hardware_id{
 	HWID_NONE = 0x00,
-	HWID_DDR = 0x10,
+	HWID_MEMORY = 0x10,
 	HWID_EMMC,
 	HWID_NAND,
-	HWID_UFS,
-	HWID_UFS_MORE,
-	HWID_UFS_WP,
-	HWID_EFUSE,
 
 	HWID_LCM = 0x20,
 	HWID_SUB_LCM,
 	HWID_BIAS_IC,
 	HWID_CTP,
+	HWID_AUDIO,
 
 	HWID_MAIN_CAM = 0x30,
-	HWID_WIDE_CAM,
-	HWID_FRONT_CAM,
-	HWID_MICRO_CAM,
-	HWID_DEPTH_CAM,
+	HWID_MAIN_CAM_2,
+	HWID_MAIN_CAM_3,
+	HWID_SUB_CAM,
+	HWID_SUB_CAM_2,
+	HWID_MAIN_LENS,
+	HWID_MAIN_LENS_2,
+	HWID_SUB_LENS,
+	HWID_SUB_LENS_2,
+	HWID_MAIN_OTP,
+	HWID_MAIN_OTP_2,
+	HWID_SUB_OTP,
+	HWID_SUB_OTP_2,
 	HWID_FLASHLIGHT,
+	HWID_FLaSHLIGHT_2,
 
 	HWID_GSENSOR = 0x70,
 	HWID_ALSPS,
 	HWID_GYRO,
 	HWID_MSENSOR,
-	HWID_SARSENSOR,
 	HWID_IRDA,
 	HWID_BAROMETER,
 	HWID_PEDOMETER,
 	HWID_HUMIDITY,
 
 	HWID_PCBA = 0x80,
+	HWID_PCBA_INFO,
 
-	HWID_BATTERY = 0xA0,
-	HWID_SMARTPA,
-/*Linden code for JLINDEN-334 by zhangjiayu5 at 20221129 start*/
-	HWID_AUDIO_CODEC,
-/*Linden code for JLINDEN-334 by zhangjiayu5 at 20221129 end*/
-	HWID_VIBRATOR,
+	HWID_BATERY = 0xA0,
+	HWID_FUEL_GAUGE_IC,
 
 	HWID_NFC = 0xC0,
 	HWID_FP,
-
-	HWID_WIFI = 0xD0,
-	HWID_BT,
-	HWID_FM,
-	HWID_GPS,
+	HWID_TEE,
 
 	HWID_USB_TYPE_C = 0xE0,
 
+
 	HWID_SUMMARY = 0xF0,
 	HWID_VER,
-/*Linden code for JLINDEN-17 by kangkai4 at 20221128 start*/
-	HWID_MASTER_CHARGE,
-	HWID_SLAVE_CHARGE,
-/*Linden code for JLINDEN-17 by kangkai4 at 20221128 end*/
+	HWID_PMIC_VERSION,
 	HWID_END
 };
-
 
 struct hw_info{
 	enum hardware_id hw_id;
@@ -107,28 +101,24 @@ struct hw_info{
 	char *hw_device_name;
 };
 
-
 #define __INFO(_id, _hw_type_name) {				\
 		.hw_id = _id,				\
 		.attr = {.name = __stringify(_hw_type_name),				\
-		 		.mode = VERIFY_OCTAL_PERMISSIONS(S_IWUSR|S_IRUGO) },		\
+		.mode = VERIFY_OCTAL_PERMISSIONS(S_IWUSR|S_IRUGO) },		\
 		.hw_exist	= 0,						\
 		.hw_device_name	= NULL,						\
 	}
 
-
 #define HW_INFO(_id, _hw_type_name) \
 	struct hw_info hw_info_##_hw_type_name = __INFO(_id, _hw_type_name)
 
+#define HUAQIN_CLASS_NAME       "huaqin"
+#define HUAIN_INTERFACE_NAME	"interface"
+#define HUAQIN_HWID_NAME        "hw_info"
+#define HUAQIN_VERSION_FILE		"hw_info_ver"
 
-
-#define HWINFO_CLASS_NAME       "hardinfo"
-#define HWINFO_INTERFACE_NAME   "interface"
-#define HWINFO_HWID_NAME        "hardware_info"
-
-int hq_register_hw_info(enum hardware_id id,char *device_name);
-int hq_deregister_hw_info(enum hardware_id id,char *device_name);
-int register_kboj_under_hqsysfs(struct kobject *kobj, struct kobj_type *ktype,
-			const char *fmt, ...);
+int hq_regiser_hw_info(enum hardware_id id, char *device_name);
+int hq_deregister_hw_info(enum hardware_id id, char *device_name);
+int register_kboj_under_hqsysfs(struct kobject *kobj, struct kobj_type *ktype, const char *fmt, ...);
 
 #endif
