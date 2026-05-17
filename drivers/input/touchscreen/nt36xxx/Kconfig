@@ -1,5 +1,5 @@
 #
-# Novatek NT36xxx touchscreen driver configuration
+# Novatek NT36532 touchscreen driver configuration
 #
 config TOUCHSCREEN_NT36532
 	tristate "Novatek NT36532 host download SPI driver"
