@@ -878,7 +878,7 @@ void get_tp_info(void)
 		sprintf(tp_version_info, "[Vendor]:Tianma,[TP-IC]:NT36532, [fw]:%d\n", ts->fw_ver);
 	}
 	printk("[%s]: tp_version %s\n", __func__, tp_version_info);
-	hq_regiser_hw_info(HWID_CTP, tp_version_info);
+	hq_register_hw_info(HWID_CTP, tp_version_info);
 }
 /* Spruce code for OSPURCET-431 by gaoxue4 at 2022/12/30 end */
 
