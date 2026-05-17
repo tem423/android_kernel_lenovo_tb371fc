@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2010 - 2022 Novatek, Inc.
  *
- * $Revision: 107367 $
- * $Date: 2022-10-26 08:30:52 +0800 (週三, 26 十月 2022) $
+ * $Revision: 77624 $
+ * $Date: 2021-02-05 10:03:05 +0800 (週五, 05 二月 2021) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,33 +37,17 @@ struct nvt_ts_bin_map {
 };
 
 static struct nvt_ts_bin_map *bin_map;
-extern void get_tp_info(void);
-/*Spinel code for OSPINEL-6922 by zhangyd22 at 2023/06/15 start*/
-#if NVT_CUST_PROC_CMD
-#if NVT_EDGE_REJECT
-extern int32_t nvt_edge_reject_set(int32_t status);
-#endif
-#if NVT_EDGE_GRID_ZONE
-extern int32_t nvt_edge_grid_zone_set(uint8_t deg, uint8_t dir, uint16_t y1, uint16_t y2);
-#endif
-#if NVT_PALM_MODE
-extern int32_t nvt_game_mode_set(uint8_t status);
-#endif
-#if NVT_SUPPORT_PEN
-extern int32_t nvt_support_pen_set(uint8_t state, uint8_t version);
-#endif
-#endif
-/*Spinel code for OSPINEL-6922 by zhangyd22 at 2023/06/15 end*/
+
 static int32_t nvt_get_fw_need_write_size(const struct firmware *fw_entry)
 {
 	int32_t i = 0;
 	int32_t total_sectors_to_check = 0;
 
 	total_sectors_to_check = fw_entry->size / FLASH_SECTOR_SIZE;
-	/* pr_info("total_sectors_to_check = %d\n", total_sectors_to_check); */
+	/* printk("total_sectors_to_check = %d\n", total_sectors_to_check); */
 
 	for (i = total_sectors_to_check; i > 0; i--) {
-		/* pr_info("current end flag address checked = 0x%X\n", i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN); */
+		/* printk("current end flag address checked = 0x%X\n", i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN); */
 		/* check if there is end flag "NVT" at the end of this sector */
 		if (strncmp(&fw_entry->data[i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN], "NVT", NVT_FLASH_END_FLAG_LEN) == 0) {
 			fw_need_write_size = i * FLASH_SECTOR_SIZE;
@@ -326,7 +310,7 @@ Description:
 return:
 	Executive outcomes. 0---succeed. -1,-22---failed.
 *******************************************************/
-static int32_t update_firmware_request(char *filename)
+static int32_t update_firmware_request(const char *filename)
 {
 	uint8_t retry = 0;
 	int32_t ret = 0;
@@ -829,7 +813,7 @@ Description:
 return:
 	n.a.
 *******************************************************/
-int32_t nvt_update_firmware(char *firmware_name)
+int32_t nvt_update_firmware(const char *firmware_name)
 {
 	int32_t ret = 0;
 
@@ -859,16 +843,13 @@ int32_t nvt_update_firmware(char *firmware_name)
 
 	NVT_LOG("Update firmware success! <%ld us>\n",
 			(long) ktime_us_delta(end, start));
-/*Spinel code for charging by wangxin77 at 2023/03/06 start*/
-	ts->fw_update_stat = 1;
+
 	/* Get FW Info */
 	ret = nvt_get_fw_info();
 	if (ret) {
 		NVT_ERR("nvt_get_fw_info failed. (%d)\n", ret);
 	}
-	if (ts->nvt_charger_notify_wq != NULL)
-		queue_work(ts->nvt_charger_notify_wq, &ts->charger_notify_work);
-/*Spinel code for charging by wangxin77 at 2023/03/06 end*/
+
 download_fail:
 	if (!IS_ERR_OR_NULL(bin_map)) {
 		kfree(bin_map);
@@ -880,30 +861,7 @@ request_firmware_fail:
 
 	return ret;
 }
-/*Spinel code for OSPINEL-6922 by zhangyd22 at 2023/06/15 start*/
-#if NVT_CUST_PROC_CMD
-static void nvt_restore_cmd(void){
-	NVT_LOG("%s++\n", __func__);
 
-#if NVT_EDGE_REJECT
-	nvt_edge_reject_set(ts->edge_reject_state);
-#endif
-#if NVT_EDGE_GRID_ZONE
-	nvt_edge_grid_zone_set(ts->edge_grid_zone_info.degree, ts->edge_grid_zone_info.direction, ts->edge_grid_zone_info.y1, ts->edge_grid_zone_info.y2);
-#endif
-#if NVT_PALM_MODE
-	nvt_game_mode_set(ts->game_mode_state);
-#endif
-#if NVT_SUPPORT_PEN
-	if (ts->nfc_state)
-		nvt_support_pen_set(0,0);
-	else
-		nvt_support_pen_set(ts->pen_state, ts->pen_version);
-#endif
-	NVT_LOG("%s--\n", __func__);
-}
-#endif
-/*Spinel code for OSPINEL-6922 by zhangyd22 at 2023/06/15 end*/
 /*******************************************************
 Description:
 	Novatek touchscreen update firmware when booting
@@ -914,14 +872,18 @@ return:
 *******************************************************/
 void Boot_Update_Firmware(struct work_struct *work)
 {
+	nvt_match_fw();
 	mutex_lock(&ts->lock);
-	nvt_update_firmware(BOOT_UPDATE_FIRMWARE_NAME);
-	get_tp_info();
+	if (nvt_get_dbgfw_status()) {
+		if (nvt_update_firmware(DEFAULT_DEBUG_FW_NAME) < 0) {
+			NVT_ERR("use built-in fw");
+			nvt_update_firmware(ts->fw_name);
+		}
+	} else {
+		nvt_update_firmware(ts->fw_name);
+	}
+	nvt_get_fw_info();
 	mutex_unlock(&ts->lock);
-/*Spinel code for OSPINEL-6922 by zhangyd22 at 2023/06/15 start*/
-#if NVT_CUST_PROC_CMD
-	nvt_restore_cmd();
-#endif
-/*Spinel code for OSPINEL-6922 by zhangyd22 at 2023/06/15 end*/
+	switch_pen_input_device();
 }
 #endif /* BOOT_UPDATE_FIRMWARE */
