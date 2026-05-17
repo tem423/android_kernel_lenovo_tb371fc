@@ -117,7 +117,7 @@ struct hw_info{
 #define HUAQIN_HWID_NAME        "hw_info"
 #define HUAQIN_VERSION_FILE		"hw_info_ver"
 
-int hq_regiser_hw_info(enum hardware_id id, char *device_name);
+int hq_register_hw_info(enum hardware_id id, char *device_name);
 int hq_deregister_hw_info(enum hardware_id id, char *device_name);
 int register_kboj_under_hqsysfs(struct kobject *kobj, struct kobj_type *ktype, const char *fmt, ...);
 
