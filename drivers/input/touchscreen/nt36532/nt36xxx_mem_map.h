@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2010 - 2022 Novatek, Inc.
  *
- * $Revision: 97627 $
- * $Date: 2022-04-06 15:02:09 +0800 (週三, 06 四月 2022) $
+ * $Revision: 107367 $
+ * $Date: 2022-10-26 08:30:52 +0800 (週三, 26 十月 2022) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -153,9 +153,11 @@ static const struct nvt_ts_mem_map NT36532_cascade_memory_map = {
 	.PEN_1D_DIFF_RING_X_ADDR  = 0x127F40,
 	.PEN_1D_DIFF_RING_Y_ADDR  = 0x127FC0,
 	.ENB_CASC_REG             = {.addr = 0x1FB12C, .mask = 0x01},
+	/*Spruce code for OSPURCET-814 by zenghui4 at 2023/1/19 start*/
 	/* FW History */
 	.MMAP_HISTORY_EVENT0      = 0x121AFC,
 	.MMAP_HISTORY_EVENT1      = 0x121B3C,
+	/*Spruce code for OSPURCET-814 by zenghui4 at 2023/1/19 end*/
 	/* Phase 2 Host Download */
 	.BOOT_RDY_ADDR            = 0x1FB50D,
 	.TX_AUTO_COPY_EN          = 0x1FC925,
@@ -206,8 +208,8 @@ static const struct nvt_ts_mem_map NT36532_single_memory_map = {
 	.PEN_1D_DIFF_RING_Y_ADDR  = 0x126B80,
 	.ENB_CASC_REG             = {.addr = 0x1FB12C, .mask = 0x01},
 	/* FW History */
-	.MMAP_HISTORY_EVENT0      = 0x122930,
-	.MMAP_HISTORY_EVENT1      = 0x122970,
+	.MMAP_HISTORY_EVENT0      = 0x12292C,
+	.MMAP_HISTORY_EVENT1      = 0x12296C,
 	/* Phase 2 Host Download */
 	.BOOT_RDY_ADDR            = 0x1FB50D,
 	.TX_AUTO_COPY_EN          = 0x1FC925,
