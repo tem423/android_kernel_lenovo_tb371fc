@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2010 - 2022 Novatek, Inc.
  *
- * $Revision: 103375 $
- * $Date: 2022-07-29 10:34:16 +0800 (週五, 29 七月 2022) $
+ * $Revision: 107367 $
+ * $Date: 2022-10-26 08:30:52 +0800 (週三, 26 十月 2022) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,9 @@
 #include <linux/spi/spi.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
+/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 start*/
 #include <linux/power_supply.h>
-
+/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 end*/
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
 #endif
@@ -46,14 +47,10 @@
 #endif
 
 #define NVT_DEBUG 1
-
 //---GPIO number---
 #define NVTTOUCH_RST_PIN 980
 #define NVTTOUCH_INT_PIN 943
 
-#define NVT_LOCKDOWN_SIZE 8
-#define PINCTRL_STATE_ACTIVE		"pmx_ts_active"
-#define PINCTRL_STATE_SUSPEND		"pmx_ts_suspend"
 
 //---INT trigger mode---
 //#define IRQ_TYPE_EDGE_RISING 1
@@ -78,8 +75,10 @@
 #define NVT_PEN_NAME "NVTCapacitivePen"
 
 //---Touch info.---
-#define TOUCH_DEFAULT_MAX_WIDTH 1800
-#define TOUCH_DEFAULT_MAX_HEIGHT 2880
+/*Spruce code for OSPURCET-2936 by zenghui4 at 2023/3/3 start*/
+#define TOUCH_DEFAULT_MAX_WIDTH 1840
+#define TOUCH_DEFAULT_MAX_HEIGHT 2944
+/*Spruce code for OSPURCET-2936 by zenghui4 at 2023/3/3 end*/
 #define TOUCH_MAX_FINGER_NUM 10
 #define TOUCH_KEY_NUM 0
 #if TOUCH_KEY_NUM > 0
@@ -99,33 +98,49 @@ extern const uint16_t touch_key_array[TOUCH_KEY_NUM];
 #define NVT_TOUCH_PROC 1
 #define NVT_TOUCH_EXT_PROC 1
 #define NVT_TOUCH_MP 1
-#define NVT_SAVE_TEST_DATA_IN_FILE 0
+#define NVT_SAVE_TEST_DATA_IN_FILE 1
 #define MT_PROTOCOL_B 1
 #define WAKEUP_GESTURE 1
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+#define NVT_CUST_PROC_CMD 1
+#define NVT_EDGE_REJECT 1
+#define NVT_EDGE_GRID_ZONE 0
+#define NVT_PALM_MODE 1
+#define NVT_SUPPORT_PEN 0
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
+
 #if WAKEUP_GESTURE
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+#define WAKEUP_OFF	0x00
+#define WAKEUP_ON	0x01
+extern bool nvt_gesture_flag;
+/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
+
+/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 start*/
+#define USB_DETECT_IN 1
+#define USB_DETECT_OUT 0
+#define CMD_CHARGER_ON	(0x53)
+#define CMD_CHARGER_OFF (0x51)
+/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 end*/
+
 extern const uint16_t gesture_key_array[];
 #endif
 #define BOOT_UPDATE_FIRMWARE 1
-#define BOOT_UPDATE_FIRMWARE_NAME "novatek_nt36532_m82_fw_tm.bin"
-#define MP_UPDATE_FIRMWARE_NAME   "novatek_nt36532_m82_mp_tm.bin"
-#define DEFAULT_DEBUG_FW_NAME     "novatek_debug_fw.bin"
-#define DEFAULT_DEBUG_MP_NAME     "novatek_debug_mp.bin"
-#define NVT_SUPER_RESOLUTION_N 10
-#if NVT_SUPER_RESOLUTION_N
-#define POINT_DATA_LEN 108
-#else
-#define POINT_DATA_LEN 65
-#endif
+extern char *BOOT_UPDATE_FIRMWARE_NAME;
+extern char *MP_UPDATE_FIRMWARE_NAME;
+//#define BOOT_UPDATE_FIRMWARE_NAME "novatek_ts_boe_fw.bin"
+//#define MP_UPDATE_FIRMWARE_NAME   "novatek_ts_boe_mp.bin"
 #define POINT_DATA_CHECKSUM 1
 #define POINT_DATA_CHECKSUM_LEN 65
 
 //---ESD Protect.---
+/*Spruce code for OSPURCET-1810 by gaoxue4 at 2023/2/23 start*/
 #define NVT_TOUCH_ESD_PROTECT 0
+/*Spruce code for OSPURCET-1810 by gaoxue4 at 2023/2/23 end*/
 #define NVT_TOUCH_ESD_CHECK_PERIOD 1500	/* ms */
 #define NVT_TOUCH_WDT_RECOVERY 1
 
 #define CHECK_PEN_DATA_CHECKSUM 0
-#define NVT_PEN_CONNECT_STRATEGY
 
 #if BOOT_UPDATE_FIRMWARE
 #define SIZE_4KB 4096
@@ -136,66 +151,32 @@ extern const uint16_t gesture_key_array[];
 #define NVT_FLASH_END_FLAG_ADDR (fw_need_write_size - NVT_FLASH_END_FLAG_LEN)
 #endif
 
-enum nvt_ic_state {
-	NVT_IC_SUSPEND_IN,
-	NVT_IC_SUSPEND_OUT,
-	NVT_IC_RESUME_IN,
-	NVT_IC_RESUME_OUT,
-	NVT_IC_INIT,
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+#if NVT_CUST_PROC_CMD
+struct edge_grid_zone_info {
+    uint8_t degree;
+    uint8_t direction;
+    uint16_t y1;
+    uint16_t y2;
 };
-
-struct nvt_config_info {
-	u8 tp_vendor;
-	u8 tp_color;
-	u8 display_maker;
-	u8 glass_vendor;
-	const char *nvt_fw_name;
-	const char *nvt_mp_name;
-	const char *nvt_limit_name;
-};
+#endif
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
 
 struct nvt_ts_data {
 	struct spi_device *client;
 	struct input_dev *input_dev;
 	struct delayed_work nvt_fwu_work;
-	struct delayed_work nvt_lockdown_work;
-	struct mutex power_supply_lock;
-	struct work_struct power_supply_work;
-	struct notifier_block power_supply_notifier;
-	int is_usb_exist;
-	int db_wakeup;
-#if defined(NVT_PEN_CONNECT_STRATEGY)
-	struct work_struct pen_charge_state_change_work;
-	struct notifier_block pen_charge_state_notifier;
-	bool pen_bluetooth_connect;
-	bool pen_charge_connect;
-	bool game_mode_enable;
-	struct device *dev;
-	int pen_count;
-	bool pen_shield_flag;
-#endif
-	struct mutex pen_switch_lock;
-	int ic_state;
-	int gesture_command_delayed;
-	bool dev_pm_suspend;
-	struct completion dev_pm_suspend_completion;
 	uint16_t addr;
 	int8_t phys[32];
-#if defined(CONFIG_DRM_PANEL)
-	struct notifier_block drm_panel_notif;
+#if defined(CONFIG_FB)
+	struct notifier_block fb_notif;
 #elif defined(_MSM_DRM_NOTIFY_H_)
 	struct notifier_block drm_notif;
-#elif defined(CONFIG_FB)
-	struct notifier_block fb_notif;
+#elif defined(CONFIG_DRM_PANEL)
+	struct notifier_block drm_panel_notif;
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 	struct early_suspend early_suspend;
 #endif
-	uint32_t config_array_size;
-	struct nvt_config_info *config_array;
-	const char *fw_name;
-	const char *mp_name;
-	bool lkdown_readed;
-	u8 lockdown_info[NVT_LOCKDOWN_SIZE];
 	uint8_t fw_ver;
 	uint8_t x_num;
 	uint8_t y_num;
@@ -204,11 +185,6 @@ struct nvt_ts_data {
 	uint8_t max_touch_num;
 	uint8_t max_button_num;
 	uint32_t int_trigger_type;
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-	u32 gamemode_config[3][5];
-	struct workqueue_struct *set_touchfeature_wq;
-	struct work_struct set_touchfeature_work;
-#endif
 	int32_t irq_gpio;
 	uint32_t irq_flags;
 	int32_t reset_gpio;
@@ -224,32 +200,40 @@ struct nvt_ts_data {
 	bool irq_enabled;
 	bool pen_support;
 	bool stylus_resol_double;
-	bool fw_debug;
 	uint8_t x_gang_num;
 	uint8_t y_gang_num;
-	uint8_t debug_flag;
 	struct input_dev *pen_input_dev;
-	bool pen_input_dev_enable;
 	int8_t pen_phys[32];
-	int result_type;
-	int panel_index;
-#ifdef CONFIG_TOUCHSCREEN_NVT_DEBUG_FS
-	struct dentry *debugfs;
-#endif
 	uint32_t chip_ver_trim_addr;
 	uint32_t swrst_sif_addr;
 	uint32_t crc_err_flag_addr;
+/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 start*/
+	struct notifier_block charger_notif;
+	struct workqueue_struct *nvt_charger_notify_wq;
+	struct work_struct charger_notify_work;
+	int usb_plug_status;
+	int fw_update_stat;
+/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 end*/
 #ifdef CONFIG_MTK_SPI
 	struct mt_chip_conf spi_ctrl;
 #endif
 #ifdef CONFIG_SPI_MT65XX
     struct mtk_chip_config spi_ctrl;
 #endif
-	struct pinctrl *ts_pinctrl;
-	struct pinctrl_state *pinctrl_state_active;
-	struct pinctrl_state *pinctrl_state_suspend;
-	struct workqueue_struct *event_wq;
-	struct work_struct resume_work;
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+#if NVT_CUST_PROC_CMD
+	int32_t edge_reject_state;
+	struct edge_grid_zone_info edge_grid_zone_info;
+	uint8_t game_mode_state;
+	uint8_t pen_state;
+#endif
+/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
+/*Spruce code for OSPURCET-1478 by gaoxue4 at 2023/3/10 start*/
+#ifdef CONFIG_PM
+	bool dev_pm_suspend;
+	struct completion dev_pm_resume_completion;
+#endif
+/*Spruce code for OSPURCET-1478 by gaoxue4 at 2023/3/10 end*/
 };
 
 #if NVT_TOUCH_PROC
@@ -291,6 +275,38 @@ typedef enum {
 //---extern structures---
 extern struct nvt_ts_data *ts;
 
+/*Spruce code for OSPURCET-218 by zenghui4 at 2023/02/14 start*/
+#define GOODIX_MAX_BUFFER   32
+#define MAX_IO_CONTROL_REPORT   16
+
+enum{
+	DATA_TYPE_RAW = 0
+};
+
+struct goodix_pen_coords_buffer {
+	signed char status;
+	signed char tool_type;
+	signed char tilt_x;
+	signed char tilt_y;
+	unsigned long int x;
+	unsigned long int y;
+	unsigned long int p;
+};
+
+struct goodix_pen_info {
+	unsigned char frame_no;
+	unsigned char data_type;
+	u16 frame_t;
+	struct goodix_pen_coords_buffer coords;
+};
+
+struct io_pen_report {
+	unsigned char report_num;
+	unsigned char reserve[3];
+	struct goodix_pen_info pen_info[MAX_IO_CONTROL_REPORT];
+};
+/*Spruce code for OSPURCET-218 by zenghui4 at 2023/02/14 end*/
+
 //---extern functions---
 int32_t CTP_SPI_READ(struct spi_device *client, uint8_t *buf, uint16_t len);
 int32_t CTP_SPI_WRITE(struct spi_device *client, uint8_t *buf, uint16_t len);
@@ -302,8 +318,7 @@ void nvt_boot_ready(void);
 void nvt_fw_crc_enable(void);
 void nvt_tx_auto_copy_mode(void);
 void nvt_read_fw_history(uint32_t fw_history_addr);
-void nvt_match_fw(void);
-int32_t nvt_update_firmware(const char *firmware_name);
+int32_t nvt_update_firmware(char *firmware_name);
 int32_t nvt_check_fw_reset_state(RST_COMPLETE_STATE check_reset_state);
 int32_t nvt_get_fw_info(void);
 int32_t nvt_clear_fw_status(void);
@@ -311,9 +326,8 @@ int32_t nvt_check_fw_status(void);
 int32_t nvt_set_page(uint32_t addr);
 int32_t nvt_wait_auto_copy(void);
 int32_t nvt_write_addr(uint32_t addr, uint8_t data);
-bool nvt_get_dbgfw_status(void);
 #if NVT_TOUCH_ESD_PROTECT
 extern void nvt_esd_check_enable(uint8_t enable);
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
-int switch_pen_input_device(void);
+
 #endif /* _LINUX_NVT_TOUCH_H */
