@@ -47,7 +47,7 @@ extern int boost_en;
 
 static void update_sw_icl_max(struct smb_charger *chg, int pst);
 static int smblib_get_prop_typec_mode(struct smb_charger *chg);
-extern int usb_is_plugin(bool enabled);
+// extern int usb_is_plugin(bool enabled);
 bool usb_in;
 int usb_status = 0;
 u8 typec_stat = 0;
@@ -7626,10 +7626,10 @@ static void smblib_usb_plugin_work(struct work_struct *work)
 	smblib_err(chg,"enter usb_plugin_work\n");
 	if (usb_in) {
 		smblib_err(chg, "usb is plugin\n");
-		usb_is_plugin(true);
+		// usb_is_plugin(true);
 	} else {
 		smblib_err(chg, "usb is plugout\n");
-		usb_is_plugin(false);
+		// usb_is_plugin(false);
 	}
 }
 
