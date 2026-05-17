@@ -1997,14 +1997,14 @@ static void nvt_restore_cmd_func(struct work_struct *work){
 int tp_compare_ic(void)
 {
 	NVT_LOG("tp_compare_ic in!!");
-	if (is_ft_lcm == 0) {
-		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_boe_fw.bin";
-		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_boe_mp.bin";
+	if (gpio_82 == 0) {
+		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_fw_boe_6.bin";
+		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_mp_boe_6.bin";
 		NVT_LOG("match nt36532_dsi_vdo_boe_drv");
 		return 0;
-	} else if (is_ft_lcm == 1) {
-		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_tianma_fw.bin";
-		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_tianma_mp.bin";
+	} else if (gpio_82 == 1) {
+		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_tm_fw_6.bin";
+		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_tm_mp_6.bin";
 		NVT_LOG("match nt36532_dsi_vdo_tianma_drv");
 		return 0;
 	}  else {
@@ -3329,4 +3329,4 @@ MODULE_DESCRIPTION("Novatek Touchscreen Driver");
 MODULE_LICENSE("GPL");
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
-#endif
+#endif 
