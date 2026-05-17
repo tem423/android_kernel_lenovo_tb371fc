@@ -6395,12 +6395,12 @@ CONFIG_CORESIGHT_TGU=y
 # >>> referenced by smb5-lib.c:7627 (../drivers/power/supply/qcom/smb5-lib.c:7627)
 # >>>               drivers/power/supply/qcom/smb5-lib.o:(smblib_usb_plugin_work) in archive built-in.a
 
-# CONFIG_TOUCHSCREEN_GOODIX_CHIPSET=y
-# CONFIG_TOUCHSCREEN_GOODIX_BRL=y
-# CONFIG_GOODIX_BRL_TOOLS=y
-# CONFIG_GOODIX_BRL_SPI=y
-# CONFIG_GOODIX_BRL_GESTURE=y
-# CONFIG_GOODIX_BRL_INSPECT=y
+CONFIG_TOUCHSCREEN_GOODIX_CHIPSET=y
+CONFIG_TOUCHSCREEN_GOODIX_BRL=y
+CONFIG_GOODIX_BRL_TOOLS=y
+CONFIG_GOODIX_BRL_SPI=y
+CONFIG_GOODIX_BRL_GESTURE=y
+CONFIG_GOODIX_BRL_INSPECT=y
 
 # ----------------------------------------------------------------------------#
 
