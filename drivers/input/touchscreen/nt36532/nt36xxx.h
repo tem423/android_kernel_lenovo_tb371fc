@@ -30,10 +30,6 @@
 #include <linux/earlysuspend.h>
 #endif
 
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-#include "../xiaomi/xiaomi_touch.h"
-#endif
-
 #include "nt36xxx_mem_map.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
