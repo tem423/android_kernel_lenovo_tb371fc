@@ -1,7 +1,3 @@
-# .github/workflows/manual-merge.yml
-# 联想 P12 内核手动合并上游脚本
-# 只创建 PR，不自动合并到目标分支
-
 name: 🔀 手动合并上游 Linux 4.19
 
 on:
