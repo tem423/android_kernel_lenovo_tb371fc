@@ -1,7 +1,9 @@
 name: 🔀 手动合并上游 Linux 4.19
 
 on:
-  workflow_dispatch:
+  push:
+   on:
+    - tb371fc
     description: '手动触发内核合并（仅创建 PR，不自动合并）'
     inputs:
       # 上游配置
