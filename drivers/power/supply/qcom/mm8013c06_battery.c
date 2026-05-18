@@ -14,7 +14,7 @@
 //#include <linux/hqsysfs.h>
 /*Linden code for JLINDEN-17 by kangkai4 at 20221128 start*/
 #ifdef CONFIG_HQ_SYSFS_SUPPORT
-#include <linux/hqsysfs_battery.h>
+#include <linux/hqsysfs.h>
 #endif
 /*Linden code for JLINDEN-17 by kangkai4 at 20221128 end*/
 
