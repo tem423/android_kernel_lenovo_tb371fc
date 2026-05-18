@@ -1,2 +1,24 @@
-*.c   diff=cpp
-*.h   diff=cpp
+# .gitattributes
+# Lenovo P12 内核合并策略
+
+# 厂商驱动 - 保留我们的版本
+techpack/                                    merge=ours
+drivers/lenovo/                              merge=ours
+drivers/soc/qcom/                            merge=ours
+drivers/gpu/msm/                             merge=ours
+arch/arm64/boot/dts/qcom/                    merge=ours
+arch/arm64/configs/tb371fc_defconfig         merge=ours
+
+# 文档 - 采用上游版本
+Documentation/                               merge=theirs
+COPYING                                      merge=theirs
+LICENSES/                                    merge=theirs
+
+# 公共驱动 - 智能合并
+drivers/usb/                                 merge=text
+drivers/i2c/                                 merge=text
+drivers/mmc/                                 merge=text
+fs/ext4/                                     merge=text
+fs/f2fs/                                     merge=text
+kernel/sched/                                merge=text
+mm/                                          merge=text
