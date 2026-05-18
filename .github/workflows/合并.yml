@@ -1,60 +1,31 @@
-name: 🔀 手动合并上游 Linux 4.19
+# .github/workflows/auto-merge-on-push.yml
+# 当推送到 tb371fc 分支时自动触发上游合并
+
+name: 🔄 提交时自动合并上游
 
 on:
+  # 当推送到 tb371fc 分支时自动触发
   push:
-   on:
-    - tb371fc
-    description: '手动触发内核合并（仅创建 PR，不自动合并）'
+    branches:
+      - tb371fc
+    paths-ignore:
+      # 忽略合并机器人自己创建的 PR 分支，避免循环触发
+      - 'merge/upstream-**'
+      - '.github/workflows/**'
+  
+  # 仍然保留手动触发能力
+  workflow_dispatch:
+    description: '手动触发合并（可选）'
     inputs:
-      # 上游配置
-      upstream_source:
-        description: '上游来源'
-        required: true
-        default: 'linux-stable'
-        type: choice
-        options:
-          - linux-stable
-          - android-common
-          - custom
       upstream_branch:
         description: '上游分支名称'
         required: false
         default: 'linux-4.19.y'
-      custom_repo:
-        description: '自定义仓库 URL（当上游来源为 custom 时）'
+      skip_auto_resolve:
+        description: '跳过自动解决冲突'
         required: false
-        default: ''
-      custom_branch:
-        description: '自定义分支名称'
-        required: false
-        default: 'master'
-      
-      # 目标配置
-      target_branch:
-        description: '目标分支（PR 将指向此分支）'
-        required: true
-        default: 'tb371fc'
-      merge_strategy:
-        description: '合并策略'
-        required: true
-        default: 'patience'
-        type: choice
-        options:
-          - recursive
-          - ours
-          - theirs
-          - patience
-      auto_resolve:
-        description: '是否自动解决冲突'
-        required: false
-        default: true
+        default: false
         type: boolean
-      
-      # 高级选项
-      commit_message:
-        description: '自定义提交信息（可选）'
-        required: false
-        default: ''
 
 # 权限配置
 permissions:
@@ -63,19 +34,22 @@ permissions:
   issues: write
   actions: read
 
+# 并发控制：避免多个合并同时运行
+concurrency:
+  group: merge-upstream-tb371fc
+  cancel-in-progress: true
+
 # 环境变量
 env:
-  UPSTREAM_URL: ''
-  UPSTREAM_BRANCH: ''
-  TARGET_BRANCH: ''
-  MERGE_STRATEGY: ''
-  AUTO_RESOLVE: ''
+  UPSTREAM_URL: 'https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git'
+  UPSTREAM_BRANCH: 'linux-4.19.y'
+  TARGET_BRANCH: 'tb371fc'
 
 jobs:
   # ============================================
-  # 主合并任务 - 只创建 PR，不自动合并到目标分支
+  # 自动合并任务
   # ============================================
-  create-merge-pr:
+  auto-merge:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     
@@ -86,33 +60,33 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.inputs.target_branch }}
+          ref: ${{ env.TARGET_BRANCH }}
           
-      # ---------- 2. 设置环境变量 ----------
-      - name: ⚙️ 设置环境变量
+      # ---------- 2. 检查是否由机器人提交 ----------
+      - name: 🔍 检查提交来源
+        id: check
         run: |
-          echo "TARGET_BRANCH=${{ github.event.inputs.target_branch }}" >> $GITHUB_ENV
-          echo "MERGE_STRATEGY=${{ github.event.inputs.merge_strategy }}" >> $GITHUB_ENV
-          echo "AUTO_RESOLVE=${{ github.event.inputs.auto_resolve }}" >> $GITHUB_ENV
+          # 获取最后一次提交信息
+          LAST_COMMIT_MSG=$(git log -1 --format=%s)
+          LAST_COMMIT_AUTHOR=$(git log -1 --format=%an)
           
-          # 配置上游 URL
-          case "${{ github.event.inputs.upstream_source }}" in
-            "linux-stable")
-              echo "UPSTREAM_URL=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git" >> $GITHUB_ENV
-              echo "UPSTREAM_BRANCH=${{ github.event.inputs.upstream_branch || 'linux-4.19.y' }}" >> $GITHUB_ENV
-              ;;
-            "android-common")
-              echo "UPSTREAM_URL=https://android.googlesource.com/kernel/common" >> $GITHUB_ENV
-              echo "UPSTREAM_BRANCH=${{ github.event.inputs.upstream_branch || 'android-4.19-stable' }}" >> $GITHUB_ENV
-              ;;
-            "custom")
-              echo "UPSTREAM_URL=${{ github.event.inputs.custom_repo }}" >> $GITHUB_ENV
-              echo "UPSTREAM_BRANCH=${{ github.event.inputs.custom_branch || 'master' }}" >> $GITHUB_ENV
-              ;;
-          esac
+          echo "最后提交: $LAST_COMMIT_MSG"
+          echo "提交作者: $LAST_COMMIT_AUTHOR"
+          
+          # 如果是机器人自己的合并提交，跳过避免循环
+          if [[ "$LAST_COMMIT_AUTHOR" == "Lenovo Kernel Merge Bot" ]] || \
+             [[ "$LAST_COMMIT_MSG" == *"Auto-merge upstream"* ]] || \
+             [[ "$LAST_COMMIT_MSG" == *"[auto]"* ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "✅ 检测到机器人提交，跳过自动合并"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "⚠️ 检测到新提交，将检查上游更新"
+          fi
           
       # ---------- 3. 配置 Git ----------
       - name: 🔧 配置 Git
+        if: steps.check.outputs.skip == 'false'
         run: |
           git config --global user.name "Lenovo Kernel Merge Bot"
           git config --global user.email "kernel-merge@lenovo-p12.local"
@@ -126,6 +100,7 @@ jobs:
           
       # ---------- 4. 添加上游仓库 ----------
       - name: 🔗 添加上游仓库
+        if: steps.check.outputs.skip == 'false'
         run: |
           git remote add upstream $UPSTREAM_URL
           git fetch upstream --depth=1000 $UPSTREAM_BRANCH
@@ -135,6 +110,7 @@ jobs:
       # ---------- 5. 获取版本信息 ----------
       - name: 📊 获取版本信息
         id: version
+        if: steps.check.outputs.skip == 'false'
         run: |
           CURRENT_COMMIT=$(git rev-parse --short HEAD)
           echo "current_commit=$CURRENT_COMMIT" >> $GITHUB_OUTPUT
@@ -146,23 +122,28 @@ jobs:
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
           
           echo "📌 当前提交 ($TARGET_BRANCH): $CURRENT_COMMIT"
-          echo "📌 上游提交: $UPSTREAM_COMMIT"
+          echo "📌 上游最新提交: $UPSTREAM_COMMIT"
           
       # ---------- 6. 检查是否需要合并 ----------
       - name: 🔍 检查是否需要合并
-        id: check
+        id: need_merge
+        if: steps.check.outputs.skip == 'false'
         run: |
+          # 检查当前分支是否包含上游最新代码
           if git merge-base --is-ancestor upstream/$UPSTREAM_BRANCH HEAD; then
             echo "need_merge=false" >> $GITHUB_OUTPUT
             echo "✅ 当前分支已包含上游所有更新，无需合并"
           else
+            # 计算落后多少提交
+            BEHIND=$(git rev-list HEAD..upstream/$UPSTREAM_BRANCH --count)
             echo "need_merge=true" >> $GITHUB_OUTPUT
-            echo "⚠️ 发现新更新，将创建合并 PR"
+            echo "behind_count=$BEHIND" >> $GITHUB_OUTPUT
+            echo "⚠️ 当前分支落后上游 $BEHIND 个提交，需要合并"
           fi
           
       # ---------- 7. 创建合并分支 ----------
       - name: 🌿 创建合并分支
-        if: steps.check.outputs.need_merge == 'true'
+        if: steps.need_merge.outputs.need_merge == 'true'
         run: |
           MERGE_BRANCH="merge/upstream-${{ steps.version.outputs.timestamp }}"
           git checkout -b $MERGE_BRANCH
@@ -171,22 +152,16 @@ jobs:
           
       # ---------- 8. 执行合并 ----------
       - name: 🔀 执行合并
-        if: steps.check.outputs.need_merge == 'true'
+        if: steps.need_merge.outputs.need_merge == 'true'
         id: merge
         continue-on-error: true
         run: |
-          MERGE_OPTS="--no-edit"
+          echo "执行: git merge upstream/$UPSTREAM_BRANCH --strategy-option=patience --no-edit"
           
-          case "$MERGE_STRATEGY" in
-            "ours") MERGE_OPTS="$MERGE_OPTS -X ours" ;;
-            "theirs") MERGE_OPTS="$MERGE_OPTS -X theirs" ;;
-            "patience") MERGE_OPTS="$MERGE_OPTS --strategy-option=patience" ;;
-            "recursive") MERGE_OPTS="$MERGE_OPTS --strategy-option=recursive" ;;
-          esac
-          
-          echo "执行: git merge upstream/$UPSTREAM_BRANCH $MERGE_OPTS"
-          
-          if git merge upstream/$UPSTREAM_BRANCH $MERGE_OPTS 2>&1 | tee merge-output.txt; then
+          if git merge upstream/$UPSTREAM_BRANCH \
+            --strategy-option=patience \
+            --strategy-option=rename-threshold=30 \
+            --no-edit 2>&1 | tee merge-output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "has_conflict=false" >> $GITHUB_OUTPUT
             echo "✅ 合并成功，无冲突"
@@ -198,7 +173,7 @@ jobs:
           
       # ---------- 9. 自动解决冲突 ----------
       - name: 🤖 自动解决冲突
-        if: steps.merge.outputs.has_conflict == 'true' && env.AUTO_RESOLVE == 'true'
+        if: steps.merge.outputs.has_conflict == 'true' && github.event.inputs.skip_auto_resolve != 'true'
         id: auto-resolve
         run: |
           cat > /tmp/resolve-conflicts.sh << 'SCRIPT'
@@ -252,19 +227,6 @@ jobs:
               continue
             fi
             
-            # Makefile - 合并双方
-            if [[ "$file" == *"Makefile" ]]; then
-              OUR_OBJS=$(sed -n '/<<<<<<< /,/=======/p' "$file" | grep 'obj-')
-              THEIR_OBJS=$(sed -n '/=======/,/>>>>>>>/p' "$file" | grep 'obj-')
-              if [ -n "$OUR_OBJS" ] || [ -n "$THEIR_OBJS" ]; then
-                echo -e "$OUR_OBJS\n$THEIR_OBJS" | sort -u > /tmp/merged_objs
-                sed -i '/<<<<<<< /,/>>>>>>>/c\'"$(cat /tmp/merged_objs)" "$file"
-                echo "  ✅ 合并 Makefile 条目"
-                RESOLVED=$((RESOLVED + 1))
-                continue
-              fi
-            fi
-            
             # 检查是否还有冲突标记
             if grep -q '<<<<<<<' "$file"; then
               echo "  ❌ 需要人工处理: $file"
@@ -295,73 +257,67 @@ SCRIPT
             echo "⚠️ 部分冲突无法自动解决"
           fi
           
-      # ---------- 10. 提交合并（如果有成功合并或无冲突）----------
+      # ---------- 10. 提交合并 ----------
       - name: 💾 提交合并
-        if: (steps.merge.outputs.status == 'success' || steps.auto-resolve.outputs.status == 'success') && steps.check.outputs.need_merge == 'true'
+        if: (steps.merge.outputs.status == 'success' || steps.auto-resolve.outputs.status == 'success') && steps.need_merge.outputs.need_merge == 'true'
         run: |
-          if [ -n "${{ github.event.inputs.commit_message }}" ]; then
-            COMMIT_MSG="${{ github.event.inputs.commit_message }}"
-          else
-            COMMIT_MSG="Merge upstream $UPSTREAM_BRANCH into $TARGET_BRANCH
+          COMMIT_MSG="Auto-merge upstream $UPSTREAM_BRANCH into $TARGET_BRANCH
           
+          触发原因: 检测到 $TARGET_BRANCH 分支有新提交
           上游仓库: $UPSTREAM_URL
           上游提交: ${{ steps.version.outputs.upstream_commit }}
-          
-          合并策略: $MERGE_STRATEGY
-          自动解决冲突: $AUTO_RESOLVE
+          当前提交: ${{ steps.version.outputs.current_commit }}
+          落后数量: ${{ steps.need_merge.outputs.behind_count }} 个提交
           
           ---
-          此 PR 由 GitHub Actions 自动创建，请审核后手动合并
+          此合并由 GitHub Actions 自动触发
           "
-          fi
           
           git commit --amend -m "$COMMIT_MSG" 2>/dev/null || git commit -m "$COMMIT_MSG"
           echo "✅ 已创建合并提交"
           
-      # ---------- 11. 推送分支（只推送 PR 分支，不推送目标分支）----------
+      # ---------- 11. 推送 PR 分支 ----------
       - name: 🚀 推送 PR 分支
-        if: (steps.merge.outputs.status == 'success' || steps.auto-resolve.outputs.status == 'success') && steps.check.outputs.need_merge == 'true'
+        if: (steps.merge.outputs.status == 'success' || steps.auto-resolve.outputs.status == 'success') && steps.need_merge.outputs.need_merge == 'true'
         run: |
           git push origin $MERGE_BRANCH
           echo "✅ 已推送分支: $MERGE_BRANCH"
-          echo "⚠️ 注意: 未自动合并到 $TARGET_BRANCH，请手动审核后合并"
           
-      # ---------- 12. 创建 Pull Request（指向目标分支）----------
+      # ---------- 12. 创建 Pull Request ----------
       - name: 🔀 创建 Pull Request
-        if: (steps.merge.outputs.status == 'success' || steps.auto-resolve.outputs.status == 'success') && steps.check.outputs.need_merge == 'true'
+        if: (steps.merge.outputs.status == 'success' || steps.auto-resolve.outputs.status == 'success') && steps.need_merge.outputs.need_merge == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Merge upstream ${{ env.UPSTREAM_BRANCH }}"
-          title: "🔀 [请手动审核] 上游 ${{ env.UPSTREAM_BRANCH }} 更新"
+          commit-message: "Auto-merge upstream ${{ env.UPSTREAM_BRANCH }}"
+          title: "🔀 [自动] 上游 ${{ env.UPSTREAM_BRANCH }} 更新"
           body: |
             ## 📦 上游内核更新合并请求
             
-            ### ⚠️ 重要提示
+            ### 触发信息
             
-            **此 PR 不会自动合并**，请审核通过后手动合并到 `${{ env.TARGET_BRANCH }}`。
+            此 PR 由推送到 `${{ env.TARGET_BRANCH }}` 分支自动触发。
             
             ### 合并信息
             
             | 项目 | 信息 |
             |------|------|
+            | 触发分支 | `${{ env.TARGET_BRANCH }}` |
             | 上游仓库 | `${{ env.UPSTREAM_URL }}` |
             | 上游分支 | `${{ env.UPSTREAM_BRANCH }}` |
             | 上游提交 | `${{ steps.version.outputs.upstream_commit }}` |
             | 当前提交 | `${{ steps.version.outputs.current_commit }}` |
-            | 合并策略 | `${{ env.MERGE_STRATEGY }}` |
+            | 落后数量 | `${{ steps.need_merge.outputs.behind_count }}` 个提交 |
             
-            ### 冲突处理状态
+            ### 冲突状态
             
             ${{ steps.merge.outputs.has_conflict == 'true' && '⚠️ 合并时发现冲突，已尝试自动解决' || '✅ 合并无冲突' }}
             ${{ steps.auto-resolve.outputs.status == 'success' && '✅ 所有冲突已自动解决' || '' }}
-            ${{ steps.auto-resolve.outputs.status == 'partial' && '⚠️ 部分冲突需要人工处理' || '' }}
             
             ### 审核清单
             
-            - [ ] 检查代码变更是否合理
-            - [ ] 验证编译是否通过
-            - [ ] 确认功能正常
+            - [ ] 检查代码变更
+            - [ ] 验证编译通过
             - [ ] **手动合并此 PR**
             
             ### 手动合并命令
@@ -374,78 +330,76 @@ SCRIPT
             ```
             
             ---
-            *此 PR 由 GitHub Actions 自动创建，请审核后手动合并*
+            *此 PR 由 GitHub Actions 自动创建*
           branch: ${{ env.MERGE_BRANCH }}
           base: ${{ env.TARGET_BRANCH }}
           labels: |
-            manual-merge-required
+            auto-created
             upstream-update
-            do-not-auto-merge
+            needs-manual-merge
           delete-branch: true
           
-      # ---------- 13. 创建 Issue（合并失败需人工处理）----------
-      - name: 🚨 创建 Issue（需要人工处理冲突）
-        if: steps.auto-resolve.outputs.status == 'partial' || (steps.merge.outputs.has_conflict == 'true' && env.AUTO_RESOLVE == 'false')
+      # ---------- 13. 合并失败时创建 Issue ----------
+      - name: 🚨 合并失败创建 Issue
+        if: steps.auto-resolve.outputs.status == 'partial' || (steps.merge.outputs.has_conflict == 'true' && github.event.inputs.skip_auto_resolve == 'true')
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             
-            let conflictFiles = '';
+            let conflictInfo = '';
             try {
-              conflictFiles = fs.readFileSync('merge-output.txt', 'utf8').slice(-500);
+              const output = fs.readFileSync('merge-output.txt', 'utf8');
+              conflictInfo = output.slice(-800);
             } catch(e) {
-              conflictFiles = '无法读取合并输出';
+              conflictInfo = '无法读取合并输出';
             }
             
-            let body = `## ⚠️ 合并冲突需要人工处理
+            let body = `## ⚠️ 自动合并失败
             
-            上游分支 **${process.env.UPSTREAM_BRANCH}** 的合并尝试发现冲突，无法自动解决。
+            推送到 **${process.env.TARGET_BRANCH}** 分支后，尝试合并上游 **${process.env.UPSTREAM_BRANCH}** 时发现冲突，无法自动解决。
             
             ### 合并信息
             
             - **目标分支**: ${process.env.TARGET_BRANCH}
-            - **上游仓库**: ${process.env.UPSTREAM_URL}
             - **上游分支**: ${process.env.UPSTREAM_BRANCH}
+            - **上游提交**: ${{ steps.version.outputs.upstream_commit }}
             
             ### 冲突详情
             
             \`\`\`
-            ${conflictFiles}
+            ${conflictInfo}
             \`\`\`
             
             ### 解决步骤
             
-            1. 克隆仓库
-            
             \`\`\`bash
+            # 1. 克隆仓库
             git clone ${{ github.server_url }}/${{ github.repository }}.git
             cd ${{ github.repository }}
             git checkout ${process.env.TARGET_BRANCH}
-            \`\`\`
             
-            2. 手动合并并解决冲突
-            
-            \`\`\`bash
+            # 2. 添加上游并合并
             git remote add upstream ${process.env.UPSTREAM_URL}
             git fetch upstream ${process.env.UPSTREAM_BRANCH}
             git merge upstream/${process.env.UPSTREAM_BRANCH}
-            # 手动解决冲突后
+            
+            # 3. 手动解决冲突后
             git add .
             git merge --continue
             git push origin ${process.env.TARGET_BRANCH}
             \`\`\`
             
             ---
-            🤖 此 Issue 由自动化系统自动创建
+            🤖 此 Issue 由自动化系统创建
             `;
             
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `[Merge Conflict] 需要手动解决冲突 - ${new Date().toISOString().slice(0, 10)}`,
+              title: `[Auto-Merge Failed] 需要手动解决冲突 - ${new Date().toISOString().slice(0, 10)}`,
               body: body,
-              labels: ['merge-conflict', 'manual-intervention']
+              labels: ['merge-conflict', 'auto-merge-failed']
             });
         env:
           UPSTREAM_BRANCH: ${{ env.UPSTREAM_BRANCH }}
@@ -456,17 +410,21 @@ SCRIPT
       - name: 📋 输出总结
         run: |
           echo "=========================================="
-          echo "📊 合并执行总结"
+          echo "📊 自动合并执行总结"
           echo "=========================================="
           echo "目标分支: $TARGET_BRANCH"
-          echo "上游: $UPSTREAM_URL -> $UPSTREAM_BRANCH"
-          echo "合并状态: ${{ steps.merge.outputs.status || '未执行' }}"
+          echo "触发方式: ${{ github.event_name }}"
+          echo "合并状态: ${{ steps.merge.outputs.status || '无需合并' }}"
           echo "冲突状态: ${{ steps.merge.outputs.has_conflict || '无' }}"
-          echo "自动解决: ${{ steps.auto-resolve.outputs.status || '未启用' }}"
           echo "=========================================="
-          echo ""
-          echo "⚠️ 重要: 未自动合并到 $TARGET_BRANCH"
-          echo "   请查看创建的 PR，审核后手动合并"
+          
+          if [ "${{ steps.need_merge.outputs.need_merge }}" == "false" ]; then
+            echo "✅ 当前已是最新，无需合并"
+          elif [ "${{ steps.merge.outputs.status }}" == "success" ] || [ "${{ steps.auto-resolve.outputs.status }}" == "success" ]; then
+            echo "✅ 合并成功，已创建 PR 请手动审核"
+          else
+            echo "⚠️ 合并失败，请查看上方 Issue 手动处理"
+          fi
           echo "=========================================="
           
       # ---------- 15. 上传日志 ----------
@@ -477,4 +435,4 @@ SCRIPT
           name: merge-logs-${{ steps.version.outputs.timestamp }}
           path: |
             merge-output.txt
-          retention-days: 30
+          retention-days: 7
