@@ -24,6 +24,7 @@
 #include "smb5-lib.h"
 #include "schgm-flash.h"
 #include <linux/of_gpio.h>
+#include "mm8013-adapt.h"
 
 static struct smb_params smb5_pmi632_params = {
 	.fcc			= {
@@ -2565,31 +2566,28 @@ static int smb5_configure_recharging(struct smb5 *chip)
 {
 	int rc = 0;
 	struct smb_charger *chg = &chip->chg;
-	struct power_supply *exfg_psy;
-	union power_supply_propval pval;
-	/* Configure VBATT-based or automatic recharging */
-
-	exfg_psy = power_supply_get_by_name("bq27541-0");
-	if (exfg_psy)
-		rc = power_supply_get_property(exfg_psy,
-				POWER_SUPPLY_PROP_GAUGE_VOLTAGE, &pval);
-	if (rc < 0) {
-		dev_err(chg->dev, "Couldn't configure POWER_SUPPLY_PROP_GAUGE_VOLTAGE rc=%d\n",
-			rc);
+	int gauge_voltage_mv;
+	
+	/* 使用 MM8013 获取电压 */
+	gauge_voltage_mv = mm8013_get_gauge_voltage_mv();
+	if (gauge_voltage_mv < 0) {
+		dev_err(chg->dev, "Couldn't get mm8013 voltage rc=%d\n", gauge_voltage_mv);
 	} else {
-		dev_err(chg->dev, "current gauge voltage = %d\n",pval.intval);
-		switch (pval.intval) {
-		case EXFG_STEP3_VOLTAGE_MV:
-			chip->dt.auto_recharge_vbat_mv = EXFG_STEP3_RECHARGE_VOLTAGE_MV;
-			break;
-		case EXFG_STEP2_VOLTAGE_MV:
-			chip->dt.auto_recharge_vbat_mv = EXFG_STEP2_RECHARGE_VOLTAGE_MV;
-			break;
-		case EXFG_STEP1_VOLTAGE_MV:
-			chip->dt.auto_recharge_vbat_mv = EXFG_STEP1_RECHARGE_VOLTAGE_MV;
-			break;
-		default:
-			break;
+		dev_err(chg->dev, "current mm8013 voltage = %d mV\n", gauge_voltage_mv);
+		
+		/* 根据电压设置重充电压阈值 */
+		if (gauge_voltage_mv >= MM8013_STEP0_VOLTAGE_MV) {
+			chip->dt.auto_recharge_vbat_mv = MM8013_STEP0_RECHARGE_VOLTAGE_MV;
+			chg->recharge_mv = MM8013_STEP0_RECHARGE_VOLTAGE_MV;
+		} else if (gauge_voltage_mv >= MM8013_STEP1_VOLTAGE_MV) {
+			chip->dt.auto_recharge_vbat_mv = MM8013_STEP1_RECHARGE_VOLTAGE_MV;
+			chg->recharge_mv = MM8013_STEP1_RECHARGE_VOLTAGE_MV;
+		} else if (gauge_voltage_mv >= MM8013_STEP2_VOLTAGE_MV) {
+			chip->dt.auto_recharge_vbat_mv = MM8013_STEP2_RECHARGE_VOLTAGE_MV;
+			chg->recharge_mv = MM8013_STEP2_RECHARGE_VOLTAGE_MV;
+		} else {
+			chip->dt.auto_recharge_vbat_mv = MM8013_STEP3_RECHARGE_VOLTAGE_MV;
+			chg->recharge_mv = MM8013_STEP3_RECHARGE_VOLTAGE_MV;
 		}
 	}
 
@@ -3676,6 +3674,10 @@ static int smb5_probe(struct platform_device *pdev)
 	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
 	if (!chip)
 		return -ENOMEM;
+
+    chg->mm8013_psy = power_supply_get_by_name("mm8013_battery");
+	if (!chg->mm8013_psy) {
+		dev_dbg(chg->dev, "mm8013_battery not available yet\n");
 
 	chg = &chip->chg;
 	chg->dev = &pdev->dev;

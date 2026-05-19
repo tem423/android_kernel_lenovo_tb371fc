@@ -13,6 +13,7 @@
 #include <linux/slab.h>
 #include <linux/pmic-voter.h>
 #include "step-chg-jeita.h"
+#include "mm8013-adapt.h"
 
 #define STEP_CHG_VOTER		"STEP_CHG_VOTER"
 #define JEITA_VOTER		"JEITA_VOTER"
@@ -104,7 +105,7 @@ static bool is_batt_available(struct step_chg_info *chip)
 static bool is_bms_available(struct step_chg_info *chip)
 {
 	if (!chip->bms_psy)
-		chip->bms_psy = power_supply_get_by_name("bms");
+		chip->bms_psy = power_supply_get_by_name("mm8013_battery");
 
 	if (!chip->bms_psy)
 		return false;
@@ -257,7 +258,8 @@ static int get_step_chg_jeita_setting_from_profile(struct step_chg_info *chip)
 
 	power_supply_get_property(chip->bms_psy,
 			POWER_SUPPLY_PROP_RESISTANCE_ID, &prop);
-	batt_id_ohms = prop.intval;
+	batt_id_ohms = mm8013_get_batt_id_ohms();
+pr_debug("batt_id_ohms from MM8013: %d\n", batt_id_ohms);
 
 	/* bms_psy has not yet read the batt_id */
 	if (batt_id_ohms < 0)
