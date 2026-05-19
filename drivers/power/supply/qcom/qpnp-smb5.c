@@ -2634,6 +2634,7 @@ static int smb5_configure_recharging(struct smb5 *chip)
 
 	/* program the auto-recharge threshold */
 	if (chip->dt.auto_recharge_soc != -EINVAL) {
+		union power_supply_propval pval;
 		pval.intval = chip->dt.auto_recharge_soc;
 		rc = smblib_set_prop_rechg_soc_thresh(chg, &pval);
 		if (rc < 0) {
@@ -3674,11 +3675,7 @@ static int smb5_probe(struct platform_device *pdev)
 	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
 	if (!chip)
 		return -ENOMEM;
-
-    chg->mm8013_psy = power_supply_get_by_name("mm8013_battery");
-	if (!chg->mm8013_psy) {
-		dev_dbg(chg->dev, "mm8013_battery not available yet\n");
-
+		
 	chg = &chip->chg;
 	chg->dev = &pdev->dev;
 	chg->debug_mask = &__debug_mask;
