@@ -23,7 +23,7 @@
 #include "storm-watch.h"
 #include "schgm-flash.h"
 #include "lenovo-jeita.h"
-#include "mm8013-adapt.h"
+
 extern int boost_en;
 
 #define smblib_err(chg, fmt, ...)		\
@@ -993,22 +993,19 @@ int smblib_get_prop_from_exfg(struct smb_charger *chg,
 				enum power_supply_property psp,
 				union power_supply_propval *val)
 {
-	int rc = 0;
+	int rc;
 
-	if (!chg->mm8013_psy){
-		chg->mm8013_psy = power_supply_get_by_name("mm8013_battery");
-		if(!chg->mm8013_psy){
-			smblib_err(chg, "mm8013_battery not found\n");
-			/* 回退到 bms_psy */
-			if (chg->bms_psy)
-				rc = power_supply_get_property(chg->bms_psy, psp, val);
-			else
-				rc = -ENODEV;
+	if (!chg->exfg_psy){
+		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
+		if(!chg->exfg_psy){
+			smblib_err(chg, "exfg not found\n");
+			rc = power_supply_get_property(chg->bms_psy, psp, val);
+
 			return rc;
 		}
 	}
-	
-	rc = power_supply_get_property(chg->mm8013_psy, psp, val);
+	rc = power_supply_get_property(chg->exfg_psy, psp, val);
+
 	return rc;
 }
 void smblib_apsd_enable(struct smb_charger *chg, bool enable)
@@ -7942,7 +7939,7 @@ static void jeita_update_work(struct work_struct *work)
 		return;
 
 	rc = smblib_get_prop_from_bms(chg,
-			val.intval = mm8013_get_batt_id_ohms();
+			POWER_SUPPLY_PROP_RESISTANCE_ID, &val);
 	if (rc < 0) {
 		smblib_err(chg, "Failed to get batt-id rc=%d\n", rc);
 		goto out;
@@ -8488,7 +8485,7 @@ int smblib_init(struct smb_charger *chg)
 		}
 
 		chg->bms_psy = power_supply_get_by_name("bms");
-		chg->mm8013_psy = power_supply_get_by_name("mm8013_battery");
+		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
 		if (chg->sec_pl_present) {
 			chg->pl.psy = power_supply_get_by_name("parallel");
 			if (chg->pl.psy) {
