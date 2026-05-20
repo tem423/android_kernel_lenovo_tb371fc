@@ -14,7 +14,6 @@
 #include <linux/pmic-voter.h>
 #include "lenovo-jeita.h"
 #include "smb5-lib.h"
-#include "mm8013-adapt.h"
 
 #define JEITA_VOTER		"LENOVO_JEITA_VOTER"
 #define BATT_MAINTAINCE_VOTER		"BATT_MAINTAINCE_VOTER"
@@ -104,7 +103,7 @@ static bool is_batt_available(struct lenovo_jeita_info *chip)
 static bool is_bms_available(struct lenovo_jeita_info *chip)
 {
 	if (!chip->bms_psy)
-		chip->bms_psy = power_supply_get_by_name("mm8013_battery");
+		chip->bms_psy = power_supply_get_by_name("bms");
 
 	if (!chip->bms_psy)
 		return false;
@@ -245,8 +244,7 @@ static int get_jeita_setting_from_profile(struct lenovo_jeita_info *chip)
 	
 	power_supply_get_property(chip->bms_psy,
 			POWER_SUPPLY_PROP_RESISTANCE_ID, &prop);
-	batt_id_ohms = mm8013_get_batt_id_ohms();
-pr_err("batt_id_ohms from MM8013: %d\n", batt_id_ohms);
+	batt_id_ohms = prop.intval;
 
 	/* bms_psy has not yet read the batt_id */
 	if (batt_id_ohms < 0)
@@ -453,36 +451,47 @@ static int get_val(struct range_data *range, int rise_hys, int fall_hys,
 
 static int get_batt_maintaince_fv(struct lenovo_jeita_info *chip){
 	int rc = 0;
+	struct power_supply *exfg_psy;
+	union power_supply_propval exfgpval = {0, };
 	int batt_maintaince_fv = 0;
 	int recharge_voltage = 0;
-	int voltage_mv = 0;
-	
-	voltage_mv = mm8013_get_gauge_voltage_mv();
-	if (voltage_mv < 0) {
-		pr_err("Couldn't get mm8013 voltage rc=%d\n", voltage_mv);
-		return voltage_mv;
-	}
-	
-	pr_err("current mm8013 voltage = %d mV\n", voltage_mv);
-	
-	if (voltage_mv >= MM8013_STEP0_VOLTAGE_MV) {
-		batt_maintaince_fv = MM8013_STEP0_FLOAT_VOLTAGE_UV;
-		recharge_voltage = MM8013_STEP0_RECHARGE_VOLTAGE_MV;
-	} else if (voltage_mv >= MM8013_STEP1_VOLTAGE_MV) {
-		batt_maintaince_fv = MM8013_STEP1_FLOAT_VOLTAGE_UV;
-		recharge_voltage = MM8013_STEP1_RECHARGE_VOLTAGE_MV;
-	} else if (voltage_mv >= MM8013_STEP2_VOLTAGE_MV) {
-		batt_maintaince_fv = MM8013_STEP2_FLOAT_VOLTAGE_UV;
-		recharge_voltage = MM8013_STEP2_RECHARGE_VOLTAGE_MV;
+
+	exfg_psy = power_supply_get_by_name("bq27541-0");
+	if (exfg_psy)
+		rc = power_supply_get_property(exfg_psy,
+				POWER_SUPPLY_PROP_GAUGE_VOLTAGE, &exfgpval);
+	if (rc < 0) {
+		pr_err("Couldn't configure POWER_SUPPLY_PROP_GAUGE_VOLTAGE rc=%d\n",
+			rc);
 	} else {
-		batt_maintaince_fv = MM8013_STEP3_FLOAT_VOLTAGE_UV;
-		recharge_voltage = MM8013_STEP3_RECHARGE_VOLTAGE_MV;
-	}
-	
-	if(batt_maintaince_fv != chip->batt_maintaince_fv){
-		chip->batt_maintaince_fv = batt_maintaince_fv;
-		chip->recharge_voltage = recharge_voltage;
-		rc = 0;
+		switch (exfgpval.intval) {
+			case EXFG_STEP3_VOLTAGE_MV:
+				batt_maintaince_fv = EXFG_STEP3_FLOAT_VOLTAGE_MV;
+				recharge_voltage = EXFG_STEP3_RECHARGE_VOLTAGE_MV;
+				break;
+			case EXFG_STEP2_VOLTAGE_MV:
+				batt_maintaince_fv  = EXFG_STEP2_FLOAT_VOLTAGE_MV;
+				recharge_voltage = EXFG_STEP2_RECHARGE_VOLTAGE_MV;
+				break;
+			case EXFG_STEP1_VOLTAGE_MV:
+				batt_maintaince_fv  = EXFG_STEP1_FLOAT_VOLTAGE_MV;
+				recharge_voltage = EXFG_STEP1_RECHARGE_VOLTAGE_MV;
+				break;
+			case EXFG_STEP0_VOLTAGE_MV:
+				batt_maintaince_fv  = EXFG_STEP0_FLOAT_VOLTAGE_MV;
+				recharge_voltage = EXFG_STEP0_RECHARGE_VOLTAGE_MV;
+				break;
+			default:
+				break;
+		}
+		pr_err("current gauge voltage = %d fv= %d recharge_voltage = %d\n",exfgpval.intval,batt_maintaince_fv, recharge_voltage);
+
+		if(batt_maintaince_fv != chip->batt_maintaince_fv){
+			chip->batt_maintaince_fv = batt_maintaince_fv;
+			chip->recharge_voltage= recharge_voltage;
+
+			rc = 0;
+		}
 	}
 	return rc;
 }
