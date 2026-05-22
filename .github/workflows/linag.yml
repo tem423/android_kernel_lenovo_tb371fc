@@ -1,13 +1,7 @@
 name: Sync LineageOS Kernel
 
 on:
-  # 手动触发
   workflow_dispatch:
-  # 定时触发（每天北京时间早上8点）
-  # 也可以推送到 main 分支时触发（按需取消注释）
-  # push:
-  #   branches:
-  #     - main
 
 jobs:
   sync-kernel:
@@ -17,7 +11,7 @@ jobs:
     - name: Checkout your repository
       uses: actions/checkout@v4
       with:
-        # 获取完整历史（否则无法 push）
+        token: ${{ secrets.PAT_TOKEN }}  # 使用你创建的 PAT
         fetch-depth: 0
         
     - name: Configure Git
@@ -32,7 +26,6 @@ jobs:
         
     - name: Create/Update lineage-23.2 branch
       run: |
-        # 检查本地是否已有该分支
         if git show-ref --verify --quiet refs/heads/lineage-23.2; then
           git checkout lineage-23.2
           git reset --hard lineage/lineage-23.2
