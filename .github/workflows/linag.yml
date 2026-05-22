@@ -2,6 +2,8 @@ name: Sync LineageOS Kernel
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   sync-kernel:
@@ -21,18 +23,18 @@ jobs:
         
     - name: Add LineageOS kernel as remote
       run: |
-        git remote add lineage https://github.com/LineageOS/android_kernel_qcom_sm8250.git
-        git fetch lineage lineage-20
+        git remote add lineage https://github.com/LineageOS/android_kernel_motorola_sm8250.git
+        git fetch lineage lineage-23.2
         
-    - name: Create/Update lineage-20 branch
+    - name: Create/Update lineage-23.2 branch
       run: |
-        if git show-ref --verify --quiet refs/heads/lineage-20; then
-          git checkout lineage-20
-          git reset --hard lineage/lineage-20
+        if git show-ref --verify --quiet refs/heads/lineage-23.2; then
+          git checkout lineage-23.2
+          git reset --hard lineage/lineage-23.2
         else
-          git checkout -b lineage-20 lineage/lineage-20
+          git checkout -b lineage-23.2 lineage/lineage-23.2
         fi
         
     - name: Push to your repository
       run: |
-        git push origin lineage-20 --force
+        git push origin lineage-23.2 --force
