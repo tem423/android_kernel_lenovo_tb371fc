@@ -23,9 +23,6 @@ jobs:
       run: |
         git remote add lineage https://github.com/LineageOS/android_kernel_qcom_sm8250.git
         git fetch lineage lineage-20
-        git fetch origin lineage-20 2>/dev/null || true
-        git push origin :lineage-20 2>/dev/null || true
-        git push origin lineage-20 --force
         
     - name: Create/Update lineage-20 branch
       run: |
