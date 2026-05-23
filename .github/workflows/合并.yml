@@ -4,10 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       upstream_ref:
-        description: '上游分支/标签 (例如: v4.19.300, linux-4.19.y)'
+        description: '上游分支/标签'
         required: true
         default: 'linux-4.19.y'
-        type: string
 
 permissions:
   contents: write
@@ -16,78 +15,41 @@ jobs:
   merge-upstream:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout target Android kernel repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           repository: tem423/linux-android-msm-lenovo-p12
           ref: 电池修复测试
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Add Linux stable repo as upstream
-        run: |
+      - run: |
           git remote add upstream https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           git fetch upstream --tags --force
 
-      - name: Merge upstream ${{ github.event.inputs.upstream_ref }}
+      - name: Merge
         id: merge
         continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          echo "::group::尝试合并上游 ${{ github.event.inputs.upstream_ref }}"
           git merge --no-commit --no-ff upstream/${{ github.event.inputs.upstream_ref }} || true
-          echo "::endgroup::"
-          
           if git diff --cached --quiet; then
             echo "status=success" >> $GITHUB_OUTPUT
-            echo "No conflicts detected."
           else
             echo "status=conflicts" >> $GITHUB_OUTPUT
-            echo "Conflicts detected. Please resolve manually."
           fi
 
-      - name: Complete merge and push
+      - name: Push if success
         if: steps.merge.outputs.status == 'success'
         run: |
-          MERGE_MSG="Merge upstream stable-4.19 to $(git rev-parse --short HEAD)
-
-Update kernel to ${{ github.event.inputs.upstream_ref }}
-
-- Upstream repo: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-- Upstream ref: ${{ github.event.inputs.upstream_ref }}
-- Automated by GitHub Actions workflow merge-upstream.yml
-"
-          git commit -m "$MERGE_MSG"
+          git commit -m "Merge upstream ${{ github.event.inputs.upstream_ref }}"
           git push origin 电池修复测试
 
-      - name: Create Pull Request for conflicts
-        uses: peter-evans/create-pull-request@v6
+      - uses: peter-evans/create-pull-request@v6
         if: steps.merge.outputs.status == 'conflicts'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "WIP: Merge upstream ${{ github.event.inputs.upstream_ref }} (with conflicts)"
-          title: "冲突: 合并上游 ${{ github.event.inputs.upstream_ref }} 需要手动解决"
-          body: |
-            自动合并 Linux 上游稳定版 `${{ github.event.inputs.upstream_ref }}` 到 `电池修复测试` 时发生冲突。
-            
-            **请手动解决冲突，然后完成合并。**
-            
-            ## 合并命令参考
-            ```
-            git fetch origin
-            git checkout 电池修复测试
-            git merge upstream/${{ github.event.inputs.upstream_ref }}
-            git commit -m "Merge upstream ${{ github.event.inputs.upstream_ref }}"
-            git push origin 电池修复测试
-            ```
-            
-            **关联的上游提交**：
-            - Linux 仓库: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-            - 参考标签/分支: ${{ github.event.inputs.upstream_ref }}
-          branch: auto-merge/upstream-${{ github.event.inputs.upstream_ref }}
+          title: Merge upstream ${{ github.event.inputs.upstream_ref }}
+          body: Please resolve conflicts.
+          branch: auto-merge/upstream
           base: 电池修复测试
-          labels: |
-            automated pr
-            merge conflict
