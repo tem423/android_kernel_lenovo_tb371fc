@@ -37,28 +37,13 @@ jobs:
         id: merge
         continue-on-error: true
         run: |
-          # 开始合并，但不自动提交
           git merge --no-commit --no-ff upstream/${{ github.event.inputs.upstream_ref }} || true
           
           echo "=== 优先保留联想原厂文件 ==="
-          
-          # 1. 对于所有冲突，优先使用我们的版本（原厂文件）
-          # 这保留了所有联想 P12 的原始驱动和配置
           git checkout --ours .
-          
-          # 2. 但需要特殊处理：如果上游新增了安全补丁或核心修复
-          # 对于特定文件，可以选择性地接受上游更改
-          # 例如：核心安全文件（根据需要取消注释）
-          # git checkout --theirs kernel/panic.c
-          # git checkout --theirs mm/page_alloc.c
-          
-          # 3. 添加所有已解决的文件
           git add .
           
-          # 4. 检查是否还有未解决的冲突
           if git diff --cached --name-only --diff-filter=U | grep -q .; then
-            echo "仍有未解决的冲突:"
-            git diff --cached --name-only --diff-filter=U
             echo "status=conflicts" >> $GITHUB_OUTPUT
           else
             echo "status=success" >> $GITHUB_OUTPUT
@@ -67,54 +52,19 @@ jobs:
       - name: 如果没有冲突，直接提交并推送
         if: steps.merge.outputs.status == 'success'
         run: |
-          git commit -m "Merge upstream ${{ github.event.inputs.upstream_ref }}
-
-优先保留联想 P12 原厂文件，仅合入上游版本号更新。
-
-- Upstream: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-- 策略: 所有冲突优先使用原厂版本（git checkout --ours）
-- 目的: 更新内核版本号，同时保持设备稳定性"
-          
+          git commit -m "Merge upstream ${{ github.event.inputs.upstream_ref }}"
           git push origin 电池修复测试
-          echo "✅ 合并成功！已推送到电池修复测试分支"
 
       - name: 如果有冲突，创建 PR 手动处理
-        if: steps.merge.outputs.status == 'conflicts'
         uses: peter-evans/create-pull-request@v6
+        if: steps.merge.outputs.status == 'conflicts'
         with:
           token: ${{ secrets.PAT_TOKEN }}
           commit-message: "WIP: 合并上游（保留原厂文件，有冲突）"
           title: "合并上游 ${{ github.event.inputs.upstream_ref }}（优先保留原厂文件）"
           body: |
-            ## 合并策略说明
-            
-            此 PR 遵循以下策略：
-            - ✅ **所有冲突优先保留联想 P12 原厂文件**
-            - ✅ 上游更新仅用于版本号同步
-            - ⚠️ 如有必要，手动从上游 cherry-pick 安全补丁
-            
-            ## 如何解决冲突
-            
-            ```bash
-            # 在本地执行
-            git fetch origin
-            git checkout ${{ github.event.inputs.upstream_ref }}
-            git merge upstream/${{ github.event.inputs.upstream_ref }}
-            
-            # 保留原厂文件
-            git checkout --ours .
-            git add .
-            git commit -m "Merge upstream（保留原厂文件）"
-            git push origin ${{ github.event.inputs.upstream_ref }}
-            ```
-            
-            ## 后续建议
-            
-            1. 编译测试内核
-            2. 如果编译失败，检查是否有新增的依赖
-            3. 如需合入特定安全补丁，手动 cherry-pick
+            自动合并时发生冲突，已优先保留原厂文件。
+            请手动检查并完成合并。
           branch: merge-upstream-prefer-vendor
           base: 电池修复测试
-          labels: |
-            merge
-            prefer-vendor
+          labels: automated pr, merge conflict
