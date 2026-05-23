@@ -11,6 +11,7 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
+          ref: 电池修复测试
 
       - name: Merge and push
         run: |
@@ -41,4 +42,4 @@ jobs:
           fi
           
           git commit -m "Auto merge from origin/linux-4.19.y"
-          git push origin 电池修复测试
+          git push origin HEAD:电池修复测试
