@@ -40,15 +40,12 @@ jobs:
         id: merge
         continue-on-error: true
         run: |
-          # 开始合并源分支到目标分支
           git merge --no-commit --no-ff origin/${{ github.event.inputs.source_branch }} || true
           
           echo "=== 优先保留目标分支（${{ github.event.inputs.target_branch }}）文件 ==="
           
-          # 检查是否有冲突
           if git diff --cached --name-only --diff-filter=U | grep -q .; then
             echo "发现冲突，保留目标分支版本"
-            # 对所有冲突文件，使用目标分支的版本（--ours）
             git checkout --ours .
             git add .
             echo "status=resolved" >> $GITHUB_OUTPUT
@@ -59,10 +56,7 @@ jobs:
       - name: 提交并推送
         if: steps.merge.outputs.status == 'success' || steps.merge.outputs.status == 'resolved'
         run: |
-          git commit -m "Merge branch '${{ github.event.inputs.source_branch }}' into '${{ github.event.inputs.target_branch }}'
-
-保留目标分支（${{ github.event.inputs.target_branch }}）内容解决冲突"
-          
+          git commit -m "Merge branch '${{ github.event.inputs.source_branch }}' into '${{ github.event.inputs.target_branch }}' - 保留目标分支内容解决冲突"
           git push origin ${{ github.event.inputs.target_branch }}
           echo "✅ 合并成功！已推送到 ${{ github.event.inputs.target_branch }}"
 
