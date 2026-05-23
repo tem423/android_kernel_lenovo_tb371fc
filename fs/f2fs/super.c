@@ -2634,9 +2634,9 @@ static inline bool sanity_check_area_boundary(struct f2fs_sb_info *sbi,
 	u32 segment_count = le32_to_cpu(raw_super->segment_count);
 	u32 log_blocks_per_seg = le32_to_cpu(raw_super->log_blocks_per_seg);
 	u64 main_end_blkaddr = main_blkaddr +
-				(segment_count_main << log_blocks_per_seg);
+				((u64)segment_count_main << log_blocks_per_seg);
 	u64 seg_end_blkaddr = segment0_blkaddr +
-				(segment_count << log_blocks_per_seg);
+				((u64)segment_count << log_blocks_per_seg);
 
 	if (segment0_blkaddr != cp_blkaddr) {
 		f2fs_info(sbi, "Mismatch start address, segment0(%u) cp_blkaddr(%u)",
@@ -3649,14 +3649,24 @@ try_onemore:
 	/* setup f2fs internal modules */
 	err = f2fs_build_segment_manager(sbi);
 	if (err) {
+<<<<<<< HEAD
 		f2fs_err(sbi, "Failed to initialize F2FS segment manager (%d)",
 			 err);
+=======
+		f2fs_msg(sb, KERN_ERR,
+			"Failed to initialize F2FS segment manager (%d)", err);
+>>>>>>> origin/linux-4.19.y
 		goto free_sm;
 	}
 	err = f2fs_build_node_manager(sbi);
 	if (err) {
+<<<<<<< HEAD
 		f2fs_err(sbi, "Failed to initialize F2FS node manager (%d)",
 			 err);
+=======
+		f2fs_msg(sb, KERN_ERR,
+			"Failed to initialize F2FS node manager (%d)", err);
+>>>>>>> origin/linux-4.19.y
 		goto free_nm;
 	}
 
@@ -4047,4 +4057,5 @@ module_exit(exit_f2fs_fs)
 MODULE_AUTHOR("Samsung Electronics's Praesto Team");
 MODULE_DESCRIPTION("Flash Friendly File System");
 MODULE_LICENSE("GPL");
+MODULE_SOFTDEP("pre: crc32");
 

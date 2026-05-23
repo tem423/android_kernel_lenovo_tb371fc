@@ -580,7 +580,11 @@ static void devfreq_dev_release(struct device *dev)
 		devfreq->profile->exit(devfreq->dev.parent);
 
 	mutex_destroy(&devfreq->lock);
+<<<<<<< HEAD
 	mutex_destroy(&devfreq->event_lock);
+=======
+	srcu_cleanup_notifier_head(&devfreq->transition_notifier_list);
+>>>>>>> origin/linux-4.19.y
 	kfree(devfreq);
 }
 

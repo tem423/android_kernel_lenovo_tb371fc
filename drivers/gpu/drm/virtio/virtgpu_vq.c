@@ -991,8 +991,14 @@ int virtio_gpu_object_attach(struct virtio_gpu_device *vgdev,
 	}
 
 	/* gets freed when the ring has consumed it */
+<<<<<<< HEAD
 	ents = kmalloc_array(nents, sizeof(struct virtio_gpu_mem_entry),
 			     GFP_KERNEL);
+=======
+	ents = kvmalloc_array(obj->pages->nents,
+			      sizeof(struct virtio_gpu_mem_entry),
+			      GFP_KERNEL);
+>>>>>>> origin/linux-4.19.y
 	if (!ents) {
 		DRM_ERROR("failed to allocate ent list\n");
 		return -ENOMEM;
