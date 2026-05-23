@@ -1,94 +1,23 @@
-name: 合并 linux-4.19.y 到电池修复测试（添加新文件）
+name: Merge Upstream
 
 on:
   workflow_dispatch:
-    inputs:
-      source_branch:
-        description: '源分支'
-        required: true
-        default: 'linux-4.19.y'
-      target_branch:
-        description: '目标分支'
-        required: true
-        default: '电池修复测试'
-
-permissions:
-  contents: write
 
 jobs:
-  merge-branches:
+  merge:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: tem423/linux-android-msm-lenovo-p12
-          ref: ${{ github.event.inputs.target_branch }}
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
-      - name: 拉取源分支
-        run: |
-          git fetch origin ${{ github.event.inputs.source_branch }}
-
-      - name: 配置 Git
+      - name: Merge and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: 执行合并（添加新文件，保留现有文件）
-        id: merge
-        run: |
-          # 开始合并
-          git merge --no-commit --no-ff origin/${{ github.event.inputs.source_branch }} || true
-          
-          echo "=== 合并策略：添加新文件，保留现有文件 ==="
-          
-          # 处理删除的文件（源分支删除了，但目标分支保留）
-          DELETED_FILES=$(git diff --cached --name-only --diff-filter=D)
-          if [ -n "$DELETED_FILES" ]; then
-            echo "恢复被删除的文件（保留本地）："
-            echo "$DELETED_FILES"
-            git reset HEAD $DELETED_FILES 2>/dev/null || true
-            git checkout -- $DELETED_FILES 2>/dev/null || true
-          fi
-          
-          # 处理冲突的文件（优先保留目标分支版本）
-          CONFLICT_FILES=$(git diff --cached --name-only --diff-filter=U)
-          if [ -n "$CONFLICT_FILES" ]; then
-            echo "冲突文件（保留目标分支版本）："
-            echo "$CONFLICT_FILES"
-            git checkout --ours $CONFLICT_FILES 2>/dev/null || true
-            git add $CONFLICT_FILES 2>/dev/null || true
-          fi
-          
-          # 新增的文件 - 自动保留在暂存区
-          ADDED_FILES=$(git diff --cached --name-only --diff-filter=A)
-          if [ -n "$ADDED_FILES" ]; then
-            echo "新增文件（已添加）："
-            echo "$ADDED_FILES"
-          fi
-          
-          # 检查是否还有未解决的冲突
-          if git diff --cached --name-only --diff-filter=U | grep -q .; then
-            echo "❌ 仍有未解决的冲突，合并失败"
-            exit 1
-          fi
-          
-          echo "✅ 所有冲突已解决"
-
-      - name: 提交并推送
-        run: |
-          # 检查是否有变更需要提交
-          if git diff --cached --quiet; then
-            echo "没有需要提交的变更"
-          else
-            git commit -m "Merge branch '${{ github.event.inputs.source_branch }}' into '${{ github.event.inputs.target_branch }}'
-
-策略：添加新文件，保留现有文件
-- 新增文件: 已添加
-- 删除文件: 已恢复（保留本地）
-- 冲突文件: 保留目标分支版本"
-
-            git push origin ${{ github.event.inputs.target_branch }}
-            echo "✅ 合并成功！已推送到 ${{ github.event.inputs.target_branch }}"
-          fi
+          git merge --no-ff origin/linux-4.19.y || true
+          git checkout --ours .
+          git add .
+          git commit -m "Auto merge"
+          git push origin 电池修复测试
