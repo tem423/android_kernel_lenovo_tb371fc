@@ -14,7 +14,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   merge-branches:
@@ -38,8 +37,8 @@ jobs:
 
       - name: 执行合并（添加新文件，保留现有文件）
         id: merge
-        continue-on-error: true
         run: |
+          # 开始合并
           git merge --no-commit --no-ff origin/${{ github.event.inputs.source_branch }} || true
           
           echo "=== 合并策略：添加新文件，保留现有文件 ==="
@@ -62,36 +61,34 @@ jobs:
             git add $CONFLICT_FILES 2>/dev/null || true
           fi
           
-          # 检查最终状态
-          if git diff --cached --name-only --diff-filter=U | grep -q .; then
-            echo "status=conflicts" >> $GITHUB_OUTPUT
-          else
-            echo "status=success" >> $GITHUB_OUTPUT
+          # 新增的文件 - 自动保留在暂存区
+          ADDED_FILES=$(git diff --cached --name-only --diff-filter=A)
+          if [ -n "$ADDED_FILES" ]; then
+            echo "新增文件（已添加）："
+            echo "$ADDED_FILES"
           fi
+          
+          # 检查是否还有未解决的冲突
+          if git diff --cached --name-only --diff-filter=U | grep -q .; then
+            echo "❌ 仍有未解决的冲突，合并失败"
+            exit 1
+          fi
+          
+          echo "✅ 所有冲突已解决"
 
       - name: 提交并推送
-        if: steps.merge.outputs.status == 'success'
         run: |
-          git commit -m "Merge branch '${{ github.event.inputs.source_branch }}' into '${{ github.event.inputs.target_branch }}'
+          # 检查是否有变更需要提交
+          if git diff --cached --quiet; then
+            echo "没有需要提交的变更"
+          else
+            git commit -m "Merge branch '${{ github.event.inputs.source_branch }}' into '${{ github.event.inputs.target_branch }}'
 
 策略：添加新文件，保留现有文件
 - 新增文件: 已添加
 - 删除文件: 已恢复（保留本地）
 - 冲突文件: 保留目标分支版本"
-          
-          git push origin ${{ github.event.inputs.target_branch }}
-          echo "合并成功！已推送到 ${{ github.event.inputs.target_branch }}"
-
-      - name: 如果有冲突，创建 PR 手动处理
-        uses: peter-evans/create-pull-request@v6
-        if: steps.merge.outputs.status == 'conflicts'
-        with:
-          token: ${{ secrets.PAT_TOKEN }}
-          commit-message: "WIP: 合并上游（保留原厂文件，有冲突）"
-          title: "合并上游 ${{ github.event.inputs.upstream_ref }}（优先保留原厂文件）"
-          body: |
-            自动合并时发生冲突，已优先保留原厂文件。
-            请手动检查并完成合并。
-          branch: auto-merge-add-new-files
-          base: ${{ github.event.inputs.target_branch }}
-          labels: automated pr, add-new-files
+            
+            git push origin ${{ github.event.inputs.target_branch }}
+            echo "✅ 合并成功！已推送到 ${{ github.event.inputs.target_branch }}"
+          fi
