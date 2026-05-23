@@ -1,0 +1,116 @@
+# .github/workflows/merge-upstream.yml
+name: Merge Linux 4.19 Stable Upstream
+
+on:
+  # 1. 手动触发（推荐），可以指定要合并的上游分支或标签
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: '上游分支/标签 (例如: v4.19.300, linux-4.19.y)'
+        required: true
+        default: 'linux-4.19.y'
+        type: string
+  # 2. 定时触发（例如每周一早上8点检查合并），可根据需要开启
+  # schedule:
+  #   - cron: '0 0 * * 1'  # 每周一 00:00 UTC
+
+# 需要写入权限来推送代码
+permissions:
+  contents: write
+
+jobs:
+  merge-upstream:
+    runs-on: ubuntu-22.04
+    steps:
+      # 1. 检出你的 Android 内核仓库（目标仓库）
+      - name: Checkout target Android kernel repo
+        uses: actions/checkout@v4
+        with:
+          # 替换为你的实际仓库地址（如果是私有仓库需配置token）
+          repository: ${{ https://github.com/tem423/linux-android-msm-lenovo-p12 }}
+          ref: 电池修复测试  # 重要：改为你要合并到的分支，例如：main, 4.19, android-4.19
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0  # 获取完整历史，以便合并
+
+      # 2. 添加 Linux 稳定版内核仓库为上游（upstream）
+      - name: Add Linux stable repo as upstream
+        run: |
+          git remote add upstream https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          git fetch upstream --tags --force
+
+      # 3. 开始合并上游指定分支/标签
+      - name: Merge upstream ${{ github.event.inputs.upstream_ref }}
+        id: merge
+        continue-on-error: true  # 允许合并失败（有冲突时继续执行）
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          echo "::group::尝试合并上游 ${{ github.event.inputs.upstream_ref }}"
+          # 执行合并，禁用默认的提交信息，后续自定义
+          git merge --no-commit --no-ff upstream/${{ github.event.inputs.upstream_ref }} || true
+          echo "::endgroup::"
+          
+          # 检查是否有冲突
+          if git diff --cached --quiet; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "No conflicts detected."
+          else
+            echo "status=conflicts" >> $GITHUB_OUTPUT
+            echo "Conflicts detected. Please resolve manually."
+          fi
+
+      # 4. 如果没有冲突，自动完成合并并推送
+      - name: Complete merge and push
+        if: steps.merge.outputs.status == 'success'
+        run: |
+          # 生成详细的合并提交信息，类似你提供的示例风格
+          MERGE_MSG="Merge upstream stable-4.19 to $(git rev-parse --short HEAD)
+
+Update kernel to ${{ github.event.inputs.upstream_ref }}
+
+- Upstream repo: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+- Upstream ref: ${{ github.event.inputs.upstream_ref }}
+- Automated by GitHub Actions workflow merge-upstream.yml
+"
+
+          # 完成合并（之前是 --no-commit）
+          git commit -m "$MERGE_MSG"
+          
+          # 推送到你的分支
+          git push origin 电池修复测试  # 注意与第1步的ref保持一致
+          
+          echo "Merge successful! Pushed to branch."
+
+      # 5. 如果有冲突，创建 Pull Request 通知手动解决
+      - name: Create Pull Request for conflicts
+        uses: peter-evans/create-pull-request@v6
+        if: steps.merge.outputs.status == 'conflicts'
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          commit-message: "WIP: Merge upstream ${{ github.event.inputs.upstream_ref }} (with conflicts)"
+          title: "冲突: 合并上游 ${{ github.event.inputs.upstream_ref }} 需要手动解决"
+          body: |
+            自动合并 Linux 上游稳定版 `${{ github.event.inputs.upstream_ref }}` 到 `电池修复测试` 时发生冲突。
+            
+            **请手动解决冲突，然后完成合并。**
+            
+            ## 合并命令参考
+            ```bash
+            # 在你的本地仓库执行
+            git fetch origin
+            git checkout 电池修复测试
+            git merge upstream/${{ github.event.inputs.upstream_ref }}
+            # 解决冲突后
+            git commit -m "Merge upstream ${{ github.event.inputs.upstream_ref }}"
+            git push origin 电池修复测试
+            ```
+            
+            **关联的上游提交**：
+            - Linux 仓库: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+            - 参考标签/分支: ${{ github.event.inputs.upstream_ref }}
+          branch: auto-merge/upstream-${{ github.event.inputs.upstream_ref }}
+          base: 电池修复测试  # 注意修改为目标分支
+          labels: |
+            automated pr
+            merge conflict
