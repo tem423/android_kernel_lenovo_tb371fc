@@ -9,7 +9,6 @@ on:
         default: 'linux-4.19.y'
         type: string
 
-# 需要写入权限来推送代码
 permissions:
   contents: write
 
@@ -17,7 +16,6 @@ jobs:
   merge-upstream:
     runs-on: ubuntu-22.04
     steps:
-      # 1. 检出你的 Android 内核仓库（目标仓库）
       - name: Checkout target Android kernel repo
         uses: actions/checkout@v4
         with:
@@ -26,13 +24,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      # 2. 添加 Linux 稳定版内核仓库为上游（upstream）
       - name: Add Linux stable repo as upstream
         run: |
           git remote add upstream https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           git fetch upstream --tags --force
 
-      # 3. 开始合并上游指定分支/标签
       - name: Merge upstream ${{ github.event.inputs.upstream_ref }}
         id: merge
         continue-on-error: true
@@ -52,7 +48,6 @@ jobs:
             echo "Conflicts detected. Please resolve manually."
           fi
 
-      # 4. 如果没有冲突，自动完成合并并推送
       - name: Complete merge and push
         if: steps.merge.outputs.status == 'success'
         run: |
@@ -64,13 +59,9 @@ Update kernel to ${{ github.event.inputs.upstream_ref }}
 - Upstream ref: ${{ github.event.inputs.upstream_ref }}
 - Automated by GitHub Actions workflow merge-upstream.yml
 "
-
           git commit -m "$MERGE_MSG"
           git push origin 电池修复测试
-          
-          echo "Merge successful! Pushed to branch."
 
-      # 5. 如果有冲突，创建 Pull Request 通知手动解决
       - name: Create Pull Request for conflicts
         uses: peter-evans/create-pull-request@v6
         if: steps.merge.outputs.status == 'conflicts'
@@ -84,7 +75,7 @@ Update kernel to ${{ github.event.inputs.upstream_ref }}
             **请手动解决冲突，然后完成合并。**
             
             ## 合并命令参考
-            ```bash
+            ```
             git fetch origin
             git checkout 电池修复测试
             git merge upstream/${{ github.event.inputs.upstream_ref }}
