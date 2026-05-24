@@ -1,48 +1,84 @@
-name: 同步联想 P12 内核补丁
+name: Sync Lenovo P12 Patches (Selective Copy)
 
 on:
-  workflow_dispatch:  # 手动触发
-  schedule:
-    - cron: '0 0 * * 0'  # 可选：每周日自动运行
+  workflow_dispatch:
 
 jobs:
   sync-patches:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出目标分支
+      - name: Checkout your repository
         uses: actions/checkout@v4
         with:
           ref: kernel-commit-e5445835
-          fetch-depth: 0  # 获取完整历史以便合并
-          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 配置 Git 用户
+      - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: 添加补丁源仓库
+      - name: Clone patch source
         run: |
-          git remote add patch-repo https://github.com/ila-embsys/linux-android-msm-lenovo-p12.git
-          git fetch patch-repo
+          git clone https://github.com/ila-embsys/linux-android-msm-lenovo-p12.git patch-source
+          cd patch-source
+          git checkout 70e9b1a2120d45c3194463a16d96a68bd2ba9d1c
 
-      - name: 合并特定补丁 (70e9b1a)
+      - name: Copy only essential new files (drivers & configs)
         run: |
-          # 尝试合并目标commit
-          if git merge --no-commit --allow-unrelated-histories 70e9b1a2120d45c3194463a16d96a68bd2ba9d1c; then
-            echo "合并成功，无冲突"
+          # 1. 复制汇顶触摸屏驱动（新增目录）
+          mkdir -p drivers/input/touchscreen/goodix
+          cp -r patch-source/drivers/input/touchscreen/goodix/* drivers/input/touchscreen/goodix/ 2>/dev/null || true
+          
+          # 2. 复制音频编解码器驱动
+          mkdir -p sound/soc/codecs
+          cp patch-source/sound/soc/codecs/as33970* sound/soc/codecs/ 2>/dev/null || true
+          cp patch-source/sound/soc/codecs/es7210* sound/soc/codecs/ 2>/dev/null || true
+          
+          # 3. 复制电池驱动更新
+          cp patch-source/drivers/power/supply/bq27xxx_battery* drivers/power/supply/ 2>/dev/null || true
+          cp patch-source/drivers/power/supply/smb1398-charger* drivers/power/supply/ 2>/dev/null || true
+          
+          # 4. 复制 exFAT 文件系统
+          cp -r patch-source/fs/exfat fs/ 2>/dev/null || true
+          
+          # 5. 复制 MMC 驱动增强
+          cp patch-source/drivers/mmc/host/sdhci* drivers/mmc/host/ 2>/dev/null || true
+          
+          echo "核心驱动文件复制完成"
+
+      - name: Apply kernel config changes (safe method)
+        run: |
+          # 备份原配置
+          cp arch/arm64/configs/vendor/your_defconfig arch/arm64/configs/vendor/your_defconfig.bak
+          
+          # 仅追加新增的配置项（避免删除已有配置）
+          cat >> arch/arm64/configs/vendor/your_defconfig << 'EOF'
+          
+          # Lenovo P12 added configs
+          CONFIG_USB_REDRIVER_PI2DPX=y
+          CONFIG_MMC_SDHCI_BH201=y
+          CONFIG_I2C_HID=y
+          CONFIG_SND_SOC_AS33970=y
+          CONFIG_SND_SOC_ES7210=y
+          CONFIG_TOUCHSCREEN_GOODIX_CHIPSET=y
+          CONFIG_BATTERY_BQ27XXX=y
+          CONFIG_BATTERY_BQ27XXX_I2C=y
+          CONFIG_SMB1398_CHARGER=y
+          CONFIG_SENSORS_HALL=y
+          CONFIG_EXFAT_FS=y
+          CONFIG_USB_NET_SMSC95XX=y
+          EOF
+          
+          echo "配置追加完成"
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          if git diff --staged --quiet; then
+            echo "没有新文件需要提交"
           else
-            echo "合并过程中出现冲突，请手动处理"
-            git merge --abort
-            exit 1
+            git commit -m "Import core drivers and configs from Lenovo P12 patch (70e9b1a)"
+            git push origin kernel-commit-e5445835
           fi
-
-      - name: 提交合并更改
-        if: success()
-        run: |
-          git commit -m "合并来自 ila-embsys/linux-android-msm-lenovo-p12 的补丁 70e9b1a（添加 Lenovo P12 硬件支持）" || echo "无新更改需要提交"
-
-      - name: 推送到您的远程仓库
-        if: success()
-        run: |
-          git push origin kernel-commit-e5445835
