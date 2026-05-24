@@ -1,0 +1,48 @@
+name: 同步联想 P12 内核补丁
+
+on:
+  workflow_dispatch:  # 手动触发
+  schedule:
+    - cron: '0 0 * * 0'  # 可选：每周日自动运行
+
+jobs:
+  sync-patches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出目标分支
+        uses: actions/checkout@v4
+        with:
+          ref: kernel-commit-e5445835
+          fetch-depth: 0  # 获取完整历史以便合并
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: 配置 Git 用户
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 添加补丁源仓库
+        run: |
+          git remote add patch-repo https://github.com/ila-embsys/linux-android-msm-lenovo-p12.git
+          git fetch patch-repo
+
+      - name: 合并特定补丁 (70e9b1a)
+        run: |
+          # 尝试合并目标commit
+          if git merge --no-commit --allow-unrelated-histories 70e9b1a2120d45c3194463a16d96a68bd2ba9d1c; then
+            echo "合并成功，无冲突"
+          else
+            echo "合并过程中出现冲突，请手动处理"
+            git merge --abort
+            exit 1
+          fi
+
+      - name: 提交合并更改
+        if: success()
+        run: |
+          git commit -m "合并来自 ila-embsys/linux-android-msm-lenovo-p12 的补丁 70e9b1a（添加 Lenovo P12 硬件支持）" || echo "无新更改需要提交"
+
+      - name: 推送到您的远程仓库
+        if: success()
+        run: |
+          git push origin kernel-commit-e5445835
