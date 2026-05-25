@@ -16,7 +16,15 @@ jobs:
 
     - name: Clone and force push android14-base branch
       run: |
-        git clone --branch android14-base --single-branch https://github.com/UtsavBalar1231/kernel_xiaomi_sm8250.git kernel-temp
+        # 浅克隆源分支（加速）
+        git clone --branch android14-base --single-branch --depth 1 \
+          https://github.com/revolwoc/kernel_xiaomi_sm8250.git kernel-temp
+        
         cd kernel-temp
-        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
-        git push origin android14-base --force
+        
+        # 更新远程地址
+        git remote set-url origin \
+          https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
+        
+        # 允许无关历史并强制推送
+        git push origin android14-base --force --allow-unrelated-histories
