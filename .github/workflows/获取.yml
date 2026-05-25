@@ -6,36 +6,17 @@ on:
 jobs:
   sync-kernel:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout your repository
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.PAT_TOKEN }}
         fetch-depth: 0
-        
-    - name: Configure Git
+
+    - name: Clone and force push android14-base branch
       run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        
-    - name: Add kernel repository as remote
-      run: |
-        git remote add kernel-source https://github.com/revolwoc/kernel_xiaomi_sm8250.git
-        git fetch kernel-source android14-base
-        
-    - name: Create/Update branch from specific commit
-      run: |
-        # 这里将分支名改为与提交相关的名称，您也可以改回 lineage-23.2
-        BRANCH_NAME="android14 base"
-        if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
-          git checkout $BRANCH_NAME
-          git reset --hard FETCH_HEAD
-        else
-          git checkout -b $BRANCH_NAME FETCH_HEAD
-        fi
-        
-    - name: Push to your repository
-      run: |
-        # 请确保这里的分支名与上一步定义的 BRANCH_NAME 一致
+        git clone --branch android14-base --single-branch https://github.com/revolwoc/kernel_xiaomi_sm8250.git kernel-temp
+        cd kernel-temp
+        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
         git push origin android14-base --force
