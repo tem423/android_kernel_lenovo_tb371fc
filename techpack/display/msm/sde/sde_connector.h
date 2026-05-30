@@ -166,7 +166,7 @@ struct sde_connector_ops {
 	 * @bl_lvel: Backlight level
 	 */
 	int (*set_backlight)(struct drm_connector *connector,
-			void *display, u32 bl_lvl);
+			void *display, u32 bl_lvl, u8 hbm);
 
 	/**
 	 * set_colorspace - set colorspace for connector
