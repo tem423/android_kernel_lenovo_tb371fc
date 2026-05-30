@@ -109,7 +109,7 @@ static int sde_backlight_device_update_status(struct backlight_device *bd)
 				c_conn->base.dev, &event, (u8 *)&brightness);
 		}
 		rc = c_conn->ops.set_backlight(&c_conn->base,
-				c_conn->display, bl_lvl);
+				c_conn->display, bl_lvl, hbm);
 		c_conn->unset_bl_level = 0;
 	}
 
