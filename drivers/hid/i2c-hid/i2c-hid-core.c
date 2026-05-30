@@ -92,6 +92,22 @@ static bool lenovo_i2c_kb_probe_done = false;
 #define VID_KB_LENOVO_TP 0x04f3
 #define PID_KB_LENOVO_TP 0x31f3
 
+/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
+int mcu_resume_gpio = 0;
+bool g_already_sleep = false;
+/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 end*/
+
+/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 start */
+struct i2c_hid *g_ihid=NULL;
+struct i2c_client *g_client=NULL;
+/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 end */
+
+/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 start */
+extern void hidinput_disconnect(struct hid_device *hid);
+extern int hidinput_connect(struct hid_device *hid, unsigned int force);
+static unsigned char g_screen_on = 0;
+/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 end */
+
 struct i2c_hid_desc {
 	__le16 wHIDDescLength;
 	__le16 bcdVersion;
@@ -1593,6 +1609,106 @@ static int i2c_hid_runtime_resume(struct device *dev)
 	enable_irq(client->irq);
 	i2c_hid_set_power(client, I2C_HID_PWR_ON);
 	return 0;
+}
+
+/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
+static int kb_i2c_hid_resume(void)
+{
+	int ret = 0;
+
+	if (!g_already_sleep) {
+		return -1;
+	}
+
+	ret = gpio_direction_output(mcu_resume_gpio, 1);
+        if(ret) {
+                pr_err("%s: set mcu_resume_gpio failed\n", __func__);
+                return ret;
+        }
+
+	ret = i2c_hid_set_power(g_client, I2C_HID_PWR_ON);
+	if (ret) {
+		pr_err("%s: i2c set power on fail\n", __func__);
+		return ret;
+	}
+
+	g_already_sleep = false;
+
+	return 0;
+}
+
+static int kb_i2c_hid_suspend(void)
+{
+	int ret = 0;
+
+	if (g_already_sleep) {
+		return -1;
+	}
+
+	ret = gpio_direction_output(mcu_resume_gpio, 0);
+        if(ret) {
+                pr_err("%s: set mcu_resume_gpio failed\n", __func__);
+                return ret;
+        }
+
+	ret = i2c_hid_set_power(g_client, I2C_HID_PWR_SLEEP);
+	if (ret) {
+		pr_err("%s: i2c set sleep fail\n", __func__);
+		return ret;
+	}
+
+	g_already_sleep = true;
+
+	return 0;
+}
+/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 end*/
+
+void kb_hid_suspend(void)
+{
+int ret = 0;
+	int args_len = 6;
+	u8 args[6] = {07,00,04,00,00,05};
+
+	if (!g_client)
+		return;
+
+	printk("-----hid suspend-----\n");
+
+	ret = __i2c_hid_command(g_client, &hid_set_report_cmd, 2, 2, args, args_len,
+				NULL, 0);
+	if (ret)
+		printk("%s:report screen off cmd failed\n");
+	else
+		g_screen_on = 0;
+
+	/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
+	kb_i2c_hid_suspend();
+	/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 end*/
+
+	return;
+}
+void kb_hid_resume(void)
+{
+	int ret = 0;
+	int args_len = 6;
+	u8 args[6] = {07,00,04,00,01,05};
+	
+	if (!g_client)
+		return;
+
+	printk("-----hid resume-----\n");
+	/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
+	kb_i2c_hid_resume();
+	/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 end*/
+
+	ret = __i2c_hid_command(g_client, &hid_set_report_cmd, 2, 2, args, args_len,
+				NULL, 0);
+	if (ret)
+		printk("%s:report screen on cmd failed\n");
+	else
+		g_screen_on = 1;
+	/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 end */
+	return;
 }
 #endif
 
