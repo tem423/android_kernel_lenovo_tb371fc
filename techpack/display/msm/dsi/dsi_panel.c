@@ -655,7 +655,7 @@ static int dsi_panel_dcs_set_display_brightness_c2(struct mipi_dsi_device *dsi,
 
 
 static int dsi_panel_update_backlight(struct dsi_panel *panel,
-	u32 bl_lv, u8 hbm)
+	u32 bl_lvl, u8 hbm)
 {
 	int rc = 0;
 	struct mipi_dsi_device *dsi;
