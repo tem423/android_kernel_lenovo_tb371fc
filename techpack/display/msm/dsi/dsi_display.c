@@ -229,7 +229,7 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 		goto error;
 	}
 
-	rc = dsi_panel_set_backlight(panel, (u32)bl_temp);
+	rc = dsi_panel_set_backlight(panel, (u32)bl_temp, hbm);
 	if (rc)
 		DSI_ERR("unable to set backlight\n");
 
