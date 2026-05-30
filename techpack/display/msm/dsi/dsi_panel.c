@@ -655,7 +655,7 @@ static int dsi_panel_dcs_set_display_brightness_c2(struct mipi_dsi_device *dsi,
 
 
 static int dsi_panel_update_backlight(struct dsi_panel *panel,
-	u32 bl_lvl)
+	u32 bl_lv, u8 hbm)
 {
 	int rc = 0;
 	struct mipi_dsi_device *dsi;
@@ -734,7 +734,7 @@ error:
 	return rc;
 }
 
-int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
+int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
 {
 	int rc = 0;
 	struct dsi_backlight_config *bl = &panel->bl_config;
@@ -748,7 +748,7 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 		rc = backlight_device_set_brightness(bl->raw_bd, bl_lvl);
 		break;
 	case DSI_BACKLIGHT_DCS:
-		rc = dsi_panel_update_backlight(panel, bl_lvl);
+		rc = dsi_panel_update_backlight(panel, bl_lvl, u8 hbm);
 		break;
 	case DSI_BACKLIGHT_EXTERNAL:
 		break;
