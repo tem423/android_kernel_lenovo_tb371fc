@@ -75,8 +75,10 @@ static int sde_backlight_device_update_status(struct backlight_device *bd)
 	int bl_lvl;
 	struct drm_event event;
 	int rc = 0;
+    int hbm;
 
 	brightness = bd->props.brightness;
+    hbm = bd->props.hbm;
 
 	if ((bd->props.power != FB_BLANK_UNBLANK) ||
 			(bd->props.state & BL_CORE_FBBLANK) ||
@@ -150,6 +152,7 @@ static int sde_backlight_setup(struct sde_connector *c_conn,
 	bl_config = &display->panel->bl_config;
 	props.max_brightness = bl_config->brightness_max_level;
 	props.brightness = bl_config->brightness_max_level;
+    props.hbm = 0;
 	snprintf(bl_node_name, BL_NODE_NAME_SIZE, "panel%u-backlight",
 							display_count);
 	c_conn->bl_device = backlight_device_register(bl_node_name, dev->dev,
@@ -605,7 +608,7 @@ static int _sde_connector_update_bl_scale(struct sde_connector *c_conn)
 		bl_config->bl_scale, bl_config->bl_scale_sv,
 		bl_config->bl_level);
 	rc = c_conn->ops.set_backlight(&c_conn->base,
-			dsi_display, bl_config->bl_level);
+			dsi_display, bl_config->bl_level, 0);
 	c_conn->unset_bl_level = 0;
 
 	return rc;
