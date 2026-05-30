@@ -748,7 +748,7 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
 		rc = backlight_device_set_brightness(bl->raw_bd, bl_lvl);
 		break;
 	case DSI_BACKLIGHT_DCS:
-		rc = dsi_panel_update_backlight(panel, bl_lvl, u8 hbm);
+		rc = dsi_panel_update_backlight(panel, bl_lvl, hbm);
 		break;
 	case DSI_BACKLIGHT_EXTERNAL:
 		break;
