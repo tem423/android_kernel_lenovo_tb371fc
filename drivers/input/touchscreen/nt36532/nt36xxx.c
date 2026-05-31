@@ -3066,7 +3066,7 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 		ts = NULL;
 	}
 
-	//return 0;
+	return 0;
 }
 
 static void nvt_ts_shutdown(struct spi_device *client)
