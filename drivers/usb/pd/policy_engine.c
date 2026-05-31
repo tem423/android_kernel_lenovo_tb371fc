@@ -20,11 +20,8 @@
 #include <linux/extcon-provider.h>
 #include <linux/usb/typec.h>
 #include <linux/usb/usbpd.h>
-#include <linux/get_otg_id.h>
 
 #include "usbpd.h"
-
-atomic_t otg_registered;
 
 enum usbpd_state {
 	PE_UNKNOWN,
@@ -547,10 +544,7 @@ static unsigned int get_connector_type(struct usbpd *pd)
 
 static inline void stop_usb_host(struct usbpd *pd)
 {
-    if (!atomic_read(&otg_registered))
-        return;
 	extcon_set_state_sync(pd->extcon, EXTCON_USB_HOST, 0);
-    atomic_set(&otg_registered, 0);
 }
 
 static inline void start_usb_host(struct usbpd *pd, bool ss)
@@ -558,9 +552,6 @@ static inline void start_usb_host(struct usbpd *pd, bool ss)
 	enum plug_orientation cc = usbpd_get_plug_orientation(pd);
 	union extcon_property_value val;
 	int ret = 0;
-
-	if (0 != otg_state)
-		return;
 
 	val.intval = (cc == ORIENTATION_CC2);
 	extcon_set_property(pd->extcon, EXTCON_USB_HOST,
@@ -578,7 +569,6 @@ static inline void start_usb_host(struct usbpd *pd, bool ss)
 		usbpd_err(&pd->dev, "err(%d) starting host", ret);
 		return;
 	}
-    atomic_set(&otg_registered, 1);
 }
 
 static inline void stop_usb_peripheral(struct usbpd *pd)
@@ -4980,7 +4970,6 @@ EXPORT_SYMBOL(usbpd_destroy);
 
 static int __init usbpd_init(void)
 {
-    atomic_set(&otg_registered, 0);
 	usbpd_ipc_log = ipc_log_context_create(NUM_LOG_PAGES, "usb_pd", 0);
 	return class_register(&usbpd_class);
 }
@@ -4988,8 +4977,6 @@ module_init(usbpd_init);
 
 static void __exit usbpd_exit(void)
 {
-    if (atomic_read(&otg_registered))
-        atomic_set(&otg_registered, 0);
 	class_unregister(&usbpd_class); 
 }
 module_exit(usbpd_exit);
