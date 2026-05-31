@@ -16,15 +16,7 @@ jobs:
 
     - name: Clone and force push android16-base branch
       run: |
-        # 浅克隆源分支（加速）
-        git clone --branch android16-base --single-branch --depth 1 \
-          https://github.com/AstideLabs/android_kernel_xiaomi_sm8250 kernel-temp
-        
+        git clone --branch android16-base --single-branch https://github.com/AstideLabs/android_kernel_xiaomi_sm8250.git kernel-temp
         cd kernel-temp
-        
-        # 更新远程地址
-        git remote set-url origin \
-          https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
-        
-        # 允许无关历史并强制推送
-        git push origin android16-base --force --allow-unrelated-histories
+        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
+        git push origin android16-base --force
