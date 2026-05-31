@@ -2980,9 +2980,6 @@ Description:
 return:
 	Executive outcomes. 0---succeed.
 *******************************************************/
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-type"
-
 static int32_t nvt_ts_remove(struct spi_device *client)
 // static void nvt_ts_remove(struct spi_device *client)
 {
@@ -3071,8 +3068,6 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 
 	//return 0;
 }
-
-#pragma GCC diagnostic pop
 
 static void nvt_ts_shutdown(struct spi_device *client)
 {
