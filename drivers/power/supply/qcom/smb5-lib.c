@@ -996,7 +996,7 @@ int smblib_get_prop_from_exfg(struct smb_charger *chg,
 	int rc;
 
 	if (!chg->exfg_psy){
-		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
+		chg->exfg_psy = power_supply_get_by_name("mm8013");
 		if(!chg->exfg_psy){
 			smblib_err(chg, "exfg not found\n");
 			rc = power_supply_get_property(chg->bms_psy, psp, val);
@@ -8485,7 +8485,7 @@ int smblib_init(struct smb_charger *chg)
 		}
 
 		chg->bms_psy = power_supply_get_by_name("bms");
-		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
+		chg->exfg_psy = power_supply_get_by_name("mm8013");
 		if (chg->sec_pl_present) {
 			chg->pl.psy = power_supply_get_by_name("parallel");
 			if (chg->pl.psy) {
