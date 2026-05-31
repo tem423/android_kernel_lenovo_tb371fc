@@ -1,4 +1,4 @@
-﻿#include <linux/module.h>
+#include <linux/module.h>
 #include <linux/param.h>
 #include <linux/jiffies.h>
 #include <linux/workqueue.h>
@@ -138,11 +138,11 @@ static int mm8013_checkdevice(struct mm8013_chip *chip)
 }
 
 static enum power_supply_property mm8013_battery_props[] = {
-    POWER_SUPPLY_PROP_batt_cap,
+    POWER_SUPPLY_PROP_CAPACITY,
     POWER_SUPPLY_PROP_VOLTAGE_NOW,
     POWER_SUPPLY_PROP_CURRENT_NOW,
     POWER_SUPPLY_PROP_TEMP,
-    POWER_SUPPLY_PROP_battery_id,
+    POWER_SUPPLY_PROP_SERIAL_NUMBER,
 };
 
 
@@ -155,7 +155,7 @@ static int mm8013_get_property(struct power_supply *psy,
 
 
     switch (psp) {
-    case POWER_SUPPLY_PROP_batt_cap:
+    case POWER_SUPPLY_PROP_CAPACITY:
 	ret = mm8013_soc(chip, &(val->intval));
 	break;
     case POWER_SUPPLY_PROP_VOLTAGE_NOW:
@@ -167,7 +167,7 @@ static int mm8013_get_property(struct power_supply *psy,
     case POWER_SUPPLY_PROP_TEMP:
 	ret = mm8013_temperature(chip, &(val->intval));
 	break;
-     case POWER_SUPPLY_PROP_battery_id:
+     case POWER_SUPPLY_PROP_SERIAL_NUMBER:
 	val->intval = battery_id;
 	break;
     default:
