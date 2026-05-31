@@ -291,7 +291,7 @@ static bool is_batt_available(struct qpnp_qg *chip)
 	if (chip->batt_psy)
 		return true;
 
-	chip->batt_psy = power_supply_get_by_name("battery");
+	chip->batt_psy = power_supply_get_by_name("mm8013");
 	if (!chip->batt_psy)
 		return false;
 
