@@ -12,7 +12,7 @@ jobs:
         uses: tem423/kernel_build_action@main
         with:
           kernel-url: https://github.com/tem423/linux-android-msm-lenovo-p12
-          kernel-branch: 电池驱动测试
+          kernel-branch: android16-base
           config: vendor/tb371fc_defconfig
           arch: arm64
           android-version: 11
