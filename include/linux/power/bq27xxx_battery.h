@@ -50,6 +50,8 @@ struct bq27xxx_reg_cache {
 	int energy;
 	int flags;
 	int health;
+    int elapsed_months;
+	int charge_voltage;
 };
 
 struct bq27xxx_device_info {
