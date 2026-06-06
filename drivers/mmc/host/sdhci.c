@@ -1380,6 +1380,13 @@ void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
 		udelay(1);
 	}
 
+/* huaqin add for SD card bringup by liufurong at 20190201 start */
+#ifdef CONFIG_MMC_SDHCI_BH201
+	if (cmd->sw_cmd_timeout) {
+		timeout = jiffies + msecs_to_jiffies(cmd->sw_cmd_timeout);
+	}
+#endif
+/* huaqin add for SD card bringup by liufurong at 20190201 end */
 	host->cmd = cmd;
 	if (sdhci_data_line_cmd(cmd)) {
 		WARN_ON(host->data_cmd);
@@ -2356,7 +2363,10 @@ static int sdhci_get_cd(struct mmc_host *mmc)
 
 static int sdhci_check_ro(struct sdhci_host *host)
 {
+	unsigned long flags;
 	int is_readonly;
+
+	spin_lock_irqsave(&host->lock, flags);
 
 	if (host->flags & SDHCI_DEVICE_DEAD)
 		is_readonly = 0;
@@ -2365,6 +2375,8 @@ static int sdhci_check_ro(struct sdhci_host *host)
 	else
 		is_readonly = !(sdhci_readl(host, SDHCI_PRESENT_STATE)
 				& SDHCI_WRITE_PROTECT);
+
+	spin_unlock_irqrestore(&host->lock, flags);
 
 	/* This quirk needs to be replaced by a callback-function later */
 	return host->quirks & SDHCI_QUIRK_INVERTED_WRITE_PROTECT ?
@@ -2788,6 +2800,11 @@ int sdhci_execute_tuning(struct mmc_host *mmc, u32 opcode)
 		break;
 
 	case MMC_TIMING_UHS_SDR50:
+/* Huaqin add for JD2020-392 by xudongfang at 2019/02/20 start */
+#ifdef CONFIG_MMC_SDHCI_BH201
+		host->flags |= SDHCI_SDR50_NEEDS_TUNING;
+#endif
+/* Huaqin add for JD2020-392 by xudongfang at 2019/02/20 end */
 		if (host->flags & SDHCI_SDR50_NEEDS_TUNING)
 			break;
 		/* FALLTHROUGH */
@@ -3224,7 +3241,11 @@ static void sdhci_cmd_irq(struct sdhci_host *host, u32 intmask, u32 *intmask_p)
 
 	trace_mmc_cmd_rw_end(host->cmd->opcode, intmask,
 				sdhci_readl(host, SDHCI_RESPONSE));
-
+/* huaqin add for SD card bringup by liufurong at 20190201 start */
+#ifdef CONFIG_MMC_SDHCI_BH201
+	host->cmd->err_int_mask = intmask;
+#endif
+/* huaqin add for SD card bringup by liufurong at 20190201 end */
 	if (intmask & (SDHCI_INT_TIMEOUT | SDHCI_INT_CRC |
 		       SDHCI_INT_END_BIT | SDHCI_INT_INDEX |
 		       SDHCI_INT_AUTO_CMD_ERR)) {
@@ -3397,7 +3418,9 @@ static void sdhci_data_irq(struct sdhci_host *host, u32 intmask)
 
 		return;
 	}
-
+#ifdef CONFIG_MMC_SDHCI_BH201
+	host->data->err_int_mask = intmask;
+#endif
 	if (intmask & SDHCI_INT_DATA_TIMEOUT) {
 		host->data->error = -ETIMEDOUT;
 		host->mmc->err_stats[MMC_ERR_DAT_TIMEOUT]++;
