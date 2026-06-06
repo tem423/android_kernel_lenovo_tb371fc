@@ -76,7 +76,7 @@ static struct wakeup_source fp_wakesrc;
 //static struct wake_lock fp_wakelock;
 static struct gf_dev gf;
 
-extern bool hall_disable_fp_pk;
+bool hall_disable_fp_pk;
 
 static struct gf_key_map maps[] = {
 	{ EV_KEY, GF_KEY_INPUT_HOME },
