@@ -71,11 +71,15 @@ struct bq27xxx_device_info {
 	struct power_supply *bat;
 	struct list_head list;
 	struct mutex lock;
-	u8 *regs;
+	u8 *regs
+    int fake_temp;
+	int battery_maintenance;
+	int last_current;
 };
 
 void bq27xxx_battery_update(struct bq27xxx_device_info *di);
 int bq27xxx_battery_setup(struct bq27xxx_device_info *di);
 void bq27xxx_battery_teardown(struct bq27xxx_device_info *di);
+void bq27xxx_battery_maintenance(struct bq27xxx_device_info *di);
 
 #endif
