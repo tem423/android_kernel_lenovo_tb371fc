@@ -89,10 +89,6 @@ static inline bool should_force_cow_break(struct vm_area_struct *vma, unsigned i
  * get_user_pages() would return the page from what is now the wrong
  * VM. So we need to force a COW break at GUP time even for reads.
  */
-static inline bool should_force_cow_break(struct vm_area_struct *vma, unsigned int flags)
-{
-	return is_cow_mapping(vma->vm_flags) && (flags & FOLL_GET);
-}
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
 		unsigned long address, pmd_t *pmd, unsigned int flags,
