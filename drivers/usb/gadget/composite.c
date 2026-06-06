@@ -2536,7 +2536,7 @@ void composite_suspend(struct usb_gadget *gadget)
 	    cdev->config->bmAttributes & USB_CONFIG_ATT_SELFPOWER)
 		usb_gadget_set_selfpowered(gadget);
 
-	usb_gadget_vbus_draw(gadget, 2);
+	usb_gadget_vbus_draw(gadget, 100);
 }
 
 void composite_resume(struct usb_gadget *gadget)
