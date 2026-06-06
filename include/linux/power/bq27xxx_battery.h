@@ -48,6 +48,7 @@ struct bq27xxx_reg_cache {
 	int cycle_count;
 	int capacity;
 	int energy;
+ int power_avg;
 	int flags;
 	int health;
     int elapsed_months;
@@ -71,7 +72,7 @@ struct bq27xxx_device_info {
 	struct power_supply *bat;
 	struct list_head list;
 	struct mutex lock;
-	u8 *regs
+	u8 *regs;
     int fake_temp;
 	int battery_maintenance;
 	int last_current;
