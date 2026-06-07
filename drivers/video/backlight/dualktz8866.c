@@ -56,8 +56,6 @@ static int caseid = 0;
 
 static struct ktz8866_led g_ktz8866_led;
 
-extern int mi_mipi_dsi_dcs_set_pwm_value(u16 dbv_value);
-
 static int ktz8866_read(u8 reg, u8 *data)
 {
 	int ret;
@@ -103,121 +101,6 @@ static int pwm_to_51(int pwm)
 
 	return pwm_map[i].bl_value;
 }
-
-static int ktz8866_case1_test(int pwm, char *result)
-{
-	int bl;
-	struct pwm_reg pwm_reg_a;
-	struct pwm_reg pwm_reg_b;
-	u16 pwm_digital_value_a;
-	u16 pwm_digital_value_b;
-
-	bl = pwm_to_51(pwm);
-	mi_mipi_dsi_dcs_set_pwm_value(bl);
-
-	mdelay(500);
-	ktz8866_reads(bd_a, 0x12, &pwm_reg_a.lbyte);
-	ktz8866_reads(bd_a, 0x13, &pwm_reg_a.hbyte);
-
-	ktz8866_reads(bd_b, 0x12, &pwm_reg_b.lbyte);
-	ktz8866_reads(bd_b, 0x13, &pwm_reg_b.hbyte);
-
-	pwm_digital_value_a = pwm_reg_a.hbyte << 8 | pwm_reg_a.lbyte;
-	pwm_digital_value_b = pwm_reg_b.hbyte << 8 | pwm_reg_b.lbyte;
-
-	sprintf(result, "case1_%d_%d", pwm_digital_value_a,
-		pwm_digital_value_b);
-	printk("bl_selftest:  ktz8866_case1_test result: %s\n", result);
-
-	return 0;
-}
-
-static int ktz8866_case2_test(int pwm, char *result)
-{
-	int bl;
-	struct pwm_reg pwm_reg_a;
-	struct pwm_reg pwm_reg_b;
-	ktime_t time_a;
-	ktime_t time_b;
-	ktime_t time_c;
-	u64 diff_a;
-	u64 diff_b;
-
-	bl = pwm_to_51(pwm);
-	mi_mipi_dsi_dcs_set_pwm_value(bl);
-
-	mdelay(128);
-
-	time_a = ktime_get();
-	ktz8866_reads(bd_a, 0x12, &pwm_reg_a.lbyte);
-	ktz8866_reads(bd_a, 0x13, &pwm_reg_a.hbyte);
-	time_b = ktime_get();
-	ktz8866_reads(bd_b, 0x12, &pwm_reg_b.lbyte);
-	ktz8866_reads(bd_b, 0x13, &pwm_reg_b.hbyte);
-	time_c = ktime_get();
-
-	diff_a = (u64)ktime_us_delta(time_b, time_a);
-	diff_b = (u64)ktime_us_delta(time_c, time_b);
-
-	sprintf(result, "case2_%d_%d", diff_a, diff_b);
-
-	printk("bl_selftest:  ktz8866_case2_test result: %s\n", result);
-	return 0;
-}
-
-static ssize_t bl_selftest_read(struct file *file, char __user *buf,
-				size_t count, loff_t *pos)
-{
-	int cnt = strlen(gresult);
-
-	if (*pos != 0)
-		return 0;
-
-	if (copy_to_user(buf, gresult, cnt)) {
-		printk("Failed to copy data to user space\n");
-		return 0;
-	}
-
-	*pos += cnt;
-
-	return cnt;
-}
-
-static ssize_t bl_selftest_write(struct file *file, const char __user *buf,
-				 size_t count, loff_t *pos)
-{
-	char tmp[6] = { 0 };
-	int pwm_value = 0;
-
-	if (copy_from_user(tmp, buf, count)) {
-		printk("Failed to copy data from user space\n");
-		goto out;
-	}
-
-	if (!strncmp(tmp, "case1", 5))
-		caseid = 0;
-	else if (!strncmp(tmp, "case2", 5))
-		caseid = 1;
-	else {
-		kstrtoint(tmp, 10, &pwm_value);
-		switch (caseid) {
-		case 0:
-			ktz8866_case1_test(pwm_value, gresult);
-			break;
-		case 1:
-			ktz8866_case2_test(pwm_value, gresult);
-			break;
-		}
-	}
-
-out:
-	return count;
-}
-
-static const struct file_operations bl_selftest_fops = {
-	.read = bl_selftest_read,
-	.write = bl_selftest_write,
-};
 
 static int ktz8866_backlight_update_status(struct backlight_device *backlight)
 {
@@ -283,7 +166,7 @@ static int parse_dt(struct device *dev, struct ktz8866_platform_data *pdata)
 	struct device_node *np = dev->of_node;
 
 	pdata->hw_en_gpio =
-		of_get_named_gpio_flags(np, "ktz8866,hwen-gpio", 0, NULL);
+		of_get_named_gpio_flags(np, "ktz8866,hwen-gpio", NULL, 0);
 
 	return 0;
 }
@@ -379,8 +262,8 @@ static int ktz8866_probe(struct i2c_client *client,
 	    ktz8866_status.ktz8866b_init == true) {
 		dev_info(
 			&client->dev,
-			"ktz8866a and ktz8866b init success create test node\n");
-		proc_create("bl_selftest", 0644, NULL, &bl_selftest_fops);
+			"ktz8866a and ktz8866b init success\n");
+		// proc_create("bl_selftest", 0644, NULL, &bl_selftest_fops);  // 调试功能已移除
 	}
 
 	return ret;
