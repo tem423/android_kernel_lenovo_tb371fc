@@ -14,6 +14,7 @@
 #include <linux/pmic-voter.h>
 #include "lenovo-jeita.h"
 #include "smb5-lib.h"
+#include "mm8013c06_battery.h"
 
 #define JEITA_VOTER		"LENOVO_JEITA_VOTER"
 #define BATT_MAINTAINCE_VOTER		"BATT_MAINTAINCE_VOTER"
