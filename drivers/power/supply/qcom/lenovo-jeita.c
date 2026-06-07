@@ -14,6 +14,7 @@
 #include <linux/pmic-voter.h>
 #include "lenovo-jeita.h"
 #include "smb5-lib.h"
+#include "mm8013c06_battery.h"
 
 #define JEITA_VOTER		"LENOVO_JEITA_VOTER"
 #define BATT_MAINTAINCE_VOTER		"BATT_MAINTAINCE_VOTER"
@@ -456,7 +457,7 @@ static int get_batt_maintaince_fv(struct lenovo_jeita_info *chip){
 	int batt_maintaince_fv = 0;
 	int recharge_voltage = 0;
 
-	exfg_psy = power_supply_get_by_name("bq27541-0");
+	exfg_psy = power_supply_get_by_name("bms");
 	if (exfg_psy)
 		rc = power_supply_get_property(exfg_psy,
 				POWER_SUPPLY_PROP_GAUGE_VOLTAGE, &exfgpval);

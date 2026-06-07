@@ -23,6 +23,7 @@
 #include "storm-watch.h"
 #include "schgm-flash.h"
 #include "lenovo-jeita.h"
+#include "mm8013c06_battery.h"
 
 extern int boost_en;
 
@@ -47,7 +48,7 @@ extern int boost_en;
 
 static void update_sw_icl_max(struct smb_charger *chg, int pst);
 static int smblib_get_prop_typec_mode(struct smb_charger *chg);
-// extern int usb_is_plugin(bool enabled);
+//extern int usb_is_plugin(bool enabled);
 bool usb_in;
 int usb_status = 0;
 u8 typec_stat = 0;
@@ -996,7 +997,7 @@ int smblib_get_prop_from_exfg(struct smb_charger *chg,
 	int rc;
 
 	if (!chg->exfg_psy){
-		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
+		chg->exfg_psy = power_supply_get_by_name("bms");
 		if(!chg->exfg_psy){
 			smblib_err(chg, "exfg not found\n");
 			rc = power_supply_get_property(chg->bms_psy, psp, val);
@@ -7626,10 +7627,10 @@ static void smblib_usb_plugin_work(struct work_struct *work)
 	smblib_err(chg,"enter usb_plugin_work\n");
 	if (usb_in) {
 		smblib_err(chg, "usb is plugin\n");
-		// usb_is_plugin(true);
+		//usb_is_plugin(true);
 	} else {
 		smblib_err(chg, "usb is plugout\n");
-		// usb_is_plugin(false);
+		//usb_is_plugin(false);
 	}
 }
 
@@ -8485,7 +8486,7 @@ int smblib_init(struct smb_charger *chg)
 		}
 
 		chg->bms_psy = power_supply_get_by_name("bms");
-		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
+		chg->exfg_psy = power_supply_get_by_name("bms");
 		if (chg->sec_pl_present) {
 			chg->pl.psy = power_supply_get_by_name("parallel");
 			if (chg->pl.psy) {
