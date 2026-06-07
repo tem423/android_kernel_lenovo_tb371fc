@@ -24,7 +24,7 @@
 #include "smb5-lib.h"
 #include "schgm-flash.h"
 #include <linux/of_gpio.h>
-#include <linux/mm8013c06_battery.h>
+#include "mm8013c06_battery.h"
 
 static struct smb_params smb5_pmi632_params = {
 	.fcc			= {
