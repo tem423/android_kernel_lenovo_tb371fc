@@ -23,6 +23,7 @@
 #include "storm-watch.h"
 #include "schgm-flash.h"
 #include "lenovo-jeita.h"
+#include <linux/mm8013c06_battery.h>
 
 extern int boost_en;
 
