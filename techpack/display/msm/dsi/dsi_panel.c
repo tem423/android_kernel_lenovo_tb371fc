@@ -10,8 +10,6 @@
 #include <linux/of_gpio.h>
 #include <linux/pwm.h>
 #include <video/mipi_display.h>
-#include <linux/i2c.h>
-#include <linux/gpio/consumer.h>
 
 #include "dsi_panel.h"
 #include "dsi_ctrl_hw.h"
@@ -97,29 +95,6 @@ static char dsi_dsc_rc_range_max_qp_1_1_scr1[][15] = {
  */
 static char dsi_dsc_rc_range_bpg_offset[] = {2, 0, 0, -2, -4, -6, -8, -8,
 		-8, -10, -10, -12, -12, -12, -12};
-
-/*
- * ktz8866 backlight chip
- */
-#define KTZ8866_REG_BRIGHTNESS_LSB 0x01
-#define KTZ8866_REG_BRIGHTNESS_MSB 0x02
-#define KTZ8866_REG_CONFIG 0x05
-#define KTZ8866_REG_ENABLE 0x06
-
-struct ktz8866_device {
-	struct i2c_client *client;
-	struct gpio_desc *hwen_gpio;
-	struct gpio_desc *enp_gpio;
-	struct gpio_desc *enn_gpio;
-	u32 max_brightness;
-};
-
-static struct ktz8866_device *g_ktz8866;
-
-static int ktz8866_write_reg(struct ktz8866_device *ktz, u8 reg, u8 val);
-static int ktz8866_init(struct ktz8866_device *ktz);
-static int ktz8866_set_brightness(struct ktz8866_device *ktz, u32 brightness);
-static int dsi_panel_ktz8866_probe(struct dsi_panel *panel);
 
 int dsi_dsc_create_pps_buf_cmd(struct msm_display_dsc_info *dsc, char *buf,
 				int pps_id)
@@ -648,136 +623,6 @@ error:
 	return rc;
 }
 
-static int ktz8866_write_reg(struct ktz8866_device *ktz, u8 reg, u8 val)
-{
-	int ret;
-	u8 buf[2] = {reg, val};
-
-	ret = i2c_master_send(ktz->client, buf, 2);
-	if (ret < 0) {
-		DSI_ERR("ktz8866: i2c write failed, reg=0x%02x, ret=%d\n", reg, ret);
-		return ret;
-	}
-	return 0;
-}
-
-static int ktz8866_init(struct ktz8866_device *ktz)
-{
-	int rc;
-
-	if (ktz->hwen_gpio) {
-		gpiod_set_value_cansleep(ktz->hwen_gpio, 1);
-		msleep(10);
-	}
-
-	rc = ktz8866_write_reg(ktz, KTZ8866_REG_CONFIG, 0x07);
-	if (rc)
-		return rc;
-
-	rc = ktz8866_write_reg(ktz, KTZ8866_REG_ENABLE, 0x01);
-	if (rc)
-		return rc;
-
-	DSI_INFO("ktz8866 initialized successfully\n");
-	return 0;
-}
-
-static int ktz8866_set_brightness(struct ktz8866_device *ktz, u32 brightness)
-{
-	u16 val;
-	int rc;
-
-	if (!ktz)
-		return -EINVAL;
-
-	val = brightness & 0x0FFF;
-
-	rc = ktz8866_write_reg(ktz, KTZ8866_REG_BRIGHTNESS_LSB, val & 0xFF);
-	if (rc)
-		return rc;
-
-	rc = ktz8866_write_reg(ktz, KTZ8866_REG_BRIGHTNESS_MSB, (val >> 8) & 0x0F);
-	if (rc)
-		return rc;
-
-	if (ktz->enp_gpio && ktz->enn_gpio) {
-		if (brightness > 0) {
-			gpiod_set_value_cansleep(ktz->enp_gpio, 1);
-			gpiod_set_value_cansleep(ktz->enn_gpio, 0);
-		} else {
-			gpiod_set_value_cansleep(ktz->enp_gpio, 0);
-			gpiod_set_value_cansleep(ktz->enn_gpio, 1);
-		}
-	}
-
-	return 0;
-}
-
-static int dsi_panel_ktz8866_probe(struct dsi_panel *panel)
-{
-	struct device_node *np;
-	struct i2c_client *client;
-	struct i2c_adapter *adap;
-	struct ktz8866_device *ktz;
-	struct dsi_parser_utils *utils = &panel->utils;
-	int rc;
-
-	np = utils->get_child_by_name(utils->data, "ktz8866@11");
-	if (!np) {
-		DSI_DEBUG("ktz8866 node not found\n");
-		return -ENODEV;
-	}
-
-	/* FIXME: adjust I2C bus number as needed (0, 1, or 8) */
-	adap = i2c_get_adapter(0);
-	if (!adap) {
-		DSI_ERR("failed to get i2c adapter\n");
-		return -ENODEV;
-	}
-
-	client = i2c_new_client_device(adap, &(struct i2c_board_info){
-		.type = "ktz8866",
-		.addr = 0x11,
-	});
-
-	i2c_put_adapter(adap);
-
-	if (IS_ERR(client)) {
-		DSI_ERR("failed to create i2c client for ktz8866\n");
-		return PTR_ERR(client);
-	}
-
-	ktz = kzalloc(sizeof(*ktz), GFP_KERNEL);
-	if (!ktz) {
-		i2c_unregister_device(client);
-		return -ENOMEM;
-	}
-
-	ktz->client = client;
-	ktz->max_brightness = 4095;
-
-	ktz->hwen_gpio = gpiod_get_from_of_node(np, "ktz8866,hwen-gpio", 0, GPIOD_OUT_LOW, "ktz_hwen");
-	ktz->enp_gpio = gpiod_get_from_of_node(np, "ktz8866,enp-gpio", 0, GPIOD_OUT_LOW, "ktz_enp");
-	ktz->enn_gpio = gpiod_get_from_of_node(np, "ktz8866,enn-gpio", 0, GPIOD_OUT_LOW, "ktz_enn");
-
-	rc = ktz8866_init(ktz);
-	if (rc) {
-		DSI_ERR("ktz8866 init failed, rc=%d\n", rc);
-		gpiod_put(ktz->hwen_gpio);
-		gpiod_put(ktz->enp_gpio);
-		gpiod_put(ktz->enn_gpio);
-		kfree(ktz);
-		i2c_unregister_device(client);
-		return rc;
-	}
-
-	g_ktz8866 = ktz;
-	panel->bl_config.external_priv = ktz;
-	DSI_INFO("ktz8866 probed successfully\n");
-
-	return 0;
-}
-
 static int dsi_panel_wled_register(struct dsi_panel *panel,
 		struct dsi_backlight_config *bl)
 {
@@ -906,15 +751,6 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
 		rc = dsi_panel_update_backlight(panel, bl_lvl, hbm);
 		break;
 	case DSI_BACKLIGHT_EXTERNAL:
-		if (g_ktz8866) {
-			rc = ktz8866_set_brightness(g_ktz8866, bl_lvl);
-			if (!rc)
-				panel->bl_config.bl_level = bl_lvl;
-		} else {
-			rc = dsi_panel_ktz8866_probe(panel);
-			if (!rc && g_ktz8866)
-				rc = ktz8866_set_brightness(g_ktz8866, bl_lvl);
-		}
 		break;
 	case DSI_BACKLIGHT_PWM:
 		rc = dsi_panel_update_pwm_backlight(panel, bl_lvl);
@@ -994,9 +830,6 @@ static int dsi_panel_bl_register(struct dsi_panel *panel)
 	case DSI_BACKLIGHT_DCS:
 		break;
 	case DSI_BACKLIGHT_EXTERNAL:
-		rc = dsi_panel_ktz8866_probe(panel);
-		if (rc)
-			DSI_DEBUG("ktz8866 probe deferred, rc=%d\n", rc);
 		break;
 	case DSI_BACKLIGHT_PWM:
 		rc = dsi_panel_pwm_register(panel);
@@ -2524,9 +2357,7 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 	} else if (!strcmp(bl_type, "bl_ctrl_dcs")) {
 		panel->bl_config.type = DSI_BACKLIGHT_DCS;
 	} else if (!strcmp(bl_type, "bl_ctrl_external")) {
-	    panel->bl_config.type = DSI_BACKLIGHT_EXTERNAL;
-	    DSI_INFO("[%s] external backlight detected, will probe ktz8866\n", panel->name);
-}
+		panel->bl_config.type = DSI_BACKLIGHT_EXTERNAL;
 	} else {
 		DSI_DEBUG("[%s] bl-pmic-control-type unknown-%s\n",
 			 panel->name, bl_type);
