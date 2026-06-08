@@ -11,7 +11,7 @@ jobs:
       - name: Build
         uses: tem423/kernel_build_action@main
         with:
-          kernel-url: tem423/android_kernel_lenovo_p12
+          kernel-url: https://github.com/tem423/android_kernel_lenovo_tb371fc
           kernel-branch: tb371fc
           config: vendor/tb371fc_defconfig
           arch: arm64
