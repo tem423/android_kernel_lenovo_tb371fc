@@ -1,1 +1,2 @@
 目前Android16内核去模块签名校验会导致不开机，Android14正常
+编译可以用我的.github/workflows/test.yml
