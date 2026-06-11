@@ -1,0 +1,22 @@
+name: Sync Kernel from Specific Commit
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync-kernel:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout your repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
+        fetch-depth: 0
+
+    - name: Clone and force push android16-base branch
+      run: |
+        git clone --branch android16-base --single-branch https://github.com/AstideLabs/android_kernel_xiaomi_sm8250.git kernel-temp
+        cd kernel-temp
+        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
+        git push origin android16-base --force
