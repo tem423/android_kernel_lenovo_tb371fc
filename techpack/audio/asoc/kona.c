@@ -8357,12 +8357,14 @@ static int msm_audio_ssr_register(struct device *dev)
 	return ret;
 }
 
+#if 0
 static void parse_cps_configuration(struct platform_device *pdev,
 			struct msm_asoc_mach_data *pdata)
 {
 	/* CPS not supported for wsa881x, just return */
 	return;
 }
+#endif
 
 static int msm_asoc_machine_probe(struct platform_device *pdev)
 {
