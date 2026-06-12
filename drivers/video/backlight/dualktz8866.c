@@ -56,7 +56,7 @@ static int caseid = 0;
 
 static struct ktz8866_led g_ktz8866_led;
 
-/* 辅助函数：同时写入 A 和 B 芯片的寄存器 */
+/* 辅助函数：同时写入 A 和 B 芯片 */
 static void ktz8866_write_both(u8 reg, u8 data)
 {
 	if (bd_a)
@@ -126,16 +126,16 @@ static int ktz8866_backlight_update_status(struct backlight_device *backlight)
 
 	mutex_lock(&g_ktz8866_led.lock);
 
-	// 控制背光使能（同时写入 A 和 B）
 	if (brightness > 0) {
 		ktz8866_write_both(KTZ8866_DISP_BL_ENABLE, 0x4f);
-		dev_warn(&bd->client->dev, "ktz8866 backlight enable, dimming close");
+		dev_warn(&bd->client->dev,
+			 "ktz8866 backlight enable,dimming close");
 	} else if (brightness == 0) {
 		ktz8866_write_both(KTZ8866_DISP_BL_ENABLE, 0x0f);
-		dev_warn(&bd->client->dev, "ktz8866 backlight disable, dimming close");
+		dev_warn(&bd->client->dev,
+			 "ktz8866 backlight disable,dimming close");
 	}
 
-	// 设置亮度值（同时写入 A 和 B）
 	v[0] = brightness & 0x7;
 	v[1] = (brightness >> 3) & 0xff;
 
@@ -220,7 +220,6 @@ static int ktz8866_probe(struct i2c_client *client,
 	mutex_init(&g_ktz8866_led.lock);
 
 	memset(&props, 0, sizeof(props));
-	// 设置设备名称：A芯片将作为主设备，B芯片作为从设备
 	if (bd->chip == KTZ8866_A) {
 		bd->client->dev.init_name = "panel0-backlight";
 	} else {
@@ -230,7 +229,7 @@ static int ktz8866_probe(struct i2c_client *client,
 	props.max_brightness = 2047;
 	props.brightness = clamp_t(unsigned int, 98, 16, props.max_brightness);
 
-	// 只有 A 芯片注册 backlight 设备，B 芯片不注册
+	/* 只有 A 芯片注册 backlight 设备，B 芯片不注册 */
 	if (bd->chip == KTZ8866_A) {
 		dev_warn(&client->dev, "ktz8866 registering backlight as panel0-backlight\n");
 		backlight = devm_backlight_device_register(
@@ -242,15 +241,15 @@ static int ktz8866_probe(struct i2c_client *client,
 		}
 		dev_warn(&client->dev, "ktz8866 i2c_set_clientdata \n");
 		i2c_set_clientdata(client, backlight);
+		bd->backlight = backlight;
 	} else {
 		dev_info(&client->dev, "KTZ8866B registered as slave, no backlight device\n");
-		// B芯片不需要继续执行注册后的步骤，但需要继续执行以保存指针和GPIO初始化
+		i2c_set_clientdata(client, NULL);
 	}
 
 	parse_dt(&client->dev, bd->pdata);
 	dev_warn(&client->dev, "ktz8866 parse_dt \n");
 
-	// 只有 A 芯片需要处理 HW_EN GPIO
 	if (bd->chip == KTZ8866_A) {
 		dev_warn(&client->dev,
 			 "ktz8866 ktz8866_probe KTZ8866_LCD_DRV_HW_EN\n");
@@ -268,7 +267,6 @@ static int ktz8866_probe(struct i2c_client *client,
 	dev_err(&bd->client->dev, "ktz8866 reading 0x%02x is 0x%02x\n",
 		KTZ8866_DISP_FLAGS, read);
 
-	// 保存全局指针
 	if (bd->chip == KTZ8866_A) {
 		ktz8866_status.ktz8866a_init = true;
 		bd_a = bd;
@@ -291,7 +289,7 @@ static int ktz8866_probe(struct i2c_client *client,
 static int ktz8866_remove(struct i2c_client *client)
 {
 	struct backlight_device *backlight = i2c_get_clientdata(client);
-	
+
 	if (backlight) {
 		backlight->props.brightness = 0;
 		backlight_update_status(backlight);
