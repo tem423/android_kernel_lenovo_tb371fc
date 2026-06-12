@@ -1,5 +1,0 @@
-config HQHARDWARE_INFO
-  bool CONFIG_HQHARDWARE_INFO
-  default n
-  help
-    CONFIG_HQHARDWARE_INFO
