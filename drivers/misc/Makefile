@@ -80,3 +80,5 @@ obj-$(CONFIG_HW_BOOT_INFO)    += bootinfo.o
 obj-$(CONFIG_NFC_NXP_CTN730)	+=ctn730/
 obj-y                           += qrc/
 obj-$(CONFIG_KINECTICS_XR_NORDIC) += kxrctrl/
+obj-y                           += huaqinhardware_info/
+obj-y                           +=hqsysfs/
