@@ -31,7 +31,6 @@
 #include "asoc/wcd-mbhc-v2.h"
 #include "codecs/wcd938x/wcd938x-mbhc.h"
 #include "codecs/wsa881x.h"
-#include "codecs/wsa883x/wsa883x.h"
 #include "codecs/wcd938x/wcd938x.h"
 #include "codecs/wcd937x/wcd937x-mbhc.h"
 #include "codecs/wcd937x/wcd937x.h"
@@ -7826,14 +7825,10 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 	if (!strcmp(component->name_prefix, "SpkrLeft")) {
 		dev_dbg(component->dev, "%s: setting left ch map to codec %s\n",
 			__func__, component->name);
-		if (strnstr(component->name, "wsa883x", sizeof(component->name)))
-			wsa883x_set_channel_map(component, &spkleft_ports[0],
-					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
-					&ch_rate[0], &spkleft_port_types[0]);
-		else
-			wsa881x_set_channel_map(component, &spkleft_ports[0],
-					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
-					&ch_rate[0], &spkleft_port_types[0]);
+		/* 直接使用 wsa881x，不检查 wsa883x */
+		wsa881x_set_channel_map(component, &spkleft_ports[0],
+				WSA881X_MAX_SWR_PORTS, &ch_mask[0],
+				&ch_rate[0], &spkleft_port_types[0]);
 		if (dapm->component) {
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft IN");
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft SPKR");
@@ -7841,14 +7836,10 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 	} else if (!strcmp(component->name_prefix, "SpkrRight")) {
 		dev_dbg(component->dev, "%s: setting right ch map to codec %s\n",
 			__func__, component->name);
-		if (strnstr(component->name, "wsa883x", sizeof(component->name)))
-			wsa883x_set_channel_map(component, &spkright_ports[0],
-					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
-					&ch_rate[0], &spkright_port_types[0]);
-		else
-			wsa881x_set_channel_map(component, &spkright_ports[0],
-					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
-					&ch_rate[0], &spkright_port_types[0]);
+		/* 直接使用 wsa881x，不检查 wsa883x */
+		wsa881x_set_channel_map(component, &spkright_ports[0],
+				WSA881X_MAX_SWR_PORTS, &ch_mask[0],
+				&ch_rate[0], &spkright_port_types[0]);
 		if (dapm->component) {
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrRight IN");
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrRight SPKR");
@@ -7859,6 +7850,7 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 		ret = -EINVAL;
 		goto err;
 	}
+
 	pdata = snd_soc_card_get_drvdata(component->card);
 	if (!pdata->codec_root) {
 		entry = snd_info_create_subdir(card->module, "codecs",
@@ -7871,12 +7863,10 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 		}
 		pdata->codec_root = entry;
 	}
-	if (strnstr(component->name, "wsa883x", sizeof(component->name)))
-		wsa883x_codec_info_create_codec_entry(pdata->codec_root,
-						      component);
-	else
-		wsa881x_codec_info_create_codec_entry(pdata->codec_root,
-						      component);
+
+	/* 直接使用 wsa881x，不检查 wsa883x */
+	wsa881x_codec_info_create_codec_entry(pdata->codec_root, component);
+
 err:
 	return ret;
 }
@@ -8377,7 +8367,7 @@ static void parse_cps_configuration(struct platform_device *pdev,
 	if (!pdev || !pdata || !pdata->wsa_max_devs)
 		return;
 
-	pdata->get_wsa_dev_num = wsa883x_codec_get_dev_num;
+	pdata->get_wsa_dev_num = wsa881x_codec_get_dev_num;
 	pdata->cps_config.hw_reg_cfg.num_spkr = pdata->wsa_max_devs;
 
 	ret = of_property_read_u32_array(pdev->dev.of_node,
