@@ -21,6 +21,7 @@
 #include <linux/spi/spi.h>
 #include <linux/pm_wakeup.h>
 #include <linux/power_supply.h>
+#include <linux/firmware.h>
 #include <uapi/linux/sched/types.h>
 #include "nt36xxx.h"
 
@@ -501,6 +502,130 @@ static int nvt_power_supply_event(struct notifier_block *nb,
     return 0;
 }
 
+/* 固件更新占位函数 */
+int32_t nvt_update_firmware(const char *firmware_name)
+{
+    NVT_LOG("update firmware: %s\n", firmware_name);
+    return 0;
+}
+
+/* 读寄存器 */
+int32_t nvt_read_reg(nvt_ts_reg_t reg, uint8_t *val)
+{
+    int32_t ret = 0;
+    uint32_t addr = 0;
+    uint8_t mask = 0;
+    uint8_t shift = 0;
+    uint8_t buf[8] = {0};
+    uint8_t temp = 0;
+
+    addr = reg.addr;
+    mask = reg.mask;
+    temp = reg.mask;
+    shift = 0;
+    while (1) {
+        if ((temp >> shift) & 0x01)
+            break;
+        if (shift == 8) {
+            NVT_ERR("mask all bits zero!\n");
+            ret = -1;
+            break;
+        }
+        shift++;
+    }
+    nvt_set_page(addr);
+    buf[0] = addr & 0xFF;
+    buf[1] = 0x00;
+    ret = CTP_SPI_READ(ts->client, buf, 2);
+    if (ret < 0) {
+        NVT_ERR("CTP_SPI_READ failed!(%d)\n", ret);
+        goto nvt_read_register_exit;
+    }
+    *val = (buf[1] & mask) >> shift;
+
+nvt_read_register_exit:
+    return ret;
+}
+
+/* 检查固件复位状态 */
+int32_t nvt_check_fw_reset_state(RST_COMPLETE_STATE check_reset_state)
+{
+    uint8_t buf[8] = {0};
+    int32_t ret = 0;
+    int32_t retry = 0;
+    int32_t retry_max = (check_reset_state == RESET_STATE_INIT) ? 10 : 50;
+
+    nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_RESET_COMPLETE);
+
+    while (1) {
+        buf[0] = EVENT_MAP_RESET_COMPLETE;
+        buf[1] = 0x00;
+        CTP_SPI_READ(ts->client, buf, 6);
+
+        if ((buf[1] >= check_reset_state) && (buf[1] <= RESET_STATE_MAX)) {
+            ret = 0;
+            break;
+        }
+
+        retry++;
+        if (unlikely(retry > retry_max)) {
+            NVT_ERR("error, retry=%d, buf[1]=0x%02X\n", retry, buf[1]);
+            ret = -1;
+            break;
+        }
+
+        usleep_range(10000, 10000);
+    }
+
+    return ret;
+}
+
+/* 获取固件信息 */
+int32_t nvt_get_fw_info(void)
+{
+    uint8_t buf[64] = {0};
+    uint32_t retry_count = 0;
+    int32_t ret = 0;
+
+info_retry:
+    nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_FWINFO);
+
+    buf[0] = EVENT_MAP_FWINFO;
+    CTP_SPI_READ(ts->client, buf, 39);
+    if ((buf[1] + buf[2]) != 0xFF) {
+        NVT_ERR("FW info is broken! fw_ver=0x%02X, ~fw_ver=0x%02X\n", buf[1], buf[2]);
+        if (retry_count < 3) {
+            retry_count++;
+            NVT_ERR("retry_count=%d\n", retry_count);
+            goto info_retry;
+        } else {
+            ts->fw_ver = 0;
+            ts->abs_x_max = TOUCH_DEFAULT_MAX_WIDTH;
+            ts->abs_y_max = TOUCH_DEFAULT_MAX_HEIGHT;
+            ts->max_button_num = TOUCH_KEY_NUM;
+            NVT_ERR("Set default values!\n");
+            ret = -1;
+            goto out;
+        }
+    }
+    ts->fw_ver = buf[1];
+    ts->x_num = buf[3];
+    ts->y_num = buf[4];
+    ts->abs_x_max = (uint16_t)((buf[5] << 8) | buf[6]);
+    ts->abs_y_max = (uint16_t)((buf[7] << 8) | buf[8]);
+    ts->max_button_num = buf[11];
+    ts->nvt_pid = (uint16_t)((buf[36] << 8) | buf[35]);
+    if (ts->pen_support) {
+        ts->x_gang_num = buf[37];
+        ts->y_gang_num = buf[38];
+    }
+    NVT_LOG("fw_ver=0x%02X, PID=0x%04X\n", ts->fw_ver, ts->nvt_pid);
+
+    ret = 0;
+out:
+    return ret;
+}
+
 /* 中断处理函数 */
 static irqreturn_t nvt_ts_work_func(int irq, void *data)
 {
@@ -632,7 +757,6 @@ XFER_ERROR:
 /* 芯片版本检测 */
 static int32_t nvt_ts_check_chip_ver_trim(struct nvt_ts_hw_reg_addr_info hw_regs)
 {
-    /* 此函数需要根据实际硬件实现，这里提供框架 */
     NVT_LOG("check chip ver trim\n");
     return 0;
 }
@@ -697,8 +821,6 @@ static int32_t nvt_ts_suspend(struct device *dev)
 /* 恢复函数 */
 static int32_t nvt_ts_resume(struct device *dev)
 {
-    int ret = 0;
-
     if (bTouchIsAwake) {
         NVT_LOG("Touch is already resume\n");
         return 0;
@@ -776,14 +898,6 @@ static int nvt_drm_notifier_callback(struct notifier_block *self, unsigned long 
     return 0;
 }
 #endif
-
-/* 固件更新占位函数 */
-int32_t nvt_update_firmware(const char *firmware_name)
-{
-    NVT_LOG("update firmware: %s\n", firmware_name);
-    /* 实际固件更新逻辑 */
-    return 0;
-}
 
 /* Probe 函数 */
 static int32_t nvt_ts_probe(struct spi_device *client)
@@ -924,8 +1038,6 @@ static int32_t nvt_ts_probe(struct spi_device *client)
         ret = -ENOMEM;
         goto err_fwu_wq;
     }
-    INIT_DELAYED_WORK(&ts->nvt_fwu_work, Boot_Update_Firmware);
-    queue_delayed_work(nvt_fwu_wq, &ts->nvt_fwu_work, msecs_to_jiffies(14000));
 #endif
 
 #if NVT_TOUCH_ESD_PROTECT
@@ -1041,7 +1153,6 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 
 #if BOOT_UPDATE_FIRMWARE
     if (nvt_fwu_wq) {
-        cancel_delayed_work_sync(&ts->nvt_fwu_work);
         destroy_workqueue(nvt_fwu_wq);
         nvt_fwu_wq = NULL;
     }
@@ -1084,6 +1195,46 @@ static void nvt_ts_shutdown(struct spi_device *client)
 {
     NVT_LOG("Shutdown driver...\n");
     nvt_irq_enable(false);
+
+    if (ts->power_supply_notifier.notifier_call) {
+        power_supply_unreg_notifier(&ts->power_supply_notifier);
+        ts->power_supply_notifier.notifier_call = NULL;
+    }
+
+#if defined(CONFIG_DRM_MSM)
+    if (msm_drm_unregister_client(&ts->drm_notif))
+        NVT_ERR("Error occurred while unregistering drm_notifier.\n");
+#endif
+
+#if NVT_TOUCH_MP
+    nvt_mp_proc_deinit();
+#endif
+#if NVT_TOUCH_EXT_PROC
+    nvt_extra_proc_deinit();
+#endif
+#if NVT_TOUCH_PROC
+    nvt_flash_proc_deinit();
+#endif
+
+    mutex_destroy(&ts->power_supply_lock);
+    if (ts->event_wq)
+        destroy_workqueue(ts->event_wq);
+
+#if NVT_TOUCH_ESD_PROTECT
+    if (nvt_esd_check_wq) {
+        cancel_delayed_work_sync(&nvt_esd_check_work);
+        nvt_esd_check_enable(false);
+        destroy_workqueue(nvt_esd_check_wq);
+        nvt_esd_check_wq = NULL;
+    }
+#endif
+
+#if BOOT_UPDATE_FIRMWARE
+    if (nvt_fwu_wq) {
+        destroy_workqueue(nvt_fwu_wq);
+        nvt_fwu_wq = NULL;
+    }
+#endif
 }
 
 /* SPI 驱动结构体 */
