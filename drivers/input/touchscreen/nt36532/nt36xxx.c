@@ -22,6 +22,7 @@
 #include <linux/pm_wakeup.h>
 #include <linux/power_supply.h>
 #include <linux/firmware.h>
+#include <linux/string.h>
 #include <uapi/linux/sched/types.h>
 #include "nt36xxx.h"
 
@@ -64,7 +65,7 @@ struct nvt_ts_data *ts;
 
 #if BOOT_UPDATE_FIRMWARE
 static struct workqueue_struct *nvt_fwu_wq;
-extern void Boot_Update_Firmware(struct work_struct *work);
+static void Boot_Update_Firmware(struct work_struct *work);
 #endif
 
 #if defined(CONFIG_DRM_MSM)
@@ -515,6 +516,53 @@ static int nvt_power_supply_event(struct notifier_block *nb,
     return 0;
 }
 
+/* USB 充电器通知工作函数 */
+static void nvt_charger_notify_work(struct work_struct *work)
+{
+    struct nvt_ts_data *ts_data = container_of(work, struct nvt_ts_data, charger_notify_work);
+    int is_usb_exist = 0;
+    uint8_t buf[3] = {0};
+    int32_t ret;
+
+    NVT_LOG("enter nvt_charger_notify_work\n");
+
+    if (!bTouchIsAwake) {
+        NVT_LOG("touch suspend, skip charger notify\n");
+        return;
+    }
+
+    is_usb_exist = !!power_supply_is_system_supplied();
+
+    if (is_usb_exist) {
+        NVT_LOG("USB plug in\n");
+        buf[0] = EVENT_MAP_HOST_CMD;
+        buf[1] = 0x53;
+    } else {
+        NVT_LOG("USB plug out\n");
+        buf[0] = EVENT_MAP_HOST_CMD;
+        buf[1] = 0x51;
+    }
+    buf[2] = 0x00;
+
+    ret = CTP_SPI_WRITE(ts->client, buf, 3);
+    if (ret) {
+        NVT_ERR("USB status set failed, ret = %d!", ret);
+    }
+
+    NVT_LOG("exit\n");
+}
+
+static int nvt_charger_notifier_callback(struct notifier_block *nb,
+                                          unsigned long event, void *ptr)
+{
+    struct nvt_ts_data *ts_data = container_of(nb, struct nvt_ts_data, charger_notifier);
+
+    if (ts_data && ts_data->event_wq != NULL)
+        queue_work(ts_data->event_wq, &ts_data->charger_notify_work);
+
+    return 0;
+}
+
 /* 读寄存器 */
 int32_t nvt_read_reg(nvt_ts_reg_t reg, uint8_t *val)
 {
@@ -757,6 +805,47 @@ out:
     return ret;
 }
 
+/* 固件异常检测 - 检测固件是否跑飞 */
+static uint8_t nvt_fw_recovery(uint8_t *point_data)
+{
+    uint8_t i = 0;
+    
+    for (i = 1; i < 7; i++) {
+        if (point_data[i] != 0x77) {
+            return 0;
+        }
+    }
+    NVT_ERR("Firmware crash detected (0x77 pattern), attempting recovery.\n");
+    return 1;
+}
+
+/* WDT 看门狗恢复 - 检测固件是否超时 */
+static uint8_t recovery_cnt = 0;
+
+static uint8_t nvt_wdt_fw_recovery(uint8_t *point_data)
+{
+    uint32_t recovery_cnt_max = 10;
+    uint8_t recovery_enable = false;
+    uint8_t i = 0;
+
+    recovery_cnt++;
+
+    for (i = 1; i < 7; i++) {
+        if ((point_data[i] != 0xFD) && (point_data[i] != 0xFE)) {
+            recovery_cnt = 0;
+            break;
+        }
+    }
+
+    if (recovery_cnt > recovery_cnt_max) {
+        recovery_enable = true;
+        recovery_cnt = 0;
+        NVT_ERR("WDT timeout detected, attempting recovery.\n");
+    }
+
+    return recovery_enable;
+}
+
 /* 中断处理函数 */
 static irqreturn_t nvt_ts_work_func(int irq, void *data)
 {
@@ -801,6 +890,37 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 
     if (ret < 0) {
         NVT_ERR("CTP_SPI_READ failed.(%d)\n", ret);
+        goto XFER_ERROR;
+    }
+
+#if NVT_TOUCH_WDT_RECOVERY
+    /* WDT 恢复检查 */
+    if (nvt_wdt_fw_recovery(point_data)) {
+        NVT_ERR("Recover for fw reset, %02X\n", point_data[1]);
+        if (point_data[1] == 0xFE) {
+            nvt_sw_reset_idle();
+        }
+        nvt_read_fw_history(ts->mmap->MMAP_HISTORY_EVENT0);
+        nvt_read_fw_history(ts->mmap->MMAP_HISTORY_EVENT1);
+        release_touch_event();
+        release_pen_event();
+        if (nvt_get_dbgfw_status()) {
+            if (nvt_update_firmware(DEFAULT_DEBUG_FW_NAME) < 0) {
+                NVT_ERR("use built-in fw");
+                nvt_update_firmware(ts->fw_name);
+            }
+        } else {
+            nvt_update_firmware(ts->fw_name);
+        }
+        goto XFER_ERROR;
+    }
+#endif /* NVT_TOUCH_WDT_RECOVERY */
+
+    /* ESD 保护 - 固件握手检查 */
+    if (nvt_fw_recovery(point_data)) {
+#if NVT_TOUCH_ESD_PROTECT
+        nvt_esd_check_enable(true);
+#endif
         goto XFER_ERROR;
     }
 
@@ -885,18 +1005,668 @@ XFER_ERROR:
     return IRQ_HANDLED;
 }
 
-/* 芯片版本检测 */
+/* 芯片版本检测 - 完整实现 */
 static int32_t nvt_ts_check_chip_ver_trim(struct nvt_ts_hw_reg_addr_info hw_regs)
 {
-    NVT_LOG("check chip ver trim\n");
-    return 0;
+    uint8_t buf[8] = {0};
+    int32_t retry = 0;
+    int32_t list = 0;
+    int32_t i = 0;
+    int32_t found_nvt_chip = 0;
+    int32_t ret = -1;
+    uint8_t enb_casc = 0;
+
+    ts->chip_ver_trim_addr = hw_regs.chip_ver_trim_addr;
+    ts->swrst_sif_addr = hw_regs.swrst_sif_addr;
+    ts->crc_err_flag_addr = hw_regs.crc_err_flag_addr;
+
+    NVT_LOG("check chip ver trim with chip_ver_trim_addr=0x%06x, "
+            "swrst_sif_addr=0x%06x, crc_err_flag_addr=0x%06x\n",
+            ts->chip_ver_trim_addr, ts->swrst_sif_addr, ts->crc_err_flag_addr);
+
+    for (retry = 5; retry > 0; retry--) {
+        nvt_bootloader_reset();
+
+        nvt_set_page(ts->chip_ver_trim_addr);
+
+        buf[0] = ts->chip_ver_trim_addr & 0x7F;
+        memset(buf + 1, 0, 6);
+        CTP_SPI_WRITE(ts->client, buf, 7);
+
+        buf[0] = ts->chip_ver_trim_addr & 0x7F;
+        CTP_SPI_READ(ts->client, buf, 7);
+        NVT_LOG("buf[1]=0x%02X, buf[2]=0x%02X, buf[3]=0x%02X, buf[4]=0x%02X, buf[5]=0x%02X, buf[6]=0x%02X\n",
+            buf[1], buf[2], buf[3], buf[4], buf[5], buf[6]);
+
+        for (list = 0; list < (sizeof(trim_id_table) / sizeof(struct nvt_ts_trim_id_table)); list++) {
+            found_nvt_chip = 0;
+
+            for (i = 0; i < NVT_ID_BYTE_MAX; i++) {
+                if (trim_id_table[list].mask[i]) {
+                    if (buf[i + 1] != trim_id_table[list].id[i])
+                        break;
+                }
+            }
+
+            if (i == NVT_ID_BYTE_MAX) {
+                found_nvt_chip = 1;
+            }
+
+            if (found_nvt_chip) {
+                NVT_LOG("This is NVT touch IC\n");
+                if (trim_id_table[list].mmap->ENB_CASC_REG.addr) {
+                    nvt_read_reg(trim_id_table[list].mmap->ENB_CASC_REG, &enb_casc);
+                    if (enb_casc & 0x01) {
+                        NVT_LOG("Single Chip\n");
+                        ts->mmap = trim_id_table[list].mmap;
+                    } else {
+                        NVT_LOG("Cascade Chip\n");
+                        ts->mmap = trim_id_table[list].mmap_casc;
+                    }
+                } else {
+                    ts->mmap = trim_id_table[list].mmap;
+                }
+                ts->hw_crc = trim_id_table[list].hwinfo->hw_crc;
+                ts->auto_copy = trim_id_table[list].hwinfo->auto_copy;
+
+                ts->chip_ver_trim_addr = trim_id_table[list].hwinfo->hw_regs->chip_ver_trim_addr;
+                ts->swrst_sif_addr = trim_id_table[list].hwinfo->hw_regs->swrst_sif_addr;
+                ts->crc_err_flag_addr = trim_id_table[list].hwinfo->hw_regs->crc_err_flag_addr;
+
+                NVT_LOG("set reg chip_ver_trim_addr=0x%06x, "
+                        "swrst_sif_addr=0x%06x, crc_err_flag_addr=0x%06x\n",
+                        ts->chip_ver_trim_addr, ts->swrst_sif_addr, ts->crc_err_flag_addr);
+
+                ret = 0;
+                goto out;
+            }
+        }
+
+        msleep(10);
+    }
+
+out:
+    return ret;
 }
 
 static int32_t nvt_ts_check_chip_ver_trim_loop(void)
 {
-    NVT_LOG("check chip ver trim loop\n");
+    uint8_t i = 0;
+    int32_t ret = 0;
+
+    struct nvt_ts_hw_reg_addr_info hw_regs_table[] = {
+        hw_reg_addr_info,
+        hw_reg_addr_info_old_w_isp,
+        hw_reg_addr_info_legacy_w_isp
+    };
+
+    for (i = 0; i < (sizeof(hw_regs_table) / sizeof(struct nvt_ts_hw_reg_addr_info)); i++) {
+        ret = nvt_ts_check_chip_ver_trim(hw_regs_table[i]);
+        if (!ret) {
+            break;
+        }
+    }
+
+    return ret;
+}
+
+/* ========== 固件更新模块 ========== */
+#if BOOT_UPDATE_FIRMWARE
+
+static ktime_t start, end;
+static const struct firmware *fw_entry = NULL;
+static size_t fw_need_write_size = 0;
+static uint8_t *fwbuf = NULL;
+
+struct nvt_ts_bin_map {
+    char name[12];
+    uint32_t BIN_addr;
+    uint32_t SRAM_addr;
+    uint32_t size;
+    uint32_t crc;
+};
+
+static struct nvt_ts_bin_map *bin_map;
+
+static int32_t nvt_get_fw_need_write_size(const struct firmware *fw_entry)
+{
+    int32_t i = 0;
+    int32_t total_sectors_to_check = 0;
+
+    total_sectors_to_check = fw_entry->size / FLASH_SECTOR_SIZE;
+
+    for (i = total_sectors_to_check; i > 0; i--) {
+        if (strncmp(&fw_entry->data[i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN], "NVT", NVT_FLASH_END_FLAG_LEN) == 0) {
+            fw_need_write_size = i * FLASH_SECTOR_SIZE;
+            NVT_LOG("fw_need_write_size = %zu(0x%zx), NVT end flag\n", fw_need_write_size, fw_need_write_size);
+            return 0;
+        }
+        if (strncmp(&fw_entry->data[i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN], "MOD", NVT_FLASH_END_FLAG_LEN) == 0) {
+            fw_need_write_size = i * FLASH_SECTOR_SIZE;
+            NVT_LOG("fw_need_write_size = %zu(0x%zx), MOD end flag\n", fw_need_write_size, fw_need_write_size);
+            return 0;
+        }
+    }
+    NVT_ERR("end flag \"NVT\" \"MOD\" not found!\n");
+    return -1;
+}
+
+static int32_t nvt_download_init(void)
+{
+    if (fwbuf == NULL) {
+        fwbuf = (uint8_t *)kzalloc((NVT_TRANSFER_LEN + 1 + DUMMY_BYTES), GFP_KERNEL);
+        if (fwbuf == NULL) {
+            NVT_ERR("kzalloc for fwbuf failed!\n");
+            return -ENOMEM;
+        }
+    }
     return 0;
 }
+
+static uint32_t CheckSum(const u8 *data, size_t len)
+{
+    uint32_t i = 0;
+    uint32_t checksum = 0;
+
+    for (i = 0; i < len + 1; i++)
+        checksum += data[i];
+
+    checksum += len;
+    checksum = ~checksum + 1;
+    return checksum;
+}
+
+static uint32_t byte_to_word(const uint8_t *data)
+{
+    return data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+}
+
+static uint32_t partition = 0;
+static uint8_t ilm_dlm_num = 2;
+static uint8_t cascade_2nd_header_info = 0;
+
+static int32_t nvt_bin_header_parser(const u8 *fwdata, size_t fwsize)
+{
+    uint32_t list = 0;
+    uint32_t pos = 0x00;
+    uint32_t end = 0x00;
+    uint8_t info_sec_num = 0;
+    uint8_t ovly_sec_num = 0;
+    uint8_t ovly_info = 0;
+    uint8_t find_bin_header = 0;
+
+    end = byte_to_word(fwdata);
+
+    cascade_2nd_header_info = (fwdata[0x20] & 0x02) >> 1;
+    NVT_LOG("cascade_2nd_header_info = %d\n", cascade_2nd_header_info);
+
+    if (cascade_2nd_header_info) {
+        pos = 0x30;
+        while (pos < (end / 2)) {
+            info_sec_num++;
+            pos += 0x10;
+        }
+        info_sec_num = info_sec_num + 1;
+    } else {
+        pos = 0x30;
+        while (pos < end) {
+            info_sec_num++;
+            pos += 0x10;
+        }
+    }
+
+    ovly_info = (fwdata[0x28] & 0x10) >> 4;
+    ovly_sec_num = (ovly_info) ? (fwdata[0x28] & 0x0F) : 0;
+
+    partition = ilm_dlm_num + ovly_sec_num + info_sec_num;
+    NVT_LOG("ovly_info = %d, ilm_dlm_num = %d, ovly_sec_num = %d, info_sec_num = %d, partition = %d\n",
+            ovly_info, ilm_dlm_num, ovly_sec_num, info_sec_num, partition);
+
+    bin_map = (struct nvt_ts_bin_map *)kzalloc((partition + 1) * sizeof(struct nvt_ts_bin_map), GFP_KERNEL);
+    if (bin_map == NULL) {
+        NVT_ERR("kzalloc for bin_map failed!\n");
+        return -ENOMEM;
+    }
+
+    for (list = 0; list < partition; list++) {
+        if (list < ilm_dlm_num) {
+            bin_map[list].BIN_addr = byte_to_word(&fwdata[0 + list * 12]);
+            bin_map[list].SRAM_addr = byte_to_word(&fwdata[4 + list * 12]);
+            bin_map[list].size = byte_to_word(&fwdata[8 + list * 12]);
+            if (ts->hw_crc)
+                bin_map[list].crc = byte_to_word(&fwdata[0x18 + list * 4]);
+            else {
+                if ((bin_map[list].BIN_addr + bin_map[list].size) < fwsize)
+                    bin_map[list].crc = CheckSum(&fwdata[bin_map[list].BIN_addr], bin_map[list].size);
+                else {
+                    NVT_ERR("access range is larger than bin size!\n");
+                    return -EINVAL;
+                }
+            }
+            if (list == 0)
+                sprintf(bin_map[list].name, "ILM");
+            else if (list == 1)
+                sprintf(bin_map[list].name, "DLM");
+        }
+
+        if ((list >= ilm_dlm_num) && (list < (ilm_dlm_num + info_sec_num))) {
+            if (find_bin_header == 0) {
+                pos = 0x30 + (0x10 * (list - ilm_dlm_num));
+            } else if (find_bin_header && cascade_2nd_header_info) {
+                pos = end - 0x10;
+            }
+
+            bin_map[list].SRAM_addr = byte_to_word(&fwdata[pos]);
+            bin_map[list].size = byte_to_word(&fwdata[pos + 4]);
+            bin_map[list].BIN_addr = byte_to_word(&fwdata[pos + 8]);
+            if (ts->hw_crc)
+                bin_map[list].crc = byte_to_word(&fwdata[pos + 12]);
+            else {
+                if ((bin_map[list].BIN_addr + bin_map[list].size) < fwsize)
+                    bin_map[list].crc = CheckSum(&fwdata[bin_map[list].BIN_addr], bin_map[list].size);
+                else {
+                    NVT_ERR("access range is larger than bin size!\n");
+                    return -EINVAL;
+                }
+            }
+            if ((bin_map[list].BIN_addr < end) && (bin_map[list].size != 0)) {
+                sprintf(bin_map[list].name, "Header");
+                find_bin_header = 1;
+            } else {
+                sprintf(bin_map[list].name, "Info-%d", (list - ilm_dlm_num));
+            }
+        }
+
+        if (list >= (ilm_dlm_num + info_sec_num)) {
+            pos = bin_map[1].BIN_addr + (0x10 * (list - ilm_dlm_num - info_sec_num));
+
+            bin_map[list].SRAM_addr = byte_to_word(&fwdata[pos]);
+            bin_map[list].size = byte_to_word(&fwdata[pos + 4]);
+            bin_map[list].BIN_addr = byte_to_word(&fwdata[pos + 8]);
+            if (ts->hw_crc)
+                bin_map[list].crc = byte_to_word(&fwdata[pos + 12]);
+            else {
+                if ((bin_map[list].BIN_addr + bin_map[list].size) < fwsize)
+                    bin_map[list].crc = CheckSum(&fwdata[bin_map[list].BIN_addr], bin_map[list].size);
+                else {
+                    NVT_ERR("access range is larger than bin size!\n");
+                    return -EINVAL;
+                }
+            }
+            sprintf(bin_map[list].name, "Overlay-%d", (list - ilm_dlm_num - info_sec_num));
+        }
+
+        if ((bin_map[list].BIN_addr + bin_map[list].size) > fwsize) {
+            NVT_ERR("access range is larger than bin size!\n");
+            return -EINVAL;
+        }
+    }
+    return 0;
+}
+
+static void update_firmware_release(void)
+{
+    if (fw_entry) {
+        release_firmware(fw_entry);
+        fw_entry = NULL;
+    }
+}
+
+static int32_t update_firmware_request(const char *filename)
+{
+    uint8_t retry = 0;
+    int32_t ret = 0;
+
+    if (NULL == filename) {
+        return -ENOENT;
+    }
+
+    while (1) {
+        NVT_LOG("filename is %s\n", filename);
+        ret = request_firmware(&fw_entry, filename, &ts->client->dev);
+        if (ret) {
+            NVT_ERR("firmware load failed, ret=%d\n", ret);
+            goto request_fail;
+        }
+
+        if (nvt_get_fw_need_write_size(fw_entry)) {
+            NVT_ERR("get fw need to write size fail!\n");
+            ret = -EINVAL;
+            goto invalid;
+        }
+
+        if (*(fw_entry->data + FW_BIN_VER_OFFSET) + *(fw_entry->data + FW_BIN_VER_BAR_OFFSET) != 0xFF) {
+            NVT_ERR("bin file FW_VER + FW_VER_BAR should be 0xFF!\n");
+            ret = -ENOEXEC;
+            goto invalid;
+        }
+
+        ret = nvt_bin_header_parser(fw_entry->data, fw_entry->size);
+        if (ret) {
+            NVT_ERR("bin header parser failed\n");
+            goto invalid;
+        } else {
+            break;
+        }
+
+invalid:
+        update_firmware_release();
+        if (!IS_ERR_OR_NULL(bin_map)) {
+            kfree(bin_map);
+            bin_map = NULL;
+        }
+
+request_fail:
+        retry++;
+        if (unlikely(retry > 2)) {
+            NVT_ERR("error, retry=%d\n", retry);
+            break;
+        }
+    }
+    return ret;
+}
+
+static int32_t nvt_write_sram(const u8 *fwdata, uint32_t SRAM_addr, uint32_t size, uint32_t BIN_addr)
+{
+    int32_t ret = 0;
+    uint32_t i = 0;
+    uint16_t len = 0;
+    int32_t count = 0;
+
+    if (size % NVT_TRANSFER_LEN)
+        count = (size / NVT_TRANSFER_LEN) + 1;
+    else
+        count = (size / NVT_TRANSFER_LEN);
+
+    for (i = 0; i < count; i++) {
+        len = (size < NVT_TRANSFER_LEN) ? size : NVT_TRANSFER_LEN;
+
+        ret = nvt_set_page(SRAM_addr);
+        if (ret) {
+            NVT_ERR("set page failed, ret = %d\n", ret);
+            return ret;
+        }
+
+        fwbuf[0] = SRAM_addr & 0x7F;
+        memcpy(fwbuf + 1, &fwdata[BIN_addr], len);
+        ret = CTP_SPI_WRITE(ts->client, fwbuf, len + 1);
+        if (ret) {
+            NVT_ERR("write to sram failed, ret = %d\n", ret);
+            return ret;
+        }
+
+        SRAM_addr += NVT_TRANSFER_LEN;
+        BIN_addr += NVT_TRANSFER_LEN;
+        size -= NVT_TRANSFER_LEN;
+    }
+    return ret;
+}
+
+static int32_t nvt_write_firmware(const u8 *fwdata, size_t fwsize)
+{
+    uint32_t list = 0;
+    int32_t ret = 0;
+
+    memset(fwbuf, 0, (NVT_TRANSFER_LEN + 1));
+
+    for (list = 0; list < partition; list++) {
+        if (!bin_map[list].size)
+            continue;
+
+        ret = nvt_write_sram(fwdata, bin_map[list].SRAM_addr, bin_map[list].size + 1, bin_map[list].BIN_addr);
+        if (ret) {
+            NVT_ERR("sram program failed, ret = %d\n", ret);
+            goto out;
+        }
+    }
+out:
+    return ret;
+}
+
+static int32_t nvt_check_fw_checksum(void)
+{
+    uint32_t fw_checksum = 0;
+    uint32_t len = partition * 4;
+    uint32_t list = 0;
+    int32_t ret = 0;
+
+    memset(fwbuf, 0, (len + 1));
+
+    nvt_set_page(ts->mmap->R_ILM_CHECKSUM_ADDR);
+
+    fwbuf[0] = (ts->mmap->R_ILM_CHECKSUM_ADDR) & 0x7F;
+    ret = CTP_SPI_READ(ts->client, fwbuf, len + 1);
+    if (ret) {
+        NVT_ERR("Read fw checksum failed\n");
+        return ret;
+    }
+
+    for (list = 0; list < partition; list++) {
+        fw_checksum = byte_to_word(&fwbuf[1 + list * 4]);
+
+        if (!bin_map[list].size)
+            continue;
+
+        if (bin_map[list].crc != fw_checksum) {
+            NVT_ERR("[%d] BIN_checksum=0x%08X, FW_checksum=0x%08X\n", list, bin_map[list].crc, fw_checksum);
+            ret = -EIO;
+        }
+    }
+    return ret;
+}
+
+static void nvt_set_bld_crc_bank(uint32_t DES_ADDR, uint32_t SRAM_ADDR,
+        uint32_t LENGTH_ADDR, uint32_t size, uint32_t G_CHECKSUM_ADDR, uint32_t crc)
+{
+    nvt_set_page(DES_ADDR);
+    fwbuf[0] = DES_ADDR & 0x7F;
+    fwbuf[1] = (SRAM_ADDR) & 0xFF;
+    fwbuf[2] = (SRAM_ADDR >> 8) & 0xFF;
+    fwbuf[3] = (SRAM_ADDR >> 16) & 0xFF;
+    CTP_SPI_WRITE(ts->client, fwbuf, 4);
+
+    fwbuf[0] = LENGTH_ADDR & 0x7F;
+    fwbuf[1] = (size) & 0xFF;
+    fwbuf[2] = (size >> 8) & 0xFF;
+    fwbuf[3] = (size >> 16) & 0xFF;
+    if (ts->hw_crc == HWCRC_LEN_2Bytes) {
+        CTP_SPI_WRITE(ts->client, fwbuf, 3);
+    } else if (ts->hw_crc >= HWCRC_LEN_3Bytes) {
+        CTP_SPI_WRITE(ts->client, fwbuf, 4);
+    }
+
+    fwbuf[0] = G_CHECKSUM_ADDR & 0x7F;
+    fwbuf[1] = (crc) & 0xFF;
+    fwbuf[2] = (crc >> 8) & 0xFF;
+    fwbuf[3] = (crc >> 16) & 0xFF;
+    fwbuf[4] = (crc >> 24) & 0xFF;
+    CTP_SPI_WRITE(ts->client, fwbuf, 5);
+}
+
+static void nvt_set_bld_hw_crc(void)
+{
+    nvt_set_bld_crc_bank(ts->mmap->ILM_DES_ADDR, bin_map[0].SRAM_addr,
+            ts->mmap->ILM_LENGTH_ADDR, bin_map[0].size,
+            ts->mmap->G_ILM_CHECKSUM_ADDR, bin_map[0].crc);
+
+    nvt_set_bld_crc_bank(ts->mmap->DLM_DES_ADDR, bin_map[1].SRAM_addr,
+            ts->mmap->DLM_LENGTH_ADDR, bin_map[1].size,
+            ts->mmap->G_DLM_CHECKSUM_ADDR, bin_map[1].crc);
+}
+
+static int32_t nvt_download_firmware_hw_crc(void)
+{
+    uint8_t retry = 0;
+    int32_t ret = 0;
+
+    start = ktime_get();
+
+    while (1) {
+        nvt_bootloader_reset();
+
+        nvt_set_bld_hw_crc();
+
+        if (cascade_2nd_header_info) {
+            nvt_tx_auto_copy_mode();
+
+            ret = nvt_write_firmware(fw_entry->data, fw_entry->size);
+            if (ret) {
+                NVT_ERR("Write_Firmware failed. (%d)\n", ret);
+                goto fail;
+            }
+
+            ret = nvt_wait_auto_copy();
+            if (ret) {
+                NVT_ERR("wait auto copy failed. (%d)\n", ret);
+                goto fail;
+            }
+        } else {
+            ret = nvt_write_firmware(fw_entry->data, fw_entry->size);
+            if (ret) {
+                NVT_ERR("Write_Firmware failed. (%d)\n", ret);
+                goto fail;
+            }
+        }
+
+        nvt_fw_crc_enable();
+        nvt_boot_ready();
+
+        ret = nvt_check_fw_reset_state(RESET_STATE_INIT);
+        if (ret) {
+            NVT_ERR("nvt_check_fw_reset_state failed. (%d)\n", ret);
+            goto fail;
+        } else {
+            break;
+        }
+
+fail:
+        retry++;
+        if (unlikely(retry > 2)) {
+            NVT_ERR("error, retry=%d\n", retry);
+            break;
+        }
+    }
+
+    end = ktime_get();
+    return ret;
+}
+
+static int32_t nvt_download_firmware(void)
+{
+    uint8_t retry = 0;
+    int32_t ret = 0;
+
+    start = ktime_get();
+
+    while (1) {
+#if NVT_TOUCH_SUPPORT_HW_RST
+        gpio_set_value(ts->reset_gpio, 0);
+        mdelay(1);
+#endif
+        nvt_eng_reset();
+#if NVT_TOUCH_SUPPORT_HW_RST
+        gpio_set_value(ts->reset_gpio, 1);
+        mdelay(10);
+#endif
+        nvt_bootloader_reset();
+
+        nvt_write_addr(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_RESET_COMPLETE, 0x00);
+
+        ret = nvt_write_firmware(fw_entry->data, fw_entry->size);
+        if (ret) {
+            NVT_ERR("Write_Firmware failed. (%d)\n", ret);
+            goto fail;
+        }
+
+        nvt_boot_ready();
+
+        ret = nvt_check_fw_reset_state(RESET_STATE_INIT);
+        if (ret) {
+            NVT_ERR("nvt_check_fw_reset_state failed. (%d)\n", ret);
+            goto fail;
+        }
+
+        ret = nvt_check_fw_checksum();
+        if (ret) {
+            NVT_ERR("firmware checksum not match, retry=%d\n", retry);
+            goto fail;
+        } else {
+            break;
+        }
+
+fail:
+        retry++;
+        if (unlikely(retry > 2)) {
+            NVT_ERR("error, retry=%d\n", retry);
+            break;
+        }
+    }
+
+    end = ktime_get();
+    return ret;
+}
+
+/* 主固件更新函数 */
+int32_t nvt_update_firmware(const char *firmware_name)
+{
+    int32_t ret = 0;
+
+    NVT_LOG("Updating firmware: %s\n", firmware_name);
+
+    ret = update_firmware_request(firmware_name);
+    if (ret) {
+        NVT_ERR("update_firmware_request failed. (%d)\n", ret);
+        goto request_firmware_fail;
+    }
+
+    ret = nvt_download_init();
+    if (ret) {
+        NVT_ERR("Download Init failed. (%d)\n", ret);
+        goto download_fail;
+    }
+
+    if (ts->hw_crc)
+        ret = nvt_download_firmware_hw_crc();
+    else
+        ret = nvt_download_firmware();
+    if (ret) {
+        NVT_ERR("Download Firmware failed. (%d)\n", ret);
+        goto download_fail;
+    }
+
+    NVT_LOG("Update firmware success! <%ld us>\n", (long)ktime_us_delta(end, start));
+
+    ret = nvt_get_fw_info();
+    if (ret) {
+        NVT_ERR("nvt_get_fw_info failed. (%d)\n", ret);
+    }
+
+download_fail:
+    if (!IS_ERR_OR_NULL(bin_map)) {
+        kfree(bin_map);
+        bin_map = NULL;
+    }
+    if (fwbuf) {
+        kfree(fwbuf);
+        fwbuf = NULL;
+    }
+    update_firmware_release();
+request_firmware_fail:
+    return ret;
+}
+
+/* 启动时固件更新工作函数 */
+static void Boot_Update_Firmware(struct work_struct *work)
+{
+    struct nvt_ts_data *ts_data = container_of(work, struct nvt_ts_data, nvt_fwu_work);
+    NVT_LOG("Boot firmware update start\n");
+    mutex_lock(&ts_data->lock);
+    nvt_update_firmware(ts_data->fw_name);
+    mutex_unlock(&ts_data->lock);
+    NVT_LOG("Boot firmware update end\n");
+}
+
+#endif /* BOOT_UPDATE_FIRMWARE */
 
 /* 挂起函数 */
 static int32_t nvt_ts_suspend(struct device *dev)
@@ -972,6 +1742,7 @@ static int32_t nvt_ts_resume(struct device *dev)
 
 #if NVT_TOUCH_SUPPORT_HW_RST
     gpio_set_value(ts->reset_gpio, 1);
+    msleep(20);
 #endif
 
     nvt_update_firmware(ts->fw_name);
@@ -1030,20 +1801,13 @@ static int nvt_drm_notifier_callback(struct notifier_block *self, unsigned long 
 }
 #endif
 
+/* /proc/NVTSPI 接口 */
 #if NVT_TOUCH_PROC
-/*******************************************************
-Description:
-    Novatek touchscreen /proc/NVTSPI read function.
-*******************************************************/
 static ssize_t nvt_flash_read(struct file *file, char __user *buff, size_t count, loff_t *offp)
 {
     return 0;
 }
 
-/*******************************************************
-Description:
-    Novatek touchscreen /proc/NVTSPI open function.
-*******************************************************/
 static int32_t nvt_flash_open(struct inode *inode, struct file *file)
 {
     struct nvt_flash_data *dev;
@@ -1060,10 +1824,6 @@ static int32_t nvt_flash_open(struct inode *inode, struct file *file)
     return 0;
 }
 
-/*******************************************************
-Description:
-    Novatek touchscreen /proc/NVTSPI close function.
-*******************************************************/
 static int32_t nvt_flash_close(struct inode *inode, struct file *file)
 {
     struct nvt_flash_data *dev = file->private_data;
@@ -1089,10 +1849,6 @@ static const struct file_operations nvt_flash_fops = {
 };
 #endif
 
-/*******************************************************
-Description:
-    Novatek touchscreen /proc/NVTSPI initial function.
-*******************************************************/
 static int32_t nvt_flash_proc_init(void)
 {
     NVT_proc_entry = proc_create(DEVICE_NAME, 0444, NULL, &nvt_flash_fops);
@@ -1102,14 +1858,9 @@ static int32_t nvt_flash_proc_init(void)
     } else {
         NVT_LOG("Succeeded!\n");
     }
-
     return 0;
 }
 
-/*******************************************************
-Description:
-    Novatek touchscreen /proc/NVTSPI deinitial function.
-*******************************************************/
 static void nvt_flash_proc_deinit(void)
 {
     if (NVT_proc_entry != NULL) {
@@ -1305,6 +2056,8 @@ static int32_t nvt_ts_probe(struct spi_device *client)
         ret = -ENOMEM;
         goto err_fwu_wq;
     }
+    INIT_DELAYED_WORK(&ts->nvt_fwu_work, Boot_Update_Firmware);
+    queue_delayed_work(nvt_fwu_wq, &ts->nvt_fwu_work, msecs_to_jiffies(14000));
 #endif
 
 #if NVT_TOUCH_ESD_PROTECT
@@ -1333,6 +2086,13 @@ static int32_t nvt_ts_probe(struct spi_device *client)
     if (ret) {
         NVT_ERR("register power_supply_notifier failed. ret=%d\n", ret);
         goto err_power_supply;
+    }
+
+    INIT_WORK(&ts->charger_notify_work, nvt_charger_notify_work);
+    ts->charger_notifier.notifier_call = nvt_charger_notifier_callback;
+    ret = power_supply_reg_notifier(&ts->charger_notifier);
+    if (ret) {
+        NVT_ERR("register charger_notifier failed. ret=%d\n", ret);
     }
 
 #if defined(CONFIG_DRM_MSM)
@@ -1385,6 +2145,7 @@ err_mp_proc_init_failed:
 err_extra_proc_init_failed:
 #endif
     power_supply_unreg_notifier(&ts->power_supply_notifier);
+    power_supply_unreg_notifier(&ts->charger_notifier);
 err_power_supply:
     destroy_workqueue(ts->event_wq);
 err_event_wq:
@@ -1432,6 +2193,11 @@ static int32_t nvt_ts_remove(struct spi_device *client)
         ts->power_supply_notifier.notifier_call = NULL;
     }
 
+    if (ts->charger_notifier.notifier_call) {
+        power_supply_unreg_notifier(&ts->charger_notifier);
+        ts->charger_notifier.notifier_call = NULL;
+    }
+
 #if defined(CONFIG_DRM_MSM)
     if (msm_drm_unregister_client(&ts->drm_notif))
         NVT_ERR("Error occurred while unregistering drm_notifier.\n");
@@ -1462,6 +2228,7 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 
 #if BOOT_UPDATE_FIRMWARE
     if (nvt_fwu_wq) {
+        cancel_delayed_work_sync(&ts->nvt_fwu_work);
         destroy_workqueue(nvt_fwu_wq);
         nvt_fwu_wq = NULL;
     }
@@ -1510,6 +2277,11 @@ static void nvt_ts_shutdown(struct spi_device *client)
         ts->power_supply_notifier.notifier_call = NULL;
     }
 
+    if (ts->charger_notifier.notifier_call) {
+        power_supply_unreg_notifier(&ts->charger_notifier);
+        ts->charger_notifier.notifier_call = NULL;
+    }
+
 #if defined(CONFIG_DRM_MSM)
     if (msm_drm_unregister_client(&ts->drm_notif))
         NVT_ERR("Error occurred while unregistering drm_notifier.\n");
@@ -1540,6 +2312,7 @@ static void nvt_ts_shutdown(struct spi_device *client)
 
 #if BOOT_UPDATE_FIRMWARE
     if (nvt_fwu_wq) {
+        cancel_delayed_work_sync(&ts->nvt_fwu_work);
         destroy_workqueue(nvt_fwu_wq);
         nvt_fwu_wq = NULL;
     }
