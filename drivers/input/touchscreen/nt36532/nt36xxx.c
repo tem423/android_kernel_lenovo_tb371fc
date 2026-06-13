@@ -897,9 +897,7 @@ static int nvt_drm_notifier_callback(struct notifier_block *self, unsigned long 
     }
     return 0;
 }
-#endif
-
-/* Probe 函数 */
+#endif/* Probe 函数 */
 static int32_t nvt_ts_probe(struct spi_device *client)
 {
     int32_t ret = 0;
