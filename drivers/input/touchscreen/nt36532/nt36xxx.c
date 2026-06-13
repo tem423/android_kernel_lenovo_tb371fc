@@ -504,13 +504,6 @@ static int nvt_power_supply_event(struct notifier_block *nb,
     return 0;
 }
 
-/* 固件更新占位函数 */
-int32_t nvt_update_firmware(const char *firmware_name)
-{
-    NVT_LOG("update firmware: %s\n", firmware_name);
-    return 0;
-}
-
 /* 读寄存器 */
 int32_t nvt_read_reg(nvt_ts_reg_t reg, uint8_t *val)
 {
@@ -1636,4 +1629,4 @@ module_init(nvt_driver_init);
 module_exit(nvt_driver_exit);
 
 MODULE_DESCRIPTION("Novatek Touchscreen Driver");
-MODULE_LICENSE("GPL"); 
+MODULE_LICENSE("GPL");
