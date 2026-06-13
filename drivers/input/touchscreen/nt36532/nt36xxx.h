@@ -72,8 +72,8 @@
 #define NVT_PEN_NAME "NVTCapacitivePen"
 
 /* 触摸信息 - 根据屏幕尺寸修改 */
-#define TOUCH_DEFAULT_MAX_WIDTH 1800
-#define TOUCH_DEFAULT_MAX_HEIGHT 2880
+#define TOUCH_DEFAULT_MAX_WIDTH 1840
+#define TOUCH_DEFAULT_MAX_HEIGHT 2944
 #define TOUCH_MAX_FINGER_NUM 10
 #define TOUCH_KEY_NUM 0
 #if TOUCH_KEY_NUM > 0
@@ -104,10 +104,10 @@ extern const uint16_t gesture_key_array[];
 
 #define BOOT_UPDATE_FIRMWARE 1
 /* 固件名称 - 根据实际固件修改 */
-#define BOOT_UPDATE_FIRMWARE_NAME "novatek_nt36532_fw.bin"
-#define MP_UPDATE_FIRMWARE_NAME   "novatek_nt36532_mp.bin"
-#define DEFAULT_DEBUG_FW_NAME     "novatek_debug_fw.bin"
-#define DEFAULT_DEBUG_MP_NAME     "novatek_debug_mp.bin"
+#define BOOT_UPDATE_FIRMWARE_NAME "novatek_ts_tm_fw_6.bin"
+#define MP_UPDATE_FIRMWARE_NAME   "novatek_ts_tm_mp_6.bin"
+#define DEFAULT_DEBUG_FW_NAME     "novatek_ts_tm_fw.bin"
+#define DEFAULT_DEBUG_MP_NAME     "novatek_ts_tm_mp.bin"
 
 #define NVT_SUPER_RESOLUTION_N 10
 #if NVT_SUPER_RESOLUTION_N
