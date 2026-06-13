@@ -39,19 +39,17 @@
 /* 高通平台 SPI 配置 */
 #endif
 
-/* 移除 CONFIG_MTK_SPI 和 CONFIG_SPI_MT65XX 相关代码 */
-
 #define NVT_DEBUG 1
 
-/* GPIO 定义 - 根据你的硬件修改 */
-#define NVTTOUCH_RST_PIN 0  /* 实际 GPIO 号从 dts 读取 */
-#define NVTTOUCH_INT_PIN 0  /* 实际 GPIO 号从 dts 读取 */
+/* GPIO 定义 - 从 dts 读取 */
+#define NVTTOUCH_RST_PIN 0
+#define NVTTOUCH_INT_PIN 0
 
 #define NVT_LOCKDOWN_SIZE 8
 #define PINCTRL_STATE_ACTIVE                "pmx_ts_active"
 #define PINCTRL_STATE_SUSPEND                "pmx_ts_suspend"
 
-/* INT 触发模式 - 根据硬件修改 */
+/* INT 触发模式 */
 #define INT_TRIGGER_TYPE IRQ_TYPE_EDGE_RISING
 
 /* 总线传输长度 */
@@ -71,7 +69,7 @@
 #define NVT_TS_NAME "NVTCapacitiveTouchScreen"
 #define NVT_PEN_NAME "NVTCapacitivePen"
 
-/* 触摸信息 - 根据屏幕尺寸修改 */
+/* 触摸信息 */
 #define TOUCH_DEFAULT_MAX_WIDTH 1840
 #define TOUCH_DEFAULT_MAX_HEIGHT 2944
 #define TOUCH_MAX_FINGER_NUM 10
@@ -81,7 +79,7 @@ extern const uint16_t touch_key_array[TOUCH_KEY_NUM];
 #endif
 #define TOUCH_FORCE_NUM 1000
 
-/* 笔数据长度 - 修复编译错误 */
+/* 笔数据长度 */
 #define PEN_DATA_LEN 14
 
 /* 手写笔参数 */
@@ -90,7 +88,7 @@ extern const uint16_t touch_key_array[TOUCH_KEY_NUM];
 #define PEN_TILT_MIN (-60)
 #define PEN_TILT_MAX (60)
 
-/* 硬件复位支持 - 根据实际硬件设置 */
+/* 硬件复位支持 */
 #define NVT_TOUCH_SUPPORT_HW_RST 1
 
 /* 功能开关 */
@@ -106,7 +104,7 @@ extern const uint16_t gesture_key_array[];
 #endif
 
 #define BOOT_UPDATE_FIRMWARE 1
-/* 固件名称 - 根据实际固件修改 */
+/* 固件名称 */
 #define BOOT_UPDATE_FIRMWARE_NAME "novatek_ts_tm_fw_6.bin"
 #define MP_UPDATE_FIRMWARE_NAME   "novatek_ts_tm_mp_6.bin"
 #define DEFAULT_DEBUG_FW_NAME     "novatek_ts_tm_fw.bin"
@@ -121,20 +119,12 @@ extern const uint16_t gesture_key_array[];
 #define POINT_DATA_CHECKSUM 1
 #define POINT_DATA_CHECKSUM_LEN 65
 
-/* ESD 保护 - 根据需求开关 */
+/* ESD 保护 */
 #define NVT_TOUCH_ESD_PROTECT 1
 #define NVT_TOUCH_ESD_CHECK_PERIOD 1500
 #define NVT_TOUCH_WDT_RECOVERY 1
 
 #define CHECK_PEN_DATA_CHECKSUM 0
-
-/* 移除 NVT_PEN_CONNECT_STRATEGY 相关定义 */
-/* #define NVT_PEN_CONNECT_STRATEGY */
-
-/* 移除小米触摸特性定义 */
-/* #ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE */
-/* #include "../xiaomi/xiaomi_touch.h" */
-/* #endif */
 
 #if BOOT_UPDATE_FIRMWARE
 #define SIZE_4KB 4096
@@ -153,14 +143,14 @@ enum nvt_ic_state {
         NVT_IC_INIT,
 };
 
-/* 配置信息结构体 - 简化版 */
+/* 配置信息结构体 */
 struct nvt_config_info {
         u8 display_maker;
         const char *nvt_fw_name;
         const char *nvt_mp_name;
 };
 
-/* 主数据结构体 - 移除小米专有字段 */
+/* 主数据结构体 */
 struct nvt_ts_data {
         struct spi_device *client;
         struct input_dev *input_dev;
@@ -168,19 +158,10 @@ struct nvt_ts_data {
         struct mutex power_supply_lock;
         struct work_struct power_supply_work;
         struct notifier_block power_supply_notifier;
+        struct notifier_block charger_notifier;
+        struct work_struct charger_notify_work;
         int is_usb_exist;
         int db_wakeup;
-
-        /* 移除 NVT_PEN_CONNECT_STRATEGY 相关字段 */
-        /* struct work_struct pen_charge_state_change_work; */
-        /* struct notifier_block pen_charge_state_notifier; */
-        /* bool pen_bluetooth_connect; */
-        /* bool pen_charge_connect; */
-        /* bool game_mode_enable; */
-        /* struct device *dev; */
-        /* int pen_count; */
-        /* bool pen_shield_flag; */
-        /* struct mutex pen_switch_lock; */
 
         int ic_state;
         int gesture_command_delayed;
@@ -189,7 +170,7 @@ struct nvt_ts_data {
         uint16_t addr;
         int8_t phys[32];
 
-/* DRM notifier - 使用高通标准接口 */
+/* DRM notifier - 高通标准接口 */
 #if defined(CONFIG_DRM_MSM)
         struct notifier_block drm_notif;
 #elif defined(CONFIG_FB)
@@ -202,9 +183,6 @@ struct nvt_ts_data {
         struct nvt_config_info *config_array;
         const char *fw_name;
         const char *mp_name;
-        /* 移除 lockdown_info 相关 */
-        /* bool lkdown_readed; */
-        /* u8 lockdown_info[NVT_LOCKDOWN_SIZE]; */
 
         uint8_t fw_ver;
         uint8_t x_num;
@@ -214,11 +192,6 @@ struct nvt_ts_data {
         uint8_t max_touch_num;
         uint8_t max_button_num;
         uint32_t int_trigger_type;
-
-        /* 移除小米触摸特性字段 */
-        /* u32 gamemode_config[3][5]; */
-        /* struct workqueue_struct *set_touchfeature_wq; */
-        /* struct work_struct set_touchfeature_work; */
 
         int32_t irq_gpio;
         uint32_t irq_flags;
@@ -253,10 +226,6 @@ struct nvt_ts_data {
         uint32_t swrst_sif_addr;
         uint32_t crc_err_flag_addr;
 
-        /* 移除 MTK SPI 配置，高通平台不需要 */
-        /* struct mt_chip_conf spi_ctrl; */
-        /* struct mtk_chip_config spi_ctrl; */
-
         struct pinctrl *ts_pinctrl;
         struct pinctrl_state *pinctrl_state_active;
         struct pinctrl_state *pinctrl_state_suspend;
@@ -288,12 +257,12 @@ typedef enum {
 
 /* SPI 读写掩码 */
 #define SPI_WRITE_MASK(a)        (a | 0x80)
-#define SPI_READ_MASK(a)        (a & 0x7F)
+#define SPI_READ_MASK(a)         (a & 0x7F)
 
 #define DUMMY_BYTES (1)
 #define NVT_TRANSFER_LEN        (63*1024)
-#define NVT_READ_LEN                (2*1024)
-#define NVT_XBUF_LEN                (NVT_TRANSFER_LEN+1+DUMMY_BYTES)
+#define NVT_READ_LEN            (2*1024)
+#define NVT_XBUF_LEN            (NVT_TRANSFER_LEN + 1 + DUMMY_BYTES)
 
 typedef enum {
         NVTWRITE = 0,
@@ -313,8 +282,6 @@ void nvt_boot_ready(void);
 void nvt_fw_crc_enable(void);
 void nvt_tx_auto_copy_mode(void);
 void nvt_read_fw_history(uint32_t fw_history_addr);
-/* 移除 nvt_match_fw 声明 */
-/* void nvt_match_fw(void); */
 int32_t nvt_update_firmware(const char *firmware_name);
 int32_t nvt_check_fw_reset_state(RST_COMPLETE_STATE check_reset_state);
 int32_t nvt_get_fw_info(void);
@@ -329,8 +296,5 @@ void nvt_set_dbgfw_status(bool enable);
 #if NVT_TOUCH_ESD_PROTECT
 extern void nvt_esd_check_enable(uint8_t enable);
 #endif
-
-/* 移除 switch_pen_input_device 声明 */
-/* int switch_pen_input_device(void); */
 
 #endif /* _LINUX_NVT_TOUCH_H */
