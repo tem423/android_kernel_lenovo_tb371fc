@@ -16,7 +16,7 @@ jobs:
           config: vendor/tb371fc_defconfig
           arch: arm64
           android-version: 11
-          ccache: true
+          ccache: false
           ksu: false
           ksu-version: v0.9.5
           # aosp
