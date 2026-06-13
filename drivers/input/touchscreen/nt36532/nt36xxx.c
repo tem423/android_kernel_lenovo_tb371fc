@@ -549,6 +549,131 @@ nvt_read_register_exit:
     return ret;
 }
 
+/* 清除固件状态 */
+int32_t nvt_clear_fw_status(void)
+{
+    uint8_t buf[8] = {0};
+    int32_t i = 0;
+    const int32_t retry = 20;
+
+    for (i = 0; i < retry; i++) {
+        nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_HANDSHAKING_or_SUB_CMD_BYTE);
+        buf[0] = EVENT_MAP_HANDSHAKING_or_SUB_CMD_BYTE;
+        buf[1] = 0x00;
+        CTP_SPI_WRITE(ts->client, buf, 2);
+        buf[0] = EVENT_MAP_HANDSHAKING_or_SUB_CMD_BYTE;
+        buf[1] = 0xFF;
+        CTP_SPI_READ(ts->client, buf, 2);
+        if (buf[1] == 0x00)
+            break;
+        usleep_range(10000, 10000);
+    }
+    return 0;
+}
+
+/* 检查固件状态 */
+int32_t nvt_check_fw_status(void)
+{
+    uint8_t buf[8] = {0};
+    int32_t i = 0;
+    const int32_t retry = 50;
+
+    usleep_range(20000, 20000);
+    for (i = 0; i < retry; i++) {
+        nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_HANDSHAKING_or_SUB_CMD_BYTE);
+        buf[0] = EVENT_MAP_HANDSHAKING_or_SUB_CMD_BYTE;
+        buf[1] = 0x00;
+        CTP_SPI_READ(ts->client, buf, 2);
+        if ((buf[1] & 0xF0) == 0xA0)
+            break;
+        usleep_range(10000, 10000);
+    }
+    return 0;
+}
+
+/* 设置启动就绪 */
+void nvt_boot_ready(void)
+{
+    nvt_write_addr(ts->mmap->BOOT_RDY_ADDR, 1);
+    mdelay(5);
+    if (ts->hw_crc == HWCRC_NOSUPPORT) {
+        nvt_write_addr(ts->mmap->BOOT_RDY_ADDR, 0);
+        nvt_write_addr(ts->mmap->POR_CD_ADDR, 0xA0);
+    }
+}
+
+/* 启用固件CRC */
+void nvt_fw_crc_enable(void)
+{
+    uint8_t buf[8] = {0};
+    nvt_set_page(ts->mmap->EVENT_BUF_ADDR);
+    buf[0] = EVENT_MAP_RESET_COMPLETE & 0x7F;
+    memset(buf + 1, 0, 6);
+    CTP_SPI_WRITE(ts->client, buf, 7);
+    buf[0] = EVENT_MAP_HOST_CMD & 0x7F;
+    buf[1] = 0xAE;
+    buf[2] = 0x00;
+    CTP_SPI_WRITE(ts->client, buf, 3);
+}
+
+/* 启用自动拷贝模式 */
+void nvt_tx_auto_copy_mode(void)
+{
+    if (ts->auto_copy == CHECK_SPI_DMA_TX_INFO) {
+        nvt_write_addr(ts->mmap->TX_AUTO_COPY_EN, 0x69);
+    } else if (ts->auto_copy == CHECK_TX_AUTO_COPY_EN) {
+        nvt_write_addr(ts->mmap->TX_AUTO_COPY_EN, 0x56);
+    }
+    NVT_LOG("tx auto copy mode %d enable\n", ts->auto_copy);
+}
+
+/* 等待自动拷贝完成 */
+int32_t nvt_wait_auto_copy(void)
+{
+    uint8_t buf[8] = {0};
+    int32_t i = 0;
+    const int32_t retry = 200;
+
+    for (i = 0; i < retry; i++) {
+        nvt_set_page(ts->mmap->TX_AUTO_COPY_EN);
+        buf[0] = ts->mmap->TX_AUTO_COPY_EN & 0x7F;
+        buf[1] = 0xFF;
+        CTP_SPI_READ(ts->client, buf, 2);
+        if (buf[1] == 0x00)
+            break;
+        usleep_range(1000, 1000);
+    }
+    return (i >= retry) ? -1 : 0;
+}
+
+/* 读取固件历史 */
+void nvt_read_fw_history(uint32_t fw_history_addr)
+{
+    uint8_t i = 0;
+    uint8_t buf[65];
+    char str[128];
+
+    if (fw_history_addr == 0)
+        return;
+
+    nvt_set_page(fw_history_addr);
+    buf[0] = (uint8_t)(fw_history_addr & 0x7F);
+    CTP_SPI_READ(ts->client, buf, 64 + 1);
+
+    NVT_LOG("fw history 0x%X:\n", fw_history_addr);
+    for (i = 0; i < 4; i++) {
+        snprintf(str, sizeof(str),
+            "%02X %02X %02X %02X %02X %02X %02X %02X  "
+            "%02X %02X %02X %02X %02X %02X %02X %02X\n",
+            buf[1 + i * 16], buf[2 + i * 16], buf[3 + i * 16], buf[4 + i * 16],
+            buf[5 + i * 16], buf[6 + i * 16], buf[7 + i * 16], buf[8 + i * 16],
+            buf[9 + i * 16], buf[10 + i * 16], buf[11 + i * 16], buf[12 + i * 16],
+            buf[13 + i * 16], buf[14 + i * 16], buf[15 + i * 16], buf[16 + i * 16]);
+        NVT_LOG("%s", str);
+    }
+    nvt_set_page(ts->mmap->EVENT_BUF_ADDR);
+}
+
 /* 检查固件复位状态 */
 int32_t nvt_check_fw_reset_state(RST_COMPLETE_STATE check_reset_state)
 {
@@ -1099,6 +1224,52 @@ static int32_t nvt_ts_probe(struct spi_device *client)
         goto err_input_register;
     }
 
+    if (ts->pen_support) {
+        ts->pen_input_dev = input_allocate_device();
+        if (!ts->pen_input_dev) {
+            NVT_ERR("allocate pen input device failed\n");
+            ret = -ENOMEM;
+            goto err_pen_input_alloc;
+        }
+
+        ts->pen_input_dev->evbit[0] = BIT_MASK(EV_SYN) | BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
+        ts->pen_input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+        ts->pen_input_dev->keybit[BIT_WORD(BTN_TOOL_PEN)] |= BIT_MASK(BTN_TOOL_PEN);
+        ts->pen_input_dev->propbit[0] = BIT(INPUT_PROP_DIRECT);
+
+#if NVT_SUPER_RESOLUTION_N
+        input_set_abs_params(ts->pen_input_dev, ABS_X, 0, ts->abs_x_max * NVT_SUPER_RESOLUTION_N - 1, 0, 0);
+        input_set_abs_params(ts->pen_input_dev, ABS_Y, 0, ts->abs_y_max * NVT_SUPER_RESOLUTION_N - 1, 0, 0);
+#else
+        if (ts->stylus_resol_double) {
+            input_set_abs_params(ts->pen_input_dev, ABS_X, 0, ts->abs_x_max * 2 - 1, 0, 0);
+            input_set_abs_params(ts->pen_input_dev, ABS_Y, 0, ts->abs_y_max * 2 - 1, 0, 0);
+        } else {
+            input_set_abs_params(ts->pen_input_dev, ABS_X, 0, ts->abs_x_max - 1, 0, 0);
+            input_set_abs_params(ts->pen_input_dev, ABS_Y, 0, ts->abs_y_max - 1, 0, 0);
+        }
+#endif
+        input_set_abs_params(ts->pen_input_dev, ABS_PRESSURE, 0, PEN_PRESSURE_MAX, 0, 0);
+        input_set_abs_params(ts->pen_input_dev, ABS_DISTANCE, 0, PEN_DISTANCE_MAX, 0, 0);
+        input_set_abs_params(ts->pen_input_dev, ABS_TILT_X, PEN_TILT_MIN, PEN_TILT_MAX, 0, 0);
+        input_set_abs_params(ts->pen_input_dev, ABS_TILT_Y, PEN_TILT_MIN, PEN_TILT_MAX, 0, 0);
+
+#if WAKEUP_GESTURE
+        input_set_capability(ts->pen_input_dev, EV_KEY, KEY_WAKEUP);
+#endif
+
+        sprintf(ts->pen_phys, "input/pen");
+        ts->pen_input_dev->name = NVT_PEN_NAME;
+        ts->pen_input_dev->phys = ts->pen_phys;
+        ts->pen_input_dev->id.bustype = BUS_SPI;
+
+        ret = input_register_device(ts->pen_input_dev);
+        if (ret) {
+            NVT_ERR("register pen input device failed. ret=%d\n", ret);
+            goto err_pen_input_register;
+        }
+    }
+
     client->irq = gpio_to_irq(ts->irq_gpio);
     if (client->irq) {
         ts->irq_enabled = true;
@@ -1223,6 +1394,12 @@ err_fwu_wq:
 #endif
     free_irq(client->irq, ts);
 err_irq_request:
+    if (ts->pen_support && ts->pen_input_dev)
+        input_unregister_device(ts->pen_input_dev);
+err_pen_input_register:
+    if (ts->pen_support && ts->pen_input_dev)
+        input_free_device(ts->pen_input_dev);
+err_pen_input_alloc:
     input_unregister_device(ts->input_dev);
     ts->input_dev = NULL;
 err_input_register:
