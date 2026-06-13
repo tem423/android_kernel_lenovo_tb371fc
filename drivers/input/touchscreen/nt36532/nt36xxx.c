@@ -126,6 +126,17 @@ static void nvt_irq_enable(bool enable)
     }
 }
 
+/* 调试固件状态控制 */
+bool nvt_get_dbgfw_status(void)
+{
+    return ts->fw_debug;
+}
+
+void nvt_set_dbgfw_status(bool enable)
+{
+    ts->fw_debug = enable;
+}
+
 /* SPI 读写函数 */
 static inline int32_t spi_read_write(struct spi_device *client, uint8_t *buf, size_t len, NVT_SPI_RW rw)
 {
