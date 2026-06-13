@@ -54,6 +54,8 @@ extern void nvt_mp_proc_deinit(void);
 #if NVT_TOUCH_PROC
 static struct proc_dir_entry *NVT_proc_entry;
 #define DEVICE_NAME "NVTSPI"
+static int32_t nvt_flash_proc_init(void);
+static void nvt_flash_proc_deinit(void);
 #endif
 
 static int32_t nvt_ts_suspend(struct device *dev);
@@ -897,7 +899,99 @@ static int nvt_drm_notifier_callback(struct notifier_block *self, unsigned long 
     }
     return 0;
 }
-#endif/* Probe 函数 */
+#endif
+
+#if NVT_TOUCH_PROC
+/*******************************************************
+Description:
+    Novatek touchscreen /proc/NVTSPI read function.
+*******************************************************/
+static ssize_t nvt_flash_read(struct file *file, char __user *buff, size_t count, loff_t *offp)
+{
+    return 0;
+}
+
+/*******************************************************
+Description:
+    Novatek touchscreen /proc/NVTSPI open function.
+*******************************************************/
+static int32_t nvt_flash_open(struct inode *inode, struct file *file)
+{
+    struct nvt_flash_data *dev;
+
+    dev = kmalloc(sizeof(struct nvt_flash_data), GFP_KERNEL);
+    if (dev == NULL) {
+        NVT_ERR("Failed to allocate memory for nvt flash data\n");
+        return -ENOMEM;
+    }
+
+    rwlock_init(&dev->lock);
+    file->private_data = dev;
+
+    return 0;
+}
+
+/*******************************************************
+Description:
+    Novatek touchscreen /proc/NVTSPI close function.
+*******************************************************/
+static int32_t nvt_flash_close(struct inode *inode, struct file *file)
+{
+    struct nvt_flash_data *dev = file->private_data;
+
+    if (dev)
+        kfree(dev);
+
+    return 0;
+}
+
+#ifdef HAVE_PROC_OPS
+static const struct proc_ops nvt_flash_fops = {
+    .proc_open = nvt_flash_open,
+    .proc_release = nvt_flash_close,
+    .proc_read = nvt_flash_read,
+};
+#else
+static const struct file_operations nvt_flash_fops = {
+    .owner = THIS_MODULE,
+    .open = nvt_flash_open,
+    .release = nvt_flash_close,
+    .read = nvt_flash_read,
+};
+#endif
+
+/*******************************************************
+Description:
+    Novatek touchscreen /proc/NVTSPI initial function.
+*******************************************************/
+static int32_t nvt_flash_proc_init(void)
+{
+    NVT_proc_entry = proc_create(DEVICE_NAME, 0444, NULL, &nvt_flash_fops);
+    if (NVT_proc_entry == NULL) {
+        NVT_ERR("Failed!\n");
+        return -ENOMEM;
+    } else {
+        NVT_LOG("Succeeded!\n");
+    }
+
+    return 0;
+}
+
+/*******************************************************
+Description:
+    Novatek touchscreen /proc/NVTSPI deinitial function.
+*******************************************************/
+static void nvt_flash_proc_deinit(void)
+{
+    if (NVT_proc_entry != NULL) {
+        remove_proc_entry(DEVICE_NAME, NULL);
+        NVT_proc_entry = NULL;
+        NVT_LOG("Removed /proc/%s\n", DEVICE_NAME);
+    }
+}
+#endif /* NVT_TOUCH_PROC */
+
+/* Probe 函数 */
 static int32_t nvt_ts_probe(struct spi_device *client)
 {
     int32_t ret = 0;
@@ -1074,12 +1168,48 @@ static int32_t nvt_ts_probe(struct spi_device *client)
     }
 #endif
 
+#if NVT_TOUCH_EXT_PROC
+    ret = nvt_extra_proc_init();
+    if (ret != 0) {
+        NVT_ERR("nvt extra proc init failed. ret=%d\n", ret);
+        goto err_extra_proc_init_failed;
+    }
+#endif
+
+#if NVT_TOUCH_MP
+    ret = nvt_mp_proc_init();
+    if (ret != 0) {
+        NVT_ERR("nvt mp proc init failed. ret=%d\n", ret);
+        goto err_mp_proc_init_failed;
+    }
+#endif
+
+#if NVT_TOUCH_PROC
+    ret = nvt_flash_proc_init();
+    if (ret != 0) {
+        NVT_ERR("nvt flash proc init failed. ret=%d\n", ret);
+        goto err_flash_proc_init_failed;
+    }
+#endif
+
     bTouchIsAwake = 1;
     nvt_irq_enable(true);
 
     NVT_LOG("end\n");
     return 0;
 
+#if NVT_TOUCH_PROC
+err_flash_proc_init_failed:
+#endif
+#if NVT_TOUCH_MP
+    nvt_mp_proc_deinit();
+err_mp_proc_init_failed:
+#endif
+#if NVT_TOUCH_EXT_PROC
+    nvt_extra_proc_deinit();
+err_extra_proc_init_failed:
+#endif
+    power_supply_unreg_notifier(&ts->power_supply_notifier);
 err_power_supply:
     destroy_workqueue(ts->event_wq);
 err_event_wq:
