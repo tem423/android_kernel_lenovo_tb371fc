@@ -9,8 +9,8 @@
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  */
-#ifndef 	_LINUX_NVT_TOUCH_H
-#define		_LINUX_NVT_TOUCH_H
+#ifndef         _LINUX_NVT_TOUCH_H
+#define                _LINUX_NVT_TOUCH_H
 
 #include <linux/delay.h>
 #include <linux/input.h>
@@ -48,8 +48,8 @@
 #define NVTTOUCH_INT_PIN 0  /* 实际 GPIO 号从 dts 读取 */
 
 #define NVT_LOCKDOWN_SIZE 8
-#define PINCTRL_STATE_ACTIVE		"pmx_ts_active"
-#define PINCTRL_STATE_SUSPEND		"pmx_ts_suspend"
+#define PINCTRL_STATE_ACTIVE                "pmx_ts_active"
+#define PINCTRL_STATE_SUSPEND                "pmx_ts_suspend"
 
 /* INT 触发模式 - 根据硬件修改 */
 #define INT_TRIGGER_TYPE IRQ_TYPE_EDGE_RISING
@@ -80,6 +80,9 @@
 extern const uint16_t touch_key_array[TOUCH_KEY_NUM];
 #endif
 #define TOUCH_FORCE_NUM 1000
+
+/* 笔数据长度 - 修复编译错误 */
+#define PEN_DATA_LEN 14
 
 /* 手写笔参数 */
 #define PEN_PRESSURE_MAX (4095)
@@ -119,7 +122,7 @@ extern const uint16_t gesture_key_array[];
 #define POINT_DATA_CHECKSUM_LEN 65
 
 /* ESD 保护 - 根据需求开关 */
-#define NVT_TOUCH_ESD_PROTECT 0
+#define NVT_TOUCH_ESD_PROTECT 1
 #define NVT_TOUCH_ESD_CHECK_PERIOD 1500
 #define NVT_TOUCH_WDT_RECOVERY 1
 
@@ -143,136 +146,136 @@ extern const uint16_t gesture_key_array[];
 #endif
 
 enum nvt_ic_state {
-	NVT_IC_SUSPEND_IN,
-	NVT_IC_SUSPEND_OUT,
-	NVT_IC_RESUME_IN,
-	NVT_IC_RESUME_OUT,
-	NVT_IC_INIT,
+        NVT_IC_SUSPEND_IN,
+        NVT_IC_SUSPEND_OUT,
+        NVT_IC_RESUME_IN,
+        NVT_IC_RESUME_OUT,
+        NVT_IC_INIT,
 };
 
 /* 配置信息结构体 - 简化版 */
 struct nvt_config_info {
-	u8 display_maker;
-	const char *nvt_fw_name;
-	const char *nvt_mp_name;
+        u8 display_maker;
+        const char *nvt_fw_name;
+        const char *nvt_mp_name;
 };
 
 /* 主数据结构体 - 移除小米专有字段 */
 struct nvt_ts_data {
-	struct spi_device *client;
-	struct input_dev *input_dev;
-	struct delayed_work nvt_fwu_work;
-	struct mutex power_supply_lock;
-	struct work_struct power_supply_work;
-	struct notifier_block power_supply_notifier;
-	int is_usb_exist;
-	int db_wakeup;
-	
-	/* 移除 NVT_PEN_CONNECT_STRATEGY 相关字段 */
-	/* struct work_struct pen_charge_state_change_work; */
-	/* struct notifier_block pen_charge_state_notifier; */
-	/* bool pen_bluetooth_connect; */
-	/* bool pen_charge_connect; */
-	/* bool game_mode_enable; */
-	/* struct device *dev; */
-	/* int pen_count; */
-	/* bool pen_shield_flag; */
-	/* struct mutex pen_switch_lock; */
-	
-	int ic_state;
-	int gesture_command_delayed;
-	bool dev_pm_suspend;
-	struct completion dev_pm_suspend_completion;
-	uint16_t addr;
-	int8_t phys[32];
-	
+        struct spi_device *client;
+        struct input_dev *input_dev;
+        struct delayed_work nvt_fwu_work;
+        struct mutex power_supply_lock;
+        struct work_struct power_supply_work;
+        struct notifier_block power_supply_notifier;
+        int is_usb_exist;
+        int db_wakeup;
+
+        /* 移除 NVT_PEN_CONNECT_STRATEGY 相关字段 */
+        /* struct work_struct pen_charge_state_change_work; */
+        /* struct notifier_block pen_charge_state_notifier; */
+        /* bool pen_bluetooth_connect; */
+        /* bool pen_charge_connect; */
+        /* bool game_mode_enable; */
+        /* struct device *dev; */
+        /* int pen_count; */
+        /* bool pen_shield_flag; */
+        /* struct mutex pen_switch_lock; */
+
+        int ic_state;
+        int gesture_command_delayed;
+        bool dev_pm_suspend;
+        struct completion dev_pm_suspend_completion;
+        uint16_t addr;
+        int8_t phys[32];
+
 /* DRM notifier - 使用高通标准接口 */
 #if defined(CONFIG_DRM_MSM)
-	struct notifier_block drm_notif;
+        struct notifier_block drm_notif;
 #elif defined(CONFIG_FB)
-	struct notifier_block fb_notif;
+        struct notifier_block fb_notif;
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
-	struct early_suspend early_suspend;
+        struct early_suspend early_suspend;
 #endif
-	
-	uint32_t config_array_size;
-	struct nvt_config_info *config_array;
-	const char *fw_name;
-	const char *mp_name;
-	/* 移除 lockdown_info 相关 */
-	/* bool lkdown_readed; */
-	/* u8 lockdown_info[NVT_LOCKDOWN_SIZE]; */
-	
-	uint8_t fw_ver;
-	uint8_t x_num;
-	uint8_t y_num;
-	uint16_t abs_x_max;
-	uint16_t abs_y_max;
-	uint8_t max_touch_num;
-	uint8_t max_button_num;
-	uint32_t int_trigger_type;
-	
-	/* 移除小米触摸特性字段 */
-	/* u32 gamemode_config[3][5]; */
-	/* struct workqueue_struct *set_touchfeature_wq; */
-	/* struct work_struct set_touchfeature_work; */
-	
-	int32_t irq_gpio;
-	uint32_t irq_flags;
-	int32_t reset_gpio;
-	uint32_t reset_flags;
-	struct mutex lock;
-	const struct nvt_ts_mem_map *mmap;
-	uint8_t hw_crc;
-	uint8_t auto_copy;
-	uint16_t nvt_pid;
-	uint8_t *rbuf;
-	uint8_t *xbuf;
-	struct mutex xbuf_lock;
-	bool irq_enabled;
-	bool pen_support;
-	bool stylus_resol_double;
-	bool fw_debug;
-	uint8_t x_gang_num;
-	uint8_t y_gang_num;
-	uint8_t debug_flag;
-	struct input_dev *pen_input_dev;
-	bool pen_input_dev_enable;
-	int8_t pen_phys[32];
-	int result_type;
-	int panel_index;
-	
+
+        uint32_t config_array_size;
+        struct nvt_config_info *config_array;
+        const char *fw_name;
+        const char *mp_name;
+        /* 移除 lockdown_info 相关 */
+        /* bool lkdown_readed; */
+        /* u8 lockdown_info[NVT_LOCKDOWN_SIZE]; */
+
+        uint8_t fw_ver;
+        uint8_t x_num;
+        uint8_t y_num;
+        uint16_t abs_x_max;
+        uint16_t abs_y_max;
+        uint8_t max_touch_num;
+        uint8_t max_button_num;
+        uint32_t int_trigger_type;
+
+        /* 移除小米触摸特性字段 */
+        /* u32 gamemode_config[3][5]; */
+        /* struct workqueue_struct *set_touchfeature_wq; */
+        /* struct work_struct set_touchfeature_work; */
+
+        int32_t irq_gpio;
+        uint32_t irq_flags;
+        int32_t reset_gpio;
+        uint32_t reset_flags;
+        struct mutex lock;
+        const struct nvt_ts_mem_map *mmap;
+        uint8_t hw_crc;
+        uint8_t auto_copy;
+        uint16_t nvt_pid;
+        uint8_t *rbuf;
+        uint8_t *xbuf;
+        struct mutex xbuf_lock;
+        bool irq_enabled;
+        bool pen_support;
+        bool stylus_resol_double;
+        bool fw_debug;
+        uint8_t x_gang_num;
+        uint8_t y_gang_num;
+        uint8_t debug_flag;
+        struct input_dev *pen_input_dev;
+        bool pen_input_dev_enable;
+        int8_t pen_phys[32];
+        int result_type;
+        int panel_index;
+
 #ifdef CONFIG_TOUCHSCREEN_NVT_DEBUG_FS
-	struct dentry *debugfs;
+        struct dentry *debugfs;
 #endif
-	
-	uint32_t chip_ver_trim_addr;
-	uint32_t swrst_sif_addr;
-	uint32_t crc_err_flag_addr;
-	
-	/* 移除 MTK SPI 配置，高通平台不需要 */
-	/* struct mt_chip_conf spi_ctrl; */
-	/* struct mtk_chip_config spi_ctrl; */
-	
-	struct pinctrl *ts_pinctrl;
-	struct pinctrl_state *pinctrl_state_active;
-	struct pinctrl_state *pinctrl_state_suspend;
-	struct workqueue_struct *event_wq;
-	struct work_struct resume_work;
+
+        uint32_t chip_ver_trim_addr;
+        uint32_t swrst_sif_addr;
+        uint32_t crc_err_flag_addr;
+
+        /* 移除 MTK SPI 配置，高通平台不需要 */
+        /* struct mt_chip_conf spi_ctrl; */
+        /* struct mtk_chip_config spi_ctrl; */
+
+        struct pinctrl *ts_pinctrl;
+        struct pinctrl_state *pinctrl_state_active;
+        struct pinctrl_state *pinctrl_state_suspend;
+        struct workqueue_struct *event_wq;
+        struct work_struct resume_work;
 };
 
 #if NVT_TOUCH_PROC
 struct nvt_flash_data{
-	rwlock_t lock;
+        rwlock_t lock;
 };
 #endif
 
 typedef enum {
-	RESET_STATE_INIT = 0xA0,
-	RESET_STATE_REK,
-	RESET_STATE_REK_FINISH,
-	RESET_STATE_NORMAL_RUN,
-	RESET_STATE_MAX  = 0xAF
+        RESET_STATE_INIT = 0xA0,
+        RESET_STATE_REK,
+        RESET_STATE_REK_FINISH,
+        RESET_STATE_NORMAL_RUN,
+        RESET_STATE_MAX  = 0xAF
 } RST_COMPLETE_STATE;
 
 typedef enum {
@@ -284,17 +287,17 @@ typedef enum {
 } SPI_EVENT_MAP;
 
 /* SPI 读写掩码 */
-#define SPI_WRITE_MASK(a)	(a | 0x80)
-#define SPI_READ_MASK(a)	(a & 0x7F)
+#define SPI_WRITE_MASK(a)        (a | 0x80)
+#define SPI_READ_MASK(a)        (a & 0x7F)
 
 #define DUMMY_BYTES (1)
-#define NVT_TRANSFER_LEN	(63*1024)
-#define NVT_READ_LEN		(2*1024)
-#define NVT_XBUF_LEN		(NVT_TRANSFER_LEN+1+DUMMY_BYTES)
+#define NVT_TRANSFER_LEN        (63*1024)
+#define NVT_READ_LEN                (2*1024)
+#define NVT_XBUF_LEN                (NVT_TRANSFER_LEN+1+DUMMY_BYTES)
 
 typedef enum {
-	NVTWRITE = 0,
-	NVTREAD  = 1
+        NVTWRITE = 0,
+        NVTREAD  = 1
 } NVT_SPI_RW;
 
 /* 外部结构和函数声明 */
