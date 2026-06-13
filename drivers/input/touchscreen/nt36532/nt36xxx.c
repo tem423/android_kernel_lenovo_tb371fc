@@ -1636,4 +1636,4 @@ module_init(nvt_driver_init);
 module_exit(nvt_driver_exit);
 
 MODULE_DESCRIPTION("Novatek Touchscreen Driver");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL"); 
