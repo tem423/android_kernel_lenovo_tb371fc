@@ -519,12 +519,9 @@ static int nvt_power_supply_event(struct notifier_block *nb,
 /* USB 充电器通知工作函数 */
 static void nvt_charger_notify_work(struct work_struct *work)
 {
-    struct nvt_ts_data *ts_data = container_of(work, struct nvt_ts_data, charger_notify_work);
     int is_usb_exist = 0;
     uint8_t buf[3] = {0};
     int32_t ret;
-
-    (void)ts_data;  /* 避免未使用变量警告 */
 
     NVT_LOG("enter nvt_charger_notify_work\n");
 
@@ -1733,9 +1730,12 @@ static void nvt_ts_shutdown(struct spi_device *client)
 
 #if NVT_TOUCH_MP
     nvt_mp_proc_deinit();
-#endif#if NVT_TOUCH_EXT_PROC
+#endif
+
+#if NVT_TOUCH_EXT_PROC
     nvt_extra_proc_deinit();
 #endif
+
 #if NVT_TOUCH_PROC
     nvt_flash_proc_deinit();
 #endif
