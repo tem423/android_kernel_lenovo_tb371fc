@@ -125,11 +125,11 @@ char *MP_UPDATE_FIRMWARE_NAME;
 /*Spruce code for OSPURCET-1208 by gaoxue4 at 2023/2/8 start*/
 /* For SPI mode */
 static struct pinctrl *nt36532_pinctrl;
-static struct pinctrl_state *nt36532_spi_mi;
-static struct pinctrl_state *nt36532_spi_mo;
-static struct pinctrl_state *nt36532_spi_clk;
-static struct pinctrl_state *nt36532_spi_csb;
-static struct pinctrl_state *nt36532_spi_suspend;
+// static struct pinctrl_state *nt36532_spi_mi;
+// static struct pinctrl_state *nt36532_spi_mo;
+// static struct pinctrl_state *nt36532_spi_clk;
+// static struct pinctrl_state *nt36532_spi_csb;
+// static struct pinctrl_state *nt36532_spi_suspend;
 /*Spruce code for OSPURCET-1208 by gaoxue4 at 2023/2/8 end*/
 
 #if defined(CONFIG_FB)
@@ -2219,51 +2219,51 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		goto err_gpio_config_failed;
 	}
 
-	nt36532_spi_mi = pinctrl_lookup_state(
-				nt36532_pinctrl, "nt36532_spi_mi");
-	if (IS_ERR_OR_NULL(nt36532_spi_mi)) {
-		ret = PTR_ERR(nt36532_spi_mi);
-		NVT_ERR("Failed to get pinctrl state:nt36532_spi_mi, r:%d", ret);
-		nt36532_spi_mi = NULL;
-		goto err_pinctrl_failed;
-	}
-	nt36532_spi_mo = pinctrl_lookup_state(
-				nt36532_pinctrl, "nt36532_spi_mo");
-	if (IS_ERR_OR_NULL(nt36532_spi_mo)) {
-		ret = PTR_ERR(nt36532_spi_mo);
-		NVT_ERR("Failed to get pinctrl state:nt36532_spi_mo, r:%d", ret);
-		nt36532_spi_mo = NULL;
-		goto err_pinctrl_failed;
-	}
-	nt36532_spi_clk = pinctrl_lookup_state(
-				nt36532_pinctrl, "nt36532_spi_clk");
-	if (IS_ERR_OR_NULL(nt36532_spi_clk)) {
-		ret = PTR_ERR(nt36532_spi_clk);
-		NVT_ERR("Failed to get pinctrl state:nt36532_spi_clk, r:%d", ret);
-		nt36532_spi_clk = NULL;
-		goto err_pinctrl_failed;
-	}
-	nt36532_spi_csb = pinctrl_lookup_state(
-				nt36532_pinctrl, "nt36532_spi_csb");
-	if (IS_ERR_OR_NULL(nt36532_spi_csb)) {
-		ret = PTR_ERR(nt36532_spi_csb);
-		NVT_ERR("Failed to get pinctrl state:nt36532_spi_csb, r:%d", ret);
-		nt36532_spi_csb = NULL;
-		goto err_pinctrl_failed;
-	}
-	nt36532_spi_suspend = pinctrl_lookup_state(
-				nt36532_pinctrl, "nt36532_spi_suspend");
-	if (IS_ERR_OR_NULL(nt36532_spi_suspend)) {
-		ret = PTR_ERR(nt36532_spi_suspend);
-		NVT_ERR("Failed to get pinctrl suspend state:nt36532_spi_suspend, r:%d",ret);
-		nt36532_spi_suspend = NULL;
-		goto err_pinctrl_failed;
-	}
+	// nt36532_spi_mi = pinctrl_lookup_state(
+				// nt36532_pinctrl, "nt36532_spi_mi");
+	// if (IS_ERR_OR_NULL(nt36532_spi_mi)) {
+		// ret = PTR_ERR(nt36532_spi_mi);
+		// NVT_ERR("Failed to get pinctrl state:nt36532_spi_mi, r:%d", ret);
+		// nt36532_spi_mi = NULL;
+		// goto err_pinctrl_failed;
+	// }
+	// nt36532_spi_mo = pinctrl_lookup_state(
+				// nt36532_pinctrl, "nt36532_spi_mo");
+	// if (IS_ERR_OR_NULL(nt36532_spi_mo)) {
+		// ret = PTR_ERR(nt36532_spi_mo);
+		// NVT_ERR("Failed to get pinctrl state:nt36532_spi_mo, r:%d", ret);
+		// nt36532_spi_mo = NULL;
+		// goto err_pinctrl_failed;
+	// }
+	// nt36532_spi_clk = pinctrl_lookup_state(
+				//。nt36532_pinctrl, "nt36532_spi_clk");
+	// if (IS_ERR_OR_NULL(nt36532_spi_clk)) {
+		// ret = PTR_ERR(nt36532_spi_clk);
+		// NVT_ERR("Failed to get pinctrl state:nt36532_spi_clk, r:%d", ret);
+		// nt36532_spi_clk = NULL;
+		// goto err_pinctrl_failed;
+	// }
+	// nt36532_spi_csb = pinctrl_lookup_state(
+				// nt36532_pinctrl, "nt36532_spi_csb");
+	// if (IS_ERR_OR_NULL(nt36532_spi_csb)) {
+		// ret = PTR_ERR(nt36532_spi_csb);
+		// NVT_ERR("Failed to get pinctrl state:nt36532_spi_csb, r:%d", ret);
+		// nt36532_spi_csb = NULL;
+		// goto err_pinctrl_failed;
+	// }
+	// nt36532_spi_suspend = pinctrl_lookup_state(
+				// nt36532_pinctrl, "nt36532_spi_suspend");
+	// if (IS_ERR_OR_NULL(nt36532_spi_suspend)) {
+		// ret = PTR_ERR(nt36532_spi_suspend);
+		// NVT_ERR("Failed to get pinctrl suspend state:nt36532_spi_suspend, r:%d",ret);
+		// nt36532_spi_suspend = NULL;
+		// goto err_pinctrl_failed;
+	// }
 
-	pinctrl_select_state(nt36532_pinctrl,nt36532_spi_mi);
-	pinctrl_select_state(nt36532_pinctrl,nt36532_spi_mo);
-	pinctrl_select_state(nt36532_pinctrl,nt36532_spi_clk);
-	pinctrl_select_state(nt36532_pinctrl,nt36532_spi_csb);
+	// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_mi);
+	// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_mo);
+	// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_clk);
+	// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_csb);
 	/*Spruce code for OSPURCET-1208 by gaoxue4 at 2023/2/8 end*/
 
 	mutex_init(&ts->lock);
@@ -2883,9 +2883,9 @@ static int32_t nvt_ts_suspend(struct device *dev)
 
 	NVT_LOG("end\n");
 	/*Spruce code for OSPURCET-1208 by gaoxue4 at 2023/2/8 start*/
-	if (!nvt_gesture_flag) {
-		pinctrl_select_state(nt36532_pinctrl,nt36532_spi_suspend);
-	}
+	// if (!nvt_gesture_flag) {
+		// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_suspend);
+	// }
 	/*Spruce code for OSPURCET-1208 by gaoxue4 at 2023/2/8 end*/
 	return 0;
 }
@@ -2900,10 +2900,10 @@ return:
 static int32_t nvt_ts_resume(struct device *dev)
 {
 	/*Spruce code for OSPURCET-1208 by gaoxue4 at 2023/2/8 start*/
-	pinctrl_select_state(nt36532_pinctrl,nt36532_spi_mi);
-	pinctrl_select_state(nt36532_pinctrl,nt36532_spi_mo);
-	pinctrl_select_state(nt36532_pinctrl,nt36532_spi_clk);
-	pinctrl_select_state(nt36532_pinctrl,nt36532_spi_csb);
+	// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_mi);
+	// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_mo);
+	// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_clk);
+	// pinctrl_select_state(nt36532_pinctrl,nt36532_spi_csb);
 	/*Spruce code for OSPURCET-1208 by gaoxue4 at 2023/2/8 end*/
 
 	if (bTouchIsAwake) {
