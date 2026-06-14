@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2010 - 2022 Novatek, Inc.
  *
- * $Revision: 77624 $
- * $Date: 2021-02-05 10:03:05 +0800 (週五, 05 二月 2021) $
+ * $Revision: 107367 $
+ * $Date: 2022-10-26 08:30:52 +0800 (週三, 26 十月 2022) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 #include <linux/firmware.h>
 #include <linux/gpio.h>
-#include <linux/ktime.h>
 
 #include "nt36xxx.h"
 
@@ -38,7 +37,9 @@ struct nvt_ts_bin_map {
 };
 
 static struct nvt_ts_bin_map *bin_map;
-
+/* Spruce code for OSPURCET-431 by gaoxue4 at 2022/12/30 start */
+extern void get_tp_info(void);
+/* Spruce code for OSPURCET-431 by gaoxue4 at 2022/12/30 end */
 static int32_t nvt_get_fw_need_write_size(const struct firmware *fw_entry)
 {
 	int32_t i = 0;
@@ -311,7 +312,7 @@ Description:
 return:
 	Executive outcomes. 0---succeed. -1,-22---failed.
 *******************************************************/
-static int32_t update_firmware_request(const char *filename)
+static int32_t update_firmware_request(char *filename)
 {
 	uint8_t retry = 0;
 	int32_t ret = 0;
@@ -814,7 +815,7 @@ Description:
 return:
 	n.a.
 *******************************************************/
-int32_t nvt_update_firmware(const char *firmware_name)
+int32_t nvt_update_firmware(char *firmware_name)
 {
 	int32_t ret = 0;
 
@@ -844,13 +845,16 @@ int32_t nvt_update_firmware(const char *firmware_name)
 
 	NVT_LOG("Update firmware success! <%ld us>\n",
 			(long) ktime_us_delta(end, start));
-
+	/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 start*/
+	ts->fw_update_stat = 1;
 	/* Get FW Info */
 	ret = nvt_get_fw_info();
 	if (ret) {
 		NVT_ERR("nvt_get_fw_info failed. (%d)\n", ret);
 	}
-
+  	if(ts->nvt_charger_notify_wq != NULL)
+		queue_work(ts->nvt_charger_notify_wq, &ts->charger_notify_work);
+	/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 end*/
 download_fail:
 	if (!IS_ERR_OR_NULL(bin_map)) {
 		kfree(bin_map);
@@ -871,24 +875,13 @@ Description:
 return:
 	n.a.
 *******************************************************/
+/* Spruce code for OSPURCET-431 by gaoxue4 at 2022/12/30 start */
 void Boot_Update_Firmware(struct work_struct *work)
 {
-    // 移除 nvt_match_fw() 调用 - 这是小米专有函数
-    // nvt_match_fw();
-    
-    mutex_lock(&ts->lock);
-    if (nvt_get_dbgfw_status()) {
-        if (nvt_update_firmware(DEFAULT_DEBUG_FW_NAME) < 0) {
-            NVT_ERR("use built-in fw");
-            nvt_update_firmware(ts->fw_name);
-        }
-    } else {
-        nvt_update_firmware(ts->fw_name);
-    }
-    nvt_get_fw_info();
-    mutex_unlock(&ts->lock);
-    
-    // 移除 switch_pen_input_device() 调用 - 这是小米专有函数
-    // switch_pen_input_device();
+	mutex_lock(&ts->lock);
+	nvt_update_firmware(BOOT_UPDATE_FIRMWARE_NAME);
+	get_tp_info();
+	mutex_unlock(&ts->lock);
 }
 #endif /* BOOT_UPDATE_FIRMWARE */
+/* Spruce code for OSPURCET-431 by gaoxue4 at 2022/12/30 end */
