@@ -28,13 +28,17 @@
 #define NVT_RAW "nvt_raw"
 #define NVT_DIFF "nvt_diff"
 #define NVT_PEN_DIFF "nvt_pen_diff"
-
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
 #if NVT_CUST_PROC_CMD
 #define PENEL_DIRECTION "panel_direction"
 #define GAME_MODE "game_mode"
 #define EDGE_GRID_ZONE "edge_grid_zone"
 #define SUPPORT_PEN "support_pen"
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 start */
+#if NVT_DPR_SWITCH
+#define FW_PEN_STATE "fw_pen_state"
+#endif
+#define NVT_FW_STATUS "nvt_fw_status"
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 end */
 #define GAME_MODE_PALM_CMD 0x79
 #define SUPPORT_PEN_CMD 0x7B
 #define NVT_EXT_CMD 0x7F
@@ -47,12 +51,12 @@
 #define EDGE_REJECT_VERTICLE_CMD 0xBA
 #define EDGE_REJECT_LEFT_UP 0xBB
 #define EDGE_REJECT_RIGHT_UP 0xBC
+#define EDGE_REJECT_VERTICLE_REVERSE_CMD 0xBD
 #endif
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
 
-/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
 #define GESTURE_CONTROL "gesture_control"
-/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 end */
 #define NORMAL_MODE 0x00
 #define TEST_MODE_2 0x22
 #define HANDSHAKING_HOST_READY 0xBB
@@ -71,19 +75,26 @@ static struct proc_dir_entry *NVT_proc_baseline_entry;
 static struct proc_dir_entry *NVT_proc_raw_entry;
 static struct proc_dir_entry *NVT_proc_diff_entry;
 static struct proc_dir_entry *NVT_proc_pen_diff_entry;
-/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
-static struct proc_dir_entry *NVT_gesture_entry;
-/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
-
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
 #if NVT_CUST_PROC_CMD
 static struct proc_dir_entry *NVT_proc_edge_reject_entry;
 static struct proc_dir_entry *NVT_proc_edge_grid_zone_entry;
 static struct proc_dir_entry *NVT_proc_game_mode_entry;
 static struct proc_dir_entry *NVT_proc_support_pen_entry;
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 start */
+#if NVT_DPR_SWITCH
+static struct proc_dir_entry *NVT_proc_get_fw_pen_state_entry;
 #endif
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 end */
+#endif
+static struct proc_dir_entry *NVT_proc_fw_status_entry;
 
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
+static struct proc_dir_entry *NVT_gesture_entry;
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 end */
+
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 start */
+extern uint8_t bTouchIsAwake;
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 end */
 /*******************************************************
 Description:
 	Novatek touchscreen change mode function.
@@ -236,7 +247,7 @@ void nvt_read_mdata(uint32_t xdata_addr, uint32_t xdata_btn_addr)
 	data_len = ts->x_num * ts->y_num * 2;
 	residual_len = (head_addr + dummy_len + data_len) % XDATA_SECTOR_SIZE;
 
-	//printk("head_addr=0x%05X, dummy_len=0x%05X, data_len=0x%05X, residual_len=0x%05X\n", head_addr, dummy_len, data_len, residual_len);
+	//pr_info("head_addr=0x%05X, dummy_len=0x%05X, data_len=0x%05X, residual_len=0x%05X\n", head_addr, dummy_len, data_len, residual_len);
 
 	//read xdata : step 1
 	for (i = 0; i < ((dummy_len + data_len) / XDATA_SECTOR_SIZE); i++) {
@@ -252,10 +263,10 @@ void nvt_read_mdata(uint32_t xdata_addr, uint32_t xdata_btn_addr)
 			//---copy buf to xdata_tmp---
 			for (k = 0; k < transfer_len; k++) {
 				xdata_tmp[XDATA_SECTOR_SIZE * i + transfer_len * j + k] = buf[k + 1];
-				//printk("0x%02X, 0x%04X\n", buf[k+1], (XDATA_SECTOR_SIZE*i + transfer_len*j + k));
+				//pr_info("0x%02X, 0x%04X\n", buf[k+1], (XDATA_SECTOR_SIZE*i + transfer_len*j + k));
 			}
 		}
-		//printk("addr=0x%05X\n", (head_addr+XDATA_SECTOR_SIZE*i));
+		//pr_info("addr=0x%05X\n", (head_addr+XDATA_SECTOR_SIZE*i));
 	}
 
 	//read xdata : step2
@@ -272,10 +283,10 @@ void nvt_read_mdata(uint32_t xdata_addr, uint32_t xdata_btn_addr)
 			//---copy buf to xdata_tmp---
 			for (k = 0; k < transfer_len; k++) {
 				xdata_tmp[(dummy_len + data_len - residual_len) + transfer_len * j + k] = buf[k + 1];
-				//printk("0x%02X, 0x%04x\n", buf[k+1], ((dummy_len+data_len-residual_len) + transfer_len*j + k));
+				//pr_info("0x%02X, 0x%04x\n", buf[k+1], ((dummy_len+data_len-residual_len) + transfer_len*j + k));
 			}
 		}
-		//printk("addr=0x%05X\n", (xdata_addr+data_len-residual_len));
+		//pr_info("addr=0x%05X\n", (xdata_addr+data_len-residual_len));
 	}
 
 	//---remove dummy data and 2bytes-to-1data---
@@ -315,7 +326,8 @@ void nvt_get_mdata(int32_t *buf, uint8_t *m_x_num, uint8_t *m_y_num)
     *m_y_num = ts->y_num;
     memcpy(buf, xdata, ((ts->x_num * ts->y_num + TOUCH_KEY_NUM) * sizeof(int32_t)));
 }
-/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
 static ssize_t gesture_control_write(struct file *file, const char __user *buffer,
 		size_t count, loff_t *pos)
 {
@@ -335,8 +347,7 @@ static int gesture_control_show(struct seq_file *m, void *v)
 	seq_printf(m, "%d\n", nvt_gesture_flag);
 	return 0;
 }
-/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
-
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 end */
 /*******************************************************
 Description:
 	Novatek touchscreen read and get number of meta data function.
@@ -367,7 +378,7 @@ void nvt_read_get_num_mdata(uint32_t xdata_addr, int32_t *buffer, uint32_t num)
 	data_len = num * 2;
 	residual_len = (head_addr + dummy_len + data_len) % XDATA_SECTOR_SIZE;
 
-	//printk("head_addr=0x%05X, dummy_len=0x%05X, data_len=0x%05X, residual_len=0x%05X\n", head_addr, dummy_len, data_len, residual_len);
+	//pr_info("head_addr=0x%05X, dummy_len=0x%05X, data_len=0x%05X, residual_len=0x%05X\n", head_addr, dummy_len, data_len, residual_len);
 
 	//read xdata : step 1
 	for (i = 0; i < ((dummy_len + data_len) / XDATA_SECTOR_SIZE); i++) {
@@ -383,10 +394,10 @@ void nvt_read_get_num_mdata(uint32_t xdata_addr, int32_t *buffer, uint32_t num)
 			//---copy buf to xdata_tmp---
 			for (k = 0; k < transfer_len; k++) {
 				xdata_tmp[XDATA_SECTOR_SIZE * i + transfer_len * j + k] = buf[k + 1];
-				//printk("0x%02X, 0x%04X\n", buf[k+1], (XDATA_SECTOR_SIZE*i + transfer_len*j + k));
+				//pr_info("0x%02X, 0x%04X\n", buf[k+1], (XDATA_SECTOR_SIZE*i + transfer_len*j + k));
 			}
 		}
-		//printk("addr=0x%05X\n", (head_addr+XDATA_SECTOR_SIZE*i));
+		//pr_info("addr=0x%05X\n", (head_addr+XDATA_SECTOR_SIZE*i));
 	}
 
 	//read xdata : step2
@@ -403,10 +414,10 @@ void nvt_read_get_num_mdata(uint32_t xdata_addr, int32_t *buffer, uint32_t num)
 			//---copy buf to xdata_tmp---
 			for (k = 0; k < transfer_len; k++) {
 				xdata_tmp[(dummy_len + data_len - residual_len) + transfer_len * j + k] = buf[k + 1];
-				//printk("0x%02X, 0x%04x\n", buf[k+1], ((dummy_len+data_len-residual_len) + transfer_len*j + k));
+				//pr_info("0x%02X, 0x%04x\n", buf[k+1], ((dummy_len+data_len-residual_len) + transfer_len*j + k));
 			}
 		}
-		//printk("addr=0x%05X\n", (xdata_addr+data_len-residual_len));
+		//pr_info("addr=0x%05X\n", (xdata_addr+data_len-residual_len));
 	}
 
 	//---remove dummy data and 2bytes-to-1data---
@@ -809,7 +820,7 @@ static const struct file_operations nvt_diff_fops = {
 	.release = seq_release,
 };
 #endif
-/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
 static int32_t gesture_control_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, gesture_control_show, NULL);
@@ -828,8 +839,8 @@ static const struct file_operations gesture_control_fops = {
 	.write = gesture_control_write,
 };
 #endif
+/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 end */
 
-/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
 /*******************************************************
 Description:
 	Novatek touchscreen /proc/nvt_pen_diff open function.
@@ -910,8 +921,66 @@ static const struct file_operations nvt_pen_diff_fops = {
 	.release = seq_release,
 };
 #endif
+/* Spinel code for OSPINEL-3913 by zhangyd22 at 2023/06/07 start */
+/*******************************************************
+Description:
+	Novatek touchscreen /proc/nvt_fw_status open
+	function.
 
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+return:
+	n.a.
+*******************************************************/
+static int32_t nvt_fw_status_show(struct seq_file *m, void *v)
+{
+	uint8_t buf[8] = {0};
+
+	if (mutex_lock_interruptible(&ts->lock)) {
+		return -ERESTARTSYS;
+	}
+
+	NVT_LOG("++\n");
+
+#if NVT_TOUCH_ESD_PROTECT
+	nvt_esd_check_enable(false);
+#endif /* #if NVT_TOUCH_ESD_PROTECT */
+
+	//---set xdata index to EVENT BUF ADDR---
+	nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_RESET_COMPLETE);
+
+	//---read reset state---
+	buf[0] = EVENT_MAP_RESET_COMPLETE;
+	buf[1] = 0x00;
+	CTP_SPI_READ(ts->client, buf, 6);
+
+	mutex_unlock(&ts->lock);
+
+	NVT_LOG("--\n");
+
+	seq_printf(m, "%02X\n", buf[1]);
+
+	return 0;
+}
+static int32_t nvt_fw_status_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, nvt_fw_status_show, NULL);
+}
+#ifdef HAVE_PROC_OPS
+static const struct proc_ops nvt_fw_status_fops = {
+	.proc_open = nvt_fw_status_open,
+	.proc_read = seq_read,
+	.proc_lseek = seq_lseek,
+	.proc_release = seq_release,
+};
+#else
+static const struct file_operations nvt_fw_status_fops = {
+	.owner = THIS_MODULE,
+	.open = nvt_fw_status_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = seq_release,
+};
+#endif
+/* Spinel code for OSPINEL-3913 by zhangyd22 at 2023/06/07 end */
 #if NVT_CUST_PROC_CMD
 int32_t nvt_cmd_store(uint8_t u8Cmd){
 	int i, retry = 5;
@@ -921,7 +990,13 @@ int32_t nvt_cmd_store(uint8_t u8Cmd){
 	if (mutex_lock_interruptible(&ts->lock)) {
 		return -ERESTARTSYS;
 	}
-
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 start */
+	if(bTouchIsAwake == 0){
+		NVT_ERR("Touch is already suspend, ignore 0x%02x cmd", u8Cmd);
+		mutex_unlock(&ts->lock);
+		return -1;
+	}
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 end */
 	//---set xdata index to EVENT BUF ADDR---
 	ret = nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_HOST_CMD);
 	if (ret < 0) {
@@ -963,6 +1038,14 @@ int32_t nvt_ext_cmd_store(uint8_t u8Cmd, uint8_t u8subCmd){
 	if (mutex_lock_interruptible(&ts->lock)) {
 		return -ERESTARTSYS;
 	}
+
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 start */
+	if(bTouchIsAwake == 0){
+		NVT_ERR("Touch is already suspend, ignore 0x%02x 0x%02x cmd", u8Cmd, u8subCmd);
+		mutex_unlock(&ts->lock);
+		return -1;
+	}
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 end */
 
 	//---set xdata index to EVENT BUF ADDR---
 	ret = nvt_set_page(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_HOST_CMD);
@@ -1012,11 +1095,13 @@ int32_t nvt_ext_cmd_store(uint8_t u8Cmd, uint8_t u8subCmd){
 int32_t nvt_edge_reject_set(int32_t status) {
 	int ret = 0;
 
-	if((status == 0) || (status == 2))//rotate 0 or 180 degree
+	if(status == 0)//rotate 0 degree
 		ret = nvt_cmd_store(EDGE_REJECT_VERTICLE_CMD);
-	else if(status == 1) //rotate 90 degree
+	else if(status == 1) //rotate 270 degree
 		ret = nvt_cmd_store(EDGE_REJECT_LEFT_UP);
-	else if(status == 3) //rotate 270 degree
+	else if(status == 2) //rotate 180 degree
+		ret = nvt_cmd_store(EDGE_REJECT_VERTICLE_REVERSE_CMD);
+	else if(status == 3) //rotate 90 degree
 		ret = nvt_cmd_store(EDGE_REJECT_RIGHT_UP);
 
 	return ret;
@@ -1044,13 +1129,16 @@ static ssize_t nvt_edge_reject_store(struct file *file, const char *buffer, size
 
 static int nvt_edge_reject_show(struct seq_file *sfile, void *v) {
 
-	if((ts->edge_reject_state == 0) || (ts->edge_reject_state == 2))
-		seq_printf(sfile, "Vertical Direction!(0 or 180 degree)\n"); //rotate 0 or 180 degree
+	if(ts->edge_reject_state == 0)
+		seq_printf(sfile, "Vertical Direction!(0 degree)\n"); //rotate 0 degree
 	else if(ts->edge_reject_state == 1)
-		seq_printf(sfile, "Left Up Direction!(90 degree)\n"); //rotate 90 degree
-	else if(ts->edge_reject_state == 3)
 		seq_printf(sfile, "Right Up Direction!(270 degree)\n"); //rotate 270 degree
+	else if(ts->edge_reject_state == 2)
+		seq_printf(sfile, "Vertical reverse Direction!(180 degree)\n"); //rotate 180 degree
+	else if(ts->edge_reject_state == 3)
+		seq_printf(sfile, "Left Up Direction!(90 degree)\n"); //rotate 90 degree
 	else
+
 		seq_printf(sfile, "Not Support!\n");
 
 	return 0;
@@ -1092,14 +1180,24 @@ static const struct file_operations nvt_edge_reject_fops = {
  *
  *		[2], floating view start Y coordinate
  *
- *		[3], floating view end Y coordinate
+ *		[3], floating view end Y coordinate 
  *
  */
 int32_t nvt_edge_grid_zone_set(uint8_t deg, uint8_t dir, uint16_t y1, uint16_t y2)
 {
     int i, retry = 5;
     uint8_t buf[12] = {0};
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 start */
 
+    if (mutex_lock_interruptible(&ts->lock)) {
+		return -ERESTARTSYS;
+	}
+    if(bTouchIsAwake == 0){
+		NVT_ERR("Touch is already suspend, ignore cmd");
+		mutex_unlock(&ts->lock);
+        return -1;
+    }
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 end */
     //---set xdata index to EVENT BUF ADDR---(set page)
     nvt_set_page(ts->mmap->EVENT_BUF_ADDR);
 
@@ -1115,7 +1213,7 @@ int32_t nvt_edge_grid_zone_set(uint8_t deg, uint8_t dir, uint16_t y1, uint16_t y
         buf[7] = (uint8_t) (y2 & 0xFF);
         buf[8] = (uint8_t) ((y2 >> 8) & 0xFF);
         CTP_SPI_WRITE(ts->client, buf, 9);
-
+        
 
         msleep(20);
 
@@ -1137,12 +1235,13 @@ int32_t nvt_edge_grid_zone_set(uint8_t deg, uint8_t dir, uint16_t y1, uint16_t y
     if (unlikely(i == retry)) {
         NVT_ERR("send Cmd 0x%02X 0x%02X failed, buf[1]=0x%02X\n",
             NVT_EXT_CMD, NVT_EXT_CMD_EDGE_GRID_ZONE, buf[1]);
+		mutex_unlock(&ts->lock);
         return -1;
     } else {
         NVT_LOG("send Cmd 0x%02X 0x%02X success, tried %d times\n",
             NVT_EXT_CMD, NVT_EXT_CMD_EDGE_GRID_ZONE, i);
     }
-
+	mutex_unlock(&ts->lock);
     return 0;
 }
 static ssize_t nvt_edge_grid_zone_store(struct file *file, const char *buffer, size_t count, loff_t *pos) {
@@ -1190,7 +1289,8 @@ static int32_t nvt_edge_grid_zone_open(struct inode *inode, struct file *file) {
 }
 
 #ifdef HAVE_PROC_OPS
-static const struct file_operations nvt_edge_grid_zone_fops = {
+//static const struct file_operations nvt_edge_grid_zone_fops = {
+static const struct proc_ops nvt_edge_grid_zone_fops = {
 	.proc_open = nvt_edge_grid_zone_open,
 	.proc_read = seq_read,
 	.proc_write = nvt_edge_grid_zone_store,
@@ -1233,7 +1333,7 @@ static ssize_t nvt_game_mode_store(struct file *file, const char *buffer, size_t
 	char dbg[10] = { 0 };
 	uint8_t state;
 	uint8_t ret;
-
+	
 	ret = copy_from_user(dbg, (uint8_t *) buffer, sizeof(uint8_t));
 	if (ret)
 		return -EINVAL;
@@ -1257,7 +1357,8 @@ static int32_t nvt_game_mode_open(struct inode *inode, struct file *file) {
 }
 
 #ifdef HAVE_PROC_OPS
-static const struct file_operations nvt_game_mode_fops = {
+//static const struct file_operations nvt_game_mode_fops = {
+static const struct proc_ops nvt_game_mode_fops = {
 	.proc_open = nvt_game_mode_open,
 	.proc_read = seq_read,
 	.proc_write = nvt_game_mode_store,
@@ -1268,6 +1369,7 @@ static const struct file_operations nvt_game_mode_fops = {
 
 #else
 static const struct file_operations nvt_game_mode_fops = {
+// static const struct proc_ops nvt_game_mode_fops = {
 	.owner = THIS_MODULE,
 	.open = nvt_game_mode_open,
 	.read = seq_read,
@@ -1277,44 +1379,111 @@ static const struct file_operations nvt_game_mode_fops = {
 };
 #endif
 
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 start*/
+int32_t nvt_support_pen_set_nfc(uint8_t state)
+{
+	if (state == 1) {
+		ts->nfc_state = 0;
+		if (ts->pen_state == 1){
+			nvt_support_pen_set(ts->pen_state, ts->pen_version);
+		} else {
+			NVT_LOG("The pen no connect!");
+			return 0;
+		}
+	} else {
+		nvt_support_pen_set(0, 0);
+		ts->nfc_state = 1;
+	}
+	return 0;
+}
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 end*/
 /*
  *	/proc/support_pen cmd_param
  *      [0], 0 : not support pen
  *			 1 : support pen
+ *		[1], 0 : old pen
+ *			 1 : new pen
  *
  */
-int32_t nvt_support_pen_set(uint8_t status) {
-	int ret = 0;
+int32_t nvt_support_pen_set(uint8_t state, uint8_t version) {
+	int i, retry = 5;
+	uint8_t buf[12] = {0};
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 start */
+	if (mutex_lock_interruptible(&ts->lock)) {
+		return -ERESTARTSYS;
+	}
+	if(bTouchIsAwake == 0){
+		NVT_ERR("Touch is already suspend, ignore cmd");
+		mutex_unlock(&ts->lock);
+		return -1;
+	}
+/* Spinel code for OSPINEL-3535 by zhangyd22 at 2023/06/05 end */
+	//---set xdata index to EVENT BUF ADDR---(set page)
+	nvt_set_page(ts->mmap->EVENT_BUF_ADDR);
 
-	if(status == 0)
-		ret = nvt_ext_cmd_store(SUPPORT_PEN_CMD, 0x00);
-	else if(status == 1)
-		ret = nvt_ext_cmd_store(SUPPORT_PEN_CMD, 0x01);
+	for (i = 0; i < retry; i++) {
+		/*---set cmd status---*/
+		buf[0] = EVENT_MAP_HOST_CMD;
+		buf[1] = SUPPORT_PEN_CMD;
+		buf[2] = state;
+		buf[3] = version;
+		CTP_SPI_WRITE(ts->client, buf, 4);
 
+		msleep(20);
 
-	return ret;
+		//---read cmd status---
+		buf[0] = EVENT_MAP_HOST_CMD;
+		buf[1] = 0xFF;
+		buf[2] = 0xFF;
+		buf[3] = 0xFF;
+		CTP_SPI_READ(ts->client, buf, 4);
+		if (buf[1] == 0x00)
+			break;
+	}
+
+	if (unlikely(i == retry)) {
+		NVT_ERR("send Cmd 0x%02X 0x%02X 0x%02X failed, buf[1]=0x%02X\n",
+			SUPPORT_PEN_CMD, state, version, buf[1]);
+		mutex_unlock(&ts->lock);
+		return -1;
+	} else {
+		NVT_LOG("send Cmd 0x%02X 0x%02X 0x%02X success, tried %d times\n",
+			SUPPORT_PEN_CMD, state, version, i);
+	}
+	mutex_unlock(&ts->lock);
+	return 0;
 }
 static ssize_t nvt_support_pen_store(struct file *file, const char *buffer, size_t count, loff_t *pos) {
-	char dbg[10] = { 0 };
-	uint8_t state;
-	uint8_t ret;
+    int32_t tmp[4];
+    uint8_t ret;
+    char buf[16] = { 0 };
 
-	ret = copy_from_user(dbg, (uint8_t *) buffer, sizeof(uint8_t));
+	ret = copy_from_user(buf, (uint8_t *) buffer, count);
 	if (ret)
 		return -EINVAL;
 
-	ret = kstrtou8(dbg, 16, &state);
-	if (ret < 0)
-		return ret;
+	NVT_LOG("buf=%s\n", buf);
 
-	NVT_LOG("support pen state %d!\n", state);
-	ts->pen_state = state;
-	nvt_support_pen_set(ts->pen_state);
+/*Spinel code for open old pen by zhangyd22 at 2023/04/011 star*/
+	ret = sscanf(buf, "%d,%d", tmp, tmp+1);
+	ts->pen_state = tmp[0];
+	ts->pen_version = tmp[1];
+
+	NVT_LOG("support pen state %d, %d!\n", ts->pen_state, ts->pen_version);
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 start*/
+	if (ts->nfc_state) {
+		NVT_LOG("The pen is chargering!");
+	} else {
+		NVT_LOG("The pen is ready!");
+		nvt_support_pen_set(ts->pen_state, ts->pen_version);
+	}
+/*Spinel code for control pen state by zhangyd22 at 2023/04/04 end*/
+/*Spinel code for open old pen by zhangyd22 at 2023/04/11 end*/
 
 	return count;
 }
 static int nvt_support_pen_show(struct seq_file *sfile, void *v) {
-	seq_printf(sfile, "Pen state %d!\n", ts->game_mode_state);
+	seq_printf(sfile, "Pen state %d!\n", ts->pen_state);
 	return 0;
 }
 static int32_t nvt_support_pen_open(struct inode *inode, struct file *file) {
@@ -1322,13 +1491,13 @@ static int32_t nvt_support_pen_open(struct inode *inode, struct file *file) {
 }
 
 #ifdef HAVE_PROC_OPS
-static const struct file_operations nvt_support_pen_fops = {
+//static const struct file_operations nvt_support_pen_fops = {
+static const struct proc_ops nvt_support_pen_fops = {
 	.proc_open = nvt_support_pen_open,
 	.proc_read = seq_read,
 	.proc_write = nvt_support_pen_store,
 	.proc_lseek = seq_lseek,
 	.proc_release = seq_release,
-
 };
 
 #else
@@ -1342,10 +1511,41 @@ static const struct file_operations nvt_support_pen_fops = {
 };
 #endif
 
-#endif
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 start */
+#if NVT_DPR_SWITCH
+/*
+* /proc/fw_pen_state
+*	0:finger mode
+*	1:pen mode
+*/
+static int32_t nvt_get_fw_pen_state_show(struct seq_file *m, void *v)
+{
+    seq_printf(m, "%d\n", ts->fw_pen_state);
+    return 0;
+}
 
-/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 start*/
+static int32_t nvt_get_fw_pen_state_open(struct inode *inode, struct file *file)
+{
+    return single_open(file, nvt_get_fw_pen_state_show, NULL);
+}
+#ifdef HAVE_PROC_OPS
+static const struct proc_ops nvt_get_fw_pen_state_fops = {
+    .proc_open = nvt_get_fw_pen_state_open,
+};
+#else
+static const struct file_operations nvt_get_fw_pen_state_fops = {
+    .owner = THIS_MODULE,
+    .open = nvt_get_fw_pen_state_open,
+    .read = seq_read,
+    .llseek = seq_lseek,
+    .release = single_release,
+};
+#endif
+#endif
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 end */
+#endif
+
+/*Spinel code for charging by wangxin77 at 2023/03/06 start*/
 int32_t nvt_set_charger(uint8_t charger_on_off)
 {
 	uint8_t buf[8] = {0};
@@ -1395,7 +1595,7 @@ int32_t nvt_set_charger(uint8_t charger_on_off)
 	return ret;
 }
 EXPORT_SYMBOL(nvt_set_charger);
-/*Spruce code for OSPURCET-1297 by zenghui4 at 2023/02/20 end*/
+/*Spinel code for charging by wangxin77 at 2023/03/06 end*/
 /*******************************************************
 Description:
 	Novatek touchscreen extra function proc. file node
@@ -1437,8 +1637,7 @@ int32_t nvt_extra_proc_init(void)
 	} else {
 		NVT_LOG("create proc/%s Succeeded!\n", NVT_DIFF);
 	}
-
-	/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+	/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
 	NVT_gesture_entry = proc_create(GESTURE_CONTROL, 0444, NULL, &gesture_control_fops);
 	if (NVT_gesture_entry == NULL) {
 		NVT_ERR("create proc/%s Failed!\n", GESTURE_CONTROL);
@@ -1446,7 +1645,7 @@ int32_t nvt_extra_proc_init(void)
 	} else {
 		NVT_LOG("create proc/%s Succeeded!\n", GESTURE_CONTROL);
 	}
-	/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
+	/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 end */
 	if (ts->pen_support) {
 		NVT_proc_pen_diff_entry = proc_create(NVT_PEN_DIFF, 0444, NULL,&nvt_pen_diff_fops);
 		if (NVT_proc_pen_diff_entry == NULL) {
@@ -1456,8 +1655,15 @@ int32_t nvt_extra_proc_init(void)
 			NVT_LOG("create proc/%s Succeeded!\n", NVT_PEN_DIFF);
 		}
 	}
-
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+	/* Spinel code for OSPINEL-3913 by zhangyd22 at 2023/06/07 start */
+	NVT_proc_fw_status_entry = proc_create(NVT_FW_STATUS, 0444, NULL,&nvt_fw_status_fops);
+	if (NVT_proc_fw_status_entry == NULL) {
+		NVT_ERR("create proc/%s Failed!\n", NVT_FW_STATUS);
+		return -ENOMEM;
+	} else {
+		NVT_LOG("create proc/%s Succeeded!\n", NVT_FW_STATUS);
+	}
+	/* Spinel code for OSPINEL-3913 by zhangyd22 at 2023/06/07 end */
 #if NVT_CUST_PROC_CMD
 	NVT_proc_edge_reject_entry = proc_create(PENEL_DIRECTION, 0644, NULL, &nvt_edge_reject_fops);
 	if (NVT_proc_edge_reject_entry == NULL) {
@@ -1465,7 +1671,7 @@ int32_t nvt_extra_proc_init(void)
 		return -ENOMEM;
 	} else {
 		NVT_LOG("create proc/%s Succeeded!\n", PENEL_DIRECTION);
-	}
+	} 
 
 	NVT_proc_edge_grid_zone_entry = proc_create(EDGE_GRID_ZONE, 0644, NULL, &nvt_edge_grid_zone_fops);
 	if (NVT_proc_edge_grid_zone_entry == NULL) {
@@ -1473,7 +1679,7 @@ int32_t nvt_extra_proc_init(void)
 		return -ENOMEM;
 	} else {
 		NVT_LOG("create proc/%s Succeeded!\n", EDGE_GRID_ZONE);
-	}
+	} 
 
 
 	NVT_proc_game_mode_entry = proc_create(GAME_MODE, 0666, NULL, &nvt_game_mode_fops);
@@ -1482,7 +1688,7 @@ int32_t nvt_extra_proc_init(void)
 		return -ENOMEM;
 	} else {
 		NVT_LOG("create proc/%s Succeeded!\n", GAME_MODE);
-	}
+	} 
 
 	NVT_proc_support_pen_entry = proc_create(SUPPORT_PEN, 0666, NULL, &nvt_support_pen_fops);
 	if (NVT_proc_support_pen_entry == NULL) {
@@ -1490,9 +1696,19 @@ int32_t nvt_extra_proc_init(void)
 		return -ENOMEM;
 	} else {
 		NVT_LOG("create proc/%s Succeeded!\n", SUPPORT_PEN);
+	} 
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 start */
+#if NVT_DPR_SWITCH
+	NVT_proc_get_fw_pen_state_entry = proc_create(FW_PEN_STATE, 0664, NULL, &nvt_get_fw_pen_state_fops);
+	if (NVT_proc_get_fw_pen_state_entry == NULL) {
+		NVT_ERR("create proc/%s Failed!\n", FW_PEN_STATE);
+		return -ENOMEM;
+	} else {
+	NVT_LOG("create proc/%s Succeeded!\n", FW_PEN_STATE);
 	}
 #endif
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 end */
+#endif
 
 	return 0;
 }
@@ -1530,14 +1746,13 @@ void nvt_extra_proc_deinit(void)
 		NVT_proc_diff_entry = NULL;
 		NVT_LOG("Removed /proc/%s\n", NVT_DIFF);
 	}
-
-	/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 start*/
+	/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
 	if (NVT_gesture_entry != NULL) {
 		remove_proc_entry(GESTURE_CONTROL, NULL);
 		NVT_gesture_entry = NULL;
 		NVT_LOG("Removed /proc/%s\n", GESTURE_CONTROL);
 	}
-	/*Spruce code for OSPURCET-112 by zenghui4 at 2023/1/5 end*/
+	/* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 end */
 	if (ts->pen_support) {
 		if (NVT_proc_pen_diff_entry != NULL) {
 			remove_proc_entry(NVT_PEN_DIFF, NULL);
@@ -1545,7 +1760,13 @@ void nvt_extra_proc_deinit(void)
 			NVT_LOG("Removed /proc/%s\n", NVT_PEN_DIFF);
 		}
 	}
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 start*/
+	/* Spinel code for OSPINEL-3913 by zhangyd22 at 2023/06/07 start */
+	if (NVT_proc_fw_status_entry != NULL) {
+		remove_proc_entry(NVT_FW_STATUS, NULL);
+		NVT_proc_fw_status_entry = NULL;
+		NVT_LOG("Removed /proc/%s\n", NVT_FW_STATUS);
+	}
+	/* Spinel code for OSPINEL-3913 by zhangyd22 at 2023/06/07 end */
 #if NVT_CUST_PROC_CMD
 	if (NVT_proc_edge_reject_entry != NULL) {
 		remove_proc_entry(PENEL_DIRECTION, NULL);
@@ -1570,7 +1791,15 @@ void nvt_extra_proc_deinit(void)
 		NVT_proc_support_pen_entry = NULL;
 		NVT_LOG("Removed /proc/%s\n", SUPPORT_PEN);
 	}
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 start */
+#if NVT_DPR_SWITCH
+	if (NVT_proc_get_fw_pen_state_entry != NULL) {
+		remove_proc_entry(FW_PEN_STATE, NULL);
+		NVT_proc_get_fw_pen_state_entry = NULL;
+		NVT_LOG("Removed /proc/%s\n", FW_PEN_STATE);
+	}
 #endif
-/*Spruce code for OSPURCET-217 by gaoxue4 at 2023/1/9 end*/
+/* Spinel code for OSPINEL-2020 by zhangyd22 at 2023/4/4 end */
+#endif
 }
 #endif

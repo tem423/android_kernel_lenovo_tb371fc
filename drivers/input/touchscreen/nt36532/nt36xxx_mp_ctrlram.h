@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2010 - 2022 Novatek, Inc.
  *
- * $Revision: 107367 $
- * $Date: 2022-10-26 08:30:52 +0800 (週三, 26 十月 2022) $
+ * $Revision: 107417 $
+ * $Date: 2022-10-26 13:59:54 +0800 (週三, 26 十月 2022) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
