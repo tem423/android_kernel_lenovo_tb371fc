@@ -1997,12 +1997,12 @@ static void nvt_restore_cmd_func(struct work_struct *work){
 int tp_compare_ic(void)
 {
 	NVT_LOG("tp_compare_ic in!!");
-	if (gpio_82 == 0) {
+	if (is_ft_lcm == 0) {
 		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_fw_boe_6.bin";
 		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_mp_boe_6.bin";
 		NVT_LOG("match nt36532_dsi_vdo_boe_drv");
 		return 0;
-	} else if (gpio_82 == 1) {
+	} else if (is_ft_lcm == 1) {
 		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_tm_fw_6.bin";
 		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_tm_mp_6.bin";
 		NVT_LOG("match nt36532_dsi_vdo_tianma_drv");
