@@ -851,8 +851,8 @@ info_retry:
 	ts->x_num = buf[3];
 	ts->y_num = buf[4];
 	/*Spruce code for OSPURCET-2936 by zenghui4 at 2023/3/3 start*/
-	//ts->abs_x_max = (uint16_t)((buf[5] << 8) | buf[6]);
-	//ts->abs_y_max = (uint16_t)((buf[7] << 8) | buf[8]);
+	ts->abs_x_max = (uint16_t)((buf[5] << 8) | buf[6]);
+	ts->abs_y_max = (uint16_t)((buf[7] << 8) | buf[8]);
 	/*Spruce code for OSPURCET-2936 by zenghui4 at 2023/3/3 end*/
 	ts->max_button_num = buf[11];
 	ts->nvt_pid = (uint16_t)((buf[36] << 8) | buf[35]);
@@ -860,7 +860,7 @@ info_retry:
 		ts->x_gang_num = buf[37];
 		ts->y_gang_num = buf[38];
 	}
-	NVT_LOG("fw_ver=0x%02X, fw_type=0x%02X, PID=0x%04X\n", ts->fw_ver, buf[14], ts->nvt_pid);
+	NVT_LOG("fw_ver=0x%02X, fw_type=0x%02X, PID=0x%04X, ABS_X_MAX=%d, ABS_Y_MAX=%d\n", ts->fw_ver, buf[14], ts->nvt_pid, ts->abs_x_max, ts->abs_y_max);
 
 	ret = 0;
 
