@@ -524,6 +524,8 @@ static void nvt_charger_notify_work(struct work_struct *work)
     uint8_t buf[3] = {0};
     int32_t ret;
 
+    (void)ts_data;  /* 避免未使用变量警告 */
+
     NVT_LOG("enter nvt_charger_notify_work\n");
 
     if (!bTouchIsAwake) {
