@@ -18,6 +18,7 @@
 
 #include <linux/firmware.h>
 #include <linux/gpio.h>
+#include <linux/ktime.h>
 
 #include "nt36xxx.h"
 
