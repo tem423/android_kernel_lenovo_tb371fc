@@ -878,7 +878,7 @@ void get_tp_info(void)
 		sprintf(tp_version_info, "[Vendor]:Tianma,[TP-IC]:NT36532, [fw]:%d\n", ts->fw_ver);
 	}
 	printk("[%s]: tp_version %s\n", __func__, tp_version_info);
-	hq_regiser_hw_info(HWID_CTP, tp_version_info);
+	hq_register_hw_info(HWID_CTP, tp_version_info);
 }
 /* Spruce code for OSPURCET-431 by gaoxue4 at 2022/12/30 end */
 
@@ -1997,14 +1997,14 @@ static void nvt_restore_cmd_func(struct work_struct *work){
 int tp_compare_ic(void)
 {
 	NVT_LOG("tp_compare_ic in!!");
-	if (is_ft_lcm == 0) {
-		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_boe_fw.bin";
-		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_boe_mp.bin";
+	if (gpio_82 == 0) {
+		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_fw_boe_6.bin";
+		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_mp_boe_6.bin";
 		NVT_LOG("match nt36532_dsi_vdo_boe_drv");
 		return 0;
-	} else if (is_ft_lcm == 1) {
-		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_tianma_fw.bin";
-		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_tianma_mp.bin";
+	} else if (gpio_82 == 1) {
+		BOOT_UPDATE_FIRMWARE_NAME = "novatek_ts_tm_fw_6.bin";
+		MP_UPDATE_FIRMWARE_NAME = "novatek_ts_tm_mp_6.bin";
 		NVT_LOG("match nt36532_dsi_vdo_tianma_drv");
 		return 0;
 	}  else {
