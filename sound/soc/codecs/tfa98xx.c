@@ -1,5 +1,5 @@
 /*
- * tfa98xx.c   tfa98xx codec module
+ * tfa98xx.c   tfa98xx component module
  *
  * Copyright 2014-2017 NXP Semiconductors
  *
@@ -1160,7 +1160,7 @@ static int tfa98xx_get_vstep(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 	int mixer_profile = kcontrol->private_value;
 	int ret = 0;
 	int profile;
@@ -1188,7 +1188,7 @@ static int tfa98xx_set_vstep(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 	int mixer_profile = kcontrol->private_value;
 	int profile;
 	int err = 0;
@@ -1266,7 +1266,7 @@ static int tfa98xx_info_vstep(struct snd_kcontrol *kcontrol,
 		       struct snd_ctl_elem_info *uinfo)
 {
 	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 
 	int mixer_profile = tfa98xx_mixer_profile;
 	int profile = get_profile_id_for_sr(mixer_profile, tfa98xx->rate);
@@ -1300,7 +1300,7 @@ static int tfa98xx_set_profile(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 	int change = 0;
 	int new_profile;
 	int prof_idx;
@@ -1921,7 +1921,7 @@ static const struct snd_soc_dapm_route tfa9888_input_dapm_routes[] = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,2,0)
 static struct snd_soc_dapm_context *snd_soc_component_get_dapm(struct snd_soc_component *component)
 {
-	return &codec->dapm;
+	return &component->dapm;
 }
 #endif
 
@@ -2647,7 +2647,7 @@ static int tfa98xx_startup(struct snd_pcm_substream *substream,
 						struct snd_soc_dai *dai)
 {
 	struct snd_soc_component *component = dai->component;
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 	unsigned int sr;
 	int len, prof, nprof, idx = 0;
 	char *basename;
@@ -2655,7 +2655,7 @@ static int tfa98xx_startup(struct snd_pcm_substream *substream,
 	int err;
 
 	/*
-	 * Support CODEC to CODEC links,
+	 * Support component to component links,
 	 * these are called with a NULL runtime pointer.
 	 */
 	if (!substream->runtime)
@@ -2685,7 +2685,7 @@ static int tfa98xx_startup(struct snd_pcm_substream *substream,
 		return 0;
 
 	if (tfa98xx->dsp_fw_state != TFA98XX_DSP_FW_OK) {
-		dev_info(codec->dev, "Container file not loaded\n");
+		dev_info(component->dev, "Container file not loaded\n");
 		return -EINVAL;
 	}
 
@@ -2710,10 +2710,10 @@ static int tfa98xx_startup(struct snd_pcm_substream *substream,
 			 */
 			sr = tfa98xx_get_profile_sr(tfa98xx->tfa, prof);
 			if (!sr)
-				dev_info(codec->dev, "Unable to identify supported sample rate\n");
+				dev_info(component->dev, "Unable to identify supported sample rate\n");
 
 			if (tfa98xx->rate_constraint.count >= TFA98XX_NUM_RATES) {
-				dev_err(codec->dev, "too many sample rates\n");
+				dev_err(component->dev, "too many sample rates\n");
 			} else {
 				tfa98xx->rate_constraint_list[idx++] = sr;
 				tfa98xx->rate_constraint.count += 1;
@@ -2731,7 +2731,7 @@ static int tfa98xx_startup(struct snd_pcm_substream *substream,
 static int tfa98xx_set_dai_sysclk(struct snd_soc_dai *component_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec_dai->component);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component_dai->component);
 
 	tfa98xx->sysclk = freq;
 	return 0;
@@ -2755,14 +2755,14 @@ static int tfa98xx_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
 		if ((fmt & SND_SOC_DAIFMT_MASTER_MASK) != SND_SOC_DAIFMT_CBS_CFS) {
-			dev_err(codec->dev, "Invalid Codec master mode\n");
+			dev_err(component->dev, "Invalid component master mode\n");
 			return -EINVAL;
 		}
 		break;
 	case SND_SOC_DAIFMT_PDM:
 		break;
 	default:
-		dev_err(codec->dev, "Unsupported DAI format %d\n",
+		dev_err(component->dev, "Unsupported DAI format %d\n",
 					fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -2788,7 +2788,7 @@ static int tfa98xx_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
 	struct snd_soc_component *component = dai->component;
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 	unsigned int rate;
 	int prof_idx;
 
@@ -2873,7 +2873,7 @@ enum Tfa98xx_Error tfa98xx_adsp_send_calib_values(struct tfa98xx *tfa98xx)
 static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
 	struct snd_soc_component *component = dai->component;
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 
 	dev_dbg(&tfa98xx->i2c->dev, "%s: state: %d\n", __func__, mute);
 #ifdef TFA9874_NONDSP_STEREO
@@ -2983,7 +2983,7 @@ static struct snd_soc_dai_driver tfa98xx_dai[] = {
 
 static int tfa98xx_probe(struct snd_soc_component *component)
 {
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 	int ret;
 
 	pr_debug("\n");
@@ -2998,22 +2998,22 @@ static int tfa98xx_probe(struct snd_soc_component *component)
 	INIT_DELAYED_WORK(&tfa98xx->interrupt_work, tfa98xx_interrupt);
 	INIT_DELAYED_WORK(&tfa98xx->tapdet_work, tfa98xx_tapdet_work);
 
-	tfa98xx->component = codec;
+	tfa98xx->component = component;
 
 	ret = tfa98xx_load_container(tfa98xx);
 	pr_debug("Container loading requested: %d\n", ret);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0)
-	codec->control_data = tfa98xx->regmap;
-	ret = snd_soc_component_set_cache_io(codec, 8, 16, SND_SOC_REGMAP);
+	component->control_data = tfa98xx->regmap;
+	ret = snd_soc_component_set_cache_io(component, 8, 16, SND_SOC_REGMAP);
 	if (ret != 0) {
-		dev_err(codec->dev, "Failed to set cache I/O: %d\n", ret);
+		dev_err(component->dev, "Failed to set cache I/O: %d\n", ret);
 		return ret;
 	}
 #endif
 	tfa98xx_add_widgets(tfa98xx);
 
-	dev_info(codec->dev, "tfa98xx codec registered (%s)",
+	dev_info(component->dev, "tfa98xx component registered (%s)",
 							tfa98xx->fw.name);
 
 	return ret;
@@ -3021,7 +3021,7 @@ static int tfa98xx_probe(struct snd_soc_component *component)
 
 static int tfa98xx_remove(struct snd_soc_component *component)
 {
-	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(codec);
+	struct tfa98xx *tfa98xx = snd_soc_component_get_drvdata(component);
 	pr_debug("\n");
 
 	tfa98xx_interrupt_enable(tfa98xx, false);
@@ -3403,7 +3403,7 @@ static int tfa98xx_i2c_probe(struct i2c_client *i2c,
 	tfa98xx->tfa->cachep = tfa98xx_cache;
 
 	/* Modify the stream names, by appending the i2c device address.
-	 * This is used with multicodec, in order to discriminate the devices.
+	 * This is used with multicomponent, in order to discriminate the devices.
 	 * Stream names appear in the dai definition and in the stream  	 .
 	 * We create copies of original structures because each device will
 	 * have its own instance of this structure, with its own address.
