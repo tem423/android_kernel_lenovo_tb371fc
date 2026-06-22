@@ -20,6 +20,7 @@
 #include <linux/kernel.h>
 #include <linux/types.h>
 #include <linux/list.h>
+#include <sound/soc.h>
 
 #include "tfa_device.h"
 #include "tfa_container.h"
