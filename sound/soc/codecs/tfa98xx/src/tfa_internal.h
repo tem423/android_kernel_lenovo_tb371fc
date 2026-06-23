@@ -28,7 +28,6 @@
 
 TFA_INTERNAL enum Tfa98xx_Error tfa98xx_check_rpc_status(struct tfa_device *tfa, int *pRpcStatus);
 TFA_INTERNAL enum Tfa98xx_Error tfa98xx_wait_result(struct tfa_device *tfa, int waitRetryCount);
-typedef enum Tfa98xx_Error tfa_error;
 
 #endif /* __TFA_INTERNAL_H__ */
 
