@@ -104,9 +104,9 @@ enum hardware_id {
     HWID_NFC,
     HWID_TEE,
 
-    HWID_BATERY_ID = 0xA0,
+    HWID_BATTERY_ID = 0xA0,
     HWID_CHARGER,
-    HWID_BATERY_ID_ADC,
+    HWID_BATTERY_ID_ADC,
 
     HWID_USB_TYPE_C = 0xE0,
 
