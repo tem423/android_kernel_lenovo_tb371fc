@@ -12,7 +12,7 @@ MISC_INFO(MISC_OTP_SN, otp_sn);
 
 /* 骁龙870 eMMC路径（如果有eMMC设备） */
 #define qcom_emmc "/sys/class/mmc_host/mmc0/mmc0:0001/block/mmcblk0/size"
-#define qcom_emmc_len 16
+#define qcom_emmc_len 18
 
 unsigned int round_kbytes_to_readable_mbytes(unsigned int k)
 {
