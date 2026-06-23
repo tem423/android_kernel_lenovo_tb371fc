@@ -22,7 +22,7 @@
 #include <linux/slab.h>
 
 #define HARDWARE_INFO_VERSION   "SM8250"
-#define HARDWARE_INFO_WCN       "WCN3998"
+#define HARDWARE_INFO_WCN       "QCA6390"
 #define hwinfo_debug  pr_info
 
 /* ========== 骁龙870 UFS 路径 ========== */
@@ -31,7 +31,7 @@
 #define emmc_len 18
 #define EMMC_VENDOR_CMP_SIZE 2
 
-#define DDR_TYPE "LPDDR4X"
+#define DDR_TYPE "LPDDR5"
 
 static EMMC_VENDOR_TABLE vendor_table[] = {
     { .id = "11", .name = "Toshiba", },
@@ -165,7 +165,7 @@ void get_hardware_info_data(enum hardware_id id, const void *data)
         case HWID_SAR_SENSOR_2:
             hwinfo_data.sar_sensor_2 = data;
             break;
-        case HWID_BATERY_ID:
+        case HWID_BATTERY_ID:
             hwinfo_data.bat_id = data;
             break;
         case HWID_NFC:
@@ -192,7 +192,7 @@ void get_hardware_info_data(enum hardware_id id, const void *data)
         case HWID_SMARTPA:
             hwinfo_data.smartpa = data;
             break;
-        case HWID_BATERY_ID_ADC:
+        case HWID_BATTERY_ID_ADC:
             hwinfo_data.bat_id_adc = (int *)data;
             break;
         default:
