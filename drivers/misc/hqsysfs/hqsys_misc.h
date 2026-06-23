@@ -39,7 +39,7 @@
 #include <linux/hqsysfs.h>
 
 #define qcom_emmc "/sys/class/mmc_host/mmc0/mmc0:0001/block/mmcblk0/size"
-#define qcom_emmc_len  18
+#define qcom_emmc_len  16
 
 #define HUAQIN_MISC_NAME	"misc"
 
