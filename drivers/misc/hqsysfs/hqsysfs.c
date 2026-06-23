@@ -384,7 +384,7 @@ err:
 
 static char *audio_pa;
 
-int hq_regiser_hw_info(enum hardware_id id, char *device_name)
+int hq_register_hw_info(enum hardware_id id, char *device_name)
 {
 	int ret = 0;
 	int find_hw_id = 0;
