@@ -5,7 +5,6 @@
 
 #include <linux/hqsysfs.h>
 #include "hqsys_misc.h"
-#include "hqsys_pcba.h"
 #include <linux/of.h>
 #include <linux/types.h>
 #include <linux/file.h>
@@ -257,11 +256,9 @@ static ssize_t huaqin_show(struct kobject *kobj, struct attribute *a, char *buf)
 		count = sprintf(buf, "%s\n", pcba_config_string);
 		return count;
 	} else if (HWID_PCBA_INFO == hw->hw_id) {
-		/* 骁龙870: 直接硬编码 SM8250 */
 		count = sprintf(buf, "SM8250_%dG\n", get_ram_size());
 		return count;
 	} else if (HWID_PMIC_VERSION == hw->hw_id) {
-		/* 骁龙870 主PMIC: PM8150 */
 		count = sprintf(buf, "%s\n", "PMIC: PM8150");
 	} else if (HWID_MEMORY == hw->hw_id) {
 		get_ufs_vendor_name(ufs_vendor_name);
@@ -381,6 +378,7 @@ int hq_deregister_hw_info(enum hardware_id id, char *device_name)
 err:
 	return ret;
 }
+EXPORT_SYMBOL(hq_deregister_hw_info);  /* 导出符号供模块使用 */
 
 static char *audio_pa;
 
@@ -429,6 +427,7 @@ int hq_register_hw_info(enum hardware_id id, char *device_name)
 err:
 	return ret;
 }
+EXPORT_SYMBOL(hq_register_hw_info);  /* 导出符号供模块使用 */
 
 #include <linux/proc_fs.h>
 #include <linux/of_gpio.h>
@@ -436,9 +435,6 @@ err:
 
 #define PROC_BOOT_REASON_FILE "boot_status"
 #define SDC_DETECT_STATUS "sdc_det_gpio_status"
-
-// 骁龙870的SD卡检测GPIO需要查具体机型原理图，这里默认注释掉
-// #define SDC_DETECT_GPIO  xxx
 
 static struct proc_dir_entry *boot_reason_proc;
 static struct proc_dir_entry *sdc_detect_status;
@@ -464,8 +460,7 @@ static const struct file_operations boot_reason_proc_fops = {
 
 static int sdc_detect_proc_show(struct seq_file *file, void *data)
 {
-	// 骁龙870需要配置正确的GPIO号
-	seq_printf(file, "%d\n", -1); // 默认返回-1表示未实现
+	seq_printf(file, "%d\n", -1);
 	return 0;
 }
 
