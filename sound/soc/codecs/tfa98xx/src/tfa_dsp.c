@@ -94,10 +94,35 @@ static inline enum tfa_error tfa98xx_to_tfa_error(enum Tfa98xx_Error err)
     case Tfa98xx_Error_Buffer_too_small:
         return tfa_error_container;
     default:
-        /* For RpcBase and other errors, map to device error */
         if (err <= Tfa98xx_Error_RpcBase)
             return tfa_error_device;
         return tfa_error_device;
+    }
+}
+
+/**
+ * Convert tfa_error to Tfa98xx_Error
+ * Maps error codes from enum tfa_error to enum Tfa98xx_Error
+ */
+static inline enum Tfa98xx_Error tfa_error_to_Tfa98xx_Error(enum tfa_error err)
+{
+    switch (err) {
+    case tfa_error_ok:
+        return Tfa98xx_Error_Ok;
+    case tfa_error_device:
+        return Tfa98xx_Error_Fail;
+    case tfa_error_bad_param:
+        return Tfa98xx_Error_Bad_Parameter;
+    case tfa_error_noclock:
+        return Tfa98xx_Error_NoClock;
+    case tfa_error_timeout:
+        return Tfa98xx_Error_StateTimedOut;
+    case tfa_error_dsp:
+        return Tfa98xx_Error_DSP_not_running;
+    case tfa_error_container:
+        return Tfa98xx_Error_Fail;
+    default:
+        return Tfa98xx_Error_Fail;
     }
 }
 
@@ -3297,7 +3322,7 @@ enum tfa_error tfa_dev_start(struct tfa_device *tfa, int next_profile, int vstep
 		tfa_dev_set_swvstep(tfa, (unsigned short)vstep);
 
 		pr_info("Power down device, by force, in standby profile!\n");
-		err = tfa_dev_stop(tfa);
+		err = tfa_error_to_Tfa98xx_Error(tfa_dev_stop(tfa));
 		goto error_exit;
 	}
 
@@ -4324,7 +4349,7 @@ void tfa_adapt_noisemode(struct tfa_device *tfa)
 }
 int tfa_plop_noise_interrupt(struct tfa_device *tfa, int profile, int vstep)
 {
-	enum Tfa98xx_Error err;
+	enum tfa_error err;
 	int no_clk = 0;
 
 	/* Remove sticky bit by reading it once */
