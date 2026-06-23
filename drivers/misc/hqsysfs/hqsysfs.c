@@ -20,7 +20,7 @@
 /* 骁龙870 UFS 路径（SM8250-AC） */
 #define emmc_file "/sys/devices/platform/soc/1d84000.ufshc/geometry_descriptor/raw_device_capacity"
 #define UFS_VENDOR_NAME "/sys/devices/platform/soc/1d84000.ufshc/string_descriptors/manufacturer_name"
-#define emmc_len 18
+#define emmc_len 17
 
 #define SKU_CMDLINE "androidboot.product.hardware.sku="
 #define STG_CMDLINE "androidboot.stage="
