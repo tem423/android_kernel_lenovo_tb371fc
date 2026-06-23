@@ -648,6 +648,8 @@ source "drivers/misc/cardreader/Kconfig"
 source "drivers/misc/fpr_FingerprintCard/Kconfig"
 source "drivers/misc/ctn730/Kconfig"
 source "drivers/misc/qrc/Kconfig"
+source "drivers/misc/huaqinhardware_info/Kconfig"
+source "drivers/misc/hqsysfs/Kconfig"
 endmenu
 
 config OKL4_USER_VIPC
