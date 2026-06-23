@@ -20,7 +20,7 @@
 
 /* ========== 骁龙870 (SM8250) UFS 路径 ========== */
 #define emmc_file "/sys/devices/platform/soc/1d84000.ufshc/geometry_descriptor/raw_device_capacity"
-#define emmc_len  18
+#define emmc_len  17
 #define EMMC_VENDOR_CMP_SIZE  2
 
 typedef struct
