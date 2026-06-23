@@ -15,7 +15,7 @@
 #include <linux/sysinfo.h>
 #include <linux/slab.h>
 
-#define HQ_SYS_FS_VER "2022-1230 V2.0-QCOM-SM8250"
+#define HQ_SYS_FS_VER "2022-12-30 V2.0"
 
 /* 骁龙870 UFS 路径（SM8250-AC） */
 #define emmc_file "/sys/devices/platform/soc/1d84000.ufshc/geometry_descriptor/raw_device_capacity"
