@@ -5,7 +5,7 @@
 
 #include <linux/hqsysfs.h>
 #include "hqsys_misc.h"
-#include "hqsys_pcba.h
+#include "hqsys_pcba.h"
 #include <linux/of.h>
 #include <linux/types.h>
 #include <linux/file.h>
