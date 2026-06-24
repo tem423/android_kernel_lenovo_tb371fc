@@ -55,7 +55,7 @@ static __maybe_unused BOARD_TYPE_TABLE pcba_type_table[] = {
     { .type_value = -1, .pcba_type_name = "UNKNOWN", },
 };
 
-static BOARD_STAGE_TABLE pcba_stage_tabe[] = {
+static __maybe_unused BOARD_STAGE_TABLE pcba_stage_tabe[] = {
     { .stage_value = 0,   .pcba_stage_name = "PRE_EVT" },
     { .stage_value = 163, .pcba_stage_name = "EVT" },
     { .stage_value = 550, .pcba_stage_name = "DVT1" },
@@ -508,6 +508,7 @@ static ssize_t show_stage_id(struct device *dev, struct device_attribute *attr, 
     char *stage = strstr(saved_command_line, "androidboot.stage=");
     char result[32] = {0};
     int i = 0;
+    
     if (stage) {
         stage += 17;
         
@@ -705,9 +706,9 @@ static ssize_t show_hw_id(struct device *dev, struct device_attribute *attr, cha
     char stage[32] = "PVT";
     char *stage_ptr = strstr(saved_command_line, "androidboot.stage=");
     int i = 0;
+    
     if (stage_ptr) {
         stage_ptr += 17;
-        int i = 0;
         while (*stage_ptr != ' ' && *stage_ptr != '\0' && i < 31) {
             stage[i++] = *stage_ptr++;
         }
