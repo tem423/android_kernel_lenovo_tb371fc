@@ -44,7 +44,7 @@ static EMMC_VENDOR_TABLE vendor_table[] = {
 
 static int current_type_value = 0;
 
-static BOARD_TYPE_TABLE pcba_type_table[] = {
+static __maybe_unused BOARD_TYPE_TABLE pcba_type_table[] = {
     { .type_value = 0,  .pcba_type_name = "Docomo", },
     { .type_value = 1,  .pcba_type_name = "KDDI/SBM", },
     { .type_value = 2,  .pcba_type_name = "RMN/MVNO", },
@@ -506,10 +506,11 @@ static ssize_t show_sim_tray_status(struct device *dev, struct device_attribute 
 static ssize_t show_stage_id(struct device *dev, struct device_attribute *attr, char *buf)
 {
     char *stage = strstr(saved_command_line, "androidboot.stage=");
+    char result[32] = {0};
+    int i = 0;
     if (stage) {
         stage += 17;
-        char result[32] = {0};
-        int i = 0;
+        
         while (*stage != ' ' && *stage != '\0' && i < 31) {
             result[i++] = *stage++;
         }
@@ -703,6 +704,7 @@ static ssize_t show_hw_id(struct device *dev, struct device_attribute *attr, cha
 {
     char stage[32] = "PVT";
     char *stage_ptr = strstr(saved_command_line, "androidboot.stage=");
+    int i = 0;
     if (stage_ptr) {
         stage_ptr += 17;
         int i = 0;
