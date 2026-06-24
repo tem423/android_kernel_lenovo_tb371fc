@@ -40,14 +40,6 @@ struct ktz8866 {
 
 static struct ktz8866 *bd;
 static struct ktz8866_status ktz8866_status;
-static struct pwm_to_51 pwm_map[6] = {
-        {10, 0x199},
-        {20, 0x333},
-        {40, 0x666},
-        {60, 0x999},
-        {80, 0xccc},
-        {100, 0xFFF},
-};
 
 static struct ktz8866 *bd_a;
 static struct ktz8866 *bd_b;
