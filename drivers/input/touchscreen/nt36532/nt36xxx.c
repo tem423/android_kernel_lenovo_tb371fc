@@ -2950,9 +2950,9 @@ err_chipvertrim_failed:
 	mutex_destroy(&ts->lock);
 	nvt_gpio_deconfig(ts);
 err_gpio_config_failed:
-err_pinctrl_failed:
-	pinctrl_put(nt36672_pinctrl);
-	nt36672_pinctrl = NULL;
+// err_pinctrl_failed:
+	// pinctrl_put(nt36672_pinctrl);
+	// nt36672_pinctrl = NULL;
 err_spi_setup:
 err_ckeck_full_duplex:
 	spi_set_drvdata(client, NULL);
