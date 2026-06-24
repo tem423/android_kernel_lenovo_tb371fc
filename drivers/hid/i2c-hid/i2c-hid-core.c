@@ -907,8 +907,7 @@ static int i2c_hid_parse(struct hid_device *hid)
 		}
 	}
 
-	//i2c_hid_dbg(ihid, "Report Descriptor: %*ph\n", rsize, rdesc);
-	dev_printk(KERN_DEBUG, &(ihid)->client->dev, "Report Descriptor: %*ph\n", rsize, rdesc);
+
 
 	if (ihid->pdata.preset_descriptors && (rdesc[0] != 0x05 || rdesc[1] != 0x01)) {
 		dev_err(&client->dev, "Wrong HID report descriptor, will use preset\n");
