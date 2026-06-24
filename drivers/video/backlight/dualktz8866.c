@@ -51,8 +51,6 @@ static struct pwm_to_51 pwm_map[6] = {
 
 static struct ktz8866 *bd_a;
 static struct ktz8866 *bd_b;
-// static char gresult[30];
-// static int caseid = 0;
 
 static struct ktz8866_led g_ktz8866_led;
 
@@ -93,22 +91,6 @@ static int ktz8866_reads(struct ktz8866 *bd, u8 reg, u8 *data)
         *data = (uint8_t)ret;
 
         return 0;
-}
-
-static __maybe_unused int ktz8866_writes(struct ktz8866 *bd, u8 reg, u8 data)
-{
-        return i2c_smbus_write_byte_data(bd->client, reg, data);
-}
-
-static __maybe_unused int pwm_to_51(int pwm)
-{
-        int i;
-        for (i = 0; i < 6; i++) {
-                if (pwm == pwm_map[i].pwm)
-                        break;
-        }
-
-        return pwm_map[i].bl_value;
 }
 
 static int ktz8866_backlight_update_status(struct backlight_device *backlight)
@@ -173,7 +155,7 @@ static int parse_dt(struct device *dev, struct ktz8866_platform_data *pdata)
         struct device_node *np = dev->of_node;
 
         pdata->hw_en_gpio =
-                of_get_named_gpio_flags(np, "ktz8866,hwen-gpio", 0, NULL);
+                of_get_named_gpio_flags(np, "ktz8866,hwen-gpio", 0);
 
         return 0;
 }
