@@ -4491,14 +4491,37 @@ static int dsi_display_dfps_calc_front_porch(
 	DSI_DEBUG("fps %u a %u b %u b_fp %u new_fp %d\n",
 			new_fps, a_total, b_total, b_fp, b_fp_new);
 
-	/* ===== 修复开始 ===== */
-	if (b_fp_new < 0) {
-		/* 使用安全的最小值代替返回错误 */
-		DSI_WARN("Invalid new_hfp calculated %d, using safe value 32\n", b_fp_new);
-		*b_fp_out = 32;  /* 典型安全值 */
+	/* ===== 增强的修复开始 ===== */
+	/* 处理所有无效的 HFP 值 */
+	if (b_fp_new < 0 || b_fp_new < 4) {
+		u32 safe_hfp;
+		
+		DSI_WARN("Invalid hfp calculated %d for %uHz\n", b_fp_new, new_fps);
+		
+		/* 根据刷新率动态选择安全值 */
+		if (new_fps >= 144)
+			safe_hfp = 16;   /* 144Hz */
+		else if (new_fps >= 120)
+			safe_hfp = 20;   /* 120Hz */
+		else if (new_fps >= 90)
+			safe_hfp = 24;   /* 90Hz */
+		else
+			safe_hfp = 32;   /* 60Hz 及以下 */
+		
+		DSI_INFO("Using safe hfp=%d for %uHz (was %d)\n", 
+			 safe_hfp, new_fps, b_fp_new);
+		
+		*b_fp_out = safe_hfp;
 		return 0;       /* 返回成功而非错误 */
 	}
-	/* ===== 修复结束 ===== */
+	
+	/* 额外保护：防止 HFP 过大导致问题 */
+	if (b_fp_new > 500) {
+		DSI_WARN("HFP %d too large, limiting to 48\n", b_fp_new);
+		*b_fp_out = 48;
+		return 0;
+	}
+	/* ===== 增强的修复结束 ===== */
 
 	/**
 	 * TODO: To differentiate from clock method when communicating to the
