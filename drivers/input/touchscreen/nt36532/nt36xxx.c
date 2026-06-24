@@ -3137,7 +3137,7 @@ static int32_t nvt_ts_suspend(struct device *dev)
 #endif
 	/* Spinel code for OSPINEL-6824 by gaobw1 at 2023/6/8 start */
 	int hall_work_status = -1;
-	int ret = -1;
+	// int ret = -1;
 	hall_work_status = gpio_get_value(1275);
 	/* Spinel code for OSPINEL-6824 by gaobw1 at 2023/6/8 end */
 	if (!bTouchIsAwake) {
@@ -3260,7 +3260,7 @@ return:
 *******************************************************/
 static int32_t nvt_ts_resume(struct device *dev)
 {
-	int ret = -1;
+	// int ret = -1;
 /* Spinel code for OSPINEL-3680 by zhangyd22 at 2023/5/11 start */
 #if NVT_HALL_CHECK
 	if(nvt_gesture_flag == true){
