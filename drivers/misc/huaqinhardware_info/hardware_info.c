@@ -469,8 +469,6 @@ static ssize_t show_ram_size(struct device *dev, struct device_attribute *attr, 
     return sprintf(buf, "%dGB\n", get_ram_size());
 }
 
-EXPORT_SYMBOL(saved_command_line);
-
 static ssize_t show_modem_id(struct device *dev, struct device_attribute *attr, char *buf)
 {
     char *buf_model = saved_command_line;
