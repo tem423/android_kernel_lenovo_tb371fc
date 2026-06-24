@@ -155,7 +155,7 @@ static int parse_dt(struct device *dev, struct ktz8866_platform_data *pdata)
         struct device_node *np = dev->of_node;
 
         pdata->hw_en_gpio =
-                of_get_named_gpio_flags(np, "ktz8866,hwen-gpio", 0);
+                of_get_named_gpio(np, "ktz8866,hwen-gpio", 0);
 
         return 0;
 }
