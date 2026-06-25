@@ -45,36 +45,47 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits (auto-skip empty)
+      - name: Cherry-pick commits (auto-skip all)
         run: |
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
           TOTAL=$(echo "$COMMITS" | wc -l)
           CURRENT=0
-          SKIPPED=0
+          SKIPPED_EMPTY=0
+          SKIPPED_CONFLICT=0
+          APPLIED=0
           
           echo "📊 总共需要处理 $TOTAL 个提交"
+          echo "========================================"
           
           for COMMIT in $COMMITS; do
             CURRENT=$((CURRENT + 1))
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
+            # 尝试 cherry-pick
             if git cherry-pick $COMMIT; then
               echo "✅ 提交 $COMMIT 应用成功"
+              APPLIED=$((APPLIED + 1))
             else
-              if git diff --cached --quiet; then
+              # 检查是否为空提交
+              if git diff --cached --quiet 2>/dev/null; then
                 echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
-                git cherry-pick --skip
-                SKIPPED=$((SKIPPED + 1))
+                git cherry-pick --skip 2>/dev/null || true
+                SKIPPED_EMPTY=$((SKIPPED_EMPTY + 1))
               else
-                echo "::warning::❌ 提交 $COMMIT 发生冲突，请手动解决"
-                echo "📋 冲突文件："
-                git diff --name-only --diff-filter=U
-                exit 1
+                # 有冲突，自动跳过
+                echo "⚠️ 提交 $COMMIT 有冲突，自动跳过"
+                git cherry-pick --abort 2>/dev/null || true
+                SKIPPED_CONFLICT=$((SKIPPED_CONFLICT + 1))
               fi
             fi
           done
           
-          echo "🎉 完成！成功: $((TOTAL - SKIPPED)) 个，跳过: $SKIPPED 个"
+          echo "========================================"
+          echo "🎉 Cherry-pick 全部完成！"
+          echo "✅ 成功应用: $APPLIED 个"
+          echo "⏭️ 跳过空提交: $SKIPPED_EMPTY 个"
+          echo "⏭️ 跳过冲突提交: $SKIPPED_CONFLICT 个"
+          echo "📊 总跳过: $((SKIPPED_EMPTY + SKIPPED_CONFLICT)) 个"
 
       - name: Push changes
         if: success()
