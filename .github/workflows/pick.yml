@@ -34,6 +34,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.target_branch }}
           fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Add source repository
         run: |
@@ -44,10 +45,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Configure remote with PAT
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/tem423/android_kernel_lenovo_tb371fc.git
 
       - name: Cherry-pick commits (conflict = overwrite with source)
         run: |
@@ -66,39 +63,30 @@ jobs:
             CURRENT=$((CURRENT + 1))
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
-            # 尝试 cherry-pick
             if git cherry-pick $COMMIT; then
               echo "✅ 提交 $COMMIT 应用成功"
               APPLIED=$((APPLIED + 1))
             else
-              # 检查是否为空提交
               if git diff --cached --quiet 2>/dev/null; then
                 echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
                 git cherry-pick --skip 2>/dev/null || true
                 SKIPPED_EMPTY=$((SKIPPED_EMPTY + 1))
               else
-                # 有冲突：使用源仓库的文件覆盖
                 echo "⚠️ 提交 $COMMIT 有冲突，使用源仓库文件覆盖"
                 
-                # 获取冲突文件列表
                 CONFLICT_FILES=$(git diff --name-only --diff-filter=U)
-                
-                # 从源仓库检出这些文件
                 for FILE in $CONFLICT_FILES; do
                   echo "  覆盖: $FILE"
                   git checkout source-repo/${{ github.event.inputs.source_branch }} -- $FILE 2>/dev/null || true
                 done
                 
-                # 标记冲突已解决
                 git add .
                 
-                # 继续 cherry-pick
                 if git cherry-pick --continue 2>/dev/null; then
                   echo "✅ 提交 $COMMIT 已通过覆盖方式应用"
                   OVERWRITTEN=$((OVERWRITTEN + 1))
                 else
-                  # 如果还是失败，放弃这个提交
-                  echo "⚠️ 提交 $COMMIT 仍然有问题，跳过"
+                  echo "⚠️ 提交 $COMMIT 覆盖后仍然失败，跳过"
                   git cherry-pick --abort 2>/dev/null || true
                   SKIPPED_CONFLICT=$((SKIPPED_CONFLICT + 1))
                 fi
@@ -112,7 +100,6 @@ jobs:
           echo "📝 覆盖冲突文件后应用: $OVERWRITTEN 个"
           echo "⏭️ 跳过空提交: $SKIPPED_EMPTY 个"
           echo "⏭️ 跳过冲突提交: $SKIPPED_CONFLICT 个"
-          echo "📊 总跳过: $((SKIPPED_EMPTY + SKIPPED_CONFLICT)) 个"
 
       - name: Push changes
         if: success()
