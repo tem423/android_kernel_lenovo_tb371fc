@@ -88,7 +88,7 @@ jobs:
           echo "⏭️ 跳过冲突提交: $SKIPPED_CONFLICT 个"
           echo "📊 总跳过: $((SKIPPED_EMPTY + SKIPPED_CONFLICT)) 个"
 
-      - name: Push changes
-        if: success()
-        run: |
-          git push origin ${{ github.event.inputs.target_branch }}
+ - name: Push changes
+  if: success()
+  run: |
+    git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/tem423/android_kernel_lenovo_tb371fc.git ${{ github.event.inputs.target_branch }}
