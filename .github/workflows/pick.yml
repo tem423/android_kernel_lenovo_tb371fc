@@ -44,7 +44,13 @@ jobs:
           git remote add source-repo ${{ github.event.inputs.source_repo }}
           git fetch source-repo ${{ github.event.inputs.source_branch }}
 
-      # 3. 执行批量 Cherry-pick
+      # 3. 【新增】配置 Git 用户身份（修复 fatal: empty ident 错误）
+      - name: Configure Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # 4. 执行批量 Cherry-pick
       - name: Cherry-pick commits
         run: |
           # 构造提交范围，例如 1a6da61^..e7087c9
@@ -59,7 +65,7 @@ jobs:
             exit 1
           fi
 
-      # 4. 推送更改到目标分支
+      # 5. 推送更改到目标分支
       - name: Push changes
         if: success()
         run: |
