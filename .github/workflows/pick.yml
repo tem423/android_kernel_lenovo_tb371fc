@@ -1,7 +1,6 @@
 name: Batch Cherry-pick from Remote Branch
 
 on:
-  # 允许您通过 GitHub 界面手动触发，并输入参数
   workflow_dispatch:
     inputs:
       source_repo:
@@ -30,42 +29,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 检出当前仓库（目标仓库）
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.target_branch }}
-          # 获取完整历史以便 cherry-pick
           fetch-depth: 0
 
-      # 2. 添加源仓库为另一个远程仓库
       - name: Add source repository
         run: |
           git remote add source-repo ${{ github.event.inputs.source_repo }}
           git fetch source-repo ${{ github.event.inputs.source_branch }}
 
-      # 3. 【新增】配置 Git 用户身份（修复 fatal: empty ident 错误）
       - name: Configure Git user
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # 4. 执行批量 Cherry-pick
-      - name: Cherry-pick commits
+      - name: Cherry-pick commits (auto-skip empty)
         run: |
-          # 构造提交范围，例如 1a6da61^..e7087c9
-          COMMIT_RANGE="${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }}"
-          echo "尝试 Cherry-pick 范围: $COMMIT_RANGE"
+          COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
+          TOTAL=$(echo "$COMMITS" | wc -l)
+          CURRENT=0
+          SKIPPED=0
           
-          # 尝试批量 cherry-pick
-          if ! git cherry-pick $COMMIT_RANGE; then
-            echo "::warning::Cherry-pick 过程中发生冲突，请手动解决。"
-            echo "冲突解决后，执行 'git cherry-pick --continue' 并推送。"
-            # 在 Actions 中，这里会停止并保留工作区，但通常建议本地处理
-            exit 1
-          fi
+          echo "📊 总共需要处理 $TOTAL 个提交"
+          
+          for COMMIT in $COMMITS; do
+            CURRENT=$((CURRENT + 1))
+            echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
+            
+            if git cherry-pick $COMMIT; then
+              echo "✅ 提交 $COMMIT 应用成功"
+            else
+              if git diff --cached --quiet; then
+                echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
+                git cherry-pick --skip
+                SKIPPED=$((SKIPPED + 1))
+              else
+                echo "::warning::❌ 提交 $COMMIT 发生冲突，请手动解决"
+                echo "📋 冲突文件："
+                git diff --name-only --diff-filter=U
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "🎉 完成！成功: $((TOTAL - SKIPPED)) 个，跳过: $SKIPPED 个"
 
-      # 5. 推送更改到目标分支
       - name: Push changes
         if: success()
         run: |
