@@ -45,7 +45,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits (auto-skip all)
+      - name: Configure remote with PAT
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/tem423/android_kernel_lenovo_tb371fc.git
+
+      - name: Cherry-pick commits (conflict = overwrite with source)
         run: |
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
           TOTAL=$(echo "$COMMITS" | wc -l)
@@ -53,6 +57,7 @@ jobs:
           SKIPPED_EMPTY=0
           SKIPPED_CONFLICT=0
           APPLIED=0
+          OVERWRITTEN=0
           
           echo "📊 总共需要处理 $TOTAL 个提交"
           echo "========================================"
@@ -72,10 +77,31 @@ jobs:
                 git cherry-pick --skip 2>/dev/null || true
                 SKIPPED_EMPTY=$((SKIPPED_EMPTY + 1))
               else
-                # 有冲突，自动跳过
-                echo "⚠️ 提交 $COMMIT 有冲突，自动跳过"
-                git cherry-pick --abort 2>/dev/null || true
-                SKIPPED_CONFLICT=$((SKIPPED_CONFLICT + 1))
+                # 有冲突：使用源仓库的文件覆盖
+                echo "⚠️ 提交 $COMMIT 有冲突，使用源仓库文件覆盖"
+                
+                # 获取冲突文件列表
+                CONFLICT_FILES=$(git diff --name-only --diff-filter=U)
+                
+                # 从源仓库检出这些文件
+                for FILE in $CONFLICT_FILES; do
+                  echo "  覆盖: $FILE"
+                  git checkout source-repo/${{ github.event.inputs.source_branch }} -- $FILE 2>/dev/null || true
+                done
+                
+                # 标记冲突已解决
+                git add .
+                
+                # 继续 cherry-pick
+                if git cherry-pick --continue 2>/dev/null; then
+                  echo "✅ 提交 $COMMIT 已通过覆盖方式应用"
+                  OVERWRITTEN=$((OVERWRITTEN + 1))
+                else
+                  # 如果还是失败，放弃这个提交
+                  echo "⚠️ 提交 $COMMIT 仍然有问题，跳过"
+                  git cherry-pick --abort 2>/dev/null || true
+                  SKIPPED_CONFLICT=$((SKIPPED_CONFLICT + 1))
+                fi
               fi
             fi
           done
@@ -83,14 +109,10 @@ jobs:
           echo "========================================"
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
+          echo "📝 覆盖冲突文件后应用: $OVERWRITTEN 个"
           echo "⏭️ 跳过空提交: $SKIPPED_EMPTY 个"
           echo "⏭️ 跳过冲突提交: $SKIPPED_CONFLICT 个"
           echo "📊 总跳过: $((SKIPPED_EMPTY + SKIPPED_CONFLICT)) 个"
-
-      # 🔑 新增：使用 PAT 替换远程地址（仅修复推送权限）
-      - name: Configure remote with PAT
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/tem423/android_kernel_lenovo_tb371fc.git
 
       - name: Push changes
         if: success()
