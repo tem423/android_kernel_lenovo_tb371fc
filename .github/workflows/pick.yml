@@ -34,6 +34,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.target_branch }}
           fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Add source repository
         run: |
