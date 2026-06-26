@@ -375,6 +375,7 @@ struct pernet_operations {
 	 * Please, avoid synchronize_rcu() at all, where it's possible.
 	 */
 	int (*init)(struct net *net);
+	void (*pre_exit)(struct net *net);
 	void (*exit)(struct net *net);
 	void (*exit_batch)(struct list_head *net_exit_list);
 	unsigned int *id;
