@@ -47,6 +47,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Cherry-pick commits (skip specific commits)
+        id: cherrypick
         run: |
           # 🔧 要跳过的提交（完整哈希，用空格分隔）
           SKIP_LIST="418171e956e573a77898eeec7aa30839028de63f"
@@ -56,6 +57,7 @@ jobs:
           CURRENT=0
           SKIPPED=0
           APPLIED=0
+          CONFLICT_COMMIT=""
           
           echo "📊 总共需要处理 $TOTAL 个提交"
           echo "⏭️ 跳过的提交: $SKIP_LIST"
@@ -98,6 +100,28 @@ jobs:
                 echo "  # 解决冲突后执行："
                 echo "  git add . && git cherry-pick --continue"
                 echo "  git push origin ${{ github.event.inputs.target_branch }}"
+                
+                # 保存冲突提交哈希，用于导出
+                echo "CONFLICT_COMMIT=$COMMIT" >> $GITHUB_ENV
+                CONFLICT_COMMIT="$COMMIT"
+                
+                # 导出冲突文件
+                mkdir -p conflict_files
+                git diff --name-only --diff-filter=U | while read FILE; do
+                  mkdir -p "conflict_files/$(dirname "$FILE")"
+                  cat "$FILE" > "conflict_files/$FILE" 2>/dev/null || echo "文件不存在" > "conflict_files/$FILE"
+                done
+                
+                # 保存冲突信息
+                echo "冲突提交: $COMMIT" > conflict_files/CONFLICT_INFO.txt
+                echo "冲突时间: $(date)" >> conflict_files/CONFLICT_INFO.txt
+                echo "" >> conflict_files/CONFLICT_INFO.txt
+                echo "冲突文件列表:" >> conflict_files/CONFLICT_INFO.txt
+                git diff --name-only --diff-filter=U >> conflict_files/CONFLICT_INFO.txt
+                echo "" >> conflict_files/CONFLICT_INFO.txt
+                echo "冲突内容:" >> conflict_files/CONFLICT_INFO.txt
+                git diff >> conflict_files/CONFLICT_INFO.txt
+                
                 exit 1
               fi
             fi
@@ -107,6 +131,14 @@ jobs:
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
           echo "⏭️ 跳过提交: $SKIPPED 个"
+
+      - name: Upload conflict files
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conflict-files
+          path: conflict_files/
+          retention-days: 7
 
       - name: Push changes
         if: success()
