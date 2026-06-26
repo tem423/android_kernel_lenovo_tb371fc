@@ -92,26 +92,51 @@ jobs:
                 git cherry-pick --skip 2>/dev/null || true
                 SKIPPED=$((SKIPPED + 1))
               else
-                echo "::error::❌ 提交 $COMMIT 发生冲突，停止执行！"
+                echo "::error::❌ 提交 $COMMIT 发生冲突！"
                 echo "📋 冲突文件列表："
                 git diff --name-only --diff-filter=U
                 echo ""
-                echo "💡 请在本地执行以下命令："
-                echo "  git checkout ${{ github.event.inputs.target_branch }}"
-                echo "  # 解决冲突后执行："
-                echo "  git add . && git cherry-pick --continue"
-                echo "  git push origin ${{ github.event.inputs.target_branch }}"
-                exit 1
+                
+                CONFLICT_COMMIT="$COMMIT"
+                break
               fi
             fi
           done
+          
+          # 推送已应用的提交
+          if [ $APPLIED -gt 0 ]; then
+            echo "========================================"
+            echo "📦 推送已应用的 $APPLIED 个提交到远程..."
+            git push origin ${{ github.event.inputs.target_branch }}
+            echo "✅ 已推送 $APPLIED 个提交"
+          fi
+          
+          # 如果有冲突，退出并报错
+          if [ -n "$CONFLICT_COMMIT" ]; then
+            echo ""
+            echo "========================================"
+            echo "::error::❌ 在提交 $CONFLICT_COMMIT 处发生冲突"
+            echo "💡 已推送的 $APPLIED 个提交已上传到远程仓库"
+            echo "⏭️ 已跳过 $SKIPPED 个提交"
+            echo ""
+            echo "📋 本地解决冲突后继续："
+            echo "  git pull origin ${{ github.event.inputs.target_branch }}"
+            echo "  # 解决冲突文件"
+            echo "  git add . && git cherry-pick --continue"
+            echo "  git push origin ${{ github.event.inputs.target_branch }}"
+            echo ""
+            echo "或跳过此提交："
+            echo "  git cherry-pick --skip"
+            echo "  git push origin ${{ github.event.inputs.target_branch }}"
+            exit 1
+          fi
           
           echo "========================================"
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
           echo "⏭️ 跳过提交: $SKIPPED 个"
 
-      - name: Push changes
+      - name: Push changes (if all succeeded)
         if: success()
         run: |
           git push origin ${{ github.event.inputs.target_branch }}
