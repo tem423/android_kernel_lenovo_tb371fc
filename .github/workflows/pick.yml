@@ -48,8 +48,8 @@ jobs:
 
       - name: Cherry-pick commits (skip specific commits)
         run: |
-          # 🔧 要跳过的提交（用空格分隔）
-          SKIP_LIST="418171e956e5"
+          # 🔧 要跳过的提交（完整哈希，用空格分隔）
+          SKIP_LIST="418171e956e573a77898eeec7aa30839028de63f"
           
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
           TOTAL=$(echo "$COMMITS" | wc -l)
@@ -65,8 +65,16 @@ jobs:
             CURRENT=$((CURRENT + 1))
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
-            # 检查是否在跳过列表中
-            if echo "$SKIP_LIST" | grep -q "$COMMIT"; then
+            # 检查是否在跳过列表中（前缀匹配）
+            SKIPPED_COMMIT=false
+            for SKIP in $SKIP_LIST; do
+              if echo "$COMMIT" | grep -q "^$SKIP"; then
+                SKIPPED_COMMIT=true
+                break
+              fi
+            done
+            
+            if [ "$SKIPPED_COMMIT" = true ]; then
               echo "⏭️ 提交 $COMMIT 在跳过列表中，跳过"
               SKIPPED=$((SKIPPED + 1))
               continue
@@ -76,7 +84,6 @@ jobs:
               echo "✅ 提交 $COMMIT 应用成功"
               APPLIED=$((APPLIED + 1))
             else
-              # 检查是否为空提交
               if git diff --cached --quiet 2>/dev/null; then
                 echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
                 git cherry-pick --skip 2>/dev/null || true
