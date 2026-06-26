@@ -46,9 +46,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits and push on conflict
+      - name: Cherry-pick commits (skip before and including 418171e956e5)
         run: |
-          # 🔧 要跳过的提交（完整哈希）
+          # 🔧 跳过的提交（之前的提交 + 该提交本身）
           SKIP_COMMIT="418171e956e573a77898eeec7aa30839028de63f"
           
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
@@ -56,41 +56,45 @@ jobs:
           CURRENT=0
           APPLIED=0
           SKIPPED=0
+          SKIP_STARTED=false
           CONFLICT_COMMIT=""
           
           echo "📊 总共需要处理 $TOTAL 个提交"
-          echo "⏭️ 跳过的提交: $SKIP_COMMIT"
+          echo "⏭️ 跳过 $SKIP_COMMIT 及其之前的所有提交"
           echo "========================================"
           
           for COMMIT in $COMMITS; do
             CURRENT=$((CURRENT + 1))
-            echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
-            # 检查是否在跳过列表中
+            # 检查是否到达跳过的提交
             if echo "$COMMIT" | grep -q "^$SKIP_COMMIT"; then
               echo "⏭️ 提交 $COMMIT 在跳过列表中，跳过"
               SKIPPED=$((SKIPPED + 1))
+              SKIP_STARTED=true
               continue
             fi
+            
+            # 如果还没到达跳过的提交，继续跳过
+            if [ "$SKIP_STARTED" = false ]; then
+              echo "⏭️ 跳过 $COMMIT（在 $SKIP_COMMIT 之前）"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+            
+            # 开始处理之后的提交
+            echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
             if git cherry-pick $COMMIT; then
               echo "✅ 提交 $COMMIT 应用成功"
               APPLIED=$((APPLIED + 1))
             else
-              # 检查是否为空提交
-              if git diff --cached --quiet 2>/dev/null; then
-                echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
-                git cherry-pick --skip 2>/dev/null || true
-                SKIPPED=$((SKIPPED + 1))
-              else
-                echo "::error::❌ 提交 $COMMIT 发生冲突！"
-                echo "📋 冲突文件列表："
-                git diff --name-only --diff-filter=U
-                echo ""
-                
-                CONFLICT_COMMIT="$COMMIT"
-                break
-              fi
+              echo "::error::❌ 提交 $COMMIT 发生冲突！"
+              echo "📋 冲突文件列表："
+              git diff --name-only --diff-filter=U
+              echo ""
+              
+              CONFLICT_COMMIT="$COMMIT"
+              break
             fi
           done
           
