@@ -48,30 +48,49 @@ jobs:
 
       - name: Cherry-pick commits and push on conflict
         run: |
+          # 🔧 要跳过的提交（完整哈希）
+          SKIP_COMMIT="418171e956e573a77898eeec7aa30839028de63f"
+          
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
           TOTAL=$(echo "$COMMITS" | wc -l)
           CURRENT=0
           APPLIED=0
+          SKIPPED=0
           CONFLICT_COMMIT=""
           
           echo "📊 总共需要处理 $TOTAL 个提交"
+          echo "⏭️ 跳过的提交: $SKIP_COMMIT"
           echo "========================================"
           
           for COMMIT in $COMMITS; do
             CURRENT=$((CURRENT + 1))
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
+            # 检查是否在跳过列表中
+            if echo "$COMMIT" | grep -q "^$SKIP_COMMIT"; then
+              echo "⏭️ 提交 $COMMIT 在跳过列表中，跳过"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+            
             if git cherry-pick $COMMIT; then
               echo "✅ 提交 $COMMIT 应用成功"
               APPLIED=$((APPLIED + 1))
             else
-              echo "::error::❌ 提交 $COMMIT 发生冲突！"
-              echo "📋 冲突文件列表："
-              git diff --name-only --diff-filter=U
-              echo ""
-              
-              CONFLICT_COMMIT="$COMMIT"
-              break
+              # 检查是否为空提交
+              if git diff --cached --quiet 2>/dev/null; then
+                echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
+                git cherry-pick --skip 2>/dev/null || true
+                SKIPPED=$((SKIPPED + 1))
+              else
+                echo "::error::❌ 提交 $COMMIT 发生冲突！"
+                echo "📋 冲突文件列表："
+                git diff --name-only --diff-filter=U
+                echo ""
+                
+                CONFLICT_COMMIT="$COMMIT"
+                break
+              fi
             fi
           done
           
@@ -89,6 +108,7 @@ jobs:
             echo "========================================"
             echo "::error::❌ 在提交 $CONFLICT_COMMIT 处发生冲突"
             echo "💡 已推送的 $APPLIED 个提交已上传到远程仓库"
+            echo "⏭️ 已跳过 $SKIPPED 个提交"
             echo ""
             echo "📋 本地解决冲突后继续："
             echo "  git pull origin ${{ github.event.inputs.target_branch }}"
@@ -105,6 +125,7 @@ jobs:
           echo "========================================"
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
+          echo "⏭️ 跳过提交: $SKIPPED 个"
 
       - name: Push changes (if all succeeded)
         if: success()
