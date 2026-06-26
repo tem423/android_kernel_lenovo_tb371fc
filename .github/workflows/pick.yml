@@ -46,10 +46,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits (skip 5ea82fe85812 and before)
+      - name: Cherry-pick commits (skip 5fb7e5762961 and before)
         run: |
           # 🔧 要跳过的提交（完整哈希）
-          SKIP_COMMIT="5ea82fe85812528e612a98d46865935622ba2bc5"
+          SKIP_COMMIT="5fb7e5762961ee2c554b005bfd2343cc9b48ecd3"
           
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
           TOTAL=$(echo "$COMMITS" | wc -l)
