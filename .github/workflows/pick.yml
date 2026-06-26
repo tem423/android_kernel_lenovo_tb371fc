@@ -46,40 +46,60 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits
+      - name: Cherry-pick commits (skip specific commits)
         run: |
+          # 🔧 要跳过的提交（用空格分隔）
+          SKIP_LIST="418171e956e5"
+          
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
           TOTAL=$(echo "$COMMITS" | wc -l)
           CURRENT=0
+          SKIPPED=0
           APPLIED=0
           
           echo "📊 总共需要处理 $TOTAL 个提交"
+          echo "⏭️ 跳过的提交: $SKIP_LIST"
           echo "========================================"
           
           for COMMIT in $COMMITS; do
             CURRENT=$((CURRENT + 1))
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
+            # 检查是否在跳过列表中
+            if echo "$SKIP_LIST" | grep -q "$COMMIT"; then
+              echo "⏭️ 提交 $COMMIT 在跳过列表中，跳过"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+            
             if git cherry-pick $COMMIT; then
               echo "✅ 提交 $COMMIT 应用成功"
               APPLIED=$((APPLIED + 1))
             else
-              echo "::error::❌ 提交 $COMMIT 失败！"
-              echo "📋 冲突文件列表："
-              git diff --name-only --diff-filter=U
-              echo ""
-              echo "💡 请在本地执行以下命令："
-              echo "  git checkout ${{ github.event.inputs.target_branch }}"
-              echo "  # 解决冲突后执行："
-              echo "  git add . && git cherry-pick --continue"
-              echo "  git push origin ${{ github.event.inputs.target_branch }}"
-              exit 1
+              # 检查是否为空提交
+              if git diff --cached --quiet 2>/dev/null; then
+                echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
+                git cherry-pick --skip 2>/dev/null || true
+                SKIPPED=$((SKIPPED + 1))
+              else
+                echo "::error::❌ 提交 $COMMIT 发生冲突，停止执行！"
+                echo "📋 冲突文件列表："
+                git diff --name-only --diff-filter=U
+                echo ""
+                echo "💡 请在本地执行以下命令："
+                echo "  git checkout ${{ github.event.inputs.target_branch }}"
+                echo "  # 解决冲突后执行："
+                echo "  git add . && git cherry-pick --continue"
+                echo "  git push origin ${{ github.event.inputs.target_branch }}"
+                exit 1
+              fi
             fi
           done
           
           echo "========================================"
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
+          echo "⏭️ 跳过提交: $SKIPPED 个"
 
       - name: Push changes
         if: success()
