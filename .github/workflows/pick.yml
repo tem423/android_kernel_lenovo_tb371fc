@@ -46,16 +46,16 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits (skip before and including 418171e956e5)
+      - name: Cherry-pick commits (skip 5ea82fe85812 and before)
         run: |
-          # 🔧 跳过的提交（之前的提交 + 该提交本身）
+          # 🔧 要跳过的提交（完整哈希）
           SKIP_COMMIT="5ea82fe85812528e612a98d46865935622ba2bc5"
           
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
           TOTAL=$(echo "$COMMITS" | wc -l)
           CURRENT=0
-          APPLIED=0
           SKIPPED=0
+          APPLIED=0
           SKIP_STARTED=false
           CONFLICT_COMMIT=""
           
@@ -81,57 +81,37 @@ jobs:
               continue
             fi
             
-            # 开始处理之后的提交
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
             if git cherry-pick $COMMIT; then
               echo "✅ 提交 $COMMIT 应用成功"
               APPLIED=$((APPLIED + 1))
             else
-              echo "::error::❌ 提交 $COMMIT 发生冲突！"
-              echo "📋 冲突文件列表："
-              git diff --name-only --diff-filter=U
-              echo ""
-              
-              CONFLICT_COMMIT="$COMMIT"
-              break
+              if git diff --cached --quiet 2>/dev/null; then
+                echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
+                git cherry-pick --skip 2>/dev/null || true
+                SKIPPED=$((SKIPPED + 1))
+              else
+                echo "::error::❌ 提交 $COMMIT 发生冲突，停止执行！"
+                echo "📋 冲突文件列表："
+                git diff --name-only --diff-filter=U
+                echo ""
+                echo "💡 请在本地执行以下命令："
+                echo "  git checkout ${{ github.event.inputs.target_branch }}"
+                echo "  # 解决冲突后执行："
+                echo "  git add . && git cherry-pick --continue"
+                echo "  git push origin ${{ github.event.inputs.target_branch }}"
+                exit 1
+              fi
             fi
           done
-          
-          # 推送已应用的提交
-          if [ $APPLIED -gt 0 ]; then
-            echo "========================================"
-            echo "📦 推送已应用的 $APPLIED 个提交到远程..."
-            git push origin ${{ github.event.inputs.target_branch }}
-            echo "✅ 已推送 $APPLIED 个提交"
-          fi
-          
-          # 如果有冲突，退出并报错
-          if [ -n "$CONFLICT_COMMIT" ]; then
-            echo ""
-            echo "========================================"
-            echo "::error::❌ 在提交 $CONFLICT_COMMIT 处发生冲突"
-            echo "💡 已推送的 $APPLIED 个提交已上传到远程仓库"
-            echo "⏭️ 已跳过 $SKIPPED 个提交"
-            echo ""
-            echo "📋 本地解决冲突后继续："
-            echo "  git pull origin ${{ github.event.inputs.target_branch }}"
-            echo "  # 解决冲突文件"
-            echo "  git add . && git cherry-pick --continue"
-            echo "  git push origin ${{ github.event.inputs.target_branch }}"
-            echo ""
-            echo "或跳过此提交："
-            echo "  git cherry-pick --skip"
-            echo "  git push origin ${{ github.event.inputs.target_branch }}"
-            exit 1
-          fi
           
           echo "========================================"
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
           echo "⏭️ 跳过提交: $SKIPPED 个"
 
-      - name: Push changes (if all succeeded)
+      - name: Push changes
         if: success()
         run: |
           git push origin ${{ github.event.inputs.target_branch }}
