@@ -23,6 +23,10 @@ on:
         description: '目标分支 (将合入的分支)'
         required: true
         default: 'bpf'
+      skip_commits:
+        description: '要跳过的提交列表（用空格分隔，例如: c74ef2fe8516 1a6da61bf1ba）'
+        required: false
+        default: 'c74ef2fe8516a7ca67e847570932bfc6117bfd25'
 
 jobs:
   cherry-pick:
@@ -48,6 +52,9 @@ jobs:
 
       - name: Cherry-pick commits and push on conflict
         run: |
+          # 定义要跳过的提交列表（从输入参数获取）
+          SKIP_COMMITS="${{ github.event.inputs.skip_commits }}"
+          
           # 显示当前状态用于调试
           echo "🔍 当前分支: $(git branch --show-current)"
           echo "🔍 工作区状态:"
@@ -63,9 +70,12 @@ jobs:
           CONFLICT_COMMIT=""
           
           echo "📊 总共需要处理 $TOTAL 个提交"
+          if [ -n "$SKIP_COMMITS" ]; then
+            echo "⏭️ 将跳过以下提交: $SKIP_COMMITS"
+          fi
           echo "========================================"
           
-          # 将提交列表保存到临时文件，避免循环中的命令替换问题
+          # 将提交列表保存到临时文件
           echo "$COMMITS" > /tmp/commit_list.txt
           
           while IFS= read -r COMMIT; do
@@ -73,6 +83,15 @@ jobs:
             [ -z "$COMMIT" ] && continue
             
             CURRENT=$((CURRENT + 1))
+            
+            # 检查是否在跳过列表中
+            if [ -n "$SKIP_COMMITS" ] && echo " $SKIP_COMMITS " | grep -q " $COMMIT "; then
+              echo "--- [$CURRENT/$TOTAL] ⏭️ 跳过指定提交: $COMMIT ---"
+              SKIPPED=$((SKIPPED + 1))
+              echo ""
+              continue
+            fi
+            
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
             # 显示提交信息
@@ -85,7 +104,6 @@ jobs:
             TEMP_ERROR=$(mktemp)
             
             # 执行 cherry-pick，重定向所有输出到临时文件
-            # 使用 set +e 防止脚本因错误退出
             set +e
             git cherry-pick $COMMIT > "$TEMP_OUTPUT" 2> "$TEMP_ERROR"
             CHERRY_EXIT_CODE=$?
@@ -183,7 +201,7 @@ jobs:
           echo "========================================"
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
-          echo "⏭️ 跳过（空提交）: $SKIPPED 个"
+          echo "⏭️ 跳过（空提交 + 手动指定）: $SKIPPED 个"
 
       - name: Push changes (if all succeeded)
         if: success()
