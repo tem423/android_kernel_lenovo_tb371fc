@@ -1,104 +1,34 @@
-name: Batch Cherry-pick from Remote Branch
+name: Android Kernel Build Action
 
 on:
-  # 允许您通过 GitHub 界面手动触发，并输入参数
   workflow_dispatch:
-    inputs:
-      source_repo:
-        description: '源仓库地址 (例如: https://github.com/user/repo.git)'
-        required: true
-        default: 'https://github.com/jsdizkcksv/kernel_xiaomi_sm8250.git'
-      source_branch:
-        description: '源分支名称'
-        required: true
-        default: 'backport-5.10-bpf'
-      commit_start:
-        description: '起始 Commit (包含)'
-        required: true
-        default: '1a6da61'
-      commit_end:
-        description: '结束 Commit (包含)'
-        required: true
-        default: 'e7087c9'
-      target_branch:
-        description: '目标分支 (将合入的分支)'
-        required: true
-        default: 'bpf'
 
 jobs:
-  cherry-pick:
-    runs-on: ubuntu-latest
-
+  build-kernel:
+    name: Build Kernel
+    runs-on: ubuntu-22.04
     steps:
-      # 1. 检出当前仓库（目标仓库）
-      - name: Checkout target repository
-        uses: actions/checkout@v4
+      - name: Build
+        uses: tem423/kernel_build_action@main
         with:
-          ref: ${{ github.event.inputs.target_branch }}
-          # 获取完整历史以便 cherry-pick
-          fetch-depth: 0
-
-      # 2. 添加源仓库为另一个远程仓库
-      - name: Add source repository
-        run: |
-          git remote add source-repo ${{ github.event.inputs.source_repo }}
-          git fetch source-repo ${{ github.event.inputs.source_branch }}
-
-      # 3. 配置 Git 用户身份（修复 fatal: empty ident 错误）
-      - name: Configure Git user
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      # 4. 【升级版】逐个 Cherry-pick，自动跳过空提交
-      - name: Cherry-pick commits (auto-skip empty)
-        run: |
-          # 获取提交列表（从起始到结束，按时间顺序）
-          COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
-          TOTAL=$(echo "$COMMITS" | wc -l)
-          CURRENT=0
-          SKIPPED=0
-          
-          echo "📊 总共需要处理 $TOTAL 个提交"
-          echo "========================================"
-          
-          for COMMIT in $COMMITS; do
-            CURRENT=$((CURRENT + 1))
-            echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
-            
-            # 尝试 cherry-pick
-            if git cherry-pick $COMMIT; then
-              echo "✅ 提交 $COMMIT 应用成功"
-            else
-              # 检查是否为空提交（所有冲突已解决但没有改动）
-              if git diff --cached --quiet; then
-                echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
-                git cherry-pick --skip
-                SKIPPED=$((SKIPPED + 1))
-              else
-                # 真正的冲突
-                echo "::warning::❌ 提交 $COMMIT 发生冲突，请手动解决"
-                echo ""
-                echo "📋 冲突文件列表："
-                git diff --name-only --diff-filter=U
-                echo ""
-                echo "💡 在本地执行以下命令解决："
-                echo "  git checkout ${{ github.event.inputs.target_branch }}"
-                echo "  git cherry-pick --continue"
-                echo "  # 解决冲突后执行："
-                echo "  git add . && git cherry-pick --continue && git push origin ${{ github.event.inputs.target_branch }}"
-                exit 1
-              fi
-            fi
-          done
-          
-          echo "========================================"
-          echo "🎉 Cherry-pick 全部完成！"
-          echo "✅ 成功应用: $((TOTAL - SKIPPED)) 个提交"
-          echo "⏭️ 跳过空提交: $SKIPPED 个"
-
-      # 5. 推送更改到目标分支
-      - name: Push changes
-        if: success()
-        run: |
-          git push origin ${{ github.event.inputs.target_branch }}
+          kernel-url: https://github.com/tem423/android_kernel_lenovo_tb371fc
+          kernel-branch: android16
+          config: vendor/tb371fc_defconfig
+          arch: arm64
+          android-version: 11
+          ccache: false
+          ksu: false
+          ksu-version: v0.9.5
+          # aosp
+          # aosp-gcc: true
+          # aosp-clang: true
+          # aosp-clang-version: r383902
+          # ndk
+          # android-ndk: true
+          # android-ndk-version:         r23b
+          other-clang-url: https://github.com/sticpaper/Snapdragon-LLVM-ARM-Compiler-10.0.7-for-Android-NDK
+          other-clang-branch: main
+          anykernel3: true
+          bootimg-url: https://github.com/tem423/android_kernel_lenovo_tb371fc/releases/download/originalboot/boot.img
+          release: false
+          access-token: ${{ secrets.GITHUB_TOKEN }}
