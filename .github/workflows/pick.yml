@@ -48,6 +48,13 @@ jobs:
 
       - name: Cherry-pick commits and push on conflict
         run: |
+          # 显示当前状态用于调试
+          echo "🔍 当前分支: $(git branch --show-current)"
+          echo "🔍 工作区状态:"
+          git status --porcelain || echo "无变更"
+          echo ""
+          
+          # 获取提交列表
           COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
           TOTAL=$(echo "$COMMITS" | wc -l)
           CURRENT=0
@@ -58,43 +65,99 @@ jobs:
           echo "📊 总共需要处理 $TOTAL 个提交"
           echo "========================================"
           
-          for COMMIT in $COMMITS; do
+          # 将提交列表保存到临时文件，避免循环中的命令替换问题
+          echo "$COMMITS" > /tmp/commit_list.txt
+          
+          while IFS= read -r COMMIT; do
+            # 跳过空行
+            [ -z "$COMMIT" ] && continue
+            
             CURRENT=$((CURRENT + 1))
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
-            # 执行 cherry-pick，捕获输出和退出码
-            CHERRY_OUTPUT=$(git cherry-pick $COMMIT 2>&1)
+            # 显示提交信息
+            echo "📝 提交说明:"
+            git log --oneline -1 $COMMIT || echo "无法获取提交信息"
+            echo ""
+            
+            # 使用临时文件捕获输出，避免命令替换卡死
+            TEMP_OUTPUT=$(mktemp)
+            TEMP_ERROR=$(mktemp)
+            
+            # 执行 cherry-pick，重定向所有输出到临时文件
+            # 使用 set +e 防止脚本因错误退出
+            set +e
+            git cherry-pick $COMMIT > "$TEMP_OUTPUT" 2> "$TEMP_ERROR"
             CHERRY_EXIT_CODE=$?
+            set -e
+            
+            # 合并输出
+            CHERRY_OUTPUT=$(cat "$TEMP_OUTPUT" "$TEMP_ERROR" 2>/dev/null || echo "")
+            rm -f "$TEMP_OUTPUT" "$TEMP_ERROR"
+            
+            # 显示输出（用于调试）
+            if [ -n "$CHERRY_OUTPUT" ]; then
+              echo "📤 命令输出:"
+              echo "$CHERRY_OUTPUT"
+            fi
+            echo "🔢 退出码: $CHERRY_EXIT_CODE"
             
             # 情况1: 完全成功
             if [ $CHERRY_EXIT_CODE -eq 0 ]; then
               echo "✅ 提交 $COMMIT 应用成功"
               APPLIED=$((APPLIED + 1))
-              
+              echo ""
+              continue
+            fi
+            
             # 情况2: 空提交（更改已存在），自动跳过
-            elif echo "$CHERRY_OUTPUT" | grep -q "The previous cherry-pick is now empty"; then
+            if echo "$CHERRY_OUTPUT" | grep -q "The previous cherry-pick is now empty"; then
               echo "⏭️ 提交 $COMMIT 为空（更改已存在），自动跳过"
-              git cherry-pick --skip
+              git cherry-pick --skip 2>/dev/null || true
               SKIPPED=$((SKIPPED + 1))
-              
-            # 情况3: 真正的代码冲突
-            else
+              echo ""
+              continue
+            fi
+            
+            # 情况3: 代码冲突
+            if echo "$CHERRY_OUTPUT" | grep -q "CONFLICT"; then
               echo "::error::❌ 提交 $COMMIT 发生冲突！"
               echo "📋 冲突文件列表："
-              git diff --name-only --diff-filter=U
+              git diff --name-only --diff-filter=U || echo "无法获取冲突文件列表"
               echo ""
               
               CONFLICT_COMMIT="$COMMIT"
               break
             fi
-          done
+            
+            # 情况4: 其他错误（如依赖缺失等）
+            echo "::error::❌ 提交 $COMMIT 处理失败！"
+            echo "错误详情: $CHERRY_OUTPUT"
+            echo ""
+            
+            # 尝试中止 cherry-pick 恢复工作区
+            if git cherry-pick --abort 2>/dev/null; then
+              echo "已执行 git cherry-pick --abort 恢复工作区"
+            fi
+            
+            CONFLICT_COMMIT="$COMMIT"
+            break
+            
+          done < /tmp/commit_list.txt
+          
+          # 清理临时文件
+          rm -f /tmp/commit_list.txt
           
           # 推送已应用的提交
           if [ $APPLIED -gt 0 ]; then
             echo "========================================"
             echo "📦 推送已应用的 $APPLIED 个提交到远程..."
-            git push origin ${{ github.event.inputs.target_branch }}
-            echo "✅ 已推送 $APPLIED 个提交"
+            if git push origin ${{ github.event.inputs.target_branch }}; then
+              echo "✅ 已推送 $APPLIED 个提交"
+            else
+              echo "::error::❌ 推送失败！请手动推送"
+              exit 1
+            fi
           fi
           
           # 如果有冲突，退出并报错
