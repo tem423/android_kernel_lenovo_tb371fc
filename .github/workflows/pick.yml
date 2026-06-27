@@ -1,31 +1,27 @@
-name: Batch Cherry-pick from Remote Branch
+name: Merge Linux Kernel 4.19.315 to 4.19.325
 
 on:
   workflow_dispatch:
     inputs:
-      source_repo:
-        description: '源仓库地址 (例如: https://github.com/user/repo.git)'
-        required: true
-        default: 'https://github.com/jsdizkcksv/kernel_xiaomi_sm8250.git'
-      source_branch:
-        description: '源分支名称'
-        required: true
-        default: 'backport-5.10-bpf'
-      commit_start:
-        description: '起始 Commit (包含)'
-        required: true
-        default: '1a6da61'
-      commit_end:
-        description: '结束 Commit (包含)'
-        required: true
-        default: 'e7087c9'
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
-        default: 'bpf'
+        default: '合并上游'
+      source_repo:
+        description: '官方 Linux 仓库地址'
+        required: true
+        default: 'https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git'
+      from_version:
+        description: '起始版本 (例如: v4.19.315)'
+        required: true
+        default: 'v4.19.315'
+      to_version:
+        description: '目标版本 (例如: v4.19.325)'
+        required: true
+        default: 'v4.19.325'
 
 jobs:
-  cherry-pick:
+  merge_kernel:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,66 +32,59 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
 
-      - name: Add source repository
+      - name: Add stable Linux repository
         run: |
-          git remote add source-repo ${{ github.event.inputs.source_repo }}
-          git fetch source-repo ${{ github.event.inputs.source_branch }}
+          git remote add stable ${{ github.event.inputs.source_repo }}
+          git fetch stable --depth 5000
 
       - name: Configure Git user
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits (skip 5fb7e5762961 and before)
+      - name: Cherry-pick patches from v4.19.315 to v4.19.325
+        id: cherrypick
         run: |
-          # 🔧 要跳过的提交（完整哈希）
-          SKIP_COMMIT="5fb7e5762961ee2c554b005bfd2343cc9b48ecd3"
+          FROM_VERSION="${{ github.event.inputs.from_version }}"
+          TO_VERSION="${{ github.event.inputs.to_version }}"
           
-          COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
-          TOTAL=$(echo "$COMMITS" | wc -l)
-          CURRENT=0
-          SKIPPED=0
-          APPLIED=0
-          SKIP_STARTED=false
-          CONFLICT_COMMIT=""
-          
-          echo "📊 总共需要处理 $TOTAL 个提交"
-          echo "⏭️ 跳过 $SKIP_COMMIT 及其之前的所有提交"
+          echo "📊 从 $FROM_VERSION 升级到 $TO_VERSION"
           echo "========================================"
           
-          for COMMIT in $COMMITS; do
+          # 获取补丁列表
+          PATCHES=$(git rev-list --reverse $FROM_VERSION..$TO_VERSION)
+          TOTAL=$(echo "$PATCHES" | wc -l)
+          CURRENT=0
+          APPLIED=0
+          SKIPPED=0
+          CONFLICT_COMMIT=""
+          
+          echo "📊 总共需要应用 $TOTAL 个补丁"
+          echo "========================================"
+          
+          for COMMIT in $PATCHES; do
             CURRENT=$((CURRENT + 1))
+            echo "--- [$CURRENT/$TOTAL] 正在应用补丁: $COMMIT ---"
             
-            # 检查是否到达跳过的提交
-            if echo "$COMMIT" | grep -q "^$SKIP_COMMIT"; then
-              echo "⏭️ 提交 $COMMIT 在跳过列表中，跳过"
-              SKIPPED=$((SKIPPED + 1))
-              SKIP_STARTED=true
-              continue
-            fi
-            
-            # 如果还没到达跳过的提交，继续跳过
-            if [ "$SKIP_STARTED" = false ]; then
-              echo "⏭️ 跳过 $COMMIT（在 $SKIP_COMMIT 之前）"
-              SKIPPED=$((SKIPPED + 1))
-              continue
-            fi
-            
-            echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
+            # 获取提交信息
+            COMMIT_MSG=$(git log -1 --pretty=%s $COMMIT)
+            echo "📝 提交信息: $COMMIT_MSG"
             
             if git cherry-pick $COMMIT; then
-              echo "✅ 提交 $COMMIT 应用成功"
+              echo "✅ 补丁 $COMMIT 应用成功"
               APPLIED=$((APPLIED + 1))
             else
+              # 检查是否为空提交
               if git diff --cached --quiet 2>/dev/null; then
-                echo "⚠️ 提交 $COMMIT 为空提交，自动跳过"
+                echo "⚠️ 补丁 $COMMIT 为空提交，自动跳过"
                 git cherry-pick --skip 2>/dev/null || true
                 SKIPPED=$((SKIPPED + 1))
               else
-                echo "::error::❌ 提交 $COMMIT 发生冲突！"
+                echo "::error::❌ 补丁 $COMMIT 发生冲突！"
                 echo "📋 冲突文件列表："
                 git diff --name-only --diff-filter=U
                 echo ""
+                echo "📝 冲突提交信息: $COMMIT_MSG"
                 
                 CONFLICT_COMMIT="$COMMIT"
                 break
@@ -103,21 +92,21 @@ jobs:
             fi
           done
           
-          # 推送已应用的提交
+          # 推送已应用的补丁
           if [ $APPLIED -gt 0 ]; then
             echo "========================================"
-            echo "📦 推送已应用的 $APPLIED 个提交到远程..."
+            echo "📦 推送已应用的 $APPLIED 个补丁到远程..."
             git push origin ${{ github.event.inputs.target_branch }}
-            echo "✅ 已推送 $APPLIED 个提交"
+            echo "✅ 已推送 $APPLIED 个补丁"
           fi
           
           # 如果有冲突，退出并报错
           if [ -n "$CONFLICT_COMMIT" ]; then
             echo ""
             echo "========================================"
-            echo "::error::❌ 在提交 $CONFLICT_COMMIT 处发生冲突"
-            echo "💡 已推送的 $APPLIED 个提交已上传到远程仓库"
-            echo "⏭️ 已跳过 $SKIPPED 个提交"
+            echo "::error::❌ 在补丁 $CONFLICT_COMMIT 处发生冲突"
+            echo "💡 已推送的 $APPLIED 个补丁已上传到远程仓库"
+            echo "⏭️ 已跳过 $SKIPPED 个补丁"
             echo ""
             echo "📋 本地解决冲突后继续："
             echo "  git pull origin ${{ github.event.inputs.target_branch }}"
@@ -125,16 +114,16 @@ jobs:
             echo "  git add . && git cherry-pick --continue"
             echo "  git push origin ${{ github.event.inputs.target_branch }}"
             echo ""
-            echo "或跳过此提交："
+            echo "或跳过此补丁："
             echo "  git cherry-pick --skip"
             echo "  git push origin ${{ github.event.inputs.target_branch }}"
             exit 1
           fi
           
           echo "========================================"
-          echo "🎉 Cherry-pick 全部完成！"
-          echo "✅ 成功应用: $APPLIED 个"
-          echo "⏭️ 跳过提交: $SKIPPED 个"
+          echo "🎉 内核升级完成！"
+          echo "✅ 成功应用: $APPLIED 个补丁"
+          echo "⏭️ 跳过补丁: $SKIPPED 个"
 
       - name: Push changes (if all succeeded)
         if: success()
