@@ -7,10 +7,6 @@ on:
         description: '目标分支 (将合入的分支)'
         required: true
         default: '合并上游'
-      source_repo:
-        description: '官方 Linux 仓库地址'
-        required: true
-        default: 'https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git'
       from_version:
         description: '起始版本 (例如: v4.19.315)'
         required: true
@@ -34,15 +30,31 @@ jobs:
 
       - name: Add stable Linux repository
         run: |
-          git remote add stable ${{ github.event.inputs.source_repo }}
-          git fetch stable --depth 5000
+          git remote add stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          
+          # 方法：获取特定标签（解决 shallow info 错误）
+          echo "📦 获取稳定分支标签..."
+          git fetch stable --depth 100 --tags || true
+          
+          # 如果上面失败，尝试直接获取特定标签
+          echo "📦 获取特定标签..."
+          git fetch stable refs/tags/v4.19.315:refs/tags/v4.19.315 2>/dev/null || true
+          git fetch stable refs/tags/v4.19.325:refs/tags/v4.19.325 2>/dev/null || true
+          
+          # 如果还失败，获取分支
+          echo "📦 获取稳定分支..."
+          git fetch stable linux-4.19.y --depth 1000 || true
+          
+          # 查看已获取的标签
+          echo "📋 已获取的标签："
+          git tag -l "v4.19.*" | head -20
 
       - name: Configure Git user
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick patches from v4.19.315 to v4.19.325
+      - name: Cherry-pick patches
         id: cherrypick
         run: |
           FROM_VERSION="${{ github.event.inputs.from_version }}"
@@ -50,6 +62,22 @@ jobs:
           
           echo "📊 从 $FROM_VERSION 升级到 $TO_VERSION"
           echo "========================================"
+          
+          # 验证标签是否存在
+          echo "📋 验证标签..."
+          if ! git rev-parse $FROM_VERSION 2>/dev/null; then
+            echo "::error::❌ 标签 $FROM_VERSION 不存在"
+            echo "📋 可用的 v4.19 标签："
+            git tag -l "v4.19.*"
+            exit 1
+          fi
+          
+          if ! git rev-parse $TO_VERSION 2>/dev/null; then
+            echo "::error::❌ 标签 $TO_VERSION 不存在"
+            echo "📋 可用的 v4.19 标签："
+            git tag -l "v4.19.*"
+            exit 1
+          fi
           
           # 获取补丁列表
           PATCHES=$(git rev-list --reverse $FROM_VERSION..$TO_VERSION)
@@ -67,7 +95,7 @@ jobs:
             echo "--- [$CURRENT/$TOTAL] 正在应用补丁: $COMMIT ---"
             
             # 获取提交信息
-            COMMIT_MSG=$(git log -1 --pretty=%s $COMMIT)
+            COMMIT_MSG=$(git log -1 --pretty=%s $COMMIT 2>/dev/null || echo "未知")
             echo "📝 提交信息: $COMMIT_MSG"
             
             if git cherry-pick $COMMIT; then
