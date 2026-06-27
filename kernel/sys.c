@@ -1248,10 +1248,11 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 	memcpy(&tmp, utsname(), sizeof(tmp));
 	if (!strncmp(current->comm, "bpfloader", 9) ||
 	    !strncmp(current->comm, "netbpfload", 10) ||
-	    !strncmp(current->comm, "netd", 4)) {
-		strcpy(tmp.release, "5.4.186");
-		pr_debug("fake uname: %s/%d release=%s\n",
-			 current->comm, current->pid, tmp.release);
+	    !strncmp(current->comm, "netd", 4) ||
+	    !strncmp(current->comm, "uprobestats", 11)) {
+		strcpy(tmp.release, "5.10.240");
+		pr_debug("fake uname: %s release=%s\n",
+			 current->comm, tmp.release);
 	}
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
