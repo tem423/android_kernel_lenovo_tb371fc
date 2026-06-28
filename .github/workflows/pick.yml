@@ -29,7 +29,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick specific commits and push (skip drivers folder)
+      - name: Cherry-pick specific commits and push (skip Makefile)
         run: |
           # 定义要 cherry-pick 的提交列表
           COMMIT_LIST="
@@ -61,11 +61,11 @@ jobs:
           CURRENT=0
           APPLIED=0
           SKIPPED=0
-          SKIPPED_DRIVERS=0
+          SKIPPED_MAKEFILE=0
           CONFLICT_COMMIT=""
           
           echo "📊 总共需要处理 $TOTAL 个提交"
-          echo "⏭️ 将跳过仅包含 drivers/ 文件夹更改的提交"
+          echo "⏭️ 将跳过仅包含 Makefile 更改的提交"
           echo "========================================"
           
           # 显示当前状态
@@ -84,18 +84,19 @@ jobs:
             git log --oneline -1 $COMMIT 2>/dev/null || echo "⚠️ 无法获取提交信息（可能提交不存在）"
             echo ""
             
-            # 检查这个提交是否只修改了 drivers/ 文件夹
-            echo "🔍 检查提交是否只涉及 drivers/ 文件夹..."
+            # 检查这个提交是否只修改了 Makefile
+            echo "🔍 检查提交是否只涉及 Makefile..."
             MODIFIED_FILES=$(git diff-tree --no-commit-id --name-only -r $COMMIT 2>/dev/null || echo "")
             
-            # 检查是否有非 drivers/ 的修改
-            NON_DRIVERS_FILES=$(echo "$MODIFIED_FILES" | grep -v "^drivers/" | grep -v "^$" || echo "")
+            # 检查是否有非 Makefile 的修改
+            # Makefile 可能是名为 Makefile 的文件或以 Makefile 结尾的文件
+            NON_MAKEFILE_FILES=$(echo "$MODIFIED_FILES" | grep -v "Makefile$" | grep -v "^$" || echo "")
             
-            if [ -z "$NON_DRIVERS_FILES" ] && [ -n "$MODIFIED_FILES" ]; then
-              echo "⏭️ 提交 $COMMIT 只修改了 drivers/ 文件夹，跳过"
+            if [ -z "$NON_MAKEFILE_FILES" ] && [ -n "$MODIFIED_FILES" ]; then
+              echo "⏭️ 提交 $COMMIT 只修改了 Makefile，跳过"
               echo "📁 修改的文件:"
               echo "$MODIFIED_FILES" | sed 's/^/  /'
-              SKIPPED_DRIVERS=$((SKIPPED_DRIVERS + 1))
+              SKIPPED_MAKEFILE=$((SKIPPED_MAKEFILE + 1))
               SKIPPED=$((SKIPPED + 1))
               echo ""
               continue
@@ -104,9 +105,9 @@ jobs:
               echo ""
               continue
             else
-              echo "✅ 提交包含非 drivers/ 的修改，将进行 cherry-pick"
-              echo "📁 修改的文件（非 drivers/）:"
-              echo "$NON_DRIVERS_FILES" | sed 's/^/  /'
+              echo "✅ 提交包含非 Makefile 的修改，将进行 cherry-pick"
+              echo "📁 修改的文件（非 Makefile）:"
+              echo "$NON_MAKEFILE_FILES" | sed 's/^/  /'
               echo ""
             fi
             
@@ -192,7 +193,7 @@ jobs:
             echo "========================================"
             echo "::error::❌ 在提交 $CONFLICT_COMMIT 处发生冲突"
             echo "💡 已推送的 $APPLIED 个提交已上传到远程仓库"
-            echo "📊 统计: 成功应用 $APPLIED 个，跳过 $SKIPPED 个 (其中仅 drivers/ 的提交: $SKIPPED_DRIVERS 个)"
+            echo "📊 统计: 成功应用 $APPLIED 个，跳过 $SKIPPED 个 (其中仅 Makefile 的提交: $SKIPPED_MAKEFILE 个)"
             echo ""
             echo "📋 本地解决冲突后继续："
             echo "  git pull origin ${{ github.event.inputs.target_branch }}"
@@ -209,7 +210,7 @@ jobs:
           echo "========================================"
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
-          echo "⏭️ 跳过: $SKIPPED 个 (其中仅 drivers/ 的提交: $SKIPPED_DRIVERS 个)"
+          echo "⏭️ 跳过: $SKIPPED 个 (其中仅 Makefile 的提交: $SKIPPED_MAKEFILE 个)"
 
       - name: Push changes (if all succeeded)
         if: success()
