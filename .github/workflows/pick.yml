@@ -1,16 +1,8 @@
-name: Batch Cherry-pick from Remote Branch
+name: Batch Cherry-pick from Local Branch
 
 on:
   workflow_dispatch:
     inputs:
-      source_repo:
-        description: '源仓库地址 (例如: https://github.com/user/repo.git)'
-        required: true
-        default: 'https://github.com/ApartTUSITU/kernel_xiaomi_sm8250_mod.git'
-      source_branch:
-        description: '源分支名称'
-        required: true
-        default: 'android16-aptusitu'
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
@@ -21,17 +13,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout target repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.target_branch }}
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
 
-      - name: Add source repository
+      - name: Fetch source branch
         run: |
-          git remote add source-repo ${{ github.event.inputs.source_repo }}
-          git fetch source-repo ${{ github.event.inputs.source_branch }}
+          git fetch origin android16-aptusitu
 
       - name: Configure Git user
         run: |
