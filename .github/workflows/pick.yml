@@ -11,22 +11,10 @@ on:
         description: '源分支名称'
         required: true
         default: 'android16-aptusitu'
-      commit_start:
-        description: '起始 Commit (包含)'
-        required: true
-        default: '1a6da61'
-      commit_end:
-        description: '结束 Commit (包含)'
-        required: true
-        default: 'e7087c9'
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
         default: 'android14-base'
-      skip_commits:
-        description: '要跳过的提交列表（用空格分隔，例如: c74ef2fe8516 1a6da61bf1ba）'
-        required: false
-        default: ''
 
 jobs:
   cherry-pick:
@@ -50,70 +38,66 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits and push on conflict
+      - name: Cherry-pick specific commits and push
         run: |
-          # 定义要跳过的提交列表（从输入参数获取）
-          SKIP_COMMITS="${{ github.event.inputs.skip_commits }}"
+          # 定义要 cherry-pick 的提交列表
+          COMMIT_LIST="
+          b37477f5316fe37f74645a5d9d92a3a9c93d8cfa
+          302e1d977385ef80349cc9fadd5204c2e3404433
+          05a68fe2c1f4661c5641ad0d9fb0241503f126d7
+          46d5c1546743336f866e6b827c0242acf2196432
+          18b61cc1d099695ff930e9043ee9bc522b953a9b
+          82f9317bbbe5b556e0433166f844cb775c2f7abe
+          bd67cb15e90fa8b47b84e8554569ef5657a05c80
+          da78120b9286aae93522c62ed9cc9a12d2e52026
+          62b9122a2a133e96c3b439477e2d931041765a12
+          bbc4834e22f0355a4971f4e4f6fd396ffd58d0c6
+          7b8888c696afdda7d4b2f517499da7f5c6b36720
+          d757552385b8c5fbe8bb6b172240cac050d22eb2
+          de2cffe297563c815c840cfa14b77a0868b61e53
+          1b3964c5e070d088ca4c9591cbadd91a22e438ea
+          a8c422f8f7233300271453594f40da83c513d22c
+          2d76dea417beb11b47beb4933a41f184bec6966a
+          708f578f2a8f702d2f2a0ef5e6eac28e08206e03
+          4f94b88d7d8730cd7b1adbb86d4ceef639a7c1f9
+          a67e7cdde7cc7984ae24c3c81a70dc1aa34424b1
+          874391c94eb1520fcf37467be70427e8787900f2
+          "
           
-          # 显示当前状态用于调试
-          echo "🔍 当前分支: $(git branch --show-current)"
-          echo "🔍 工作区状态:"
-          git status --porcelain || echo "无变更"
-          echo ""
-          
-          # 获取提交列表
-          COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
-          TOTAL=$(echo "$COMMITS" | wc -l)
+          # 去除空行和空格
+          COMMIT_LIST=$(echo "$COMMIT_LIST" | grep -v '^$' | tr -d ' ')
+          TOTAL=$(echo "$COMMIT_LIST" | wc -l)
           CURRENT=0
           APPLIED=0
           SKIPPED=0
           CONFLICT_COMMIT=""
           
           echo "📊 总共需要处理 $TOTAL 个提交"
-          if [ -n "$SKIP_COMMITS" ]; then
-            echo "⏭️ 将跳过以下提交: $SKIP_COMMITS"
-          fi
           echo "========================================"
           
-          # 将提交列表保存到临时文件
-          echo "$COMMITS" > /tmp/commit_list.txt
+          # 显示当前状态
+          echo "🔍 当前分支: $(git branch --show-current)"
+          echo "🔍 工作区状态:"
+          git status --porcelain || echo "无变更"
+          echo ""
           
-          while IFS= read -r COMMIT; do
-            # 跳过空行
-            [ -z "$COMMIT" ] && continue
-            
+          for COMMIT in $COMMIT_LIST; do
             CURRENT=$((CURRENT + 1))
-            
-            # 检查是否在跳过列表中
-            if [ -n "$SKIP_COMMITS" ] && echo " $SKIP_COMMITS " | grep -q " $COMMIT "; then
-              echo "--- [$CURRENT/$TOTAL] ⏭️ 跳过指定提交: $COMMIT ---"
-              SKIPPED=$((SKIPPED + 1))
-              echo ""
-              continue
-            fi
             
             echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
             
             # 显示提交信息
             echo "📝 提交说明:"
-            git log --oneline -1 $COMMIT || echo "无法获取提交信息"
+            git log --oneline -1 $COMMIT 2>/dev/null || echo "⚠️ 无法获取提交信息（可能提交不存在）"
             echo ""
             
-            # 使用临时文件捕获输出，避免命令替换卡死
-            TEMP_OUTPUT=$(mktemp)
-            TEMP_ERROR=$(mktemp)
-            
-            # 执行 cherry-pick，重定向所有输出到临时文件
+            # 执行 cherry-pick
             set +e
-            git cherry-pick $COMMIT > "$TEMP_OUTPUT" 2> "$TEMP_ERROR"
+            CHERRY_OUTPUT=$(git cherry-pick $COMMIT 2>&1)
             CHERRY_EXIT_CODE=$?
             set -e
             
-            # 合并输出
-            CHERRY_OUTPUT=$(cat "$TEMP_OUTPUT" "$TEMP_ERROR" 2>/dev/null || echo "")
-            rm -f "$TEMP_OUTPUT" "$TEMP_ERROR"
-            
-            # 显示输出（用于调试）
+            # 显示输出
             if [ -n "$CHERRY_OUTPUT" ]; then
               echo "📤 命令输出:"
               echo "$CHERRY_OUTPUT"
@@ -148,7 +132,7 @@ jobs:
               break
             fi
             
-            # 情况4: 其他错误（如依赖缺失等）
+            # 情况4: 其他错误
             echo "::error::❌ 提交 $COMMIT 处理失败！"
             echo "错误详情: $CHERRY_OUTPUT"
             echo ""
@@ -160,11 +144,7 @@ jobs:
             
             CONFLICT_COMMIT="$COMMIT"
             break
-            
-          done < /tmp/commit_list.txt
-          
-          # 清理临时文件
-          rm -f /tmp/commit_list.txt
+          done
           
           # 推送已应用的提交
           if [ $APPLIED -gt 0 ]; then
@@ -201,7 +181,7 @@ jobs:
           echo "========================================"
           echo "🎉 Cherry-pick 全部完成！"
           echo "✅ 成功应用: $APPLIED 个"
-          echo "⏭️ 跳过（空提交 + 手动指定）: $SKIPPED 个"
+          echo "⏭️ 跳过（空提交）: $SKIPPED 个"
 
       - name: Push changes (if all succeeded)
         if: success()
