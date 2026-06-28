@@ -6,11 +6,11 @@ on:
       source_repo:
         description: '源仓库地址 (例如: https://github.com/user/repo.git)'
         required: true
-        default: 'https://github.com/jsdizkcksv/kernel_xiaomi_sm8250.git'
+        default: 'https://github.com/ApartTUSITU/kernel_xiaomi_sm8250_mod.git'
       source_branch:
         description: '源分支名称'
         required: true
-        default: 'backport-5.10-bpf'
+        default: 'android16-aptusitu'
       commit_start:
         description: '起始 Commit (包含)'
         required: true
@@ -22,11 +22,11 @@ on:
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
-        default: 'bpf'
+        default: 'android14-base'
       skip_commits:
         description: '要跳过的提交列表（用空格分隔，例如: c74ef2fe8516 1a6da61bf1ba）'
         required: false
-        default: 'c74ef2fe8516a7ca67e847570932bfc6117bfd25'
+        default: ''
 
 jobs:
   cherry-pick:
