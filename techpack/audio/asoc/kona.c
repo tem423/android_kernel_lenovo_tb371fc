@@ -31,7 +31,6 @@
 #include "asoc/wcd-mbhc-v2.h"
 #include "codecs/wcd938x/wcd938x-mbhc.h"
 #include "codecs/wsa881x.h"
-#include "codecs/wsa883x/wsa883x.h"
 #include "codecs/wcd938x/wcd938x.h"
 #include "codecs/wcd937x/wcd937x-mbhc.h"
 #include "codecs/wcd937x/wcd937x.h"
@@ -7826,14 +7825,10 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 	if (!strcmp(component->name_prefix, "SpkrLeft")) {
 		dev_dbg(component->dev, "%s: setting left ch map to codec %s\n",
 			__func__, component->name);
-		if (strnstr(component->name, "wsa883x", sizeof(component->name)))
-			wsa883x_set_channel_map(component, &spkleft_ports[0],
-					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
-					&ch_rate[0], &spkleft_port_types[0]);
-		else
-			wsa881x_set_channel_map(component, &spkleft_ports[0],
-					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
-					&ch_rate[0], &spkleft_port_types[0]);
+		/* 直接使用 wsa881x，不检查 wsa883x */
+		wsa881x_set_channel_map(component, &spkleft_ports[0],
+				WSA881X_MAX_SWR_PORTS, &ch_mask[0],
+				&ch_rate[0], &spkleft_port_types[0]);
 		if (dapm->component) {
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft IN");
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft SPKR");
@@ -7841,14 +7836,10 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 	} else if (!strcmp(component->name_prefix, "SpkrRight")) {
 		dev_dbg(component->dev, "%s: setting right ch map to codec %s\n",
 			__func__, component->name);
-		if (strnstr(component->name, "wsa883x", sizeof(component->name)))
-			wsa883x_set_channel_map(component, &spkright_ports[0],
-					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
-					&ch_rate[0], &spkright_port_types[0]);
-		else
-			wsa881x_set_channel_map(component, &spkright_ports[0],
-					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
-					&ch_rate[0], &spkright_port_types[0]);
+		/* 直接使用 wsa881x，不检查 wsa883x */
+		wsa881x_set_channel_map(component, &spkright_ports[0],
+				WSA881X_MAX_SWR_PORTS, &ch_mask[0],
+				&ch_rate[0], &spkright_port_types[0]);
 		if (dapm->component) {
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrRight IN");
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrRight SPKR");
@@ -7859,6 +7850,7 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 		ret = -EINVAL;
 		goto err;
 	}
+
 	pdata = snd_soc_card_get_drvdata(component->card);
 	if (!pdata->codec_root) {
 		entry = snd_info_create_subdir(card->module, "codecs",
@@ -7871,12 +7863,10 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 		}
 		pdata->codec_root = entry;
 	}
-	if (strnstr(component->name, "wsa883x", sizeof(component->name)))
-		wsa883x_codec_info_create_codec_entry(pdata->codec_root,
-						      component);
-	else
-		wsa881x_codec_info_create_codec_entry(pdata->codec_root,
-						      component);
+
+	/* 直接使用 wsa881x，不检查 wsa883x */
+	wsa881x_codec_info_create_codec_entry(pdata->codec_root, component);
+
 err:
 	return ret;
 }
@@ -8367,114 +8357,14 @@ static int msm_audio_ssr_register(struct device *dev)
 	return ret;
 }
 
+#if 0
 static void parse_cps_configuration(struct platform_device *pdev,
 			struct msm_asoc_mach_data *pdata)
 {
-	int ret = 0;
-	int i = 0, j = 0;
-	u32 dt_values[MAX_CPS_LEVELS];
-
-	if (!pdev || !pdata || !pdata->wsa_max_devs)
-		return;
-
-	pdata->get_wsa_dev_num = wsa883x_codec_get_dev_num;
-	pdata->cps_config.hw_reg_cfg.num_spkr = pdata->wsa_max_devs;
-
-	ret = of_property_read_u32_array(pdev->dev.of_node,
-				"qcom,cps_reg_phy_addr", dt_values,
-				sizeof(dt_values)/sizeof(dt_values[0]));
-	if (ret) {
-		dev_dbg(&pdev->dev, "%s: could not find %s entry in dt\n",
-			__func__, "qcom,cps_reg_phy_addr");
-	} else {
-		pdata->cps_config.hw_reg_cfg.lpass_wr_cmd_reg_phy_addr =
-								dt_values[0];
-		pdata->cps_config.hw_reg_cfg.lpass_rd_cmd_reg_phy_addr =
-								dt_values[1];
-		pdata->cps_config.hw_reg_cfg.lpass_rd_fifo_reg_phy_addr =
-								dt_values[2];
-	}
-
-	ret = of_property_read_u32_array(pdev->dev.of_node,
-				"qcom,cps_threshold_levels", dt_values,
-				sizeof(dt_values)/sizeof(dt_values[0]) - 1);
-	if (ret) {
-		dev_dbg(&pdev->dev, "%s: could not find %s entry in dt\n",
-			__func__, "qcom,cps_threshold_levels");
-	} else {
-		pdata->cps_config.hw_reg_cfg.vbatt_lower2_threshold =
-								dt_values[0];
-		pdata->cps_config.hw_reg_cfg.vbatt_lower1_threshold =
-								dt_values[1];
-	}
-
-	pdata->cps_config.spkr_dep_cfg = devm_kzalloc(&pdev->dev,
-				    sizeof(struct lpass_swr_spkr_dep_cfg_t)
-				    * pdata->wsa_max_devs, GFP_KERNEL);
-	if (!pdata->cps_config.spkr_dep_cfg) {
-		dev_err(&pdev->dev, "%s: spkr dep cfg alloc failed\n", __func__);
-		return;
-	}
-	ret = of_property_read_u32_array(pdev->dev.of_node,
-				"qcom,cps_wsa_vbatt_temp_reg_addr", dt_values,
-				sizeof(dt_values)/sizeof(dt_values[0]) - 1);
-	if (ret) {
-		dev_dbg(&pdev->dev, "%s: could not find %s entry in dt\n",
-			__func__, "qcom,cps_wsa_vbatt_temp_reg_addr");
-	} else {
-		for (i = 0; i < pdata->wsa_max_devs; i++) {
-			pdata->cps_config.spkr_dep_cfg[i].vbatt_pkd_reg_addr =
-								dt_values[0];
-			pdata->cps_config.spkr_dep_cfg[i].temp_pkd_reg_addr =
-								dt_values[1];
-		}
-	}
-
-	ret = of_property_read_u32_array(pdev->dev.of_node,
-				"qcom,cps_normal_values", dt_values,
-				sizeof(dt_values)/sizeof(dt_values[0]));
-	if (ret) {
-		dev_dbg(&pdev->dev, "%s: could not find %s entry in dt\n",
-			__func__, "qcom,cps_normal_values");
-	} else {
-		for (i = 0; i < pdata->wsa_max_devs; i++) {
-			for (j = 0; j < MAX_CPS_LEVELS; j++) {
-				pdata->cps_config.spkr_dep_cfg[i].
-					value_normal_thrsd[j] = dt_values[j];
-			}
-		}
-	}
-
-	ret = of_property_read_u32_array(pdev->dev.of_node,
-				"qcom,cps_lower1_values", dt_values,
-				sizeof(dt_values)/sizeof(dt_values[0]));
-	if (ret) {
-		dev_dbg(&pdev->dev, "%s: could not find %s entry in dt\n",
-			__func__, "qcom,cps_lower1_values");
-	} else {
-		for (i = 0; i < pdata->wsa_max_devs; i++) {
-			for (j = 0; j < MAX_CPS_LEVELS; j++) {
-				pdata->cps_config.spkr_dep_cfg[i].
-					value_low1_thrsd[j] = dt_values[j];
-			}
-		}
-	}
-
-	ret = of_property_read_u32_array(pdev->dev.of_node,
-				"qcom,cps_lower2_values", dt_values,
-				sizeof(dt_values)/sizeof(dt_values[0]));
-	if (ret) {
-		dev_dbg(&pdev->dev, "%s: could not find %s entry in dt\n",
-			__func__, "qcom,cps_lower2_values");
-	} else {
-		for (i = 0; i < pdata->wsa_max_devs; i++) {
-			for (j = 0; j < MAX_CPS_LEVELS; j++) {
-				pdata->cps_config.spkr_dep_cfg[i].
-					value_low2_thrsd[j] = dt_values[j];
-			}
-		}
-	}
+	/* CPS not supported for wsa881x, just return */
+	return;
 }
+#endif
 
 static int msm_asoc_machine_probe(struct platform_device *pdev)
 {
@@ -8668,9 +8558,11 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 		atomic_set(&(pdata->mi2s_gpio_ref_count[index]), 0);
 	}
 
-	/* parse cps configuration from dt */
-	if (of_property_read_bool(pdev->dev.of_node, "qcom,cps_reg_phy_addr"))
-		parse_cps_configuration(pdev, pdata);
+/* parse cps configuration from dt - disabled for wsa881x */
+#if 0
+if (of_property_read_bool(pdev->dev.of_node, "qcom,cps_reg_phy_addr"))
+	parse_cps_configuration(pdev, pdata);
+#endif
 
 	/* Register LPASS audio hw vote */
 	lpass_audio_hw_vote = devm_clk_get(&pdev->dev, "lpass_audio_hw_vote");

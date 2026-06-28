@@ -1,0 +1,70 @@
+#ifndef __HQSYS_PCBA_
+#define __HQSYS_PCBA_
+
+typedef enum
+{
+	PCBA_INFO_UNKNOW = 0,
+
+	PCBA_EVT_4_128_LTE_ROW = 1,
+	PCBA_EVT_6_128_LTE_ROW,
+	PCBA_EVT_4_64_LTE_ROW,
+	PCBA_EVT_6_128_LTE_PRC,
+	PCBA_EVT_4_128_WIFI_GPS,
+	PCBA_EVT_6_128_WIFI_GPS,
+	PCBA_EVT_4_64_WIFI_GPS,
+
+	PCBA_DVT1_4_128_LTE_ROW = 8,
+	PCBA_DVT1_6_128_LTE_ROW,
+	PCBA_DVT1_4_64_LTE_ROW,
+	PCBA_DVT1_6_128_LTE_PRC,
+	PCBA_DVT1_4_128_WIFI_GPS,
+	PCBA_DVT1_6_128_WIFI_GPS,
+	PCBA_DVT1_4_64_WIFI_GPS,
+
+	PCBA_DVT2_4_128_LTE_ROW = 15,
+	PCBA_DVT2_6_128_LTE_ROW,
+	PCBA_DVT2_4_64_LTE_ROW,
+	PCBA_DVT2_6_128_LTE_PRC,
+	PCBA_DVT2_4_128_WIFI_GPS,
+	PCBA_DVT2_6_128_WIFI_GPS,
+	PCBA_DVT2_4_64_WIFI_GPS,
+
+	PCBA_PVT_4_128_LTE_ROW = 22,
+	PCBA_PVT_6_128_LTE_ROW,
+	PCBA_PVT_4_64_LTE_ROW,
+	PCBA_PVT_6_128_LTE_PRC,
+	PCBA_PVT_4_128_WIFI_GPS,
+	PCBA_PVT_6_128_WIFI_GPS,
+	PCBA_PVT_4_64_WIFI_GPS,
+
+	PCBA_INFO_END,
+} PCBA_INFO;
+
+typedef enum
+{
+	STAGE_UNKNOW = 0,
+	EVT,
+	DVT1,
+	DVT2,
+	PVT,
+} PROJECT_STAGE;
+
+struct project_stage {
+	int voltage_min;
+	int voltage_max;
+	PROJECT_STAGE project_stage;
+};
+
+struct PCBA_MSG {
+	PCBA_INFO huaqin_pcba_config;
+	PROJECT_STAGE pcba_stage;
+	unsigned int pcba_config;
+	unsigned int pcba_config_count;
+	const char *rsc;
+	const char *sku;
+};
+
+struct PCBA_MSG* get_pcba_msg(void);
+
+#endif
+

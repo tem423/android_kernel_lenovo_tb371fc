@@ -191,7 +191,7 @@ void dsi_rect_intersect(const struct dsi_rect *r1,
 }
 
 int dsi_display_set_backlight(struct drm_connector *connector,
-		void *display, u32 bl_lvl)
+		void *display, u32 bl_lvl, u8 hbm)
 {
 	struct dsi_display *dsi_display = display;
 	struct dsi_panel *panel;
@@ -229,7 +229,7 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 		goto error;
 	}
 
-	rc = dsi_panel_set_backlight(panel, (u32)bl_temp);
+	rc = dsi_panel_set_backlight(panel, (u32)bl_temp, hbm);
 	if (rc)
 		DSI_ERR("unable to set backlight\n");
 
@@ -4491,10 +4491,37 @@ static int dsi_display_dfps_calc_front_porch(
 	DSI_DEBUG("fps %u a %u b %u b_fp %u new_fp %d\n",
 			new_fps, a_total, b_total, b_fp, b_fp_new);
 
-	if (b_fp_new < 0) {
-		DSI_ERR("Invalid new_hfp calcluated%d\n", b_fp_new);
-		return -EINVAL;
+	/* ===== 增强的修复开始 ===== */
+	/* 处理所有无效的 HFP 值 */
+	if (b_fp_new < 0 || b_fp_new < 4) {
+		u32 safe_hfp;
+		
+		DSI_WARN("Invalid hfp calculated %d for %uHz\n", b_fp_new, new_fps);
+		
+		/* 根据刷新率动态选择安全值 */
+		if (new_fps >= 144)
+			safe_hfp = 16;   /* 144Hz */
+		else if (new_fps >= 120)
+			safe_hfp = 20;   /* 120Hz */
+		else if (new_fps >= 90)
+			safe_hfp = 24;   /* 90Hz */
+		else
+			safe_hfp = 32;   /* 60Hz 及以下 */
+		
+		DSI_INFO("Using safe hfp=%d for %uHz (was %d)\n", 
+			 safe_hfp, new_fps, b_fp_new);
+		
+		*b_fp_out = safe_hfp;
+		return 0;       /* 返回成功而非错误 */
 	}
+	
+	/* 额外保护：防止 HFP 过大导致问题 */
+	if (b_fp_new > 500) {
+		DSI_WARN("HFP %d too large, limiting to 48\n", b_fp_new);
+		*b_fp_out = 48;
+		return 0;
+	}
+	/* ===== 增强的修复结束 ===== */
 
 	/**
 	 * TODO: To differentiate from clock method when communicating to the

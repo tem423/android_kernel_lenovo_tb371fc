@@ -208,6 +208,7 @@ struct socinfo_v0_14 {
 struct socinfo_v0_15 {
 	struct socinfo_v0_14 v0_14;
 	uint32_t nmodem_supported;
+    uint32_t feature_id;
 };
 
 struct socinfo_v0_16 {
@@ -703,6 +704,45 @@ static uint32_t socinfo_get_nmodem_supported(void)
 		: 0;
 }
 
+static uint32_t socinfo_get_feature_id(void)
+{
+	return socinfo ?
+		(socinfo_format >= SOCINFO_VERSION(0, 15) ?
+			socinfo->v0_15.feature_id : 0)
+		: 0;
+}
+
+char *socinfo_get_cpu_info(void)
+{
+	static char cpu_str[256];
+	static bool string_generated;
+	uint32_t feature_id, soc_version;
+
+	if (string_generated)
+		return cpu_str;
+	if (!socinfo)
+		goto err_path;
+
+	soc_version = socinfo_get_version();
+
+	sprintf(cpu_str, "%s_v%u.%u", socinfo_get_chip_name(), SOCINFO_VERSION_MAJOR(soc_version), SOCINFO_VERSION_MINOR(soc_version));
+
+	feature_id = socinfo_get_feature_id();
+
+	switch(feature_id) {
+        case 0x03: strlcat(cpu_str, "_AB", sizeof(cpu_str));break;
+		case 0x0e: strlcat(cpu_str, "_AC", sizeof(cpu_str));break;
+		default:strlcat(cpu_str, "_UNKNOW", sizeof(cpu_str));break;
+	};
+
+	string_generated = true;
+	return cpu_str;
+err_path:
+	return "UNKNOWN CPU";
+}
+EXPORT_SYMBOL(socinfo_get_cpu_info);
+
+
 static uint32_t socinfo_get_feature_code_id(void)
 {
 	uint32_t fc_id;
@@ -1146,6 +1186,15 @@ msm_get_nmodem_supported(struct device *dev,
 }
 
 static ssize_t
+msm_get_feature_id(struct device *dev,
+			struct device_attribute *attr,
+			char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "0x%x\n",
+		socinfo_get_feature_id());
+}
+
+static ssize_t
 msm_get_sku(struct device *dev,
 			struct device_attribute *attr,
 			char *buf)
@@ -1488,6 +1537,10 @@ static struct device_attribute msm_soc_attr_nmodem_supported =
 	__ATTR(nmodem_supported, 0444,
 			msm_get_nmodem_supported, NULL);
 
+static struct device_attribute msm_soc_attr_feature_id =
+	__ATTR(feature_id, 0444,
+			msm_get_feature_id, NULL);
+
 static struct device_attribute msm_soc_attr_sku =
 	__ATTR(sku, 0444, msm_get_sku, NULL);
 
@@ -1697,6 +1750,8 @@ static void __init populate_soc_sysfs_files(struct device *msm_soc_device)
 	case SOCINFO_VERSION(0, 15):
 		device_create_file(msm_soc_device,
 					&msm_soc_attr_nmodem_supported);
+		device_create_file(msm_soc_device,
+		            &msm_soc_attr_feature_id);
 	case SOCINFO_VERSION(0, 14):
 		device_create_file(msm_soc_device,
 					&msm_soc_attr_num_clusters);
