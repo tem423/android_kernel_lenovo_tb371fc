@@ -9,6 +9,8 @@ menuconfig INPUT_TOUCHSCREEN
 
 	  If unsure, say Y.
 
+if INPUT_TOUCHSCREEN
+
 config TOUCHSCREEN_PROPERTIES
 	def_tristate INPUT
 	depends on INPUT
@@ -1367,4 +1369,4 @@ source "drivers/input/touchscreen/nt36xxx/Kconfig"
 
 source "drivers/input/touchscreen/nt36532/Kconfig"
 
-endmenu
+endif
