@@ -1,0 +1,209 @@
+name: Batch Cherry-pick from Remote Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_repo:
+        description: '源仓库地址 (例如: https://github.com/user/repo.git)'
+        required: true
+        default: 'https://github.com/jsdizkcksv/kernel_xiaomi_sm8250.git'
+      source_branch:
+        description: '源分支名称'
+        required: true
+        default: 'backport-5.10-bpf'
+      commit_start:
+        description: '起始 Commit (包含)'
+        required: true
+        default: '1a6da61'
+      commit_end:
+        description: '结束 Commit (包含)'
+        required: true
+        default: 'e7087c9'
+      target_branch:
+        description: '目标分支 (将合入的分支)'
+        required: true
+        default: 'bpf'
+      skip_commits:
+        description: '要跳过的提交列表（用空格分隔，例如: c74ef2fe8516 1a6da61bf1ba）'
+        required: false
+        default: ''
+
+jobs:
+  cherry-pick:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.target_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Add source repository
+        run: |
+          git remote add source-repo ${{ github.event.inputs.source_repo }}
+          git fetch source-repo ${{ github.event.inputs.source_branch }}
+
+      - name: Configure Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Cherry-pick commits and push on conflict
+        run: |
+          # 定义要跳过的提交列表（从输入参数获取）
+          SKIP_COMMITS="${{ github.event.inputs.skip_commits }}"
+          
+          # 显示当前状态用于调试
+          echo "🔍 当前分支: $(git branch --show-current)"
+          echo "🔍 工作区状态:"
+          git status --porcelain || echo "无变更"
+          echo ""
+          
+          # 获取提交列表
+          COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
+          TOTAL=$(echo "$COMMITS" | wc -l)
+          CURRENT=0
+          APPLIED=0
+          SKIPPED=0
+          CONFLICT_COMMIT=""
+          
+          echo "📊 总共需要处理 $TOTAL 个提交"
+          if [ -n "$SKIP_COMMITS" ]; then
+            echo "⏭️ 将跳过以下提交: $SKIP_COMMITS"
+          fi
+          echo "========================================"
+          
+          # 将提交列表保存到临时文件
+          echo "$COMMITS" > /tmp/commit_list.txt
+          
+          while IFS= read -r COMMIT; do
+            # 跳过空行
+            [ -z "$COMMIT" ] && continue
+            
+            CURRENT=$((CURRENT + 1))
+            
+            # 检查是否在跳过列表中
+            if [ -n "$SKIP_COMMITS" ] && echo " $SKIP_COMMITS " | grep -q " $COMMIT "; then
+              echo "--- [$CURRENT/$TOTAL] ⏭️ 跳过指定提交: $COMMIT ---"
+              SKIPPED=$((SKIPPED + 1))
+              echo ""
+              continue
+            fi
+            
+            echo "--- [$CURRENT/$TOTAL] 正在处理: $COMMIT ---"
+            
+            # 显示提交信息
+            echo "📝 提交说明:"
+            git log --oneline -1 $COMMIT || echo "无法获取提交信息"
+            echo ""
+            
+            # 使用临时文件捕获输出，避免命令替换卡死
+            TEMP_OUTPUT=$(mktemp)
+            TEMP_ERROR=$(mktemp)
+            
+            # 执行 cherry-pick，重定向所有输出到临时文件
+            set +e
+            git cherry-pick $COMMIT > "$TEMP_OUTPUT" 2> "$TEMP_ERROR"
+            CHERRY_EXIT_CODE=$?
+            set -e
+            
+            # 合并输出
+            CHERRY_OUTPUT=$(cat "$TEMP_OUTPUT" "$TEMP_ERROR" 2>/dev/null || echo "")
+            rm -f "$TEMP_OUTPUT" "$TEMP_ERROR"
+            
+            # 显示输出（用于调试）
+            if [ -n "$CHERRY_OUTPUT" ]; then
+              echo "📤 命令输出:"
+              echo "$CHERRY_OUTPUT"
+            fi
+            echo "🔢 退出码: $CHERRY_EXIT_CODE"
+            
+            # 情况1: 完全成功
+            if [ $CHERRY_EXIT_CODE -eq 0 ]; then
+              echo "✅ 提交 $COMMIT 应用成功"
+              APPLIED=$((APPLIED + 1))
+              echo ""
+              continue
+            fi
+            
+            # 情况2: 空提交（更改已存在），自动跳过
+            if echo "$CHERRY_OUTPUT" | grep -q "The previous cherry-pick is now empty"; then
+              echo "⏭️ 提交 $COMMIT 为空（更改已存在），自动跳过"
+              git cherry-pick --skip 2>/dev/null || true
+              SKIPPED=$((SKIPPED + 1))
+              echo ""
+              continue
+            fi
+            
+            # 情况3: 代码冲突
+            if echo "$CHERRY_OUTPUT" | grep -q "CONFLICT"; then
+              echo "::error::❌ 提交 $COMMIT 发生冲突！"
+              echo "📋 冲突文件列表："
+              git diff --name-only --diff-filter=U || echo "无法获取冲突文件列表"
+              echo ""
+              
+              CONFLICT_COMMIT="$COMMIT"
+              break
+            fi
+            
+            # 情况4: 其他错误（如依赖缺失等）
+            echo "::error::❌ 提交 $COMMIT 处理失败！"
+            echo "错误详情: $CHERRY_OUTPUT"
+            echo ""
+            
+            # 尝试中止 cherry-pick 恢复工作区
+            if git cherry-pick --abort 2>/dev/null; then
+              echo "已执行 git cherry-pick --abort 恢复工作区"
+            fi
+            
+            CONFLICT_COMMIT="$COMMIT"
+            break
+            
+          done < /tmp/commit_list.txt
+          
+          # 清理临时文件
+          rm -f /tmp/commit_list.txt
+          
+          # 推送已应用的提交
+          if [ $APPLIED -gt 0 ]; then
+            echo "========================================"
+            echo "📦 推送已应用的 $APPLIED 个提交到远程..."
+            if git push origin ${{ github.event.inputs.target_branch }}; then
+              echo "✅ 已推送 $APPLIED 个提交"
+            else
+              echo "::error::❌ 推送失败！请手动推送"
+              exit 1
+            fi
+          fi
+          
+          # 如果有冲突，退出并报错
+          if [ -n "$CONFLICT_COMMIT" ]; then
+            echo ""
+            echo "========================================"
+            echo "::error::❌ 在提交 $CONFLICT_COMMIT 处发生冲突"
+            echo "💡 已推送的 $APPLIED 个提交已上传到远程仓库"
+            echo "📊 统计: 成功应用 $APPLIED 个，跳过 $SKIPPED 个"
+            echo ""
+            echo "📋 本地解决冲突后继续："
+            echo "  git pull origin ${{ github.event.inputs.target_branch }}"
+            echo "  # 解决冲突文件"
+            echo "  git add . && git cherry-pick --continue"
+            echo "  git push origin ${{ github.event.inputs.target_branch }}"
+            echo ""
+            echo "或跳过此提交："
+            echo "  git cherry-pick --skip"
+            echo "  git push origin ${{ github.event.inputs.target_branch }}"
+            exit 1
+          fi
+          
+          echo "========================================"
+          echo "🎉 Cherry-pick 全部完成！"
+          echo "✅ 成功应用: $APPLIED 个"
+          echo "⏭️ 跳过（空提交 + 手动指定）: $SKIPPED 个"
+
+      - name: Push changes (if all succeeded)
+        if: success()
+        run: |
+          git push origin ${{ github.event.inputs.target_branch }}
