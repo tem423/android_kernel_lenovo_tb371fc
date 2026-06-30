@@ -79,6 +79,7 @@ config SND_SOC_ALL_CODECS
 	select SND_SOC_ES8328_SPI if SPI_MASTER
 	select SND_SOC_ES8328_I2C if I2C
 	select SND_SOC_ES7134
+    select SND_SOC_ES7210
 	select SND_SOC_ES7241
 	select SND_SOC_GTM601
 	select SND_SOC_HDAC_HDMI
@@ -164,6 +165,7 @@ config SND_SOC_ALL_CODECS
 	select SND_SOC_TAS6424 if I2C
 	select SND_SOC_TDA7419 if I2C
 	select SND_SOC_TFA9879 if I2C
+    select SND_SOC_TFA98XX if I2C
 	select SND_SOC_TLV320AIC23_I2C if I2C
 	select SND_SOC_TLV320AIC23_SPI if SPI_MASTER
 	select SND_SOC_TLV320AIC26 if SPI_MASTER
@@ -587,6 +589,10 @@ config SND_SOC_HDMI_CODEC
 config SND_SOC_ES7134
        tristate "Everest Semi ES7134 CODEC"
 
+config SND_SOC_ES7210
+       tristate "Everest Semi ES7210 ADC"
+       default n
+
 config SND_SOC_ES7241
        tristate "Everest Semi ES7241 CODEC"
 
@@ -992,6 +998,15 @@ config SND_SOC_TDA7419
 config SND_SOC_TFA9879
 	tristate "NXP Semiconductors TFA9879 amplifier"
 	depends on I2C
+
+config SND_SOC_TFA98XX
+	tristate "NXP TFA98XX speaker amplifier"
+	depends on I2C
+	help
+	  Config of TFA98XX. It is a Smart power
+	  amplifier which contain speaker protection,
+	  multi-band DRC, equalizer function. It would
+	  be set to yes if device with TFA98XX on it.
 
 config SND_SOC_TLV320AIC23
 	tristate
