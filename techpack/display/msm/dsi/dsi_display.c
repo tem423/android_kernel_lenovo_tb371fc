@@ -191,7 +191,7 @@ void dsi_rect_intersect(const struct dsi_rect *r1,
 }
 
 int dsi_display_set_backlight(struct drm_connector *connector,
-		void *display, u32 bl_lvl)
+		void *display, u32 bl_lvl, u8 hbm)
 {
 	struct dsi_display *dsi_display = display;
 	struct dsi_panel *panel;
@@ -229,7 +229,7 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 		goto error;
 	}
 
-	rc = dsi_panel_set_backlight(panel, (u32)bl_temp);
+	rc = dsi_panel_set_backlight(panel, (u32)bl_temp, hbm);
 	if (rc)
 		DSI_ERR("unable to set backlight\n");
 
