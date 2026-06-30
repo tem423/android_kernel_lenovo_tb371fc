@@ -52,6 +52,14 @@
 #include "sd_ops.h"
 #include "sdio_ops.h"
 
+/* huaqin add for SD card bringup by liufurong at 20190201 start */
+#ifdef CONFIG_MMC_SDHCI_BH201
+#include "../host/sdhci-msm.h"
+#else
+#define SDHCI_TIMEOUT_CONTROL	0x2E
+#endif
+/* huaqin add for SD card bringup by liufurong at 20190201 end */
+
 /* The max erase timeout, used when host->max_busy_timeout isn't specified */
 #define MMC_ERASE_TIMEOUT_MS	(60 * 1000) /* 60 s */
 
@@ -535,7 +543,17 @@ static int mmc_devfreq_set_target(struct device *dev,
 
 	pr_debug("%s: target freq = %lu (%s)\n", mmc_hostname(host),
 		*freq, current->comm);
+/* huaqin add for SD card bringup by liufurong at 20190201 start */
+#ifdef CONFIG_MMC_SDHCI_BH201
+	{
+		struct sdhci_host *sdhost = mmc_priv(host);
 
+if (bht_target_host(sdhost)) {
+			goto out;
+		}
+	}
+#endif
+/* huaqin add for SD card bringup by liufurong at 20190201 end */
 	spin_lock_irqsave(&clk_scaling->lock, flags);
 	if (clk_scaling->curr_freq == *freq ||
 		clk_scaling->skip_clk_scale_freq_update) {
@@ -1219,10 +1237,18 @@ static int mmc_mrq_prep(struct mmc_host *host, struct mmc_request *mrq)
 int mmc_start_request(struct mmc_host *host, struct mmc_request *mrq)
 {
 	int err;
-
+    #ifdef CONFIG_MMC_SDHCI_MSM_BH201
+	struct sdhci_host * host_sdhci = mmc_priv(host);
 	init_completion(&mrq->cmd_completion);
 
 	mmc_retune_hold(host);
+	//Add by ZhaoZiqiang for timeout controller register setting debug begin
+	if (sdhci_readb(host_sdhci, SDHCI_TIMEOUT_CONTROL)!= 0xE)
+	{
+		pr_info("TEST_print: host reg SDHCI_TIMEOUT_CONTROL is 0x%X\n", sdhci_readb(host_sdhci, SDHCI_TIMEOUT_CONTROL));
+	}
+	//Add by ZhaoZiqiang for timeout controller register setting debug end
+	#endif
 
 	if (mmc_card_removed(host->card))
 		return -ENOMEDIUM;
@@ -2726,11 +2752,10 @@ int mmc_resume_bus(struct mmc_host *host)
 		}
 		if (host->card->ext_csd.cmdq_en && !host->cqe_enabled) {
 			err = host->cqe_ops->cqe_enable(host, host->card);
+			host->cqe_enabled = true;
 			if (err)
 				pr_err("%s: %s: cqe enable failed: %d\n",
 				       mmc_hostname(host), __func__, err);
-			else
-				host->cqe_enabled = true;
 		}
 	}
 
