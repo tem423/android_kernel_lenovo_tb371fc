@@ -1327,3 +1327,4 @@ config SND_SOC_TPA6130A2
 	depends on I2C
 
 endmenu
+endif
