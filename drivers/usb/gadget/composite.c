@@ -2061,20 +2061,8 @@ unknown:
 			memset(buf, 0, w_length);
 			buf[5] = 0x01;
 			switch (ctrl->bRequestType & USB_RECIP_MASK) {
-			/*
-			 * The Microsoft CompatID OS Descriptor Spec(w_index = 0x4) and
-			 * Extended Prop OS Desc Spec(w_index = 0x5) state that the
-			 * HighByte of wValue is the InterfaceNumber and the LowByte is
-			 * the PageNumber. This high/low byte ordering is incorrectly
-			 * documented in the Spec. USB analyzer output on the below
-			 * request packets show the high/low byte inverted i.e LowByte
-			 * is the InterfaceNumber and the HighByte is the PageNumber.
-			 * Since we dont support >64KB CompatID/ExtendedProp descriptors,
-			 * PageNumber is set to 0. Hence verify that the HighByte is 0
-			 * for below two cases.
-			 */
 			case USB_RECIP_DEVICE:
-				if (w_index != 0x4 || (w_value >> 8))
+				if (w_index != 0x4 || (w_value & 0xff))
 					break;
 				buf[6] = w_index;
 				/* Number of ext compat interfaces */
@@ -2096,9 +2084,9 @@ unknown:
 				}
 				break;
 			case USB_RECIP_INTERFACE:
-				if (w_index != 0x5 || (w_value >> 8))
+				if (w_index != 0x5 || (w_value & 0xff))
 					break;
-				interface = w_value & 0xFF;
+				interface = w_value >> 8;
 				if (interface >= MAX_CONFIG_INTERFACES ||
 				    !os_desc_cfg->interface[interface])
 					break;
@@ -2526,7 +2514,7 @@ void composite_suspend(struct usb_gadget *gadget)
 	spin_unlock_irqrestore(&cdev->lock, flags);
 
 	usb_gadget_set_selfpowered(gadget);
-	usb_gadget_vbus_draw(gadget, 2);
+	usb_gadget_vbus_draw(gadget, 100);
 }
 
 void composite_resume(struct usb_gadget *gadget)
