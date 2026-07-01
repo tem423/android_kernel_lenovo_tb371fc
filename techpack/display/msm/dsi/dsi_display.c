@@ -3900,6 +3900,7 @@ static bool dsi_display_is_seamless_dfps_possible(
 
 	cur = display->panel->cur_mode;
 
+	/* 只检查时序参数，不限制刷新率 */
 	if (cur->timing.h_active != tgt->timing.h_active) {
 		DSI_DEBUG("timing.h_active differs %d %d\n",
 				cur->timing.h_active, tgt->timing.h_active);
@@ -3935,8 +3936,6 @@ static bool dsi_display_is_seamless_dfps_possible(
 		return false;
 	}
 
-	/* skip polarity comparison */
-
 	if (cur->timing.v_active != tgt->timing.v_active) {
 		DSI_DEBUG("timing.v_active differs %d %d\n",
 				cur->timing.v_active,
@@ -3966,20 +3965,9 @@ static bool dsi_display_is_seamless_dfps_possible(
 			return false;
 	}
 
-	/* skip polarity comparison */
-
-	if (cur->timing.refresh_rate == tgt->timing.refresh_rate)
-		DSI_DEBUG("timing.refresh_rate identical %d %d\n",
-				cur->timing.refresh_rate,
-				tgt->timing.refresh_rate);
-
-	if (cur->pixel_clk_khz != tgt->pixel_clk_khz)
-		DSI_DEBUG("pixel_clk_khz differs %d %d\n",
-				cur->pixel_clk_khz, tgt->pixel_clk_khz);
-
-	if (cur->dsi_mode_flags != tgt->dsi_mode_flags)
-		DSI_DEBUG("flags differs %d %d\n",
-				cur->dsi_mode_flags, tgt->dsi_mode_flags);
+	/* 允许任意刷新率切换，包括 144Hz */
+	DSI_INFO("Seamless DFPS allowed: %dHz -> %dHz\n",
+			cur->timing.refresh_rate, tgt->timing.refresh_rate);
 
 	return true;
 }
@@ -4485,20 +4473,28 @@ static int dsi_display_dfps_calc_front_porch(
 	DSI_DEBUG("fps %u a %u b %u b_fp %u new_fp %d\n",
 			new_fps, a_total, b_total, b_fp, b_fp_new);
 
+	/* 144Hz 特殊处理：强制使用天马面板安全值 */
+	if (new_fps == 144) {
+		if (b_fp > 100)
+			b_fp_new = 201;  /* HFP 安全值 */
+		else
+			b_fp_new = 26;   /* VFP 安全值 */
+		DSI_INFO("144Hz mode: forcing %s=%d\n",
+				b_fp > 100 ? "HFP" : "VFP", b_fp_new);
+		goto done;
+	}
+
+	/* 通用容错：计算结果为负时使用默认值 */
 	if (b_fp_new < 0) {
 		DSI_INFO("DFPS calculation failed (%d), using Tianma defaults\n", b_fp_new);
-		/* 天马 NT36532 面板：
-		 * HFP = 201, VFP = 26
-		 * 原始 b_fp > 100 是 HFP，否则是 VFP
-		 */
 		if (b_fp > 100)
 			b_fp_new = 201;
 		else
 			b_fp_new = 26;
 	}
 
+done:
 	*b_fp_out = b_fp_new;
-
 	return 0;
 }
 
@@ -4553,7 +4549,6 @@ static int dsi_display_get_dfps_timing(struct dsi_display *display,
 			return -EINVAL;
 		}
 	}
-	/* TODO: Remove this direct reference to the dsi_ctrl */
 	timing = &per_ctrl_mode.timing;
 
 	switch (dfps_caps.type) {
@@ -4568,6 +4563,14 @@ static int dsi_display_get_dfps_timing(struct dsi_display *display,
 		SDE_EVT32(SDE_EVTLOG_FUNC_CASE1, DSI_DFPS_IMMEDIATE_VFP,
 			curr_refresh_rate, timing->refresh_rate,
 			timing->v_front_porch, adj_mode->timing.v_front_porch);
+		
+		/* 验证 VFP 值是否合理，天马 NT36532 典型 VFP 为 26 */
+		if (adj_mode->timing.v_front_porch < 10 ||
+		    adj_mode->timing.v_front_porch > 100) {
+			DSI_INFO("VFP value %d abnormal, forcing to 26\n",
+					adj_mode->timing.v_front_porch);
+			adj_mode->timing.v_front_porch = 26;
+		}
 		break;
 
 	case DSI_DFPS_IMMEDIATE_HFP:
@@ -6335,8 +6338,12 @@ int dsi_display_get_modes(struct dsi_display *display,
 
 		is_cmd_mode = (display_mode.panel_mode == DSI_OP_CMD_MODE);
 
-		num_dfps_rates = ((!dfps_caps.dfps_support ||
-			is_cmd_mode) ? 1 : dfps_caps.dfps_list_len);
+		/* ===== 修改点：始终使用完整的 dfps_list ===== */
+		/* 原代码：num_dfps_rates = ((!dfps_caps.dfps_support || is_cmd_mode) ? 1 : dfps_caps.dfps_list_len); */
+		num_dfps_rates = dfps_caps.dfps_list_len;
+		if (num_dfps_rates == 0)
+			num_dfps_rates = 1;
+		/* ===== 修改结束 ===== */
 
 		/* Calculate dsi frame transfer time */
 		if (is_cmd_mode) {
@@ -6398,12 +6405,6 @@ int dsi_display_get_modes(struct dsi_display *display,
 					curr_refresh_rate);
 		}
 		end = array_idx;
-		/*
-		 * if POMS is enabled and boot up mode is video mode,
-		 * skip bit clk rates update for command mode,
-		 * else if dynamic clk switch is supported then update all
-		 * the bit clk rates.
-		 */
 
 		if (is_cmd_mode &&
 			(display->panel->panel_mode == DSI_OP_VIDEO_MODE))
@@ -6411,7 +6412,6 @@ int dsi_display_get_modes(struct dsi_display *display,
 
 		_dsi_display_populate_bit_clks(display, start, end, &array_idx);
 		if (is_preferred) {
-			/* Set first timing sub mode as preferred mode */
 			display->modes[start].is_preferred = true;
 		}
 	}
