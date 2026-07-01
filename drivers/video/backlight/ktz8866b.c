@@ -1,7 +1,10 @@
 #include <linux/platform_data/ktz8866.h>
 
-struct ktz8866 *bd_b = NULL;
+/* ===== 全局变量声明（引用自ktz8866a.c） ===== */
+extern struct ktz8866 *bd_b;
+extern struct ktz8866_status ktz8866_status;   /* 新增 */
 
+/* ===== B芯片Probe（从设备，不注册背光） ===== */
 static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
     struct ktz8866 *bd;
