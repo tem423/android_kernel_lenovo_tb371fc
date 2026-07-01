@@ -147,12 +147,9 @@ static int backlight_dev_match_name(struct device *dev, const void *data)
 /* ===== Hook panel0-backlight ===== */
 static int ktz8866_hook_panel_backlight(void)
 {
-    struct device *panel_dev;
     struct backlight_device *bd;
     struct backlight_ops *new_ops;
     int ret = 0;
-
-    extern struct class backlight_class;
 
     if (!bd_a) {
         pr_err("ktz8866a: bd_a not initialized\n");
@@ -161,49 +158,41 @@ static int ktz8866_hook_panel_backlight(void)
 
     dev_info(&bd_a->client->dev, "hooking panel0-backlight\n");
 
-    /* 查找 panel0-backlight */
-    panel_dev = class_find_device(&backlight_class, NULL, "panel0-backlight",
-                                  backlight_dev_match_name);
-    if (!panel_dev) {
-        dev_err(&bd_a->client->dev, "panel0-backlight not found\n");
+    // 方法1：通过类型查找
+    bd = backlight_device_get_by_type(BACKLIGHT_PLATFORM);
+    if (!bd) {
+        bd = backlight_device_get_by_type(BACKLIGHT_RAW);
+    }
+    if (!bd) {
+        dev_err(&bd_a->client->dev, "backlight device not found\n");
         return -ENODEV;
     }
 
-    bd = to_backlight_device(panel_dev);
     g_panel_bd = bd;
+    // 保持引用
+    get_device(&bd->dev);
 
-    /* 保存原始ops */
-    g_orig_ops = kmalloc(sizeof(*g_orig_ops), GFP_KERNEL);
+    // 保存原始ops
+    g_orig_ops = kmemdup(bd->ops, sizeof(*g_orig_ops), GFP_KERNEL);
     if (!g_orig_ops) {
-        ret = -ENOMEM;
-        goto out_put;
+        put_device(&bd->dev);
+        return -ENOMEM;
     }
-    memcpy(g_orig_ops, bd->ops, sizeof(*g_orig_ops));
 
-    /* 创建新ops */
-    new_ops = kmalloc(sizeof(*new_ops), GFP_KERNEL);
+    // 创建新ops并替换
+    new_ops = kmemdup(bd->ops, sizeof(*new_ops), GFP_KERNEL);
     if (!new_ops) {
-        ret = -ENOMEM;
-        goto out_free_orig;
+        kfree(g_orig_ops);
+        put_device(&bd->dev);
+        return -ENOMEM;
     }
-    memcpy(new_ops, bd->ops, sizeof(*new_ops));
 
-    /* 替换update_status */
     new_ops->update_status = ktz8866_hooked_update_status;
     bd->ops = new_ops;
     g_hooked = true;
 
     dev_info(&bd_a->client->dev, "panel0-backlight hooked successfully\n");
-
-    put_device(panel_dev);
     return 0;
-
-out_free_orig:
-    kfree(g_orig_ops);
-    g_orig_ops = NULL;
-out_put:
-    put_device(panel_dev);
-    return ret;
 }
 
 /* ===== 解析设备树 ===== */
