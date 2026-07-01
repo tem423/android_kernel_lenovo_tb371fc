@@ -1,14 +1,20 @@
 /*
- * KTZ8866A Driver - BIAS + Backlight
+ * KTZ8866A Driver - BIAS + Backlight (Master)
  * compatible: "ktz,ktz8866a"
  * I2C bus 2, address 0x11
+ *
+ * Brightness mapping:
+ *   LSB (0x04) = brightness & 0x07
+ *   MSB (0x05) = brightness >> 3
+ *   Max: 2047 (0x07FF)
  */
 
 #include <linux/platform_data/ktz8866.h>
 
 /* ===== 全局变量 ===== */
 static struct ktz8866 *g_ktz_a = NULL;
-static struct ktz8866 *g_ktz_b = NULL;  /* 引用B芯片，用于同步 */
+static struct ktz8866 *g_ktz_b = NULL;
+static struct ktz8866 *g_ktz_main = NULL;
 
 /* ===== I2C写操作 ===== */
 int ktz8866_write_byte(struct i2c_client *client, u8 reg, u8 value)
@@ -60,11 +66,16 @@ void ktz8866_set_brightness(struct ktz8866 *dev, int brightness)
     if (brightness > KTZ8866_BL_MAX)
         brightness = KTZ8866_BL_MAX;
 
-    lsb = 0x07;
-    msb = brightness & 0xFF;
+    /*
+     * 映射公式：
+     * LSB (0x04) = brightness & 0x07   (低3位)
+     * MSB (0x05) = brightness >> 3     (高8位)
+     */
+    lsb = brightness & 0x07;
+    msb = (brightness >> 3) & 0xFF;
 
-    dev_info(&dev->client->dev, "brightness=%d (0x%02x, 0x%02x)\n",
-             brightness, lsb, msb);
+    dev_dbg(&dev->client->dev, "brightness=%d (LSB=0x%02x, MSB=0x%02x)\n",
+            brightness, lsb, msb);
 
     mutex_lock(&dev->lock);
 
@@ -78,7 +89,6 @@ void ktz8866_set_brightness(struct ktz8866 *dev, int brightness)
         ktz8866_write_byte(g_ktz_b->client, KTZ8866_REG_LSB, lsb);
         ktz8866_write_byte(g_ktz_b->client, KTZ8866_REG_MSB, msb);
         mutex_unlock(&g_ktz_b->lock);
-        dev_info(&dev->client->dev, "synced to B chip\n");
     }
 
     dev->brightness = brightness;
@@ -194,9 +204,38 @@ static void ktz8866_set_gpio(struct ktz8866_platform_data *pdata, bool enable)
     gpio_set_value(pdata->hw_en_gpio, enable ? 1 : 0);
     gpio_set_value(pdata->enp_gpio, enable ? 1 : 0);
     gpio_set_value(pdata->enn_gpio, enable ? 0 : 1);
-
-    pr_info("[KTZ8866] GPIO: enable=%d\n", enable);
 }
+
+/* ===== 简化接口：设置背光亮度 ===== */
+void ktz8866_set_backlight_level(int brightness)
+{
+    if (g_ktz_main)
+        ktz8866_set_brightness(g_ktz_main, brightness);
+    else
+        pr_err("[KTZ8866] driver not ready\n");
+}
+EXPORT_SYMBOL(ktz8866_set_backlight_level);
+
+/* ===== 简化接口：使能偏压 ===== */
+void ktz8866_enable_bias(int enable)
+{
+    if (g_ktz_main && g_ktz_main->pdata) {
+        struct ktz8866_platform_data *pdata = g_ktz_main->pdata;
+        gpio_set_value(pdata->hw_en_gpio, enable ? 1 : 0);
+        gpio_set_value(pdata->enp_gpio, enable ? 1 : 0);
+        gpio_set_value(pdata->enn_gpio, enable ? 0 : 1);
+    } else {
+        pr_err("[KTZ8866] cannot set bias: driver not ready\n");
+    }
+}
+EXPORT_SYMBOL(ktz8866_enable_bias);
+
+/* ===== 检查驱动是否就绪 ===== */
+bool ktz8866_is_ready(void)
+{
+    return (g_ktz_main != NULL);
+}
+EXPORT_SYMBOL(ktz8866_is_ready);
 
 /* ===== Probe ===== */
 static int ktz8866a_probe(struct i2c_client *client, const struct i2c_device_id *id)
@@ -207,9 +246,6 @@ static int ktz8866a_probe(struct i2c_client *client, const struct i2c_device_id 
 
     dev_info(&client->dev, "KTZ8866A probing on bus %d, addr 0x%02x\n",
              client->adapter->nr, client->addr);
-
-    /* ===== 删除cmdline判断 ===== */
-    /* 原厂有: if(strstr(saved_command_line,"backlightktz=4")...) 已删除 */
 
     ktz = devm_kzalloc(&client->dev, sizeof(*ktz), GFP_KERNEL);
     if (!ktz)
@@ -247,6 +283,7 @@ static int ktz8866a_probe(struct i2c_client *client, const struct i2c_device_id 
         return ret;
 
     g_ktz_a = ktz;
+    g_ktz_main = ktz;
     i2c_set_clientdata(client, ktz);
 
     /* 默认亮度100 */
@@ -256,13 +293,17 @@ static int ktz8866a_probe(struct i2c_client *client, const struct i2c_device_id 
     return 0;
 }
 
+/* ===== Remove ===== */
 static int ktz8866a_remove(struct i2c_client *client)
 {
     struct ktz8866 *ktz = i2c_get_clientdata(client);
 
     if (ktz) {
         ktz8866_set_brightness(ktz, 0);
-        g_ktz_a = NULL;
+        if (g_ktz_a == ktz)
+            g_ktz_a = NULL;
+        if (g_ktz_main == ktz)
+            g_ktz_main = NULL;
     }
     return 0;
 }
@@ -292,6 +333,6 @@ static struct i2c_driver ktz8866a_driver = {
 
 module_i2c_driver(ktz8866a_driver);
 
-MODULE_DESCRIPTION("KTZ8866A BIAS + Backlight Driver");
+MODULE_DESCRIPTION("KTZ8866A BIAS + Backlight Driver (Master)");
 MODULE_AUTHOR("Your Name");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL v2");
