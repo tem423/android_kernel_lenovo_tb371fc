@@ -4,7 +4,6 @@
  * Driver for nt36532 tianma 3k video mode dsi panel
  *
  * Based on DTS node: qcom,mdss_dsi_panel_spinel_tianma_nt36532_dsc_3k_video
- * Compatible: "tianma,nt36532-tianma-video"
  *
  * Physical resolution: 2944x1840 (dual DSI, each 1472x1840)
  * DSC: Enabled, slice width 736, slice height 20
@@ -196,7 +195,7 @@ static int panel_send_cmds(struct panel_data *ctx, const u8 *cmds, size_t len)
 static int panel_update_backlight(struct backlight_device *bl)
 {
     struct panel_data *ctx = bl_get_data(bl);
-    int brightness = backlight_get_brightness(bl);
+    int brightness = bl->props.brightness;  // 直接读取，不用 backlight_get_brightness
 
     ktz8866_set_backlight_level(brightness);
     return 0;
@@ -371,7 +370,7 @@ static int panel_get_modes(struct drm_panel *panel)
 }
 
 /* ============================================================
- * DRM Panel Funcs (4.19 内核没有 .set_backlight)
+ * DRM Panel Funcs (4.19 内核)
  * ============================================================ */
 
 static const struct drm_panel_funcs panel_funcs = {
@@ -469,8 +468,10 @@ static int panel_probe(struct mipi_dsi_device *dsi)
     bl->props.type = BACKLIGHT_RAW;
     ctx->backlight = bl;
 
-    /* 7. Register panel */
-    drm_panel_init(&ctx->panel, dev, &panel_funcs, DRM_MODE_CONNECTOR_DSI);
+    /* 7. Register panel (4.19 内核只有一个参数) */
+    drm_panel_init(&ctx->panel);
+    ctx->panel.dev = dev;
+    ctx->panel.funcs = &panel_funcs;
 
     ret = drm_panel_add(&ctx->panel);
     if (ret < 0) {
