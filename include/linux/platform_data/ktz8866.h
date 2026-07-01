@@ -47,7 +47,13 @@ struct ktz8866_status {
     bool ktz8866b_init;
 };
 
-/* ===== 全局变量 ===== */
+/* ===== 【关键】完整定义 ktz8866_led ===== */
+struct ktz8866_led {
+    struct mutex lock;
+    int level;
+};
+
+/* ===== 全局变量声明 ===== */
 extern struct ktz8866 *bd_a;
 extern struct ktz8866 *bd_b;
 extern struct ktz8866_status ktz8866_status;
