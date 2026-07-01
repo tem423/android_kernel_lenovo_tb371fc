@@ -1,3 +1,8 @@
+/*
+ * KTZ8866 Driver - BIAS + Backlight
+ * Header file for common definitions and exported APIs
+ */
+
 #ifndef _KTZ8866_H
 #define _KTZ8866_H
 
@@ -13,6 +18,7 @@
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
 #include <linux/slab.h>
+#include <linux/err.h>
 
 /* ===== 寄存器定义 ===== */
 #define KTZ8866_REG_CFG1        0x02
@@ -20,10 +26,10 @@
 #define KTZ8866_REG_LSB         0x04
 #define KTZ8866_REG_MSB         0x05
 #define KTZ8866_REG_ENABLE      0x08
+#define KTZ8866_REG_CTRL        0x09
 #define KTZ8866_REG_BOOST_CFG   0x0C
 #define KTZ8866_REG_OUTP_CFG    0x0D
 #define KTZ8866_REG_OUTN_CFG    0x0E
-#define KTZ8866_REG_CTRL        0x09
 #define KTZ8866_REG_OPTION2     0x11
 #define KTZ8866_REG_CURRENT     0x15
 
@@ -45,11 +51,20 @@ struct ktz8866 {
     bool is_a;
 };
 
-/* ===== 函数声明 ===== */
+/* ===== 原始I2C操作接口 ===== */
 int ktz8866_write_byte(struct i2c_client *client, u8 reg, u8 value);
 int ktz8866_read_byte(struct i2c_client *client, u8 reg, u8 *value);
+
+/* ===== 初始化接口 ===== */
 int ktz8866_init_backlight(struct i2c_client *client);
 int ktz8866_init_bias(struct i2c_client *client);
+
+/* ===== 核心功能接口 ===== */
 void ktz8866_set_brightness(struct ktz8866 *dev, int brightness);
 
-#endif
+/* ===== 简化接口（供Panel驱动调用） ===== */
+void ktz8866_set_backlight_level(int brightness);
+void ktz8866_enable_bias(int enable);
+bool ktz8866_is_ready(void);
+
+#endif /* _KTZ8866_H */
