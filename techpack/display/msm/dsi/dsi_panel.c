@@ -16,6 +16,8 @@
 #include "dsi_parser.h"
 #include "sde_dbg.h"
 
+#include <linux/backlight.h>
+
 /**
  * topology is currently defined by a set of following 3 values:
  * 1. num of layer mixers
@@ -738,11 +740,25 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
 {
 	int rc = 0;
 	struct dsi_backlight_config *bl = &panel->bl_config;
+	struct backlight_device *ktz_bd;
 
 	if (panel->host_config.ext_bridge_mode)
 		return 0;
 
 	DSI_DEBUG("backlight type:%d lvl:%d\n", bl->type, bl_lvl);
+
+	/* ===== 控制KTZ8866A芯片（B芯片由A芯片自动同步） ===== */
+	ktz_bd = backlight_device_get_by_name("ktz8866a");
+	if (ktz_bd) {
+		ktz_bd->props.brightness = bl_lvl;
+		rc = backlight_update_status(ktz_bd);
+		if (rc)
+			DSI_ERR("failed to set ktz8866a backlight, rc=%d\n", rc);
+	} else {
+		DSI_DEBUG("ktz8866a backlight device not found\n");
+	}
+
+	/* ===== 原有的背光控制逻辑保持不变 ===== */
 	switch (bl->type) {
 	case DSI_BACKLIGHT_WLED:
 		rc = backlight_device_set_brightness(bl->raw_bd, bl_lvl);
