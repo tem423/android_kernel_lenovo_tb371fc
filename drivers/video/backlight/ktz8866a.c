@@ -1,15 +1,16 @@
 /*
  * KTZ8866A Driver - BIAS + Backlight
  * compatible: "ktz,ktz8866a"
+ * I2C bus 2, address 0x11
  */
 
 #include <linux/platform_data/ktz8866.h>
 
 /* ===== 全局变量 ===== */
 static struct ktz8866 *g_ktz_a = NULL;
-static struct ktz8866 *g_ktz_b = NULL;  /* 引用B芯片 */
+static struct ktz8866 *g_ktz_b = NULL;  /* 引用B芯片，用于同步 */
 
-/* ===== 公共I2C操作 ===== */
+/* ===== I2C写操作 ===== */
 int ktz8866_write_byte(struct i2c_client *client, u8 reg, u8 value)
 {
     u8 write_data[2] = {reg, value};
@@ -25,6 +26,7 @@ int ktz8866_write_byte(struct i2c_client *client, u8 reg, u8 value)
 }
 EXPORT_SYMBOL(ktz8866_write_byte);
 
+/* ===== I2C读操作 ===== */
 int ktz8866_read_byte(struct i2c_client *client, u8 reg, u8 *value)
 {
     u8 buffer = reg;
@@ -66,11 +68,11 @@ void ktz8866_set_brightness(struct ktz8866 *dev, int brightness)
 
     mutex_lock(&dev->lock);
 
-    /* 写自己 */
+    /* 写自己 (A芯片) */
     ktz8866_write_byte(dev->client, KTZ8866_REG_LSB, lsb);
     ktz8866_write_byte(dev->client, KTZ8866_REG_MSB, msb);
 
-    /* 如果B芯片存在，同步写B */
+    /* 同步写入B芯片 */
     if (g_ktz_b && g_ktz_b != dev) {
         mutex_lock(&g_ktz_b->lock);
         ktz8866_write_byte(g_ktz_b->client, KTZ8866_REG_LSB, lsb);
@@ -80,12 +82,11 @@ void ktz8866_set_brightness(struct ktz8866 *dev, int brightness)
     }
 
     dev->brightness = brightness;
-
     mutex_unlock(&dev->lock);
 }
 EXPORT_SYMBOL(ktz8866_set_brightness);
 
-/* ===== 设置BIAS偏压 ===== */
+/* ===== 初始化BIAS偏压 ===== */
 int ktz8866_init_bias(struct i2c_client *client)
 {
     int ret;
@@ -135,7 +136,7 @@ int ktz8866_init_backlight(struct i2c_client *client)
 }
 EXPORT_SYMBOL(ktz8866_init_backlight);
 
-/* ===== 解析GPIO ===== */
+/* ===== 解析设备树GPIO ===== */
 static int ktz8866_parse_dt(struct device *dev, struct ktz8866_platform_data *pdata)
 {
     struct device_node *np = dev->of_node;
@@ -206,6 +207,9 @@ static int ktz8866a_probe(struct i2c_client *client, const struct i2c_device_id 
 
     dev_info(&client->dev, "KTZ8866A probing on bus %d, addr 0x%02x\n",
              client->adapter->nr, client->addr);
+
+    /* ===== 删除cmdline判断 ===== */
+    /* 原厂有: if(strstr(saved_command_line,"backlightktz=4")...) 已删除 */
 
     ktz = devm_kzalloc(&client->dev, sizeof(*ktz), GFP_KERNEL);
     if (!ktz)
