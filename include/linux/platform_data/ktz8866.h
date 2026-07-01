@@ -2,6 +2,7 @@
 #define _KTZ8866_H
 
 #include <linux/backlight.h>
+#include <linux/device.h>
 #include <linux/i2c.h>
 #include <linux/mutex.h>
 #include <linux/gpio.h>
