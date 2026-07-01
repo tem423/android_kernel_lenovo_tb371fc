@@ -6,7 +6,7 @@
 
 #include <linux/platform_data/ktz8866.h>
 
-/* ===== 全局变量 ===== */
+/* ===== 声明外部变量 ===== */
 extern struct ktz8866 *g_ktz_a;
 
 /* ===== Probe ===== */
@@ -23,15 +23,16 @@ static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id 
         return -ENOMEM;
 
     ktz->client = client;
-    ktz->pdata = NULL;  /* B芯片不申请GPIO */
+    ktz->pdata = NULL;
     ktz->is_a = false;
     mutex_init(&ktz->lock);
 
-    /* 初始化背光（不初始化BIAS） */
+    /* 初始化背光 */
     ret = ktz8866_init_backlight(client);
     if (ret < 0)
         return ret;
 
+    /* 保存到全局变量，供A芯片同步时使用 */
     g_ktz_a = ktz;
     i2c_set_clientdata(client, ktz);
 
