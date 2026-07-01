@@ -1,9 +1,10 @@
 /*
  * KTZ8866B Driver - Backlight only
  * compatible: "ktz,ktz8866b"
+ * I2C bus 4, address 0x11
  */
 
-#include <linux/platform_data/ktz8866.h>
+#include <linux/platform_data/ktz8866.h
 
 /* ===== 全局变量 ===== */
 extern struct ktz8866 *g_ktz_a;
@@ -17,6 +18,9 @@ static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id 
 
     dev_info(&client->dev, "KTZ8866B probing on bus %d, addr 0x%02x\n",
              client->adapter->nr, client->addr);
+
+    /* ===== 删除cmdline判断 ===== */
+    /* 原厂有: if(strstr(saved_command_line,"backlightktz=4")...) 已删除 */
 
     ktz = devm_kzalloc(&client->dev, sizeof(*ktz), GFP_KERNEL);
     if (!ktz)
@@ -44,7 +48,6 @@ static int ktz8866b_remove(struct i2c_client *client)
     struct ktz8866 *ktz = i2c_get_clientdata(client);
 
     if (ktz) {
-        /* 关闭背光 */
         ktz8866_write_byte(client, KTZ8866_REG_ENABLE, 0x00);
         g_ktz_b = NULL;
     }
