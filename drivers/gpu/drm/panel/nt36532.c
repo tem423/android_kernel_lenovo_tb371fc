@@ -23,7 +23,18 @@
 #include <drm/drm_panel.h>
 #include <drm/drm_mipi_dsi.h>
 #include <drm/drm_modes.h>
-#include <drm/drm_dsc.h>
+
+/* ============================================================
+ * drm_dsc.h 不存在，手动定义 DSC 结构
+ * ============================================================ */
+struct drm_dsc_config {
+    u8 version;
+    u8 slice_height;
+    u16 slice_width;
+    u8 bits_per_component;
+    u8 bits_per_pixel;
+    bool block_pred_enable;
+};
 
 #include <linux/platform_data/ktz8866.h>
 
