@@ -19,6 +19,9 @@
 #include <linux/backlight.h>
 #include <linux/device.h>
 
+/* 声明外部backlight_class */
+extern struct class *backlight_class;
+
 /**
  * topology is currently defined by a set of following 3 values:
  * 1. num of layer mixers
@@ -737,11 +740,11 @@ error:
 	return rc;
 }
 
-/* 辅助函数：通过名称查找backlight设备 */
+/* 辅助函数：通过名称查找backlight设备（4.19内核兼容） */
 static int backlight_dev_match_name(struct device *dev, const void *data)
 {
-    struct backlight_device *bd = to_backlight_device(dev);
-    return !strcmp(bd->name, (const char *)data);
+    /* 使用dev_name获取设备名称 */
+    return !strcmp(dev_name(dev), (const char *)data);
 }
 
 int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
@@ -756,8 +759,7 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
 
     DSI_DEBUG("backlight type:%d lvl:%d\n", bl->type, bl_lvl);
 
-    /* ===== 控制KTZ8866A芯片（B芯片由A芯片自动同步） ===== */
-    /* 4.19内核使用class_find_device通过名称查找 */
+    /* 控制KTZ8866A芯片（B芯片由A芯片自动同步） */
     dev = class_find_device(backlight_class, NULL, "ktz8866a",
                             backlight_dev_match_name);
     if (dev) {
@@ -766,12 +768,12 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
         rc = backlight_update_status(ktz_bd);
         if (rc)
             DSI_ERR("failed to set ktz8866a backlight, rc=%d\n", rc);
-        put_device(dev);  /* 释放引用 */
+        put_device(dev);
     } else {
         DSI_DEBUG("ktz8866a backlight device not found\n");
     }
 
-    /* ===== 原有的背光控制逻辑 ===== */
+    /* 原有的背光控制逻辑 */
     switch (bl->type) {
     case DSI_BACKLIGHT_WLED:
         rc = backlight_device_set_brightness(bl->raw_bd, bl_lvl);
