@@ -10,17 +10,15 @@
 #include <linux/module.h>
 #include <linux/err.h>
 #include <linux/delay.h>
-#include <linux/proc_fs.h>
-#include <linux/uaccess.h>
-#include <linux/ktime.h>
+#include <linux/notifier.h>
 
-/* ===== 寄存器定义 ===== */
-#define KTZ8866_DISP_BL_ENABLE  0x08
-#define KTZ8866_DISP_BB_LSB     0x04
-#define KTZ8866_DISP_BB_MSB     0x05
-#define KTZ8866_DISP_FLAGS      0x06
+/* ===== 寄存器定义（基于实际I2C扫描） ===== */
+#define KTZ8866_DISP_BL_ENABLE  0x08    /* 使能寄存器: 0x4f=使能, 0x0f=禁用 */
+#define KTZ8866_DISP_BB_LSB     0x04    /* 亮度低字节 (bit 0-2) */
+#define KTZ8866_DISP_BB_MSB     0x05    /* 亮度高字节 (bit 3-10) */
+#define KTZ8866_DISP_FLAGS      0x06    /* 状态寄存器 */
 
-#define BL_LEVEL_MAX            2047
+#define BL_LEVEL_MAX            2047    /* 最大亮度 (12位) */
 
 /* ===== 芯片枚举 ===== */
 enum {
@@ -33,37 +31,21 @@ struct ktz8866_platform_data {
     int hw_en_gpio;
 };
 
-struct ktz8866_status {
-    bool ktz8866a_init;
-    bool ktz8866b_init;
-};
-
 struct ktz8866 {
     u8 chip;
     struct i2c_client *client;
-    struct backlight_device *backlight;
+    struct notifier_block nb;
     struct ktz8866_platform_data *pdata;
-};
-
-struct pwm_reg {
-    u8 lbyte;
-    u8 hbyte;
-};
-
-struct ktz8866_led {
     struct mutex lock;
-    int level;
+    int current_brightness;
 };
 
 /* ===== 全局变量 ===== */
-extern struct ktz8866 *bd_a;
-extern struct ktz8866 *bd_b;
-extern struct ktz8866_status ktz8866_status;
-extern struct ktz8866_led g_ktz8866_led;
+extern struct ktz8866 *g_ktz_a;
+extern struct ktz8866 *g_ktz_b;
 
 /* ===== 函数声明 ===== */
 int ktz8866_reads(struct ktz8866 *bd, u8 reg, u8 *data);
 int ktz8866_writes(struct ktz8866 *bd, u8 reg, u8 data);
-void ktz8866b_sync_brightness(int brightness);
 
 #endif
