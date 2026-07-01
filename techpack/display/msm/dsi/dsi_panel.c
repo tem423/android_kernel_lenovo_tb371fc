@@ -17,6 +17,7 @@
 #include "sde_dbg.h"
 
 #include <linux/backlight.h>
+#include <linux/device.h>
 
 /**
  * topology is currently defined by a set of following 3 values:
@@ -736,47 +737,59 @@ error:
 	return rc;
 }
 
+/* 辅助函数：通过名称查找backlight设备 */
+static int backlight_dev_match_name(struct device *dev, const void *data)
+{
+    struct backlight_device *bd = to_backlight_device(dev);
+    return !strcmp(bd->name, (const char *)data);
+}
+
 int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
 {
-	int rc = 0;
-	struct dsi_backlight_config *bl = &panel->bl_config;
-	struct backlight_device *ktz_bd;
+    int rc = 0;
+    struct dsi_backlight_config *bl = &panel->bl_config;
+    struct backlight_device *ktz_bd = NULL;
+    struct device *dev = NULL;
 
-	if (panel->host_config.ext_bridge_mode)
-		return 0;
+    if (panel->host_config.ext_bridge_mode)
+        return 0;
 
-	DSI_DEBUG("backlight type:%d lvl:%d\n", bl->type, bl_lvl);
+    DSI_DEBUG("backlight type:%d lvl:%d\n", bl->type, bl_lvl);
 
-	/* ===== 控制KTZ8866A芯片（B芯片由A芯片自动同步） ===== */
-	ktz_bd = backlight_device_get_by_name("ktz8866a");
-	if (ktz_bd) {
-		ktz_bd->props.brightness = bl_lvl;
-		rc = backlight_update_status(ktz_bd);
-		if (rc)
-			DSI_ERR("failed to set ktz8866a backlight, rc=%d\n", rc);
-	} else {
-		DSI_DEBUG("ktz8866a backlight device not found\n");
-	}
+    /* ===== 控制KTZ8866A芯片（B芯片由A芯片自动同步） ===== */
+    /* 4.19内核使用class_find_device通过名称查找 */
+    dev = class_find_device(backlight_class, NULL, "ktz8866a",
+                            backlight_dev_match_name);
+    if (dev) {
+        ktz_bd = to_backlight_device(dev);
+        ktz_bd->props.brightness = bl_lvl;
+        rc = backlight_update_status(ktz_bd);
+        if (rc)
+            DSI_ERR("failed to set ktz8866a backlight, rc=%d\n", rc);
+        put_device(dev);  /* 释放引用 */
+    } else {
+        DSI_DEBUG("ktz8866a backlight device not found\n");
+    }
 
-	/* ===== 原有的背光控制逻辑保持不变 ===== */
-	switch (bl->type) {
-	case DSI_BACKLIGHT_WLED:
-		rc = backlight_device_set_brightness(bl->raw_bd, bl_lvl);
-		break;
-	case DSI_BACKLIGHT_DCS:
-		rc = dsi_panel_update_backlight(panel, bl_lvl, hbm);
-		break;
-	case DSI_BACKLIGHT_EXTERNAL:
-		break;
-	case DSI_BACKLIGHT_PWM:
-		rc = dsi_panel_update_pwm_backlight(panel, bl_lvl);
-		break;
-	default:
-		DSI_ERR("Backlight type(%d) not supported\n", bl->type);
-		rc = -ENOTSUPP;
-	}
+    /* ===== 原有的背光控制逻辑 ===== */
+    switch (bl->type) {
+    case DSI_BACKLIGHT_WLED:
+        rc = backlight_device_set_brightness(bl->raw_bd, bl_lvl);
+        break;
+    case DSI_BACKLIGHT_DCS:
+        rc = dsi_panel_update_backlight(panel, bl_lvl, hbm);
+        break;
+    case DSI_BACKLIGHT_EXTERNAL:
+        break;
+    case DSI_BACKLIGHT_PWM:
+        rc = dsi_panel_update_pwm_backlight(panel, bl_lvl);
+        break;
+    default:
+        DSI_ERR("Backlight type(%d) not supported\n", bl->type);
+        rc = -ENOTSUPP;
+    }
 
-	return rc;
+    return rc;
 }
 
 static u32 dsi_panel_get_brightness(struct dsi_backlight_config *bl)
