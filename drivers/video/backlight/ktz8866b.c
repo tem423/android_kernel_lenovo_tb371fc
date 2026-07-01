@@ -1,5 +1,9 @@
 #include <linux/platform_data/ktz8866.h>
 
+/* ===== 全局变量 ===== */
+extern struct ktz8866 *bd_b;
+extern struct ktz8866_status ktz8866_status;
+
 /* ===== B芯片Probe ===== */
 static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
@@ -14,7 +18,7 @@ static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id 
 
     bd->client = client;
     bd->chip = KTZ8866_B;
-    bd->pdata = NULL;  /* B芯片不申请GPIO */
+    bd->pdata = NULL;
     mutex_init(&bd->lock);
 
     if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
