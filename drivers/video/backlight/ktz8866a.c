@@ -1,10 +1,10 @@
 #include <linux/platform_data/ktz8866.h>
 
-/* ===== 全局变量 ===== */
+/* ===== 全局变量定义 ===== */
 struct ktz8866 *bd_a = NULL;
 struct ktz8866 *bd_b = NULL;
 struct ktz8866_status ktz8866_status;
-struct ktz8866_led g_ktz8866_led;
+struct ktz8866_led g_ktz8866_led;  /* 现在结构体已完整定义 */
 
 static struct backlight_ops *g_orig_ops = NULL;
 static struct backlight_device *g_panel_bd = NULL;
@@ -331,8 +331,8 @@ static int __init ktz8866a_init(void)
     if (ret)
         return ret;
 
-    /* 延迟1秒后尝试hook，等待B芯片加载 */
-    schedule_timeout(HZ);
+    /* 延迟2秒后尝试hook，等待B芯片加载 */
+    msleep(2000);
     ktz8866_hook_panel_backlight();
 
     return 0;
