@@ -9,11 +9,15 @@
  *   Max: 2047 (0x07FF)
  */
 
+/*
+ * KTZ8866A Driver - BIAS + Backlight (Master)
+ */
+
 #include <linux/platform_data/ktz8866.h>
 
-/* ===== 全局变量 ===== */
-static struct ktz8866 *g_ktz_a = NULL;
-static struct ktz8866 *g_ktz_b = NULL;
+/* ===== 全局变量（非 static，供 B 芯片引用） ===== */
+struct ktz8866 *g_ktz_a = NULL;
+struct ktz8866 *g_ktz_b = NULL;
 static struct ktz8866 *g_ktz_main = NULL;
 
 /* ===== I2C写操作 ===== */
