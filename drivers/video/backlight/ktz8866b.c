@@ -1,37 +1,32 @@
-#include <linux/platform_data/ktz8866.h>
+#include "ktz8866.h"
 
-/* ===== 全局变量声明（引用自ktz8866a.c） ===== */
-extern struct ktz8866 *bd_b;
-extern struct ktz8866_status ktz8866_status;   /* 新增 */
+/* ===== 全局变量 ===== */
+extern struct ktz8866 *g_ktz_b;
 
-/* ===== B芯片Probe（从设备，不注册背光） ===== */
+/* ===== B芯片Probe ===== */
 static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-    struct ktz8866 *bd;
+    struct ktz8866 *ktz;
 
     dev_info(&client->dev, "KTZ8866B probing on %d-0x%02x\n",
              client->adapter->nr, client->addr);
 
-    bd = devm_kzalloc(&client->dev, sizeof(*bd), GFP_KERNEL);
-    if (!bd)
+    ktz = devm_kzalloc(&client->dev, sizeof(*ktz), GFP_KERNEL);
+    if (!ktz)
         return -ENOMEM;
 
-    bd->client = client;
-    bd->chip = KTZ8866_B;
-    bd->pdata = NULL;  /* B芯片不申请GPIO */
+    ktz->client = client;
+    ktz->chip = KTZ8866_B;
+    ktz->pdata = NULL;
+    mutex_init(&ktz->lock);
 
     if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
         dev_err(&client->dev, "I2C doesn't support SMBUS_BYTE_DATA\n");
         return -EIO;
     }
 
-    bd_b = bd;
-    i2c_set_clientdata(client, bd);
-    ktz8866_status.ktz8866b_init = true;
-
-    if (ktz8866_status.ktz8866a_init && ktz8866_status.ktz8866b_init) {
-        dev_info(&client->dev, "Both chips initialized\n");
-    }
+    g_ktz_b = ktz;
+    i2c_set_clientdata(client, ktz);
 
     dev_info(&client->dev, "KTZ8866B probed successfully (slave)\n");
     return 0;
@@ -39,8 +34,7 @@ static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id 
 
 static int ktz8866b_remove(struct i2c_client *client)
 {
-    bd_b = NULL;
-    ktz8866_status.ktz8866b_init = false;
+    g_ktz_b = NULL;
     return 0;
 }
 
