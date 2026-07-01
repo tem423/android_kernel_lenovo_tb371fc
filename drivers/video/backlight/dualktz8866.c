@@ -281,7 +281,7 @@ static struct of_device_id ktz8866_match_table[] = {
 
 static struct i2c_driver ktz8866_driver = {
         .driver = {
-                .name = "dualktz8866",
+                .name = "ktz8866",
                 .owner = THIS_MODULE,
                 .of_match_table = ktz8866_match_table,
         },
