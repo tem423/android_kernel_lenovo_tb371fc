@@ -42,7 +42,7 @@ struct ktz8866 {
     struct ktz8866_platform_data *pdata;
     struct mutex lock;
     int brightness;
-    bool is_a;  /* true=A芯片, false=B芯片 */
+    bool is_a;
 };
 
 /* ===== 函数声明 ===== */
