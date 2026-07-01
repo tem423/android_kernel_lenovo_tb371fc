@@ -1,340 +1,293 @@
+/*
+ * KTZ8866A Driver - BIAS + Backlight
+ * compatible: "ktz,ktz8866a"
+ */
+
 #include <linux/platform_data/ktz8866.h>
 
-/* ===== 全局变量定义 ===== */
-struct ktz8866 *bd_a = NULL;
-struct ktz8866 *bd_b = NULL;
-struct ktz8866_status ktz8866_status;
-struct ktz8866_led g_ktz8866_led;  /* 现在结构体已完整定义 */
+/* ===== 全局变量 ===== */
+static struct ktz8866 *g_ktz_a = NULL;
+static struct ktz8866 *g_ktz_b = NULL;  /* 引用B芯片 */
 
-static struct backlight_ops *g_orig_ops = NULL;
-static struct backlight_device *g_panel_bd = NULL;
-static bool g_hooked = false;
-
-/* ===== 亮度映射表 ===== */
-static int bl_level_remap[KTZ8866_BL_MAX + 1];
-
-static void init_bl_level_remap(void)
+/* ===== 公共I2C操作 ===== */
+int ktz8866_write_byte(struct i2c_client *client, u8 reg, u8 value)
 {
-    int i;
-    for (i = 0; i <= KTZ8866_BL_MAX; i++) {
-        bl_level_remap[i] = i;
-    }
-    bl_level_remap[0] = 0;
-    pr_info("ktz8866a: bl_level_remap initialized (0-2047)\n");
-}
+    u8 write_data[2] = {reg, value};
+    int ret;
 
-/* ===== I2C操作 ===== */
-int ktz8866_reads(struct ktz8866 *bd, u8 reg, u8 *data)
-{
-    int ret = i2c_smbus_read_byte_data(bd->client, reg);
-    if (ret < 0) {
-        dev_err(&bd->client->dev, "read 0x%02x failed: %d\n", reg, ret);
-        return ret;
-    }
-    *data = (uint8_t)ret;
-    return 0;
-}
-EXPORT_SYMBOL(ktz8866_reads);
+    if (!client)
+        return -EINVAL;
 
-int ktz8866_writes(struct ktz8866 *bd, u8 reg, u8 data)
-{
-    int ret = i2c_smbus_write_byte_data(bd->client, reg, data);
+    ret = i2c_master_send(client, write_data, 2);
     if (ret < 0)
-        dev_err(&bd->client->dev, "write 0x%02x=0x%02x failed: %d\n", reg, data, ret);
+        pr_err("[KTZ8866] write 0x%02x=0x%02x failed: %d\n", reg, value, ret);
     return ret;
 }
-EXPORT_SYMBOL(ktz8866_writes);
+EXPORT_SYMBOL(ktz8866_write_byte);
 
-/* ===== B芯片同步 ===== */
-void ktz8866b_sync_brightness(int brightness)
+int ktz8866_read_byte(struct i2c_client *client, u8 reg, u8 *value)
 {
-    u8 v[2];
+    u8 buffer = reg;
+    int ret;
 
-    if (!bd_b) {
-        pr_warn("ktz8866b: not available\n");
-        return;
-    }
-
-    v[0] = brightness & 0x7;
-    v[1] = (brightness >> 3) & 0xff;
-
-    mutex_lock(&g_ktz8866_led.lock);
-
-    dev_info(&bd_b->client->dev, "sync brightness=%d (0x%02x, 0x%02x)\n",
-             brightness, v[0], v[1]);
-
-    if (brightness > 0) {
-        ktz8866_writes(bd_b, KTZ8866_REG_ENABLE, 0x4f);
-    } else {
-        ktz8866_writes(bd_b, KTZ8866_REG_ENABLE, 0x0f);
-    }
-
-    ktz8866_writes(bd_b, KTZ8866_REG_LSB, v[0]);
-    ktz8866_writes(bd_b, KTZ8866_REG_MSB, v[1]);
-
-    mutex_unlock(&g_ktz8866_led.lock);
-}
-EXPORT_SYMBOL(ktz8866b_sync_brightness);
-
-/* ===== 控制A芯片亮度 ===== */
-static void ktz8866a_set_brightness(struct ktz8866 *bd, int brightness)
-{
-    u8 v[2];
-    int mapped;
-
-    if (!bd)
-        return;
-
-    mapped = bl_level_remap[brightness];
-    v[0] = mapped & 0x7;
-    v[1] = (mapped >> 3) & 0xff;
-
-    dev_info(&bd->client->dev, "brightness=%d mapped=%d (0x%02x, 0x%02x)\n",
-             brightness, mapped, v[0], v[1]);
-
-    if (mapped > 0) {
-        ktz8866_writes(bd, KTZ8866_REG_ENABLE, 0x4f);
-    } else {
-        ktz8866_writes(bd, KTZ8866_REG_ENABLE, 0x0f);
-    }
-
-    ktz8866_writes(bd, KTZ8866_REG_LSB, v[0]);
-    ktz8866_writes(bd, KTZ8866_REG_MSB, v[1]);
-
-    bd->level = mapped;
-}
-
-/* ===== Hook的update_status ===== */
-static int ktz8866_hooked_update_status(struct backlight_device *bd)
-{
-    int brightness = bd->props.brightness;
-    int ret = 0;
-
-    if (!bd_a) {
-        pr_err("ktz8866a: bd_a is NULL\n");
+    if (!client || !value)
         return -EINVAL;
-    }
 
-    dev_info(&bd_a->client->dev, "hooked: brightness=%d\n", brightness);
+    ret = i2c_master_send(client, &buffer, 1);
+    if (ret < 0)
+        return ret;
 
-    mutex_lock(&g_ktz8866_led.lock);
+    ret = i2c_master_recv(client, value, 1);
+    if (ret < 0)
+        return ret;
 
-    /* 控制A芯片 */
-    ktz8866a_set_brightness(bd_a, brightness);
-
-    /* 同步到B芯片 */
-    if (bd_b) {
-        dev_info(&bd_a->client->dev, "syncing to B chip\n");
-        ktz8866b_sync_brightness(brightness);
-    }
-
-    mutex_unlock(&g_ktz8866_led.lock);
-
-    /* 调用原始update_status（保持WLED/DCS功能） */
-    if (g_orig_ops && g_orig_ops->update_status) {
-        ret = g_orig_ops->update_status(bd);
-    }
-
-    return ret;
-}
-
-/* ===== 查找backlight设备的回调 ===== */
-static int backlight_dev_match_name(struct device *dev, const void *data)
-{
-    return !strcmp(dev_name(dev), (const char *)data);
-}
-
-/* ===== Hook panel0-backlight ===== */
-static int ktz8866_hook_panel_backlight(void)
-{
-    struct backlight_device *bd;
-    struct backlight_ops *new_ops;
-    int ret = 0;
-
-    if (!bd_a) {
-        pr_err("ktz8866a: bd_a not initialized\n");
-        return -EINVAL;
-    }
-
-    dev_info(&bd_a->client->dev, "hooking panel0-backlight\n");
-
-    // 方法1：通过类型查找
-    bd = backlight_device_get_by_type(BACKLIGHT_PLATFORM);
-    if (!bd) {
-        bd = backlight_device_get_by_type(BACKLIGHT_RAW);
-    }
-    if (!bd) {
-        dev_err(&bd_a->client->dev, "backlight device not found\n");
-        return -ENODEV;
-    }
-
-    g_panel_bd = bd;
-    // 保持引用
-    get_device(&bd->dev);
-
-    // 保存原始ops
-    g_orig_ops = kmemdup(bd->ops, sizeof(*g_orig_ops), GFP_KERNEL);
-    if (!g_orig_ops) {
-        put_device(&bd->dev);
-        return -ENOMEM;
-    }
-
-    // 创建新ops并替换
-    new_ops = kmemdup(bd->ops, sizeof(*new_ops), GFP_KERNEL);
-    if (!new_ops) {
-        kfree(g_orig_ops);
-        put_device(&bd->dev);
-        return -ENOMEM;
-    }
-
-    new_ops->update_status = ktz8866_hooked_update_status;
-    bd->ops = new_ops;
-    g_hooked = true;
-
-    dev_info(&bd_a->client->dev, "panel0-backlight hooked successfully\n");
     return 0;
 }
+EXPORT_SYMBOL(ktz8866_read_byte);
 
-/* ===== 解析设备树 ===== */
-static int parse_dt(struct device *dev, struct ktz8866_platform_data *pdata)
+/* ===== 设置亮度（同时控制A和B） ===== */
+void ktz8866_set_brightness(struct ktz8866 *dev, int brightness)
+{
+    u8 lsb, msb;
+
+    if (!dev)
+        return;
+
+    if (brightness < 0)
+        brightness = 0;
+    if (brightness > KTZ8866_BL_MAX)
+        brightness = KTZ8866_BL_MAX;
+
+    lsb = 0x07;
+    msb = brightness & 0xFF;
+
+    dev_info(&dev->client->dev, "brightness=%d (0x%02x, 0x%02x)\n",
+             brightness, lsb, msb);
+
+    mutex_lock(&dev->lock);
+
+    /* 写自己 */
+    ktz8866_write_byte(dev->client, KTZ8866_REG_LSB, lsb);
+    ktz8866_write_byte(dev->client, KTZ8866_REG_MSB, msb);
+
+    /* 如果B芯片存在，同步写B */
+    if (g_ktz_b && g_ktz_b != dev) {
+        mutex_lock(&g_ktz_b->lock);
+        ktz8866_write_byte(g_ktz_b->client, KTZ8866_REG_LSB, lsb);
+        ktz8866_write_byte(g_ktz_b->client, KTZ8866_REG_MSB, msb);
+        mutex_unlock(&g_ktz_b->lock);
+        dev_info(&dev->client->dev, "synced to B chip\n");
+    }
+
+    dev->brightness = brightness;
+
+    mutex_unlock(&dev->lock);
+}
+EXPORT_SYMBOL(ktz8866_set_brightness);
+
+/* ===== 设置BIAS偏压 ===== */
+int ktz8866_init_bias(struct i2c_client *client)
+{
+    int ret;
+
+    if (!client)
+        return -EINVAL;
+
+    dev_info(&client->dev, "Initializing BIAS\n");
+
+    ret = ktz8866_write_byte(client, KTZ8866_REG_BOOST_CFG, 0x2E);
+    if (ret < 0) return ret;
+    ret = ktz8866_write_byte(client, KTZ8866_REG_OUTP_CFG, 0x24);
+    if (ret < 0) return ret;
+    ret = ktz8866_write_byte(client, KTZ8866_REG_OUTN_CFG, 0x24);
+    if (ret < 0) return ret;
+    ret = ktz8866_write_byte(client, KTZ8866_REG_CTRL, 0x99);
+    if (ret < 0) return ret;
+
+    dev_info(&client->dev, "BIAS init success\n");
+    return 0;
+}
+EXPORT_SYMBOL(ktz8866_init_bias);
+
+/* ===== 初始化背光 ===== */
+int ktz8866_init_backlight(struct i2c_client *client)
+{
+    int ret;
+
+    if (!client)
+        return -EINVAL;
+
+    dev_info(&client->dev, "Initializing Backlight\n");
+
+    ret = ktz8866_write_byte(client, KTZ8866_REG_CFG1, 0xDA);
+    if (ret < 0) return ret;
+    ret = ktz8866_write_byte(client, KTZ8866_REG_OPTION2, 0x37);
+    if (ret < 0) return ret;
+    ret = ktz8866_write_byte(client, KTZ8866_REG_CURRENT, 0xA0);
+    if (ret < 0) return ret;
+    ret = ktz8866_write_byte(client, KTZ8866_REG_ENABLE, 0x4F);
+    if (ret < 0) return ret;
+    ret = ktz8866_write_byte(client, KTZ8866_REG_CFG2, 0xFD);
+    if (ret < 0) return ret;
+
+    dev_info(&client->dev, "Backlight init success\n");
+    return 0;
+}
+EXPORT_SYMBOL(ktz8866_init_backlight);
+
+/* ===== 解析GPIO ===== */
+static int ktz8866_parse_dt(struct device *dev, struct ktz8866_platform_data *pdata)
 {
     struct device_node *np = dev->of_node;
-    pdata->hw_en_gpio = of_get_named_gpio_flags(np, "ktz8866,hwen-gpio", 0, NULL);
 
-    if (pdata->hw_en_gpio < 0) {
-        dev_err(dev, "failed to parse hwen-gpio\n");
+    pdata->hw_en_gpio = of_get_named_gpio_flags(np, "ktz8866,hwen-gpio", 0, NULL);
+    pdata->enp_gpio = of_get_named_gpio_flags(np, "ktz8866,enp-gpio", 0, NULL);
+    pdata->enn_gpio = of_get_named_gpio_flags(np, "ktz8866,enn-gpio", 0, NULL);
+
+    if (pdata->hw_en_gpio < 0 || pdata->enp_gpio < 0 || pdata->enn_gpio < 0) {
+        dev_err(dev, "GPIO parse failed\n");
         return -EINVAL;
     }
 
-    dev_info(dev, "GPIO: hwen=%d\n", pdata->hw_en_gpio);
+    dev_info(dev, "GPIO: hwen=%d, enp=%d, enn=%d\n",
+             pdata->hw_en_gpio, pdata->enp_gpio, pdata->enn_gpio);
     return 0;
 }
 
-/* ===== A芯片Probe ===== */
+/* ===== 申请GPIO ===== */
+static int ktz8866_request_gpio(struct device *dev, struct ktz8866_platform_data *pdata)
+{
+    int ret;
+
+    ret = devm_gpio_request_one(dev, pdata->hw_en_gpio,
+                                GPIOF_DIR_OUT | GPIOF_INIT_HIGH, "KTZ8866_HW_EN");
+    if (ret < 0) {
+        dev_err(dev, "HW_EN GPIO request failed\n");
+        return ret;
+    }
+
+    ret = devm_gpio_request_one(dev, pdata->enp_gpio,
+                                GPIOF_DIR_OUT | GPIOF_INIT_HIGH, "KTZ8866_ENP");
+    if (ret < 0) {
+        dev_err(dev, "ENP GPIO request failed\n");
+        return ret;
+    }
+
+    ret = devm_gpio_request_one(dev, pdata->enn_gpio,
+                                GPIOF_DIR_OUT | GPIOF_INIT_LOW, "KTZ8866_ENN");
+    if (ret < 0) {
+        dev_err(dev, "ENN GPIO request failed\n");
+        return ret;
+    }
+
+    dev_info(dev, "GPIO requested successfully\n");
+    return 0;
+}
+
+/* ===== 设置GPIO状态 ===== */
+static void ktz8866_set_gpio(struct ktz8866_platform_data *pdata, bool enable)
+{
+    if (!pdata)
+        return;
+
+    gpio_set_value(pdata->hw_en_gpio, enable ? 1 : 0);
+    gpio_set_value(pdata->enp_gpio, enable ? 1 : 0);
+    gpio_set_value(pdata->enn_gpio, enable ? 0 : 1);
+
+    pr_info("[KTZ8866] GPIO: enable=%d\n", enable);
+}
+
+/* ===== Probe ===== */
 static int ktz8866a_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-    struct ktz8866 *bd;
+    struct ktz8866 *ktz;
+    struct ktz8866_platform_data *pdata;
     int ret;
-    static bool remap_initialized = false;
 
-    dev_info(&client->dev, "KTZ8866A probing on %d-0x%02x\n",
+    dev_info(&client->dev, "KTZ8866A probing on bus %d, addr 0x%02x\n",
              client->adapter->nr, client->addr);
 
-    bd = devm_kzalloc(&client->dev, sizeof(*bd), GFP_KERNEL);
-    if (!bd)
+    ktz = devm_kzalloc(&client->dev, sizeof(*ktz), GFP_KERNEL);
+    if (!ktz)
         return -ENOMEM;
 
-    bd->pdata = devm_kzalloc(&client->dev, sizeof(*bd->pdata), GFP_KERNEL);
-    if (!bd->pdata)
+    pdata = devm_kzalloc(&client->dev, sizeof(*pdata), GFP_KERNEL);
+    if (!pdata)
         return -ENOMEM;
 
-    bd->client = client;
-    bd->chip = KTZ8866_A;
-    mutex_init(&bd->lock);
+    ktz->client = client;
+    ktz->pdata = pdata;
+    ktz->is_a = true;
+    mutex_init(&ktz->lock);
 
-    if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
-        dev_err(&client->dev, "I2C doesn't support SMBUS_BYTE_DATA\n");
-        return -EIO;
-    }
-
-    if (!remap_initialized) {
-        init_bl_level_remap();
-        remap_initialized = true;
-    }
-
-    ret = parse_dt(&client->dev, bd->pdata);
+    ret = ktz8866_parse_dt(&client->dev, pdata);
     if (ret < 0)
         return ret;
 
-    /* A芯片申请GPIO */
-    ret = devm_gpio_request_one(&client->dev, bd->pdata->hw_en_gpio,
-                                GPIOF_DIR_OUT | GPIOF_INIT_HIGH, "KTZ8866_HW_EN");
-    if (ret < 0) {
-        dev_err(&client->dev, "GPIO request failed: %d\n", bd->pdata->hw_en_gpio);
+    ret = ktz8866_request_gpio(&client->dev, pdata);
+    if (ret < 0)
         return ret;
-    }
 
-    bd_a = bd;
-    i2c_set_clientdata(client, bd);
-    ktz8866_status.ktz8866a_init = true;
+    /* 使能GPIO */
+    ktz8866_set_gpio(pdata, true);
+    msleep(10);
 
-    /* 检查B芯片是否已初始化 */
-    if (ktz8866_status.ktz8866a_init && ktz8866_status.ktz8866b_init) {
-        dev_info(&client->dev, "Both chips initialized\n");
-    }
+    /* 初始化BIAS */
+    ret = ktz8866_init_bias(client);
+    if (ret < 0)
+        return ret;
+
+    /* 初始化背光 */
+    ret = ktz8866_init_backlight(client);
+    if (ret < 0)
+        return ret;
+
+    g_ktz_a = ktz;
+    i2c_set_clientdata(client, ktz);
+
+    /* 默认亮度100 */
+    ktz8866_set_brightness(ktz, 100);
 
     dev_info(&client->dev, "KTZ8866A probed successfully\n");
     return 0;
 }
 
-/* ===== A芯片Remove ===== */
 static int ktz8866a_remove(struct i2c_client *client)
 {
-    /* 恢复原始ops */
-    if (g_hooked && g_panel_bd && g_orig_ops) {
-        g_panel_bd->ops = g_orig_ops;
-        g_hooked = false;
+    struct ktz8866 *ktz = i2c_get_clientdata(client);
+
+    if (ktz) {
+        ktz8866_set_brightness(ktz, 0);
+        g_ktz_a = NULL;
     }
-
-    kfree(g_orig_ops);
-    g_orig_ops = NULL;
-    g_panel_bd = NULL;
-
-    bd_a = NULL;
-    ktz8866_status.ktz8866a_init = false;
     return 0;
 }
 
-/* ===== I2C ID表 ===== */
 static const struct i2c_device_id ktz8866a_ids[] = {
-    { "ktz8866a", KTZ8866_A },
+    { "ktz8866a", 0 },
     { },
 };
 MODULE_DEVICE_TABLE(i2c, ktz8866a_ids);
 
-/* ===== 设备树匹配表 ===== */
-static const struct of_device_id ktz8866a_match_table[] = {
+static const struct of_device_id ktz8866a_match[] = {
     { .compatible = "ktz,ktz8866a" },
     { },
 };
-MODULE_DEVICE_TABLE(of, ktz8866a_match_table);
+MODULE_DEVICE_TABLE(of, ktz8866a_match);
 
-/* ===== I2C驱动结构 ===== */
 static struct i2c_driver ktz8866a_driver = {
     .driver = {
         .name = "ktz8866a",
         .owner = THIS_MODULE,
-        .of_match_table = ktz8866a_match_table,
+        .of_match_table = ktz8866a_match,
     },
     .probe = ktz8866a_probe,
     .remove = ktz8866a_remove,
     .id_table = ktz8866a_ids,
 };
 
-/* ===== 延迟Hook（等待B芯片加载） ===== */
-static int __init ktz8866a_init(void)
-{
-    int ret;
+module_i2c_driver(ktz8866a_driver);
 
-    ret = i2c_add_driver(&ktz8866a_driver);
-    if (ret)
-        return ret;
-
-    /* 延迟2秒后尝试hook，等待B芯片加载 */
-    msleep(2000);
-    ktz8866_hook_panel_backlight();
-
-    return 0;
-}
-
-static void __exit ktz8866a_exit(void)
-{
-    i2c_del_driver(&ktz8866a_driver);
-}
-
-module_init(ktz8866a_init);
-module_exit(ktz8866a_exit);
-
-MODULE_DESCRIPTION("KTZ8866A Backlight Driver (Master + Hook)");
+MODULE_DESCRIPTION("KTZ8866A BIAS + Backlight Driver");
 MODULE_AUTHOR("Your Name");
 MODULE_LICENSE("GPL");
