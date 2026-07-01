@@ -1,12 +1,10 @@
 /*
  * KTZ8866B Driver - Backlight only (Slave)
- * compatible: "ktz,ktz8866b"
- * I2C bus 4, address 0x11
  */
 
 #include <linux/platform_data/ktz8866.h>
 
-/* ===== 声明外部变量 ===== */
+/* ===== 引用 A 芯片的全局变量 ===== */
 extern struct ktz8866 *g_ktz_a;
 
 /* ===== Probe ===== */
@@ -27,12 +25,11 @@ static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id 
     ktz->is_a = false;
     mutex_init(&ktz->lock);
 
-    /* 初始化背光 */
     ret = ktz8866_init_backlight(client);
     if (ret < 0)
         return ret;
 
-    /* 保存到全局变量，供A芯片同步时使用 */
+    /* 保存到 g_ktz_a，供 A 芯片同步亮度时使用 */
     g_ktz_a = ktz;
     i2c_set_clientdata(client, ktz);
 
@@ -43,12 +40,8 @@ static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id 
 /* ===== Remove ===== */
 static int ktz8866b_remove(struct i2c_client *client)
 {
-    struct ktz8866 *ktz = i2c_get_clientdata(client);
-
-    if (ktz) {
-        ktz8866_write_byte(client, KTZ8866_REG_ENABLE, 0x00);
-        g_ktz_a = NULL;
-    }
+    ktz8866_write_byte(client, KTZ8866_REG_ENABLE, 0x00);
+    g_ktz_a = NULL;
     return 0;
 }
 
