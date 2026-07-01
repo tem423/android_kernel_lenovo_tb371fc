@@ -19,14 +19,15 @@
 #include <linux/backlight.h>
 #include <linux/delay.h>
 #include <linux/err.h>
+#include <linux/string.h>
 
 #include <drm/drm_panel.h>
 #include <drm/drm_mipi_dsi.h>
 #include <drm/drm_modes.h>
 
-/* ============================================================
- * drm_dsc.h 不存在，手动定义 DSC 结构
- * ============================================================ */
+#include <linux/platform_data/ktz8866.h>
+
+/* ===== 手动定义 DSC 结构 (4.19内核不存在 drm_dsc.h) ===== */
 struct drm_dsc_config {
     u8 version;
     u8 slice_height;
@@ -36,21 +37,19 @@ struct drm_dsc_config {
     bool block_pred_enable;
 };
 
-#include <linux/platform_data/ktz8866.h>
-
 /* ===== Display Timing (from DTS) ===== */
-#define HFP 201   /* 0xC9 */
-#define HSA 12    /* 0x0C */
-#define HBP 60    /* 0x3C */
-#define VFP 26    /* 0x1A */
-#define VSA 2     /* 0x02 */
-#define VBP 182   /* 0xB6 */
-#define VACT 1840 /* 0x730 */
-#define HACT 1472 /* 0x5C0, per DSI, total = 2944 */
+#define HFP 201
+#define HSA 12
+#define HBP 60
+#define VFP 26
+#define VSA 2
+#define VBP 182
+#define VACT 1840
+#define HACT 1472
 
 /* ===== Physical Size (mm) ===== */
-#define PHYSICAL_WIDTH_MM   274  /* 0x112 */
-#define PHYSICAL_HEIGHT_MM  171  /* 0xAB */
+#define PHYSICAL_WIDTH_MM   274
+#define PHYSICAL_HEIGHT_MM  171
 
 /* ===== Panel Data Structure ===== */
 struct panel_data {
@@ -58,15 +57,12 @@ struct panel_data {
     struct mipi_dsi_device *dsi;
     struct device *dev;
 
-    /* GPIOs */
     struct gpio_desc *reset_gpio;
     struct gpio_desc *te_gpio;
 
-    /* Regulators */
     struct regulator *vdd;
     struct regulator *v1_8;
 
-    /* Backlight */
     struct backlight_device *backlight;
 
     bool prepared;
@@ -78,11 +74,11 @@ static inline struct panel_data *to_panel_data(struct drm_panel *panel)
     return container_of(panel, struct panel_data, panel);
 }
 
-/* ===== DSC Configuration (from DTS) ===== */
+/* ===== DSC Configuration ===== */
 static const struct drm_dsc_config dsc_cfg = {
     .version = 0x11,
-    .slice_height = 20,          /* 0x14 */
-    .slice_width = 736,          /* 0x2E0 */
+    .slice_height = 20,
+    .slice_width = 736,
     .bits_per_component = 8,
     .bits_per_pixel = 8,
     .block_pred_enable = true,
@@ -104,24 +100,19 @@ static const struct drm_display_mode default_mode = {
 };
 
 /* ============================================================
- * Panel Commands (from DTS qcom,mdss-dsi-on-command)
+ * Panel Commands (from DTS)
  * ============================================================ */
 
 static const u8 panel_on_cmds[] = {
-    /* Page 0x20 */
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x20,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x32, 0x72,
-
-    /* Page 0x23 */
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x23,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x75, 0x03,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x76, 0x07,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x7a, 0xcd,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xbc, 0x04,
-
-    /* Page 0x26 - Gamma/DGC */
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x26,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x04, 0x19, 0x1c, 0x1d, 0x16,
@@ -132,37 +123,24 @@ static const u8 panel_on_cmds[] = {
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x04, 0x9a, 0x30, 0x94, 0x3b,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x04, 0x9d, 0x15, 0x1e, 0x04,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x04, 0x9e, 0x2a, 0x8c, 0x00,
-
-    /* Page 0x10 */
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x10,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x07, 0x3b, 0x03, 0xb8, 0x1a, 0x0a, 0x0a, 0x00,
-
-    /* Page 0x27 */
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x27,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x13, 0x06,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xd0, 0x31,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xd1, 0x84,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xd2, 0x38,
-
-    /* Page 0x25 */
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x25,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x0f, 0x20,
-
-    /* Page 0x23 - TE setup */
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x23,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x04, 0xbc, 0x04, 0x00, 0x3c,
-
-    /* Page 0x10 */
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x10,
     0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
-
-    /* Sleep Out */
     0x05, 0x01, 0x00, 0x00, 0x78, 0x00, 0x02, 0x11, 0x00,
-    /* Display On */
     0x05, 0x01, 0x00, 0x00, 0x64, 0x00, 0x02, 0x29, 0x00,
 };
 
@@ -172,7 +150,7 @@ static const u8 panel_off_cmds[] = {
 };
 
 /* ============================================================
- * Command Sending Helper
+ * 命令发送函数
  * ============================================================ */
 
 static int panel_send_cmds(struct panel_data *ctx, const u8 *cmds, size_t len)
@@ -183,19 +161,15 @@ static int panel_send_cmds(struct panel_data *ctx, const u8 *cmds, size_t len)
 
     while (i < len) {
         u8 type = cmds[i];
-        u8 flags = cmds[i + 1];
         u8 delay = cmds[i + 2];
         u8 payload_len = cmds[i + 3];
         const u8 *payload = &cmds[i + 4];
 
         if (type == 0x05) {
-            /* DCS Short Write */
             ret = mipi_dsi_dcs_write(dsi, payload[0], payload + 1, payload_len - 1);
         } else if (type == 0x15) {
-            /* Generic Short Write */
             ret = mipi_dsi_generic_write(dsi, payload, payload_len);
         } else if (type == 0x39) {
-            /* DCS Long Write */
             ret = mipi_dsi_dcs_write(dsi, payload[0], payload + 1, payload_len - 1);
         } else {
             dev_err(ctx->dev, "unknown command type 0x%02x\n", type);
@@ -216,24 +190,24 @@ static int panel_send_cmds(struct panel_data *ctx, const u8 *cmds, size_t len)
 }
 
 /* ============================================================
- * Backlight Control
+ * 背光控制 (4.19 内核通过 backlight 子系统)
  * ============================================================ */
 
-static int panel_set_backlight(struct drm_panel *panel, u32 brightness)
+static int panel_update_backlight(struct backlight_device *bl)
 {
-    struct panel_data *ctx = to_panel_data(panel);
+    struct panel_data *ctx = bl_get_data(bl);
+    int brightness = backlight_get_brightness(bl);
 
-    brightness = clamp(brightness, 0u, 2047u);
-
-    /* 调用 KTZ8866 简化接口 */
     ktz8866_set_backlight_level(brightness);
-
-    dev_dbg(ctx->dev, "set brightness: %d\n", brightness);
     return 0;
 }
 
+static const struct backlight_ops panel_bl_ops = {
+    .update_status = panel_update_backlight,
+};
+
 /* ============================================================
- * DRM Panel Operations
+ * DRM Panel 操作函数
  * ============================================================ */
 
 static int panel_prepare(struct drm_panel *panel)
@@ -246,13 +220,11 @@ static int panel_prepare(struct drm_panel *panel)
     if (ctx->prepared)
         return 0;
 
-    /* 1. Check KTZ8866 driver ready */
     if (!ktz8866_is_ready()) {
         dev_warn(ctx->dev, "KTZ8866 not ready, defer...\n");
         return -EPROBE_DEFER;
     }
 
-    /* 2. Enable regulators */
     if (ctx->vdd) {
         ret = regulator_set_voltage(ctx->vdd, 1800000, 1800000);
         if (ret < 0)
@@ -278,12 +250,10 @@ static int panel_prepare(struct drm_panel *panel)
     }
 
     msleep(20);
-
-    /* 3. Enable bias (GPIO controlled by KTZ8866 driver) */
     ktz8866_enable_bias(1);
     msleep(10);
 
-    /* 4. Panel reset sequence (from DTS) */
+    /* Panel reset sequence (from DTS) */
     gpiod_set_value(ctx->reset_gpio, 1);
     msleep(10);
     gpiod_set_value(ctx->reset_gpio, 0);
@@ -295,7 +265,6 @@ static int panel_prepare(struct drm_panel *panel)
     gpiod_set_value(ctx->reset_gpio, 1);
     msleep(12);
 
-    /* 5. Send init commands */
     ret = panel_send_cmds(ctx, panel_on_cmds, sizeof(panel_on_cmds));
     if (ret < 0) {
         dev_err(ctx->dev, "init commands failed\n");
@@ -324,20 +293,12 @@ static int panel_unprepare(struct drm_panel *panel)
     if (!ctx->prepared)
         return 0;
 
-    /* 1. Turn off backlight */
     ktz8866_set_backlight_level(0);
-
-    /* 2. Send off commands */
     panel_send_cmds(ctx, panel_off_cmds, sizeof(panel_off_cmds));
-
-    /* 3. Disable bias */
     ktz8866_enable_bias(0);
-
-    /* 4. Reset low */
     gpiod_set_value(ctx->reset_gpio, 0);
     msleep(20);
 
-    /* 5. Disable regulators */
     if (ctx->v1_8)
         regulator_disable(ctx->v1_8);
     if (ctx->vdd)
@@ -358,7 +319,7 @@ static int panel_enable(struct drm_panel *panel)
         return 0;
 
     if (ctx->backlight) {
-        ctx->backlight->props.power = FB_BLANK_UNBLANK;
+        ctx->backlight->props.power = 1;
         backlight_update_status(ctx->backlight);
     }
 
@@ -377,7 +338,7 @@ static int panel_disable(struct drm_panel *panel)
         return 0;
 
     if (ctx->backlight) {
-        ctx->backlight->props.power = FB_BLANK_POWERDOWN;
+        ctx->backlight->props.power = 4;
         backlight_update_status(ctx->backlight);
     }
 
@@ -410,7 +371,7 @@ static int panel_get_modes(struct drm_panel *panel)
 }
 
 /* ============================================================
- * DRM Panel Funcs
+ * DRM Panel Funcs (4.19 内核没有 .set_backlight)
  * ============================================================ */
 
 static const struct drm_panel_funcs panel_funcs = {
@@ -419,7 +380,6 @@ static const struct drm_panel_funcs panel_funcs = {
     .enable = panel_enable,
     .disable = panel_disable,
     .get_modes = panel_get_modes,
-    .set_backlight = panel_set_backlight,
 };
 
 /* ============================================================
@@ -430,25 +390,41 @@ static int panel_probe(struct mipi_dsi_device *dsi)
 {
     struct device *dev = &dsi->dev;
     struct panel_data *ctx;
+    const char *panel_name;
+    struct backlight_device *bl;
     int ret;
 
     dev_info(dev, "%s+++\n", __func__);
 
+    /* 1. 获取 panel name 并匹配 */
+    ret = of_property_read_string(dev->of_node, "qcom,mdss-dsi-panel-name", &panel_name);
+    if (ret < 0) {
+        dev_info(dev, "no qcom,mdss-dsi-panel-name, skipping\n");
+        return -ENODEV;
+    }
+
+    if (strcmp(panel_name, "nt36532 tianma 3k video mode dsi panel") != 0) {
+        dev_info(dev, "panel name mismatch: %s, skipping\n", panel_name);
+        return -ENODEV;
+    }
+
+    dev_info(dev, "panel matched: %s\n", panel_name);
+
+    /* 2. 分配上下文 */
     ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
     if (!ctx)
         return -ENOMEM;
 
     ctx->dev = dev;
     ctx->dsi = dsi;
-
     mipi_dsi_set_drvdata(dsi, ctx);
 
-    /* DSI config */
+    /* 3. DSI 配置 */
     dsi->lanes = 4;
     dsi->format = MIPI_DSI_FMT_RGB888;
     dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST;
 
-    /* Get GPIOs (from DTS: reset=gpio69, te=gpio66) */
+    /* 4. GPIO */
     ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
     if (IS_ERR(ctx->reset_gpio)) {
         ret = PTR_ERR(ctx->reset_gpio);
@@ -463,41 +439,38 @@ static int panel_probe(struct mipi_dsi_device *dsi)
         return ret;
     }
 
-    /* Regulators */
+    /* 5. Regulator */
     ctx->vdd = devm_regulator_get_optional(dev, "vdd");
     if (IS_ERR(ctx->vdd)) {
-        if (PTR_ERR(ctx->vdd) == -EPROBE_DEFER) {
-            dev_info(dev, "vdd regulator not ready, defer...\n");
+        if (PTR_ERR(ctx->vdd) == -EPROBE_DEFER)
             return -EPROBE_DEFER;
-        }
         ctx->vdd = NULL;
-        dev_info(dev, "vdd regulator not found, skip\n");
+        dev_info(dev, "vdd regulator not found\n");
     }
 
     ctx->v1_8 = devm_regulator_get_optional(dev, "v1-8");
     if (IS_ERR(ctx->v1_8)) {
-        if (PTR_ERR(ctx->v1_8) == -EPROBE_DEFER) {
-            dev_info(dev, "v1_8 regulator not ready, defer...\n");
+        if (PTR_ERR(ctx->v1_8) == -EPROBE_DEFER)
             return -EPROBE_DEFER;
-        }
         ctx->v1_8 = NULL;
-        dev_info(dev, "v1_8 regulator not found, skip\n");
+        dev_info(dev, "v1_8 regulator not found\n");
     }
 
-    /* Backlight */
-    ctx->backlight = devm_of_find_backlight(dev);
-    if (IS_ERR(ctx->backlight)) {
-        if (PTR_ERR(ctx->backlight) == -EPROBE_DEFER) {
-            dev_info(dev, "backlight not ready, defer...\n");
-            return -EPROBE_DEFER;
-        }
-        ctx->backlight = NULL;
-        dev_info(dev, "backlight not found, skip\n");
+    /* 6. Backlight */
+    bl = devm_backlight_device_register(dev, "nt36532-backlight", dev, ctx,
+                                        &panel_bl_ops, NULL);
+    if (IS_ERR(bl)) {
+        ret = PTR_ERR(bl);
+        dev_err(dev, "failed to register backlight: %d\n", ret);
+        return ret;
     }
+    bl->props.max_brightness = 2047;
+    bl->props.brightness = 100;
+    bl->props.type = BACKLIGHT_RAW;
+    ctx->backlight = bl;
 
-    /* Register panel */
+    /* 7. Register panel */
     drm_panel_init(&ctx->panel, dev, &panel_funcs, DRM_MODE_CONNECTOR_DSI);
-    ctx->panel.dsc = &dsc_cfg;
 
     ret = drm_panel_add(&ctx->panel);
     if (ret < 0) {
@@ -527,7 +500,7 @@ static int panel_remove(struct mipi_dsi_device *dsi)
 
 static const struct of_device_id panel_of_match[] = {
     { .compatible = "tianma,nt36532-tianma-video" },
-    { }
+    { },
 };
 MODULE_DEVICE_TABLE(of, panel_of_match);
 
