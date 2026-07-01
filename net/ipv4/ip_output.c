@@ -82,10 +82,6 @@
 #include <linux/netlink.h>
 #include <linux/tcp.h>
 
-static int
-ip_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
-	    unsigned int mtu,
-	    int (*output)(struct net *, struct sock *, struct sk_buff *));
 
 /* Generate a checksum for an outgoing IP datagram. */
 void ip_send_check(struct iphdr *iph)
@@ -160,19 +156,12 @@ int ip_build_and_send_pkt(struct sk_buff *skb, const struct sock *sk,
 	iph->daddr    = (opt && opt->opt.srr ? opt->opt.faddr : daddr);
 	iph->saddr    = saddr;
 	iph->protocol = sk->sk_protocol;
-	/* Do not bother generating IPID for small packets (eg SYNACK) */
-	if (skb->len <= IPV4_MIN_MTU || ip_dont_fragment(sk, &rt->dst)) {
+	if (ip_dont_fragment(sk, &rt->dst)) {
 		iph->frag_off = htons(IP_DF);
 		iph->id = 0;
 	} else {
 		iph->frag_off = 0;
-		/* TCP packets here are SYNACK with fat IPv4/TCP options.
-		 * Avoid using the hashed IP ident generator.
-		 */
-		if (sk->sk_protocol == IPPROTO_TCP)
-			iph->id = (__force __be16)prandom_u32();
-		else
-			__ip_select_ident(net, iph, 1);
+		__ip_select_ident(net, iph, 1);
 	}
 
 	if (opt && opt->opt.optlen) {
@@ -221,7 +210,7 @@ static int ip_finish_output2(struct net *net, struct sock *sk, struct sk_buff *s
 	if (lwtunnel_xmit_redirect(dst->lwtstate)) {
 		int res = lwtunnel_xmit(skb);
 
-		if (res != LWTUNNEL_XMIT_CONTINUE)
+		if (res < 0 || res == LWTUNNEL_XMIT_DONE)
 			return res;
 	}
 
@@ -426,9 +415,8 @@ static void ip_copy_addrs(struct iphdr *iph, const struct flowi4 *fl4)
 {
 	BUILD_BUG_ON(offsetof(typeof(*fl4), daddr) !=
 		     offsetof(typeof(*fl4), saddr) + sizeof(fl4->saddr));
-
-	iph->saddr = fl4->saddr;
-	iph->daddr = fl4->daddr;
+	memcpy(&iph->saddr, &fl4->saddr,
+	       sizeof(fl4->saddr) + sizeof(fl4->daddr));
 }
 
 /* Note: skb->sk can be different from sk, in case of tunnels */
@@ -549,9 +537,9 @@ static void ip_copy_metadata(struct sk_buff *to, struct sk_buff *from)
 	skb_copy_secmark(to, from);
 }
 
-static int ip_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
-		       unsigned int mtu,
-		       int (*output)(struct net *, struct sock *, struct sk_buff *))
+int ip_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
+		unsigned int mtu,
+		int (*output)(struct net *, struct sock *, struct sk_buff *))
 {
 	struct iphdr *iph = ip_hdr(skb);
 
@@ -948,7 +936,7 @@ static int __ip_append_data(struct sock *sk,
 			unsigned int datalen;
 			unsigned int fraglen;
 			unsigned int fraggap;
-			unsigned int alloclen, alloc_extra;
+			unsigned int alloclen;
 			unsigned int pagedlen;
 			struct sk_buff *skb_prev;
 alloc_new_skb:
@@ -968,8 +956,17 @@ alloc_new_skb:
 			fraglen = datalen + fragheaderlen;
 			pagedlen = 0;
 
-			alloc_extra = hh_len + 15;
-			alloc_extra += exthdrlen;
+			if ((flags & MSG_MORE) &&
+			    !(rt->dst.dev->features&NETIF_F_SG))
+				alloclen = mtu;
+			else if (!paged)
+				alloclen = fraglen;
+			else {
+				alloclen = min_t(int, fraglen, MAX_HEADER);
+				pagedlen = fraglen - alloclen;
+			}
+
+			alloclen += exthdrlen;
 
 			/* The last fragment gets additional space at tail.
 			 * Note, with MSG_MORE we overallocate on fragments,
@@ -977,30 +974,17 @@ alloc_new_skb:
 			 * the last.
 			 */
 			if (datalen == length + fraggap)
-				alloc_extra += rt->dst.trailer_len;
-
-			if ((flags & MSG_MORE) &&
-			    !(rt->dst.dev->features&NETIF_F_SG))
-				alloclen = mtu;
-			else if (!paged &&
-				 (fraglen + alloc_extra < SKB_MAX_ALLOC ||
-				  !(rt->dst.dev->features & NETIF_F_SG)))
-				alloclen = fraglen;
-			else {
-				alloclen = min_t(int, fraglen, MAX_HEADER);
-				pagedlen = fraglen - alloclen;
-			}
-
-			alloclen += alloc_extra;
+				alloclen += rt->dst.trailer_len;
 
 			if (transhdrlen) {
-				skb = sock_alloc_send_skb(sk, alloclen,
+				skb = sock_alloc_send_skb(sk,
+						alloclen + hh_len + 15,
 						(flags & MSG_DONTWAIT), &err);
 			} else {
 				skb = NULL;
 				if (refcount_read(&sk->sk_wmem_alloc) + wmem_alloc_delta <=
 				    2 * sk->sk_sndbuf)
-					skb = alloc_skb(alloclen,
+					skb = alloc_skb(alloclen + hh_len + 15,
 							sk->sk_allocation);
 				if (unlikely(!skb))
 					err = -ENOBUFS;
@@ -1140,12 +1124,6 @@ static int ip_setup_cork(struct sock *sk, struct inet_cork *cork,
 	if (unlikely(!rt))
 		return -EFAULT;
 
-	cork->fragsize = ip_sk_use_pmtu(sk) ?
-			 dst_mtu(&rt->dst) : READ_ONCE(rt->dst.dev->mtu);
-
-	if (!inetdev_valid_mtu(cork->fragsize))
-		return -ENETUNREACH;
-
 	/*
 	 * setup for corking.
 	 */
@@ -1161,6 +1139,12 @@ static int ip_setup_cork(struct sock *sk, struct inet_cork *cork,
 		cork->flags |= IPCORK_OPT;
 		cork->addr = ipc->addr;
 	}
+
+	cork->fragsize = ip_sk_use_pmtu(sk) ?
+			 dst_mtu(&rt->dst) : READ_ONCE(rt->dst.dev->mtu);
+
+	if (!inetdev_valid_mtu(cork->fragsize))
+		return -ENETUNREACH;
 
 	cork->gso_size = ipc->gso_size;
 
@@ -1443,19 +1427,9 @@ struct sk_buff *__ip_make_skb(struct sock *sk,
 	cork->dst = NULL;
 	skb_dst_set(skb, &rt->dst);
 
-	if (iph->protocol == IPPROTO_ICMP) {
-		u8 icmp_type;
-
-		/* For such sockets, transhdrlen is zero when do ip_append_data(),
-		 * so icmphdr does not in skb linear region and can not get icmp_type
-		 * by icmp_hdr(skb)->type.
-		 */
-		if (sk->sk_type == SOCK_RAW && !inet_sk(sk)->hdrincl)
-			icmp_type = fl4->fl4_icmp_type;
-		else
-			icmp_type = icmp_hdr(skb)->type;
-		icmp_out_count(net, icmp_type);
-	}
+	if (iph->protocol == IPPROTO_ICMP)
+		icmp_out_count(net, ((struct icmphdr *)
+			skb_transport_header(skb))->type);
 
 	ip_cork_release(cork);
 out:

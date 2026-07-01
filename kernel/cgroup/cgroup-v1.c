@@ -13,9 +13,11 @@
 #include <linux/delayacct.h>
 #include <linux/pid_namespace.h>
 #include <linux/cgroupstats.h>
-#include <linux/cpu.h>
 
 #include <trace/events/cgroup.h>
+#ifdef CONFIG_MTK_TASK_TURBO
+#include <mt-plat/turbo_common.h>
+#endif
 
 /*
  * pidlists linger the following amount before being destroyed.  The goal
@@ -59,7 +61,6 @@ int cgroup_attach_task_all(struct task_struct *from, struct task_struct *tsk)
 	int retval = 0;
 
 	mutex_lock(&cgroup_mutex);
-	get_online_cpus();
 	percpu_down_write(&cgroup_threadgroup_rwsem);
 	for_each_root(root) {
 		struct cgroup *from_cgrp;
@@ -76,7 +77,6 @@ int cgroup_attach_task_all(struct task_struct *from, struct task_struct *tsk)
 			break;
 	}
 	percpu_up_write(&cgroup_threadgroup_rwsem);
-	put_online_cpus();
 	mutex_unlock(&cgroup_mutex);
 
 	return retval;
@@ -382,9 +382,10 @@ static int pidlist_array_load(struct cgroup *cgrp, enum cgroup_filetype type,
 	}
 	css_task_iter_end(&it);
 	length = n;
-	/* now sort & strip out duplicates (tgids or recycled thread PIDs) */
+	/* now sort & (if procs) strip out duplicates */
 	sort(array, length, sizeof(pid_t), cmppid, NULL);
-	length = pidlist_uniq(array, length);
+	if (type == CGROUP_FILE_PROCS)
+		length = pidlist_uniq(array, length);
 
 	l = cgroup_pidlist_find_create(cgrp, type);
 	if (!l) {
@@ -415,7 +416,6 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 	 * next pid to display, if any
 	 */
 	struct kernfs_open_file *of = s->private;
-	struct cgroup_file_ctx *ctx = of->priv;
 	struct cgroup *cgrp = seq_css(s)->cgroup;
 	struct cgroup_pidlist *l;
 	enum cgroup_filetype type = seq_cft(s)->private;
@@ -425,24 +425,25 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 	mutex_lock(&cgrp->pidlist_mutex);
 
 	/*
-	 * !NULL @ctx->procs1.pidlist indicates that this isn't the first
-	 * start() after open. If the matching pidlist is around, we can use
-	 * that. Look for it. Note that @ctx->procs1.pidlist can't be used
-	 * directly. It could already have been destroyed.
+	 * !NULL @of->priv indicates that this isn't the first start()
+	 * after open.  If the matching pidlist is around, we can use that.
+	 * Look for it.  Note that @of->priv can't be used directly.  It
+	 * could already have been destroyed.
 	 */
-	if (ctx->procs1.pidlist)
-		ctx->procs1.pidlist = cgroup_pidlist_find(cgrp, type);
+	if (of->priv)
+		of->priv = cgroup_pidlist_find(cgrp, type);
 
 	/*
 	 * Either this is the first start() after open or the matching
 	 * pidlist has been destroyed inbetween.  Create a new one.
 	 */
-	if (!ctx->procs1.pidlist) {
-		ret = pidlist_array_load(cgrp, type, &ctx->procs1.pidlist);
+	if (!of->priv) {
+		ret = pidlist_array_load(cgrp, type,
+					 (struct cgroup_pidlist **)&of->priv);
 		if (ret)
 			return ERR_PTR(ret);
 	}
-	l = ctx->procs1.pidlist;
+	l = of->priv;
 
 	if (pid) {
 		int end = l->length;
@@ -470,8 +471,7 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 static void cgroup_pidlist_stop(struct seq_file *s, void *v)
 {
 	struct kernfs_open_file *of = s->private;
-	struct cgroup_file_ctx *ctx = of->priv;
-	struct cgroup_pidlist *l = ctx->procs1.pidlist;
+	struct cgroup_pidlist *l = of->priv;
 
 	if (l)
 		mod_delayed_work(cgroup_pidlist_destroy_wq, &l->destroy_dwork,
@@ -482,8 +482,7 @@ static void cgroup_pidlist_stop(struct seq_file *s, void *v)
 static void *cgroup_pidlist_next(struct seq_file *s, void *v, loff_t *pos)
 {
 	struct kernfs_open_file *of = s->private;
-	struct cgroup_file_ctx *ctx = of->priv;
-	struct cgroup_pidlist *l = ctx->procs1.pidlist;
+	struct cgroup_pidlist *l = of->priv;
 	pid_t *p = v;
 	pid_t *end = l->list + l->length;
 	/*
@@ -526,11 +525,10 @@ static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 		goto out_unlock;
 
 	/*
-	 * Even if we're attaching all tasks in the thread group, we only need
-	 * to check permissions on one of them. Check permissions using the
-	 * credentials from file open to protect against inherited fd attacks.
+	 * Even if we're attaching all tasks in the thread group, we only
+	 * need to check permissions on one of them.
 	 */
-	cred = of->file->f_cred;
+	cred = current_cred();
 	tcred = get_task_cred(task);
 	if (!uid_eq(cred->euid, GLOBAL_ROOT_UID) &&
 	    !uid_eq(cred->euid, tcred->uid) &&
@@ -542,6 +540,10 @@ static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 		goto out_finish;
 
 	ret = cgroup_attach_task(cgrp, task, threadgroup);
+#ifdef CONFIG_MTK_TASK_TURBO
+	if (!ret)
+		cgroup_set_turbo_task(task);
+#endif
 
 out_finish:
 	cgroup_procs_write_finish(task);
@@ -569,14 +571,6 @@ static ssize_t cgroup_release_agent_write(struct kernfs_open_file *of,
 	struct cgroup *cgrp;
 
 	BUILD_BUG_ON(sizeof(cgrp->root->release_agent_path) < PATH_MAX);
-
-	/*
-	 * Release agent gets called with all capabilities,
-	 * require capabilities to set release agent.
-	 */
-	if ((of->file->f_cred->user_ns != &init_user_ns) ||
-	    !capable(CAP_SYS_ADMIN))
-		return -EPERM;
 
 	cgrp = cgroup_kn_lock_live(of->kn, false);
 	if (!cgrp)
@@ -850,10 +844,6 @@ static int cgroup1_rename(struct kernfs_node *kn, struct kernfs_node *new_parent
 	struct cgroup *cgrp = kn->priv;
 	int ret;
 
-	/* do not accept '\n' to prevent making /proc/<pid>/cgroup unparsable */
-	if (strchr(new_name_str, '\n'))
-		return -EINVAL;
-
 	if (kernfs_type(kn) != KERNFS_DIR)
 		return -ENOTDIR;
 	if (kn->parent != new_parent)
@@ -1053,7 +1043,6 @@ static int cgroup1_remount(struct kernfs_root *kf_root, int *flags, char *data)
 {
 	int ret = 0;
 	struct cgroup_root *root = cgroup_root_from_kf(kf_root);
-	struct cgroup_namespace *ns = current->nsproxy->cgroup_ns;
 	struct cgroup_sb_opts opts;
 	u16 added_mask, removed_mask;
 
@@ -1067,12 +1056,6 @@ static int cgroup1_remount(struct kernfs_root *kf_root, int *flags, char *data)
 	if (opts.subsys_mask != root->subsys_mask || opts.release_agent)
 		pr_warn("option changes via remount are deprecated (pid=%d comm=%s)\n",
 			task_tgid_nr(current), current->comm);
-	/* See cgroup1_mount release_agent handling */
-	if (opts.release_agent &&
-	    ((ns->user_ns != &init_user_ns) || !capable(CAP_SYS_ADMIN))) {
-		ret = -EINVAL;
-		goto out_unlock;
-	}
 
 	added_mask = opts.subsys_mask & ~root->subsys_mask;
 	removed_mask = root->subsys_mask & ~opts.subsys_mask;
@@ -1209,15 +1192,6 @@ struct dentry *cgroup1_mount(struct file_system_type *fs_type, int flags,
 	/* Hierarchies may only be created in the initial cgroup namespace. */
 	if (ns != &init_cgroup_ns) {
 		ret = -EPERM;
-		goto out_unlock;
-	}
-	/*
-	 * Release agent gets called with all capabilities,
-	 * require capabilities to set release agent.
-	 */
-	if (opts.release_agent &&
-	    ((ns->user_ns != &init_user_ns) || !capable(CAP_SYS_ADMIN))) {
-		ret = -EINVAL;
 		goto out_unlock;
 	}
 

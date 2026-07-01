@@ -41,6 +41,16 @@ struct route_info {
  */
 #define IP6_MAX_MTU (0xFFFF + sizeof(struct ipv6hdr))
 
+/* Use to control all vzw feature*/
+#define MTK_IPV6_VZW_ALL        0x000C
+
+/* Use to control vzw feature except for
+ * the fixed rs interval time of 4 seconds
+ */
+#define MTK_IPV6_EX_RS_INTERVAL 0x01F7
+
+extern int sysctl_optr;
+
 /*
  * rt6_srcprefs2flags() and rt6_flags2srcprefs() translate
  * between IPV6_ADDR_PREFERENCES socket option values
@@ -144,6 +154,7 @@ struct fib6_info *addrconf_f6i_alloc(struct net *net, struct inet6_dev *idev,
 struct rt6_info *ip6_dst_alloc(struct net *net, struct net_device *dev,
 			       int flags);
 
+int ip6_operator_isop12(void);
 /*
  *	support functions for ND
  *
@@ -151,6 +162,9 @@ struct rt6_info *ip6_dst_alloc(struct net *net, struct net_device *dev,
 struct fib6_info *rt6_get_dflt_router(struct net *net,
 				     const struct in6_addr *addr,
 				     struct net_device *dev);
+
+struct fib6_info *rt6_get_dflt_router_expires(struct net_device *dev);
+
 struct fib6_info *rt6_add_dflt_router(struct net *net,
 				     const struct in6_addr *gwaddr,
 				     struct net_device *dev, unsigned int pref);
@@ -241,20 +255,13 @@ static inline bool ipv6_anycast_destination(const struct dst_entry *dst,
 int ip6_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
 		 int (*output)(struct net *, struct sock *, struct sk_buff *));
 
-static inline unsigned int ip6_skb_dst_mtu(struct sk_buff *skb)
+static inline int ip6_skb_dst_mtu(struct sk_buff *skb)
 {
-	unsigned int mtu;
-
 	struct ipv6_pinfo *np = skb->sk && !dev_recursion_level() ?
 				inet6_sk(skb->sk) : NULL;
 
-	if (np && np->pmtudisc >= IPV6_PMTUDISC_PROBE) {
-		mtu = READ_ONCE(skb_dst(skb)->dev->mtu);
-		mtu -= lwtunnel_headroom(skb_dst(skb)->lwtstate, mtu);
-	} else
-		mtu = dst_mtu(skb_dst(skb));
-
-	return mtu;
+	return (np && np->pmtudisc >= IPV6_PMTUDISC_PROBE) ?
+	       skb_dst(skb)->dev->mtu : dst_mtu(skb_dst(skb));
 }
 
 static inline bool ip6_sk_accept_pmtu(const struct sock *sk)
@@ -295,7 +302,7 @@ static inline unsigned int ip6_dst_mtu_forward(const struct dst_entry *dst)
 	if (dst_metric_locked(dst, RTAX_MTU)) {
 		mtu = dst_metric_raw(dst, RTAX_MTU);
 		if (mtu)
-			goto out;
+			return mtu;
 	}
 
 	mtu = IPV6_MIN_MTU;
@@ -305,8 +312,7 @@ static inline unsigned int ip6_dst_mtu_forward(const struct dst_entry *dst)
 		mtu = idev->cnf.mtu6;
 	rcu_read_unlock();
 
-out:
-	return mtu - lwtunnel_headroom(dst->lwtstate, mtu);
+	return mtu;
 }
 
 u32 ip6_mtu_from_fib6(struct fib6_info *f6i, struct in6_addr *daddr,

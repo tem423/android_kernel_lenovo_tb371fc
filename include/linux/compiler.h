@@ -228,8 +228,6 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
     (typeof(ptr)) (__ptr + (off)); })
 #endif
 
-#define absolute_pointer(val)	RELOC_HIDE((void *)(val), 0)
-
 #ifndef OPTIMIZER_HIDE_VAR
 /* Make the optimizer believe the variable can be manipulated arbitrarily. */
 #define OPTIMIZER_HIDE_VAR(var)						\
@@ -395,7 +393,7 @@ static inline void *offset_to_ptr(const int *off)
 # define __compiletime_assert(condition, msg, prefix, suffix)		\
 	do {								\
 		extern void prefix ## suffix(void) __compiletime_error(msg); \
-		if (!(condition))						\
+		if (!(condition))					\
 			prefix ## suffix();				\
 	} while (0)
 #else

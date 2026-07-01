@@ -38,24 +38,17 @@ int __init __weak early_init_dt_alloc_reserved_memory_arch(phys_addr_t size,
 	 * panic()s on allocation failure.
 	 */
 	end = !end ? MEMBLOCK_ALLOC_ANYWHERE : end;
-	base = __memblock_alloc_base(size, align, end);
+	base = memblock_find_in_range(start, end, size, align);
 	if (!base)
 		return -ENOMEM;
-
-	/*
-	 * Check if the allocated region fits in to start..end window
-	 */
-	if (base < start) {
-		memblock_free(base, size);
-		return -ENOMEM;
-	}
 
 	*res_base = base;
 	if (nomap) {
 		kmemleak_ignore_phys(base);
 		return memblock_remove(base, size);
 	}
-	return 0;
+
+	return memblock_reserve(base, size);
 }
 #else
 int __init __weak early_init_dt_alloc_reserved_memory_arch(phys_addr_t size,
@@ -157,9 +150,9 @@ static int __init __reserved_mem_alloc_size(unsigned long node,
 			ret = early_init_dt_alloc_reserved_memory_arch(size,
 					align, start, end, nomap, &base);
 			if (ret == 0) {
-				pr_debug("allocated memory for '%s' node: base %pa, size %lu MiB\n",
+				pr_debug("allocated memory for '%s' node: base %pa, size %ld MiB\n",
 					uname, &base,
-					(unsigned long)(size / SZ_1M));
+					(unsigned long)size / SZ_1M);
 				break;
 			}
 			len -= t_len;
@@ -169,8 +162,8 @@ static int __init __reserved_mem_alloc_size(unsigned long node,
 		ret = early_init_dt_alloc_reserved_memory_arch(size, align,
 							0, 0, nomap, &base);
 		if (ret == 0)
-			pr_debug("allocated memory for '%s' node: base %pa, size %lu MiB\n",
-				uname, &base, (unsigned long)(size / SZ_1M));
+			pr_debug("allocated memory for '%s' node: base %pa, size %ld MiB\n",
+				uname, &base, (unsigned long)size / SZ_1M);
 	}
 
 	if (base == 0) {

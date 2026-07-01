@@ -127,8 +127,8 @@ static int ufshcd_program_key(struct ufs_hba *hba,
 
 	ufshcd_hold(hba, false);
 
-	if (hba->var->vops->program_key) {
-		err = hba->var->vops->program_key(hba, cfg, slot);
+	if (hba->vops->program_key) {
+		err = hba->vops->program_key(hba, cfg, slot);
 		goto out;
 	}
 
@@ -153,13 +153,13 @@ static int ufshcd_program_key(struct ufs_hba *hba,
 	wmb();
 	err = 0;
 out:
-	ufshcd_release(hba, false);
+	ufshcd_release(hba);
 	return err;
 }
 
 static void ufshcd_clear_keyslot(struct ufs_hba *hba, int slot)
 {
-	union ufs_crypto_cfg_entry cfg = {};
+	union ufs_crypto_cfg_entry cfg = { 0 };
 	int err;
 
 	err = ufshcd_program_key(hba, &cfg, slot);
@@ -379,6 +379,8 @@ int ufshcd_prepare_lrbp_crypto_spec(struct ufs_hba *hba,
 				    struct ufshcd_lrb *lrbp)
 {
 	struct bio_crypt_ctx *bc;
+	unsigned long flags;
+	int ret;
 
 	if (!bio_crypt_should_process(cmd->request)) {
 		lrbp->crypto_enable = false;
@@ -386,24 +388,38 @@ int ufshcd_prepare_lrbp_crypto_spec(struct ufs_hba *hba,
 	}
 	bc = cmd->request->bio->bi_crypt_context;
 
-	if (WARN_ON(!ufshcd_is_crypto_enabled(hba))) {
+	if (!ufshcd_is_crypto_enabled(hba)) {
 		/*
 		 * Upper layer asked us to do inline encryption
 		 * but that isn't enabled, so we fail this request.
 		 */
-		return -EINVAL;
+		spin_lock_irqsave(hba->host->host_lock, flags);
+		if (hba->ufshcd_state != UFSHCD_STATE_OPERATIONAL)
+			ret = SCSI_MLQUEUE_HOST_BUSY;
+		else if (ufshcd_is_crypto_enabled(hba))
+			ret = 0;
+		else
+			ret = -EINVAL;
+		spin_unlock_irqrestore(hba->host->host_lock, flags);
+
+		if (ret == 0)
+			goto cont;
+		if (ret == -EINVAL)
+			WARN_ON(1);
+		return ret;
 	}
+cont:
 	if (!ufshcd_keyslot_valid(hba, bc->bc_keyslot))
 		return -EINVAL;
 
 	lrbp->crypto_enable = true;
 	lrbp->crypto_key_slot = bc->bc_keyslot;
-	if (bc->is_ext4) {
-		lrbp->data_unit_num = (u64)cmd->request->bio->bi_iter.bi_sector;
-		lrbp->data_unit_num >>= 3;
-	} else {
+
+	if (bc->hie_ext4 == true)
+		lrbp->data_unit_num = blk_rq_pos(cmd->request) >> 3;
+	else
 		lrbp->data_unit_num = bc->bc_dun[0];
-	}
+
 	return 0;
 }
 EXPORT_SYMBOL_GPL(ufshcd_prepare_lrbp_crypto_spec);

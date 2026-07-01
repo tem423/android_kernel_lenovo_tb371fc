@@ -466,8 +466,6 @@ ENDPROC(v7_dma_unmap_area)
 
 	globl_equ	b15_dma_map_area,		v7_dma_map_area
 	globl_equ	b15_dma_unmap_area,		v7_dma_unmap_area
-	globl_equ	b15_dma_inv_range,		v7_dma_inv_range
-	globl_equ	b15_dma_clean_range,		v7_dma_clean_range
 	globl_equ	b15_dma_flush_range,		v7_dma_flush_range
 
 	define_cache_functions b15

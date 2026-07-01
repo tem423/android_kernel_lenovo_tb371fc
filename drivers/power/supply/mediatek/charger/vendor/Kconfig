@@ -1,0 +1,41 @@
+config HUAQIN_VENDOR_CHARGE
+	tristate "huaqin vendor charger driver"
+	depends on I2C
+	default y
+	help
+	  Say Y to enable support for HUAQIN VENDOR CHARGE
+
+config SC8960X_BUCK_CHARGE
+	tristate "SC BUCK SC8960X battery charger driver"
+	depends on I2C
+	default y
+	help
+	  Say Y to enable support for SC BUCK SC8960X charger
+
+config SGM415XX_BUCK_CHARGE
+	tristate "SGM BUCK SGM41600 battery charger driver"
+	depends on I2C
+	default y
+	help
+	  Say Y to enable support for SC SGM415XX charger
+
+config SC854X_CHARGE_PUMP
+	tristate "SC PUMP SC8960X battery charger driver"
+	depends on I2C
+	default y
+	help
+	  Say Y to enable support for SC SC854X charger
+
+config SGM41600_CHARGE_PUMP
+	tristate "SGM PUMP SGM41600 battery charger driver"
+	depends on I2C
+	default y
+	help
+	  Say Y to enable support for SC SGM41600 charger
+
+config PD_POLICY_MANAGER
+	tristate "PPS POLICY charger driver"
+	depends on I2C
+	default y
+	help
+	  Say Y to enable support for SC PD POLICY MANAGER charger

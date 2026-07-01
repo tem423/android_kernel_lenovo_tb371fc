@@ -216,6 +216,9 @@ static void __init setup_machine_fdt(phys_addr_t dt_phys)
 	if (!name)
 		return;
 
+	/* backward-compatibility for third-party applications */
+	machine_desc_set(name);
+
 	pr_info("Machine model: %s\n", name);
 	dump_stack_set_arch_desc("%s (DT)", name);
 }
@@ -293,8 +296,6 @@ static int __init reserve_memblock_reserved_regions(void)
 arch_initcall(reserve_memblock_reserved_regions);
 
 u64 __cpu_logical_map[NR_CPUS] = { [0 ... NR_CPUS-1] = INVALID_HWID };
-
-void __init __weak init_random_pool(void) { }
 
 void __init setup_arch(char **cmdline_p)
 {
@@ -386,8 +387,6 @@ void __init setup_arch(char **cmdline_p)
 			"This indicates a broken bootloader or old kernel\n",
 			boot_args[1], boot_args[2], boot_args[3]);
 	}
-
-	init_random_pool();
 }
 
 static int __init topology_init(void)
@@ -405,7 +404,7 @@ static int __init topology_init(void)
 
 	return 0;
 }
-postcore_initcall(topology_init);
+subsys_initcall(topology_init);
 
 /*
  * Dump out kernel offset information on panic.
@@ -418,6 +417,7 @@ static int dump_kernel_offset(struct notifier_block *self, unsigned long v,
 	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE) && offset > 0) {
 		pr_emerg("Kernel Offset: 0x%lx from 0x%lx\n",
 			 offset, KIMAGE_VADDR);
+		pr_emerg("PHYS_OFFSET: 0x%llx\n", PHYS_OFFSET);
 	} else {
 		pr_emerg("Kernel Offset: disabled\n");
 	}

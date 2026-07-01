@@ -1906,7 +1906,7 @@ static void btrfs_clear_bit_hook(void *private_data,
 		 */
 		if (*bits & EXTENT_CLEAR_META_RESV &&
 		    root != fs_info->tree_root)
-			btrfs_delalloc_release_metadata(inode, len, true);
+			btrfs_delalloc_release_metadata(inode, len, false);
 
 		/* For sanity tests. */
 		if (btrfs_is_testing(fs_info))
@@ -3161,18 +3161,6 @@ out:
 
 	if (ret || truncated) {
 		u64 start, end;
-
-		/*
-		 * If we failed to finish this ordered extent for any reason we
-		 * need to make sure BTRFS_ORDERED_IOERR is set on the ordered
-		 * extent, and mark the inode with the error if it wasn't
-		 * already set.  Any error during writeback would have already
-		 * set the mapping error, so we need to set it if we're the ones
-		 * marking this ordered extent as failed.
-		 */
-		if (ret && !test_and_set_bit(BTRFS_ORDERED_IOERR,
-					     &ordered_extent->flags))
-			mapping_set_error(ordered_extent->inode->i_mapping, -EIO);
 
 		if (truncated)
 			start = ordered_extent->file_offset + logical_len;
@@ -6620,7 +6608,7 @@ static int btrfs_mknod(struct inode *dir, struct dentry *dentry,
 	if (IS_ERR(trans))
 		return PTR_ERR(trans);
 
-	err = btrfs_find_free_objectid(root, &objectid);
+	err = btrfs_find_free_ino(root, &objectid);
 	if (err)
 		goto out_unlock;
 
@@ -6684,7 +6672,7 @@ static int btrfs_create(struct inode *dir, struct dentry *dentry,
 	if (IS_ERR(trans))
 		return PTR_ERR(trans);
 
-	err = btrfs_find_free_objectid(root, &objectid);
+	err = btrfs_find_free_ino(root, &objectid);
 	if (err)
 		goto out_unlock;
 
@@ -6837,7 +6825,7 @@ static int btrfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 	if (IS_ERR(trans))
 		return PTR_ERR(trans);
 
-	err = btrfs_find_free_objectid(root, &objectid);
+	err = btrfs_find_free_ino(root, &objectid);
 	if (err)
 		goto out_fail;
 
@@ -9556,14 +9544,8 @@ static int btrfs_rename_exchange(struct inode *old_dir,
 	bool sync_log_dest = false;
 	bool commit_transaction = false;
 
-	/*
-	 * For non-subvolumes allow exchange only within one subvolume, in the
-	 * same inode namespace. Two subvolumes (represented as directory) can
-	 * be exchanged as they're a logical link and have a fixed inode number.
-	 */
-	if (root != dest &&
-	    (old_ino != BTRFS_FIRST_FREE_OBJECTID ||
-	     new_ino != BTRFS_FIRST_FREE_OBJECTID))
+	/* we only allow rename subvolume link between subvolumes */
+	if (old_ino != BTRFS_FIRST_FREE_OBJECTID && root != dest)
 		return -EXDEV;
 
 	btrfs_init_log_ctx(&ctx_root, old_inode);
@@ -9819,7 +9801,7 @@ static int btrfs_whiteout_for_rename(struct btrfs_trans_handle *trans,
 	u64 objectid;
 	u64 index;
 
-	ret = btrfs_find_free_objectid(root, &objectid);
+	ret = btrfs_find_free_ino(root, &objectid);
 	if (ret)
 		return ret;
 
@@ -10316,7 +10298,7 @@ static int btrfs_symlink(struct inode *dir, struct dentry *dentry,
 	if (IS_ERR(trans))
 		return PTR_ERR(trans);
 
-	err = btrfs_find_free_objectid(root, &objectid);
+	err = btrfs_find_free_ino(root, &objectid);
 	if (err)
 		goto out_unlock;
 
@@ -10600,7 +10582,7 @@ static int btrfs_tmpfile(struct inode *dir, struct dentry *dentry, umode_t mode)
 	if (IS_ERR(trans))
 		return PTR_ERR(trans);
 
-	ret = btrfs_find_free_objectid(root, &objectid);
+	ret = btrfs_find_free_ino(root, &objectid);
 	if (ret)
 		goto out;
 

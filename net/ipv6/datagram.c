@@ -54,7 +54,7 @@ static void ip6_datagram_flow_key_init(struct flowi6 *fl6, struct sock *sk)
 	fl6->flowi6_mark = sk->sk_mark;
 	fl6->fl6_dport = inet->inet_dport;
 	fl6->fl6_sport = inet->inet_sport;
-	fl6->flowlabel = ip6_make_flowinfo(np->tclass, np->flow_label);
+	fl6->flowlabel = np->flow_label;
 	fl6->flowi6_uid = sk->sk_uid;
 
 	if (!fl6->flowi6_oif)
@@ -1027,14 +1027,9 @@ void __ip6_dgram_sock_seq_show(struct seq_file *seq, struct sock *sp,
 			       __u16 srcp, __u16 destp, int rqueue, int bucket)
 {
 	const struct in6_addr *dest, *src;
-	__u8 state = sp->sk_state;
 
 	dest  = &sp->sk_v6_daddr;
 	src   = &sp->sk_v6_rcv_saddr;
-
-	if (inet_sk(sp) && inet_sk(sp)->transparent)
-		state |= 0x80;
-
 	seq_printf(seq,
 		   "%5d: %08X%08X%08X%08X:%04X %08X%08X%08X%08X:%04X "
 		   "%02X %08X:%08X %02X:%08lX %08X %5u %8d %lu %d %pK %d\n",
@@ -1043,7 +1038,7 @@ void __ip6_dgram_sock_seq_show(struct seq_file *seq, struct sock *sp,
 		   src->s6_addr32[2], src->s6_addr32[3], srcp,
 		   dest->s6_addr32[0], dest->s6_addr32[1],
 		   dest->s6_addr32[2], dest->s6_addr32[3], destp,
-		   state,
+		   sp->sk_state,
 		   sk_wmem_alloc_get(sp),
 		   rqueue,
 		   0, 0L, 0,

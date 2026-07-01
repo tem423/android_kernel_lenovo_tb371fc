@@ -204,47 +204,11 @@ static ssize_t brightness_store(struct device *dev,
 	if (rc)
 		return rc;
 
-	bd->usr_brightness_req = brightness;
-	brightness = (brightness <= bd->thermal_brightness_limit) ?
-				bd->usr_brightness_req :
-				bd->thermal_brightness_limit;
-
 	rc = backlight_device_set_brightness(bd, brightness);
 
 	return rc ? rc : count;
 }
 static DEVICE_ATTR_RW(brightness);
-
-static ssize_t hbm_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct backlight_device *bd = to_backlight_device(dev);
-
-	return sprintf(buf, "%d\n", bd->props.hbm);
-}
-
-static ssize_t hbm_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	int rc;
-	struct backlight_device *bd = to_backlight_device(dev);
-	unsigned long hbm;
-
-	rc = kstrtoul(buf, 0, &hbm);
-	if (rc)
-		return rc;
-
-	mutex_lock(&bd->ops_lock);
-	if (bd->ops) {
-		bd->props.hbm = hbm;
-		rc = backlight_update_status(bd);
-	}
-	mutex_unlock(&bd->ops_lock);
-
-return rc ? rc : count;
-}
-static DEVICE_ATTR_RW(hbm);
-
 
 static ssize_t type_show(struct device *dev, struct device_attribute *attr,
 		char *buf)
@@ -328,7 +292,6 @@ static struct attribute *bl_device_attrs[] = {
 	&dev_attr_actual_brightness.attr,
 	&dev_attr_max_brightness.attr,
 	&dev_attr_type.attr,
-    &dev_attr_hbm.attr,
 	NULL,
 };
 ATTRIBUTE_GROUPS(bl_device);
@@ -351,66 +314,6 @@ void backlight_force_update(struct backlight_device *bd,
 	backlight_generate_event(bd, reason);
 }
 EXPORT_SYMBOL(backlight_force_update);
-
-static int bd_cdev_get_max_brightness(struct thermal_cooling_device *cdev,
-					unsigned long *state)
-{
-	struct backlight_device *bd = (struct backlight_device *)cdev->devdata;
-
-	*state = bd->props.max_brightness;
-
-	return 0;
-}
-
-static int bd_cdev_get_cur_brightness(struct thermal_cooling_device *cdev,
-					unsigned long *state)
-{
-	struct backlight_device *bd = (struct backlight_device *)cdev->devdata;
-
-	*state = bd->props.max_brightness - bd->thermal_brightness_limit;
-
-	return 0;
-}
-
-static int bd_cdev_set_cur_brightness(struct thermal_cooling_device *cdev,
-					unsigned long state)
-{
-	struct backlight_device *bd = (struct backlight_device *)cdev->devdata;
-	int brightness_lvl;
-
-	if (state > bd->props.max_brightness)
-		return -EINVAL;
-
-	brightness_lvl = bd->props.max_brightness - state;
-	if (brightness_lvl == bd->thermal_brightness_limit)
-		return 0;
-
-	bd->thermal_brightness_limit = brightness_lvl;
-	brightness_lvl = (bd->usr_brightness_req
-				<= bd->thermal_brightness_limit) ?
-				bd->usr_brightness_req :
-				bd->thermal_brightness_limit;
-	backlight_device_set_brightness(bd, brightness_lvl);
-
-	return 0;
-}
-
-static struct thermal_cooling_device_ops bd_cdev_ops = {
-	.get_max_state = bd_cdev_get_max_brightness,
-	.get_cur_state = bd_cdev_get_cur_brightness,
-	.set_cur_state = bd_cdev_set_cur_brightness,
-};
-
-static void backlight_cdev_register(struct device *parent,
-				    struct backlight_device *bd)
-{
-	if (of_find_property(parent->of_node, "#cooling-cells", NULL)) {
-		bd->cdev = thermal_of_cooling_device_register(parent->of_node,
-				(char *)dev_name(&bd->dev), bd, &bd_cdev_ops);
-		if (!bd->cdev)
-			pr_err("Cooling device register failed\n");
-	}
-}
 
 /**
  * backlight_device_register - create and register a new object of
@@ -455,8 +358,6 @@ struct backlight_device *backlight_device_register(const char *name,
 			WARN(1, "%s: invalid backlight type", name);
 			new_bd->props.type = BACKLIGHT_RAW;
 		}
-		new_bd->thermal_brightness_limit = props->max_brightness;
-		new_bd->usr_brightness_req = props->brightness;
 	} else {
 		new_bd->props.type = BACKLIGHT_RAW;
 	}
@@ -473,7 +374,6 @@ struct backlight_device *backlight_device_register(const char *name,
 		return ERR_PTR(rc);
 	}
 
-	backlight_cdev_register(parent, new_bd);
 	new_bd->ops = ops;
 
 #ifdef CONFIG_PMAC_BACKLIGHT
@@ -710,6 +610,12 @@ struct backlight_device *of_find_backlight(struct device *dev)
 			of_node_put(np);
 			if (!bd)
 				return ERR_PTR(-EPROBE_DEFER);
+			/*
+			 * Note: gpio_backlight uses brightness as
+			 * power state during probe
+			 */
+			if (!bd->props.brightness)
+				bd->props.brightness = bd->props.max_brightness;
 		}
 	}
 

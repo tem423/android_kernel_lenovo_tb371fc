@@ -86,9 +86,6 @@
 extern phys_addr_t arm64_dma_phys_limit;
 #define ARCH_LOW_ADDRESS_LIMIT	(arm64_dma_phys_limit - 1)
 
-extern unsigned int boot_reason;
-extern unsigned int cold_boot;
-
 struct debug_info {
 #ifdef CONFIG_HAVE_HW_BREAKPOINT
 	/* Have we suspended stepping by a debugger? */
@@ -177,9 +174,8 @@ void tls_preserve_current_state(void);
 
 static inline void start_thread_common(struct pt_regs *regs, unsigned long pc)
 {
-	s32 previous_syscall = regs->syscallno;
 	memset(regs, 0, sizeof(*regs));
-	regs->syscallno = previous_syscall;
+	forget_syscall(regs);
 	regs->pc = pc;
 }
 

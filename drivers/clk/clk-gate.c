@@ -43,7 +43,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
 {
 	struct clk_gate *gate = to_clk_gate(hw);
 	int set = gate->flags & CLK_GATE_SET_TO_DISABLE ? 1 : 0;
-	unsigned long flags;
+	unsigned long uninitialized_var(flags);
 	u32 reg;
 
 	set ^= enable;
@@ -158,7 +158,6 @@ struct clk_hw *clk_hw_register_gate(struct device *dev, const char *name,
 
 	hw = &gate->hw;
 	ret = clk_hw_register(dev, hw);
-	hw->init = NULL;
 	if (ret) {
 		kfree(gate);
 		hw = ERR_PTR(ret);

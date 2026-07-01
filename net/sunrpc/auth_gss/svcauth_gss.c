@@ -1088,23 +1088,18 @@ static int gss_read_proxy_verf(struct svc_rqst *rqstp,
 		return res;
 
 	inlen = svc_getnl(argv);
-	if (inlen > (argv->iov_len + rqstp->rq_arg.page_len)) {
-		kfree(in_handle->data);
+	if (inlen > (argv->iov_len + rqstp->rq_arg.page_len))
 		return SVC_DENIED;
-	}
 
 	pages = DIV_ROUND_UP(inlen, PAGE_SIZE);
 	in_token->pages = kcalloc(pages, sizeof(struct page *), GFP_KERNEL);
-	if (!in_token->pages) {
-		kfree(in_handle->data);
+	if (!in_token->pages)
 		return SVC_DENIED;
-	}
 	in_token->page_base = 0;
 	in_token->page_len = inlen;
 	for (i = 0; i < pages; i++) {
 		in_token->pages[i] = alloc_page(GFP_KERNEL);
 		if (!in_token->pages[i]) {
-			kfree(in_handle->data);
 			gss_free_in_token_pages(in_token);
 			return SVC_DENIED;
 		}
@@ -1919,7 +1914,7 @@ gss_svc_init_net(struct net *net)
 		goto out2;
 	return 0;
 out2:
-	rsi_cache_destroy_net(net);
+	destroy_use_gss_proxy_proc_entry(net);
 out1:
 	rsc_cache_destroy_net(net);
 	return rv;

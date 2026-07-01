@@ -1,0 +1,13 @@
+#
+# Mediatek Hall Driver
+#
+
+config HALL_DETECT
+	tristate "hall mode detect interrupt pin register an input device"
+	default y
+	help
+	  To support register an input device in hall model detect function.
+	  if yes, then it is supported,
+	  if no, it is disabled.
+	  The option default enabled.
+

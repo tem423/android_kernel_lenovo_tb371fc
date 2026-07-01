@@ -73,28 +73,28 @@ static struct devfreq *find_device_devfreq(struct device *dev)
 	return ERR_PTR(-ENODEV);
 }
 
-static long find_available_min_freq(struct devfreq *devfreq)
+static unsigned long find_available_min_freq(struct devfreq *devfreq)
 {
 	struct dev_pm_opp *opp;
-	long min_freq = 0;
+	unsigned long min_freq = 0;
 
 	opp = dev_pm_opp_find_freq_ceil(devfreq->dev.parent, &min_freq);
 	if (IS_ERR(opp))
-		min_freq = PTR_ERR(opp);
+		min_freq = 0;
 	else
 		dev_pm_opp_put(opp);
 
 	return min_freq;
 }
 
-static long find_available_max_freq(struct devfreq *devfreq)
+static unsigned long find_available_max_freq(struct devfreq *devfreq)
 {
 	struct dev_pm_opp *opp;
-	long max_freq = LONG_MAX;
+	unsigned long max_freq = ULONG_MAX;
 
 	opp = dev_pm_opp_find_freq_floor(devfreq->dev.parent, &max_freq);
 	if (IS_ERR(opp))
-		max_freq = PTR_ERR(opp);
+		max_freq = 0;
 	else
 		dev_pm_opp_put(opp);
 
@@ -581,7 +581,6 @@ static void devfreq_dev_release(struct device *dev)
 
 	mutex_destroy(&devfreq->lock);
 	mutex_destroy(&devfreq->event_lock);
-	srcu_cleanup_notifier_head(&devfreq->transition_notifier_list);
 	kfree(devfreq);
 }
 
@@ -601,7 +600,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
 	struct devfreq *devfreq;
 	struct devfreq_governor *governor;
 	int err = 0;
-	long freq;
 
 	if (!dev || !profile || !governor_name) {
 		dev_err(dev, "%s: Invalid parameters.\n", __func__);
@@ -647,21 +645,16 @@ struct devfreq *devfreq_add_device(struct device *dev,
 		mutex_lock(&devfreq->lock);
 	}
 
-	freq = find_available_min_freq(devfreq);
-	if (freq < 0) {
-		mutex_unlock(&devfreq->lock);
-		err = -EINVAL;
-		goto err_dev;
-	}
-	devfreq->min_freq = devfreq->scaling_min_freq = freq;
+	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
+	devfreq->min_freq = devfreq->scaling_min_freq;
 
-	freq = find_available_max_freq(devfreq);
-	if (freq < 0) {
+	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
+	if (!devfreq->scaling_max_freq) {
 		mutex_unlock(&devfreq->lock);
 		err = -EINVAL;
 		goto err_dev;
 	}
-	devfreq->max_freq = devfreq->scaling_max_freq = freq;
+	devfreq->max_freq = devfreq->scaling_max_freq;
 
 	dev_set_name(&devfreq->dev, "%s", dev_name(dev));
 	err = device_register(&devfreq->dev);
@@ -898,7 +891,7 @@ int devfreq_resume_device(struct devfreq *devfreq)
 		return -EINVAL;
 
 	mutex_lock(&devfreq->event_lock);
-	if (!devfreq->governor || !devfreq->dev_suspended) {
+	if (!devfreq->governor) {
 		mutex_unlock(&devfreq->event_lock);
 		return 0;
 	}
@@ -1091,7 +1084,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
 	}
 	prev_gov = df->governor;
 	df->governor = governor;
-	strlcpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+	strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
 	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
 	if (ret) {
 		dev_warn(dev, "%s: Governor %s not started(%d)\n",

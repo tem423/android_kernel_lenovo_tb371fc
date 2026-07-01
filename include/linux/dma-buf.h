@@ -31,7 +31,6 @@
 #include <linux/dma-mapping.h>
 #include <linux/fs.h>
 #include <linux/dma-fence.h>
-#include <linux/dma-buf-ref.h>
 #include <linux/wait.h>
 
 struct device;
@@ -313,6 +312,8 @@ struct dma_buf_ops {
 				      enum dma_data_direction,
 				      unsigned int offset, unsigned int len);
 
+	void *(*map_atomic)(struct dma_buf *dmabuf, unsigned long page_num);
+	void (*unmap_atomic)(struct dma_buf *dma_buf, unsigned long page_num, void *vaddr);
 	void *(*map)(struct dma_buf *, unsigned long);
 	void (*unmap)(struct dma_buf *, unsigned long, void *);
 
@@ -411,7 +412,6 @@ typedef int (*dma_buf_destructor)(struct dma_buf *dmabuf, void *dtor_data);
  * @exp_name: name of the exporter; useful for debugging.
  * @name: userspace-provided name; useful for accounting and debugging.
  * @name_lock: lock to protect name.
- * @ktime: time (in jiffies) at which the buffer was born
  * @owner: pointer to exporter module; used for refcounting when exporter is a
  *         kernel module.
  * @list_node: node for dma_buf accounting and debugging.
@@ -431,6 +431,7 @@ typedef int (*dma_buf_destructor)(struct dma_buf *dmabuf, void *dtor_data);
  * Device DMA access is handled by the separate &struct dma_buf_attachment.
  */
 struct dma_buf {
+	atomic_t ref_dbg;
 	size_t size;
 	struct file *file;
 	struct list_head attachments;
@@ -440,11 +441,9 @@ struct dma_buf {
 	void *vmap_ptr;
 	const char *exp_name;
 	const char *name;
-	spinlock_t name_lock;
-#if defined(CONFIG_DEBUG_FS)
-	ktime_t ktime;
-#endif
+	spinlock_t name_lock; /* spinlock to protect name access */
 	struct module *owner;
+	struct list_head node;
 	struct list_head list_node;
 	void *priv;
 	struct reservation_object *resv;
@@ -458,8 +457,6 @@ struct dma_buf {
 
 		__poll_t active;
 	} cb_excl, cb_shared;
-
-	struct list_head refs;
 	dma_buf_destructor dtor;
 	void *dtor_data;
 	atomic_t dent_count;
@@ -536,10 +533,11 @@ struct dma_buf_export_info {
  */
 static inline void get_dma_buf(struct dma_buf *dmabuf)
 {
+	atomic_inc(&dmabuf->ref_dbg);
 	get_file(dmabuf->file);
-	dma_buf_ref_mod(dmabuf, 1);
 }
 
+int is_dma_buf_file(struct file *file);
 struct dma_buf_attachment *dma_buf_attach(struct dma_buf *dmabuf,
 							struct device *dev);
 void dma_buf_detach(struct dma_buf *dmabuf,
@@ -559,13 +557,12 @@ int dma_buf_begin_cpu_access(struct dma_buf *dma_buf,
 			     enum dma_data_direction dir);
 int dma_buf_begin_cpu_access_partial(struct dma_buf *dma_buf,
 				     enum dma_data_direction dir,
-				     unsigned int offset,
-				     unsigned int len);
+				     unsigned int offset, unsigned int len);
 int dma_buf_end_cpu_access(struct dma_buf *dma_buf,
 			   enum dma_data_direction dir);
 int dma_buf_end_cpu_access_partial(struct dma_buf *dma_buf,
-				   enum dma_data_direction dir,
-				   unsigned int offset, unsigned int len);
+				     enum dma_data_direction dir,
+				     unsigned int offset, unsigned int len);
 void *dma_buf_kmap(struct dma_buf *, unsigned long);
 void dma_buf_kunmap(struct dma_buf *, unsigned long, void *);
 
@@ -573,8 +570,8 @@ int dma_buf_mmap(struct dma_buf *, struct vm_area_struct *,
 		 unsigned long);
 void *dma_buf_vmap(struct dma_buf *);
 void dma_buf_vunmap(struct dma_buf *, void *vaddr);
-int dma_buf_get_flags(struct dma_buf *dma_buf, unsigned long *flags);
-int dma_buf_get_uuid(struct dma_buf *dma_buf, uuid_t *uuid);
+int dma_buf_get_flags(struct dma_buf *dmabuf, unsigned long *flags);
+int dma_buf_get_uuid(struct dma_buf *dmabuf, uuid_t *uuid);
 
 /**
  * dma_buf_set_destructor - set the dma-buf's destructor

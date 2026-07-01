@@ -63,7 +63,7 @@ enum hardware_id{
 	HWID_SUB_OTP,
 	HWID_SUB_OTP_2,
 	HWID_FLASHLIGHT,
-	HWID_FLASHLIGHT_2,
+	HWID_FLaSHLIGHT_2,
 
 	HWID_GSENSOR = 0x70,
 	HWID_ALSPS,
@@ -77,7 +77,7 @@ enum hardware_id{
 	HWID_PCBA = 0x80,
 	HWID_PCBA_INFO,
 
-	HWID_BATTERY = 0xA0,
+	HWID_BATERY = 0xA0,
 	HWID_FUEL_GAUGE_IC,
 
 	HWID_NFC = 0xC0,
@@ -117,8 +117,9 @@ struct hw_info{
 #define HUAQIN_HWID_NAME        "hw_info"
 #define HUAQIN_VERSION_FILE		"hw_info_ver"
 
-int hq_register_hw_info(enum hardware_id id, char *device_name);
+int hq_regiser_hw_info(enum hardware_id id, char *device_name);
 int hq_deregister_hw_info(enum hardware_id id, char *device_name);
 int register_kboj_under_hqsysfs(struct kobject *kobj, struct kobj_type *ktype, const char *fmt, ...);
 
 #endif
+

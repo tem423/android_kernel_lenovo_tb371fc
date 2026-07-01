@@ -25,7 +25,7 @@ menuconfig DRM
 
 config DRM_MIPI_DSI
 	bool
-	default y if DRM
+	depends on DRM
 
 config DRM_DP_AUX_CHARDEV
 	bool "DRM DP AUX Interface"
@@ -67,7 +67,7 @@ config DRM_DEBUG_SELFTEST
 
 config DRM_KMS_HELPER
 	tristate
-	default y if DRM
+	depends on DRM
 	help
 	  CRTC helpers for KMS drivers.
 
@@ -93,7 +93,7 @@ config DRM_FBDEV_EMULATION
 	depends on DRM
 	select DRM_KMS_HELPER
 	select DRM_KMS_FB_HELPER
-	default n
+	default y
 	help
 	  Choose this option if you have a need for the legacy fbdev
 	  support. Note that this support also provides the linux console

@@ -171,7 +171,7 @@ typedef struct sock *(*udp_lookup_t)(struct sk_buff *skb, __be16 sport,
 				     __be16 dport);
 
 struct sk_buff *udp_gro_receive(struct list_head *head, struct sk_buff *skb,
-				struct udphdr *uh, udp_lookup_t lookup);
+				struct udphdr *uh, struct sock *sk);
 int udp_gro_complete(struct sk_buff *skb, int nhoff, udp_lookup_t lookup);
 
 struct sk_buff *__udp_gso_segment(struct sk_buff *gso_skb,
@@ -253,7 +253,7 @@ static inline int udp_rqueue_get(struct sock *sk)
 }
 
 /* net/ipv4/udp.c */
-void udp_destruct_common(struct sock *sk);
+void udp_destruct_sock(struct sock *sk);
 void skb_consume_udp(struct sock *sk, struct sk_buff *skb, int len);
 int __udp_enqueue_schedule_skb(struct sock *sk, struct sk_buff *skb);
 void udp_skb_destructor(struct sock *sk, struct sk_buff *skb);
@@ -450,27 +450,22 @@ int udpv4_offload_init(void);
 
 void udp_init(void);
 
+DECLARE_STATIC_KEY_FALSE(udp_encap_needed_key);
 void udp_encap_enable(void);
 #if IS_ENABLED(CONFIG_IPV6)
+DECLARE_STATIC_KEY_FALSE(udpv6_encap_needed_key);
 void udpv6_encap_enable(void);
 #endif
 
 static inline struct sk_buff *udp_rcv_segment(struct sock *sk,
 					      struct sk_buff *skb, bool ipv4)
 {
-	netdev_features_t features = NETIF_F_SG;
 	struct sk_buff *segs;
-
-	/* Avoid csum recalculation by skb_segment unless userspace explicitly
-	 * asks for the final checksum values
-	 */
-	if (!inet_get_convert_csum(sk))
-		features |= NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
 
 	/* the GSO CB lays after the UDP one, no need to save and restore any
 	 * CB fragment
 	 */
-	segs = __skb_gso_segment(skb, features, false);
+	segs = __skb_gso_segment(skb, NETIF_F_SG, false);
 	if (unlikely(IS_ERR_OR_NULL(segs))) {
 		int segs_nr = skb_shinfo(skb)->gso_segs;
 

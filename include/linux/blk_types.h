@@ -200,6 +200,19 @@ struct bio {
 
 	unsigned short		bi_vcnt;	/* how many bio_vec's */
 
+#ifdef CONFIG_MTK_HW_FDE
+		/*
+		 * MTK PATH:
+		 *
+		 * Indicating this bio request needs encryption or decryption by
+		 * HW FDE (Full Disk Encryption) engine.
+		 *
+		 * Set by DM Crypt.
+		 * Quried by HW FDE engine driver, e.g., eMMC/UFS.
+		 */
+		unsigned int		bi_hw_fde;
+		unsigned int		bi_key_idx;
+#endif
 	/*
 	 * Everything starting with bi_max_vecs will be preserved by bio_reset()
 	 */
@@ -338,8 +351,6 @@ enum req_flag_bits {
 	__REQ_BACKGROUND,	/* background IO */
 	__REQ_NOWAIT,           /* Don't wait if request will block */
 
-	__REQ_SORTED = __REQ_RAHEAD, /* elevator knows about this request */
-	__REQ_URGENT,		/* urgent request */
 	/* command specific flags for REQ_OP_WRITE_ZEROES: */
 	__REQ_NOUNMAP,		/* do not free blocks when zeroing */
 
@@ -355,7 +366,6 @@ enum req_flag_bits {
 #define REQ_SYNC		(1ULL << __REQ_SYNC)
 #define REQ_META		(1ULL << __REQ_META)
 #define REQ_PRIO		(1ULL << __REQ_PRIO)
-#define REQ_URGENT		(1ULL << __REQ_URGENT)
 #define REQ_NOMERGE		(1ULL << __REQ_NOMERGE)
 #define REQ_IDLE		(1ULL << __REQ_IDLE)
 #define REQ_INTEGRITY		(1ULL << __REQ_INTEGRITY)

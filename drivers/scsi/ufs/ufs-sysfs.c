@@ -50,7 +50,6 @@ static inline ssize_t ufs_sysfs_pm_lvl_store(struct device *dev,
 		hba->rpm_lvl = value;
 	else
 		hba->spm_lvl = value;
-	ufshcd_apply_pm_quirks(hba);
 	spin_unlock_irqrestore(hba->host->host_lock, flags);
 	return count;
 }
@@ -119,41 +118,6 @@ static ssize_t spm_target_link_state_show(struct device *dev,
 				ufs_pm_lvl_states[hba->spm_lvl].link_state));
 }
 
-static void ufshcd_auto_hibern8_update(struct ufs_hba *hba, u32 ahit)
-{
-	unsigned long flags;
-
-	if (!ufshcd_is_auto_hibern8_supported(hba))
-		return;
-
-	spin_lock_irqsave(hba->host->host_lock, flags);
-	if (hba->ahit == ahit)
-		goto out_unlock;
-	if (!pm_runtime_suspended(hba->dev)) {
-		spin_unlock_irqrestore(hba->host->host_lock, flags);
-		pm_runtime_get_sync(hba->dev);
-		ufshcd_hold(hba, false);
-		down_write(&hba->lock);
-		ufshcd_scsi_block_requests(hba);
-		/* wait for all the outstanding requests to finish */
-		ufshcd_wait_for_doorbell_clr(hba, U64_MAX);
-		spin_lock_irqsave(hba->host->host_lock, flags);
-		hba->ahit = ahit;
-		ufshcd_writel(hba, hba->ahit, REG_AUTO_HIBERNATE_IDLE_TIMER);
-		/* Make sure the timer gets applied before further operations */
-		mb();
-		spin_unlock_irqrestore(hba->host->host_lock, flags);
-		up_write(&hba->lock);
-		ufshcd_scsi_unblock_requests(hba);
-		ufshcd_release(hba, false);
-		pm_runtime_put(hba->dev);
-		return;
-	}
-	hba->ahit = ahit;
-out_unlock:
-	spin_unlock_irqrestore(hba->host->host_lock, flags);
-}
-
 /* Convert Auto-Hibernate Idle Timer register value to microseconds */
 static int ufshcd_ahit_to_us(u32 ahit)
 {
@@ -181,12 +145,26 @@ static u32 ufshcd_us_to_ahit(unsigned int timer)
 static ssize_t auto_hibern8_show(struct device *dev,
 				 struct device_attribute *attr, char *buf)
 {
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
+	int ret;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 
 	if (!ufshcd_is_auto_hibern8_supported(hba))
 		return -EOPNOTSUPP;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
+	down(&hba->host_sem);
+	if (!ufshcd_is_user_access_allowed(hba)) {
+		ret = -EBUSY;
+		goto out;
+	}
 
-	return snprintf(buf, PAGE_SIZE, "%d\n", ufshcd_ahit_to_us(hba->ahit));
+	ret = snprintf(buf, PAGE_SIZE, "%d\n", ufshcd_ahit_to_us(hba->ahit));
+
+out:
+	up(&hba->host_sem);
+	return ret;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 }
 
 static ssize_t auto_hibern8_store(struct device *dev,
@@ -195,6 +173,9 @@ static ssize_t auto_hibern8_store(struct device *dev,
 {
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	unsigned int timer;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
+	int ret = 0;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 
 	if (!ufshcd_is_auto_hibern8_supported(hba))
 		return -EOPNOTSUPP;
@@ -204,10 +185,19 @@ static ssize_t auto_hibern8_store(struct device *dev,
 
 	if (timer > UFSHCI_AHIBERN8_MAX)
 		return -EINVAL;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
+	down(&hba->host_sem);
+	if (!ufshcd_is_user_access_allowed(hba)) {
+		ret = -EBUSY;
+		goto out;
+	}
 
 	ufshcd_auto_hibern8_update(hba, ufshcd_us_to_ahit(timer));
 
-	return count;
+out:
+	up(&hba->host_sem);
+	return ret ? ret : count;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 }
 
 static DEVICE_ATTR_RW(rpm_lvl);
@@ -245,14 +235,22 @@ static ssize_t ufs_sysfs_read_desc_param(struct ufs_hba *hba,
 
 	if (param_size > 8)
 		return -EINVAL;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
+	down(&hba->host_sem);
+	if (!ufshcd_is_user_access_allowed(hba)) {
+		ret = -EBUSY;
+		goto out;
+	}
 
-	pm_runtime_get_sync(hba->dev);
+	ufshcd_rpm_get_sync(hba);
 	ret = ufshcd_read_desc_param(hba, desc_id, desc_index,
 				param_offset, desc_buf, param_size);
-	pm_runtime_put_sync(hba->dev);
-
-	if (ret)
-		return -EINVAL;
+	ufshcd_rpm_put_sync(hba);
+	if (ret) {
+		ret = -EINVAL;
+		goto out;
+	}
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 	switch (param_size) {
 	case 1:
 		ret = sprintf(sysfs_buf, "0x%02X\n", *desc_buf);
@@ -270,8 +268,11 @@ static ssize_t ufs_sysfs_read_desc_param(struct ufs_hba *hba,
 			get_unaligned_be64(desc_buf));
 		break;
 	}
-
+/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
+out:
+	up(&hba->host_sem);
 	return ret;
+/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 }
 
 #define UFS_DESC_PARAM(_name, _puname, _duname, _size)			\
@@ -306,17 +307,13 @@ UFS_DEVICE_DESC_PARAM(manufacturing_date, _MANF_DATE, 2);
 UFS_DEVICE_DESC_PARAM(manufacturer_id, _MANF_ID, 2);
 UFS_DEVICE_DESC_PARAM(rtt_capability, _RTT_CAP, 1);
 UFS_DEVICE_DESC_PARAM(rtc_update, _FRQ_RTC, 2);
-UFS_DEVICE_DESC_PARAM(ufs_features, _UFS_FEAT, 1);
+UFS_DEVICE_DESC_PARAM(ufs_features, _FEAT_SUP, 1);
 UFS_DEVICE_DESC_PARAM(ffu_timeout, _FFU_TMT, 1);
 UFS_DEVICE_DESC_PARAM(queue_depth, _Q_DPTH, 1);
 UFS_DEVICE_DESC_PARAM(device_version, _DEV_VER, 2);
 UFS_DEVICE_DESC_PARAM(number_of_secure_wpa, _NUM_SEC_WPA, 1);
 UFS_DEVICE_DESC_PARAM(psa_max_data_size, _PSA_MAX_DATA, 4);
 UFS_DEVICE_DESC_PARAM(psa_state_timeout, _PSA_TMT, 1);
-UFS_DEVICE_DESC_PARAM(ext_feature_sup, _EXT_UFS_FEATURE_SUP, 4);
-UFS_DEVICE_DESC_PARAM(wb_presv_us_en, _WB_US_RED_EN, 1);
-UFS_DEVICE_DESC_PARAM(wb_type, _WB_TYPE, 1);
-UFS_DEVICE_DESC_PARAM(wb_shared_alloc_units, _WB_SHARED_ALLOC_UNITS, 4);
 
 static struct attribute *ufs_sysfs_device_descriptor[] = {
 	&dev_attr_device_type.attr,
@@ -345,10 +342,6 @@ static struct attribute *ufs_sysfs_device_descriptor[] = {
 	&dev_attr_number_of_secure_wpa.attr,
 	&dev_attr_psa_max_data_size.attr,
 	&dev_attr_psa_state_timeout.attr,
-	&dev_attr_ext_feature_sup.attr,
-	&dev_attr_wb_presv_us_en.attr,
-	&dev_attr_wb_type.attr,
-	&dev_attr_wb_shared_alloc_units.attr,
 	NULL,
 };
 
@@ -418,12 +411,6 @@ UFS_GEOMETRY_DESC_PARAM(enh4_memory_max_alloc_units,
 	_ENM4_MAX_NUM_UNITS, 4);
 UFS_GEOMETRY_DESC_PARAM(enh4_memory_capacity_adjustment_factor,
 	_ENM4_CAP_ADJ_FCTR, 2);
-UFS_GEOMETRY_DESC_PARAM(wb_max_alloc_units, _WB_MAX_ALLOC_UNITS, 4);
-UFS_GEOMETRY_DESC_PARAM(wb_max_wb_luns, _WB_MAX_WB_LUNS, 1);
-UFS_GEOMETRY_DESC_PARAM(wb_buff_cap_adj, _WB_BUFF_CAP_ADJ, 1);
-UFS_GEOMETRY_DESC_PARAM(wb_sup_red_type, _WB_SUP_RED_TYPE, 1);
-UFS_GEOMETRY_DESC_PARAM(wb_sup_wb_type, _WB_SUP_WB_TYPE, 1);
-
 
 static struct attribute *ufs_sysfs_geometry_descriptor[] = {
 	&dev_attr_raw_device_capacity.attr,
@@ -455,11 +442,6 @@ static struct attribute *ufs_sysfs_geometry_descriptor[] = {
 	&dev_attr_enh3_memory_capacity_adjustment_factor.attr,
 	&dev_attr_enh4_memory_max_alloc_units.attr,
 	&dev_attr_enh4_memory_capacity_adjustment_factor.attr,
-	&dev_attr_wb_max_alloc_units.attr,
-	&dev_attr_wb_max_wb_luns.attr,
-	&dev_attr_wb_buff_cap_adj.attr,
-	&dev_attr_wb_sup_red_type.attr,
-	&dev_attr_wb_sup_wb_type.attr,
 	NULL,
 };
 
@@ -603,6 +585,7 @@ static const struct attribute_group ufs_sysfs_power_descriptor_group = {
 	.attrs = ufs_sysfs_power_descriptor,
 };
 
+/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
 #define UFS_STRING_DESCRIPTOR(_name, _pname)				\
 static ssize_t _name##_show(struct device *dev,				\
 	struct device_attribute *attr, char *buf)			\
@@ -612,10 +595,18 @@ static ssize_t _name##_show(struct device *dev,				\
 	int ret;							\
 	int desc_len = QUERY_DESC_MAX_SIZE;				\
 	u8 *desc_buf;							\
+									\
+	down(&hba->host_sem);						\
+	if (!ufshcd_is_user_access_allowed(hba)) {			\
+		up(&hba->host_sem);					\
+		return -EBUSY;						\
+	}								\
 	desc_buf = kzalloc(QUERY_DESC_MAX_SIZE, GFP_ATOMIC);		\
-	if (!desc_buf)							\
+	if (!desc_buf) {						\
+		up(&hba->host_sem);					\
 		return -ENOMEM;						\
-	pm_runtime_get_sync(hba->dev);					\
+	}								\
+	ufshcd_rpm_get_sync(hba);					\
 	ret = ufshcd_query_descriptor_retry(hba,			\
 		UPIU_QUERY_OPCODE_READ_DESC, QUERY_DESC_IDN_DEVICE,	\
 		0, 0, desc_buf, &desc_len);				\
@@ -624,20 +615,21 @@ static ssize_t _name##_show(struct device *dev,				\
 		goto out;						\
 	}								\
 	index = desc_buf[DEVICE_DESC_PARAM##_pname];			\
-	memset(desc_buf, 0, QUERY_DESC_MAX_SIZE);			\
-	if (ufshcd_read_string_desc(hba, index, desc_buf,		\
-		QUERY_DESC_MAX_SIZE, true)) {				\
-		ret = -EINVAL;						\
-		goto out;						\
-	}								\
-	ret = snprintf(buf, PAGE_SIZE, "%s\n",				\
-		desc_buf + QUERY_DESC_HDR_SIZE);			\
-out:									\
-	pm_runtime_put_sync(hba->dev);					\
 	kfree(desc_buf);						\
+	desc_buf = NULL;						\
+	ret = ufshcd_read_string_desc(hba, index, &desc_buf,		\
+				      SD_ASCII_STD);			\
+	if (ret < 0)							\
+		goto out;						\
+	ret = snprintf(buf, PAGE_SIZE, "%s\n", desc_buf);		\
+out:									\
+	ufshcd_rpm_put_sync(hba);					\
+	kfree(desc_buf);						\
+	up(&hba->host_sem);						\
 	return ret;							\
 }									\
 static DEVICE_ATTR_RO(_name)
+/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 
 UFS_STRING_DESCRIPTOR(manufacturer_name, _MANF_NAME);
 UFS_STRING_DESCRIPTOR(product_name, _PRDCT_NAME);
@@ -659,6 +651,7 @@ static const struct attribute_group ufs_sysfs_string_descriptors_group = {
 	.attrs = ufs_sysfs_string_descriptors,
 };
 
+/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
 #define UFS_FLAG(_name, _uname)						\
 static ssize_t _name##_show(struct device *dev,				\
 	struct device_attribute *attr, char *buf)			\
@@ -666,15 +659,27 @@ static ssize_t _name##_show(struct device *dev,				\
 	bool flag;							\
 	int ret;							\
 	struct ufs_hba *hba = dev_get_drvdata(dev);			\
-	pm_runtime_get_sync(hba->dev);					\
-	ret = ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,	\
-		QUERY_FLAG_IDN##_uname, &flag);				\
-	pm_runtime_put_sync(hba->dev);					\
-	if (ret)							\
-		return -EINVAL;						\
-	return snprintf(buf, PAGE_SIZE, "%s\n", flag ? "true" : "false"); \
+									\
+	down(&hba->host_sem);						\
+	if (!ufshcd_is_user_access_allowed(hba)) {			\
+		up(&hba->host_sem);					\
+		return -EBUSY;						\
+	}								\
+	ufshcd_rpm_get_sync(hba);					\
+	ret = (ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,	\
+		QUERY_FLAG_IDN##_uname, &flag));			\
+	ufshcd_rpm_put_sync(hba);					\
+	if (ret) {							\
+		ret = -EINVAL;						\
+		goto out;						\
+	}								\
+	ret = sprintf(buf, "%s\n", flag ? "true" : "false");		\
+out:									\
+	up(&hba->host_sem);						\
+	return ret;							\
 }									\
 static DEVICE_ATTR_RO(_name)
+/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 
 UFS_FLAG(device_init, _FDEVICEINIT);
 UFS_FLAG(permanent_wpe, _PERMANENT_WPE);
@@ -684,9 +689,6 @@ UFS_FLAG(life_span_mode_enable, _LIFE_SPAN_MODE_ENABLE);
 UFS_FLAG(phy_resource_removal, _FPHYRESOURCEREMOVAL);
 UFS_FLAG(busy_rtc, _BUSY_RTC);
 UFS_FLAG(disable_fw_update, _PERMANENTLY_DISABLE_FW_UPDATE);
-UFS_FLAG(wb_enable, _WB_EN);
-UFS_FLAG(wb_flush_en, _WB_BUFF_FLUSH_EN);
-UFS_FLAG(wb_flush_during_h8, _WB_BUFF_FLUSH_DURING_HIBERN8);
 
 static struct attribute *ufs_sysfs_device_flags[] = {
 	&dev_attr_device_init.attr,
@@ -697,9 +699,6 @@ static struct attribute *ufs_sysfs_device_flags[] = {
 	&dev_attr_phy_resource_removal.attr,
 	&dev_attr_busy_rtc.attr,
 	&dev_attr_disable_fw_update.attr,
-	&dev_attr_wb_enable.attr,
-	&dev_attr_wb_flush_en.attr,
-	&dev_attr_wb_flush_during_h8.attr,
 	NULL,
 };
 
@@ -708,6 +707,7 @@ static const struct attribute_group ufs_sysfs_flags_group = {
 	.attrs = ufs_sysfs_device_flags,
 };
 
+/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
 #define UFS_ATTRIBUTE(_name, _uname)					\
 static ssize_t _name##_show(struct device *dev,				\
 	struct device_attribute *attr, char *buf)			\
@@ -715,15 +715,27 @@ static ssize_t _name##_show(struct device *dev,				\
 	struct ufs_hba *hba = dev_get_drvdata(dev);			\
 	u32 value;							\
 	int ret;							\
-	pm_runtime_get_sync(hba->dev);					\
-	ret = ufshcd_query_attr(hba, UPIU_QUERY_OPCODE_READ_ATTR,	\
-		QUERY_ATTR_IDN##_uname, 0, 0, &value);			\
-	pm_runtime_put_sync(hba->dev);					\
-	if (ret)							\
-		return -EINVAL;						\
-	return snprintf(buf, PAGE_SIZE, "0x%08X\n", value);		\
+									\
+	down(&hba->host_sem);						\
+	if (!ufshcd_is_user_access_allowed(hba)) {			\
+		up(&hba->host_sem);					\
+		return -EBUSY;						\
+	}								\
+	ufshcd_rpm_get_sync(hba);					\
+	ret = (ufshcd_query_attr(hba, UPIU_QUERY_OPCODE_READ_ATTR,	\
+		QUERY_ATTR_IDN##_uname, 0, 0, &value));			\
+	ufshcd_rpm_put_sync(hba);					\
+	if (ret) {							\
+		ret = -EINVAL;						\
+		goto out;						\
+	}								\
+	ret = sprintf(buf, "0x%08X\n", value);				\
+out:									\
+	up(&hba->host_sem);						\
+	return ret;							\
 }									\
 static DEVICE_ATTR_RO(_name)
+/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 
 UFS_ATTRIBUTE(boot_lun_enabled, _BOOT_LU_EN);
 UFS_ATTRIBUTE(current_power_mode, _POWER_MODE);
@@ -741,11 +753,6 @@ UFS_ATTRIBUTE(exception_event_status, _EE_STATUS);
 UFS_ATTRIBUTE(ffu_status, _FFU_STATUS);
 UFS_ATTRIBUTE(psa_state, _PSA_STATE);
 UFS_ATTRIBUTE(psa_data_size, _PSA_DATA_SIZE);
-UFS_ATTRIBUTE(wb_flush_status, _WB_FLUSH_STATUS);
-UFS_ATTRIBUTE(wb_avail_buf, _AVAIL_WB_BUFF_SIZE);
-UFS_ATTRIBUTE(wb_life_time_est, _WB_BUFF_LIFE_TIME_EST);
-UFS_ATTRIBUTE(wb_cur_buf, _CURR_WB_BUFF_SIZE);
-
 
 static struct attribute *ufs_sysfs_attributes[] = {
 	&dev_attr_boot_lun_enabled.attr,
@@ -764,10 +771,6 @@ static struct attribute *ufs_sysfs_attributes[] = {
 	&dev_attr_ffu_status.attr,
 	&dev_attr_psa_state.attr,
 	&dev_attr_psa_data_size.attr,
-	&dev_attr_wb_flush_status.attr,
-	&dev_attr_wb_avail_buf.attr,
-	&dev_attr_wb_life_time_est.attr,
-	&dev_attr_wb_cur_buf.attr,
 	NULL,
 };
 
@@ -796,7 +799,7 @@ static ssize_t _pname##_show(struct device *dev,			\
 	struct scsi_device *sdev = to_scsi_device(dev);			\
 	struct ufs_hba *hba = shost_priv(sdev->host);			\
 	u8 lun = ufshcd_scsi_to_upiu_lun(sdev->lun);			\
-	if (!ufs_is_valid_unit_desc_lun(lun))				\
+	if (!ufs_is_valid_unit_desc_lun(lun))		\
 		return -EINVAL;						\
 	return ufs_sysfs_read_desc_param(hba, QUERY_DESC_IDN_##_duname,	\
 		lun, _duname##_DESC_PARAM##_puname, buf, _size);	\
@@ -819,8 +822,6 @@ UFS_UNIT_DESC_PARAM(provisioning_type, _PROVISIONING_TYPE, 1);
 UFS_UNIT_DESC_PARAM(physical_memory_resourse_count, _PHY_MEM_RSRC_CNT, 8);
 UFS_UNIT_DESC_PARAM(context_capabilities, _CTX_CAPABILITIES, 2);
 UFS_UNIT_DESC_PARAM(large_unit_granularity, _LARGE_UNIT_SIZE_M1, 1);
-UFS_UNIT_DESC_PARAM(wb_buf_alloc_units, _WB_BUF_ALLOC_UNITS, 4);
-
 
 static struct attribute *ufs_sysfs_unit_descriptor[] = {
 	&dev_attr_boot_lun_id.attr,
@@ -836,7 +837,6 @@ static struct attribute *ufs_sysfs_unit_descriptor[] = {
 	&dev_attr_physical_memory_resourse_count.attr,
 	&dev_attr_context_capabilities.attr,
 	&dev_attr_large_unit_granularity.attr,
-	&dev_attr_wb_buf_alloc_units.attr,
 	NULL,
 };
 
@@ -852,16 +852,29 @@ static ssize_t dyn_cap_needed_attribute_show(struct device *dev,
 	struct scsi_device *sdev = to_scsi_device(dev);
 	struct ufs_hba *hba = shost_priv(sdev->host);
 	u8 lun = ufshcd_scsi_to_upiu_lun(sdev->lun);
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 start */
 	int ret;
 
-	pm_runtime_get_sync(hba->dev);
-	ret = ufshcd_query_attr(hba, UPIU_QUERY_OPCODE_READ_ATTR,
-		QUERY_ATTR_IDN_DYN_CAP_NEEDED, lun, 0, &value);
-	pm_runtime_put_sync(hba->dev);
-	if (ret)
-		return -EINVAL;
+	down(&hba->host_sem);
+	if (!ufshcd_is_user_access_allowed(hba)) {
+		ret = -EBUSY;
+		goto out;
+	}
 
-	return sprintf(buf, "0x%08X\n", value);
+	ufshcd_rpm_get_sync(hba);
+	ret = (ufshcd_query_attr(hba, UPIU_QUERY_OPCODE_READ_ATTR,
+		QUERY_ATTR_IDN_DYN_CAP_NEEDED, lun, 0, &value));
+	ufshcd_rpm_put_sync(hba);
+	if (ret) {
+		ret = -EINVAL;
+		goto out;
+	}
+	ret = sprintf(buf, "0x%08X\n", value);
+
+out:
+	up(&hba->host_sem);
+	return ret;
+	/* Spruce code add for OSPURCET-1519 by zhangyue65 at 2023/03/02 end */
 }
 static DEVICE_ATTR_RO(dyn_cap_needed_attribute);
 

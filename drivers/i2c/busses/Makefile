@@ -71,6 +71,8 @@ obj-$(CONFIG_I2C_LPC2K)		+= i2c-lpc2k.o
 obj-$(CONFIG_I2C_MESON)		+= i2c-meson.o
 obj-$(CONFIG_I2C_MPC)		+= i2c-mpc.o
 obj-$(CONFIG_I2C_MT65XX)	+= i2c-mt65xx.o
+obj-$(CONFIG_I2C_MTK)		+= i2c-mtk.o
+obj-$(CONFIG_I2C_MTK)       	+= i2c-mtk_debug.o
 obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
 obj-$(CONFIG_I2C_MXS)		+= i2c-mxs.o
 obj-$(CONFIG_I2C_NOMADIK)	+= i2c-nomadik.o
@@ -115,7 +117,6 @@ obj-$(CONFIG_I2C_XILINX)	+= i2c-xiic.o
 obj-$(CONFIG_I2C_XLR)		+= i2c-xlr.o
 obj-$(CONFIG_I2C_XLP9XX)	+= i2c-xlp9xx.o
 obj-$(CONFIG_I2C_RCAR)		+= i2c-rcar.o
-obj-$(CONFIG_I2C_MSM_V2)        += i2c-msm-v2.o
 obj-$(CONFIG_I2C_ZX2967)	+= i2c-zx2967.o
 
 # External I2C/SMBus adapter drivers
@@ -143,3 +144,4 @@ obj-$(CONFIG_SCx200_ACB)	+= scx200_acb.o
 obj-$(CONFIG_I2C_FSI)		+= i2c-fsi.o
 
 ccflags-$(CONFIG_I2C_DEBUG_BUS) := -DDEBUG
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat

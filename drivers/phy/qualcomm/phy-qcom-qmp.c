@@ -1193,7 +1193,8 @@ static int qcom_qmp_phy_exit(struct phy *phy)
 	return 0;
 }
 
-static int qcom_qmp_phy_set_mode(struct phy *phy, enum phy_mode mode)
+static int qcom_qmp_phy_set_mode(struct phy *phy,
+				 enum phy_mode mode, int submode)
 {
 	struct qmp_phy *qphy = phy_get_drvdata(phy);
 	struct qcom_qmp *qmp = qphy->qmp;
@@ -1426,11 +1427,6 @@ static const struct phy_ops qcom_qmp_phy_gen_ops = {
 	.owner		= THIS_MODULE,
 };
 
-static void qcom_qmp_reset_control_put(void *data)
-{
-	reset_control_put(data);
-}
-
 static
 int qcom_qmp_phy_create(struct device *dev, struct device_node *np, int id)
 {
@@ -1473,7 +1469,7 @@ int qcom_qmp_phy_create(struct device *dev, struct device_node *np, int id)
 	 * all phys that don't need this.
 	 */
 	snprintf(prop_name, sizeof(prop_name), "pipe%d", id);
-	qphy->pipe_clk = devm_get_clk_from_child(dev, np, prop_name);
+	qphy->pipe_clk = of_clk_get_by_name(np, prop_name);
 	if (IS_ERR(qphy->pipe_clk)) {
 		if (qmp->cfg->type == PHY_TYPE_PCIE ||
 		    qmp->cfg->type == PHY_TYPE_USB3) {
@@ -1495,10 +1491,6 @@ int qcom_qmp_phy_create(struct device *dev, struct device_node *np, int id)
 			dev_err(dev, "failed to get lane%d reset\n", id);
 			return PTR_ERR(qphy->lane_rst);
 		}
-		ret = devm_add_action_or_reset(dev, qcom_qmp_reset_control_put,
-					       qphy->lane_rst);
-		if (ret)
-			return ret;
 	}
 
 	generic_phy = devm_phy_create(dev, np, &qcom_qmp_phy_gen_ops);

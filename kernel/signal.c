@@ -43,8 +43,6 @@
 #include <linux/compiler.h>
 #include <linux/posix-timers.h>
 #include <linux/livepatch.h>
-#include <linux/oom.h>
-#include <linux/capability.h>
 #include <linux/cgroup.h>
 
 #define CREATE_TRACE_POINTS
@@ -901,8 +899,11 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
 	sigset_t flush;
 
 	if (signal->flags & (SIGNAL_GROUP_EXIT | SIGNAL_GROUP_COREDUMP)) {
-		if (!(signal->flags & SIGNAL_GROUP_EXIT))
-			return sig == SIGKILL;
+		if (signal->flags & SIGNAL_GROUP_COREDUMP) {
+			pr_debug("[%d:%s] is in the middle of doing coredump so skip sig %d\n",
+				p->pid, p->comm, sig);
+			return 0;
+		}
 		/*
 		 * The process is in the middle of dying, nothing to do.
 		 */
@@ -1387,15 +1388,8 @@ int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p,
 	ret = check_kill_permission(sig, info, p);
 	rcu_read_unlock();
 
-	if (!ret && sig) {
-		check_panic_on_foreground_kill(p);
+	if (!ret && sig)
 		ret = do_send_sig_info(sig, info, p, type);
-		if (capable(CAP_KILL) && sig == SIGKILL) {
-			if (!strcmp(current->comm, ULMK_MAGIC))
-				add_to_oom_reaper(p);
-			ulmk_update_last_kill();
-		}
-	}
 
 	return ret;
 }
@@ -1846,12 +1840,12 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
 	bool autoreap = false;
 	u64 utime, stime;
 
-	WARN_ON_ONCE(sig == -1);
+	BUG_ON(sig == -1);
 
-	/* do_notify_parent_cldstop should have been called instead.  */
-	WARN_ON_ONCE(task_is_stopped_or_traced(tsk));
+ 	/* do_notify_parent_cldstop should have been called instead.  */
+ 	BUG_ON(task_is_stopped_or_traced(tsk));
 
-	WARN_ON_ONCE(!tsk->ptrace &&
+	BUG_ON(!tsk->ptrace &&
 	       (tsk->group_leader != tsk || !thread_group_empty(tsk)));
 
 	/* Wake up all pidfd waiters */
@@ -1924,12 +1918,8 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
 		if (psig->action[SIGCHLD-1].sa.sa_handler == SIG_IGN)
 			sig = 0;
 	}
-	/*
-	 * Send with __send_signal as si_pid and si_uid are in the
-	 * parent's namespaces.
-	 */
 	if (valid_signal(sig) && sig)
-		__send_signal(sig, &info, tsk->parent, PIDTYPE_TGID, false);
+		__group_send_sig_info(sig, &info, tsk->parent);
 	__wake_up_parent(tsk, tsk->parent);
 	spin_unlock_irqrestore(&psig->siglock, flags);
 
@@ -2031,6 +2021,15 @@ static inline bool may_ptrace_stop(void)
 	return true;
 }
 
+/*
+ * Return non-zero if there is a SIGKILL that should be waking us up.
+ * Called with the siglock held.
+ */
+static bool sigkill_pending(struct task_struct *tsk)
+{
+	return sigismember(&tsk->pending.signal, SIGKILL) ||
+	       sigismember(&tsk->signal->shared_pending.signal, SIGKILL);
+}
 
 /*
  * This must be called with current->sighand->siglock held.
@@ -2057,16 +2056,17 @@ static void ptrace_stop(int exit_code, int why, int clear_code, siginfo_t *info)
 		 * calling arch_ptrace_stop, so we must release it now.
 		 * To preserve proper semantics, we must do this before
 		 * any signal bookkeeping like checking group_stop_count.
+		 * Meanwhile, a SIGKILL could come in before we retake the
+		 * siglock.  That must prevent us from sleeping in TASK_TRACED.
+		 * So after regaining the lock, we must check for SIGKILL.
 		 */
 		spin_unlock_irq(&current->sighand->siglock);
 		arch_ptrace_stop(exit_code, info);
 		spin_lock_irq(&current->sighand->siglock);
+		if (sigkill_pending(current))
+			return;
 	}
 
-	/*
-	 * schedule() will not sleep if there is a pending signal that
-	 * can awaken the task.
-	 */
 	set_special_state(TASK_TRACED);
 
 	/*

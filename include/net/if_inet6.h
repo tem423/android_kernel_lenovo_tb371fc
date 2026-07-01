@@ -20,7 +20,7 @@
 #include <linux/refcount.h>
 
 /* inet6_dev.if_flags */
-
+#define IF_RS_VZW_SENT  0x01  /*add for VzW feature*/
 #define IF_RA_OTHERCONF	0x80
 #define IF_RA_MANAGED	0x40
 #define IF_RA_RCVD	0x20
@@ -69,14 +69,6 @@ struct inet6_ifaddr {
 
 	struct hlist_node	addr_lst;
 	struct list_head	if_list;
-	/*
-	 * Used to safely traverse idev->addr_list in process context
-	 * if the idev->lock needed to protect idev->addr_list cannot be held.
-	 * In that case, add the items to this list temporarily and iterate
-	 * without holding idev->lock.
-	 * See addrconf_ifdown and dev_forward_change.
-	 */
-	struct list_head	if_list_aux;
 
 	struct list_head	tmp_list;
 	struct inet6_ifaddr	*ifpub;

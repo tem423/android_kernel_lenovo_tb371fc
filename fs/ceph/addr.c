@@ -75,6 +75,10 @@ static int ceph_set_page_dirty(struct page *page)
 	struct inode *inode;
 	struct ceph_inode_info *ci;
 	struct ceph_snap_context *snapc;
+	int ret;
+
+	if (unlikely(!mapping))
+		return !TestSetPageDirty(page);
 
 	if (PageDirty(page)) {
 		dout("%p set_page_dirty %p idx %lu -- already dirty\n",
@@ -120,7 +124,11 @@ static int ceph_set_page_dirty(struct page *page)
 	page->private = (unsigned long)snapc;
 	SetPagePrivate(page);
 
-	return __set_page_dirty_nobuffers(page);
+	ret = __set_page_dirty_nobuffers(page);
+	WARN_ON(!PageLocked(page));
+	WARN_ON(!page->mapping);
+
+	return ret;
 }
 
 /*
@@ -1794,6 +1802,9 @@ out:
 static const struct vm_operations_struct ceph_vmops = {
 	.fault		= ceph_filemap_fault,
 	.page_mkwrite	= ceph_page_mkwrite,
+#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+	.suitable_for_spf = true,
+#endif
 };
 
 int ceph_mmap(struct file *file, struct vm_area_struct *vma)

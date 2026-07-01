@@ -249,6 +249,12 @@ struct fscrypt_info {
 
 	/* Hashed inode number.  Only set for IV_INO_LBLK_32 */
 	u32 ci_hashed_ino;
+	/*
+	 * This design for eMMC + F2FS security OTA,
+	 * we don't used  "ci_hashed_ino" but a special
+	 * one - "ci_hashed_info" to avoid using confusion.
+	 */
+	u32 ci_hashed_info;
 };
 
 typedef enum {
@@ -374,8 +380,6 @@ fscrypt_is_key_prepared(struct fscrypt_prepared_key *prep_key,
 	return smp_load_acquire(&prep_key->tfm) != NULL;
 }
 
-extern int fscrypt_find_storage_type(char **device);
-
 #else /* CONFIG_FS_ENCRYPTION_INLINE_CRYPT */
 
 static inline int fscrypt_select_encryption_impl(struct fscrypt_info *ci,
@@ -421,11 +425,6 @@ fscrypt_is_key_prepared(struct fscrypt_prepared_key *prep_key,
 			const struct fscrypt_info *ci)
 {
 	return smp_load_acquire(&prep_key->tfm) != NULL;
-}
-
-static inline int fscrypt_find_storage_type(char **device)
-{
-	return -EOPNOTSUPP;
 }
 #endif /* !CONFIG_FS_ENCRYPTION_INLINE_CRYPT */
 
@@ -629,5 +628,6 @@ bool fscrypt_supported_policy(const union fscrypt_policy *policy_u,
 int fscrypt_policy_from_context(union fscrypt_policy *policy_u,
 				const union fscrypt_context *ctx_u,
 				int ctx_size);
+extern int is_emmc_type(void);
 
 #endif /* _FSCRYPT_PRIVATE_H */

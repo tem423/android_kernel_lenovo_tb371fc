@@ -108,6 +108,11 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/task.h>
 
+#include <mt-plat/mtk_pidmap.h>
+#ifdef CONFIG_MTK_TASK_TURBO
+#include <mt-plat/turbo_common.h>
+#endif
+
 /*
  * Minimum number of threads to boot the kernel
  */
@@ -246,6 +251,7 @@ static unsigned long *alloc_thread_stack_node(struct task_struct *tsk, int node)
 
 	if (likely(page)) {
 		tsk->stack = page_address(page);
+		tsk->stack = kasan_reset_tag(tsk->stack);
 		return tsk->stack;
 	}
 	return NULL;
@@ -281,6 +287,7 @@ static unsigned long *alloc_thread_stack_node(struct task_struct *tsk,
 {
 	unsigned long *stack;
 	stack = kmem_cache_alloc_node(thread_stack_cache, THREADINFO_GFP, node);
+	stack = kasan_reset_tag(stack);
 	tsk->stack = stack;
 	return stack;
 }
@@ -334,6 +341,7 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
 
 	if (new) {
 		*new = *orig;
+		INIT_LIST_HEAD(&new->anon_vma_chain);
 		INIT_VMA(new);
 	}
 	return new;
@@ -560,7 +568,7 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 				 * it until the TLB are flushed below.
 				 */
 				last = mpnt;
-				vm_write_begin(mpnt);
+				vm_raw_write_begin(mpnt);
 			}
 			retval = copy_page_range(mm, oldmm, mpnt);
 		}
@@ -588,7 +596,7 @@ out:
 			if (last->vm_flags & VM_DONTCOPY)
 				continue;
 			if (!(last->vm_flags & VM_WIPEONFORK))
-				vm_write_end(last);
+				vm_raw_write_end(last);
 		}
 	}
 
@@ -636,13 +644,7 @@ static void check_mm(struct mm_struct *mm)
 	int i;
 
 	for (i = 0; i < NR_MM_COUNTERS; i++) {
-		long x;
-
-		/* MM_UNRECLAIMABLE could be freed later in exit_files */
-		if (i == MM_UNRECLAIMABLE)
-			continue;
-
-		x = atomic_long_read(&mm->rss_stat.count[i]);
+		long x = atomic_long_read(&mm->rss_stat.count[i]);
 
 		if (unlikely(x))
 			printk(KERN_ALERT "BUG: Bad rss-counter state "
@@ -897,12 +899,10 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 #endif
 
 	/*
-	 * One for the user space visible state that goes away when reaped.
-	 * One for the scheduler.
+	 * One for us, one for whoever does the "release_task()" (usually
+	 * parent)
 	 */
-	refcount_set(&tsk->rcu_users, 2);
-	/* One for the rcu users */
-	atomic_set(&tsk->usage, 1);
+	atomic_set(&tsk->usage, 2);
 #ifdef CONFIG_BLK_DEV_IO_TRACE
 	tsk->btrace_seq = 0;
 #endif
@@ -1014,7 +1014,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm->pmd_huge_pte = NULL;
 #endif
 	mm_init_uprobes_state(mm);
-	hugetlb_count_init(mm);
 
 	if (current->mm) {
 		mm->flags = current->mm->flags & MMF_INIT_MASK;
@@ -1749,6 +1748,31 @@ const struct file_operations pidfd_fops = {
 #endif
 };
 
+/**
+ * pidfd_create() - Create a new pid file descriptor.
+ *
+ * @pid:  struct pid that the pidfd will reference
+ *
+ * This creates a new pid file descriptor with the O_CLOEXEC flag set.
+ *
+ * Note, that this function can only be called after the fd table has
+ * been unshared to avoid leaking the pidfd to the new process.
+ *
+ * Return: On success, a cloexec pidfd is returned.
+ *         On error, a negative errno number will be returned.
+ */
+static int pidfd_create(struct pid *pid)
+{
+	int fd;
+
+	fd = anon_inode_getfd("[pidfd]", &pidfd_fops, get_pid(pid),
+			      O_RDWR | O_CLOEXEC);
+	if (fd < 0)
+		put_pid(pid);
+
+	return fd;
+}
+
 static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
 {
 	/* Skip if kernel thread */
@@ -1790,7 +1814,6 @@ static __latent_entropy struct task_struct *copy_process(
 	int pidfd = -1, retval;
 	struct task_struct *p;
 	struct multiprocess_signals delayed;
-	struct file *pidfile = NULL;
 
 	/*
 	 * Don't allow sharing the root directory with processes in a different
@@ -2004,7 +2027,9 @@ static __latent_entropy struct task_struct *copy_process(
 	p->sequential_io	= 0;
 	p->sequential_io_avg	= 0;
 #endif
-
+#ifdef CONFIG_MTK_TASK_TURBO
+	init_turbo_attr(p, current);
+#endif
 	/* Perform scheduler related setup. Assign this task to a CPU. */
 	retval = sched_fork(clone_flags, p);
 	if (retval)
@@ -2063,21 +2088,11 @@ static __latent_entropy struct task_struct *copy_process(
 	 * if the fd table isn't shared).
 	 */
 	if (clone_flags & CLONE_PIDFD) {
-		retval = get_unused_fd_flags(O_RDWR | O_CLOEXEC);
+		retval = pidfd_create(pid);
 		if (retval < 0)
 			goto bad_fork_free_pid;
 
 		pidfd = retval;
-
-		pidfile = anon_inode_getfile("[pidfd]", &pidfd_fops, pid,
-					      O_RDWR | O_CLOEXEC);
-		if (IS_ERR(pidfile)) {
-			put_unused_fd(pidfd);
-			retval = PTR_ERR(pidfile);
-			goto bad_fork_free_pid;
-		}
-		get_pid(pid);	/* held by pidfile now */
-
 		retval = put_user(pidfd, parent_tidptr);
 		if (retval)
 			goto bad_fork_put_pidfd;
@@ -2189,6 +2204,7 @@ static __latent_entropy struct task_struct *copy_process(
 		goto bad_fork_cancel_cgroup;
 	}
 
+
 	init_task_pid_links(p);
 	if (likely(p->pid)) {
 		ptrace_init_task(p, (clone_flags & CLONE_PTRACE) || trace);
@@ -2237,9 +2253,6 @@ static __latent_entropy struct task_struct *copy_process(
 	syscall_tracepoint_update(p);
 	write_unlock_irq(&tasklist_lock);
 
-	if (pidfile)
-		fd_install(pidfd, pidfile);
-
 	proc_fork_connector(p);
 	cgroup_post_fork(p);
 	cgroup_threadgroup_change_end(current);
@@ -2259,10 +2272,8 @@ bad_fork_cancel_cgroup:
 bad_fork_cgroup_threadgroup_change_end:
 	cgroup_threadgroup_change_end(current);
 bad_fork_put_pidfd:
-	if (clone_flags & CLONE_PIDFD) {
-		fput(pidfile);
-		put_unused_fd(pidfd);
-	}
+	if (clone_flags & CLONE_PIDFD)
+		ksys_close(pidfd);
 bad_fork_free_pid:
 	if (pid != &init_struct_pid)
 		free_pid(pid);
@@ -2297,7 +2308,6 @@ bad_fork_cleanup_perf:
 	perf_event_free_task(p);
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);
-	free_task_load_ptrs(p);
 #ifdef CONFIG_NUMA
 	mpol_put(p->mempolicy);
 bad_fork_cleanup_threadgroup_lock:

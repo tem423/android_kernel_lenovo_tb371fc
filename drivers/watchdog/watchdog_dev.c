@@ -268,6 +268,9 @@ static int watchdog_start(struct watchdog_device *wdd)
 		watchdog_update_worker(wdd);
 	}
 
+	pr_info("watchdog%d: userspace call %s, wdd->status=%lx, wd_data->status=%lx, err=%d.\n",
+		wdd->id, __func__, wdd->status, wd_data->status, err);
+
 	return err;
 }
 
@@ -307,6 +310,9 @@ static int watchdog_stop(struct watchdog_device *wdd)
 		clear_bit(WDOG_ACTIVE, &wdd->status);
 		watchdog_update_worker(wdd);
 	}
+
+	pr_info("watchdog%d: userspace call %s, wdd->status=%lx, wd_data->status=%lx, err=%d.\n",
+		wdd->id, __func__, wdd->status, wdd->wd_data->status, err);
 
 	return err;
 }
@@ -980,7 +986,6 @@ static int watchdog_cdev_register(struct watchdog_device *wdd)
 
 	/* Fill in the data structures */
 	cdev_init(&wd_data->cdev, &watchdog_fops);
-	wd_data->cdev.owner = wdd->ops->owner;
 
 	/* Add the device */
 	err = cdev_device_add(&wd_data->cdev, &wd_data->dev);
@@ -990,10 +995,12 @@ static int watchdog_cdev_register(struct watchdog_device *wdd)
 		if (wdd->id == 0) {
 			misc_deregister(&watchdog_miscdev);
 			old_wd_data = NULL;
+			put_device(&wd_data->dev);
 		}
-		put_device(&wd_data->dev);
 		return err;
 	}
+
+	wd_data->cdev.owner = wdd->ops->owner;
 
 	/* Record time of most recent heartbeat as 'just before now'. */
 	wd_data->last_hw_keepalive = ktime_sub(ktime_get(), 1);

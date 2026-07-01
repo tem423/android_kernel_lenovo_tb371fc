@@ -847,7 +847,7 @@ static int __init genpd_power_off_unused(void)
 
 	return 0;
 }
-late_initcall_sync(genpd_power_off_unused);
+late_initcall(genpd_power_off_unused);
 
 #if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_GENERIC_DOMAINS_OF)
 
@@ -2433,10 +2433,10 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
 
 	err = of_property_read_u32(state_node, "min-residency-us", &residency);
 	if (!err)
-		genpd_state->residency_ns = 1000LL * residency;
+		genpd_state->residency_ns = 1000 * residency;
 
-	genpd_state->power_on_latency_ns = 1000LL * exit_latency;
-	genpd_state->power_off_latency_ns = 1000LL * entry_latency;
+	genpd_state->power_on_latency_ns = 1000 * exit_latency;
+	genpd_state->power_off_latency_ns = 1000 * entry_latency;
 	genpd_state->fwnode = &state_node->fwnode;
 
 	return 0;
@@ -2459,10 +2459,6 @@ static int genpd_iterate_idle_states(struct device_node *dn,
 		np = it.node;
 		if (!of_match_node(idle_state_match, np))
 			continue;
-
-		if (!of_device_is_available(np))
-			continue;
-
 		if (states) {
 			ret = genpd_parse_state(&states[i], np);
 			if (ret) {
@@ -2619,6 +2615,7 @@ static int genpd_summary_one(struct seq_file *s,
 		[GPD_STATE_POWER_OFF] = "off"
 	};
 	struct pm_domain_data *pm_data;
+	struct generic_pm_domain_data *pd_data;
 	const char *kobj_path;
 	struct gpd_link *link;
 	char state[16];
@@ -2636,7 +2633,8 @@ static int genpd_summary_one(struct seq_file *s,
 	else
 		snprintf(state, sizeof(state), "%s",
 			 status_lookup[genpd->status]);
-	seq_printf(s, "%-30s  %-15s ", genpd->name, state);
+	seq_printf(s, "%-30s  %-15s %12d  ", genpd->name, state,
+		genpd->performance_state);
 
 	/*
 	 * Modifications on the list require holding locks on both
@@ -2656,7 +2654,9 @@ static int genpd_summary_one(struct seq_file *s,
 		if (kobj_path == NULL)
 			continue;
 
-		seq_printf(s, "\n    %-50s  ", kobj_path);
+		pd_data = to_gpd_data(pm_data);
+		seq_printf(s, "\n    %-50s  %12d  ", kobj_path,
+			pd_data->performance_state);
 		rtpm_status_str(s, pm_data->dev);
 		kfree(kobj_path);
 	}
@@ -2673,8 +2673,8 @@ static int genpd_summary_show(struct seq_file *s, void *data)
 	struct generic_pm_domain *genpd;
 	int ret = 0;
 
-	seq_puts(s, "domain                          status          slaves\n");
-	seq_puts(s, "    /device                                             runtime status\n");
+	seq_puts(s, "domain                          status                pstate  slaves\n");
+	seq_puts(s, "    /device                                                   pstate  runtime status\n");
 	seq_puts(s, "----------------------------------------------------------------------\n");
 
 	ret = mutex_lock_interruptible(&gpd_list_lock);

@@ -11,7 +11,6 @@
 #include <linux/vmalloc.h>
 #include <linux/blkdev.h>
 #include <linux/namei.h>
-#include <linux/mount.h>
 #include <linux/ctype.h>
 #include <linux/string.h>
 #include <linux/slab.h>
@@ -190,12 +189,7 @@ static int alloc_targets(struct dm_table *t, unsigned int num)
 int dm_table_create(struct dm_table **result, fmode_t mode,
 		    unsigned num_targets, struct mapped_device *md)
 {
-	struct dm_table *t;
-
-	if (num_targets > DM_MAX_TARGETS)
-		return -EOVERFLOW;
-
-	t = kzalloc(sizeof(*t), GFP_KERNEL);
+	struct dm_table *t = kzalloc(sizeof(*t), GFP_KERNEL);
 
 	if (!t)
 		return -ENOMEM;
@@ -210,7 +204,7 @@ int dm_table_create(struct dm_table **result, fmode_t mode,
 
 	if (!num_targets) {
 		kfree(t);
-		return -EOVERFLOW;
+		return -ENOMEM;
 	}
 
 	if (alloc_targets(t, num_targets)) {
@@ -679,7 +673,7 @@ static int validate_hardware_logical_block_alignment(struct dm_table *table,
 	 */
 	unsigned short remaining = 0;
 
-	struct dm_target *ti;
+	struct dm_target *uninitialized_var(ti);
 	struct queue_limits ti_limits;
 	unsigned i;
 

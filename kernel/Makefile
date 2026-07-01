@@ -3,6 +3,7 @@
 # Makefile for the linux kernel.
 #
 
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include
 obj-y     = fork.o exec_domain.o panic.o \
 	    cpu.o exit.o softirq.o resource.o \
 	    sysctl.o sysctl_binary.o capability.o ptrace.o user.o \
@@ -36,9 +37,6 @@ ifndef CONFIG_CFI_CLANG
 # cond_syscall is currently not gcc LTO compatible
 CFLAGS_sys_ni.o = $(DISABLE_LTO)
 endif
-
-# Don't instrument error handlers
-CFLAGS_cfi.o = $(DISABLE_CFI_CLANG)
 
 # Don't instrument error handlers
 CFLAGS_cfi.o = $(DISABLE_CFI_CLANG)

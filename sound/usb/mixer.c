@@ -1293,10 +1293,8 @@ no_res_check:
 	/* USB descriptions contain the dB scale in 1/256 dB unit
 	 * while ALSA TLV contains in 1/100 dB unit
 	 */
-	cval->dBmin =
-		(convert_signed_value(cval, cval->min) * 100) / (cval->res);
-	cval->dBmax =
-		(convert_signed_value(cval, cval->max) * 100) / (cval->res);
+	cval->dBmin = (convert_signed_value(cval, cval->min) * 100) / 256;
+	cval->dBmax = (convert_signed_value(cval, cval->max) * 100) / 256;
 	if (cval->dBmin > cval->dBmax) {
 		/* something is wrong; assume it's either from/to 0dB */
 		if (cval->dBmin < 0)
@@ -3262,9 +3260,8 @@ static void snd_usb_mixer_dump_cval(struct snd_info_buffer *buffer,
 				    struct usb_mixer_elem_list *list)
 {
 	struct usb_mixer_elem_info *cval = mixer_elem_list_to_info(list);
-	static const char * const val_types[] = {
-		"BOOLEAN", "INV_BOOLEAN", "S8", "U8", "S16", "U16", "S32", "U32",
-	};
+	static const char * const val_types[] = {"BOOLEAN", "INV_BOOLEAN",
+				    "S8", "U8", "S16", "U16"};
 	snd_iprintf(buffer, "    Info: id=%i, control=%i, cmask=0x%x, "
 			    "channels=%i, type=\"%s\"\n", cval->head.id,
 			    cval->control, cval->cmask, cval->channels,

@@ -125,12 +125,31 @@ static unsigned int da9211_buck_get_mode(struct regulator_dev *rdev)
 	return mode;
 }
 
+static unsigned int da9211_map_mode(unsigned int mode)
+{
+	unsigned int val = 0;
+
+	switch (mode) {
+	case DA9211_BUCK_MODE_SYNC:
+		val = REGULATOR_MODE_FAST;
+		break;
+	case DA9211_BUCK_MODE_AUTO:
+		val = REGULATOR_MODE_NORMAL;
+		break;
+	case DA9211_BUCK_MODE_SLEEP:
+		val = REGULATOR_MODE_STANDBY;
+		break;
+	}
+
+	return val;
+}
+
 static int da9211_buck_set_mode(struct regulator_dev *rdev,
 					unsigned int mode)
 {
 	int id = rdev_get_id(rdev);
 	struct da9211 *chip = rdev_get_drvdata(rdev);
-	int val = 0;
+	int val = 0, ret;
 
 	switch (mode) {
 	case REGULATOR_MODE_FAST:
@@ -144,8 +163,13 @@ static int da9211_buck_set_mode(struct regulator_dev *rdev,
 		break;
 	}
 
-	return regmap_update_bits(chip->regmap, DA9211_REG_BUCKA_CONF+id,
-					0x03, val);
+	ret = regmap_update_bits(chip->regmap, DA9211_REG_BUCKA_CONF+id,
+				 0x03, val);
+
+	regmap_read(chip->regmap, DA9211_REG_BUCKA_CONF+id, &val);
+	dev_notice(chip->dev, "set mode = 0x%x\n", val);
+
+	return ret;
 }
 
 static int da9211_set_current_limit(struct regulator_dev *rdev, int min,
@@ -245,6 +269,7 @@ static const struct regulator_ops da9211_buck_ops = {
 	.enable_mask = DA9211_BUCKA_EN,\
 	.vsel_reg = DA9211_REG_VBUCKA_A + DA9211_ID_##_id * 2,\
 	.vsel_mask = DA9211_VBUCK_MASK,\
+	.of_map_mode = da9211_map_mode,\
 	.owner = THIS_MODULE,\
 }
 
@@ -255,8 +280,10 @@ static struct regulator_desc da9211_regulators[] = {
 
 #ifdef CONFIG_OF
 static struct of_regulator_match da9211_matches[] = {
-	[DA9211_ID_BUCKA] = { .name = "BUCKA" },
-	[DA9211_ID_BUCKB] = { .name = "BUCKB" },
+	[DA9211_ID_BUCKA] = { .name = "BUCKA",
+			      .desc = &da9211_regulators[0] },
+	[DA9211_ID_BUCKB] = { .name = "BUCKB",
+			      .desc = &da9211_regulators[1] },
 	};
 
 static struct da9211_pdata *da9211_parse_regulators_dt(
@@ -469,12 +496,6 @@ static int da9211_i2c_probe(struct i2c_client *i2c,
 
 	chip->chip_irq = i2c->irq;
 
-	ret = da9211_regulator_init(chip);
-	if (ret < 0) {
-		dev_err(chip->dev, "Failed to initialize regulator: %d\n", ret);
-		return ret;
-	}
-
 	if (chip->chip_irq != 0) {
 		ret = devm_request_threaded_irq(chip->dev, chip->chip_irq, NULL,
 					da9211_irq_handler,
@@ -488,6 +509,11 @@ static int da9211_i2c_probe(struct i2c_client *i2c,
 	} else {
 		dev_warn(chip->dev, "No IRQ configured\n");
 	}
+
+	ret = da9211_regulator_init(chip);
+
+	if (ret < 0)
+		dev_err(chip->dev, "Failed to initialize regulator: %d\n", ret);
 
 	return ret;
 }

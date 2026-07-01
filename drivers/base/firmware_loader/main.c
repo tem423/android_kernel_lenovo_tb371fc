@@ -97,15 +97,12 @@ static struct firmware_cache fw_cache;
 extern struct builtin_fw __start_builtin_fw[];
 extern struct builtin_fw __end_builtin_fw[];
 
-static bool fw_copy_to_prealloc_buf(struct firmware *fw,
+static void fw_copy_to_prealloc_buf(struct firmware *fw,
 				    void *buf, size_t size)
 {
-	if (!buf)
-		return true;
-	if (size < fw->size)
-		return false;
+	if (!buf || size < fw->size)
+		return;
 	memcpy(buf, fw->data, fw->size);
-	return true;
 }
 
 static bool fw_get_builtin_firmware(struct firmware *fw, const char *name,
@@ -117,7 +114,9 @@ static bool fw_get_builtin_firmware(struct firmware *fw, const char *name,
 		if (strcmp(name, b_fw->name) == 0) {
 			fw->size = b_fw->size;
 			fw->data = b_fw->data;
-			return fw_copy_to_prealloc_buf(fw, buf, size);
+			fw_copy_to_prealloc_buf(fw, buf, size);
+
+			return true;
 		}
 	}
 
@@ -186,7 +185,6 @@ static struct fw_priv *__allocate_fw_priv(const char *fw_name,
 	fw_priv->data = dbuf;
 	fw_priv->allocated_size = size;
 	fw_state_init(fw_priv);
-	INIT_LIST_HEAD(&fw_priv->list);
 #ifdef CONFIG_FW_LOADER_USER_HELPER
 	INIT_LIST_HEAD(&fw_priv->pending_list);
 #endif
@@ -251,10 +249,6 @@ static void __free_fw_priv(struct kref *ref)
 		 (unsigned int)fw_priv->size);
 
 	list_del(&fw_priv->list);
-#ifdef CONFIG_FW_LOADER_USER_HELPER
-	list_del(&fw_priv->pending_list);
-#endif
-
 	spin_unlock(&fwc->lock);
 
 #ifdef CONFIG_FW_LOADER_USER_HELPER
@@ -284,6 +278,7 @@ static void free_fw_priv(struct fw_priv *fw_priv)
 static char fw_path_para[256];
 static const char * const fw_path[] = {
 	fw_path_para,
+	"/vendor/firmware"
 	"/lib/firmware/updates/" UTS_RELEASE,
 	"/lib/firmware/updates",
 	"/lib/firmware/" UTS_RELEASE,
@@ -564,10 +559,8 @@ static void fw_abort_batch_reqs(struct firmware *fw)
 		return;
 
 	fw_priv = fw->priv;
-	mutex_lock(&fw_lock);
 	if (!fw_state_is_aborted(fw_priv))
 		fw_state_aborted(fw_priv);
-	mutex_unlock(&fw_lock);
 }
 
 /* called from request_firmware() and request_firmware_work_func() */
@@ -595,8 +588,8 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
 	ret = fw_get_filesystem_firmware(device, fw->priv);
 	if (ret) {
 		if (!(opt_flags & FW_OPT_NO_WARN))
-			dev_dbg(device,
-				 "Firmware %s was not found in kernel paths. rc:%d\n",
+			dev_warn(device,
+				 "Direct firmware load for %s failed with error %d\n",
 				 name, ret);
 		ret = firmware_fallback_sysfs(fw, name, device, opt_flags, ret);
 	} else

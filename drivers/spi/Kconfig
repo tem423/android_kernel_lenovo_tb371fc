@@ -533,18 +533,6 @@ config SPI_QUP
 	  This driver can also be built as a module.  If so, the module
 	  will be called spi_qup.
 
-config SPI_QCOM_GENI
-        tristate "Qualcomm Technologies Inc.'s GENI based SPI controller"
-        depends on ARCH_QCOM
-        help
-          SPI driver for Qualcomm Technologies Inc's GENI based controller.
-          The controller can run upto 50 Mhz, support upto 4 CS lines,
-          programmable bits per word from 4 to 32 and supports the various
-          SPI modes. It can operate in FIFO mode (SW driven IO) and DMA mode.
-
-          This driver can also be built as a module.  If so, the module
-          will be called spi-geni-qcom.
-
 config SPI_S3C24XX
 	tristate "Samsung S3C24XX series SPI"
 	depends on ARCH_S3C24XX
@@ -607,6 +595,16 @@ config SPI_SIRF
 	select SPI_BITBANG
 	help
 	  SPI driver for CSR SiRFprimaII SoCs
+
+config SPI_SLAVE_MT27XX
+	tristate "MediaTek SPI slave device"
+	depends on ARCH_MEDIATEK || COMPILE_TEST
+	depends on SPI_SLAVE
+	help
+	  This selects the MediaTek(R) SPI slave device driver.
+	  If you want to use MediaTek(R) SPI slave interface,
+	  say Y or M here.If you are not sure, say N.
+	  SPI slave drivers for Mediatek MT27XX series ARM SoCs.
 
 config SPI_SPRD_ADI
 	tristate "Spreadtrum ADI controller"

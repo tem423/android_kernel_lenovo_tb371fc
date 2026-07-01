@@ -9,6 +9,11 @@ menuconfig INPUT_TOUCHSCREEN
 
 	  If unsure, say Y.
 
+source "drivers/input/touchscreen/mediatek/Kconfig"
+
+source "drivers/input/touchscreen/NT36672C/Kconfig"
+source "drivers/input/touchscreen/NT36532/Kconfig"
+
 if INPUT_TOUCHSCREEN
 
 config TOUCHSCREEN_PROPERTIES
@@ -857,17 +862,6 @@ config TOUCHSCREEN_WM97XX_ZYLONITE
 	  To compile this driver as a module, choose M here: the
 	  module will be called zylonite-wm97xx.
 
-config SECURE_TOUCH_SYNAPTICS_DSX
-	bool "Secure Touch"
-	depends on TOUCHSCREEN_SYNAPTICS_DSX_I2C
-	help
-	  Say Y here to enable Secure Touch in supported driver.
-
-	  If unsure, say N.
-
-	  To compile the supported driver with Secure Touch enabled,
-	  choose M here.
-
 config TOUCHSCREEN_USB_COMPOSITE
 	tristate "USB Touchscreen Driver"
 	depends on USB_ARCH_HAS_HCD
@@ -1250,6 +1244,16 @@ config TOUCHSCREEN_SX8654
 	  To compile this driver as a module, choose M here: the
 	  module will be called sx8654.
 
+config TOUCHSCREEN_MTK_NT36572_COMMON
+         bool "NT36572 for Mediatek package"
+         default n
+         help
+           Say Y here if you have NT36572 touch panel.
+           If unsure, say N.
+           To compile this dirver as a module, choose M here: the
+           module will be called.
+source "drivers/input/touchscreen/nt36572_common/Kconfig"
+
 config TOUCHSCREEN_TPS6507X
 	tristate "TPS6507x based touchscreens"
 	depends on I2C
@@ -1311,62 +1315,69 @@ config TOUCHSCREEN_ROHM_BU21023
 	  To compile this driver as a module, choose M here: the
 	  module will be called bu21023_ts.
 
-config TOUCHSCREEN_ST
-	tristate "STMicroelectronics Touchscreen Driver"
+config TOUCHSCREEN_MTK_GT1151
+        bool "GT1151 for Mediatek package"
+        default n
+        help
+          Say Y here if you have GT1151 touch panel.
+
+          If unsure, say N.
+
+          To compile this dirver as a module, choose M here: the
+          module will be called.
+
+source "drivers/input/touchscreen/GT1151/Kconfig"
+
+config TOUCHSCREEN_MTK_NT36xxx_no_flash_spi
+        bool "NT36xxx for Mediatek package"
+        default n
+        help
+          Say Y here if you have NT36xxx touch panel.
+
+          If unsure, say N.
+
+          To compile this dirver as a module, choose M here: the
+          module will be called.
+
+config TOUCHSCREEN_MTK_FOCALTECH_HD
+	bool "Focaltech Touchscreen"
 	depends on I2C
-	default y
 	help
-	  Say Y here if you have a STMicroelectronics Touchscreen.
-
+	  Say Y here if you have Focaltech touch panel.
 	  If unsure, say N.
-	  To compile this driver as a module, choose M here: the
-	  module will be called st.
 
-source "drivers/input/touchscreen/st/Kconfig"
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
 
-config TOUCHSCREEN_SYNAPTICS_DSX
-	bool "Synaptics DSX Touchscreen Driver"
+config TOUCHSCREEN_MTK_FOCALTECH_FHD
+	bool "Focaltech FHD Touchscreen"
 	depends on I2C
-	default y
 	help
-	  Say Y here if you have a Synaptics Touchscreen.
+	  Say Y here if you have Focaltech touch panel.
+	  If unsure, say N
 
-	  If unsure, say N.
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
 
-	  To compile this driver as a module, choose M here: the
-	  module will be called synaptics_dsx.
+config TOUCHSCREEN_MTK_SYNAPTICS_I2C_RMI4
+        tristate "Synaptics DSX I2C touchscreen"
+        depends on I2C
+        help
+          Say Y here if you have a Synaptics DSX I2C touchscreen
+          connected to your system.
 
-source "drivers/input/touchscreen/synaptics_dsx/Kconfig"
+          If unsure, say N.
 
-config TOUCHSCREEN_SYNAPTICS_TCM
-	bool "Synaptics TCM Touchscreen Driver"
-	depends on I2C
-	default y
+          To compile this driver as a module, choose M here: the
+          module will be called synaptics_i2c_rmi4.
+
+source "drivers/input/touchscreen/synaptics_i2c_rmi4/Kconfig"
+
+config TOUCHSCREEN_MTK_TOUCH
+	string "Touch IC name for Mediatek package"
 	help
-	  Say Y here if you have a Synaptics Touchscreen.
+	  Set touch IC name if you have touch panel.
 
-	  If unsure, say N.
-
-	  To compile this driver as a module, choose M here: the
-	  module will be called synaptics_tcm.
-
-config TOUCHSCREEN_GOODIX_CHIPSET
-	bool "goodix Touchscreen Driver"
-	depends on SPI_MASTER
-	default y
-	help
-	  Say Y here if you have a goodix Touchscreen.
-
-	  If unsure, say N.
-
-source "drivers/input/touchscreen/goodix/Kconfig"
-
-source "drivers/input/touchscreen/synaptics_tcm/Kconfig"
-
-source "drivers/input/touchscreen/focaltech_touch/Kconfig"
-
-source "drivers/input/touchscreen/nt36xxx/Kconfig"
-
-source "drivers/input/touchscreen/nt36532/Kconfig"
+	  To compile this dirver for used touch IC.
 
 endif

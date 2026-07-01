@@ -91,7 +91,6 @@ static int alarmtimer_rtc_add_device(struct device *dev,
 	unsigned long flags;
 	struct rtc_device *rtc = to_rtc_device(dev);
 	struct wakeup_source *__ws;
-	struct platform_device *pdev;
 	int ret = 0;
 
 	if (rtcdev)
@@ -102,12 +101,10 @@ static int alarmtimer_rtc_add_device(struct device *dev,
 	if (!device_may_wakeup(rtc->dev.parent))
 		return -1;
 
-	__ws = wakeup_source_register(dev, "alarmtimer");
-	pdev = platform_device_register_data(dev, "alarmtimer",
-					     PLATFORM_DEVID_AUTO, NULL, 0);
+	__ws = wakeup_source_register(NULL, "alarmtimer");
 
 	spin_lock_irqsave(&rtcdev_lock, flags);
-	if (__ws && !IS_ERR(pdev) && !rtcdev) {
+	if (!rtcdev) {
 		if (!try_module_get(rtc->owner)) {
 			ret = -1;
 			goto unlock;
@@ -118,14 +115,10 @@ static int alarmtimer_rtc_add_device(struct device *dev,
 		get_device(dev);
 		ws = __ws;
 		__ws = NULL;
-		pdev = NULL;
-	} else {
-		ret = -1;
 	}
 unlock:
 	spin_unlock_irqrestore(&rtcdev_lock, flags);
 
-	platform_device_unregister(pdev);
 	wakeup_source_unregister(__ws);
 
 	return ret;
@@ -171,8 +164,15 @@ static inline void alarmtimer_rtc_timer_init(void) { }
  */
 static void alarmtimer_enqueue(struct alarm_base *base, struct alarm *alarm)
 {
+	static DEFINE_RATELIMIT_STATE(ratelimit, HZ - 1, 5);
+
 	if (alarm->state & ALARMTIMER_STATE_ENQUEUED)
 		timerqueue_del(&base->timerqueue, &alarm->node);
+
+	if (__ratelimit(&ratelimit)) {
+		ratelimit.begin = jiffies;
+		pr_notice("%s, %lld\n", __func__, alarm->node.expires);
+	}
 
 	timerqueue_add(&base->timerqueue, &alarm->node);
 	alarm->state |= ALARMTIMER_STATE_ENQUEUED;
@@ -258,7 +258,7 @@ static int alarmtimer_suspend(struct device *dev)
 	int i, ret, type;
 	struct rtc_device *rtc;
 	unsigned long flags;
-	struct rtc_time tm;
+	struct rtc_time tm, time;
 
 	spin_lock_irqsave(&freezer_delta_lock, flags);
 	min = freezer_delta;
@@ -305,6 +305,14 @@ static int alarmtimer_suspend(struct device *dev)
 	rtc_read_time(rtc, &tm);
 	now = rtc_tm_to_ktime(tm);
 	now = ktime_add(now, min);
+
+	time = rtc_ktime_to_tm(now);
+	pr_notice_ratelimited("%s convert %lld to %04d/%02d/%02d %02d:%02d:%02d (now = %04d/%02d/%02d %02d:%02d:%02d)\n",
+			__func__, expires,
+			time.tm_year+1900, time.tm_mon+1, time.tm_mday,
+			time.tm_hour, time.tm_min, time.tm_sec,
+			tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
+			tm.tm_hour, tm.tm_min, tm.tm_sec);
 
 	/* Set alarm, if in the past reject suspend briefly to handle */
 	ret = rtc_timer_start(rtc, &rtctimer, now, 0);
@@ -483,35 +491,11 @@ u64 alarm_forward(struct alarm *alarm, ktime_t now, ktime_t interval)
 }
 EXPORT_SYMBOL_GPL(alarm_forward);
 
-static u64 __alarm_forward_now(struct alarm *alarm, ktime_t interval, bool throttle)
-{
-	struct alarm_base *base = &alarm_bases[alarm->type];
-	ktime_t now = base->gettime();
-
-	if (IS_ENABLED(CONFIG_HIGH_RES_TIMERS) && throttle) {
-		/*
-		 * Same issue as with posix_timer_fn(). Timers which are
-		 * periodic but the signal is ignored can starve the system
-		 * with a very small interval. The real fix which was
-		 * promised in the context of posix_timer_fn() never
-		 * materialized, but someone should really work on it.
-		 *
-		 * To prevent DOS fake @now to be 1 jiffie out which keeps
-		 * the overrun accounting correct but creates an
-		 * inconsistency vs. timer_gettime(2).
-		 */
-		ktime_t kj = NSEC_PER_SEC / HZ;
-
-		if (interval < kj)
-			now = ktime_add(now, kj);
-	}
-
-	return alarm_forward(alarm, now, interval);
-}
-
 u64 alarm_forward_now(struct alarm *alarm, ktime_t interval)
 {
-	return __alarm_forward_now(alarm, interval, false);
+	struct alarm_base *base = &alarm_bases[alarm->type];
+
+	return alarm_forward(alarm, base->gettime(), interval);
 }
 EXPORT_SYMBOL_GPL(alarm_forward_now);
 
@@ -585,10 +569,9 @@ static enum alarmtimer_restart alarm_handle_timer(struct alarm *alarm,
 	if (posix_timer_event(ptr, si_private) && ptr->it_interval) {
 		/*
 		 * Handle ignored signals and rearm the timer. This will go
-		 * away once we handle ignored signals proper. Ensure that
-		 * small intervals cannot starve the system.
+		 * away once we handle ignored signals proper.
 		 */
-		ptr->it_overrun += __alarm_forward_now(alarm, ptr->it_interval, true);
+		ptr->it_overrun += alarm_forward_now(alarm, ptr->it_interval);
 		++ptr->it_requeue_pending;
 		ptr->it_active = 1;
 		result = ALARMTIMER_RESTART;
@@ -898,7 +881,8 @@ static struct platform_driver alarmtimer_driver = {
  */
 static int __init alarmtimer_init(void)
 {
-	int error;
+	struct platform_device *pdev;
+	int error = 0;
 	int i;
 
 	alarmtimer_rtc_timer_init();
@@ -921,7 +905,15 @@ static int __init alarmtimer_init(void)
 	if (error)
 		goto out_if;
 
+	pdev = platform_device_register_simple("alarmtimer", -1, NULL, 0);
+	if (IS_ERR(pdev)) {
+		error = PTR_ERR(pdev);
+		goto out_drv;
+	}
 	return 0;
+
+out_drv:
+	platform_driver_unregister(&alarmtimer_driver);
 out_if:
 	alarmtimer_rtc_interface_remove();
 	return error;

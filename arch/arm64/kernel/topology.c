@@ -31,16 +31,6 @@
 #include <asm/cputype.h>
 #include <asm/topology.h>
 
-/*
- * This function returns the logic cpu number of the node.
- * There are basically three kinds of return values:
- * (1) logic cpu number which is > 0.
- * (2) -ENODEV when the device tree(DT) node is valid and found in the DT but
- * there is no possible logical CPU in the kernel to match. This happens
- * when CONFIG_NR_CPUS is configure to be smaller than the number of
- * CPU nodes in DT. We need to just ignore this case.
- * (3) -1 if the node does not exist in the device tree
- */
 static int __init get_cpu_for_node(struct device_node *node)
 {
 	struct device_node *cpu_node;
@@ -54,8 +44,8 @@ static int __init get_cpu_for_node(struct device_node *node)
 	if (cpu >= 0)
 		topology_parse_cpu_capacity(cpu_node, cpu);
 	else
-		pr_info("CPU node for %pOF exist but the possible cpu range is :%*pbl\n",
-			cpu_node, cpumask_pr_args(cpu_possible_mask));
+		pr_crit("Unable to find CPU node for %pOF\n", cpu_node);
+
 	of_node_put(cpu_node);
 	return cpu;
 }
@@ -79,7 +69,7 @@ static int __init parse_core(struct device_node *core, int package_id,
 				cpu_topology[cpu].package_id = package_id;
 				cpu_topology[cpu].core_id = core_id;
 				cpu_topology[cpu].thread_id = i;
-			} else if (cpu != -ENODEV) {
+			} else {
 				pr_err("%pOF: Can't get CPU for thread\n",
 				       t);
 				of_node_put(t);
@@ -100,7 +90,7 @@ static int __init parse_core(struct device_node *core, int package_id,
 
 		cpu_topology[cpu].package_id = package_id;
 		cpu_topology[cpu].core_id = core_id;
-	} else if (leaf && cpu != -ENODEV) {
+	} else if (leaf) {
 		pr_err("%pOF: Can't get CPU for leaf core\n", core);
 		return -EINVAL;
 	}
@@ -240,24 +230,6 @@ const struct cpumask *cpu_coregroup_mask(int cpu)
 	return core_mask;
 }
 
-static void update_possible_siblings_masks(unsigned int cpuid)
-{
-	struct cpu_topology *cpu_topo, *cpuid_topo = &cpu_topology[cpuid];
-	int cpu;
-
-	if (cpuid_topo->package_id == -1)
-		return;
-
-	for_each_possible_cpu(cpu) {
-		cpu_topo = &cpu_topology[cpu];
-
-		if (cpuid_topo->package_id != cpu_topo->package_id)
-			continue;
-		cpumask_set_cpu(cpuid, &cpu_topo->core_possible_sibling);
-		cpumask_set_cpu(cpu, &cpuid_topo->core_possible_sibling);
-	}
-}
-
 static void update_siblings_masks(unsigned int cpuid)
 {
 	struct cpu_topology *cpu_topo, *cpuid_topo = &cpu_topology[cpuid];
@@ -369,6 +341,22 @@ void remove_cpu_topology(unsigned int cpu)
 	clear_cpu_topology(cpu);
 }
 
+int topology_nr_clusters(void)
+{
+	int cpu;
+	int nr_clusters = 0;
+	int cluster_id, prev_cluster_id = -1;
+
+	for_each_possible_cpu(cpu) {
+		cluster_id = topology_physical_package_id(cpu);
+		if (cluster_id != prev_cluster_id) {
+			nr_clusters++;
+			prev_cluster_id = cluster_id;
+		}
+	}
+	return nr_clusters;
+}
+
 #ifdef CONFIG_ACPI
 static bool __init acpi_cpu_is_threaded(int cpu)
 {
@@ -435,8 +423,6 @@ static inline int __init parse_acpi_topology(void)
 
 void __init init_cpu_topology(void)
 {
-	int cpu;
-
 	reset_cpu_topology();
 
 	/*
@@ -447,8 +433,4 @@ void __init init_cpu_topology(void)
 		reset_cpu_topology();
 	else if (of_have_populated_dt() && parse_dt_topology())
 		reset_cpu_topology();
-	else {
-		for_each_possible_cpu(cpu)
-			update_possible_siblings_masks(cpu);
-	}
 }

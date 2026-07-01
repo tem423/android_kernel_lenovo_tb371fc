@@ -884,9 +884,11 @@ void _opp_free(struct dev_pm_opp *opp)
 	kfree(opp);
 }
 
-static void _opp_kref_release(struct dev_pm_opp *opp,
-			      struct opp_table *opp_table)
+static void _opp_kref_release(struct kref *kref)
 {
+	struct dev_pm_opp *opp = container_of(kref, struct dev_pm_opp, kref);
+	struct opp_table *opp_table = opp->opp_table;
+
 	/*
 	 * Notify the changes in the availability of the operable
 	 * frequency/voltage list.
@@ -895,22 +897,7 @@ static void _opp_kref_release(struct dev_pm_opp *opp,
 	opp_debug_remove_one(opp);
 	list_del(&opp->node);
 	kfree(opp);
-}
 
-static void _opp_kref_release_unlocked(struct kref *kref)
-{
-	struct dev_pm_opp *opp = container_of(kref, struct dev_pm_opp, kref);
-	struct opp_table *opp_table = opp->opp_table;
-
-	_opp_kref_release(opp, opp_table);
-}
-
-static void _opp_kref_release_locked(struct kref *kref)
-{
-	struct dev_pm_opp *opp = container_of(kref, struct dev_pm_opp, kref);
-	struct opp_table *opp_table = opp->opp_table;
-
-	_opp_kref_release(opp, opp_table);
 	mutex_unlock(&opp_table->lock);
 	dev_pm_opp_put_opp_table(opp_table);
 }
@@ -922,15 +909,9 @@ void dev_pm_opp_get(struct dev_pm_opp *opp)
 
 void dev_pm_opp_put(struct dev_pm_opp *opp)
 {
-	kref_put_mutex(&opp->kref, _opp_kref_release_locked,
-		       &opp->opp_table->lock);
+	kref_put_mutex(&opp->kref, _opp_kref_release, &opp->opp_table->lock);
 }
 EXPORT_SYMBOL_GPL(dev_pm_opp_put);
-
-static void dev_pm_opp_put_unlocked(struct dev_pm_opp *opp)
-{
-	kref_put(&opp->kref, _opp_kref_release_unlocked);
-}
 
 /**
  * dev_pm_opp_remove()  - Remove an OPP from OPP table
@@ -970,40 +951,6 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
 	dev_pm_opp_put_opp_table(opp_table);
 }
 EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
-
-/**
- * dev_pm_opp_remove_all_dynamic() - Remove all dynamically created OPPs
- * @dev:	device for which we do this operation
- *
- * This function removes all dynamically created OPPs from the opp table.
- */
-void dev_pm_opp_remove_all_dynamic(struct device *dev)
-{
-	struct opp_table *opp_table;
-	struct dev_pm_opp *opp, *temp;
-	int count = 0;
-
-	opp_table = _find_opp_table(dev);
-	if (IS_ERR(opp_table))
-		return;
-
-	mutex_lock(&opp_table->lock);
-	list_for_each_entry_safe(opp, temp, &opp_table->opp_list, node) {
-		if (opp->dynamic) {
-			dev_pm_opp_put_unlocked(opp);
-			count++;
-		}
-	}
-	mutex_unlock(&opp_table->lock);
-
-	/* Drop the references taken by dev_pm_opp_add() */
-	while (count--)
-		dev_pm_opp_put_opp_table(opp_table);
-
-	/* Drop the reference taken by _find_opp_table() */
-	dev_pm_opp_put_opp_table(opp_table);
-}
-EXPORT_SYMBOL_GPL(dev_pm_opp_remove_all_dynamic);
 
 struct dev_pm_opp *_opp_allocate(struct opp_table *table)
 {
@@ -1678,6 +1625,83 @@ unlock:
 	mutex_unlock(&opp_table->lock);
 put_table:
 	dev_pm_opp_put_opp_table(opp_table);
+	return r;
+}
+
+/*
+ * dev_pm_opp_adjust_voltage() - helper to change the voltage of an OPP
+ * @dev:		device for which we do this operation
+ * @freq:		OPP frequency to adjust voltage of
+ * @u_volt:		new OPP voltage
+ *
+ * Change the voltage of an OPP with an RCU operation.
+ *
+ * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
+ * copy operation, returns 0 if no modifcation was done OR modification was
+ * successful.
+ *
+ * Locking: The internal device_opp and opp structures are RCU protected.
+ * Hence this function internally uses RCU updater strategy with mutex locks to
+ * keep the integrity of the internal data structures. Callers should ensure
+ * that this function is *NOT* called under RCU protection or in contexts where
+ * mutex locking or synchronize_rcu() blocking calls cannot be used.
+ */
+int dev_pm_opp_adjust_voltage(struct device *dev, unsigned long freq,
+			      unsigned long u_volt)
+{
+	struct opp_table *opp_table;
+	struct dev_pm_opp *new_opp, *tmp_opp, *opp = ERR_PTR(-ENODEV);
+	int r = 0;
+
+	/* Find the opp_table */
+	opp_table = _find_opp_table(dev);
+	if (IS_ERR(opp_table)) {
+		r = PTR_ERR(opp_table);
+		return r;
+	}
+
+	/* keep the node allocated */
+	new_opp = kmalloc(sizeof(*new_opp), GFP_KERNEL);
+	if (!new_opp)
+		return -ENOMEM;
+
+	mutex_lock(&opp_table->lock);
+
+	/* Do we have the frequency? */
+	list_for_each_entry(tmp_opp, &opp_table->opp_list, node) {
+		if (tmp_opp->rate == freq) {
+			opp = tmp_opp;
+			break;
+		}
+	}
+
+	if (IS_ERR(opp)) {
+		r = PTR_ERR(opp);
+		goto unlock;
+	}
+
+	/* Is update really needed? */
+	if (opp->supplies->u_volt == u_volt)
+		goto unlock;
+
+	/* copy the old data over */
+	*new_opp = *opp;
+
+	/* plug in new node */
+	new_opp->supplies->u_volt = u_volt;
+
+	list_replace_rcu(&opp->node, &new_opp->node);
+	mutex_unlock(&opp_table->lock);
+
+	/* Notify the change of the OPP */
+	blocking_notifier_call_chain(&opp_table->head, OPP_EVENT_ADJUST_VOLTAGE,
+				     opp);
+
+	return 0;
+
+unlock:
+	mutex_unlock(&opp_table->lock);
+	kfree(new_opp);
 	return r;
 }
 

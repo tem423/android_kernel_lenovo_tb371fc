@@ -178,7 +178,6 @@ enum {
 
 #define SWAP_CLUSTER_MAX 32UL
 #define COMPACT_CLUSTER_MAX SWAP_CLUSTER_MAX
-#define SWAPFILE_CLUSTER	256
 
 #define SWAP_MAP_MAX	0x3e	/* Max duplication count, in first swap_map */
 #define SWAP_MAP_BAD	0x3f	/* Note pageblock is bad, in first swap_map */
@@ -373,8 +372,6 @@ extern unsigned long mem_cgroup_shrink_node(struct mem_cgroup *mem,
 						unsigned long *nr_scanned);
 extern unsigned long shrink_all_memory(unsigned long nr_pages);
 extern int vm_swappiness;
-extern int sysctl_swap_ratio;
-extern int sysctl_swap_ratio_enable;
 extern int remove_mapping(struct address_space *mapping, struct page *page);
 extern unsigned long vm_total_pages;
 
@@ -440,6 +437,7 @@ extern struct page *swap_cluster_readahead(swp_entry_t entry, gfp_t flag,
 extern struct page *swapin_readahead(swp_entry_t entry, gfp_t flag,
 				struct vm_fault *vmf);
 
+extern bool swap_use_vma_readmore(void);
 /* linux/mm/swapfile.c */
 extern atomic_long_t nr_swap_pages;
 extern long total_swap_pages;

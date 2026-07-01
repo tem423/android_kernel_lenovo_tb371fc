@@ -84,6 +84,16 @@ choice
 	  This option sets which thermal governor shall be loaded at
 	  startup. If in doubt, select 'step_wise'.
 
+config THERMAL_DEFAULT_GOV_BACKWARD_COMPATIBLE
+	bool "backward_compatible"
+	select THERMAL_GOV_BACKWARD_COMPATIBLE
+	help
+	  Use the backward_compatible governor as default. This throttles the
+	  devices when the temperature is over each trip point.
+	  Backward-compatible governor resembles the behaviors of thermal
+	  framework in Linux kernel 2.6. It sets cooler states whenever
+	  temperature is updated no meter cooler state change or not.
+
 config THERMAL_DEFAULT_GOV_STEP_WISE
 	bool "step_wise"
 	select THERMAL_GOV_STEP_WISE
@@ -115,6 +125,13 @@ config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
 	  operate on cooling devices that implement the power API.
 
 endchoice
+config THERMAL_GOV_BACKWARD_COMPATIBLE
+	bool "Backward-compatible thermal governor"
+	help
+	  Enable this to manage platform thermals using backward-compatible governor.
+	  Backward-compatible governor resembles the behaviors of thermal
+	  framework in Linux kernel 2.6. It sets cooler states whenever
+	  temperature is updated no meter cooler state change or not.
 
 config THERMAL_GOV_FAIR_SHARE
 	bool "Fair-share thermal governor"
@@ -141,16 +158,6 @@ config THERMAL_GOV_USER_SPACE
 	bool "User_space thermal governor"
 	help
 	  Enable this to let the user space manage the platform thermals.
-
-config THERMAL_GOV_LOW_LIMITS
-	bool "Low limits mitigation governor"
-	help
-	  Enable this to manage platform limits using low limits
-	  governor.
-
-	  Enable this governor to monitor and trigger floor mitigation.
-	  This governor will monitor the limits going below a
-	  trip threshold to trigger a floor mitigation.
 
 config THERMAL_GOV_POWER_ALLOCATOR
 	bool "Power allocator thermal governor"
@@ -477,27 +484,6 @@ config GENERIC_ADC_THERMAL
 	  is read via IIO framework and the channel information is provided
 	  to this driver. This driver reports the temperature by reading ADC
 	  channel and converts it to temperature based on lookup table.
-
-config THERMAL_QPNP_ADC_TM
-	tristate "Qualcomm Technologies Inc. Thermal Monitor ADC Driver"
-	depends on THERMAL
-	depends on  SPMI
-	help
-	  This enables the thermal Sysfs driver for the ADC thermal monitoring
-	  device. It shows up in Sysfs as a thermal zone with multiple trip points.
-	  Disabling the thermal zone device via the mode file results in disabling
-	  the sensor. Also able to set threshold temperature for both hot and cold
-	  and update when a threshold is reached.
-
-config THERMAL_TSENS
-	tristate "Qualcomm Technologies Inc. TSENS Temperature driver"
-	depends on THERMAL
-	help
-	  This enables the thermal sysfs driver for the TSENS device. It shows
-	  up in Sysfs as a thermal zone with multiple trip points. Also able
-	  to set threshold temperature for both warm and cool and update
-	  thermal userspace client when a threshold is reached. Warm/Cool
-	  temperature thresholds can be set independently for each sensor.
 
 menu "Qualcomm thermal drivers"
 depends on (ARCH_QCOM && OF) || COMPILE_TEST

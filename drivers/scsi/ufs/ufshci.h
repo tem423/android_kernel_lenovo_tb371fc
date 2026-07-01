@@ -80,6 +80,22 @@ enum {
 	REG_UFS_CRYPTOCAP			= 0x104,
 
 	UFSHCI_CRYPTO_REG_SPACE_SIZE		= 0x400,
+
+	/* MTK PATCH: vendor-specific registers */
+	REG_UFS_MTK_START = 0x2100, /* the start offset of MTK registers */
+	REG_UFS_MTK_EXTREG1 = 0x2100, /* shall be equal to REG_UFS_MTK_START */
+	REG_UFS_MTK_MPHYCTRL			= 0x2200,
+	REG_UFS_MTK_AXI_W_ULTRA_THR		= 0x220C,
+	REG_UFS_MTK_AUTO_DEEP_STALL		= 0x2210,
+	REG_UFS_MTK_HW_VER			= 0x2240,
+	REG_UFS_MTK_OCS_ERR_STATUS		= 0x2244,
+	REG_UFS_MTK_COMMAND_MON			= 0x2288,
+	REG_UFS_MTK_DATAOUT_MON			= 0x2290,
+	REG_UFS_MTK_RTT_MON			= 0x22A0,
+	REG_UFS_MTK_DEBUG_SEL			= 0x22C0,
+	REG_UFS_MTK_SW_DGB			= 0x22C4,
+	REG_UFS_MTK_PROBE			= 0x22C8,
+	REG_UFS_MTK_SIZE = (REG_UFS_MTK_PROBE - REG_UFS_MTK_START + 16)
 };
 
 /* Controller capability masks */
@@ -93,6 +109,8 @@ enum {
 	MASK_CRYPTO_SUPPORT			= 0x10000000,
 };
 
+#define UFS_MASK(mask, offset)		((mask) << (offset))
+
 /* UFS Version 08h */
 #define MINOR_VERSION_NUM_MASK		UFS_MASK(0xFFFF, 0)
 #define MAJOR_VERSION_NUM_MASK		UFS_MASK(0xFFFF, 16)
@@ -103,7 +121,6 @@ enum {
 	UFSHCI_VERSION_11 = 0x00010100, /* 1.1 */
 	UFSHCI_VERSION_20 = 0x00000200, /* 2.0 */
 	UFSHCI_VERSION_21 = 0x00000210, /* 2.1 */
-	UFSHCI_VERSION_30 = 0x00000300, /* 3.0 */
 };
 
 /*
@@ -125,16 +142,10 @@ enum {
 #define UFSHCI_AHIBERN8_SCALE_MASK		GENMASK(12, 10)
 #define UFSHCI_AHIBERN8_SCALE_FACTOR		10
 #define UFSHCI_AHIBERN8_MAX			(1023 * 100000)
-#define AUTO_HIBERN8_IDLE_TIMER_MASK		UFS_MASK(0x3FF, 0)
-#define AUTO_HIBERN8_TIMER_SCALE_MASK		UFS_MASK(0x7, 10)
-#define AUTO_HIBERN8_TIMER_SCALE_1_US		UFS_MASK(0x0, 10)
-#define AUTO_HIBERN8_TIMER_SCALE_10_US		UFS_MASK(0x1, 10)
-#define AUTO_HIBERN8_TIMER_SCALE_100_US		UFS_MASK(0x2, 10)
-#define AUTO_HIBERN8_TIMER_SCALE_1_MS		UFS_MASK(0x3, 10)
-#define AUTO_HIBERN8_TIMER_SCALE_10_MS		UFS_MASK(0x4, 10)
-#define AUTO_HIBERN8_TIMER_SCALE_100_MS		UFS_MASK(0x5, 10)
 
-/* IS - Interrupt status (20h) / IE - Interrupt enable (24h) */
+/*
+ * IS - Interrupt Status - 20h
+ */
 #define UTP_TRANSFER_REQ_COMPL			0x1
 #define UIC_DME_END_PT_RESET			0x2
 #define UIC_ERROR				0x4
@@ -151,13 +162,15 @@ enum {
 #define SYSTEM_BUS_FATAL_ERROR			0x20000
 #define CRYPTO_ENGINE_FATAL_ERROR		0x40000
 
-#define UFSHCD_UIC_PWR_MASK	(UIC_HIBERNATE_ENTER |\
-				UIC_HIBERNATE_EXIT |\
+#define UFSHCD_UIC_HIBERN8_MASK	(UIC_HIBERNATE_ENTER |\
+				UIC_HIBERNATE_EXIT)
+
+#define UFSHCD_UIC_PWR_MASK	(UFSHCD_UIC_HIBERN8_MASK |\
 				UIC_POWER_MODE)
 
 #define UFSHCD_UIC_MASK		(UIC_COMMAND_COMPL | UFSHCD_UIC_PWR_MASK)
 
-#define UFSHCD_ERROR_MASK	(UIC_ERROR | UIC_LINK_LOST |\
+#define UFSHCD_ERROR_MASK	(UIC_ERROR |\
 				DEVICE_FATAL_ERROR |\
 				CONTROLLER_FATAL_ERROR |\
 				SYSTEM_BUS_FATAL_ERROR |\
@@ -190,43 +203,6 @@ enum {
 	PWR_FATAL_ERROR	= 0x05,
 };
 
-/* Host UIC error type */
-enum ufshcd_uic_err_type {
-	UFS_UIC_ERROR_PA,
-	UFS_UIC_ERROR_DL,
-	UFS_UIC_ERROR_DME,
-};
-
-/* Host UIC error code PHY adapter layer */
-enum ufshcd_ec_pa {
-	UFS_EC_PA_LANE_0,
-	UFS_EC_PA_LANE_1,
-	UFS_EC_PA_LANE_2,
-	UFS_EC_PA_LANE_3,
-	UFS_EC_PA_LINE_RESET,
-	UFS_EC_PA_MAX,
-};
-
-/* Host UIC error code data link layer */
-enum ufshcd_ec_dl {
-	UFS_EC_DL_NAC_RECEIVED,
-	UFS_EC_DL_TCx_REPLAY_TIMER_EXPIRED,
-	UFS_EC_DL_AFCx_REQUEST_TIMER_EXPIRED,
-	UFS_EC_DL_FCx_PROTECT_TIMER_EXPIRED,
-	UFS_EC_DL_CRC_ERROR,
-	UFS_EC_DL_RX_BUFFER_OVERFLOW,
-	UFS_EC_DL_MAX_FRAME_LENGTH_EXCEEDED,
-	UFS_EC_DL_WRONG_SEQUENCE_NUMBER,
-	UFS_EC_DL_AFC_FRAME_SYNTAX_ERROR,
-	UFS_EC_DL_NAC_FRAME_SYNTAX_ERROR,
-	UFS_EC_DL_EOF_SYNTAX_ERROR,
-	UFS_EC_DL_FRAME_SYNTAX_ERROR,
-	UFS_EC_DL_BAD_CTRL_SYMBOL_TYPE,
-	UFS_EC_DL_PA_INIT_ERROR,
-	UFS_EC_DL_PA_ERROR_IND_RECEIVED,
-	UFS_EC_DL_MAX,
-};
-
 /* HCE - Host Controller Enable 34h */
 #define CONTROLLER_ENABLE	0x1
 #define CONTROLLER_DISABLE	0x0
@@ -234,18 +210,18 @@ enum ufshcd_ec_dl {
 
 /* UECPA - Host UIC Error Code PHY Adapter Layer 38h */
 #define UIC_PHY_ADAPTER_LAYER_ERROR			0x80000000
-#define UIC_PHY_ADAPTER_LAYER_GENERIC_ERROR		0x10
 #define UIC_PHY_ADAPTER_LAYER_ERROR_CODE_MASK		0x1F
 #define UIC_PHY_ADAPTER_LAYER_LANE_ERR_MASK		0xF
 
 /* UECDL - Host UIC Error Code Data Link Layer 3Ch */
 #define UIC_DATA_LINK_LAYER_ERROR		0x80000000
-#define UIC_DATA_LINK_LAYER_ERROR_CODE_MASK	0x7FFF
+#define UIC_DATA_LINK_LAYER_ERROR_CODE_MASK	0xFFFF
 #define UIC_DATA_LINK_LAYER_ERROR_TCX_REP_TIMER_EXP	0x2
 #define UIC_DATA_LINK_LAYER_ERROR_AFCX_REQ_TIMER_EXP	0x4
 #define UIC_DATA_LINK_LAYER_ERROR_FCX_PRO_TIMER_EXP	0x8
 #define UIC_DATA_LINK_LAYER_ERROR_RX_BUF_OF	0x20
-#define UIC_DATA_LINK_LAYER_ERROR_PA_INIT	0x2000
+#define UIC_DATA_LINK_LAYER_ERROR_PA_INIT_ERROR	0x2000
+#define UIC_DATA_LINK_LAYER_ERROR_PA_INIT	0x8000
 #define UIC_DATA_LINK_LAYER_ERROR_NAC_RECEIVED	0x0001
 #define UIC_DATA_LINK_LAYER_ERROR_TCx_REPLAY_TIMEOUT 0x0002
 
@@ -547,22 +523,25 @@ struct utp_transfer_req_desc {
 	__le16  prd_table_offset;
 };
 
-/**
- * struct utp_task_req_desc - UTMRD structure
- * @header: UTMRD header DW-0 to DW-3
- * @task_req_upiu: Pointer to task request UPIU DW-4 to DW-11
- * @task_rsp_upiu: Pointer to task response UPIU DW12 to DW-19
+/*
+ * UTMRD structure.
  */
 struct utp_task_req_desc {
-
 	/* DW 0-3 */
 	struct request_desc_header header;
 
-	/* DW 4-11 */
-	__le32 task_req_upiu[TASK_REQ_UPIU_SIZE_DWORDS];
+	/* DW 4-11 - Task request UPIU structure */
+	struct utp_upiu_header	req_header;
+	__be32			input_param1;
+	__be32			input_param2;
+	__be32			input_param3;
+	__be32			__reserved1[2];
 
-	/* DW 12-19 */
-	__le32 task_rsp_upiu[TASK_RSP_UPIU_SIZE_DWORDS];
+	/* DW 12-19 - Task Management Response UPIU structure */
+	struct utp_upiu_header	rsp_header;
+	__be32			output_param1;
+	__be32			output_param2;
+	__be32			__reserved2[3];
 };
 
 #endif /* End of Header */

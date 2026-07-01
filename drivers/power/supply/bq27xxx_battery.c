@@ -628,6 +628,9 @@ static enum power_supply_property bq27541_props[] = {
 	POWER_SUPPLY_PROP_POWER_AVG,
 	POWER_SUPPLY_PROP_HEALTH,
 	POWER_SUPPLY_PROP_MANUFACTURER,
+#if defined(CONFIG_MACH_MT6893)
+	POWER_SUPPLY_PROP_CHARGE_COUNTER
+#endif
 };
 #define bq27542_props bq27541_props
 #define bq27546_props bq27541_props
@@ -877,8 +880,10 @@ static int poll_interval_param_set(const char *val, const struct kernel_param *k
 		return ret;
 
 	mutex_lock(&bq27xxx_list_lock);
-	list_for_each_entry(di, &bq27xxx_battery_devices, list)
-		mod_delayed_work(system_wq, &di->work, 0);
+	list_for_each_entry(di, &bq27xxx_battery_devices, list) {
+		cancel_delayed_work_sync(&di->work);
+		schedule_delayed_work(&di->work, 0);
+	}
 	mutex_unlock(&bq27xxx_list_lock);
 
 	return ret;
@@ -1549,7 +1554,7 @@ static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
 	return POWER_SUPPLY_HEALTH_GOOD;
 }
 
-static void bq27xxx_battery_update_unlocked(struct bq27xxx_device_info *di)
+void bq27xxx_battery_update(struct bq27xxx_device_info *di)
 {
 	struct bq27xxx_reg_cache cache = {0, };
 	bool has_ci_flag = di->opts & BQ27XXX_O_ZERO;
@@ -1597,16 +1602,6 @@ static void bq27xxx_battery_update_unlocked(struct bq27xxx_device_info *di)
 		di->cache = cache;
 
 	di->last_update = jiffies;
-
-	if (!di->removed && poll_interval > 0)
-		mod_delayed_work(system_wq, &di->work, poll_interval * HZ);
-}
-
-void bq27xxx_battery_update(struct bq27xxx_device_info *di)
-{
-	mutex_lock(&di->lock);
-	bq27xxx_battery_update_unlocked(di);
-	mutex_unlock(&di->lock);
 }
 EXPORT_SYMBOL_GPL(bq27xxx_battery_update);
 
@@ -1617,6 +1612,9 @@ static void bq27xxx_battery_poll(struct work_struct *work)
 				     work.work);
 
 	bq27xxx_battery_update(di);
+
+	if (poll_interval > 0)
+		schedule_delayed_work(&di->work, poll_interval * HZ);
 }
 
 /*
@@ -1775,18 +1773,45 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
 {
 	int ret = 0;
 	struct bq27xxx_device_info *di = power_supply_get_drvdata(psy);
-
+#if defined(CONFIG_MACH_MT6893)
+	struct power_supply *chg_psy;
+	union power_supply_propval online_val;
+	union power_supply_propval type_val;
+#endif
 	mutex_lock(&di->lock);
-	if (time_is_before_jiffies(di->last_update + 5 * HZ))
-		bq27xxx_battery_update_unlocked(di);
+	if (time_is_before_jiffies(di->last_update + 5 * HZ)) {
+		cancel_delayed_work_sync(&di->work);
+		bq27xxx_battery_poll(&di->work.work);
+	}
 	mutex_unlock(&di->lock);
 
+#if defined(CONFIG_MACH_MT6893)
+	chg_psy = power_supply_get_by_name("charger");
+	if (chg_psy == NULL) {
+		pr_info("[%s] can get charger psy\n", __func__);
+	} else {
+		power_supply_get_property(chg_psy, POWER_SUPPLY_PROP_ONLINE, &online_val);
+		power_supply_get_property(chg_psy, POWER_SUPPLY_PROP_CHARGE_TYPE, &type_val);
+	}
+#endif
 	if (psp != POWER_SUPPLY_PROP_PRESENT && di->cache.flags < 0)
 		return -ENODEV;
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_STATUS:
 		ret = bq27xxx_battery_status(di, val);
+#if defined(CONFIG_MACH_MT6893)
+		pr_info("original charger status(%d)", val->intval);
+		if ((val->intval == POWER_SUPPLY_STATUS_DISCHARGING) ||
+			(val->intval == POWER_SUPPLY_STATUS_NOT_CHARGING) ||
+			(val->intval == POWER_SUPPLY_STATUS_UNKNOWN)) {
+			if (online_val.intval && (type_val.intval != 0)) {
+				val->intval = POWER_SUPPLY_STATUS_CHARGING;
+				pr_info("update charger status(%d), online_val.intval(%d), type_val.intval(%d)",
+					val->intval,online_val.intval, type_val.intval);
+			}
+		}
+#endif
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
 		ret = bq27xxx_battery_voltage(di, val);
@@ -1851,6 +1876,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_MANUFACTURER:
 		val->strval = BQ27XXX_MANUFACTURER;
 		break;
+#if defined(CONFIG_MACH_MT6893)
+	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+		ret = bq27xxx_simple_value(di->cache.capacity, val);
+		if (val->intval >= 0)
+			val->intval = ((val->intval) * 8000) / 100;
+		break;
+#endif
 	default:
 		return -EINVAL;
 	}
@@ -1862,8 +1894,8 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
 {
 	struct bq27xxx_device_info *di = power_supply_get_drvdata(psy);
 
-	/* After charger plug in/out wait 0.5s for things to stabilize */
-	mod_delayed_work(system_wq, &di->work, HZ / 2);
+	cancel_delayed_work_sync(&di->work);
+	schedule_delayed_work(&di->work, 0);
 }
 
 int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
@@ -1886,7 +1918,11 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
 	if (!psy_desc)
 		return -ENOMEM;
 
+#if defined(CONFIG_MACH_MT6893)
+	psy_desc->name = "battery";
+#else
 	psy_desc->name = di->name;
+#endif
 	psy_desc->type = POWER_SUPPLY_TYPE_BATTERY;
 	psy_desc->properties = bq27xxx_chip_data[di->chip].props;
 	psy_desc->num_properties = bq27xxx_chip_data[di->chip].props_size;
@@ -1915,18 +1951,22 @@ EXPORT_SYMBOL_GPL(bq27xxx_battery_setup);
 
 void bq27xxx_battery_teardown(struct bq27xxx_device_info *di)
 {
-	mutex_lock(&bq27xxx_list_lock);
-	list_del(&di->list);
-	mutex_unlock(&bq27xxx_list_lock);
-
-	/* Set removed to avoid bq27xxx_battery_update() re-queuing the work */
-	mutex_lock(&di->lock);
-	di->removed = true;
-	mutex_unlock(&di->lock);
+	/*
+	 * power_supply_unregister call bq27xxx_battery_get_property which
+	 * call bq27xxx_battery_poll.
+	 * Make sure that bq27xxx_battery_poll will not call
+	 * schedule_delayed_work again after unregister (which cause OOPS).
+	 */
+	poll_interval = 0;
 
 	cancel_delayed_work_sync(&di->work);
 
 	power_supply_unregister(di->bat);
+
+	mutex_lock(&bq27xxx_list_lock);
+	list_del(&di->list);
+	mutex_unlock(&bq27xxx_list_lock);
+
 	mutex_destroy(&di->lock);
 }
 EXPORT_SYMBOL_GPL(bq27xxx_battery_teardown);

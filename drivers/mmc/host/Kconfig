@@ -13,6 +13,67 @@ config MMC_DEBUG
 	  added host drivers please don't invent their private macro for
 	  debugging.
 
+config MMC_MTK_PRO
+	tristate "MediaTek SD/MMC Card Proprietary Interface support"
+	depends on !MMC_MTK
+	select RPMB
+	help
+	  This selects the MediaTek(R) Secure digital and Multimedia card
+	  Interface. If you have a machine with a integrated SD/MMC card
+	  reader, say Y or M here.
+
+	  If unsure, say N.
+
+config MTK_EMMC_SUPPORT
+	bool "MediaTek eMMC Card boot support"
+	depends on MMC_MTK_PRO
+	help
+	  This enables using embedded Multimedia card (eMMC) as booting
+	  device on MTK platform. Say Y if you turns on MTK_EMMC and want to
+	  use eMMC as booting device.
+
+	  If unsure, say N.
+
+config MTK_EMMC_CACHE
+	tristate "MediaTek eMMC Card cache support"
+	depends on MTK_EMMC_SUPPORT
+	default n
+	help
+	  This enables eMMC cache scheme designed by MTK.
+	  Say Y if you turns on MTK_EMMC_SUPPORT and want to use MTK eMMC
+	  cacheas scheme.
+
+	  If unsure, say N.
+
+config MTK_EMMC_SUPPORT_OTP
+	tristate "MediaTek eMMC Card OTP support"
+	help
+	  This enables MTK One-Time-Programming (OTP) partition support on eMMC
+	  device. Say Y if you turns on MTK_EMMC and want to use MTK OTP
+	  partition for storing One-Time-Programming data.
+
+	  If unsure, say N.
+
+config MTK_EMMC_CQ_SUPPORT
+	tristate "MediaTek eMMC Command Queuing support"
+	depends on MTK_EMMC_SUPPORT
+	default n
+	help
+	  This enables eMMC Command Queuing support by MTK.
+	  Say Y if you turns on MTK_EMMC_SUPPORT and want to
+	  use MTK eMMC Command Queuing scheme.
+	  If unsure, say N.
+
+config MTK_EMMC_HW_CQ
+	tristate "MediaTek eMMC hardware Command Queuing support"
+	depends on MTK_EMMC_SUPPORT
+	depends on !MTK_EMMC_CQ_SUPPORT
+	default n
+	help
+	  This enables eMMC hardware Command Queuing support by MTK.
+	  Say Y if you turns on MTK_EMMC_HW_CQ and want to
+	  use MTK eMMC hardware Command Queuing scheme.
+	  If unsure, say N.
 config MMC_ARMMMCI
 	tristate "ARM AMBA Multimedia Card Interface support"
 	depends on ARM_AMBA
@@ -120,8 +181,6 @@ config MMC_SDHCI_ACPI
 config MMC_SDHCI_PLTFM
 	tristate "SDHCI platform and OF driver helper"
 	depends on MMC_SDHCI
-	select EXTCON
-	select EXTCON_GPIO
 	help
 	  This selects the common helper functions support for Secure Digital
 	  Host Controller Interface based platform and OF drivers.
@@ -423,7 +482,7 @@ config MMC_OMAP_HS
 
 config MMC_WBSD
 	tristate "Winbond W83L51xD SD/MMC Card Interface support"
-	depends on ISA_DMA_API && !M68K
+	depends on ISA_DMA_API
 	help
 	  This selects the Winbond(R) W83L51xD Secure digital and
           Multimedia card Interface.
@@ -433,12 +492,11 @@ config MMC_WBSD
 	  If unsure, say N.
 
 config MMC_AU1X
-	bool "Alchemy AU1XX0 MMC Card Interface support"
+	tristate "Alchemy AU1XX0 MMC Card Interface support"
 	depends on MIPS_ALCHEMY
-	depends on MMC=y
 	help
 	  This selects the AMD Alchemy(R) Multimedia card interface.
-	  If you have a Alchemy platform with a MMC slot, say Y here.
+	  If you have a Alchemy platform with a MMC slot, say Y or M here.
 
 	  If unsure, say N.
 
@@ -453,31 +511,19 @@ config MMC_ATMELMCI
 	  If unsure, say N.
 
 config MMC_SDHCI_MSM
-	tristate "Qualcomm Technologies, Inc. SDHCI Controller Support"
+	tristate "Qualcomm SDHCI Controller Support"
 	depends on ARCH_QCOM || (ARM && COMPILE_TEST)
 	depends on MMC_SDHCI_PLTFM
 	select MMC_SDHCI_IO_ACCESSORS
-	select MMC_CQHCI
 	help
 	  This selects the Secure Digital Host Controller Interface (SDHCI)
-	  support present in Qualcomm Technologies, Inc. SOCs. The controller
-	  supports SD/MMC/SDIO devices.
+	  support present in Qualcomm SOCs. The controller supports
+	  SD/MMC/SDIO devices.
 
 	  If you have a controller with this interface, say Y or M here.
 
 	  If unsure, say N.
 
-# huaqin add for SD card bringup by liufurong at 20190201 start
-config MMC_SDHCI_BH201
-	bool "Bayhub BH201 SD bridge for Qualcomm SDHCI Controller Support"
-	depends on MMC_SDHCI_MSM
-	help
-	  This selects the Bayhub BH201 SD bus bridge additions for get better
-	  signal integrity.
-
-	  Select this if you have BH201 supported for SDHCI on QTI chipset.
-	  If unsure, say N.
-# huaqin add for SD card bringup by liufurong at 20190201 end
 config MMC_MXC
 	tristate "Freescale i.MX21/27/31 or MPC512x Multimedia Card support"
 	depends on ARCH_MXC || PPC_MPC512x
@@ -939,6 +985,15 @@ config MMC_SDHCI_BRCMSTB
 
 	  If unsure, say Y.
 
+config MMC_MTK_SDIO
+	tristate "MediaTek SDIO Card Interface support"
+	depends on HAS_DMA
+	help
+	  This selects the MediaTek(R) SDIO Interface.
+	  If you have a machine with a integrated SDIO card reader, say Y or M here.
+	  This is needed if support for any SDIO devices is required.
+	  If unsure, say N.
+
 config MMC_SDHCI_XENON
 	tristate "Marvell Xenon eMMC/SD/SDIO SDHCI driver"
 	depends on MMC_SDHCI_PLTFM
@@ -949,32 +1004,16 @@ config MMC_SDHCI_XENON
 
 config MMC_SDHCI_OMAP
 	tristate "TI SDHCI Controller Support"
-	depends on ARCH_OMAP2PLUS || ARCH_KEYSTONE || COMPILE_TEST
 	depends on MMC_SDHCI_PLTFM && OF
 	select THERMAL
 	imply TI_SOC_THERMAL
 	help
 	  This selects the Secure Digital Host Controller Interface (SDHCI)
-	  support present in TI's Keystone/OMAP2+/DRA7 SOCs. The controller
-	  supports SD/MMC/SDIO devices.
+	  support present in TI's DRA7 SOCs. The controller supports
+	  SD/MMC/SDIO devices.
 
 	  If you have a controller with this interface, say Y or M here.
 
 	  If unsure, say N.
 
-config MMC_CQHCI_CRYPTO
-	bool "CQHCI Crypto Engine Support"
-	depends on MMC_CQHCI && BLK_INLINE_ENCRYPTION
-	help
-	  Enable Crypto Engine Support in CQHCI.
-	  Enabling this makes it possible for the kernel to use the crypto
-	  capabilities of the CQHCI device (if present) to perform crypto
-	  operations on data being transferred to/from the device.
-
-config MMC_CQHCI_CRYPTO_QTI
-	bool "Vendor specific CQHCI Crypto Engine Support"
-	depends on MMC_CQHCI_CRYPTO
-	help
-	 Enable Vendor Crypto Engine Support in CQHCI
-	 Enabling this allows kernel to use CQHCI crypto operations defined
-	 and implemented by QTI.
+source "drivers/mmc/host/mediatek/Kconfig"

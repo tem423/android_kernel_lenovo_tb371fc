@@ -45,9 +45,23 @@ static const char * const power_supply_type_text[] = {
 	"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
 	"USB_PD", "USB_PD_DRP", "BrickID",
 	"USB_HVDCP", "USB_HVDCP_3", "USB_HVDCP_3P5", "Wireless", "USB_FLOAT",
-	"BMS", "Parallel", "Main", "Wipower", "USB_C_DFP",
-	"Charge_Pump", "POGO",
+	"BMS", "Parallel", "Main", "USB_C_UFP", "USB_C_DFP",
+	"Charge_Pump",
 };
+
+/*Spruce code for OSPURCET-36 by liugong2 at 20221214 start*/
+static const char * const power_supply_real_type_text[] = {
+    "UNKNOWN",
+    "USB",
+    "CDP",
+    "FLOAT",
+    "DCP",
+    "PD_PPS",
+    "PD20",
+    "PEPLUS20"
+};
+/*Spruce code for OSPURCET-36 by liugong2 at 20221214 end*/
+
 
 static const char * const power_supply_usb_type_text[] = {
 	"Unknown", "SDP", "DCP", "CDP", "ACA", "C",
@@ -87,7 +101,13 @@ static const char * const power_supply_usbc_text[] = {
 	"Source attached (default current)",
 	"Source attached (medium current)",
 	"Source attached (high current)",
+	"Debug Accessory Mode (default current)",
+	"Debug Accessory Mode (medium current)",
+	"Debug Accessory Mode (high current)",
 	"Non compliant",
+	"Non compliant (Rp-Default/Rp-Default)",
+	"Non compliant (Rp-1.5A/Rp-1.5A)",
+	"Non compliant (Rp-3A/Rp-3A)"
 };
 
 static const char * const power_supply_usbc_pr_text[] = {
@@ -148,8 +168,7 @@ static ssize_t power_supply_show_property(struct device *dev,
 
 		if (ret < 0) {
 			if (ret == -ENODATA)
-				dev_dbg_ratelimited(dev,
-					"driver has no data for `%s' property\n",
+				dev_dbg(dev, "driver has no data for `%s' property\n",
 					attr->attr.name);
 			else if (ret != -ENODEV && ret != -EAGAIN)
 				dev_err_ratelimited(dev,
@@ -180,11 +199,16 @@ static ssize_t power_supply_show_property(struct device *dev,
 		ret = sprintf(buf, "%s\n",
 			      power_supply_capacity_level_text[value.intval]);
 		break;
+	/*Spruce code for OSPURCET-36 by liugong2 at 20221214 start*/
 	case POWER_SUPPLY_PROP_TYPE:
-	case POWER_SUPPLY_PROP_REAL_TYPE:
 		ret = sprintf(buf, "%s\n",
 			      power_supply_type_text[value.intval]);
 		break;
+	case POWER_SUPPLY_PROP_REAL_TYPE:
+		ret = sprintf(buf, "%s\n",
+			      power_supply_real_type_text[value.intval]);
+		break;
+	/*Spruce code for OSPURCET-36 by liugong2 at 20221214 end*/
 	case POWER_SUPPLY_PROP_USB_TYPE:
 		ret = power_supply_show_usb_type(dev, psy->desc->usb_types,
 						 psy->desc->num_usb_types,
@@ -311,6 +335,9 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(charge_now),
 	POWER_SUPPLY_ATTR(charge_avg),
 	POWER_SUPPLY_ATTR(charge_counter),
+	/* Spruce code for OSPURCET-1294 by tangsf2 at 2023.02.15 start */
+	POWER_SUPPLY_ATTR(adc_dis),
+	/* Spruce code for OSPURCET-1294 by tangsf2 at 2023.02.15 end */
 	POWER_SUPPLY_ATTR(constant_charge_current),
 	POWER_SUPPLY_ATTR(constant_charge_current_max),
 	POWER_SUPPLY_ATTR(constant_charge_voltage),
@@ -429,7 +456,6 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(pd_voltage_max),
 	POWER_SUPPLY_ATTR(pd_voltage_min),
 	POWER_SUPPLY_ATTR(sdp_current_max),
-	POWER_SUPPLY_ATTR(fg_reset_clock),
 	POWER_SUPPLY_ATTR(connector_type),
 	POWER_SUPPLY_ATTR(parallel_batfet_mode),
 	POWER_SUPPLY_ATTR(parallel_fcc_max),
@@ -438,7 +464,6 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(batt_profile_version),
 	POWER_SUPPLY_ATTR(batt_full_current),
 	POWER_SUPPLY_ATTR(recharge_soc),
-    POWER_SUPPLY_ATTR(recharge_mv),
 	POWER_SUPPLY_ATTR(hvdcp_opti_allowed),
 	POWER_SUPPLY_ATTR(smb_en_mode),
 	POWER_SUPPLY_ATTR(smb_en_reason),
@@ -466,14 +491,29 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(comp_clamp_level),
 	POWER_SUPPLY_ATTR(adapter_cc_mode),
 	POWER_SUPPLY_ATTR(skin_health),
+	POWER_SUPPLY_ATTR(charge_disable),
+	POWER_SUPPLY_ATTR(adapter_details),
+	POWER_SUPPLY_ATTR(dead_battery),
+	POWER_SUPPLY_ATTR(voltage_fifo),
+	POWER_SUPPLY_ATTR(cc_uah),
+	POWER_SUPPLY_ATTR(operating_freq),
+	POWER_SUPPLY_ATTR(aicl_delay),
+	POWER_SUPPLY_ATTR(aicl_icl),
+	POWER_SUPPLY_ATTR(rtx),
+	POWER_SUPPLY_ATTR(cutoff_soc),
+	POWER_SUPPLY_ATTR(sys_soc),
+	POWER_SUPPLY_ATTR(batt_soc),
+	/* Capacity Estimation */
+	POWER_SUPPLY_ATTR(batt_ce_ctrl),
+	POWER_SUPPLY_ATTR(batt_ce_full),
+	/* Resistance Estimaton */
+	POWER_SUPPLY_ATTR(resistance_avg),
+	POWER_SUPPLY_ATTR(batt_res_filt_cnts),
 	POWER_SUPPLY_ATTR(aicl_done),
 	POWER_SUPPLY_ATTR(voltage_step),
+	POWER_SUPPLY_ATTR(otg_fastroleswap),
 	POWER_SUPPLY_ATTR(apsd_rerun),
 	POWER_SUPPLY_ATTR(apsd_timeout),
-    POWER_SUPPLY_ATTR(elapsed_months),
-	POWER_SUPPLY_ATTR(gauge_voltage),
-	POWER_SUPPLY_ATTR(battery_maintenance),
-	POWER_SUPPLY_ATTR(battery_maintenance_set),
 	/* Charge pump properties */
 	POWER_SUPPLY_ATTR(cp_status1),
 	POWER_SUPPLY_ATTR(cp_status2),
@@ -487,13 +527,17 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(cp_ilim),
 	POWER_SUPPLY_ATTR(irq_status),
 	POWER_SUPPLY_ATTR(parallel_output_mode),
+	POWER_SUPPLY_ATTR(alignment),
+	POWER_SUPPLY_ATTR(moisture_detection_enabled),
 	POWER_SUPPLY_ATTR(cc_toggle_enable),
 	POWER_SUPPLY_ATTR(fg_type),
 	POWER_SUPPLY_ATTR(charger_status),
 	/* Local extensions of type int64_t */
 	POWER_SUPPLY_ATTR(charge_counter_ext),
+	POWER_SUPPLY_ATTR(charge_charger_state),
 	/* Properties of type `const char *' */
 	POWER_SUPPLY_ATTR(model_name),
+	POWER_SUPPLY_ATTR(ptmc_id),
 	POWER_SUPPLY_ATTR(manufacturer),
 	POWER_SUPPLY_ATTR(battery_type),
 	POWER_SUPPLY_ATTR(cycle_counts),
@@ -583,8 +627,6 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
 	if (ret)
 		return ret;
 
-    dev_dbg(dev, "%s: POWER_SUPPLY_NAME=%s\n", __FUNCTION__, psy->desc->name);
-	
 	prop_buf = (char *)get_zeroed_page(GFP_KERNEL);
 	if (!prop_buf)
 		return -ENOMEM;
@@ -594,6 +636,12 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
 		char *line;
 
 		attr = &power_supply_attrs[psy->desc->properties[j]];
+
+		if (!attr->attr.name) {
+			dev_info(dev, "%s:%d FAKE attr.name=NULL skip\n",
+				__FILE__, __LINE__);
+			continue;
+		}
 
 		ret = power_supply_show_property(dev, attr, prop_buf);
 		if (ret == -ENODEV || ret == -ENODATA) {

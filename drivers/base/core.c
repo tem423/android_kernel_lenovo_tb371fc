@@ -306,8 +306,7 @@ struct device_link *device_link_add(struct device *consumer,
 {
 	struct device_link *link;
 
-	if (!consumer || !supplier || consumer == supplier ||
-	    flags & ~DL_ADD_VALID_FLAGS ||
+	if (!consumer || !supplier || flags & ~DL_ADD_VALID_FLAGS ||
 	    (flags & DL_FLAG_STATELESS && flags & DL_MANAGED_LINK_FLAGS) ||
 	    (flags & DL_FLAG_SYNC_STATE_ONLY &&
 	     flags != DL_FLAG_SYNC_STATE_ONLY) ||
@@ -738,8 +737,6 @@ static void __device_links_queue_sync_state(struct device *dev,
 {
 	struct device_link *link;
 
-	if (!dev_has_sync_state(dev))
-		return;
 	if (dev->state_synced)
 		return;
 
@@ -757,11 +754,11 @@ static void __device_links_queue_sync_state(struct device *dev,
 	 */
 	dev->state_synced = true;
 
-	if (WARN_ON(!list_empty(&dev->links.defer_hook)))
+	if (WARN_ON(!list_empty(&dev->links.defer_sync)))
 		return;
 
 	get_device(dev);
-	list_add_tail(&dev->links.defer_hook, list);
+	list_add_tail(&dev->links.defer_sync, list);
 }
 
 /**
@@ -779,8 +776,8 @@ static void device_links_flush_sync_list(struct list_head *list,
 {
 	struct device *dev, *tmp;
 
-	list_for_each_entry_safe(dev, tmp, list, links.defer_hook) {
-		list_del_init(&dev->links.defer_hook);
+	list_for_each_entry_safe(dev, tmp, list, links.defer_sync) {
+		list_del_init(&dev->links.defer_sync);
 
 		if (dev != dont_lock_dev)
 			device_lock(dev);
@@ -818,12 +815,12 @@ void device_links_supplier_sync_state_resume(void)
 	if (defer_sync_state_count)
 		goto out;
 
-	list_for_each_entry_safe(dev, tmp, &deferred_sync, links.defer_hook) {
+	list_for_each_entry_safe(dev, tmp, &deferred_sync, links.defer_sync) {
 		/*
 		 * Delete from deferred_sync list before queuing it to
-		 * sync_list because defer_hook is used for both lists.
+		 * sync_list because defer_sync is used for both lists.
 		 */
-		list_del_init(&dev->links.defer_hook);
+		list_del_init(&dev->links.defer_sync);
 		__device_links_queue_sync_state(dev, &sync_list);
 	}
 out:
@@ -841,8 +838,8 @@ late_initcall(sync_state_resume_initcall);
 
 static void __device_links_supplier_defer_sync(struct device *sup)
 {
-	if (list_empty(&sup->links.defer_hook) && dev_has_sync_state(sup))
-		list_add_tail(&sup->links.defer_hook, &deferred_sync);
+	if (list_empty(&sup->links.defer_sync))
+		list_add_tail(&sup->links.defer_sync, &deferred_sync);
 }
 
 static void device_link_drop_managed(struct device_link *link)
@@ -1055,7 +1052,7 @@ void device_links_driver_cleanup(struct device *dev)
 		WRITE_ONCE(link->status, DL_STATE_DORMANT);
 	}
 
-	list_del_init(&dev->links.defer_hook);
+	list_del_init(&dev->links.defer_sync);
 	__device_links_no_driver(dev);
 
 	device_links_write_unlock();
@@ -1163,7 +1160,7 @@ static void device_links_purge(struct device *dev)
 	struct device_link *link, *ln;
 
 	mutex_lock(&wfs_lock);
-	list_del_init(&dev->links.needs_suppliers);
+	list_del(&dev->links.needs_suppliers);
 	mutex_unlock(&wfs_lock);
 
 	/*
@@ -1211,13 +1208,13 @@ static void fw_devlink_link_device(struct device *dev)
 	if (!defer_fw_devlink_count) {
 		fw_ret = fwnode_call_int_op(dev->fwnode, add_links, dev);
 	} else {
-		fw_ret = -ENODEV;
 		/*
 		 * defer_hook is not used to add device to deferred_sync list
 		 * until device is bound. Since deferred fw devlink also blocks
 		 * probing, same list hook can be used for deferred_fw_devlink.
 		 */
-		list_add_tail(&dev->links.defer_hook, &deferred_fw_devlink);
+		list_add_tail(&dev->links.defer_sync, &deferred_fw_devlink);
+		fw_ret = -ENODEV;
 	}
 
 	if (fw_ret == -ENODEV)
@@ -1309,8 +1306,8 @@ out:
 	 * try to grab defer_fw_devlink_lock. So, this needs to be done outside
 	 * the defer_fw_devlink_lock.
 	 */
-	list_for_each_entry_safe(dev, tmp, &probe_list, links.defer_hook) {
-		list_del_init(&dev->links.defer_hook);
+	list_for_each_entry_safe(dev, tmp, &probe_list, links.defer_sync) {
+		list_del_init(&dev->links.defer_sync);
 		bus_probe_device(dev);
 	}
 }
@@ -1342,11 +1339,6 @@ int lock_device_hotplug_sysfs(void)
 	/* Avoid busy looping (5 ms of sleep should do). */
 	msleep(5);
 	return restart_syscall();
-}
-
-void lock_device_hotplug_assert(void)
-{
-	lockdep_assert_held(&device_hotplug_lock);
 }
 
 #ifdef CONFIG_BLOCK
@@ -2135,7 +2127,7 @@ void device_initialize(struct device *dev)
 	INIT_LIST_HEAD(&dev->links.consumers);
 	INIT_LIST_HEAD(&dev->links.suppliers);
 	INIT_LIST_HEAD(&dev->links.needs_suppliers);
-	INIT_LIST_HEAD(&dev->links.defer_hook);
+	INIT_LIST_HEAD(&dev->links.defer_sync);
 	dev->links.status = DL_DEV_NO_DRIVER;
 }
 EXPORT_SYMBOL_GPL(device_initialize);
@@ -2350,7 +2342,7 @@ static int device_add_class_symlinks(struct device *dev)
 	struct device_node *of_node = dev_of_node(dev);
 	int error;
 
-	if (of_node && of_node_kobj(of_node)) {
+	if (of_node) {
 		error = sysfs_create_link(&dev->kobj, of_node_kobj(of_node), "of_node");
 		if (error)
 			dev_warn(dev, "Error %d creating of_node link\n",error);
@@ -3804,50 +3796,6 @@ define_dev_printk_level(_dev_notice, KERN_NOTICE);
 define_dev_printk_level(_dev_info, KERN_INFO);
 
 #endif
-
-/**
- * dev_err_probe - probe error check and log helper
- * @dev: the pointer to the struct device
- * @err: error value to test
- * @fmt: printf-style format string
- * @...: arguments as specified in the format string
- *
- * This helper implements common pattern present in probe functions for error
- * checking: print debug or error message depending if the error value is
- * -EPROBE_DEFER and propagate error upwards.
- * It replaces code sequence::
- * 	if (err != -EPROBE_DEFER)
- * 		dev_err(dev, ...);
- * 	else
- * 		dev_dbg(dev, ...);
- * 	return err;
- *
- * with::
- *
- * 	return dev_err_probe(dev, err, ...);
- *
- * Returns @err.
- *
- */
-int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
-{
-	struct va_format vaf;
-	va_list args;
-
-	va_start(args, fmt);
-	vaf.fmt = fmt;
-	vaf.va = &args;
-
-	if (err != -EPROBE_DEFER)
-		dev_err(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
-	else
-		dev_dbg(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
-
-	va_end(args);
-
-	return err;
-}
-EXPORT_SYMBOL_GPL(dev_err_probe);
 
 static inline bool fwnode_is_primary(struct fwnode_handle *fwnode)
 {

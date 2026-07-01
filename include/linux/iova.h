@@ -135,7 +135,7 @@ static inline unsigned long iova_pfn(struct iova_domain *iovad, dma_addr_t iova)
 	return iova >> iova_shift(iovad);
 }
 
-#if IS_REACHABLE(CONFIG_IOMMU_IOVA)
+#if IS_ENABLED(CONFIG_IOMMU_IOVA)
 int iova_cache_get(void);
 void iova_cache_put(void);
 
@@ -151,11 +151,25 @@ void free_iova_fast(struct iova_domain *iovad, unsigned long pfn,
 void queue_iova(struct iova_domain *iovad,
 		unsigned long pfn, unsigned long pages,
 		unsigned long data);
+#ifdef CONFIG_MTK_IOMMU_V2
+unsigned long
+alloc_iova_fast(struct iova_domain *iovad, unsigned long size,
+		unsigned long limit_pfn, bool size_align);
+#else
 unsigned long alloc_iova_fast(struct iova_domain *iovad, unsigned long size,
 			      unsigned long limit_pfn, bool flush_rcache);
+#endif
 struct iova *reserve_iova(struct iova_domain *iovad, unsigned long pfn_lo,
 	unsigned long pfn_hi);
 void copy_reserved_iova(struct iova_domain *from, struct iova_domain *to);
+#ifdef CONFIG_MTK_IOMMU_V2
+void iovad_scan_reserved_iova(void *arg,
+		struct iova_domain *iovad,
+		void (*f)(void *domain, unsigned long start,
+			unsigned long end, unsigned long size,
+			unsigned long target),
+		unsigned long target);
+#endif
 void init_iova_domain(struct iova_domain *iovad, unsigned long granule,
 	unsigned long start_pfn);
 bool has_iova_flush_queue(struct iova_domain *iovad);
@@ -166,7 +180,6 @@ void put_iova_domain(struct iova_domain *iovad);
 struct iova *split_and_remove_iova(struct iova_domain *iovad,
 	struct iova *iova, unsigned long pfn_lo, unsigned long pfn_hi);
 void free_cpu_cached_iovas(unsigned int cpu, struct iova_domain *iovad);
-void free_global_cached_iovas(struct iova_domain *iovad);
 #else
 static inline int iova_cache_get(void)
 {
@@ -274,11 +287,6 @@ static inline void free_cpu_cached_iovas(unsigned int cpu,
 					 struct iova_domain *iovad)
 {
 }
-
-static inline void free_global_cached_iovas(struct iova_domain *iovad)
-{
-}
-
 #endif
 
 #endif

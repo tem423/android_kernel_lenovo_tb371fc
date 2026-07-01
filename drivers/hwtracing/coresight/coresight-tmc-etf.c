@@ -26,7 +26,7 @@ static void __tmc_etb_enable_hw(struct tmc_drvdata *drvdata)
 	writel_relaxed(TMC_MODE_CIRCULAR_BUFFER, drvdata->base + TMC_MODE);
 	writel_relaxed(TMC_FFCR_EN_FMT | TMC_FFCR_EN_TI |
 		       TMC_FFCR_FON_FLIN | TMC_FFCR_FON_TRIG_EVT |
-		       TMC_FFCR_TRIGON_TRIGIN | TMC_FFCR_STOP_ON_FLUSH,
+		       TMC_FFCR_TRIGON_TRIGIN,
 		       drvdata->base + TMC_FFCR);
 
 	writel_relaxed(drvdata->trigger_cntr, drvdata->base + TMC_TRG);
@@ -220,12 +220,6 @@ out:
 	if (!used)
 		kfree(buf);
 
-	if (!ret) {
-		coresight_cti_map_trigin(drvdata->cti_reset, 0, 0);
-		coresight_cti_map_trigout(drvdata->cti_flush, 1, 0);
-		dev_info(drvdata->dev, "TMC-ETB/ETF enabled\n");
-	}
-
 	return ret;
 }
 
@@ -312,9 +306,6 @@ static int tmc_disable_etf_sink(struct coresight_device *csdev)
 	drvdata->mode = CS_MODE_DISABLED;
 
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);
-
-	coresight_cti_unmap_trigin(drvdata->cti_reset, 0, 0);
-	coresight_cti_unmap_trigout(drvdata->cti_flush, 1, 0);
 
 	dev_dbg(drvdata->dev, "TMC-ETB/ETF disabled\n");
 	return 0;
@@ -413,7 +404,7 @@ static int tmc_set_etf_buffer(struct coresight_device *csdev,
 		return -EINVAL;
 
 	/* wrap head around to the amount of space we have */
-	head = handle->head & (((unsigned long)buf->nr_pages << PAGE_SHIFT) - 1);
+	head = handle->head & ((buf->nr_pages << PAGE_SHIFT) - 1);
 
 	/* find the page to write to */
 	buf->cur = head / PAGE_SIZE;
@@ -510,7 +501,7 @@ static unsigned long tmc_update_etf_buffer(struct coresight_device *csdev,
 		buf_ptr = buf->data_pages[cur] + offset;
 		*buf_ptr = readl_relaxed(drvdata->base + TMC_RRD);
 
-		if (lost && i < CORESIGHT_BARRIER_PKT_SIZE) {
+		if (lost && *barrier) {
 			*buf_ptr = *barrier;
 			barrier++;
 		}
@@ -575,13 +566,11 @@ int tmc_read_prepare_etb(struct tmc_drvdata *drvdata)
 		goto out;
 	}
 
-	if (drvdata->enable) {
-		/* There is no point in reading a TMC in HW FIFO mode */
-		mode = readl_relaxed(drvdata->base + TMC_MODE);
-		if (mode != TMC_MODE_CIRCULAR_BUFFER) {
-			ret = -EINVAL;
-			goto out;
-		}
+	/* There is no point in reading a TMC in HW FIFO mode */
+	mode = readl_relaxed(drvdata->base + TMC_MODE);
+	if (mode != TMC_MODE_CIRCULAR_BUFFER) {
+		ret = -EINVAL;
+		goto out;
 	}
 
 	/* Don't interfere if operated from Perf */
@@ -597,12 +586,9 @@ int tmc_read_prepare_etb(struct tmc_drvdata *drvdata)
 	}
 
 	/* Disable the TMC if need be */
-	if (drvdata->mode == CS_MODE_SYSFS) {
-		spin_unlock_irqrestore(&drvdata->spinlock, flags);
-		coresight_disable_all_source_link();
-		spin_lock_irqsave(&drvdata->spinlock, flags);
+	if (drvdata->mode == CS_MODE_SYSFS)
 		__tmc_etb_disable_hw(drvdata);
-	}
+
 	drvdata->reading = true;
 out:
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);
@@ -623,7 +609,6 @@ int tmc_read_unprepare_etb(struct tmc_drvdata *drvdata)
 
 	spin_lock_irqsave(&drvdata->spinlock, flags);
 
-	drvdata->reading = false;
 	/* Re-enable the TMC if need be */
 	if (drvdata->mode == CS_MODE_SYSFS) {
 		/* There is no point in reading a TMC in HW FIFO mode */
@@ -642,9 +627,6 @@ int tmc_read_unprepare_etb(struct tmc_drvdata *drvdata)
 		 */
 		memset(drvdata->buf, 0, drvdata->size);
 		__tmc_etb_enable_hw(drvdata);
-		spin_unlock_irqrestore(&drvdata->spinlock, flags);
-		coresight_enable_all_source_link();
-		spin_lock_irqsave(&drvdata->spinlock, flags);
 	} else {
 		/*
 		 * The ETB/ETF is not tracing and the buffer was just read.
@@ -654,6 +636,7 @@ int tmc_read_unprepare_etb(struct tmc_drvdata *drvdata)
 		drvdata->buf = NULL;
 	}
 
+	drvdata->reading = false;
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);
 
 	/*

@@ -1,0 +1,73 @@
+/* AWINIC AW883XX Smart PA stereo*/
+&i2c6 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spk_id_pin_default>;
+	aw883xx_smartpa_0: aw883xx@34 {
+		compatible = "awinic,aw883xx_smartpa";
+                #sound-dai-cells = <0>;
+		reg = <0x34>;
+		reset-gpio = <&pio 110 0>;
+		spk-id-gpio = <&pio 25 0>;
+		sound-channel = <0>;
+		spin_data = "L L R R";
+		re-min = <1000>;
+		re-max= <40000>;
+		spin-mode = "reg_spin";
+		spin-data = "l l r r";
+		status = "okay";
+	};
+	aw883xx_smartpa_1: aw883xx@35 {
+		compatible = "awinic,aw883xx_smartpa";
+                #sound-dai-cells = <0>;
+		reg = <0x35>;
+		reset-gpio = <&pio 117 0>;
+		spk-id-gpio = <&pio 25 0>;
+		sound-channel = <1>;
+		spin_data = "R R L L";
+		re-min = <1000>;
+		re-max= <40000>;
+		spin-mode = "reg_spin";
+		spin-data = "r r l l";
+		status = "okay";
+	};
+	aw883xx_smartpa_2: aw883xx@36 {
+		compatible = "awinic,aw883xx_smartpa";
+                #sound-dai-cells = <0>;
+		reg = <0x36>;
+		reset-gpio = <&pio 118 0>;
+		spk-id-gpio = <&pio 25 0>;
+		sound-channel = <2>;
+		spin_data = "L R R L";
+		re-min = <1000>;
+		re-max= <40000>;
+		spin-mode = "reg_spin";
+		spin-data = "l r r l";
+		status = "okay";
+	};
+	aw883xx_smartpa_3: aw883xx@37 {
+		compatible = "awinic,aw883xx_smartpa";
+                #sound-dai-cells = <0>;
+		reg = <0x37>;
+		reset-gpio = <&pio 119 0>;
+		spk-id-gpio = <&pio 25 0>;
+		sound-channel = <3>;
+		spin_data = "R L L R";
+		re-min = <1000>;
+		re-max= <40000>;
+		spin-mode = "reg_spin";
+		spin-data = "r l l r";
+		status = "okay";
+	};
+};
+
+&pio {
+	spk_id_pin_default: spk_mode_default {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO25__FUNC_GPIO25>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_10>;
+			input-enable;
+			drive-strength = <0>;
+		};
+	};
+};
+/* AWINIC AW883XX Smart PA stereo End */

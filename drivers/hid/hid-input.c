@@ -60,8 +60,6 @@ static const struct {
 	__s32 y;
 }  hid_hat_to_axis[] = {{ 0, 0}, { 0,-1}, { 1,-1}, { 1, 0}, { 1, 1}, { 0, 1}, {-1, 1}, {-1, 0}, {-1,-1}};
 
-bool lenovo_i2c_kb_registed = false;
-
 #define map_abs(c)	hid_map_usage(hidinput, usage, &bit, &max, EV_ABS, (c))
 #define map_rel(c)	hid_map_usage(hidinput, usage, &bit, &max, EV_REL, (c))
 #define map_key(c)	hid_map_usage(hidinput, usage, &bit, &max, EV_KEY, (c))
@@ -429,6 +427,8 @@ static int hidinput_get_battery_property(struct power_supply *psy,
 
 		if (dev->battery_status == HID_BATTERY_UNKNOWN)
 			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
+		else if (dev->battery_capacity == 100)
+			val->intval = POWER_SUPPLY_STATUS_FULL;
 		else
 			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
 		break;
@@ -612,9 +612,15 @@ static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_fiel
 	case HID_UP_KEYBOARD:
 		set_bit(EV_REP, input->evbit);
 
+		dbg_hid("hidinput_configure_usage key:0x%x\n",usage->hid & HID_USAGE);
 		if ((usage->hid & HID_USAGE) < 256) {
 			if (!hid_keyboard[usage->hid & HID_USAGE]) goto ignore;
-			map_key_clear(hid_keyboard[usage->hid & HID_USAGE]);
+			if((usage->hid & HID_USAGE) == 0x32){
+				//dbg_hid("hidinput_configure_usage key:0x%x\n",usage->hid & HID_USAGE);
+				map_key_clear(KEY_NUMERIC_POUND);
+			}else{
+				map_key_clear(hid_keyboard[usage->hid & HID_USAGE]);
+			}
 		} else
 			map_key(KEY_UNKNOWN);
 
@@ -1039,8 +1045,6 @@ static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_fiel
 		case 0x28b: map_key_clear(KEY_FORWARDMAIL);	break;
 		case 0x28c: map_key_clear(KEY_SEND);		break;
 
-		case 0x2a2: map_key_clear(KEY_ALL_APPLICATIONS);	break;
-
 		case 0x2c7: map_key_clear(KEY_KBDINPUTASSIST_PREV);		break;
 		case 0x2c8: map_key_clear(KEY_KBDINPUTASSIST_NEXT);		break;
 		case 0x2c9: map_key_clear(KEY_KBDINPUTASSIST_PREVGROUP);		break;
@@ -1049,6 +1053,20 @@ static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_fiel
 		case 0x2cc: map_key_clear(KEY_KBDINPUTASSIST_CANCEL);	break;
 
 		case 0x29f: map_key_clear(KEY_SCALE);		break;
+		/*keyboard custom button start*/
+		case 0x27f: map_key_clear(KEY_KB_ENABLE);	break;
+		case 0x282: map_key_clear(KEY_KB_DISABLE);	break;
+		case 0x391: map_key_clear(KEY_MICDISABLE);	break;
+		case 0x392: map_key_clear(KEY_TOUCHPANELMUTE);	break;
+		case 0x393: map_key_clear(KEY_GLOBALSEARCH);	break;
+		case 0x394: map_key_clear(KEY_FULLSCREEN);	break;
+		case 0x395: map_key_clear(KEY_SPLITSCREEN);	break;
+		case 0x397: map_key_clear(KEY_SUPERINTCON);	break;
+		case 0x398: map_key_clear(KEY_CUSTOMERAPP1);	break;
+		case 0x399: map_key_clear(KEY_CUSTOMERAPP2);	break;
+		case 0x38e: map_key_clear(KEY_LOCKSCREEN);	break;
+		case 0x390: map_key_clear(KEY_SWITCHLANGUAGE);	break;
+		/*keyboard custom button end*/
 
 		default: map_key_clear(KEY_UNKNOWN);
 		}
@@ -1249,12 +1267,6 @@ void hidinput_hid_event(struct hid_device *hid, struct hid_field *field, struct 
 		return;
 
 	input = field->hidinput->input;
-
-	if (usage->type == EV_ABS &&
-	    (((*quirks & HID_QUIRK_X_INVERT) && usage->code == ABS_X) ||
-	     ((*quirks & HID_QUIRK_Y_INVERT) && usage->code == ABS_Y))) {
-		value = field->logical_maximum - value;
-	}
 
 	if (usage->hat_min < usage->hat_max || usage->hat_dir) {
 		int hat_dir = usage->hat_dir;
@@ -1741,13 +1753,69 @@ static inline void hidinput_configure_usages(struct hid_input *hidinput,
 			hidinput_configure_usage(hidinput, report->field[i],
 						 report->field[i]->usage + j);
 }
-
+#if 0
+void kb_report_power_key()
+{
+	printk(KERN_DEBUG "===%s===\n",__func__);
+	input_report_key(kb_input_dev, KEY_POWER, 1);
+	input_sync(kb_input_dev);
+	input_report_key(kb_input_dev, KEY_POWER, 0);
+	input_sync(kb_input_dev);
+}
+EXPORT_SYMBOL_GPL(kb_report_power_key);
+void mouse_report_power_key()
+{
+	printk(KERN_DEBUG "===%s===\n",__func__);
+	input_report_key(mouse_input_dev, KEY_POWER, 1);
+	input_sync(mouse_input_dev);
+	input_report_key(mouse_input_dev, KEY_POWER, 0);
+	input_sync(mouse_input_dev);
+}
+EXPORT_SYMBOL_GPL(mouse_report_power_key);
 /*
  * Register the input device; print a message.
  * Configure the input layer interface
  * Read all reports and initialize the absolute field values.
  */
+int register_kb_wakeup_devices(void)
+{
+	printk(KERN_DEBUG "==keyboard register_report_power_key==");
+	kb_input_dev = input_allocate_device();
+	if(kb_input_dev==NULL){
+		printk(KERN_ERR "failed to allocate keyboard report_power_key device");
+		return -1;
+	}
+	input_set_capability(kb_input_dev, EV_KEY, KEY_POWER);
+	input_set_capability(kb_input_dev, EV_KEY, KEY_KB_ENABLE);
+	input_set_capability(kb_input_dev, EV_KEY, KEY_KB_DISABLE);
+	kb_input_dev->name="keyboard_wakeup_devices";
+	if (input_register_device(kb_input_dev)){
+		printk(KERN_ERR "failed to register keyboard report_power_key device");
+		return -1;
+	}
+	return 0;
 
+}
+EXPORT_SYMBOL_GPL(register_kb_wakeup_devices);
+
+int register_mouse_wakeup_devices(void)
+{
+	printk(KERN_DEBUG "==mouse register_report_power_key==");
+	mouse_input_dev = input_allocate_device();
+	if(mouse_input_dev==NULL){
+		printk(KERN_ERR "failed to allocate mouse_wakeup_devices device");
+		return -1;
+	}
+	input_set_capability(mouse_input_dev, EV_KEY, KEY_POWER);
+	mouse_input_dev->name="mouse_wakeup_devices";
+	if (input_register_device(mouse_input_dev)){
+		printk(KERN_ERR "failed to register  mouse_wakeup_devices device");
+		return -1;
+	}
+	return 0;
+}
+EXPORT_SYMBOL_GPL(register_mouse_wakeup_devices);
+#endif
 int hidinput_connect(struct hid_device *hid, unsigned int force)
 {
 	struct hid_driver *drv = hid->driver;
@@ -1759,9 +1827,6 @@ int hidinput_connect(struct hid_device *hid, unsigned int force)
 	INIT_LIST_HEAD(&hid->inputs);
 	INIT_WORK(&hid->led_work, hidinput_led_worker);
 
-    if((hid->vendor == 0x17EF) && (hid->product == 0x6127)) {
-		hid->quirks &= ~HID_QUIRK_INPUT_PER_APP;
-	}
 	hid->status &= ~HID_STAT_DUP_DETECTED;
 
 	if (!force) {
@@ -1831,10 +1896,6 @@ int hidinput_connect(struct hid_device *hid, unsigned int force)
 		if (input_register_device(hidinput->input))
 			goto out_unwind;
 		hidinput->registered = true;
-		/* Lenovo 1-wire keyboard */
-		if((hid->vendor == 0x17EF) && (hid->product == 0x6127) && (hid->bus == BUS_I2C)) {
-			lenovo_i2c_kb_registed = true;
-		}
 	}
 
 	if (list_empty(&hid->inputs)) {
@@ -1845,7 +1906,6 @@ int hidinput_connect(struct hid_device *hid, unsigned int force)
 	if (hid->status & HID_STAT_DUP_DETECTED)
 		hid_dbg(hid,
 			"Some usages could not be mapped, please use HID_QUIRK_INCREMENT_USAGE_ON_DUPLICATE if this is legitimate.\n");
-
 	return 0;
 
 out_unwind:
@@ -1864,15 +1924,10 @@ void hidinput_disconnect(struct hid_device *hid)
 
 	list_for_each_entry_safe(hidinput, next, &hid->inputs, list) {
 		list_del(&hidinput->list);
-		if (hidinput->registered) {
-			/* Lenovo 1-wire keyboard */
-			if((hid->vendor == 0x17EF) && (hid->product == 0x6127) && (hid->bus == BUS_I2C)) {
-				lenovo_i2c_kb_registed = false;
-			}
+		if (hidinput->registered)
 			input_unregister_device(hidinput->input);
-		} else {
+		else
 			input_free_device(hidinput->input);
-		}
 		kfree(hidinput->name);
 		kfree(hidinput);
 	}
@@ -1884,3 +1939,4 @@ void hidinput_disconnect(struct hid_device *hid)
 	cancel_work_sync(&hid->led_work);
 }
 EXPORT_SYMBOL_GPL(hidinput_disconnect);
+

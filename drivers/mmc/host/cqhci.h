@@ -1,5 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/* Copyright (c) 2015-2021, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -21,7 +20,6 @@
 #include <linux/wait.h>
 #include <linux/irqreturn.h>
 #include <asm/io.h>
-#include <linux/keyslot-manager.h>
 
 /* registers */
 /* version */
@@ -41,7 +39,7 @@
 #define CQHCI_DCMD			0x00001000
 #define CQHCI_TASK_DESC_SZ		0x00000100
 #define CQHCI_ENABLE			0x00000001
-#define CQHCI_ICE_ENABLE		0x00000002
+#define CQHCI_CRYPTO_ENABLE		0x00000002
 
 /* control */
 #define CQHCI_CTL			0x0C
@@ -54,11 +52,8 @@
 #define CQHCI_IS_TCC			BIT(1)
 #define CQHCI_IS_RED			BIT(2)
 #define CQHCI_IS_TCL			BIT(3)
-#define CQHCI_IS_GCE			BIT(4)
-#define CQHCI_IS_ICCE			BIT(5)
 
-#define CQHCI_IS_MASK (CQHCI_IS_TCC | CQHCI_IS_RED | \
-			CQHCI_IS_GCE | CQHCI_IS_ICCE)
+#define CQHCI_IS_MASK (CQHCI_IS_TCC | CQHCI_IS_RED)
 
 /* interrupt status enable */
 #define CQHCI_ISTE			0x14
@@ -102,12 +97,6 @@
 /* send status config 2 */
 #define CQHCI_SSC2			0x44
 
-/*
- * Value n means CQE would send CMD13 during the transfer of data block
- * BLOCK_CNT-n
- */
-#define SEND_QSR_INTERVAL 0x70001
-
 /* response for dcmd */
 #define CQHCI_CRDCT			0x48
 
@@ -130,13 +119,10 @@
 /* command response argument */
 #define CQHCI_CRA			0x5C
 
-/*
- * Add new macro for updated CQ vendor specific
- * register address for SDHC v5.0 onwards.
- */
-#define CQE_V5_VENDOR_CFG	0x900
-#define CQHCI_VENDOR_CFG   0x100
-#define CMDQ_SEND_STATUS_TRIGGER (1 << 31)
+#define CQHCI_CRNQP         0x70
+#define CQHCI_CRNQDUN       0x74
+#define CQHCI_CRNQIS        0x78
+#define CQHCI_CRNQIE        0x7c
 
 #define CQHCI_INT_ALL			0xF
 #define CQHCI_IC_DEFAULT_ICCTH		31
@@ -168,19 +154,6 @@
 #define CQHCI_DAT_LENGTH(x)		(((x) & 0xFFFF) << 16)
 #define CQHCI_DAT_ADDR_LO(x)		(((x) & 0xFFFFFFFF) << 32)
 #define CQHCI_DAT_ADDR_HI(x)		(((x) & 0xFFFFFFFF) << 0)
-#define DATA_UNIT_NUM(x)		(((u64)(x) & 0xFFFFFFFF) << 0)
-#define CRYPTO_CONFIG_INDEX(x)		(((u64)(x) & 0xFF) << 32)
-#define CRYPTO_ENABLE(x)		(((u64)(x) & 0x1) << 47)
-
-/* ICE context is present in the upper 64bits of task descriptor */
-#define CQHCI_TASK_DESC_ICE_PARAM_OFFSET	8
-/* ICE descriptor size */
-#define CQHCI_TASK_DESC_ICE_PARAMS_SIZE		8
-
-struct cqhci_host_ops;
-struct mmc_host;
-struct cqhci_slot;
-struct cqhci_host;
 
 /* CCAP - Crypto Capability 100h */
 union cqhci_crypto_capabilities {
@@ -194,18 +167,18 @@ union cqhci_crypto_capabilities {
 };
 
 enum cqhci_crypto_key_size {
-	CQHCI_CRYPTO_KEY_SIZE_INVALID	= 0x0,
-	CQHCI_CRYPTO_KEY_SIZE_128	= 0x1,
-	CQHCI_CRYPTO_KEY_SIZE_192	= 0x2,
-	CQHCI_CRYPTO_KEY_SIZE_256	= 0x3,
-	CQHCI_CRYPTO_KEY_SIZE_512	= 0x4,
+	CQHCI_CRYPTO_KEY_SIZE_INVALID	= 0,
+	CQHCI_CRYPTO_KEY_SIZE_128	= 1,
+	CQHCI_CRYPTO_KEY_SIZE_192	= 2,
+	CQHCI_CRYPTO_KEY_SIZE_256	= 3,
+	CQHCI_CRYPTO_KEY_SIZE_512	= 4,
 };
 
 enum cqhci_crypto_alg {
-	CQHCI_CRYPTO_ALG_AES_XTS		= 0x0,
-	CQHCI_CRYPTO_ALG_BITLOCKER_AES_CBC	= 0x1,
-	CQHCI_CRYPTO_ALG_AES_ECB		= 0x2,
-	CQHCI_CRYPTO_ALG_ESSIV_AES_CBC		= 0x3,
+	CQHCI_CRYPTO_ALG_AES_XTS		= 0,
+	CQHCI_CRYPTO_ALG_BITLOCKER_AES_CBC	= 1,
+	CQHCI_CRYPTO_ALG_AES_ECB		= 2,
+	CQHCI_CRYPTO_ALG_ESSIV_AES_CBC		= 3,
 };
 
 /* x-CRYPTOCAP - Crypto Capability X */
@@ -226,6 +199,7 @@ union cqhci_crypto_cfg_entry {
 	__le32 reg_val[32];
 	struct {
 		u8 crypto_key[CQHCI_CRYPTO_KEY_MAX_SIZE];
+		/* 4KB/512 = 8 */
 		u8 data_unit_size;
 		u8 crypto_cap_idx;
 		u8 reserved_1;
@@ -237,38 +211,13 @@ union cqhci_crypto_cfg_entry {
 	};
 };
 
-struct cqhci_host_crypto_variant_ops {
-	void (*setup_rq_keyslot_manager)(struct cqhci_host *host,
-					 struct request_queue *q);
-	void (*destroy_rq_keyslot_manager)(struct cqhci_host *host,
-					   struct request_queue *q);
-#ifdef CONFIG_BLK_INLINE_ENCRYPTION
-	int (*host_init_crypto)(struct cqhci_host *host,
-				const struct keyslot_mgmt_ll_ops *ksm_ops);
-#endif
-	void (*enable)(struct cqhci_host *host);
-	void (*disable)(struct cqhci_host *host);
-	int (*suspend)(struct cqhci_host *host);
-	int (*resume)(struct cqhci_host *host);
-	int (*debug)(struct cqhci_host *host);
-	int (*prepare_crypto_desc)(struct cqhci_host *host,
-				   struct mmc_request *mrq,
-				   u64 *ice_ctx);
-	int (*complete_crypto_desc)(struct cqhci_host *host,
-				    struct mmc_request *mrq,
-				    u64 *ice_ctx);
-	int (*reset)(struct cqhci_host *host);
-	int (*recovery_finish)(struct cqhci_host *host);
-	int (*program_key)(struct cqhci_host *host,
-			   const union cqhci_crypto_cfg_entry *cfg,
-			   int slot);
-	void *priv;
-};
+struct cqhci_host_ops;
+struct mmc_host;
+struct cqhci_slot;
 
 struct cqhci_host {
 	const struct cqhci_host_ops *ops;
 	void __iomem *mmio;
-	void __iomem *icemmio;
 	struct mmc_host *mmc;
 
 	spinlock_t lock;
@@ -284,10 +233,10 @@ struct cqhci_host {
 	u32 dcmd_slot;
 	u32 caps;
 #define CQHCI_TASK_DESC_SZ_128		0x1
-#define CQHCI_CAP_CRYPTO_SUPPORT	0x2
 
 	u32 quirks;
-#define CQHCI_QUIRK_SHORT_TXFR_DESC_SZ	0x1
+#define CQHCI_QUIRK_SHORT_TXFR_DESC_SZ		(1 << 0)
+#define CQHCI_QUIRK_DIS_BEFORE_NON_CQ_CMD	(1 << 1)
 
 	bool enabled;
 	bool halted;
@@ -295,7 +244,6 @@ struct cqhci_host {
 	bool activated;
 	bool waiting_for_idle;
 	bool recovery_halt;
-	bool offset_changed;
 
 	size_t desc_size;
 	size_t data_size;
@@ -321,16 +269,11 @@ struct cqhci_host {
 	struct completion halt_comp;
 	wait_queue_head_t wait_queue;
 	struct cqhci_slot *slot;
-	const struct cqhci_host_crypto_variant_ops *crypto_vops;
-
-#ifdef CONFIG_MMC_CQHCI_CRYPTO
+#ifdef CONFIG_MMC_CRYPTO
 	union cqhci_crypto_capabilities crypto_capabilities;
 	union cqhci_crypto_cap_entry *crypto_cap_array;
 	u32 crypto_cfg_register;
-#ifdef CONFIG_BLK_INLINE_ENCRYPTION
-	struct keyslot_manager *ksm;
-#endif /* CONFIG_BLK_INLINE_ENCRYPTION */
-#endif /* CONFIG_SCSI_CQHCI_CRYPTO */
+#endif
 };
 
 struct cqhci_host_ops {
@@ -339,12 +282,11 @@ struct cqhci_host_ops {
 	u32 (*read_l)(struct cqhci_host *host, int reg);
 	void (*enable)(struct mmc_host *mmc);
 	void (*disable)(struct mmc_host *mmc, bool recovery);
-	void (*enhanced_strobe_mask)(struct mmc_host *mmc, bool set);
 };
 
 static inline void cqhci_writel(struct cqhci_host *host, u32 val, int reg)
 {
-	if (unlikely(host->ops && host->ops->write_l))
+	if (unlikely(host->ops->write_l))
 		host->ops->write_l(host, val, reg);
 	else
 		writel_relaxed(val, host->mmio + reg);
@@ -352,7 +294,7 @@ static inline void cqhci_writel(struct cqhci_host *host, u32 val, int reg)
 
 static inline u32 cqhci_readl(struct cqhci_host *host, int reg)
 {
-	if (unlikely(host->ops && host->ops->read_l))
+	if (unlikely(host->ops->read_l))
 		return host->ops->read_l(host, reg);
 	else
 		return readl_relaxed(host->mmio + reg);
@@ -366,5 +308,7 @@ int cqhci_init(struct cqhci_host *cq_host, struct mmc_host *mmc, bool dma64);
 struct cqhci_host *cqhci_pltfm_init(struct platform_device *pdev);
 int cqhci_suspend(struct mmc_host *mmc);
 int cqhci_resume(struct mmc_host *mmc);
+void msdc_gate_clock(struct mmc_host *mmc);
+void msdc_ungate_clock(struct mmc_host *mmc);
 
 #endif

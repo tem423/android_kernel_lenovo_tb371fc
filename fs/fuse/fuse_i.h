@@ -118,8 +118,6 @@ enum {
 	FUSE_I_INIT_RDPLUS,
 	/** An operation changing file size is in progress  */
 	FUSE_I_SIZE_UNSTABLE,
-	/* Bad inode */
-	FUSE_I_BAD,
 };
 
 struct fuse_conn;
@@ -332,8 +330,6 @@ struct fuse_req {
 
 	/** refcount */
 	refcount_t count;
-
-	bool user_pages;
 
 	/** Unique ID for the interrupt request */
 	u64 intr_unique;
@@ -709,7 +705,7 @@ struct fuse_conn {
 	/** IDR for passthrough requests */
 	struct idr passthrough_req;
 
-	/** Protects passthrough_req */
+	/** Proctects passthrough_req */
 	spinlock_t passthrough_req_lock;
 };
 
@@ -731,16 +727,6 @@ static inline struct fuse_inode *get_fuse_inode(struct inode *inode)
 static inline u64 get_node_id(struct inode *inode)
 {
 	return get_fuse_inode(inode)->nodeid;
-}
-
-static inline void fuse_make_bad(struct inode *inode)
-{
-	set_bit(FUSE_I_BAD, &get_fuse_inode(inode)->state);
-}
-
-static inline bool fuse_is_bad(struct inode *inode)
-{
-	return unlikely(test_bit(FUSE_I_BAD, &get_fuse_inode(inode)->state));
 }
 
 /** Device operations */
@@ -1042,7 +1028,8 @@ struct posix_acl *fuse_get_acl(struct inode *inode, int type);
 int fuse_set_acl(struct inode *inode, struct posix_acl *acl, int type);
 
 /* passthrough.c */
-int fuse_passthrough_open(struct fuse_dev *fud, u32 lower_fd);
+int fuse_passthrough_open(struct fuse_dev *fud,
+			  struct fuse_passthrough_out *pto);
 int fuse_passthrough_setup(struct fuse_conn *fc, struct fuse_file *ff,
 			   struct fuse_open_out *openarg);
 void fuse_passthrough_release(struct fuse_passthrough *passthrough);

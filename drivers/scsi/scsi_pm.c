@@ -17,7 +17,7 @@
 #include "scsi_priv.h"
 
 static int do_scsi_runtime_resume(struct device *dev,
-				   const struct dev_pm_ops *pm);
+				  const struct dev_pm_ops *pm);
 
 #ifdef CONFIG_PM_SLEEP
 
@@ -85,16 +85,18 @@ static int scsi_dev_type_resume(struct device *dev,
 		err = pm_runtime_set_active(dev);
 		pm_runtime_enable(dev);
 
+		/*
+		 * Forcibly set runtime PM status of request queue to "active"
+		 * to make sure we can again get requests from the queue
+		 * (see also blk_pm_peek_request()).
+		 *
+		 * The resume hook will correct runtime PM status of the disk.
+		 */
 		if (!err && scsi_is_sdev_device(dev)) {
 			struct scsi_device *sdev = to_scsi_device(dev);
 
-			/*
-			 * If scsi device runtime PM is managed by block layer
-			 * then we should update request queue's runtime status
-			 * as well.
-			 */
 			if (sdev->request_queue->dev)
-				blk_post_runtime_resume(sdev->request_queue, 0);
+				blk_set_runtime_active(sdev->request_queue);
 		}
 	}
 
@@ -226,6 +228,19 @@ static int scsi_bus_restore(struct device *dev)
 #define scsi_bus_poweroff		NULL
 #define scsi_bus_restore		NULL
 
+static inline int
+scsi_dev_type_suspend(struct device *dev,
+		      int (*cb)(struct device *, const struct dev_pm_ops *))
+{
+	return 0;
+}
+
+static inline int
+scsi_dev_type_resume(struct device *dev,
+		     int (*cb)(struct device *, const struct dev_pm_ops *))
+{
+	return 0;
+}
 #endif /* CONFIG_PM_SLEEP */
 
 static int do_scsi_runtime_suspend(struct device *dev,
@@ -235,7 +250,7 @@ static int do_scsi_runtime_suspend(struct device *dev,
 }
 
 static int do_scsi_runtime_resume(struct device *dev,
-				   const struct dev_pm_ops *pm)
+				  const struct dev_pm_ops *pm)
 {
 	return pm && pm->runtime_resume ? pm->runtime_resume(dev) : 0;
 }

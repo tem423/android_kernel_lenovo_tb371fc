@@ -907,7 +907,7 @@ static void xc5000_config_tv(struct dvb_frontend *fe,
 static int xc5000_set_tv_freq(struct dvb_frontend *fe)
 {
 	struct xc5000_priv *priv = fe->tuner_priv;
-	u16 pll_lock_status = 0;
+	u16 pll_lock_status;
 	int ret;
 
 tune_channel:
@@ -1112,7 +1112,7 @@ static int xc_load_fw_and_init_tuner(struct dvb_frontend *fe, int force)
 	const struct xc5000_fw_cfg *desired_fw = xc5000_assign_firmware(priv->chip_id);
 	const struct firmware *fw;
 	int ret, i;
-	u16 pll_lock_status = 0;
+	u16 pll_lock_status;
 	u16 fw_ck;
 
 	cancel_delayed_work(&priv->timer_sleep);
@@ -1470,7 +1470,7 @@ fail:
 	xc5000_release(fe);
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(xc5000_attach);
+EXPORT_SYMBOL(xc5000_attach);
 
 MODULE_AUTHOR("Steven Toth");
 MODULE_DESCRIPTION("Xceive xc5000 silicon tuner driver");

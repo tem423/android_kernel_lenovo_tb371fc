@@ -126,7 +126,6 @@ void power_supply_changed(struct power_supply *psy)
 }
 EXPORT_SYMBOL_GPL(power_supply_changed);
 
-static int psy_register_cooler(struct device *dev, struct power_supply *psy);
 /*
  * Notify that power supply was registered after parent finished the probing.
  *
@@ -134,8 +133,6 @@ static int psy_register_cooler(struct device *dev, struct power_supply *psy);
  * calling power_supply_changed() directly from power_supply_register()
  * would lead to execution of get_property() function provided by the driver
  * too early - before the probe ends.
- * Also, registering cooling device from the probe will execute the
- * get_property() function. So register the cooling device after the probe.
  *
  * Avoid that by waiting on parent's mutex.
  */
@@ -152,7 +149,6 @@ static void power_supply_deferred_register_work(struct work_struct *work)
 		}
 	}
 
-	psy_register_cooler(psy->dev.parent, psy);
 	power_supply_changed(psy);
 
 	if (psy->dev.parent)
@@ -354,10 +350,6 @@ static int __power_supply_is_system_supplied(struct device *dev, void *data)
 	struct power_supply *psy = dev_get_drvdata(dev);
 	unsigned int *count = data;
 
-	if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_SCOPE, &ret))
-		if (ret.intval == POWER_SUPPLY_SCOPE_DEVICE)
-			return 0;
-
 	(*count)++;
 	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY)
 		if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_ONLINE,
@@ -376,8 +368,8 @@ int power_supply_is_system_supplied(void)
 				      __power_supply_is_system_supplied);
 
 	/*
-	 * If no system scope power class device was found at all, most probably we
-	 * are running on a desktop system, so assume we are on mains power.
+	 * If no power class device was found at all, most probably we are
+	 * running on a desktop system, so assume we are on mains power.
 	 */
 	if (count == 0)
 		return 1;
@@ -386,49 +378,46 @@ int power_supply_is_system_supplied(void)
 }
 EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
 
-struct psy_get_supplier_prop_data {
-	struct power_supply *psy;
-	enum power_supply_property psp;
-	union power_supply_propval *val;
-};
-
-static int __power_supply_get_supplier_property(struct device *dev, void *_data)
+static int __power_supply_get_supplier_max_current(struct device *dev,
+						   void *data)
 {
+	union power_supply_propval ret = {0,};
 	struct power_supply *epsy = dev_get_drvdata(dev);
-	struct psy_get_supplier_prop_data *data = _data;
+	struct power_supply *psy = data;
 
-	if (__power_supply_is_supplied_by(epsy, data->psy))
-		if (!epsy->desc->get_property(epsy, data->psp, data->val))
-			return 1; /* Success */
-
-	return 0; /* Continue iterating */
-}
-
-int power_supply_get_property_from_supplier(struct power_supply *psy,
-					    enum power_supply_property psp,
-					    union power_supply_propval *val)
-{
-	struct psy_get_supplier_prop_data data = {
-		.psy = psy,
-		.psp = psp,
-		.val = val,
-	};
-	int ret;
-
-	/*
-	 * This function is not intended for use with a supply with multiple
-	 * suppliers, we simply pick the first supply to report the psp.
-	 */
-	ret = class_for_each_device(power_supply_class, NULL, &data,
-				    __power_supply_get_supplier_property);
-	if (ret < 0)
-		return ret;
-	if (ret == 0)
-		return -ENODEV;
+	if (__power_supply_is_supplied_by(epsy, psy))
+		if (!epsy->desc->get_property(epsy,
+					      POWER_SUPPLY_PROP_CURRENT_MAX,
+					      &ret))
+			return ret.intval;
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(power_supply_get_property_from_supplier);
+
+int power_supply_set_input_current_limit_from_supplier(struct power_supply *psy)
+{
+	union power_supply_propval val = {0,};
+	int curr;
+
+	if (!psy->desc->set_property)
+		return -EINVAL;
+
+	/*
+	 * This function is not intended for use with a supply with multiple
+	 * suppliers, we simply pick the first supply to report a non 0
+	 * max-current.
+	 */
+	curr = class_for_each_device(power_supply_class, NULL, psy,
+				      __power_supply_get_supplier_max_current);
+	if (curr <= 0)
+		return (curr == 0) ? -ENODEV : curr;
+
+	val.intval = curr;
+
+	return psy->desc->set_property(psy,
+				POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
+}
+EXPORT_SYMBOL_GPL(power_supply_set_input_current_limit_from_supplier);
 
 int power_supply_set_battery_charged(struct power_supply *psy)
 {
@@ -591,11 +580,6 @@ int power_supply_get_battery_info(struct power_supply *psy,
 	info->constant_charge_current_max_ua = -EINVAL;
 	info->constant_charge_voltage_max_uv = -EINVAL;
 
-    if (IS_ERR_OR_NULL(psy)) {
-		pr_info("%s psy null", __func__);
-		return -ENODEV;
-	}
-	
 	if (!psy->of_node) {
 		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
 			 __func__);
@@ -641,11 +625,6 @@ int power_supply_get_property(struct power_supply *psy,
 			    enum power_supply_property psp,
 			    union power_supply_propval *val)
 {
-	if (IS_ERR_OR_NULL(psy)) {
-		pr_info("%s psy null", __func__);
-		return -ENODEV;
-	}
-	
 	if (atomic_read(&psy->use_cnt) <= 0) {
 		if (!psy->initialized)
 			return -EAGAIN;
@@ -660,11 +639,6 @@ int power_supply_set_property(struct power_supply *psy,
 			    enum power_supply_property psp,
 			    const union power_supply_propval *val)
 {
-	if (IS_ERR_OR_NULL(psy)) {
-		pr_info("%s psy null", __func__);
-		return -ENODEV;
-	}
-	
 	if (atomic_read(&psy->use_cnt) <= 0 || !psy->desc->set_property)
 		return -ENODEV;
 
@@ -675,11 +649,6 @@ EXPORT_SYMBOL_GPL(power_supply_set_property);
 int power_supply_property_is_writeable(struct power_supply *psy,
 					enum power_supply_property psp)
 {
-	if (IS_ERR_OR_NULL(psy)) {
-		pr_info("%s psy null", __func__);
-		return -ENODEV;
-	}
-	
 	if (atomic_read(&psy->use_cnt) <= 0 ||
 			!psy->desc->property_is_writeable)
 		return -ENODEV;
@@ -690,11 +659,6 @@ EXPORT_SYMBOL_GPL(power_supply_property_is_writeable);
 
 void power_supply_external_power_changed(struct power_supply *psy)
 {
-	if (IS_ERR_OR_NULL(psy)) {
-		pr_info("%s psy null", __func__);
-		return ;
-	}
-	
 	if (atomic_read(&psy->use_cnt) <= 0 ||
 			!psy->desc->external_power_changed)
 		return;
@@ -705,11 +669,6 @@ EXPORT_SYMBOL_GPL(power_supply_external_power_changed);
 
 int power_supply_powers(struct power_supply *psy, struct device *dev)
 {
-	if (IS_ERR_OR_NULL(psy)) {
-		pr_info("%s psy null", __func__);
-		return -ENODEV;
-	}
-	
 	return sysfs_create_link(&psy->dev.kobj, &dev->kobj, "powers");
 }
 EXPORT_SYMBOL_GPL(power_supply_powers);
@@ -761,10 +720,9 @@ static int psy_register_thermal(struct power_supply *psy)
 {
 	int i;
 
-	if (IS_ERR_OR_NULL(psy) || psy->desc->no_thermal) {
-		pr_info("%s psy null", __func__);
+	if (psy->desc->no_thermal)
 		return 0;
-}
+
 	/* Register battery zone device psy reports temperature */
 	for (i = 0; i < psy->desc->num_properties; i++) {
 		if (psy->desc->properties[i] == POWER_SUPPLY_PROP_TEMP) {
@@ -778,11 +736,8 @@ static int psy_register_thermal(struct power_supply *psy)
 
 static void psy_unregister_thermal(struct power_supply *psy)
 {
-	if (IS_ERR_OR_NULL(psy) || IS_ERR_OR_NULL(psy->tzd)) {
-		pr_info("%s psy null", __func__);
+	if (IS_ERR_OR_NULL(psy->tzd))
 		return;
-	}
-	
 	thermal_zone_device_unregister(psy->tzd);
 }
 
@@ -844,7 +799,7 @@ static const struct thermal_cooling_device_ops psy_tcd_ops = {
 	.set_cur_state = ps_set_cur_charge_cntl_limit,
 };
 
-static int psy_register_cooler(struct device *dev, struct power_supply *psy)
+static int psy_register_cooler(struct power_supply *psy)
 {
 	int i;
 
@@ -852,13 +807,7 @@ static int psy_register_cooler(struct device *dev, struct power_supply *psy)
 	for (i = 0; i < psy->desc->num_properties; i++) {
 		if (psy->desc->properties[i] ==
 				POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT) {
-			if (dev)
-				psy->tcd = thermal_of_cooling_device_register(
-							dev_of_node(dev),
-							(char *)psy->desc->name,
-							psy, &psy_tcd_ops);
-			else
-				psy->tcd = thermal_cooling_device_register(
+			psy->tcd = thermal_cooling_device_register(
 							(char *)psy->desc->name,
 							psy, &psy_tcd_ops);
 			return PTR_ERR_OR_ZERO(psy->tcd);
@@ -869,11 +818,8 @@ static int psy_register_cooler(struct device *dev, struct power_supply *psy)
 
 static void psy_unregister_cooler(struct power_supply *psy)
 {
-	if (IS_ERR_OR_NULL(psy) || IS_ERR_OR_NULL(psy->tcd)) {
-		pr_info("%s psy null", __func__);
+	if (IS_ERR_OR_NULL(psy->tcd))
 		return;
-	}
-	
 	thermal_cooling_device_unregister(psy->tcd);
 }
 #else
@@ -886,7 +832,7 @@ static void psy_unregister_thermal(struct power_supply *psy)
 {
 }
 
-static int psy_register_cooler(struct device *dev, struct power_supply *psy)
+static int psy_register_cooler(struct power_supply *psy)
 {
 	return 0;
 }
@@ -968,6 +914,10 @@ __power_supply_register(struct device *parent,
 	if (rc)
 		goto register_thermal_failed;
 
+	rc = psy_register_cooler(psy);
+	if (rc)
+		goto register_cooler_failed;
+
 	rc = power_supply_create_triggers(psy);
 	if (rc)
 		goto create_triggers_failed;
@@ -991,10 +941,12 @@ __power_supply_register(struct device *parent,
 	return psy;
 
 create_triggers_failed:
+	psy_unregister_cooler(psy);
+register_cooler_failed:
 	psy_unregister_thermal(psy);
 register_thermal_failed:
-wakeup_init_failed:
 	device_del(dev);
+wakeup_init_failed:
 device_add_failed:
 check_supplies_failed:
 dev_set_name_failed:
@@ -1160,7 +1112,6 @@ static int __init power_supply_class_init(void)
 
 	if (IS_ERR(power_supply_class))
 		return PTR_ERR(power_supply_class);
-
 	power_supply_class->dev_uevent = power_supply_uevent;
 	power_supply_init_attrs(&power_supply_dev_type);
 

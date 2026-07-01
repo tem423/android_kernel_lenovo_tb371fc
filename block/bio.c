@@ -613,6 +613,11 @@ void __bio_clone_fast(struct bio *bio, struct bio *bio_src)
 	bio->bi_iter = bio_src->bi_iter;
 	bio->bi_io_vec = bio_src->bi_io_vec;
 
+#if defined(CONFIG_MTK_HW_FDE)
+	/* for FDE */
+	bio->bi_hw_fde = bio_src->bi_hw_fde;
+	bio->bi_key_idx = bio_src->bi_key_idx;
+#endif
 	bio_clone_blkcg_association(bio, bio_src);
 }
 EXPORT_SYMBOL(__bio_clone_fast);
@@ -1532,7 +1537,7 @@ struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
 		if (bytes > len)
 			bytes = len;
 
-		page = alloc_page(q->bounce_gfp | __GFP_ZERO | gfp_mask);
+		page = alloc_page(q->bounce_gfp | gfp_mask);
 		if (!page)
 			goto cleanup;
 
@@ -1596,7 +1601,8 @@ void bio_set_pages_dirty(struct bio *bio)
 	int i;
 
 	bio_for_each_segment_all(bvec, bio, i) {
-		set_page_dirty_lock(bvec->bv_page);
+		if (!PageCompound(bvec->bv_page))
+			set_page_dirty_lock(bvec->bv_page);
 	}
 }
 EXPORT_SYMBOL_GPL(bio_set_pages_dirty);
@@ -1655,7 +1661,7 @@ void bio_check_pages_dirty(struct bio *bio)
 	int i;
 
 	bio_for_each_segment_all(bvec, bio, i) {
-		if (!PageDirty(bvec->bv_page))
+		if (!PageDirty(bvec->bv_page) && !PageCompound(bvec->bv_page))
 			goto defer;
 	}
 
@@ -1671,33 +1677,13 @@ defer:
 }
 EXPORT_SYMBOL_GPL(bio_check_pages_dirty);
 
-void update_io_ticks(struct hd_struct *part, unsigned long now)
-{
-	unsigned long stamp;
-	int cpu;
-again:
-	stamp = READ_ONCE(part->stamp);
-	if (unlikely(stamp != now)) {
-		if (likely(cmpxchg(&part->stamp, stamp, now) == stamp)) {
-			cpu = part_stat_lock();
-			__part_stat_add(cpu, part, io_ticks, 1);
-			part_stat_unlock();
-		}
-	}
-	if (part->partno) {
-		part = &part_to_disk(part)->part0;
-		goto again;
-	}
-}
-
 void generic_start_io_acct(struct request_queue *q, int op,
 			   unsigned long sectors, struct hd_struct *part)
 {
 	const int sgrp = op_stat_group(op);
-	int cpu;
+	int cpu = part_stat_lock();
 
-	cpu = part_stat_lock();
-	update_io_ticks(part, jiffies);
+	part_round_stats(q, cpu, part);
 	part_stat_inc(cpu, part, ios[sgrp]);
 	part_stat_add(cpu, part, sectors[sgrp], sectors);
 	part_inc_in_flight(q, part, op_is_write(op));
@@ -1709,15 +1695,12 @@ EXPORT_SYMBOL(generic_start_io_acct);
 void generic_end_io_acct(struct request_queue *q, int req_op,
 			 struct hd_struct *part, unsigned long start_time)
 {
-	unsigned long now = jiffies;
-	unsigned long duration = now - start_time;
+	unsigned long duration = jiffies - start_time;
 	const int sgrp = op_stat_group(req_op);
-	int cpu;
+	int cpu = part_stat_lock();
 
-	cpu = part_stat_lock();
-	update_io_ticks(part, now);
 	part_stat_add(cpu, part, nsecs[sgrp], jiffies_to_nsecs(duration));
-	part_stat_add(cpu, part, time_in_queue, duration);
+	part_round_stats(q, cpu, part);
 	part_dec_in_flight(q, part, op_is_write(req_op));
 
 	part_stat_unlock();

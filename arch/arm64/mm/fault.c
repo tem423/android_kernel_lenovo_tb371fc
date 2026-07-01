@@ -45,7 +45,6 @@
 #include <asm/pgtable.h>
 #include <asm/tlbflush.h>
 #include <asm/traps.h>
-#include <soc/qcom/scm.h>
 
 #include <acpi/ghes.h>
 
@@ -282,7 +281,7 @@ static void die_kernel_fault(const char *msg, unsigned long addr,
 	show_pte(addr);
 	die("Oops", regs, esr);
 	bust_spinlocks(0);
-	make_task_dead(SIGKILL);
+	do_exit(SIGKILL);
 }
 
 static void __do_kernel_fault(unsigned long addr, unsigned int esr,
@@ -390,15 +389,17 @@ static void do_bad_area(unsigned long addr, unsigned int esr, struct pt_regs *re
 	}
 }
 
-#define VM_FAULT_BADMAP		((__force vm_fault_t)0x010000)
-#define VM_FAULT_BADACCESS	((__force vm_fault_t)0x020000)
+#define VM_FAULT_BADMAP		0x010000
+#define VM_FAULT_BADACCESS	0x020000
 
-static int __do_page_fault(struct vm_area_struct *vma, unsigned long addr,
+static vm_fault_t __do_page_fault(struct mm_struct *mm, unsigned long addr,
 			   unsigned int mm_flags, unsigned long vm_flags,
 			   struct task_struct *tsk)
 {
+	struct vm_area_struct *vma;
 	vm_fault_t fault;
 
+	vma = find_vma(mm, addr);
 	fault = VM_FAULT_BADMAP;
 	if (unlikely(!vma))
 		goto out;
@@ -442,7 +443,6 @@ static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
 	vm_fault_t fault, major = 0;
 	unsigned long vm_flags = VM_READ | VM_WRITE | VM_EXEC;
 	unsigned int mm_flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
-	struct vm_area_struct *vma = NULL;
 
 	if (notify_page_fault(regs, esr))
 		return 0;
@@ -488,7 +488,7 @@ static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
 	 * let's try a speculative page fault without grabbing the
 	 * mmap_sem.
 	 */
-	fault = handle_speculative_fault(mm, addr, mm_flags, &vma);
+	fault = handle_speculative_fault(mm, addr, mm_flags, vm_flags);
 	if (fault != VM_FAULT_RETRY)
 		goto done;
 
@@ -514,10 +514,7 @@ retry:
 #endif
 	}
 
-	if (!vma || !can_reuse_spf_vma(vma, addr))
-		vma = find_vma(mm, addr);
-
-	fault = __do_page_fault(vma, addr, mm_flags, vm_flags, tsk);
+	fault = __do_page_fault(mm, addr, mm_flags, vm_flags, tsk);
 	major |= fault & VM_FAULT_MAJOR;
 
 	if (fault & VM_FAULT_RETRY) {
@@ -540,13 +537,6 @@ retry:
 		if (mm_flags & FAULT_FLAG_ALLOW_RETRY) {
 			mm_flags &= ~FAULT_FLAG_ALLOW_RETRY;
 			mm_flags |= FAULT_FLAG_TRIED;
-
-			/*
-			 * Do not try to reuse this vma and fetch it
-			 * again since we will release the mmap_sem.
-			 */
-			vma = NULL;
-
 			goto retry;
 		}
 	}
@@ -633,21 +623,24 @@ no_context:
 	return 0;
 }
 
-static int do_tlb_conf_fault(unsigned long addr,
-				unsigned int esr,
-				struct pt_regs *regs)
+int __weak do_tlb_conf_fault(unsigned long addr,
+			     unsigned int esr,
+			     struct pt_regs *regs)
 {
-#define SCM_TLB_CONFLICT_CMD	0x1F
-	struct scm_desc desc = {
-		.args[0] = addr,
-		.arginfo = SCM_ARGS(1),
-	};
+	return 1; /* do_bad default */
+}
 
-	if (scm_call2_atomic(SCM_SIP_FNID(SCM_SVC_MP, SCM_TLB_CONFLICT_CMD),
-						&desc))
-		return 1;
+int (*do_tlb_conf_fault_cb)(unsigned long addr,
+			    unsigned int esr,
+			    struct pt_regs *regs)
+	= do_tlb_conf_fault; /* initialization saves us a branch */
+EXPORT_SYMBOL_GPL(do_tlb_conf_fault_cb);
 
-	return 0;
+static int _do_tlb_conf_fault(unsigned long addr,
+			      unsigned int esr,
+			      struct pt_regs *regs)
+{
+	return (*do_tlb_conf_fault_cb)(addr, esr, regs);
 }
 
 static int __kprobes do_translation_fault(unsigned long addr,
@@ -757,7 +750,7 @@ static const struct fault_info fault_info[] = {
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 45"			},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 46"			},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 47"			},
-	{ do_tlb_conf_fault,	SIGKILL, SI_KERNEL,	"TLB conflict abort"		},
+	{ _do_tlb_conf_fault,	SIGKILL, SI_KERNEL,	"TLB conflict abort"		},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"Unsupported atomic hardware update fault"	},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 50"			},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 51"			},

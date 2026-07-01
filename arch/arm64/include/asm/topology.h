@@ -11,7 +11,6 @@ struct cpu_topology {
 	int llc_id;
 	cpumask_t thread_sibling;
 	cpumask_t core_sibling;
-	cpumask_t core_possible_sibling;
 	cpumask_t llc_sibling;
 };
 
@@ -22,13 +21,12 @@ extern struct cpu_topology cpu_topology[NR_CPUS];
 #define topology_core_cpumask(cpu)	(&cpu_topology[cpu].core_sibling)
 #define topology_sibling_cpumask(cpu)	(&cpu_topology[cpu].thread_sibling)
 #define topology_llc_cpumask(cpu)	(&cpu_topology[cpu].llc_sibling)
-#define topology_possible_sibling_cpumask(cpu)		\
-				(&cpu_topology[cpu].core_possible_sibling)
 
 void init_cpu_topology(void);
 void store_cpu_topology(unsigned int cpuid);
 void remove_cpu_topology(unsigned int cpuid);
 const struct cpumask *cpu_coregroup_mask(int cpu);
+int topology_nr_clusters(void);
 
 #ifdef CONFIG_NUMA
 
@@ -53,6 +51,10 @@ int pcibus_to_node(struct pci_bus *bus);
 
 /* Enable topology flag updates */
 #define arch_update_cpu_topology topology_update_cpu_topology
+
+/* Cpu and cluster informantion */
+#define arch_cpu_cluster_id topology_physical_package_id
+#define arch_nr_clusters topology_nr_clusters
 
 #include <asm-generic/topology.h>
 

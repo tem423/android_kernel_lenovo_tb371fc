@@ -919,7 +919,7 @@ struct mem_cgroup *mem_cgroup_iter(struct mem_cgroup *root,
 				   struct mem_cgroup *prev,
 				   struct mem_cgroup_reclaim_cookie *reclaim)
 {
-	struct mem_cgroup_reclaim_iter *iter;
+	struct mem_cgroup_reclaim_iter *uninitialized_var(iter);
 	struct cgroup_subsys_state *css = NULL;
 	struct mem_cgroup *memcg = NULL;
 	struct mem_cgroup *pos = NULL;
@@ -2015,9 +2015,6 @@ static void drain_stock(struct memcg_stock_pcp *stock)
 {
 	struct mem_cgroup *old = stock->cached;
 
-	if (!old)
-		return;
-
 	if (stock->nr_pages) {
 		page_counter_uncharge(&old->memory, stock->nr_pages);
 		if (do_memsw_account())
@@ -2025,8 +2022,6 @@ static void drain_stock(struct memcg_stock_pcp *stock)
 		css_put_many(&old->css, stock->nr_pages);
 		stock->nr_pages = 0;
 	}
-
-	css_put(&old->css);
 	stock->cached = NULL;
 }
 
@@ -2062,7 +2057,6 @@ static void refill_stock(struct mem_cgroup *memcg, unsigned int nr_pages)
 	stock = this_cpu_ptr(&memcg_stock);
 	if (stock->cached != memcg) { /* reset if necessary */
 		drain_stock(stock);
-		css_get(&memcg->css);
 		stock->cached = memcg;
 	}
 	stock->nr_pages += nr_pages;
@@ -2094,22 +2088,21 @@ static void drain_all_stock(struct mem_cgroup *root_memcg)
 	for_each_online_cpu(cpu) {
 		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
 		struct mem_cgroup *memcg;
-		bool flush = false;
 
-		rcu_read_lock();
 		memcg = stock->cached;
-		if (memcg && stock->nr_pages &&
-		    mem_cgroup_is_descendant(memcg, root_memcg))
-			flush = true;
-		rcu_read_unlock();
-
-		if (flush &&
-		    !test_and_set_bit(FLUSHING_CACHED_CHARGE, &stock->flags)) {
+		if (!memcg || !stock->nr_pages || !css_tryget(&memcg->css))
+			continue;
+		if (!mem_cgroup_is_descendant(memcg, root_memcg)) {
+			css_put(&memcg->css);
+			continue;
+		}
+		if (!test_and_set_bit(FLUSHING_CACHED_CHARGE, &stock->flags)) {
 			if (cpu == curcpu)
 				drain_local_stock(&stock->work);
 			else
 				schedule_work_on(cpu, &stock->work);
 		}
+		css_put(&memcg->css);
 	}
 	put_cpu();
 	mutex_unlock(&percpu_charge_mutex);
@@ -3558,8 +3551,10 @@ static int mem_cgroup_swappiness_write(struct cgroup_subsys_state *css,
 {
 	struct mem_cgroup *memcg = mem_cgroup_from_css(css);
 
+#ifndef CONFIG_MTK_GMO_RAM_OPTIMIZE
 	if (val > 100)
 		return -EINVAL;
+#endif
 
 	if (css->parent)
 		memcg->swappiness = val;
@@ -4127,7 +4122,6 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 	unsigned int efd, cfd;
 	struct fd efile;
 	struct fd cfile;
-	struct dentry *cdentry;
 	const char *name;
 	char *endp;
 	int ret;
@@ -4179,16 +4173,6 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 		goto out_put_cfile;
 
 	/*
-	 * The control file must be a regular cgroup1 file. As a regular cgroup
-	 * file can't be renamed, it's safe to access its name afterwards.
-	 */
-	cdentry = cfile.file->f_path.dentry;
-	if (cdentry->d_sb->s_type != &cgroup_fs_type || !d_is_reg(cdentry)) {
-		ret = -EINVAL;
-		goto out_put_cfile;
-	}
-
-	/*
 	 * Determine the event callbacks and set them in @event.  This used
 	 * to be done via struct cftype but cgroup core no longer knows
 	 * about these events.  The following is crude but the whole thing
@@ -4196,7 +4180,7 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 	 *
 	 * DO NOT ADD NEW FILES.
 	 */
-	name = cdentry->d_name.name;
+	name = cfile.file->f_path.dentry->d_name.name;
 
 	if (!strcmp(name, "memory.usage_in_bytes")) {
 		event->register_event = mem_cgroup_usage_register_event;
@@ -4220,7 +4204,7 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 	 * automatically removed on cgroup destruction but the removal is
 	 * asynchronous, so take an extra ref on @css.
 	 */
-	cfile_css = css_tryget_online_from_dir(cdentry->d_parent,
+	cfile_css = css_tryget_online_from_dir(cfile.file->f_path.dentry->d_parent,
 					       &memory_cgrp_subsys);
 	ret = -EINVAL;
 	if (IS_ERR(cfile_css))
@@ -6422,7 +6406,7 @@ static int __init cgroup_memory(char *s)
 		if (!strcmp(token, "nokmem"))
 			cgroup_memory_nokmem = true;
 	}
-	return 1;
+	return 0;
 }
 __setup("cgroup.memory=", cgroup_memory);
 

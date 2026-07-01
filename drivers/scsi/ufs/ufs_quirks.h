@@ -1,15 +1,6 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2014-2020, The Linux Foundation. All rights reserved.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
+ * Copyright (c) 2014-2016, The Linux Foundation. All rights reserved.
  */
 
 #ifndef _UFS_QUIRKS_H_
@@ -25,8 +16,6 @@
 #define UFS_VENDOR_TOSHIBA     0x198
 #define UFS_VENDOR_SAMSUNG     0x1CE
 #define UFS_VENDOR_SKHYNIX     0x1AD
-#define UFS_VENDOR_WDC         0x145
-#define UFS_VENDOR_MICRON      0x12C
 
 /**
  * ufs_dev_fix - ufs device quirk info
@@ -34,34 +23,19 @@
  * @quirk: device quirk
  */
 struct ufs_dev_fix {
-	u16 w_manufacturer_id;
-	char *model;
+	u16 wmanufacturerid;
+	u8 *model;
 	unsigned int quirk;
 };
 
-#define END_FIX { 0 }
+#define END_FIX { }
 
 /* add specific device quirk */
 #define UFS_FIX(_vendor, _model, _quirk) { \
-	.w_manufacturer_id = (_vendor),\
-	.model = (_model),		  \
+	.wmanufacturerid = (_vendor),\
+	.model = (_model),		   \
 	.quirk = (_quirk),		   \
 }
-
-/*
- * If UFS device is having issue in processing LCC (Line Control
- * Command) coming from UFS host controller then enable this quirk.
- * When this quirk is enabled, host controller driver should disable
- * the LCC transmission on UFS host controller (by clearing
- * TX_LCC_ENABLE attribute of host to 0).
- */
-#define UFS_DEVICE_QUIRK_BROKEN_LCC (1 << 0)
-
-/*
- * Some UFS devices don't need VCCQ rail for device operations. Enabling this
- * quirk for such devices will make sure that VCCQ rail is not voted.
- */
-#define UFS_DEVICE_NO_VCCQ (1 << 1)
 
 /*
  * Some vendor's UFS device sends back to back NACs for the DL data frames
@@ -89,13 +63,6 @@ struct ufs_dev_fix {
 #define UFS_DEVICE_QUIRK_RECOVERY_FROM_DL_NAC_ERRORS (1 << 2)
 
 /*
- * Some UFS devices may not work properly after resume if the link was kept
- * in off state during suspend. Enabling this quirk will not allow the
- * link to be kept in off state during suspend.
- */
-#define UFS_DEVICE_QUIRK_NO_LINK_OFF	(1 << 3)
-
-/*
  * Few Toshiba UFS device models advertise RX_MIN_ACTIVATETIME_CAPABILITY as
  * 600us which may not be enough for reliable hibern8 exit hardware sequence
  * from UFS device.
@@ -103,13 +70,6 @@ struct ufs_dev_fix {
  * if device advertises RX_MIN_ACTIVATETIME_CAPABILITY less than 1ms.
  */
 #define UFS_DEVICE_QUIRK_PA_TACTIVATE	(1 << 4)
-
-/*
- * Some UFS memory devices may have really low read/write throughput in
- * FAST AUTO mode, enable this quirk to make sure that FAST AUTO mode is
- * never enabled for such devices.
- */
-#define UFS_DEVICE_NO_FASTAUTO		(1 << 5)
 
 /*
  * It seems some UFS devices may keep drawing more than sleep current
@@ -136,35 +96,38 @@ struct ufs_dev_fix {
 #define UFS_DEVICE_QUIRK_HOST_PA_SAVECONFIGTIME	(1 << 8)
 
 /*
- * Some UFS devices may stop responding after switching from HS-G1 to HS-G3.
- * Also, it is found that these devices work fine if we do 2 steps switch:
- * HS-G1 to HS-G2 followed by HS-G2 to HS-G3. Enabling this quirk for such
- * device would apply this 2 steps gear switch workaround.
- */
-#define UFS_DEVICE_QUIRK_HS_G1_TO_HS_G3_SWITCH	(1 << 9)
-
- /* Some UFS devices require VS_DebugSaveConfigTime is 0x10,
+ * Some UFS devices require VS_DebugSaveConfigTime is 0x10,
  * enabling this quirk ensure this.
  */
-#define UFS_DEVICE_QUIRK_HOST_VS_DEBUGSAVECONFIGTIME	(1 << 10)
+#define UFS_DEVICE_QUIRK_HOST_VS_DEBUGSAVECONFIGTIME	(1 << 9)
 
 /*
- * Some UFS devices need more delay after device reference clk is turned on
- * but before initiation of the state transition to STALL from a LS-MODE or
- * from the HIBERN8 state. Enable this quirk to give UFS devices 50us delay
- * instead of the default delay.
+ * Some UFS devices require delay after VCC power rail is turned-off.
+ * Enable this quirk to introduce 5ms delays after VCC power-off during
+ * suspend flow.
  */
-#define UFS_DEVICE_QUIRK_WAIT_AFTER_REF_CLK_UNGATE	(1 << 11)
-
+#define UFS_DEVICE_QUIRK_DELAY_AFTER_LPM        (1 << 11)
 
 /*
- * Few samsung UFS device models advertise PA_HIBERN8TIME as
- * 200us during handshaking in link establishment b/w host and device but
- * which may not be enough for the UFS device.
- * To workaround this issue, host should set its PA_HIBERN8TIME time to
- * 300us even if device advertises PA_HIBERN8TIME of 200us.
+ * MTK PATCH
+ * Some UFS device need 5ms delay in VCC off. In order to wait VCC discharged
+ * to 0V. Some device may have issue when VCC is not discharged to 0V
+ * and power up.
  */
-#define UFS_DEVICE_QUIRK_PA_HIBER8TIME   (1 << 12)
+#define UFS_DEVICE_QUIRK_VCC_OFF_DELAY	(1 << 29)
 
+/*
+ * MTK PATCH
+ * Some UFS memory device needs limited RPMB max rw size otherwise
+ * device issue, for example, device hang, may happen in some scenarios.
+ */
+#define UFS_DEVICE_QUIRK_LIMITED_RPMB_MAX_RW_SIZE	(1 << 30)
+
+/*
+ * MTK PATCH
+ * Some UFS device writebooster cannot flush.
+ * To fix this problem, Toggle fWriteBoosterEn instead.
+ */
+#define UFS_DEVICE_QUIRK_WRITE_BOOSETER_FLUSH	(1 << 31)
 
 #endif /* UFS_QUIRKS_H_ */

@@ -581,7 +581,7 @@ static struct its_collection *its_build_invall_cmd(struct its_node *its,
 
 	its_fixup_cmd(cmd);
 
-	return desc->its_invall_cmd.col;
+	return NULL;
 }
 
 static struct its_vpe *its_build_vinvall_cmd(struct its_node *its,
@@ -2994,8 +2994,13 @@ static int its_vpe_irq_domain_alloc(struct irq_domain *domain, unsigned int virq
 		set_bit(i, bitmap);
 	}
 
-	if (err)
-		its_vpe_irq_domain_free(domain, virq, i);
+	if (err) {
+		if (i > 0)
+			its_vpe_irq_domain_free(domain, virq, i - 1);
+
+		its_lpi_free(bitmap, base, nr_ids);
+		its_free_prop_table(vprop_page);
+	}
 
 	return err;
 }

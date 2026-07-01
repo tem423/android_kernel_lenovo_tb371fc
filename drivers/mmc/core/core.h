@@ -14,10 +14,11 @@
 #include <linux/delay.h>
 #include <linux/sched.h>
 
+#include "mmc_crypto.h"
+
 struct mmc_host;
 struct mmc_card;
 struct mmc_request;
-struct mmc_queue;
 
 #define MMC_CMD_RETRIES        3
 
@@ -27,7 +28,6 @@ struct mmc_bus_ops {
 	int (*pre_suspend)(struct mmc_host *);
 	int (*suspend)(struct mmc_host *);
 	int (*resume)(struct mmc_host *);
-	int (*deferred_resume)(struct mmc_host *host);
 	int (*runtime_suspend)(struct mmc_host *);
 	int (*runtime_resume)(struct mmc_host *);
 	int (*alive)(struct mmc_host *);
@@ -35,9 +35,6 @@ struct mmc_bus_ops {
 	int (*hw_reset)(struct mmc_host *);
 	int (*sw_reset)(struct mmc_host *);
 	bool (*cache_enabled)(struct mmc_host *);
-	int (*change_bus_speed)(struct mmc_host *host, unsigned long *freq);
-	int (*change_bus_speed_deferred)(struct mmc_host *host,
-							unsigned long *freq);
 };
 
 void mmc_attach_bus(struct mmc_host *host, const struct mmc_bus_ops *ops);
@@ -65,8 +62,6 @@ void mmc_power_up(struct mmc_host *host, u32 ocr);
 void mmc_power_off(struct mmc_host *host);
 void mmc_power_cycle(struct mmc_host *host, u32 ocr);
 void mmc_set_initial_state(struct mmc_host *host);
-int mmc_clk_update_freq(struct mmc_host *host,
-		unsigned long freq, enum mmc_load state);
 
 static inline void mmc_delay(unsigned int ms)
 {
@@ -97,18 +92,16 @@ void mmc_remove_host_debugfs(struct mmc_host *host);
 void mmc_add_card_debugfs(struct mmc_card *card);
 void mmc_remove_card_debugfs(struct mmc_card *card);
 
-extern bool mmc_can_scale_clk(struct mmc_host *host);
-extern int mmc_init_clk_scaling(struct mmc_host *host);
-extern int mmc_suspend_clk_scaling(struct mmc_host *host);
-extern int mmc_resume_clk_scaling(struct mmc_host *host);
-extern int mmc_exit_clk_scaling(struct mmc_host *host);
-extern void mmc_deferred_scaling(struct mmc_host *host);
-extern void mmc_cqe_clk_scaling_start_busy(struct mmc_queue *mq,
-	struct mmc_host *host, bool lock_needed);
-extern void mmc_cqe_clk_scaling_stop_busy(struct mmc_host *host,
-			bool lock_needed, bool is_cqe_dcmd);
+#ifdef CONFIG_MTK_EMMC_CQ_SUPPORT
+void mmc_wait_cmdq_empty(struct mmc_host *host);
+void mmc_do_check(struct mmc_host *host);
+void mmc_do_stop(struct mmc_host *host);
+void mmc_do_status(struct mmc_host *host);
+void mmc_wait_cmdq_done(struct mmc_request *mrq);
+int mmc_run_queue_thread(void *data);
+#endif
 
-extern unsigned long mmc_get_max_frequency(struct mmc_host *host);
+
 
 int mmc_execute_tuning(struct mmc_card *card);
 int mmc_hs200_to_hs400(struct mmc_card *card);

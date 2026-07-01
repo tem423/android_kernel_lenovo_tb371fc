@@ -323,20 +323,14 @@ void __init memblock_discard(void)
 		addr = __pa(memblock.reserved.regions);
 		size = PAGE_ALIGN(sizeof(struct memblock_region) *
 				  memblock.reserved.max);
-		if (memblock_reserved_in_slab)
-			kfree(memblock.reserved.regions);
-		else
-			__memblock_free_late(addr, size);
+		__memblock_free_late(addr, size);
 	}
 
 	if (memblock.memory.regions != memblock_memory_init_regions) {
 		addr = __pa(memblock.memory.regions);
 		size = PAGE_ALIGN(sizeof(struct memblock_region) *
 				  memblock.memory.max);
-		if (memblock_memory_in_slab)
-			kfree(memblock.memory.regions);
-		else
-			__memblock_free_late(addr, size);
+		__memblock_free_late(addr, size);
 	}
 }
 #endif
@@ -769,8 +763,7 @@ int __init_memblock memblock_free(phys_addr_t base, phys_addr_t size)
 	memblock_dbg("   memblock_free: [%pa-%pa] %pF\n",
 		     &base, &end, (void *)_RET_IP_);
 
-	if (base < memblock.current_limit)
-		kmemleak_free_part(__va(base), size);
+	kmemleak_free_part_phys(base, size);
 	return memblock_remove_range(&memblock.reserved, base, size);
 }
 EXPORT_SYMBOL_GPL(memblock_free);
@@ -1220,9 +1213,7 @@ static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 		 * The min_count is set to 0 so that memblock allocations are
 		 * never reported as leaks.
 		 */
-		if (found < memblock.current_limit)
-			kmemleak_alloc(__va(found), size, 0, 0);
-
+		kmemleak_alloc_phys(found, size, 0, 0);
 		return found;
 	}
 	return 0;
@@ -1232,8 +1223,6 @@ phys_addr_t __init memblock_alloc_range(phys_addr_t size, phys_addr_t align,
 					phys_addr_t start, phys_addr_t end,
 					enum memblock_flags flags)
 {
-	memblock_dbg("%s: size: %llu align: %llu %pS\n",
-		     __func__, (u64)size, (u64)align, (void *)_RET_IP_);
 	return memblock_alloc_range_nid(size, align, start, end, NUMA_NO_NODE,
 					flags);
 }
@@ -1263,8 +1252,6 @@ again:
 
 phys_addr_t __init __memblock_alloc_base(phys_addr_t size, phys_addr_t align, phys_addr_t max_addr)
 {
-	memblock_dbg("%s: size: %llu align: %llu %pS\n",
-		     __func__, (u64)size, (u64)align, (void *)_RET_IP_);
 	return memblock_alloc_base_nid(size, align, max_addr, NUMA_NO_NODE,
 				       MEMBLOCK_NONE);
 }
@@ -1284,8 +1271,6 @@ phys_addr_t __init memblock_alloc_base(phys_addr_t size, phys_addr_t align, phys
 
 phys_addr_t __init memblock_alloc(phys_addr_t size, phys_addr_t align)
 {
-	memblock_dbg("%s: size: %llu align: %llu %pS\n",
-		     __func__, (u64)size, (u64)align, (void *)_RET_IP_);
 	return memblock_alloc_base(size, align, MEMBLOCK_ALLOC_ACCESSIBLE);
 }
 
@@ -1611,11 +1596,6 @@ static phys_addr_t __init_memblock __find_max_addr(phys_addr_t limit)
 	}
 
 	return max_addr;
-}
-
-phys_addr_t __init_memblock memblock_max_addr(phys_addr_t limit)
-{
-	return __find_max_addr(limit);
 }
 
 void __init memblock_enforce_memory_limit(phys_addr_t limit)

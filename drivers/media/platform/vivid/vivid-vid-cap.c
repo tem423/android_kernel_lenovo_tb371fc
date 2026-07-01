@@ -51,7 +51,7 @@ static const struct vivid_fmt formats_ovl[] = {
 };
 
 /* The number of discrete webcam framesizes */
-#define VIVID_WEBCAM_SIZES 5
+#define VIVID_WEBCAM_SIZES 6
 /* The number of discrete webcam frameintervals */
 #define VIVID_WEBCAM_IVALS (VIVID_WEBCAM_SIZES * 2)
 
@@ -59,6 +59,7 @@ static const struct vivid_fmt formats_ovl[] = {
 static const struct v4l2_frmsize_discrete webcam_sizes[VIVID_WEBCAM_SIZES] = {
 	{  320, 180 },
 	{  640, 360 },
+	{  640, 480 },
 	{ 1280, 720 },
 	{ 1920, 1080 },
 	{ 3840, 2160 },
@@ -74,9 +75,11 @@ static const struct v4l2_fract webcam_intervals[VIVID_WEBCAM_IVALS] = {
 	{  1, 4 },
 	{  1, 5 },
 	{  1, 10 },
+	{  2, 25 },
 	{  1, 15 },
 	{  1, 25 },
 	{  1, 30 },
+	{  1, 40 },
 	{  1, 50 },
 	{  1, 60 },
 };
@@ -254,6 +257,13 @@ static void vid_cap_stop_streaming(struct vb2_queue *vq)
 	dev->can_loop_video = false;
 }
 
+static void vid_cap_buf_request_complete(struct vb2_buffer *vb)
+{
+	struct vivid_dev *dev = vb2_get_drv_priv(vb->vb2_queue);
+
+	v4l2_ctrl_request_complete(vb->req_obj.req, &dev->ctrl_hdl_vid_cap);
+}
+
 const struct vb2_ops vivid_vid_cap_qops = {
 	.queue_setup		= vid_cap_queue_setup,
 	.buf_prepare		= vid_cap_buf_prepare,
@@ -261,6 +271,7 @@ const struct vb2_ops vivid_vid_cap_qops = {
 	.buf_queue		= vid_cap_buf_queue,
 	.start_streaming	= vid_cap_start_streaming,
 	.stop_streaming		= vid_cap_stop_streaming,
+	.buf_request_complete	= vid_cap_buf_request_complete,
 	.wait_prepare		= vb2_ops_wait_prepare,
 	.wait_finish		= vb2_ops_wait_finish,
 };
@@ -441,12 +452,6 @@ void vivid_update_format_cap(struct vivid_dev *dev, bool keep_controls)
 	tpg_reset_source(&dev->tpg, dev->src_rect.width, dev->src_rect.height, dev->field_cap);
 	dev->crop_cap = dev->src_rect;
 	dev->crop_bounds_cap = dev->src_rect;
-	if (dev->bitmap_cap &&
-	    (dev->compose_cap.width != dev->crop_cap.width ||
-	     dev->compose_cap.height != dev->crop_cap.height)) {
-		vfree(dev->bitmap_cap);
-		dev->bitmap_cap = NULL;
-	}
 	dev->compose_cap = dev->crop_cap;
 	if (V4L2_FIELD_HAS_T_OR_B(dev->field_cap))
 		dev->compose_cap.height /= 2;
@@ -877,8 +882,6 @@ int vivid_vid_cap_s_selection(struct file *file, void *fh, struct v4l2_selection
 	struct vivid_dev *dev = video_drvdata(file);
 	struct v4l2_rect *crop = &dev->crop_cap;
 	struct v4l2_rect *compose = &dev->compose_cap;
-	unsigned orig_compose_w = compose->width;
-	unsigned orig_compose_h = compose->height;
 	unsigned factor = V4L2_FIELD_HAS_T_OR_B(dev->field_cap) ? 2 : 1;
 	int ret;
 
@@ -923,7 +926,6 @@ int vivid_vid_cap_s_selection(struct file *file, void *fh, struct v4l2_selection
 			if (dev->has_compose_cap) {
 				v4l2_rect_set_min_size(compose, &min_rect);
 				v4l2_rect_set_max_size(compose, &max_rect);
-				v4l2_rect_map_inside(compose, &fmt);
 			}
 			dev->fmt_cap_rect = fmt;
 			tpg_s_buf_height(&dev->tpg, fmt.height);
@@ -996,17 +998,17 @@ int vivid_vid_cap_s_selection(struct file *file, void *fh, struct v4l2_selection
 			s->r.height /= factor;
 		}
 		v4l2_rect_map_inside(&s->r, &dev->fmt_cap_rect);
+		if (dev->bitmap_cap && (compose->width != s->r.width ||
+					compose->height != s->r.height)) {
+			vfree(dev->bitmap_cap);
+			dev->bitmap_cap = NULL;
+		}
 		*compose = s->r;
 		break;
 	default:
 		return -EINVAL;
 	}
 
-	if (dev->bitmap_cap && (compose->width != orig_compose_w ||
-				compose->height != orig_compose_h)) {
-		vfree(dev->bitmap_cap);
-		dev->bitmap_cap = NULL;
-	}
 	tpg_s_crop_compose(&dev->tpg, crop, compose);
 	return 0;
 }
@@ -1249,14 +1251,7 @@ int vivid_vid_cap_s_fbuf(struct file *file, void *fh,
 		return -EINVAL;
 	if (a->fmt.bytesperline < (a->fmt.width * fmt->bit_depth[0]) / 8)
 		return -EINVAL;
-	if (a->fmt.bytesperline > a->fmt.sizeimage / a->fmt.height)
-		return -EINVAL;
-
-	/*
-	 * Only support the framebuffer of one of the vivid instances.
-	 * Anything else is rejected.
-	 */
-	if (!vivid_validate_fb(a))
+	if (a->fmt.height * a->fmt.bytesperline < a->fmt.sizeimage)
 		return -EINVAL;
 
 	dev->fb_vbase_cap = phys_to_virt((unsigned long)a->base);

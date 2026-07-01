@@ -302,8 +302,13 @@ struct vm_area_struct;
 #define GFP_USER	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
 #define GFP_DMA		__GFP_DMA
 #define GFP_DMA32	__GFP_DMA32
+#ifdef CONFIG_DMAUSER_PAGES
+#define GFP_HIGHUSER    (GFP_USER | GFP_DMA)
+#define GFP_HIGHUSER_MOVABLE    (GFP_HIGHUSER)
+#else
 #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
 #define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE)
+#endif
 #define GFP_TRANSHUGE_LIGHT	((GFP_HIGHUSER_MOVABLE | __GFP_COMP | \
 			 __GFP_NOMEMALLOC | __GFP_NOWARN) & ~__GFP_RECLAIM)
 #define GFP_TRANSHUGE	(GFP_TRANSHUGE_LIGHT | __GFP_DIRECT_RECLAIM)
@@ -448,14 +453,7 @@ static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
 	enum zone_type z;
-	int bit;
-
-	if (!IS_ENABLED(CONFIG_HIGHMEM)) {
-		if ((flags & __GFP_MOVABLE) && !(flags & __GFP_CMA))
-			flags &= ~__GFP_HIGHMEM;
-	}
-
-	bit = (__force int) (flags & GFP_ZONEMASK);
+	int bit = (__force int) (flags & GFP_ZONEMASK);
 
 	z = (GFP_ZONE_TABLE >> (bit * GFP_ZONES_SHIFT)) &
 					 ((1 << GFP_ZONES_SHIFT) - 1);
@@ -621,15 +619,6 @@ static inline bool pm_suspended_storage(void)
 	return false;
 }
 #endif /* CONFIG_PM_SLEEP */
-
-/*
- * Check if the gfp flags allow compaction - GFP_NOIO is a really
- * tricky context because the migration might require IO.
- */
-static inline bool gfp_compaction_allowed(gfp_t gfp_mask)
-{
-	return IS_ENABLED(CONFIG_COMPACTION) && (gfp_mask & __GFP_IO);
-}
 
 #if (defined(CONFIG_MEMORY_ISOLATION) && defined(CONFIG_COMPACTION)) || defined(CONFIG_CMA)
 /* The below functions must be run on a range from a single zone. */

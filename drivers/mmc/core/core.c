@@ -14,7 +14,6 @@
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/completion.h>
-#include <linux/devfreq.h>
 #include <linux/device.h>
 #include <linux/delay.h>
 #include <linux/pagemap.h>
@@ -30,6 +29,7 @@
 #include <linux/random.h>
 #include <linux/slab.h>
 #include <linux/of.h>
+#include <uapi/linux/sched/types.h>
 
 #include <linux/mmc/card.h>
 #include <linux/mmc/host.h>
@@ -42,24 +42,17 @@
 
 #include "core.h"
 #include "card.h"
+#include "queue.h"
 #include "bus.h"
 #include "host.h"
-#include "queue.h"
 #include "sdio_bus.h"
 #include "pwrseq.h"
 
 #include "mmc_ops.h"
 #include "sd_ops.h"
 #include "sdio_ops.h"
-
-/* huaqin add for SD card bringup by liufurong at 20190201 start */
-#ifdef CONFIG_MMC_SDHCI_BH201
-#include "../host/sdhci-msm.h"
-#else
-#define SDHCI_TIMEOUT_CONTROL	0x2E
-#endif
-/* huaqin add for SD card bringup by liufurong at 20190201 end */
-
+#include "mtk_mmc_block.h"
+#include "../host/mtk-sd-dbg.h"
 /* The max erase timeout, used when host->max_busy_timeout isn't specified */
 #define MMC_ERASE_TIMEOUT_MS	(60 * 1000) /* 60 s */
 
@@ -122,893 +115,6 @@ static inline void mmc_should_fail_request(struct mmc_host *host,
 
 #endif /* CONFIG_FAIL_MMC_REQUEST */
 
-static bool mmc_is_data_request(struct mmc_request *mmc_request)
-{
-	switch (mmc_request->cmd->opcode) {
-	case MMC_READ_SINGLE_BLOCK:
-	case MMC_READ_MULTIPLE_BLOCK:
-	case MMC_WRITE_BLOCK:
-	case MMC_WRITE_MULTIPLE_BLOCK:
-		return true;
-	default:
-		return false;
-	}
-}
-
-static void mmc_clk_scaling_start_busy(struct mmc_host *host, bool lock_needed)
-{
-	struct mmc_devfeq_clk_scaling *clk_scaling = &host->clk_scaling;
-
-	if (!clk_scaling->enable)
-		return;
-
-	if (lock_needed)
-		spin_lock_bh(&clk_scaling->lock);
-
-	clk_scaling->start_busy = ktime_get();
-	clk_scaling->is_busy_started = true;
-
-	if (lock_needed)
-		spin_unlock_bh(&clk_scaling->lock);
-}
-
-static void mmc_clk_scaling_stop_busy(struct mmc_host *host, bool lock_needed)
-{
-	struct mmc_devfeq_clk_scaling *clk_scaling = &host->clk_scaling;
-
-	if (!clk_scaling->enable)
-		return;
-
-	if (lock_needed)
-		spin_lock_bh(&clk_scaling->lock);
-
-	if (!clk_scaling->is_busy_started) {
-		WARN_ON(1);
-		goto out;
-	}
-
-	clk_scaling->total_busy_time_us +=
-		ktime_to_us(ktime_sub(ktime_get(),
-			clk_scaling->start_busy));
-	pr_debug("%s: accumulated busy time is %lu usec\n",
-		mmc_hostname(host), clk_scaling->total_busy_time_us);
-	clk_scaling->is_busy_started = false;
-
-out:
-	if (lock_needed)
-		spin_unlock_bh(&clk_scaling->lock);
-}
-
-/* mmc_cqe_clk_scaling_start_busy() - start busy timer for data requests
- * @host: pointer to mmc host structure
- * @lock_needed: flag indication if locking is needed
- *
- * This function starts the busy timer in case it was not already started.
- */
-void mmc_cqe_clk_scaling_start_busy(struct mmc_queue *mq,
-			struct mmc_host *host, bool lock_needed)
-{
-	unsigned long flags;
-
-	if (!host->clk_scaling.enable)
-		return;
-
-	if (lock_needed)
-		spin_lock_irqsave(&host->clk_scaling.lock, flags);
-
-	if (!host->clk_scaling.is_busy_started &&
-			!(mq->cqe_busy & MMC_CQE_DCMD_BUSY)) {
-		host->clk_scaling.start_busy = ktime_get();
-		host->clk_scaling.is_busy_started = true;
-	}
-
-	if (lock_needed)
-		spin_unlock_irqrestore(&host->clk_scaling.lock, flags);
-}
-EXPORT_SYMBOL(mmc_cqe_clk_scaling_start_busy);
-
-/**
- * mmc_cqe_clk_scaling_stop_busy() - stop busy timer for last data requests
- * @host: pointer to mmc host structure
- * @lock_needed: flag indication if locking is needed
- *
- * This function stops the busy timer in case it is the last data request.
- * In case the current request is not the last one, the busy time till
- * now will be accumulated and the counter will be restarted.
- */
-void mmc_cqe_clk_scaling_stop_busy(struct mmc_host *host,
-	bool lock_needed, bool is_cqe_dcmd)
-{
-	unsigned int cqe_active_reqs = 0;
-
-	if (!host->clk_scaling.enable)
-		return;
-
-	cqe_active_reqs = atomic_read(&host->active_reqs);
-
-	/*
-	 * This gets invoked from CQE completion path which is hard IRQ context
-	 * So use spin_lock() instread of spin_lock_irqsave()
-	 */
-	if (lock_needed)
-		spin_lock(&host->clk_scaling.lock);
-
-	/*
-	 *  For CQ mode: In completion of DCMD request, start busy time in
-	 *  case of pending data requests
-	 */
-	if (is_cqe_dcmd) {
-		if (cqe_active_reqs && !host->clk_scaling.is_busy_started) {
-			host->clk_scaling.is_busy_started = true;
-			host->clk_scaling.start_busy = ktime_get();
-		}
-		goto out;
-	}
-
-	host->clk_scaling.total_busy_time_us +=
-		ktime_to_us(ktime_sub(ktime_get(),
-			host->clk_scaling.start_busy));
-
-	if (cqe_active_reqs) {
-		host->clk_scaling.is_busy_started = true;
-		host->clk_scaling.start_busy = ktime_get();
-	} else {
-		host->clk_scaling.is_busy_started = false;
-	}
-out:
-	if (lock_needed)
-		spin_unlock(&host->clk_scaling.lock);
-
-}
-EXPORT_SYMBOL(mmc_cqe_clk_scaling_stop_busy);
-
-/**
- * mmc_can_scale_clk() - Check clock scaling capability
- * @host: pointer to mmc host structure
- */
-bool mmc_can_scale_clk(struct mmc_host *host)
-{
-	if (!host) {
-		pr_err("bad host parameter\n");
-		WARN_ON(1);
-		return false;
-	}
-
-	return host->caps2 & MMC_CAP2_CLK_SCALE;
-}
-EXPORT_SYMBOL(mmc_can_scale_clk);
-
-static int mmc_devfreq_get_dev_status(struct device *dev,
-		struct devfreq_dev_status *status)
-{
-	struct mmc_host *host = container_of(dev, struct mmc_host, class_dev);
-	struct mmc_devfeq_clk_scaling *clk_scaling;
-	unsigned long flags;
-
-	if (!host) {
-		pr_err("bad host parameter\n");
-		WARN_ON(1);
-		return -EINVAL;
-	}
-
-	clk_scaling = &host->clk_scaling;
-
-	if (!clk_scaling->enable)
-		return 0;
-
-	spin_lock_irqsave(&host->clk_scaling.lock, flags);
-
-	/* accumulate the busy time of ongoing work */
-	memset(status, 0, sizeof(*status));
-	if (clk_scaling->is_busy_started) {
-		if (host->cqe_on) {
-			/* the "busy-timer" will be restarted in case there
-			 * are pending data requests
-			 */
-			mmc_cqe_clk_scaling_stop_busy(host, false, false);
-		} else {
-			mmc_clk_scaling_stop_busy(host, false);
-			mmc_clk_scaling_start_busy(host, false);
-		}
-	}
-
-	status->busy_time = clk_scaling->total_busy_time_us;
-	status->total_time = ktime_to_us(ktime_sub(ktime_get(),
-		clk_scaling->measure_interval_start));
-	clk_scaling->total_busy_time_us = 0;
-	status->current_frequency = clk_scaling->curr_freq;
-	clk_scaling->measure_interval_start = ktime_get();
-
-	pr_debug("%s: status: load = %lu%% - total_time=%lu busy_time = %lu, clk=%lu\n",
-		mmc_hostname(host),
-		(status->busy_time*100)/status->total_time,
-		status->total_time, status->busy_time,
-		status->current_frequency);
-
-	spin_unlock_irqrestore(&host->clk_scaling.lock, flags);
-
-	return 0;
-}
-
-static bool mmc_is_valid_state_for_clk_scaling(struct mmc_host *host)
-{
-	struct mmc_card *card = host->card;
-	u32 status;
-
-	/*
-	 * If the current partition type is RPMB, clock switching may not
-	 * work properly as sending tuning command (CMD21) is illegal in
-	 * this mode.
-	 */
-	if (!card || (mmc_card_mmc(card) &&
-			(card->part_curr == EXT_CSD_PART_CONFIG_ACC_RPMB)))
-		return false;
-
-	if (mmc_send_status(card, &status)) {
-		pr_err("%s: Get card status fail\n", mmc_hostname(card->host));
-		return false;
-	}
-
-	return R1_CURRENT_STATE(status) == R1_STATE_TRAN;
-}
-
-int mmc_clk_update_freq_deferred(struct mmc_host *host,
-		unsigned long freq, enum mmc_load state)
-{
-	int err = 0;
-
-	if (!host) {
-		pr_err("bad host parameter\n");
-		WARN_ON(1);
-		return -EINVAL;
-	}
-
-	/* make sure the card supports the frequency we want */
-	if (unlikely(freq > host->card->clk_scaling_highest)) {
-		freq = host->card->clk_scaling_highest;
-		pr_warn("%s: %s: frequency was overridden to %lu\n",
-				mmc_hostname(host), __func__,
-				host->card->clk_scaling_highest);
-	}
-
-	if (unlikely(freq < host->card->clk_scaling_lowest)) {
-		freq = host->card->clk_scaling_lowest;
-		pr_warn("%s: %s: frequency was overridden to %lu\n",
-			mmc_hostname(host), __func__,
-			host->card->clk_scaling_lowest);
-	}
-
-	if (freq == host->clk_scaling.curr_freq)
-		goto out;
-
-	if (host->ops->notify_load) {
-		err = host->ops->notify_load(host, state);
-		if (err) {
-			pr_err("%s: %s: fail on notify_load\n",
-				mmc_hostname(host), __func__);
-			goto out;
-		}
-	}
-
-	if (host->cqe_on) {
-		err = host->cqe_ops->cqe_wait_for_idle(host);
-		if (err) {
-			pr_err("%s: %s: CQE went in recovery path.\n",
-				mmc_hostname(host), __func__);
-			goto error;
-		}
-		host->cqe_ops->cqe_off(host);
-	}
-
-	if (!mmc_is_valid_state_for_clk_scaling(host)) {
-		pr_debug("%s: invalid state for clock scaling - skipping\n",
-			mmc_hostname(host));
-		goto error;
-	}
-
-	err = host->bus_ops->change_bus_speed_deferred(host, &freq);
-	if (!err)
-		host->clk_scaling.curr_freq = freq;
-	else
-		pr_err("%s: %s: failed (%d) at freq=%lu\n",
-			mmc_hostname(host), __func__, err, freq);
-
-	mmc_log_string(host,
-			"deferred clock scale state %d freq %lu done with err %d\n",
-			state, freq, err);
-	/*
-	 * CQE would be enabled as part of CQE issueing path
-	 * So no need to unhalt it explicitly
-	 */
-
-error:
-	if (err) {
-		/* restore previous state */
-		if (host->ops->notify_load)
-			if (host->ops->notify_load(host,
-				host->clk_scaling.state))
-				pr_err("%s: %s: fail on notify_load restore\n",
-					mmc_hostname(host), __func__);
-	}
-out:
-	return err;
-}
-EXPORT_SYMBOL(mmc_clk_update_freq_deferred);
-
-
-int mmc_clk_update_freq(struct mmc_host *host,
-		unsigned long freq, enum mmc_load state)
-{
-	int err = 0;
-
-	if (!host) {
-		pr_err("bad host parameter\n");
-		WARN_ON(1);
-		return -EINVAL;
-	}
-
-	/* make sure the card supports the frequency we want */
-	if (unlikely(freq > host->card->clk_scaling_highest)) {
-		freq = host->card->clk_scaling_highest;
-		pr_warn("%s: %s: frequency was overridden to %lu\n",
-				mmc_hostname(host), __func__,
-				host->card->clk_scaling_highest);
-	}
-
-	if (unlikely(freq < host->card->clk_scaling_lowest)) {
-		freq = host->card->clk_scaling_lowest;
-		pr_warn("%s: %s: frequency was overridden to %lu\n",
-			mmc_hostname(host), __func__,
-			host->card->clk_scaling_lowest);
-	}
-
-	if (freq == host->clk_scaling.curr_freq)
-		goto out;
-
-	if (host->ops->notify_load) {
-		err = host->ops->notify_load(host, state);
-		if (err) {
-			pr_err("%s: %s: fail on notify_load\n",
-				mmc_hostname(host), __func__);
-			goto out;
-		}
-	}
-
-	if (host->cqe_on) {
-		err = host->cqe_ops->cqe_wait_for_idle(host);
-		if (err) {
-			pr_err("%s: %s: CQE went in recovery path\n",
-				mmc_hostname(host), __func__);
-			goto error;
-		}
-		host->cqe_ops->cqe_off(host);
-	}
-
-	if (!mmc_is_valid_state_for_clk_scaling(host)) {
-		pr_debug("%s: invalid state for clock scaling - skipping\n",
-			mmc_hostname(host));
-		goto error;
-	}
-
-	err = host->bus_ops->change_bus_speed(host, &freq);
-	if (!err)
-		host->clk_scaling.curr_freq = freq;
-	else
-		pr_err("%s: %s: failed (%d) at freq=%lu\n",
-			mmc_hostname(host), __func__, err, freq);
-	mmc_log_string(host, "clock scale state %d freq %lu done with err %d\n",
-			state, freq, err);
-	/*
-	 * CQE would be enabled as part of CQE issueing path
-	 * So no need to unhalt it explicitly
-	 */
-
-error:
-	if (err) {
-		/* restore previous state */
-		if (host->ops->notify_load)
-			if (host->ops->notify_load(host,
-				host->clk_scaling.state))
-				pr_err("%s: %s: fail on notify_load restore\n",
-					mmc_hostname(host), __func__);
-	}
-out:
-	return err;
-}
-EXPORT_SYMBOL(mmc_clk_update_freq);
-
-static int mmc_devfreq_set_target(struct device *dev,
-				unsigned long *freq, u32 devfreq_flags)
-{
-	struct mmc_host *host = container_of(dev, struct mmc_host, class_dev);
-	struct mmc_devfeq_clk_scaling *clk_scaling;
-	int err = 0;
-	int abort;
-	unsigned long pflags = current->flags;
-	unsigned long flags;
-
-	/* Ensure scaling would happen even in memory pressure conditions */
-	current->flags |= PF_MEMALLOC;
-
-	if (!(host && freq)) {
-		pr_err("%s: unexpected host/freq parameter\n", __func__);
-		err = -EINVAL;
-		goto out;
-	}
-
-	clk_scaling = &host->clk_scaling;
-
-	if (!clk_scaling->enable)
-		goto out;
-
-	pr_debug("%s: target freq = %lu (%s)\n", mmc_hostname(host),
-		*freq, current->comm);
-/* huaqin add for SD card bringup by liufurong at 20190201 start */
-#ifdef CONFIG_MMC_SDHCI_BH201
-	{
-		struct sdhci_host *sdhost = mmc_priv(host);
-
-if (bht_target_host(sdhost)) {
-			goto out;
-		}
-	}
-#endif
-/* huaqin add for SD card bringup by liufurong at 20190201 end */
-	spin_lock_irqsave(&clk_scaling->lock, flags);
-	if (clk_scaling->curr_freq == *freq ||
-		clk_scaling->skip_clk_scale_freq_update) {
-		spin_unlock_irqrestore(&clk_scaling->lock, flags);
-		goto out;
-	}
-
-	clk_scaling->need_freq_change = true;
-	clk_scaling->target_freq = *freq;
-	clk_scaling->state = *freq < clk_scaling->curr_freq ?
-		MMC_LOAD_LOW : MMC_LOAD_HIGH;
-	spin_unlock_irqrestore(&clk_scaling->lock, flags);
-
-	if (!clk_scaling->is_suspended && host->ios.clock)
-		abort = __mmc_claim_host(host, NULL,
-				&clk_scaling->devfreq_abort);
-	else
-		goto out;
-
-	if (abort)
-		goto out;
-
-	/*
-	 * In case we were able to claim host there is no need to
-	 * defer the frequency change. It will be done now
-	 */
-	clk_scaling->need_freq_change = false;
-
-	err = mmc_clk_update_freq(host, *freq, clk_scaling->state);
-	if (err && err != -EAGAIN)
-		pr_err("%s: clock scale to %lu failed with error %d\n",
-			mmc_hostname(host), *freq, err);
-	else
-		pr_debug("%s: clock change to %lu finished successfully (%s)\n",
-			mmc_hostname(host), *freq, current->comm);
-
-	mmc_release_host(host);
-out:
-	current_restore_flags(pflags, PF_MEMALLOC);
-	return err;
-}
-
-/**
- * mmc_deferred_scaling() - scale clocks from data path (mmc thread context)
- * @host: pointer to mmc host structure
- *
- * This function does clock scaling in case "need_freq_change" flag was set
- * by the clock scaling logic.
- */
-void mmc_deferred_scaling(struct mmc_host *host)
-{
-	unsigned long target_freq;
-	int err;
-	struct mmc_devfeq_clk_scaling clk_scaling;
-	unsigned long flags;
-
-	if (!host->clk_scaling.enable)
-		return;
-
-	spin_lock_irqsave(&host->clk_scaling.lock, flags);
-
-	if (!host->clk_scaling.need_freq_change) {
-		spin_unlock_irqrestore(&host->clk_scaling.lock, flags);
-		return;
-	}
-
-	atomic_inc(&host->clk_scaling.devfreq_abort);
-	target_freq = host->clk_scaling.target_freq;
-	/*
-	 * Store the clock scaling state while the lock is acquired so that
-	 * if devfreq context modifies clk_scaling, it will get reflected only
-	 * in the next deferred scaling check.
-	 */
-	clk_scaling = host->clk_scaling;
-	host->clk_scaling.need_freq_change = false;
-	spin_unlock_irqrestore(&host->clk_scaling.lock, flags);
-
-	pr_debug("%s: doing deferred frequency change (%lu) (%s)\n",
-				mmc_hostname(host),
-				target_freq, current->comm);
-	mmc_log_string(host, "doing deferred frequency change (%lu) (%s)\n",
-			target_freq, current->comm);
-
-	err = mmc_clk_update_freq_deferred(host, target_freq,
-		clk_scaling.state);
-	if (err && err != -EAGAIN)
-		pr_err("%s: failed on deferred scale clocks (%d)\n",
-			mmc_hostname(host), err);
-	else
-		pr_debug("%s: clocks were successfully scaled to %lu (%s)\n",
-			mmc_hostname(host),
-			target_freq, current->comm);
-	atomic_dec(&host->clk_scaling.devfreq_abort);
-}
-EXPORT_SYMBOL(mmc_deferred_scaling);
-
-static int mmc_devfreq_create_freq_table(struct mmc_host *host)
-{
-	int i;
-	struct mmc_devfeq_clk_scaling *clk_scaling = &host->clk_scaling;
-
-	pr_debug("%s: supported: lowest=%lu, highest=%lu\n",
-		mmc_hostname(host),
-		host->card->clk_scaling_lowest,
-		host->card->clk_scaling_highest);
-
-	/*
-	 * Create the frequency table and initialize it with default values.
-	 * Initialize it with platform specific frequencies if the frequency
-	 * table supplied by platform driver is present, otherwise initialize
-	 * it with min and max frequencies supported by the card.
-	 */
-	if (!clk_scaling->freq_table) {
-		if (clk_scaling->pltfm_freq_table_sz)
-			clk_scaling->freq_table_sz =
-				clk_scaling->pltfm_freq_table_sz;
-		else
-			clk_scaling->freq_table_sz = 2;
-
-		clk_scaling->freq_table = kzalloc(
-			(clk_scaling->freq_table_sz *
-			sizeof(*(clk_scaling->freq_table))), GFP_KERNEL);
-		if (!clk_scaling->freq_table)
-			return -ENOMEM;
-
-		if (clk_scaling->pltfm_freq_table) {
-			memcpy(clk_scaling->freq_table,
-				clk_scaling->pltfm_freq_table,
-				(clk_scaling->pltfm_freq_table_sz *
-				sizeof(*(clk_scaling->pltfm_freq_table))));
-		} else {
-			pr_debug("%s: no frequency table defined -  setting default\n",
-				mmc_hostname(host));
-			clk_scaling->freq_table[0] =
-				host->card->clk_scaling_lowest;
-			clk_scaling->freq_table[1] =
-				host->card->clk_scaling_highest;
-			goto out;
-		}
-	}
-
-	if (host->card->clk_scaling_lowest >
-		clk_scaling->freq_table[0])
-		pr_debug("%s: frequency table undershot possible freq\n",
-			mmc_hostname(host));
-
-	for (i = 0; i < clk_scaling->freq_table_sz; i++) {
-		if (clk_scaling->freq_table[i] <=
-			host->card->clk_scaling_highest)
-			continue;
-		clk_scaling->freq_table[i] =
-			host->card->clk_scaling_highest;
-		clk_scaling->freq_table_sz = i + 1;
-		pr_debug("%s: frequency table overshot possible freq (%d)\n",
-				mmc_hostname(host), clk_scaling->freq_table[i]);
-		break;
-	}
-
-	if (mmc_card_sd(host->card) && (clk_scaling->freq_table_sz < 2)) {
-		clk_scaling->freq_table[clk_scaling->freq_table_sz] =
-				host->card->clk_scaling_highest;
-		clk_scaling->freq_table_sz++;
-	}
-
-out:
-	/**
-	 * devfreq requires unsigned long type freq_table while the
-	 * freq_table in clk_scaling is un32. Here allocates an individual
-	 * memory space for it and release it when exit clock scaling.
-	 */
-	clk_scaling->devfreq_profile.freq_table =  kzalloc(
-			clk_scaling->freq_table_sz *
-			sizeof(*(clk_scaling->devfreq_profile.freq_table)),
-			GFP_KERNEL);
-	if (!clk_scaling->devfreq_profile.freq_table)
-		return -ENOMEM;
-	clk_scaling->devfreq_profile.max_state = clk_scaling->freq_table_sz;
-
-	for (i = 0; i < clk_scaling->freq_table_sz; i++) {
-		clk_scaling->devfreq_profile.freq_table[i] =
-			clk_scaling->freq_table[i];
-		pr_debug("%s: freq[%d] = %u\n",
-			mmc_hostname(host), i, clk_scaling->freq_table[i]);
-	}
-
-	return 0;
-}
-
-/**
- * mmc_init_devfreq_clk_scaling() - Initialize clock scaling
- * @host: pointer to mmc host structure
- *
- * Initialize clock scaling for supported hosts. It is assumed that the caller
- * ensure clock is running at maximum possible frequency before calling this
- * function. Shall use struct devfreq_simple_ondemand_data to configure
- * governor.
- */
-int mmc_init_clk_scaling(struct mmc_host *host)
-{
-	int err;
-	struct devfreq *devfreq;
-
-	if (!host || !host->card) {
-		pr_err("%s: unexpected host/card parameters\n",
-			__func__);
-		return -EINVAL;
-	}
-
-	if (!mmc_can_scale_clk(host) ||
-		!host->bus_ops->change_bus_speed) {
-		pr_debug("%s: clock scaling is not supported\n",
-			mmc_hostname(host));
-		return 0;
-	}
-
-	pr_debug("registering %s dev (%pK) to devfreq\n",
-		mmc_hostname(host),
-		mmc_classdev(host));
-
-	if (host->clk_scaling.devfreq) {
-		pr_err("%s: dev is already registered for dev %pK\n",
-			mmc_hostname(host),
-			mmc_dev(host));
-		return -EPERM;
-	}
-	spin_lock_init(&host->clk_scaling.lock);
-	atomic_set(&host->clk_scaling.devfreq_abort, 0);
-	host->clk_scaling.curr_freq = host->ios.clock;
-	host->clk_scaling.need_freq_change = false;
-	host->clk_scaling.is_busy_started = false;
-
-	host->clk_scaling.devfreq_profile.polling_ms =
-		host->clk_scaling.polling_delay_ms;
-	host->clk_scaling.devfreq_profile.get_dev_status =
-		mmc_devfreq_get_dev_status;
-	host->clk_scaling.devfreq_profile.target = mmc_devfreq_set_target;
-	host->clk_scaling.devfreq_profile.initial_freq = host->ios.clock;
-
-	host->clk_scaling.ondemand_gov_data.simple_scaling = true;
-	host->clk_scaling.ondemand_gov_data.upthreshold =
-		host->clk_scaling.upthreshold;
-	host->clk_scaling.ondemand_gov_data.downdifferential =
-		host->clk_scaling.upthreshold - host->clk_scaling.downthreshold;
-
-	err = mmc_devfreq_create_freq_table(host);
-	if (err) {
-		pr_err("%s: fail to create devfreq frequency table\n",
-			mmc_hostname(host));
-		return err;
-	}
-
-	dev_pm_opp_add(mmc_classdev(host),
-		host->clk_scaling.devfreq_profile.freq_table[0], 0);
-	dev_pm_opp_add(mmc_classdev(host),
-		host->clk_scaling.devfreq_profile.freq_table[1], 0);
-
-	pr_debug("%s: adding devfreq with: upthreshold=%u downthreshold=%u polling=%u\n",
-		mmc_hostname(host),
-		host->clk_scaling.ondemand_gov_data.upthreshold,
-		host->clk_scaling.ondemand_gov_data.downdifferential,
-		host->clk_scaling.devfreq_profile.polling_ms);
-
-	devfreq = devfreq_add_device(
-		mmc_classdev(host),
-		&host->clk_scaling.devfreq_profile,
-		"simple_ondemand",
-		&host->clk_scaling.ondemand_gov_data);
-
-	if (IS_ERR(devfreq)) {
-		pr_err("%s: unable to register with devfreq\n",
-			mmc_hostname(host));
-		dev_pm_opp_remove(mmc_classdev(host),
-			host->clk_scaling.devfreq_profile.freq_table[0]);
-		dev_pm_opp_remove(mmc_classdev(host),
-			host->clk_scaling.devfreq_profile.freq_table[1]);
-		return PTR_ERR(devfreq);
-	}
-
-	host->clk_scaling.devfreq = devfreq;
-	pr_debug("%s: clk scaling is enabled for device %s (%pK) with devfreq %pK (clock = %uHz)\n",
-		mmc_hostname(host),
-		dev_name(mmc_classdev(host)),
-		mmc_classdev(host),
-		host->clk_scaling.devfreq,
-		host->ios.clock);
-
-	host->clk_scaling.enable = true;
-	host->clk_scaling.is_suspended = false;
-
-	return err;
-}
-EXPORT_SYMBOL(mmc_init_clk_scaling);
-
-/**
- * mmc_suspend_clk_scaling() - suspend clock scaling
- * @host: pointer to mmc host structure
- *
- * This API will suspend devfreq feature for the specific host.
- * The statistics collected by mmc will be cleared.
- * This function is intended to be called by the pm callbacks
- * (e.g. runtime_suspend, suspend) of the mmc device
- */
-int mmc_suspend_clk_scaling(struct mmc_host *host)
-{
-	int err;
-
-	if (!host) {
-		WARN(1, "bad host parameter\n");
-		return -EINVAL;
-	}
-
-	if (!mmc_can_scale_clk(host) || !host->clk_scaling.enable ||
-			host->clk_scaling.is_suspended)
-		return 0;
-
-	if (!host->clk_scaling.devfreq) {
-		pr_err("%s: %s: no devfreq is assosiated with this device\n",
-			mmc_hostname(host), __func__);
-		return -EPERM;
-	}
-
-	atomic_inc(&host->clk_scaling.devfreq_abort);
-	wake_up(&host->wq);
-	err = devfreq_suspend_device(host->clk_scaling.devfreq);
-	if (err) {
-		pr_err("%s: %s: failed to suspend devfreq\n",
-			mmc_hostname(host), __func__);
-		return err;
-	}
-	host->clk_scaling.is_suspended = true;
-
-	host->clk_scaling.total_busy_time_us = 0;
-
-	pr_debug("%s: devfreq was removed\n", mmc_hostname(host));
-
-	return 0;
-}
-EXPORT_SYMBOL(mmc_suspend_clk_scaling);
-
-/**
- * mmc_resume_clk_scaling() - resume clock scaling
- * @host: pointer to mmc host structure
- *
- * This API will resume devfreq feature for the specific host.
- * This API is intended to be called by the pm callbacks
- * (e.g. runtime_suspend, suspend) of the mmc device
- */
-int mmc_resume_clk_scaling(struct mmc_host *host)
-{
-	int err = 0;
-	u32 max_clk_idx = 0;
-	u32 devfreq_max_clk = 0;
-	u32 devfreq_min_clk = 0;
-
-	if (!host) {
-		WARN(1, "bad host parameter\n");
-		return -EINVAL;
-	}
-
-	if (!mmc_can_scale_clk(host))
-		return 0;
-
-	/*
-	 * If clock scaling is already exited when resume is called, like
-	 * during mmc shutdown, it is not an error and should not fail the
-	 * API calling this.
-	 */
-	if (!host->clk_scaling.devfreq) {
-		pr_warn("%s: %s: no devfreq is assosiated with this device\n",
-			mmc_hostname(host), __func__);
-		return 0;
-	}
-
-	atomic_set(&host->clk_scaling.devfreq_abort, 0);
-
-	max_clk_idx = host->clk_scaling.freq_table_sz - 1;
-	devfreq_max_clk = host->clk_scaling.freq_table[max_clk_idx];
-	devfreq_min_clk = host->clk_scaling.freq_table[0];
-
-	host->clk_scaling.curr_freq = devfreq_max_clk;
-	if (host->ios.clock < host->clk_scaling.freq_table[max_clk_idx])
-		host->clk_scaling.curr_freq = devfreq_min_clk;
-	host->clk_scaling.target_freq = host->clk_scaling.curr_freq;
-
-	err = devfreq_resume_device(host->clk_scaling.devfreq);
-	if (err) {
-		pr_err("%s: %s: failed to resume devfreq (%d)\n",
-			mmc_hostname(host), __func__, err);
-	} else {
-		host->clk_scaling.is_suspended = false;
-		pr_debug("%s: devfreq resumed\n", mmc_hostname(host));
-	}
-
-	return err;
-}
-EXPORT_SYMBOL(mmc_resume_clk_scaling);
-
-/**
- * mmc_exit_devfreq_clk_scaling() - Disable clock scaling
- * @host: pointer to mmc host structure
- *
- * Disable clock scaling permanently.
- */
-int mmc_exit_clk_scaling(struct mmc_host *host)
-{
-	int err;
-
-	if (!host) {
-		pr_err("%s: bad host parameter\n", __func__);
-		WARN_ON(1);
-		return -EINVAL;
-	}
-
-	if (!mmc_can_scale_clk(host))
-		return 0;
-
-	if (!host->clk_scaling.devfreq) {
-		pr_err("%s: %s: no devfreq is assosiated with this device\n",
-			mmc_hostname(host), __func__);
-		return -EPERM;
-	}
-
-	err = mmc_suspend_clk_scaling(host);
-	if (err) {
-		pr_err("%s: %s: fail to suspend clock scaling (%d)\n",
-			mmc_hostname(host), __func__,  err);
-		return err;
-	}
-
-	err = devfreq_remove_device(host->clk_scaling.devfreq);
-	if (err) {
-		pr_err("%s: remove devfreq failed (%d)\n",
-			mmc_hostname(host), err);
-		return err;
-	}
-
-	dev_pm_opp_remove(mmc_classdev(host),
-		host->clk_scaling.devfreq_profile.freq_table[0]);
-	dev_pm_opp_remove(mmc_classdev(host),
-		host->clk_scaling.devfreq_profile.freq_table[1]);
-
-	kfree(host->clk_scaling.devfreq_profile.freq_table);
-
-	host->clk_scaling.devfreq = NULL;
-	atomic_set(&host->clk_scaling.devfreq_abort, 1);
-
-	kfree(host->clk_scaling.freq_table);
-	host->clk_scaling.freq_table = NULL;
-
-	pr_debug("%s: devfreq was removed\n", mmc_hostname(host));
-
-	return 0;
-}
-EXPORT_SYMBOL(mmc_exit_clk_scaling);
-
 static inline void mmc_complete_cmd(struct mmc_request *mrq)
 {
 	if (mrq->cap_cmd_during_tfr && !completion_done(&mrq->cmd_completion))
@@ -1040,9 +146,6 @@ void mmc_request_done(struct mmc_host *host, struct mmc_request *mrq)
 	struct mmc_command *cmd = mrq->cmd;
 	int err = cmd->error;
 
-	if (host->clk_scaling.is_busy_started)
-		mmc_clk_scaling_stop_busy(host, true);
-
 	/* Flag re-tuning needed on CRC errors */
 	if (cmd->opcode != MMC_SEND_TUNING_BLOCK &&
 	    cmd->opcode != MMC_SEND_TUNING_BLOCK_HS200 &&
@@ -1064,6 +167,8 @@ void mmc_request_done(struct mmc_host *host, struct mmc_request *mrq)
 
 	trace_mmc_request_done(host, mrq);
 
+	dbg_add_host_log(host, 1, cmd->opcode, cmd->resp[0]);
+
 	/*
 	 * We list various conditions for the command to be considered
 	 * properly done:
@@ -1080,7 +185,7 @@ void mmc_request_done(struct mmc_host *host, struct mmc_request *mrq)
 			led_trigger_event(host->led, LED_OFF);
 
 		if (mrq->sbc) {
-			pr_debug("%s: req done <CMD%u>: %d: %08x %08x %08x %08x\n",
+			pr_debug("%s: sbc req done <CMD%u>: %d: %08x %08x %08x %08x\n",
 				mmc_hostname(host), mrq->sbc->opcode,
 				mrq->sbc->error,
 				mrq->sbc->resp[0], mrq->sbc->resp[1],
@@ -1112,6 +217,8 @@ void mmc_request_done(struct mmc_host *host, struct mmc_request *mrq)
 	 */
 	if (mrq->done)
 		mrq->done(mrq);
+
+	/* mmc_crypto_debug(host); */
 }
 
 EXPORT_SYMBOL(mmc_request_done);
@@ -1178,12 +285,17 @@ static void mmc_mrq_pr_debug(struct mmc_host *host, struct mmc_request *mrq,
 			 mmc_hostname(host), cqe ? "CQE direct " : "",
 			 mrq->cmd->opcode, mrq->cmd->arg, mrq->cmd->flags);
 	} else if (cqe) {
-		pr_debug("%s: starting CQE transfer for tag %d blkaddr %u\n",
-			 mmc_hostname(host), mrq->tag, mrq->data->blk_addr);
+		if (mrq->data->flags & MMC_DATA_WRITE)
+			pr_debug("%s: starting CQE transfer for tag %d blkaddr %u, flags=0x%x WRITE\n",
+			mmc_hostname(host), mrq->tag, mrq->data->blk_addr, mrq->data->flags);
+		else if (mrq->data->flags & MMC_DATA_READ)
+			pr_debug("%s: starting CQE transfer for tag %d blkaddr %u, flags=0x%x READ\n",
+			mmc_hostname(host), mrq->tag, mrq->data->blk_addr, mrq->data->flags);
 	}
 
 	if (mrq->data) {
-		pr_debug("%s: blksz %d blocks %d flags %08x tsac %d ms nsac %d\n",
+		pr_debug("%s:     blksz %d blocks %d flags %08x "
+			"tsac %d ms nsac %d\n",
 			mmc_hostname(host), mrq->data->blksz,
 			mrq->data->blocks, mrq->data->flags,
 			mrq->data->timeout_ns / 1000000,
@@ -1234,21 +346,777 @@ static int mmc_mrq_prep(struct mmc_host *host, struct mmc_request *mrq)
 	return 0;
 }
 
+#ifdef CONFIG_MTK_EMMC_CQ_SUPPORT
+static void mmc_enqueue_queue(struct mmc_host *host, struct mmc_request *mrq)
+{
+	unsigned long flags;
+
+	if (mrq->cmd->opcode == MMC_EXECUTE_READ_TASK ||
+		mrq->cmd->opcode == MMC_EXECUTE_WRITE_TASK) {
+
+		spin_lock_irqsave(&host->dat_que_lock, flags);
+		if (mrq->flags)
+			list_add(&mrq->link, &host->dat_que);
+		else
+			list_add_tail(&mrq->link, &host->dat_que);
+		spin_unlock_irqrestore(&host->dat_que_lock, flags);
+	} else {
+
+		spin_lock_irqsave(&host->cmd_que_lock, flags);
+		if (mrq->flags)
+			list_add(&mrq->link, &host->cmd_que);
+		else
+			list_add_tail(&mrq->link, &host->cmd_que);
+
+		spin_unlock_irqrestore(&host->cmd_que_lock, flags);
+
+	}
+}
+
+static void mmc_dequeue_queue(struct mmc_host *host, struct mmc_request *mrq)
+{
+	unsigned long flags;
+
+	if (mrq->cmd->opcode == MMC_EXECUTE_READ_TASK ||
+		mrq->cmd->opcode == MMC_EXECUTE_WRITE_TASK) {
+		spin_lock_irqsave(&host->dat_que_lock, flags);
+		list_del_init(&mrq->link);
+		spin_unlock_irqrestore(&host->dat_que_lock, flags);
+	}
+}
+
+static void mmc_clr_dat_mrq_que_flag(struct mmc_host *host)
+{
+	unsigned int i;
+
+	for (i = 0; i < host->card->ext_csd.cmdq_depth; i++)
+		host->data_mrq_queued[i] = false;
+}
+
+static void mmc_clr_dat_list(struct mmc_host *host)
+{
+
+	unsigned long flags;
+	struct mmc_request *mrq = NULL;
+	struct mmc_request *mrq_next = NULL;
+
+	spin_lock_irqsave(&host->dat_que_lock, flags);
+	list_for_each_entry_safe(mrq, mrq_next, &host->dat_que, link) {
+		list_del_init(&mrq->link);
+	}
+	spin_unlock_irqrestore(&host->dat_que_lock, flags);
+
+	mmc_clr_dat_mrq_que_flag(host);
+}
+
+static int mmc_restore_tasks(struct mmc_host *host)
+{
+	struct mmc_request *mrq_cmd = NULL;
+	unsigned int i = 0;
+	unsigned int task_id;
+	unsigned int tasks;
+
+	tasks = host->task_id_index;
+	for (task_id = 0; task_id < host->card->ext_csd.cmdq_depth; task_id++) {
+		if (tasks & 0x1) {
+			mrq_cmd = host->areq_que[task_id]->mrq_que;
+			mmc_enqueue_queue(host, mrq_cmd);
+			clear_bit(task_id, &host->task_id_index);
+			i++;
+		}
+		tasks >>= 1;
+	}
+
+	return i;
+}
+
+static struct mmc_request *mmc_get_cmd_que(struct mmc_host *host)
+{
+	struct mmc_request *mrq = NULL;
+
+	if (!list_empty(&host->cmd_que)) {
+		mrq = list_first_entry(&host->cmd_que,
+			struct mmc_request, link);
+		list_del_init(&mrq->link);
+	}
+
+	return mrq;
+}
+
+static struct mmc_request *mmc_get_dat_que(struct mmc_host *host)
+{
+	struct mmc_request *mrq = NULL;
+
+	if (!list_empty(&host->dat_que)) {
+		mrq = list_first_entry(&host->dat_que,
+			struct mmc_request, link);
+	}
+	return mrq;
+}
+
+static int mmc_blk_status_check(struct mmc_card *card, unsigned int *status)
+{
+	struct mmc_command cmd = {0};
+	int err, retries = 3;
+
+	cmd.opcode = MMC_SEND_STATUS;
+	cmd.arg = card->rca << 16;
+	cmd.flags = MMC_RSP_SPI_R2 | MMC_RSP_R1 | MMC_CMD_AC;
+	err = mmc_wait_for_cmd(card->host, &cmd, retries);
+	if (err == 0)
+		*status = cmd.resp[0];
+	else
+		pr_info("%s: err %d\n", __func__, err);
+
+	return err;
+}
+
+static void mmc_discard_cmdq(struct mmc_host *host)
+{
+	memset(&host->deq_cmd, 0, sizeof(struct mmc_command));
+	memset(&host->deq_mrq, 0, sizeof(struct mmc_request));
+
+	host->deq_cmd.opcode = MMC_CMDQ_TASK_MGMT;
+	host->deq_cmd.arg = 1;
+	host->deq_cmd.flags = MMC_RSP_SPI_R2 | MMC_RSP_R1B | MMC_CMD_AC;
+	host->deq_mrq.data = NULL;
+	host->deq_mrq.cmd = &host->deq_cmd;
+
+	host->deq_mrq.done = mmc_wait_cmdq_done;
+	host->deq_mrq.host = host;
+	host->deq_mrq.cmd->retries = 3;
+	host->deq_mrq.cmd->error = 0;
+	host->deq_mrq.cmd->mrq = &host->deq_mrq;
+
+	while (1) {
+		trace_mmc_request_start(host, &host->deq_mrq);
+		host->ops->request(host, &host->deq_mrq);
+
+		if (!host->deq_mrq.cmd->error ||
+			!host->deq_mrq.cmd->retries)
+			break;
+
+		pr_info("%s: req failed (CMD%u): %d, retrying...\n",
+			 __func__,
+			 host->deq_mrq.cmd->opcode,
+			 host->deq_mrq.cmd->error);
+
+		host->deq_mrq.cmd->retries--;
+		host->deq_mrq.cmd->error = 0;
+	};
+
+	pr_notice("%s: CMDQ send distard (CMD48)\n", __func__);
+}
+
+/* add for emmc reset when error happen */
+int emmc_resetting_when_cmdq;
+static int mmc_reset_for_cmdq(struct mmc_host *host)
+{
+	int err, ret;
+
+	emmc_resetting_when_cmdq = 1;
+	err = mmc_hw_reset(host);
+	/* Ensure we switch back to the correct partition */
+	if (err != -EOPNOTSUPP) {
+		u8 part_config = host->card->ext_csd.part_config;
+
+		part_config &= ~EXT_CSD_PART_CONFIG_ACC_MASK;
+		/*  only enable cq at user */
+		part_config |= 0;
+
+		ret = mmc_switch(host->card, EXT_CSD_CMD_SET_NORMAL,
+				EXT_CSD_PART_CONFIG, part_config,
+				host->card->ext_csd.part_time);
+		if (ret)
+			return ret;
+
+		/* enable cmdq at all partition */
+		ret = mmc_cmdq_enable(host->card);
+		if (ret)
+			return ret;
+
+		host->card->ext_csd.part_config = part_config;
+
+	}
+	emmc_resetting_when_cmdq = 0;
+	return err;
+}
+
+/*
+ *	check CMDQ QSR
+ */
+void mmc_do_check(struct mmc_host *host)
+{
+	memset(&host->que_cmd, 0, sizeof(struct mmc_command));
+	memset(&host->que_mrq, 0, sizeof(struct mmc_request));
+	host->que_cmd.opcode = MMC_SEND_STATUS;
+	host->que_cmd.arg = host->card->rca << 16 | 1 << 15;
+	host->que_cmd.flags = MMC_RSP_SPI_R2 | MMC_RSP_R1 | MMC_CMD_AC;
+	host->que_cmd.data = NULL;
+	host->que_mrq.cmd = &host->que_cmd;
+
+	host->que_mrq.done = mmc_wait_cmdq_done;
+	host->que_mrq.host = host;
+	host->que_mrq.cmd->retries = 3;
+	host->que_mrq.cmd->error = 0;
+	host->que_mrq.cmd->mrq = &host->que_mrq;
+	while (1) {
+		trace_mmc_request_start(host, &host->que_mrq);
+		host->ops->request(host, &host->que_mrq);
+
+		/* add for emmc reset when error happen */
+		if (host->que_mrq.cmd->error && !host->que_mrq.cmd->retries) {
+	/* wait data irq handle done otherwice timing issue will happen  */
+			msleep(2000);
+			if (mmc_reset_for_cmdq(host)) {
+				WARN_ON(1);
+				pr_info("%s: line=%d [CQ] reinit fail\n",
+					__func__, __LINE__);
+			}
+			mmc_clr_dat_list(host);
+			mmc_restore_tasks(host);
+			atomic_set(&host->cq_wait_rdy, 0);
+			atomic_set(&host->cq_rdy_cnt, 0);
+		}
+
+		if (!host->que_mrq.cmd->error ||
+			!host->que_mrq.cmd->retries)
+			break;
+
+		pr_info("%s: req failed (CMD%u): %d, retrying...\n",
+			 __func__,
+			 host->que_mrq.cmd->opcode,
+			 host->que_mrq.cmd->error);
+
+		host->que_mrq.cmd->retries--;
+		host->que_mrq.cmd->error = 0;
+	};
+}
+
+static void mmc_prep_chk_mrq(struct mmc_host *host)
+{
+	memset(&host->chk_cmd, 0, sizeof(struct mmc_command));
+	memset(&host->chk_mrq, 0, sizeof(struct mmc_request));
+	host->chk_cmd.opcode = MMC_SEND_STATUS;
+	host->chk_cmd.arg = host->card->rca << 16;
+	host->chk_cmd.flags = MMC_RSP_SPI_R2 | MMC_RSP_R1 | MMC_CMD_AC;
+	host->chk_cmd.data = NULL;
+	host->chk_mrq.cmd = &host->chk_cmd;
+
+	host->chk_mrq.done = mmc_wait_cmdq_done;
+	host->chk_mrq.host = host;
+	host->chk_mrq.cmd->error = 0;
+	host->chk_mrq.cmd->mrq = &host->chk_mrq;
+}
+
+static void mmc_prep_areq_que(struct mmc_host *host,
+	struct mmc_async_req *areq_que)
+{
+	areq_que->mrq->done = mmc_wait_cmdq_done;
+	areq_que->mrq->host = host;
+	areq_que->mrq->cmd->error = 0;
+	areq_que->mrq->cmd->mrq = areq_que->mrq;
+	areq_que->mrq->cmd->data =
+		areq_que->mrq->data;
+	areq_que->mrq->data->error = 0;
+	areq_que->mrq->data->mrq = areq_que->mrq;
+	if (areq_que->mrq->stop) {
+		areq_que->mrq->data->stop =
+			areq_que->mrq->stop;
+		areq_que->mrq->stop->error = 0;
+		areq_que->mrq->stop->mrq = areq_que->mrq;
+	}
+}
+
+/*
+ *	check status register
+ */
+void mmc_do_status(struct mmc_host *host)
+{
+	mmc_prep_chk_mrq(host);
+	trace_mmc_request_start(host, &host->chk_mrq);
+	host->ops->request(host, &host->chk_mrq);
+}
+
+/*
+ * send stop command
+ */
+void mmc_do_stop(struct mmc_host *host)
+{
+	memset(&host->que_cmd, 0, sizeof(struct mmc_command));
+	memset(&host->que_mrq, 0, sizeof(struct mmc_request));
+	host->que_cmd.opcode = MMC_STOP_TRANSMISSION;
+	host->que_cmd.flags = MMC_RSP_SPI_R1B | MMC_RSP_R1B | MMC_CMD_AC;
+	host->que_mrq.cmd = &host->que_cmd;
+	host->que_mrq.done = mmc_wait_cmdq_done;
+	host->que_mrq.host = host;
+	host->que_mrq.cmd->retries = 3;
+	host->que_mrq.cmd->error = 0;
+	host->que_mrq.cmd->mrq = &host->que_mrq;
+
+	while (1) {
+		trace_mmc_request_start(host, &host->que_mrq);
+		host->ops->request(host, &host->que_mrq);
+
+		if (!host->que_mrq.cmd->error ||
+			!host->que_mrq.cmd->retries)
+			break;
+
+		pr_info("%s: req failed (CMD%u): %d, retrying...\n",
+			__func__,
+			host->que_mrq.cmd->opcode,
+			host->que_mrq.cmd->error);
+
+		host->que_mrq.cmd->retries--;
+		host->que_mrq.cmd->error = 0;
+	};
+}
+
+static int mmc_wait_tran(struct mmc_host *host)
+{
+	u32 status;
+	int err;
+	unsigned long timeout;
+
+	timeout = jiffies + msecs_to_jiffies(10 * 1000);
+	do {
+		err = mmc_blk_status_check(host->card, &status);
+		if (err) {
+			pr_notice("[CQ] check card status error = %d\n", err);
+			return 1;
+		}
+
+		if ((R1_CURRENT_STATE(status) == R1_STATE_DATA) ||
+			(R1_CURRENT_STATE(status) == R1_STATE_RCV))
+			mmc_do_stop(host);
+
+		if (time_after(jiffies, timeout)) {
+			pr_info("%s: Card stuck in %d state! %s\n",
+				mmc_hostname(host),
+				R1_CURRENT_STATE(status), __func__);
+			return 1;
+		}
+	} while (R1_CURRENT_STATE(status) != R1_STATE_TRAN);
+
+	return 0;
+}
+
+/*
+ * check write
+ */
+static int mmc_check_write(struct mmc_host *host, struct mmc_request *mrq)
+{
+	int ret = 0;
+	u32 status = 0;
+	struct mmc_queue_req *mq_rq;
+	struct mmc_async_req *areq_active;
+
+	if (mrq->cmd->opcode == MMC_EXECUTE_WRITE_TASK) {
+		ret = mmc_blk_status_check(host->card, &status);
+
+		if ((status & R1_WP_VIOLATION) || host->wp_error) {
+			mrq->data->error = -EROFS;
+			areq_active =
+				host->areq_que[(mrq->cmd->arg >> 16) & 0x1f];
+			mq_rq = container_of(areq_active, struct mmc_queue_req,
+					areq);
+			pr_notice(
+	"[%s]: data error = %d, status=0x%x, line:%d, block addr:0x%x\n",
+				__func__, mrq->data->error, status,
+				__LINE__, mq_rq->brq.que.arg);
+		}
+		mmc_wait_tran(host);
+		mrq->data->error = 0;
+		host->wp_error = 0;
+		atomic_set(&host->cq_w, false);
+	}
+
+	return ret;
+}
+
+unsigned long not_ready_time;
+void mmc_wait_cmdq_done(struct mmc_request *mrq)
+{
+	struct mmc_host *host = mrq->host;
+	struct mmc_command *cmd = mrq->cmd;
+	int done = 0, task_id;
+
+	if (cmd->opcode == MMC_SEND_STATUS ||
+		cmd->opcode == MMC_STOP_TRANSMISSION ||
+		cmd->opcode == MMC_CMDQ_TASK_MGMT) {
+		/* do nothing */
+	} else
+		mmc_dequeue_queue(host, mrq);
+
+	/* error - request done */
+	if (cmd->error) {
+		pr_info("%s: cmd%d arg:%x error:%d\n",
+			mmc_hostname(host),
+			cmd->opcode, cmd->arg,
+			cmd->error);
+		if ((cmd->opcode == MMC_EXECUTE_READ_TASK) ||
+			(cmd->opcode == MMC_EXECUTE_WRITE_TASK)) {
+			atomic_set(&host->cq_tuning_now, 1);
+			goto clear_end;
+		}
+		goto request_end;
+	}
+
+	/* data error */
+	if (mrq->data && mrq->data->error) {
+		pr_info("%s: cmd%d arg:%x data error:%d\n",
+			mmc_hostname(host),
+			cmd->opcode, cmd->arg,
+			mrq->data->error);
+		atomic_set(&host->cq_tuning_now, 1);
+		goto clear_end;
+	}
+
+	/* check wp violation */
+	if ((cmd->opcode == MMC_QUE_TASK_PARAMS) ||
+		(cmd->opcode == MMC_QUE_TASK_ADDR)) {
+
+		if (atomic_read(&host->cq_w)) {
+			if (cmd->resp[0] & R1_WP_VIOLATION)
+				host->wp_error = 1;
+		}
+	}
+
+	/* cmd13' - check queue ready & enqueue 46/47 */
+	if ((cmd->opcode == MMC_SEND_STATUS) && (cmd->arg & (1 << 15))) {
+		int i = 0;
+		unsigned int resp = cmd->resp[0];
+
+		if (resp == 0) {
+/* Workaround for ALPS03808823: if task not ready over 30s, reinit emmc */
+			if (!not_ready_time)
+				not_ready_time = jiffies;
+			else if (time_after(jiffies, not_ready_time
+			+ msecs_to_jiffies(30 * 1000))) {
+				pr_info("mmc0: error: task not ready over 30s\n");
+				msleep(2000);
+				if (mmc_reset_for_cmdq(host)) {
+					pr_info("%s: line=%d [CQ] reinit fail\n",
+						__func__, __LINE__);
+					WARN_ON(1);
+				}
+				mmc_clr_dat_list(host);
+				mmc_restore_tasks(host);
+				atomic_set(&host->cq_wait_rdy, 0);
+				atomic_set(&host->cq_rdy_cnt, 0);
+				not_ready_time = 0;
+
+				//aee_kernel_warning("mmc",
+				//	"task not ready over 30s");
+			}
+			goto request_end;
+		}
+		not_ready_time = 0;
+		do {
+			if ((resp & 1) && (!host->data_mrq_queued[i])) {
+				if (host->cur_rw_task == i) {
+					resp >>= 1;
+					i++;
+					continue;
+				}
+
+				if (!host->areq_que[i]) {
+					pr_info("%s: task %d not exist!,QSR:%x\n",
+						mmc_hostname(host), i,
+						cmd->resp[0]);
+					pr_info("%s: task_idx:%08lx\n",
+						mmc_hostname(host),
+						host->task_id_index);
+					pr_info("%s: cnt:%d,wait:%d,rdy:%d\n",
+						mmc_hostname(host),
+						atomic_read(&host->areq_cnt),
+						atomic_read(&host->cq_wait_rdy),
+						atomic_read(&host->cq_rdy_cnt));
+					/* reset eMMC flow */
+					cmd->error = (unsigned int)-ETIMEDOUT;
+					cmd->retries = 0;
+					goto request_end;
+				}
+
+				atomic_dec(&host->cq_wait_rdy);
+				atomic_inc(&host->cq_rdy_cnt);
+
+				mmc_prep_areq_que(host, host->areq_que[i]);
+				mmc_enqueue_queue(host, host->areq_que[i]->mrq);
+				host->data_mrq_queued[i] = true;
+			}
+			resp >>= 1;
+			i++;
+		} while (resp && (i < host->card->ext_csd.cmdq_depth));
+	}
+
+	/* cmd46 - request done */
+	if (cmd->opcode == MMC_EXECUTE_READ_TASK
+		|| cmd->opcode == MMC_EXECUTE_WRITE_TASK)
+		goto clear_end;
+
+	goto request_end;
+
+clear_end:
+	task_id = ((cmd->arg >> 16) & 0x1f);
+	clear_bit(task_id, &host->task_id_index);
+	host->data_mrq_queued[task_id] = false;
+	done = 1;
+
+request_end:
+	/* request done when next data transfer */
+	if (done) {
+		WARN_ON(cmd->opcode != 46 && cmd->opcode != 47);
+		WARN_ON(host->done_mrq);
+		host->done_mrq = mrq;
+
+		/*
+		 * Need to wake up cmdq thread, after done rw.
+		 */
+		wake_up_interruptible(&host->cmdq_que);
+	}
+}
+
+static void mmc_wait_for_cmdq_done(struct mmc_host *host)
+{
+	while (atomic_read(&host->areq_cnt) != 0) {
+		wait_event_interruptible(host->cmp_que,
+			(atomic_read(&host->areq_cnt) == 0));
+	}
+}
+
+void mmc_wait_cmdq_empty(struct mmc_host *host)
+{
+	mmc_wait_for_cmdq_done(host);
+}
+
+#define CMD13_TMO_NS (1000 * 1000)
+int mmc_run_queue_thread(void *data)
+{
+	struct mmc_host *host = data;
+	struct mmc_request *cmd_mrq = NULL;
+	struct mmc_request *dat_mrq = NULL;
+	struct mmc_request *done_mrq = NULL;
+	unsigned int task_id, areq_cnt_chk, tmo;
+	bool is_done = false;
+	int err;
+	u64 chk_time = 0;
+
+	pr_info("[CQ] start cmdq thread\n");
+	mt_bio_queue_alloc(current, NULL, false);
+
+	while (1) {
+		mt_biolog_cmdq_check();
+		/* End request stage 1/2 */
+		if (atomic_read(&host->cq_rw)
+		|| (atomic_read(&host->areq_cnt) <= 1)) {
+			if (host->done_mrq) {
+				done_mrq = host->done_mrq;
+				host->done_mrq = NULL;
+			}
+		}
+
+		if (done_mrq) {
+			if (done_mrq->data->error || done_mrq->cmd->error) {
+				mmc_wait_tran(host);
+				mmc_discard_cmdq(host);
+				mmc_wait_tran(host);
+				mmc_clr_dat_list(host);
+				atomic_set(&host->cq_rdy_cnt, 0);
+				if (host->ops->execute_tuning) {
+					err = host->ops->execute_tuning(host,
+				MMC_SEND_TUNING_BLOCK_HS200);
+					if (err && mmc_reset_for_cmdq(host)) {
+						pr_info("%s: line=%d ",
+							__func__, __LINE__);
+						pr_info("[CQ] reinit fail\n");
+						WARN_ON(1);
+					} else
+						pr_notice("[CQ] tuning pass\n");
+				}
+
+				host->cur_rw_task = CQ_TASK_IDLE;
+				task_id = (done_mrq->cmd->arg >> 16) & 0x1f;
+				trace_mmc_request_start(host,
+					host->areq_que[task_id]->mrq_que);
+				host->ops->request(host,
+					host->areq_que[task_id]->mrq_que);
+				atomic_set(&host->cq_wait_rdy, 1);
+				done_mrq = NULL;
+			}
+
+			atomic_set(&host->cq_rw, false);
+			if (done_mrq && !done_mrq->data->error
+			&& !done_mrq->cmd->error) {
+				task_id = (done_mrq->cmd->arg >> 16) & 0x1f;
+				mt_biolog_cmdq_dma_end(task_id);
+				mmc_check_write(host, done_mrq);
+				host->cur_rw_task = CQ_TASK_IDLE;
+				is_done = true;
+				mmc_complete_mqr_crypto(host);
+
+				if (atomic_read(&host->cq_tuning_now) == 1) {
+					mmc_restore_tasks(host);
+					atomic_set(&host->cq_tuning_now, 0);
+				}
+			}
+		}
+
+		/* Send Command 46/47 (DMA) */
+		if (!atomic_read(&host->cq_rw)) {
+			spin_lock_irq(&host->dat_que_lock);
+			dat_mrq = mmc_get_dat_que(host);
+
+			spin_unlock_irq(&host->dat_que_lock);
+
+			if (dat_mrq) {
+				WARN_ON(
+				dat_mrq->cmd->opcode !=
+				MMC_EXECUTE_WRITE_TASK
+				&& dat_mrq->cmd->opcode !=
+				MMC_EXECUTE_READ_TASK);
+
+				if (dat_mrq->cmd->opcode
+				== MMC_EXECUTE_WRITE_TASK)
+					atomic_set(&host->cq_w, true);
+
+				atomic_set(&host->cq_rw, true);
+				task_id = ((dat_mrq->cmd->arg >> 16) & 0x1f);
+				host->cur_rw_task = task_id;
+				trace_mmc_request_start(host, dat_mrq);
+				err = mmc_swcq_prepare_mqr_crypto(host,
+					dat_mrq);
+				if (err) {
+					pr_info("eMMC crypto fail %d\n", err);
+					WARN_ON(1);
+				}
+				host->ops->request(host, dat_mrq);
+				mt_biolog_cmdq_dma_start(task_id);
+				atomic_dec(&host->cq_rdy_cnt);
+				dat_mrq = NULL;
+			}
+		}
+
+		/* End request stage 2/2 */
+		if (is_done) {
+			task_id = (done_mrq->cmd->arg >> 16) & 0x1f;
+			mt_biolog_cmdq_isdone_start(task_id,
+				host->areq_que[task_id]->mrq_que);
+			mt_biolog_cmdq_isdone_end(task_id);
+			mt_biolog_cmdq_check();
+			mmc_blk_end_queued_req(host, done_mrq->areq, task_id);
+			done_mrq = NULL;
+			is_done = false;
+		}
+
+		/* Send Command 44/45 */
+		if (atomic_read(&host->cq_tuning_now) == 0) {
+
+			spin_lock_irq(&host->cmd_que_lock);
+			cmd_mrq = mmc_get_cmd_que(host);
+			spin_unlock_irq(&host->cmd_que_lock);
+
+			while (cmd_mrq) {
+				task_id = ((cmd_mrq->sbc->arg >> 16) & 0x1f);
+				mt_biolog_cmdq_queue_task(task_id, cmd_mrq);
+				if (host->task_id_index & (1 << task_id)) {
+					pr_info(
+"[%s] BUG!!! task_id %d used, task_id_index 0x%08lx, areq_cnt = %d, cq_wait_rdy = %d\n",
+					__func__, task_id, host->task_id_index,
+					atomic_read(&host->areq_cnt),
+					atomic_read(&host->cq_wait_rdy));
+					/* mmc_cmd_dump(host); */
+					while (1)
+						;
+				}
+				set_bit(task_id, &host->task_id_index);
+				trace_mmc_request_start(host, cmd_mrq);
+				host->ops->request(host, cmd_mrq);
+				/* add for emmc reset when error happen */
+				if ((cmd_mrq->sbc && cmd_mrq->sbc->error)
+				|| cmd_mrq->cmd->error) {
+		/* wait data irq handle done otherwise timing issue happen*/
+					msleep(2000);
+					if (mmc_reset_for_cmdq(host)) {
+						pr_info("%s: line=%d ",
+							__func__, __LINE__);
+						pr_info("[CQ] reinit fail\n");
+						WARN_ON(1);
+					}
+					mmc_clr_dat_list(host);
+					mmc_restore_tasks(host);
+					atomic_set(&host->cq_wait_rdy, 0);
+					atomic_set(&host->cq_rdy_cnt, 0);
+				} else
+					atomic_inc(&host->cq_wait_rdy);
+
+				spin_lock_irq(&host->cmd_que_lock);
+				cmd_mrq = mmc_get_cmd_que(host);
+				spin_unlock_irq(&host->cmd_que_lock);
+			}
+		}
+		if (atomic_read(&host->cq_rw)) {
+			/* wait for event to wakeup */
+			/* wake up when new request arrived and dma done */
+			areq_cnt_chk = atomic_read(&host->areq_cnt);
+			tmo = wait_event_interruptible_timeout(host->cmdq_que,
+				host->done_mrq ||
+				(atomic_read(&host->areq_cnt) > areq_cnt_chk),
+				10 * HZ);
+			if (!tmo) {
+				pr_info("%s:tmo,mrq(%p),chk(%d),cnt(%d)\n",
+					__func__,
+					host->done_mrq,
+					areq_cnt_chk,
+					atomic_read(&host->areq_cnt));
+				pr_info("%s:tmo,rw(%d),wait(%d),rdy(%d)\n",
+					__func__,
+					atomic_read(&host->cq_rw),
+					atomic_read(&host->cq_wait_rdy),
+					atomic_read(&host->cq_rdy_cnt));
+			}
+			/* DMA time should not count in polling time */
+			chk_time = 0;
+		}
+		/* Send Command 13' */
+
+		if (atomic_read(&host->cq_wait_rdy) > 0
+			&& atomic_read(&host->cq_rdy_cnt) == 0) {
+			if (!chk_time)
+				/* set check time */
+				chk_time = sched_clock();
+
+			/* send cmd13' */
+			mmc_do_check(host);
+
+			if (atomic_read(&host->cq_rdy_cnt))
+				/* clear when got ready task */
+				chk_time = 0;
+			else if (sched_clock() - chk_time > CMD13_TMO_NS)
+				/* sleep when TMO */
+				usleep_range(2000, 5000);
+		}
+
+		/* Sleep when nothing to do */
+		mt_biolog_cmdq_check();
+		set_current_state(TASK_INTERRUPTIBLE);
+		if (atomic_read(&host->areq_cnt) == 0)
+			schedule();
+
+		set_current_state(TASK_RUNNING);
+	}
+	mt_bio_queue_free(current);
+	return 0;
+}
+#endif
+
 int mmc_start_request(struct mmc_host *host, struct mmc_request *mrq)
 {
 	int err;
-    #ifdef CONFIG_MMC_SDHCI_MSM_BH201
-	struct sdhci_host * host_sdhci = mmc_priv(host);
+
 	init_completion(&mrq->cmd_completion);
 
 	mmc_retune_hold(host);
-	//Add by ZhaoZiqiang for timeout controller register setting debug begin
-	if (sdhci_readb(host_sdhci, SDHCI_TIMEOUT_CONTROL)!= 0xE)
-	{
-		pr_info("TEST_print: host reg SDHCI_TIMEOUT_CONTROL is 0x%X\n", sdhci_readb(host_sdhci, SDHCI_TIMEOUT_CONTROL));
-	}
-	//Add by ZhaoZiqiang for timeout controller register setting debug end
-	#endif
 
 	if (mmc_card_removed(host->card))
 		return -ENOMEDIUM;
@@ -1260,14 +1128,25 @@ int mmc_start_request(struct mmc_host *host, struct mmc_request *mrq)
 	err = mmc_mrq_prep(host, mrq);
 	if (err)
 		return err;
-
-	led_trigger_event(host->led, LED_FULL);
-
-	if (mmc_is_data_request(mrq)) {
-		mmc_deferred_scaling(host);
-		mmc_clk_scaling_start_busy(host, true);
+#ifdef CONFIG_MTK_EMMC_CQ_SUPPORT
+	if (mrq->done == mmc_wait_cmdq_done) {
+		mmc_enqueue_queue(host, mrq);
+		wake_up_process(host->cmdq_thread);
+		led_trigger_event(host->led, LED_FULL);
+		return 0;
 	}
-
+	if (host->card
+		&& host->card->ext_csd.cmdq_support
+		&& mrq->cmd->opcode != MMC_SEND_STATUS)
+		/* add for emmc reset when error happen */
+		/* cannot wait cmdq empty for init requests
+		 * when emmc resetting when cmdq
+		 */
+		if (strncmp(current->comm, "exe_cq", 6)
+			|| !emmc_resetting_when_cmdq)
+			mmc_wait_cmdq_empty(host);
+#endif
+	led_trigger_event(host->led, LED_FULL);
 	__mmc_start_request(host, mrq);
 
 	return 0;
@@ -1315,7 +1194,7 @@ void mmc_wait_for_req_done(struct mmc_host *host, struct mmc_request *mrq)
 	struct mmc_command *cmd;
 
 	while (1) {
-		wait_for_completion_io(&mrq->completion);
+		wait_for_completion(&mrq->completion);
 
 		cmd = mrq->cmd;
 
@@ -1379,11 +1258,22 @@ int mmc_cqe_start_req(struct mmc_host *host, struct mmc_request *mrq)
 
 	mmc_mrq_pr_debug(host, mrq, true);
 
+	if(mrq->cmd)
+		dbg_add_host_log(host, 5, mrq->cmd->opcode, mrq->cmd->arg);
+
+	if(mrq->data){
+		if (mrq->data->flags & MMC_DATA_WRITE)
+			dbg_add_host_log(host, 5, MMC_EXECUTE_WRITE_TASK, mrq->data->blocks);//CMD47
+		else if (mrq->data->flags & MMC_DATA_READ)
+			dbg_add_host_log(host, 5, MMC_EXECUTE_READ_TASK, mrq->data->blocks);//CMD46
+	}
+
 	err = mmc_mrq_prep(host, mrq);
 	if (err)
 		goto out_err;
 
 	err = host->cqe_ops->cqe_request(host, mrq);
+
 	if (err)
 		goto out_err;
 
@@ -1393,10 +1283,10 @@ int mmc_cqe_start_req(struct mmc_host *host, struct mmc_request *mrq)
 
 out_err:
 	if (mrq->cmd) {
-		pr_debug("%s: failed to start CQE direct CMD%u, error %d\n",
+		pr_info("%s: failed to start CQE direct CMD%u, error %d\n",
 			 mmc_hostname(host), mrq->cmd->opcode, err);
 	} else {
-		pr_debug("%s: failed to start CQE transfer for tag %d, error %d\n",
+		pr_info("%s: failed to start CQE transfer for tag %d, error %d\n",
 			 mmc_hostname(host), mrq->tag, err);
 	}
 	return err;
@@ -1425,15 +1315,24 @@ void mmc_cqe_request_done(struct mmc_host *host, struct mmc_request *mrq)
 	if (mrq->cmd) {
 		pr_debug("%s: CQE req done (direct CMD%u): %d\n",
 			 mmc_hostname(host), mrq->cmd->opcode, mrq->cmd->error);
+		dbg_add_host_log(host, 6, mrq->cmd->opcode, mrq->cmd->resp[0]);
 	} else {
 		pr_debug("%s: CQE transfer done tag %d\n",
 			 mmc_hostname(host), mrq->tag);
 	}
 
-	if (mrq->data) {
-		pr_debug("%s:     %d bytes transferred: %d\n",
-			 mmc_hostname(host),
-			 mrq->data->bytes_xfered, mrq->data->error);
+	if (mrq->data){
+		if (mrq->data->flags & MMC_DATA_WRITE){
+			pr_debug("%s:     %d bytes transferred: %d WRITE\n",
+				 mmc_hostname(host),
+				 mrq->data->bytes_xfered, mrq->data->error);
+			dbg_add_host_log(host, 6, MMC_EXECUTE_WRITE_TASK, mrq->data->error);//CMD47
+		} else if (mrq->data->flags & MMC_DATA_READ){
+			pr_debug("%s:     %d bytes transferred: %d READ\n",
+				 mmc_hostname(host),
+				 mrq->data->bytes_xfered, mrq->data->error);
+			dbg_add_host_log(host, 6, MMC_EXECUTE_READ_TASK, mrq->data->error);//CMD46
+		}
 	}
 
 	mrq->done(mrq);
@@ -1480,26 +1379,21 @@ int mmc_cqe_recovery(struct mmc_host *host)
 	host->cqe_ops->cqe_recovery_start(host);
 
 	memset(&cmd, 0, sizeof(cmd));
-	cmd.opcode       = MMC_STOP_TRANSMISSION;
-	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC;
+	cmd.opcode       = MMC_STOP_TRANSMISSION,
+	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC,
 	cmd.flags       &= ~MMC_RSP_CRC; /* Ignore CRC */
-	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT;
-	mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
-
-	mmc_poll_for_busy(host->card, MMC_CQE_RECOVERY_TIMEOUT, true, true);
+	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT,
+	mmc_wait_for_cmd(host, &cmd, 0);
 
 	memset(&cmd, 0, sizeof(cmd));
 	cmd.opcode       = MMC_CMDQ_TASK_MGMT;
 	cmd.arg          = 1; /* Discard entire queue */
 	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC;
 	cmd.flags       &= ~MMC_RSP_CRC; /* Ignore CRC */
-	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT;
-	err = mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
+	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT,
+	err = mmc_wait_for_cmd(host, &cmd, 0);
 
 	host->cqe_ops->cqe_recovery_finish(host);
-
-	if (err)
-		err = mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
 
 	mmc_retune_release(host);
 
@@ -1539,9 +1433,6 @@ EXPORT_SYMBOL(mmc_is_req_done);
  */
 void mmc_wait_for_req(struct mmc_host *host, struct mmc_request *mrq)
 {
-	if (mmc_bus_needs_resume(host))
-		mmc_resume_bus(host);
-
 	__mmc_start_req(host, mrq);
 
 	if (!mrq->cap_cmd_during_tfr)
@@ -1590,10 +1481,6 @@ void mmc_set_data_timeout(struct mmc_data *data, const struct mmc_card *card)
 {
 	unsigned int mult;
 
-	if (!card) {
-		WARN_ON(1);
-		return;
-	}
 	/*
 	 * SDIO cards only define an upper 1 s limit on access.
 	 */
@@ -1680,11 +1567,6 @@ void mmc_set_data_timeout(struct mmc_data *data, const struct mmc_card *card)
 			if (data->timeout_ns < 100000000)
 				data->timeout_ns =  100000000;	/* 100ms */
 		}
-	}
-	/* Increase the timeout values for some bad INAND MCP devices */
-	if (card->quirks & MMC_QUIRK_INAND_DATA_TIMEOUT) {
-		data->timeout_ns = 4000000000u; /* 4s */
-		data->timeout_clks = 0;
 	}
 }
 EXPORT_SYMBOL(mmc_set_data_timeout);
@@ -1831,11 +1713,7 @@ void mmc_get_card(struct mmc_card *card, struct mmc_ctx *ctx)
 {
 	pm_runtime_get_sync(&card->dev);
 	__mmc_claim_host(card->host, ctx, NULL);
-
-	if (mmc_bus_needs_resume(card->host))
-		mmc_resume_bus(card->host);
 }
-
 EXPORT_SYMBOL(mmc_get_card);
 
 /*
@@ -1862,32 +1740,13 @@ static inline void mmc_set_ios(struct mmc_host *host)
 {
 	struct mmc_ios *ios = &host->ios;
 
-	pr_debug("%s: clock %uHz busmode %u powermode %u cs %u Vdd %u "
+	dev_info(host->parent, "%s: clock %uHz busmode %u powermode %u cs %u Vdd %u "
 		"width %u timing %u\n",
 		 mmc_hostname(host), ios->clock, ios->bus_mode,
 		 ios->power_mode, ios->chip_select, ios->vdd,
 		 1 << ios->bus_width, ios->timing);
 
 	host->ops->set_ios(host, ios);
-	if (ios->old_rate != ios->clock) {
-		if (likely(ios->clk_ts)) {
-			char trace_info[80];
-
-			snprintf(trace_info, 80,
-				"%s: freq_KHz %d --> %d | t = %d",
-				mmc_hostname(host), ios->old_rate / 1000,
-				ios->clock / 1000, jiffies_to_msecs(
-					(long)jiffies - (long)ios->clk_ts));
-			trace_mmc_clk(trace_info);
-			mmc_log_string(host,
-				"freq_KHz %d --> %d | t = %d",
-				ios->old_rate / 1000,
-				ios->clock / 1000, jiffies_to_msecs(
-					(long)jiffies - (long)ios->clk_ts));
-		}
-		ios->old_rate = ios->clock;
-		ios->clk_ts = jiffies;
-	}
 }
 
 /*
@@ -1934,14 +1793,13 @@ int mmc_execute_tuning(struct mmc_card *card)
 	err = host->ops->execute_tuning(host, opcode);
 
 	if (err) {
-		pr_err("%s: tuning execution failed: %d\n",
+		pr_info("%s: tuning execution failed: %d\n",
 			mmc_hostname(host), err);
 	} else {
-		host->retune_now = 0;
-		host->need_retune = 0;
+		pr_info("%s: tuning execution ok: %d\n",
+			mmc_hostname(host), err);
 		mmc_retune_enable(host);
 	}
-
 	return err;
 }
 
@@ -2414,13 +2272,7 @@ u32 mmc_select_voltage(struct mmc_host *host, u32 ocr)
 		mmc_power_cycle(host, ocr);
 	} else {
 		bit = fls(ocr) - 1;
-		/*
-		 * The bit variable represents the highest voltage bit set in
-		 * the OCR register.
-		 * To keep a range of 2 values (e.g. 3.2V/3.3V and 3.3V/3.4V),
-		 * we must shift the mask '3' with (bit - 1).
-		 */
-		ocr &= 3 << (bit - 1);
+		ocr &= 3 << bit;
 		if (bit != host->ios.vdd)
 			dev_warn(mmc_dev(host), "exceeding card's volts\n");
 	}
@@ -2463,21 +2315,17 @@ int mmc_host_set_uhs_voltage(struct mmc_host *host)
 	 * During a signal voltage level switch, the clock must be gated
 	 * for 5 ms according to the SD spec
 	 */
-	host->card_clock_off = true;
 	clock = host->ios.clock;
 	host->ios.clock = 0;
 	mmc_set_ios(host);
 
-	if (mmc_set_signal_voltage(host, MMC_SIGNAL_VOLTAGE_180)) {
-		host->card_clock_off = false;
+	if (mmc_set_signal_voltage(host, MMC_SIGNAL_VOLTAGE_180))
 		return -EAGAIN;
-	}
 
 	/* Keep clock gated for at least 10 ms, though spec only says 5 ms */
 	mmc_delay(10);
 	host->ios.clock = clock;
 	mmc_set_ios(host);
-	host->card_clock_off = false;
 
 	return 0;
 }
@@ -2710,62 +2558,6 @@ static inline void mmc_bus_put(struct mmc_host *host)
 	spin_unlock_irqrestore(&host->lock, flags);
 }
 
-int mmc_resume_bus(struct mmc_host *host)
-{
-	unsigned long flags;
-	int err = 0;
-	int card_present = true;
-
-	if (!mmc_bus_needs_resume(host))
-		return -EINVAL;
-
-	pr_debug("%s: Starting deferred resume\n", mmc_hostname(host));
-	spin_lock_irqsave(&host->lock, flags);
-	host->bus_resume_flags &= ~MMC_BUSRESUME_NEEDS_RESUME;
-	spin_unlock_irqrestore(&host->lock, flags);
-
-	mmc_bus_get(host);
-	if (host->ops->get_cd) {
-		card_present = host->ops->get_cd(host);
-		if (!card_present) {
-			pr_err("%s: Card removed - card_present:%d\n",
-			       mmc_hostname(host), card_present);
-			mmc_card_set_removed(host->card);
-		}
-	}
-
-	if (host->bus_ops && !host->bus_dead && host->card && card_present) {
-		mmc_power_up(host, host->card->ocr);
-		BUG_ON(!host->bus_ops->deferred_resume);
-		err = host->bus_ops->deferred_resume(host);
-		if (err && (err != -ENOMEDIUM)) {
-			pr_err("%s: bus resume: failed: %d\n",
-			       mmc_hostname(host), err);
-			err = mmc_hw_reset(host);
-			if (err) {
-				pr_err("%s: reset: failed: %d\n",
-				       mmc_hostname(host), err);
-				goto err_reset;
-			} else {
-				mmc_card_clr_suspended(host->card);
-			}
-		}
-		if (host->card->ext_csd.cmdq_en && !host->cqe_enabled) {
-			err = host->cqe_ops->cqe_enable(host, host->card);
-			host->cqe_enabled = true;
-			if (err)
-				pr_err("%s: %s: cqe enable failed: %d\n",
-				       mmc_hostname(host), __func__, err);
-		}
-	}
-
-err_reset:
-	mmc_bus_put(host);
-	pr_debug("%s: Deferred resume completed\n", mmc_hostname(host));
-	return err;
-}
-EXPORT_SYMBOL(mmc_resume_bus);
-
 /*
  * Assign a mmc bus handler to a host. Only one bus handler may control a
  * host at any given time.
@@ -2819,16 +2611,6 @@ static void _mmc_detect_change(struct mmc_host *host, unsigned long delay,
 		pm_wakeup_event(mmc_dev(host), 5000);
 
 	host->detect_change = 1;
-	/*
-	 * Change in cd_gpio state, so make sure detection part is
-	 * not overided because of manual resume.
-	 */
-	if (cd_irq && mmc_bus_manual_resume(host))
-		host->ignore_bus_resume_flags = true;
-
-	if (delayed_work_pending(&host->detect))
-		cancel_delayed_work(&host->detect);
-
 	mmc_schedule_delayed_work(&host->detect, delay);
 }
 
@@ -3405,10 +3187,8 @@ unsigned int mmc_calc_max_discard(struct mmc_card *card)
 	struct mmc_host *host = card->host;
 	unsigned int max_discard, max_trim;
 
-	if (!host->max_busy_timeout ||
-			(host->caps2 & MMC_CAP2_MAX_DISCARD_SIZE))
+	if (!host->max_busy_timeout)
 		return UINT_MAX;
-
 	/*
 	 * Without erase_group_def set, MMC erase timeout depends on clock
 	 * frequence which can change.  In that case, the best choice is
@@ -3637,30 +3417,14 @@ int mmc_detect_card_removed(struct mmc_host *host)
 }
 EXPORT_SYMBOL(mmc_detect_card_removed);
 
-/*
- * This should be called to make sure that detect work(mmc_rescan)
- * is completed.Drivers may use this function from async schedule/probe
- * contexts to make sure that the bootdevice detection is completed on
- * completion of async_schedule.
- */
-void mmc_flush_detect_work(struct mmc_host *host)
-{
-	flush_delayed_work(&host->detect);
-}
-EXPORT_SYMBOL(mmc_flush_detect_work);
-
 void mmc_rescan(struct work_struct *work)
 {
-	unsigned long flags;
 	struct mmc_host *host =
 		container_of(work, struct mmc_host, detect.work);
+	int i;
 
-	spin_lock_irqsave(&host->lock, flags);
-	if (host->rescan_disable) {
-		spin_unlock_irqrestore(&host->lock, flags);
+	if (host->rescan_disable)
 		return;
-	}
-	spin_unlock_irqrestore(&host->lock, flags);
 
 	/* If there is a non-removable card registered, only scan once */
 	if (!mmc_card_is_removable(host) && host->rescan_entered)
@@ -3684,8 +3448,6 @@ void mmc_rescan(struct work_struct *work)
 		host->bus_ops->detect(host);
 
 	host->detect_change = 0;
-	if (host->ignore_bus_resume_flags)
-		host->ignore_bus_resume_flags = false;
 
 	/*
 	 * Let mmc_bus_put() free the bus/bus_ops if we've found that
@@ -3714,8 +3476,12 @@ void mmc_rescan(struct work_struct *work)
 		goto out;
 	}
 
-	mmc_rescan_try_freq(host, host->f_min);
-	host->err_stats[MMC_ERR_CMD_TIMEOUT] = 0;
+	for (i = 0; i < ARRAY_SIZE(freqs); i++) {
+		if (!mmc_rescan_try_freq(host, max(freqs[i], host->f_min)))
+			break;
+		if (freqs[i] <= host->f_min)
+			break;
+	}
 	mmc_release_host(host);
 
  out:
@@ -3725,17 +3491,17 @@ void mmc_rescan(struct work_struct *work)
 
 void mmc_start_host(struct mmc_host *host)
 {
-	mmc_claim_host(host);
 	host->f_init = max(freqs[0], host->f_min);
 	host->rescan_disable = 0;
 	host->ios.power_mode = MMC_POWER_UNDEFINED;
 
-	if (!(host->caps2 & MMC_CAP2_NO_PRESCAN_POWERUP))
+	if (!(host->caps2 & MMC_CAP2_NO_PRESCAN_POWERUP)) {
+		mmc_claim_host(host);
 		mmc_power_up(host, host->ocr_avail);
+		mmc_release_host(host);
+	}
 
 	mmc_gpiod_request_cd_irq(host);
-	mmc_release_host(host);
-	mmc_register_extcon(host);
 	_mmc_detect_change(host, 0, false);
 }
 
@@ -3752,6 +3518,7 @@ void mmc_stop_host(struct mmc_host *host)
 	/* clear pm flags now and let card drivers set them as needed */
 	host->pm_flags = 0;
 
+
 	mmc_bus_get(host);
 	if (host->bus_ops && !host->bus_dead) {
 		/* Calling bus_ops->remove() with a claimed host can deadlock */
@@ -3765,7 +3532,6 @@ void mmc_stop_host(struct mmc_host *host)
 	}
 	mmc_bus_put(host);
 
-	mmc_unregister_extcon(host);
 	mmc_claim_host(host);
 	mmc_power_off(host);
 	mmc_release_host(host);
@@ -3782,7 +3548,7 @@ static int mmc_pm_notify(struct notifier_block *notify_block,
 	struct mmc_host *host = container_of(
 		notify_block, struct mmc_host, pm_notify);
 	unsigned long flags;
-	int err = 0, present = 0;
+	int err = 0;
 
 	switch (mode) {
 	case PM_HIBERNATION_PREPARE:
@@ -3825,15 +3591,6 @@ static int mmc_pm_notify(struct notifier_block *notify_block,
 
 		spin_lock_irqsave(&host->lock, flags);
 		host->rescan_disable = 0;
-		if (host->ops->get_cd)
-			present = host->ops->get_cd(host);
-
-		if (mmc_bus_manual_resume(host) &&
-				!host->ignore_bus_resume_flags &&
-				present) {
-			spin_unlock_irqrestore(&host->lock, flags);
-			break;
-		}
 		spin_unlock_irqrestore(&host->lock, flags);
 		_mmc_detect_change(host, 0, false);
 

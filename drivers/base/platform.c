@@ -26,6 +26,7 @@
 #include <linux/clk/clk-conf.h>
 #include <linux/limits.h>
 #include <linux/property.h>
+#include <linux/bootprof.h>
 #include <linux/kmemleak.h>
 #include <linux/types.h>
 
@@ -79,26 +80,6 @@ struct resource *platform_get_resource(struct platform_device *dev,
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(platform_get_resource);
-
-/**
- * devm_platform_ioremap_resource - call devm_ioremap_resource() for a platform
- *				    device
- *
- * @pdev: platform device to use both for memory resource lookup as well as
- *        resource managemend
- * @index: resource index
- */
-#ifdef CONFIG_HAS_IOMEM
-void __iomem *devm_platform_ioremap_resource(struct platform_device *pdev,
-					     unsigned int index)
-{
-	struct resource *res;
-
-	res = platform_get_resource(pdev, IORESOURCE_MEM, index);
-	return devm_ioremap_resource(&pdev->dev, res);
-}
-EXPORT_SYMBOL_GPL(devm_platform_ioremap_resource);
-#endif /* CONFIG_HAS_IOMEM */
 
 /**
  * platform_get_irq - get an IRQ for a device
@@ -494,9 +475,17 @@ EXPORT_SYMBOL_GPL(platform_device_del);
  */
 int platform_device_register(struct platform_device *pdev)
 {
+	int ret;
+#ifdef CONFIG_MTPROF
+	unsigned long long ts;
+#endif
+	BOOTPROF_TIME_LOG_START(ts);
 	device_initialize(&pdev->dev);
 	arch_setup_pdev_archdata(pdev);
-	return platform_device_add(pdev);
+	ret = platform_device_add(pdev);
+	BOOTPROF_TIME_LOG_END(ts);
+	bootprof_pdev_register(ts, pdev);
+	return ret;
 }
 EXPORT_SYMBOL_GPL(platform_device_register);
 
@@ -891,11 +880,31 @@ static ssize_t driver_override_store(struct device *dev,
 				     const char *buf, size_t count)
 {
 	struct platform_device *pdev = to_platform_device(dev);
-	int ret;
+	char *driver_override, *old, *cp;
 
-	ret = driver_set_override(dev, (const char **)&pdev->driver_override, buf, count);
-	if (ret)
-		return ret;
+	/* We need to keep extra room for a newline */
+	if (count >= (PAGE_SIZE - 1))
+		return -EINVAL;
+
+	driver_override = kstrndup(buf, count, GFP_KERNEL);
+	if (!driver_override)
+		return -ENOMEM;
+
+	cp = strchr(driver_override, '\n');
+	if (cp)
+		*cp = '\0';
+
+	device_lock(dev);
+	old = pdev->driver_override;
+	if (strlen(driver_override)) {
+		pdev->driver_override = driver_override;
+	} else {
+		kfree(driver_override);
+		pdev->driver_override = NULL;
+	}
+	device_unlock(dev);
+
+	kfree(old);
 
 	return count;
 }

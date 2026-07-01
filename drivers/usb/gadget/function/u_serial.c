@@ -29,6 +29,7 @@
 #include <linux/kfifo.h>
 
 #include "u_serial.h"
+#define USERIAL_LOG(fmt, args...) pr_notice("USB_ACM " fmt, ## args)
 
 
 /*
@@ -80,6 +81,7 @@
 #define QUEUE_SIZE		16
 #define WRITE_BUF_SIZE		8192		/* TX only */
 #define GS_CONSOLE_BUF_SIZE	8192
+#define REQ_BUF_SIZE		4096
 
 /* console info */
 struct gscons_info {
@@ -132,6 +134,38 @@ static struct portmaster {
 #define GS_CLOSE_TIMEOUT		15		/* seconds */
 
 
+static void pr_vmpt_debug(struct gs_port *port, int len,
+			struct usb_request *req, bool dir)
+{
+	static unsigned int	skip;
+	static DEFINE_RATELIMIT_STATE(ratelimit, 1 * HZ, 10);
+
+	if (__ratelimit(&ratelimit)) {
+		if (dir == USB_DIR_OUT)
+			USERIAL_LOG("%s:ttyGS%d:w=%d,0x%x0x%x0x%x\n",
+					__func__, port->port_num, len,
+					*((u8 *)req->buf),
+					*((u8 *)req->buf+1),
+					*((u8 *)req->buf+2));
+		else
+			USERIAL_LOG("%s:ttyGS%d:a=%d,r=%d(%x%x%x)\n",
+					__func__,
+					port->port_num,
+					req->actual,
+					port->n_read,
+					*((u8 *)req->buf),
+					*((u8 *)req->buf+1),
+					*((u8 *)req->buf+2));
+
+		if (skip > 0) {
+			USERIAL_LOG("%s skipped %d bytes\n",
+					__func__, skip);
+			skip = 0;
+		}
+	} else {
+		skip += req->actual;
+	}
+}
 
 #ifdef VERBOSE_DEBUG
 #ifndef pr_vdebug
@@ -156,8 +190,7 @@ static struct portmaster {
  * usb_request or NULL if there is an error.
  */
 struct usb_request *
-gs_alloc_req(struct usb_ep *ep, unsigned int len, size_t extra_sz,
-		gfp_t kmalloc_flags)
+gs_alloc_req(struct usb_ep *ep, unsigned len, gfp_t kmalloc_flags)
 {
 	struct usb_request *req;
 
@@ -165,7 +198,7 @@ gs_alloc_req(struct usb_ep *ep, unsigned int len, size_t extra_sz,
 
 	if (req != NULL) {
 		req->length = len;
-		req->buf = kmalloc(len + extra_sz, kmalloc_flags);
+		req->buf = kmalloc(len, kmalloc_flags);
 		if (req->buf == NULL) {
 			usb_ep_free_request(ep, req);
 			return NULL;
@@ -245,7 +278,7 @@ __acquires(&port->port_lock)
 			break;
 
 		req = list_entry(pool->next, struct usb_request, list);
-		len = gs_send_packet(port, req->buf, in->maxpacket);
+		len = gs_send_packet(port, req->buf, REQ_BUF_SIZE);
 		if (len == 0) {
 			wake_up_interruptible(&port->drain_wait);
 			break;
@@ -259,6 +292,7 @@ __acquires(&port->port_lock)
 		pr_vdebug("ttyGS%d: tx len=%d, 0x%02x 0x%02x 0x%02x ...\n",
 			  port->port_num, len, *((u8 *)req->buf),
 			  *((u8 *)req->buf+1), *((u8 *)req->buf+2));
+		pr_vmpt_debug(port, len, req, USB_DIR_OUT);
 
 		/* Drop lock while we call out of driver; completions
 		 * could be issued while we do so.  Disconnection may
@@ -389,6 +423,8 @@ static void gs_rx_push(unsigned long _port)
 			break;
 		}
 
+		pr_vmpt_debug(port, 0, req, USB_DIR_IN);
+
 		/* push data to (open) tty */
 		if (req->actual && tty) {
 			char		*packet = req->buf;
@@ -507,7 +543,6 @@ static void gs_free_requests(struct usb_ep *ep, struct list_head *head,
 }
 
 static int gs_alloc_requests(struct usb_ep *ep, struct list_head *head,
-		size_t extra_sz,
 		void (*fn)(struct usb_ep *, struct usb_request *),
 		int *allocated)
 {
@@ -520,7 +555,7 @@ static int gs_alloc_requests(struct usb_ep *ep, struct list_head *head,
 	 * be as speedy as we might otherwise be.
 	 */
 	for (i = 0; i < n; i++) {
-		req = gs_alloc_req(ep, ep->maxpacket, extra_sz, GFP_ATOMIC);
+		req = gs_alloc_req(ep, REQ_BUF_SIZE, GFP_ATOMIC);
 		if (!req)
 			return list_empty(head) ? -ENOMEM : 0;
 		req->complete = fn;
@@ -542,8 +577,6 @@ static int gs_alloc_requests(struct usb_ep *ep, struct list_head *head,
  */
 static int gs_start_io(struct gs_port *port)
 {
-	struct usb_function	*f = &port->port_usb->func;
-	struct usb_composite_dev *cdev = f->config->cdev;
 	struct list_head	*head = &port->read_pool;
 	struct usb_ep		*ep = port->port_usb->out;
 	int			status;
@@ -555,13 +588,12 @@ static int gs_start_io(struct gs_port *port)
 	 * configurations may use different endpoints with a given port;
 	 * and high speed vs full speed changes packet sizes too.
 	 */
-	status = gs_alloc_requests(ep, head, 0, gs_read_complete,
+	status = gs_alloc_requests(ep, head, gs_read_complete,
 		&port->read_allocated);
 	if (status)
 		return status;
 
 	status = gs_alloc_requests(port->port_usb->in, &port->write_pool,
-			cdev->gadget->extra_buf_alloc,
 			gs_write_complete, &port->write_allocated);
 	if (status) {
 		gs_free_requests(ep, head, &port->read_allocated);
@@ -688,6 +720,8 @@ static int gs_open(struct tty_struct *tty, struct file *file)
 	}
 
 	pr_debug("gs_open: ttyGS%d (%p,%p)\n", port->port_num, tty, file);
+	USERIAL_LOG("%s: ttyGS%d (%p,%p)\n",
+			__func__, port->port_num, tty, file);
 
 	status = 0;
 
@@ -724,6 +758,8 @@ static void gs_close(struct tty_struct *tty, struct file *file)
 	}
 
 	pr_debug("gs_close: ttyGS%d (%p,%p) ...\n", port->port_num, tty, file);
+	USERIAL_LOG("%s: ttyGS%d (%p,%p)\n",
+			__func__, port->port_num, tty, file);
 
 	/* mark port as closing but in use; we can drop port lock
 	 * and sleep if necessary

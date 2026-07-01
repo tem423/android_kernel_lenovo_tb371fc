@@ -44,8 +44,8 @@ struct pwm_args {
 };
 
 enum {
-	PWMF_REQUESTED = 0,
-	PWMF_EXPORTED = 1,
+	PWMF_REQUESTED = 1 << 0,
+	PWMF_EXPORTED = 1 << 1,
 };
 
 /**
@@ -424,8 +424,8 @@ int pwm_adjust_config(struct pwm_device *pwm);
 static inline int pwm_get_output_type_supported(struct pwm_device *pwm)
 {
 	if (pwm->chip->ops->get_output_type_supported != NULL)
-		return pwm->chip->ops->
-			get_output_type_supported(pwm->chip, pwm);
+		return pwm->chip->ops->get_output_type_supported(pwm->chip,
+								 pwm);
 	else
 		return PWM_OUTPUT_FIXED;
 }

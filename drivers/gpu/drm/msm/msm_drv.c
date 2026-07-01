@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
  * Copyright (C) 2013 Red Hat
  * Author: Rob Clark <robdclark@gmail.com>
  *
@@ -170,8 +170,7 @@ void __iomem *msm_ioremap(struct platform_device *pdev, const char *name,
 		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 
 	if (!res) {
-		dev_err(&pdev->dev, "failed to get memory resource: %s\n",
-			       name);
+		dev_err(&pdev->dev, "failed to get memory resource: %s\n", name);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -184,8 +183,7 @@ void __iomem *msm_ioremap(struct platform_device *pdev, const char *name,
 	}
 
 	if (reglog)
-		printk(KERN_DEBUG "IO:region %s %pk %08lx\n", dbgname,
-				ptr, size);
+		printk(KERN_DEBUG "IO:region %s %p %08lx\n", dbgname, ptr, size);
 
 	return ptr;
 }
@@ -390,7 +388,7 @@ static int msm_init_vram(struct drm_device *dev)
 		of_node_put(node);
 		if (ret)
 			return ret;
-		size = r.end - r.start + 1;
+		size = r.end - r.start;
 		DRM_INFO("using VRAM carveout: %lx@%pa\n", size, &r.start);
 
 		/* if we have no IOMMU, then we need to use carveout allocator.
@@ -673,11 +671,7 @@ err_unref_drm_dev:
 /*
  * DRM operations:
  */
-#ifdef CONFIG_QCOM_KGSL
-static void load_gpu(struct drm_device *dev)
-{
-}
-#else
+
 static void load_gpu(struct drm_device *dev)
 {
 	static DEFINE_MUTEX(init_lock);
@@ -690,7 +684,6 @@ static void load_gpu(struct drm_device *dev)
 
 	mutex_unlock(&init_lock);
 }
-#endif
 
 static int context_init(struct drm_device *dev, struct drm_file *file)
 {
@@ -1233,7 +1226,7 @@ static int add_components_mdp(struct device *mdp_dev,
 
 static int compare_name_mdp(struct device *dev, void *data)
 {
-	return (strnstr(dev_name(dev), "mdp") != NULL);
+	return (strstr(dev_name(dev), "mdp") != NULL);
 }
 
 static int add_display_components(struct device *dev,
@@ -1292,13 +1285,6 @@ static const struct of_device_id msm_gpu_match[] = {
 	{ },
 };
 
-#ifdef CONFIG_QCOM_KGSL
-static int add_gpu_components(struct device *dev,
-					      struct component_match **matchptr)
-{
-		return 0;
-}
-#else
 static int add_gpu_components(struct device *dev,
 			      struct component_match **matchptr)
 {
@@ -1315,7 +1301,6 @@ static int add_gpu_components(struct device *dev,
 
 	return 0;
 }
-#endif
 
 static int msm_drm_bind(struct device *dev)
 {
@@ -1404,16 +1389,6 @@ static struct platform_driver msm_platform_driver = {
 		.pm     = &msm_pm_ops,
 	},
 };
-
-#ifdef CONFIG_QCOM_KGSL
-void __init adreno_register(void)
-{
-}
-
-void __exit adreno_unregister(void)
-{
-}
-#endif
 
 static int __init msm_drm_register(void)
 {

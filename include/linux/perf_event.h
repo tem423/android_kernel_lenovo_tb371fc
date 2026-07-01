@@ -597,9 +597,6 @@ struct perf_event {
 	/* The cumulative AND of all event_caps for events in this group. */
 	int				group_caps;
 
-#ifndef __GENKSYMS__	/* ANDROID Bug: 307236803 to keep the crc preserved */
-	unsigned int			group_generation;
-#endif
 	struct perf_event		*group_leader;
 	struct pmu			*pmu;
 	void				*pmu_private;
@@ -719,11 +716,8 @@ struct perf_event {
 	/* Is this event shared with other events */
 	bool				shared;
 
-	/*
-	 * Entry into the list that holds the events whose CPUs
-	 * are offline. These events will be installed once the
-	 * CPU wakes up and will be removed from the list after that
-	 */
+	/* TODO: need to cherry-pick 3d3eb5fb85d97. This is just padding for now
+	 * to reduce the ABI diff */
 	struct list_head		dormant_event_entry;
 #endif /* CONFIG_PERF_EVENTS */
 };
@@ -1013,30 +1007,14 @@ extern void perf_event_output(struct perf_event *event,
 			      struct pt_regs *regs);
 
 static inline bool
-__is_default_overflow_handler(perf_overflow_handler_t overflow_handler)
+is_default_overflow_handler(struct perf_event *event)
 {
-	if (likely(overflow_handler == perf_event_output_forward))
+	if (likely(event->overflow_handler == perf_event_output_forward))
 		return true;
-	if (unlikely(overflow_handler == perf_event_output_backward))
+	if (unlikely(event->overflow_handler == perf_event_output_backward))
 		return true;
 	return false;
 }
-
-#define is_default_overflow_handler(event) \
-	__is_default_overflow_handler((event)->overflow_handler)
-
-#ifdef CONFIG_BPF_SYSCALL
-static inline bool uses_default_overflow_handler(struct perf_event *event)
-{
-	if (likely(is_default_overflow_handler(event)))
-		return true;
-
-	return __is_default_overflow_handler(event->orig_overflow_handler);
-}
-#else
-#define uses_default_overflow_handler(event) \
-	is_default_overflow_handler(event)
-#endif
 
 extern void
 perf_event_header__init_id(struct perf_event_header *header,
@@ -1479,11 +1457,9 @@ static struct device_attribute format_attr_##_name = __ATTR_RO(_name)
 #ifdef CONFIG_PERF_EVENTS
 int perf_event_init_cpu(unsigned int cpu);
 int perf_event_exit_cpu(unsigned int cpu);
-int perf_event_restart_events(unsigned int cpu);
 #else
 #define perf_event_init_cpu	NULL
 #define perf_event_exit_cpu	NULL
-#define perf_event_restart_events NULL
 #endif
 
 #endif /* _LINUX_PERF_EVENT_H */

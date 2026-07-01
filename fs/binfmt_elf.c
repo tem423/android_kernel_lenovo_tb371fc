@@ -580,7 +580,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 				elf_prot |= PROT_EXEC;
 			vaddr = eppnt->p_vaddr;
 			if (interp_elf_ex->e_type == ET_EXEC || load_addr_set)
-				elf_type |= MAP_FIXED;
+				elf_type |= MAP_FIXED_NOREPLACE;
 			else if (no_base && interp_elf_ex->e_type == ET_DYN)
 				load_addr = -vaddr;
 
@@ -2394,8 +2394,12 @@ static int elf_core_dump(struct coredump_params *cprm)
 				put_page(page);
 			} else
 				stop = !dump_skip(cprm, PAGE_SIZE);
-			if (stop)
+			if (stop) {
+				pr_info("%s: stop:0x%lx, vm_start:0x%lx, vm_end:0x%lx\n",
+					__func__, addr,
+					vma->vm_start, vma->vm_end);
 				goto end_coredump;
+			}
 		}
 	}
 	dump_truncate(cprm);

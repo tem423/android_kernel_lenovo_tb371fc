@@ -10,6 +10,21 @@
 #include <linux/types.h>
 
 #ifdef CONFIG_ENERGY_MODEL
+
+#ifdef CONFIG_NONLINEAR_FREQ_CTL
+#include "../../drivers/misc/mediatek/base/power/include/mtk_upower.h"
+
+static int get_opp_cap(int cpu, int opp)
+{
+	struct upower_tbl *tbl;
+
+	tbl = upower_get_core_tbl(cpu);
+	if (opp < 0 || opp >= tbl->row_num)
+		return -1;
+	return tbl->row[opp].cap;
+}
+#endif
+
 /**
  * em_cap_state - Capacity state of a performance domain
  * @frequency:	The CPU frequency in KHz, for consistency with CPUFreq
@@ -41,22 +56,6 @@ struct em_perf_domain {
 };
 
 #define EM_CPU_MAX_POWER 0xFFFF
-
-/*
- * Increase resolution of energy estimation calculations for 64-bit
- * architectures. The extra resolution improves decision made by EAS for the
- * task placement when two Performance Domains might provide similar energy
- * estimation values (w/o better resolution the values could be equal).
- *
- * We increase resolution only if we have enough bits to allow this increased
- * resolution (i.e. 64-bit). The costs for increasing resolution when 32-bit
- * are pretty high and the returns do not justify the increased costs.
- */
-#ifdef CONFIG_64BIT
-#define em_scale_power(p) ((p) * 1000)
-#else
-#define em_scale_power(p) (p)
-#endif
 
 struct em_data_callback {
 	/**
@@ -98,9 +97,9 @@ static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
 	unsigned long freq, scale_cpu;
 	struct em_cap_state *cs;
 	int i, cpu;
-
-	if (!sum_util)
-		return 0;
+#ifdef CONFIG_NONLINEAR_FREQ_CTL
+	int opp, opp_cap;
+#endif
 
 	/*
 	 * In order to predict the capacity state, map the utilization of the
@@ -110,8 +109,11 @@ static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
 	cpu = cpumask_first(to_cpumask(pd->cpus));
 	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
 	cs = &pd->table[pd->nr_cap_states - 1];
+#ifdef CONFIG_NONLINEAR_FREQ_CTL
+	freq = mtk_map_util_freq(cpu, max_util);
+#else
 	freq = map_util_freq(max_util, cs->frequency, scale_cpu);
-
+#endif
 	/*
 	 * Find the lowest capacity state of the Energy Model above the
 	 * requested frequency.
@@ -121,6 +123,13 @@ static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
 		if (cs->frequency >= freq)
 			break;
 	}
+
+#ifdef CONFIG_NONLINEAR_FREQ_CTL
+	opp = min(i, pd->nr_cap_states - 1);
+	opp_cap = get_opp_cap(cpu, opp);
+	if (opp_cap > 0)
+		return cs->power * sum_util / opp_cap;
+#endif
 
 	/*
 	 * The capacity of a CPU in the domain at that capacity state (cs)

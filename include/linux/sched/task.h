@@ -36,7 +36,6 @@ extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
 extern void sched_dead(struct task_struct *p);
 
 void __noreturn do_task_dead(void);
-void __noreturn make_task_dead(int signr);
 
 extern void proc_caches_init(void);
 
@@ -71,6 +70,12 @@ static inline void exit_thread(struct task_struct *tsk)
 #endif
 extern void do_group_exit(int);
 
+#ifdef CONFIG_UCLAMP_TASK
+extern void uclamp_exit_task(struct task_struct *p);
+#else
+static inline void uclamp_exit_task(struct task_struct *p) { }
+#endif /* CONFIG_UCLAMP_TASK */
+
 extern void exit_files(struct task_struct *);
 extern void exit_itimers(struct signal_struct *);
 
@@ -100,7 +105,6 @@ static inline void put_task_struct(struct task_struct *t)
 }
 
 struct task_struct *task_rcu_dereference(struct task_struct **ptask);
-void put_task_struct_rcu_user(struct task_struct *task);
 
 #ifdef CONFIG_ARCH_WANTS_DYNAMIC_TASK_STRUCT
 extern int arch_task_struct_size __read_mostly;
@@ -138,7 +142,7 @@ static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
  * Protects ->fs, ->files, ->mm, ->group_info, ->comm, keyring
  * subscriptions and synchronises with wait4().  Also used in procfs.  Also
  * pins the final release of task.io_context.  Also protects ->cpuset and
- * ->cgroup.subsys[]. And ->vfork_done. And ->sysvshm.shm_clist.
+ * ->cgroup.subsys[]. And ->vfork_done.
  *
  * Nests both inside and outside of read_lock(&tasklist_lock).
  * It must not be nested with write_lock_irq(&tasklist_lock),

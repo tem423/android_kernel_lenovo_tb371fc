@@ -26,9 +26,6 @@
 /* No upper/lower limit requirement */
 #define THERMAL_NO_LIMIT	((u32)~0)
 
-/* upper limit requirement */
-#define THERMAL_MAX_LIMIT	(THERMAL_NO_LIMIT - 1)
-
 /* Default weight of a bound cooling device */
 #define THERMAL_WEIGHT_DEFAULT 0
 
@@ -64,6 +61,8 @@
 #define DEFAULT_THERMAL_GOVERNOR       "user_space"
 #elif defined(CONFIG_THERMAL_DEFAULT_GOV_POWER_ALLOCATOR)
 #define DEFAULT_THERMAL_GOVERNOR       "power_allocator"
+#elif defined(CONFIG_THERMAL_DEFAULT_GOV_BACKWARD_COMPATIBLE)
+#define DEFAULT_THERMAL_GOVERNOR       "backward_compatible"
 #endif
 
 struct thermal_zone_device;
@@ -388,8 +387,8 @@ struct thermal_zone_of_device_ops {
 	int (*get_trend)(void *, int, enum thermal_trend *);
 	int (*set_trips)(void *, int, int);
 	int (*set_emul_temp)(void *, int);
-	int (*set_trip_temp)(void *data, int trip, int temp);
-	int (*get_trip_temp)(void *data, int trip, int *temp);
+	int (*set_trip_temp)(void *, int, int);
+	int (*get_trip_temp)(void *, int, int *);
 };
 
 /**
@@ -412,6 +411,7 @@ enum aggregation_logic {
 	VIRT_WEIGHTED_AVG,
 	VIRT_MAXIMUM,
 	VIRT_MINIMUM,
+	VIRT_COUNT_THRESHOLD,
 	VIRT_AGGREGATION_NR,
 };
 
@@ -581,13 +581,12 @@ static inline void thermal_zone_device_update_temp(
 static inline void thermal_zone_set_trips(struct thermal_zone_device *tz)
 { }
 static inline struct thermal_cooling_device *
-thermal_cooling_device_register(const char *type, void *devdata,
+thermal_cooling_device_register(char *type, void *devdata,
 	const struct thermal_cooling_device_ops *ops)
 { return ERR_PTR(-ENODEV); }
 static inline struct thermal_cooling_device *
 thermal_of_cooling_device_register(struct device_node *np,
-	const char *type, void *devdata,
-	const struct thermal_cooling_device_ops *ops)
+	char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
 { return ERR_PTR(-ENODEV); }
 static inline void thermal_cooling_device_unregister(
 	struct thermal_cooling_device *cdev)

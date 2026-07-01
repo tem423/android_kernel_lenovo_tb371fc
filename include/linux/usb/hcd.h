@@ -424,6 +424,11 @@ struct hc_driver {
 	int (*get_core_id)(struct usb_hcd *hcd);
 	int (*stop_endpoint)(struct usb_hcd *hcd, struct usb_device *udev,
 			struct usb_host_endpoint *ep);
+
+	ANDROID_KABI_RESERVE(1);
+	ANDROID_KABI_RESERVE(2);
+	ANDROID_KABI_RESERVE(3);
+	ANDROID_KABI_RESERVE(4);
 };
 
 static inline int hcd_giveback_urb_in_bh(struct usb_hcd *hcd)
@@ -525,7 +530,7 @@ extern void usb_hc_died(struct usb_hcd *hcd);
 extern void usb_hcd_poll_rh_status(struct usb_hcd *hcd);
 extern void usb_wakeup_notification(struct usb_device *hdev,
 		unsigned int portnum);
-extern void usb_flush_hub_wq(void);
+
 extern void usb_hcd_start_port_resume(struct usb_bus *bus, int portnum);
 extern void usb_hcd_end_port_resume(struct usb_bus *bus, int portnum);
 

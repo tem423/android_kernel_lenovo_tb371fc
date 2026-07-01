@@ -268,17 +268,8 @@ static void module_assert_mutex_or_preempt(void)
 #endif
 }
 
-#ifdef CONFIG_MODULE_SIG
 static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
 module_param(sig_enforce, bool_enable_only, 0644);
-
-void set_module_sig_enforced(void)
-{
-	sig_enforce = true;
-}
-#else
-#define sig_enforce false
-#endif
 
 /*
  * Export sig_enforce kernel cmdline parameter to allow other subsystems rely
@@ -1282,7 +1273,7 @@ static int try_to_force_load(struct module *mod, const char *reason)
 #endif
 }
 
-#if 0
+#ifdef CONFIG_MODVERSIONS
 
 static u32 resolve_rel_crc(const s32 *crc)
 {
@@ -1388,6 +1379,25 @@ static inline int same_magic(const char *amagic, const char *bmagic,
 }
 #endif /* CONFIG_MODVERSIONS */
 
+static bool inherit_taint(struct module *mod, struct module *owner)
+{
+	if (!owner || !test_bit(TAINT_PROPRIETARY_MODULE, &owner->taints))
+		return true;
+
+	if (mod->using_gplonly_symbols) {
+		pr_err("%s: module using GPL-only symbols uses symbols from proprietary module %s.\n",
+			mod->name, owner->name);
+		return false;
+	}
+
+	if (!test_bit(TAINT_PROPRIETARY_MODULE, &mod->taints)) {
+		pr_warn("%s: module uses symbols from proprietary module %s, inheriting taint.\n",
+			mod->name, owner->name);
+		set_bit(TAINT_PROPRIETARY_MODULE, &mod->taints);
+	}
+	return true;
+}
+
 /* Resolve a symbol for this module.  I.e. if we find one, record usage. */
 static const struct kernel_symbol *resolve_symbol(struct module *mod,
 						  const struct load_info *info,
@@ -1411,6 +1421,14 @@ static const struct kernel_symbol *resolve_symbol(struct module *mod,
 			  !(mod->taints & (1 << TAINT_PROPRIETARY_MODULE)), true);
 	if (!sym)
 		goto unlock;
+
+	if (license == GPL_ONLY)
+		mod->using_gplonly_symbols = true;
+
+	if (!inherit_taint(mod, owner)) {
+		sym = NULL;
+		goto getname;
+	}
 
 	if (!check_version(info, name, mod, crc)) {
 		sym = ERR_PTR(-EINVAL);
@@ -2234,36 +2252,21 @@ static void free_module(struct module *mod)
 
 	/* Finally, free the core (containing the module structure) */
 	disable_ro_nx(&mod->core_layout);
-#ifdef CONFIG_DEBUG_MODULE_LOAD_INFO
-	pr_info("Unloaded %s: module core layout, start: 0x%pK size: 0x%x\n",
-		mod->name, mod->core_layout.base, mod->core_layout.size);
-#endif
 	module_memfree(mod->core_layout.base);
 }
 
 void *__symbol_get(const char *symbol)
 {
 	struct module *owner;
-	enum mod_license license;
 	const struct kernel_symbol *sym;
 
 	preempt_disable();
-	sym = find_symbol(symbol, &owner, NULL, &license, true, true);
-	if (!sym)
-		goto fail;
-	if (license != GPL_ONLY) {
-		pr_warn("failing symbol_get of non-GPLONLY symbol %s.\n",
-			symbol);
-		goto fail;
-	}
-	if (strong_try_module_get(owner))
+	sym = find_symbol(symbol, &owner, NULL, NULL, true, true);
+	if (sym && strong_try_module_get(owner))
 		sym = NULL;
 	preempt_enable();
 
 	return sym ? (void *)kernel_symbol_value(sym) : NULL;
-fail:
-	preempt_enable();
-	return NULL;
 }
 EXPORT_SYMBOL_GPL(__symbol_get);
 
@@ -3477,8 +3480,7 @@ static bool finished_loading(const char *name)
 	sched_annotate_sleep();
 	mutex_lock(&module_mutex);
 	mod = find_module_all(name, strlen(name), true);
-	ret = !mod || mod->state == MODULE_STATE_LIVE
-		|| mod->state == MODULE_STATE_GOING;
+	ret = !mod || mod->state == MODULE_STATE_LIVE;
 	mutex_unlock(&module_mutex);
 
 	return ret;
@@ -3526,6 +3528,12 @@ static noinline int do_init_module(struct module *mod)
 	}
 	freeinit->module_init = mod->init_layout.base;
 
+	/*
+	 * We want to find out whether @mod uses async during init.  Clear
+	 * PF_USED_ASYNC.  async_schedule*() will set it.
+	 */
+	current->flags &= ~PF_USED_ASYNC;
+
 	do_mod_ctors(mod);
 	/* Start the module */
 	if (mod->init != NULL)
@@ -3551,13 +3559,22 @@ static noinline int do_init_module(struct module *mod)
 
 	/*
 	 * We need to finish all async code before the module init sequence
-	 * is done. This has potential to deadlock if synchronous module
-	 * loading is requested from async (which is not allowed!).
+	 * is done.  This has potential to deadlock.  For example, a newly
+	 * detected block device can trigger request_module() of the
+	 * default iosched from async probing task.  Once userland helper
+	 * reaches here, async_synchronize_full() will wait on the async
+	 * task waiting on request_module() and deadlock.
 	 *
-	 * See commit 0fdff3ec6d87 ("async, kmod: warn on synchronous
-	 * request_module() from async workers") for more details.
+	 * This deadlock is avoided by perfomring async_synchronize_full()
+	 * iff module init queued any async jobs.  This isn't a full
+	 * solution as it will deadlock the same if module loading from
+	 * async jobs nests more than once; however, due to the various
+	 * constraints, this hack seems to be the best option for now.
+	 * Please refer to the following thread for details.
+	 *
+	 * http://thread.gmane.org/gmane.linux.kernel/1420814
 	 */
-	if (!mod->async_probe_requested)
+	if (!mod->async_probe_requested && (current->flags & PF_USED_ASYNC))
 		async_synchronize_full();
 
 	ftrace_free_mem(mod, mod->init_layout.base, mod->init_layout.base +
@@ -3573,6 +3590,7 @@ static noinline int do_init_module(struct module *mod)
 	module_enable_ro(mod, true);
 	mod_tree_remove_init(mod);
 	disable_ro_nx(&mod->init_layout);
+	mod->init_layout_backup = mod->init_layout;
 	module_arch_freeing_init(mod);
 	mod->init_layout.base = NULL;
 	mod->init_layout.size = 0;
@@ -3632,35 +3650,20 @@ static int add_unformed_module(struct module *mod)
 
 	mod->state = MODULE_STATE_UNFORMED;
 
+again:
 	mutex_lock(&module_mutex);
 	old = find_module_all(mod->name, strlen(mod->name), true);
 	if (old != NULL) {
-		if (old->state == MODULE_STATE_COMING
-		    || old->state == MODULE_STATE_UNFORMED) {
+		if (old->state != MODULE_STATE_LIVE) {
 			/* Wait in case it fails to load. */
 			mutex_unlock(&module_mutex);
 			err = wait_event_interruptible(module_wq,
 					       finished_loading(mod->name));
 			if (err)
 				goto out_unlocked;
-
-			/* The module might have gone in the meantime. */
-			mutex_lock(&module_mutex);
-			old = find_module_all(mod->name, strlen(mod->name),
-					      true);
+			goto again;
 		}
-
-		/*
-		 * We are here only when the same module was being loaded. Do
-		 * not try to load it again right now. It prevents long delays
-		 * caused by serialized module load failures. It might happen
-		 * when more devices of the same type trigger load of
-		 * a particular module.
-		 */
-		if (old && old->state == MODULE_STATE_LIVE)
-			err = -EEXIST;
-		else
-			err = -EBUSY;
+		err = -EEXIST;
 		goto out;
 	}
 	mod_update_bounds(mod);
@@ -3744,11 +3747,6 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	struct module *mod;
 	long err = 0;
 	char *after_dashes;
-
-
-//FIXME
-	flags |= MODULE_INIT_IGNORE_MODVERSIONS;
-	flags |= MODULE_INIT_IGNORE_VERMAGIC;
 
 	err = elf_header_check(info);
 	if (err)
@@ -4497,13 +4495,83 @@ void print_modules(void)
 	list_for_each_entry_rcu(mod, &modules, list) {
 		if (mod->state == MODULE_STATE_UNFORMED)
 			continue;
-		pr_cont(" %s%s", mod->name, module_flags(mod, buf));
+		pr_cont(" %s %lx %lx %d %d %s",
+			mod->name,
+			(unsigned long)mod->core_layout.base,
+			(unsigned long)mod->init_layout_backup.base,
+			mod->core_layout.size,
+			mod->init_layout_backup.size,
+			module_flags(mod, buf));
 	}
 	preempt_enable();
 	if (last_unloaded_module[0])
 		pr_cont(" [last unloaded: %s]", last_unloaded_module);
 	pr_cont("\n");
 }
+
+#ifdef CONFIG_MTK_AEE_FEATURE
+/* MUST ensure called when preempt disabled already */
+int save_modules(char *mbuf, int mbufsize)
+{
+	struct module *mod;
+	char buf[MODULE_FLAGS_BUF_SIZE];
+	int sz = 0;
+	unsigned long text_addr = 0;
+	unsigned long init_addr = 0;
+	int i, search_nm;
+
+	if (mbuf == NULL || mbufsize <= 0) {
+		pr_info("mrdump: module info buffer wrong(sz:%d)\n", mbufsize);
+		return 0;
+	}
+
+	memset(mbuf, '\0', mbufsize);
+	sz += snprintf(mbuf + sz, mbufsize - sz, "Modules linked in:");
+	list_for_each_entry_rcu(mod, &modules, list) {
+		if (mod->state == MODULE_STATE_UNFORMED)
+			continue;
+		if (sz >= mbufsize) {
+			pr_info("mrdump: module info buffer full(sz:%d)\n",
+				mbufsize);
+			break;
+		}
+
+		text_addr = (unsigned long)mod->core_layout.base;
+		init_addr = (unsigned long)mod->init_layout.base;
+		search_nm = 2;
+		if (!mod->sect_attrs)
+			continue;
+		for (i = 0; i < mod->sect_attrs->nsections; i++) {
+			if (!strcmp(mod->sect_attrs->attrs[i].battr.attr.name, ".text")) {
+				text_addr = mod->sect_attrs->attrs[i].address;
+				search_nm--;
+			} else if (!strcmp(mod->sect_attrs->attrs[i].battr.attr.name,
+					   ".init.text")) {
+				init_addr = mod->sect_attrs->attrs[i].address;
+				search_nm--;
+			}
+			if (!search_nm)
+				break;
+		}
+
+		sz += snprintf(mbuf + sz, mbufsize - sz,
+				" %s %lx %lx %d %d %s",
+				mod->name,
+				text_addr,
+				init_addr,
+				mod->core_layout.size,
+				mod->init_layout.size,
+				module_flags(mod, buf));
+	}
+	if (last_unloaded_module[0] && sz < mbufsize)
+		sz += snprintf(mbuf + sz, mbufsize - sz, " [last unloaded: %s]",
+				last_unloaded_module);
+	if (sz < mbufsize)
+		sz += snprintf(mbuf + sz, mbufsize - sz, "\n");
+	return sz;
+}
+EXPORT_SYMBOL(save_modules);
+#endif
 
 #ifdef CONFIG_MODVERSIONS
 /* Generate the signature for all relevant module structures here.

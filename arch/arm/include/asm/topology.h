@@ -20,11 +20,11 @@ extern struct cputopo_arm cpu_topology[NR_CPUS];
 #define topology_core_id(cpu)		(cpu_topology[cpu].core_id)
 #define topology_core_cpumask(cpu)	(&cpu_topology[cpu].core_sibling)
 #define topology_sibling_cpumask(cpu)	(&cpu_topology[cpu].thread_sibling)
-#define topology_possible_sibling_cpumask topology_core_cpumask
 
 void init_cpu_topology(void);
 void store_cpu_topology(unsigned int cpuid);
 const struct cpumask *cpu_coregroup_mask(int cpu);
+int topology_nr_clusters(void);
 
 #include <linux/arch_topology.h>
 
@@ -39,6 +39,10 @@ const struct cpumask *cpu_coregroup_mask(int cpu);
 
 /* Enable topology flag updates */
 #define arch_update_cpu_topology topology_update_cpu_topology
+
+/* Cpu and cluster informantion */
+#define arch_cpu_cluster_id topology_physical_package_id
+#define arch_nr_clusters topology_nr_clusters
 
 #else
 

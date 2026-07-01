@@ -349,6 +349,8 @@ static inline void free_ep(struct uac_rtd_params *prm, struct usb_ep *ep)
 	if (!prm->ep_enabled)
 		return;
 
+	prm->ep_enabled = false;
+
 	audio_dev = uac->audio_dev;
 	params = &audio_dev->params;
 
@@ -366,11 +368,10 @@ static inline void free_ep(struct uac_rtd_params *prm, struct usb_ep *ep)
 		}
 	}
 
-	prm->ep_enabled = false;
-
 	if (usb_ep_disable(ep))
 		dev_err(uac->card->dev, "%s:%d Error!\n", __func__, __LINE__);
 }
+
 
 int u_audio_start_capture(struct g_audio *audio_dev)
 {
@@ -381,14 +382,11 @@ int u_audio_start_capture(struct g_audio *audio_dev)
 	struct usb_ep *ep;
 	struct uac_rtd_params *prm;
 	struct uac_params *params = &audio_dev->params;
-	int req_len, i, ret;
+	int req_len, i;
 
 	ep = audio_dev->out_ep;
 	prm = &uac->c_prm;
-	ret = config_ep_by_speed(gadget, &audio_dev->func, ep);
-	if (ret)
-		return ret;
-
+	config_ep_by_speed(gadget, &audio_dev->func, ep);
 	req_len = prm->max_psize;
 
 	prm->ep_enabled = true;
@@ -437,13 +435,11 @@ int u_audio_start_playback(struct g_audio *audio_dev)
 	struct uac_params *params = &audio_dev->params;
 	unsigned int factor, rate;
 	const struct usb_endpoint_descriptor *ep_desc;
-	int req_len, i, ret;
+	int req_len, i;
 
 	ep = audio_dev->in_ep;
 	prm = &uac->p_prm;
-	ret = config_ep_by_speed(gadget, &audio_dev->func, ep);
-	if (ret)
-		return ret;
+	config_ep_by_speed(gadget, &audio_dev->func, ep);
 
 	ep_desc = ep->desc;
 
@@ -631,7 +627,7 @@ void g_audio_cleanup(struct g_audio *g_audio)
 	uac = g_audio->uac;
 	card = uac->card;
 	if (card)
-		snd_card_free_when_closed(card);
+		snd_card_free(card);
 
 	kfree(uac->p_prm.ureq);
 	kfree(uac->c_prm.ureq);

@@ -25,6 +25,7 @@ struct opp_table;
 
 enum dev_pm_opp_event {
 	OPP_EVENT_ADD, OPP_EVENT_REMOVE, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
+	OPP_EVENT_ADJUST_VOLTAGE,
 };
 
 /**
@@ -107,7 +108,9 @@ void dev_pm_opp_put(struct dev_pm_opp *opp);
 int dev_pm_opp_add(struct device *dev, unsigned long freq,
 		   unsigned long u_volt);
 void dev_pm_opp_remove(struct device *dev, unsigned long freq);
-void dev_pm_opp_remove_all_dynamic(struct device *dev);
+
+int dev_pm_opp_adjust_voltage(struct device *dev, unsigned long freq,
+					      unsigned long u_volt);
 
 int dev_pm_opp_enable(struct device *dev, unsigned long freq);
 
@@ -209,8 +212,11 @@ static inline void dev_pm_opp_remove(struct device *dev, unsigned long freq)
 {
 }
 
-static inline void dev_pm_opp_remove_all_dynamic(struct device *dev)
+static inline int
+dev_pm_opp_adjust_voltage(struct device *dev, unsigned long freq,
+			  unsigned long u_volt)
 {
+	return 0;
 }
 
 static inline int dev_pm_opp_enable(struct device *dev, unsigned long freq)
@@ -307,7 +313,6 @@ struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
 struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np);
 struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
 int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu);
-void dev_pm_opp_of_register_em(struct cpumask *cpus);
 #else
 static inline int dev_pm_opp_of_add_table(struct device *dev)
 {
@@ -350,11 +355,6 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
 {
 	return NULL;
 }
-
-static inline void dev_pm_opp_of_register_em(struct cpumask *cpus)
-{
-}
-
 static inline int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
 {
 	return -ENOTSUPP;

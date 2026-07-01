@@ -69,7 +69,6 @@ enum hrtimer_restart {
  *
  * 0x00		inactive
  * 0x01		enqueued into rbtree
- * 0x02		timer is pinned to a cpu
  *
  * The callback state is not part of the timer->state because clearing it would
  * mean touching the timer after the callback, this makes it impossible to free
@@ -89,8 +88,6 @@ enum hrtimer_restart {
  */
 #define HRTIMER_STATE_INACTIVE	0x00
 #define HRTIMER_STATE_ENQUEUED	0x01
-#define HRTIMER_PINNED_SHIFT	1
-#define HRTIMER_STATE_PINNED	(1 << HRTIMER_PINNED_SHIFT)
 
 /**
  * struct hrtimer - the basic hrtimer structure
@@ -188,7 +185,6 @@ enum  hrtimer_base_type {
  * @hang_detected:	The last hrtimer interrupt detected a hang
  * @softirq_activated:	displays, if the softirq is raised - update of softirq
  *			related settings is not required then.
- * @online:		CPU is online from an hrtimers point of view
  * @nr_events:		Total number of hrtimer interrupt events
  * @nr_retries:		Total number of hrtimer interrupt retries
  * @nr_hangs:		Total number of hrtimer interrupt hangs
@@ -213,8 +209,7 @@ struct hrtimer_cpu_base {
 	unsigned int			hres_active		: 1,
 					in_hrtirq		: 1,
 					hang_detected		: 1,
-					softirq_activated       : 1,
-					online			: 1;
+					softirq_activated       : 1;
 #ifdef CONFIG_HIGH_RES_TIMERS
 	unsigned int			nr_events;
 	unsigned short			nr_retries;
@@ -354,9 +349,6 @@ DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
 
 /* Exported timer functions: */
-
-/* To be used from cpusets, only */
-extern void hrtimer_quiesce_cpu(void *cpup);
 
 /* Initialize timers: */
 extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,

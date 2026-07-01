@@ -55,7 +55,8 @@ struct udp_sock {
 					   * different encapsulation layer set
 					   * this
 					   */
-			 gro_enabled:1;	/* Can accept GRO packets */
+			 gro_enabled:1, /* Can accept GRO packets */
+			 gro_disabled:3; /* Disable udp gro for special socket case */
 	/*
 	 * Following member retains the information to create a UDP header
 	 * when the socket is uncorked.

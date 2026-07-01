@@ -103,41 +103,17 @@ static void dwxgmac2_rx_queue_prio(struct mac_device_info *hw, u32 prio,
 				   u32 queue)
 {
 	void __iomem *ioaddr = hw->pcsr;
-	u32 clear_mask = 0;
-	u32 ctrl2, ctrl3;
-	int i;
+	u32 value, reg;
 
-	ctrl2 = readl(ioaddr + XGMAC_RXQ_CTRL2);
-	ctrl3 = readl(ioaddr + XGMAC_RXQ_CTRL3);
-
-	/* The software must ensure that the same priority
-	 * is not mapped to multiple Rx queues
-	 */
-	for (i = 0; i < 4; i++)
-		clear_mask |= ((prio << XGMAC_PSRQ_SHIFT(i)) &
-						XGMAC_PSRQ(i));
-
-	ctrl2 &= ~clear_mask;
-	ctrl3 &= ~clear_mask;
-
-	/* First assign new priorities to a queue, then
-	 * clear them from others queues
-	 */
-	if (queue < 4) {
-		ctrl2 |= (prio << XGMAC_PSRQ_SHIFT(queue)) &
-						XGMAC_PSRQ(queue);
-
-		writel(ctrl2, ioaddr + XGMAC_RXQ_CTRL2);
-		writel(ctrl3, ioaddr + XGMAC_RXQ_CTRL3);
-	} else {
+	reg = (queue < 4) ? XGMAC_RXQ_CTRL2 : XGMAC_RXQ_CTRL3;
+	if (queue >= 4)
 		queue -= 4;
 
-		ctrl3 |= (prio << XGMAC_PSRQ_SHIFT(queue)) &
-						XGMAC_PSRQ(queue);
+	value = readl(ioaddr + reg);
+	value &= ~XGMAC_PSRQ(queue);
+	value |= (prio << XGMAC_PSRQ_SHIFT(queue)) & XGMAC_PSRQ(queue);
 
-		writel(ctrl3, ioaddr + XGMAC_RXQ_CTRL3);
-		writel(ctrl2, ioaddr + XGMAC_RXQ_CTRL2);
-	}
+	writel(value, ioaddr + reg);
 }
 
 static void dwxgmac2_prog_mtl_rx_algorithms(struct mac_device_info *hw,
@@ -203,6 +179,23 @@ static void dwxgmac2_map_mtl_to_dma(struct mac_device_info *hw, u32 queue,
 	value |= (chan << XGMAC_QxMDMACH_SHIFT(queue)) & XGMAC_QxMDMACH(queue);
 
 	writel(value, ioaddr + reg);
+}
+
+static void dwxgmac2_config_cbs(struct mac_device_info *hw,
+				u32 send_slope, u32 idle_slope,
+				u32 high_credit, u32 low_credit, u32 queue)
+{
+	void __iomem *ioaddr = hw->pcsr;
+	u32 value;
+
+	writel(send_slope, ioaddr + XGMAC_MTL_TCx_SENDSLOPE(queue));
+	writel(idle_slope, ioaddr + XGMAC_MTL_TCx_QUANTUM_WEIGHT(queue));
+	writel(high_credit, ioaddr + XGMAC_MTL_TCx_HICREDIT(queue));
+	writel(low_credit, ioaddr + XGMAC_MTL_TCx_LOCREDIT(queue));
+
+	value = readl(ioaddr + XGMAC_MTL_TCx_ETS_CONTROL(queue));
+	value |= XGMAC_CC | XGMAC_CBS;
+	writel(value, ioaddr + XGMAC_MTL_TCx_ETS_CONTROL(queue));
 }
 
 static int dwxgmac2_host_irq_status(struct mac_device_info *hw,
@@ -344,7 +337,7 @@ const struct stmmac_ops dwxgmac210_ops = {
 	.prog_mtl_tx_algorithms = dwxgmac2_prog_mtl_tx_algorithms,
 	.set_mtl_tx_queue_weight = NULL,
 	.map_mtl_to_dma = dwxgmac2_map_mtl_to_dma,
-	.config_cbs = NULL,
+	.config_cbs = dwxgmac2_config_cbs,
 	.dump_regs = NULL,
 	.host_irq_status = dwxgmac2_host_irq_status,
 	.host_mtl_irq_status = dwxgmac2_host_mtl_irq_status,

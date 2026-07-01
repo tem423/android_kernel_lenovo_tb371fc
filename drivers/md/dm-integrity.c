@@ -29,11 +29,11 @@
 #define DEFAULT_BUFFER_SECTORS		128
 #define DEFAULT_JOURNAL_WATERMARK	50
 #define DEFAULT_SYNC_MSEC		10000
-#define DEFAULT_MAX_JOURNAL_SECTORS	(IS_ENABLED(CONFIG_64BIT) ? 131072 : 8192)
+#define DEFAULT_MAX_JOURNAL_SECTORS	131072
 #define MIN_LOG2_INTERLEAVE_SECTORS	3
 #define MAX_LOG2_INTERLEAVE_SECTORS	31
 #define METADATA_WORKQUEUE_MAX_ACTIVE	16
-#define RECALC_SECTORS			(IS_ENABLED(CONFIG_64BIT) ? 32768 : 2048)
+#define RECALC_SECTORS			8192
 #define RECALC_WRITE_SUPER		16
 
 /*
@@ -568,12 +568,7 @@ static void section_mac(struct dm_integrity_c *ic, unsigned section, __u8 result
 		}
 		memset(result + size, 0, JOURNAL_MAC_SIZE - size);
 	} else {
-		__u8 digest[HASH_MAX_DIGESTSIZE];
-
-		if (WARN_ON(size > sizeof(digest))) {
-			dm_integrity_io_error(ic, "digest_size", -EINVAL);
-			goto err;
-		}
+		__u8 digest[size];
 		r = crypto_shash_final(desc, digest);
 		if (unlikely(r)) {
 			dm_integrity_io_error(ic, "crypto_shash_final", r);
@@ -1371,7 +1366,7 @@ static void integrity_metadata(struct work_struct *w)
 		struct bio *bio = dm_bio_from_per_bio_data(dio, sizeof(struct dm_integrity_io));
 		char *checksums;
 		unsigned extra_space = unlikely(digest_size > ic->tag_size) ? digest_size - ic->tag_size : 0;
-		char checksums_onstack[HASH_MAX_DIGESTSIZE];
+		char checksums_onstack[ic->tag_size + extra_space];
 		unsigned sectors_to_process = dio->range.n_sectors;
 		sector_t sector = dio->range.logical_sector;
 
@@ -1380,22 +1375,15 @@ static void integrity_metadata(struct work_struct *w)
 
 		checksums = kmalloc((PAGE_SIZE >> SECTOR_SHIFT >> ic->sb->log2_sectors_per_block) * ic->tag_size + extra_space,
 				    GFP_NOIO | __GFP_NORETRY | __GFP_NOWARN);
-		if (!checksums) {
+		if (!checksums)
 			checksums = checksums_onstack;
-			if (WARN_ON(extra_space &&
-				    digest_size > sizeof(checksums_onstack))) {
-				r = -EINVAL;
-				goto error;
-			}
-		}
 
 		__bio_for_each_segment(bv, bio, iter, dio->bio_details.bi_iter) {
-			struct bio_vec bv_copy = bv;
 			unsigned pos;
 			char *mem, *checksums_ptr;
 
 again:
-			mem = (char *)kmap_atomic(bv_copy.bv_page) + bv_copy.bv_offset;
+			mem = (char *)kmap_atomic(bv.bv_page) + bv.bv_offset;
 			pos = 0;
 			checksums_ptr = checksums;
 			do {
@@ -1404,7 +1392,7 @@ again:
 				sectors_to_process -= ic->sectors_per_block;
 				pos += ic->sectors_per_block << SECTOR_SHIFT;
 				sector += ic->sectors_per_block;
-			} while (pos < bv_copy.bv_len && sectors_to_process && checksums != checksums_onstack);
+			} while (pos < bv.bv_len && sectors_to_process && checksums != checksums_onstack);
 			kunmap_atomic(mem);
 
 			r = dm_integrity_rw_tag(ic, checksums, &dio->metadata_block, &dio->metadata_offset,
@@ -1424,9 +1412,9 @@ again:
 			if (!sectors_to_process)
 				break;
 
-			if (unlikely(pos < bv_copy.bv_len)) {
-				bv_copy.bv_offset += pos;
-				bv_copy.bv_len -= pos;
+			if (unlikely(pos < bv.bv_len)) {
+				bv.bv_offset += pos;
+				bv.bv_len -= pos;
 				goto again;
 			}
 		}
@@ -1600,7 +1588,7 @@ retry_kmap:
 				} while (++s < ic->sectors_per_block);
 #ifdef INTERNAL_VERIFY
 				if (ic->internal_hash) {
-					char checksums_onstack[max(HASH_MAX_DIGESTSIZE, MAX_TAG_SIZE)];
+					char checksums_onstack[max(crypto_shash_digestsize(ic->internal_hash), ic->tag_size)];
 
 					integrity_sector_checksum(ic, logical_sector, mem + bv.bv_offset, checksums_onstack);
 					if (unlikely(memcmp(checksums_onstack, journal_entry_tag(ic, je), ic->tag_size))) {
@@ -1650,7 +1638,7 @@ retry_kmap:
 				if (ic->internal_hash) {
 					unsigned digest_size = crypto_shash_digestsize(ic->internal_hash);
 					if (unlikely(digest_size > ic->tag_size)) {
-						char checksums_onstack[HASH_MAX_DIGESTSIZE];
+						char checksums_onstack[digest_size];
 						integrity_sector_checksum(ic, logical_sector, (char *)js, checksums_onstack);
 						memcpy(journal_entry_tag(ic, je), checksums_onstack, ic->tag_size);
 					} else
@@ -2085,7 +2073,7 @@ static void do_journal_write(struct dm_integrity_c *ic, unsigned write_start,
 				    unlikely(from_replay) &&
 #endif
 				    ic->internal_hash) {
-					char test_tag[max_t(size_t, HASH_MAX_DIGESTSIZE, MAX_TAG_SIZE)];
+					char test_tag[max(crypto_shash_digestsize(ic->internal_hash), ic->tag_size)];
 
 					integrity_sector_checksum(ic, sec + ((l - j) << ic->sb->log2_sectors_per_block),
 								  (char *)access_journal_data(ic, i, l), test_tag);
@@ -2127,6 +2115,10 @@ static void integrity_writer(struct work_struct *w)
 	unsigned write_start, write_sections;
 
 	unsigned prev_free_sectors;
+
+	/* the following test is not needed, but it tests the replay code */
+	if (unlikely(dm_post_suspending(ic->ti)) && !ic->meta_dev)
+		return;
 
 	spin_lock_irq(&ic->endio_wait.lock);
 	write_start = ic->committed_section;
@@ -2463,7 +2455,8 @@ static void dm_integrity_postsuspend(struct dm_target *ti)
 	drain_workqueue(ic->commit_wq);
 
 	if (ic->mode == 'J') {
-		queue_work(ic->writer_wq, &ic->writer_work);
+		if (ic->meta_dev)
+			queue_work(ic->writer_wq, &ic->writer_work);
 		drain_workqueue(ic->writer_wq);
 		dm_integrity_flush_buffers(ic, true);
 	}
@@ -3511,7 +3504,6 @@ try_smaller_buffer:
 	}
 
 	if (ic->sb->flags & cpu_to_le32(SB_FLAG_RECALCULATING)) {
-		size_t recalc_tags_size;
 		if (!ic->internal_hash) {
 			r = -EINVAL;
 			ti->error = "Recalculate is only valid with internal hash";
@@ -3530,10 +3522,8 @@ try_smaller_buffer:
 			r = -ENOMEM;
 			goto bad;
 		}
-		recalc_tags_size = (RECALC_SECTORS >> ic->sb->log2_sectors_per_block) * ic->tag_size;
-		if (crypto_shash_digestsize(ic->internal_hash) > ic->tag_size)
-			recalc_tags_size += crypto_shash_digestsize(ic->internal_hash) - ic->tag_size;
-		ic->recalc_tags = kvmalloc(recalc_tags_size, GFP_KERNEL);
+		ic->recalc_tags = kvmalloc_array(RECALC_SECTORS >> ic->sb->log2_sectors_per_block,
+						 ic->tag_size, GFP_KERNEL);
 		if (!ic->recalc_tags) {
 			ti->error = "Cannot allocate tags for recalculating";
 			r = -ENOMEM;
@@ -3572,6 +3562,8 @@ try_smaller_buffer:
 	}
 
 	if (should_write_sb) {
+		int r;
+
 		init_journal(ic, 0, ic->journal_sections, 0);
 		r = dm_integrity_failed(ic);
 		if (unlikely(r)) {
@@ -3701,13 +3693,11 @@ int __init dm_integrity_init(void)
 	}
 
 	r = dm_register_target(&integrity_target);
-	if (r < 0) {
-		DMERR("register failed %d", r);
-		kmem_cache_destroy(journal_io_cache);
-		return r;
-	}
 
-	return 0;
+	if (r < 0)
+		DMERR("register failed %d", r);
+
+	return r;
 }
 
 void dm_integrity_exit(void)

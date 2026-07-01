@@ -311,6 +311,7 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
 	vma->vm_start = vma->vm_end - PAGE_SIZE;
 	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+	INIT_VMA(vma);
 
 	err = insert_vm_struct(mm, vma);
 	if (err)
@@ -823,7 +824,6 @@ int transfer_args_to_stack(struct linux_binprm *bprm,
 			goto out;
 	}
 
-	bprm->exec += *sp_location - MAX_ARG_PAGES * PAGE_SIZE;
 	*sp_location = sp;
 
 out:
@@ -985,7 +985,7 @@ int kernel_read_file_from_fd(int fd, void **buf, loff_t *size, loff_t max_size,
 	struct fd f = fdget(fd);
 	int ret = -EBADF;
 
-	if (!f.file || !(f.file->f_mode & FMODE_READ))
+	if (!f.file)
 		goto out;
 
 	ret = kernel_read_file(f.file, buf, size, max_size, id);
@@ -1806,9 +1806,6 @@ static int __do_execve_file(int fd, struct filename *filename,
 		goto out_unmark;
 
 	bprm->argc = count(argv, MAX_ARG_STRINGS);
-	if (bprm->argc == 0)
-		pr_warn_once("process '%s' launched '%s' with NULL argv: empty string added\n",
-			     current->comm, bprm->filename);
 	if ((retval = bprm->argc) < 0)
 		goto out;
 
@@ -1832,20 +1829,6 @@ static int __do_execve_file(int fd, struct filename *filename,
 	retval = copy_strings(bprm->argc, argv, bprm);
 	if (retval < 0)
 		goto out;
-
-	/*
-	 * When argv is empty, add an empty string ("") as argv[0] to
-	 * ensure confused userspace programs that start processing
-	 * from argv[1] won't end up walking envp. See also
-	 * bprm_stack_limits().
-	 */
-	if (bprm->argc == 0) {
-		const char *argv[] = { "", NULL };
-		retval = copy_strings_kernel(1, argv, bprm);
-		if (retval < 0)
-			goto out;
-		bprm->argc = 1;
-	}
 
 	retval = exec_binprm(bprm);
 	if (retval < 0)

@@ -112,9 +112,8 @@
 		printk(KERN_INFO a);	\
 } while (0)
 #define v2printk(a...) do {		\
-	if (verbose > 1) {		\
+	if (verbose > 1)		\
 		printk(KERN_INFO a);	\
-	}				\
 	touch_nmi_watchdog();		\
 } while (0)
 #define eprintk(a...) do {		\
@@ -1072,10 +1071,10 @@ static int kgdbts_option_setup(char *opt)
 {
 	if (strlen(opt) >= MAX_CONFIG_LEN) {
 		printk(KERN_ERR "kgdbts: config string too long\n");
-		return 1;
+		return -ENOSPC;
 	}
 	strcpy(config, opt);
-	return 1;
+	return 0;
 }
 
 __setup("kgdbts=", kgdbts_option_setup);

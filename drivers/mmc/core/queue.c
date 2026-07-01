@@ -24,6 +24,8 @@
 #include "crypto.h"
 #include "card.h"
 #include "host.h"
+#include "mmc_crypto.h"
+#include "mtk_mmc_block.h"
 
 static inline bool mmc_cqe_dcmd_busy(struct mmc_queue *mq)
 {
@@ -104,9 +106,6 @@ static enum blk_eh_timer_return mmc_cqe_timed_out(struct request *req)
 	enum mmc_issue_type issue_type = mmc_issue_type(mq, req);
 	bool recovery_needed = false;
 
-	mmc_log_string(host,
-			"Request timed out! Active reqs: %d Req: %p Tag: %d\n",
-			mmc_cqe_qcnt(mq), req, req->tag);
 	switch (issue_type) {
 	case MMC_ISSUE_ASYNC:
 	case MMC_ISSUE_DCMD:
@@ -115,13 +114,6 @@ static enum blk_eh_timer_return mmc_cqe_timed_out(struct request *req)
 				mmc_cqe_recovery_notifier(mrq);
 			return BLK_EH_RESET_TIMER;
 		}
-
-		pr_info("%s: %s: Timeout even before req reaching LDD, completing the req. Active reqs: %d Req: %p Tag: %d\n",
-				mmc_hostname(host), __func__,
-				mmc_cqe_qcnt(mq), req, req->tag);
-		mmc_log_string(host,
-				"Timeout even before req reaching LDD,completing the req. Active reqs: %d Req: %p Tag: %d\n",
-				mmc_cqe_qcnt(mq), req, req->tag);
 		/* The request has gone already */
 		return BLK_EH_DONE;
 	default:
@@ -211,11 +203,8 @@ static int __mmc_init_request(struct mmc_queue *mq, struct request *req,
 			      gfp_t gfp)
 {
 	struct mmc_queue_req *mq_rq = req_to_mmc_queue_req(req);
-	struct mmc_host *host;
-
-	if (!mq)
-		return -ENODEV;
-	host = mq->card->host;
+	struct mmc_card *card = mq->card;
+	struct mmc_host *host = card->host;
 
 	mq_rq->sg = mmc_alloc_sg(host->max_segs, gfp);
 	if (!mq_rq->sg)
@@ -299,7 +288,6 @@ static blk_status_t mmc_mq_queue_rq(struct blk_mq_hw_ctx *hctx,
 	mq->busy = true;
 
 	mq->in_flight[issue_type] += 1;
-	atomic_inc(&host->active_reqs);
 	get_card = (mmc_tot_in_flight(mq) == 1);
 	cqe_retune_ok = (mmc_cqe_qcnt(mq) == 1);
 
@@ -339,7 +327,6 @@ static blk_status_t mmc_mq_queue_rq(struct blk_mq_hw_ctx *hctx,
 
 		spin_lock_irq(q->queue_lock);
 		mq->in_flight[issue_type] -= 1;
-		atomic_dec(&host->active_reqs);
 		if (mmc_tot_in_flight(mq) == 0)
 			put_card = true;
 		mq->busy = false;
@@ -380,9 +367,6 @@ static void mmc_setup_queue(struct mmc_queue *mq, struct mmc_card *card)
 		min(host->max_blk_count, host->max_req_size / 512));
 	blk_queue_max_segments(mq->queue, host->max_segs);
 
-	if (host->ops->init)
-		host->ops->init(host);
-
 	if (mmc_card_mmc(card) && card->ext_csd.data_sector_size) {
 		block_size = card->ext_csd.data_sector_size;
 		WARN_ON(block_size != 512 && block_size != 4096);
@@ -398,9 +382,6 @@ static void mmc_setup_queue(struct mmc_queue *mq, struct mmc_card *card)
 	mutex_init(&mq->complete_lock);
 
 	init_waitqueue_head(&mq->wait);
-
-	if (host->cqe_ops && host->cqe_ops->cqe_crypto_update_queue)
-		host->cqe_ops->cqe_crypto_update_queue(host, mq->queue);
 }
 
 static int mmc_mq_init_queue(struct mmc_queue *mq, int q_depth,
@@ -430,6 +411,7 @@ static int mmc_mq_init_queue(struct mmc_queue *mq, int q_depth,
 
 	mq->queue->queue_lock = lock;
 	mq->queue->queuedata = mq;
+	mq->queue->backing_dev_info->ra_pages = 128;
 
 	return 0;
 
@@ -447,14 +429,50 @@ static int mmc_mq_init(struct mmc_queue *mq, struct mmc_card *card,
 {
 	struct mmc_host *host = card->host;
 	int q_depth;
-	int ret;
+	int ret = 0;
 
+#ifdef CONFIG_MTK_EMMC_CQ_SUPPORT
+	int i;
+	struct mmc_blk_data *md = container_of(mq, struct mmc_blk_data, queue);
+#endif
 	/*
 	 * The queue depth for CQE must match the hardware because the request
 	 * tag is used to index the hardware queue.
 	 */
 	if (mq->use_cqe)
 		q_depth = min_t(int, card->ext_csd.cmdq_depth, host->cqe_qdepth);
+#ifdef CONFIG_MTK_EMMC_CQ_SUPPORT
+	else if (mq->use_swcq && (md->area_type == MMC_BLK_DATA_AREA_MAIN)) {
+		q_depth = MMC_QUEUE_DEPTH;
+		atomic_set(&host->cq_rw, false);
+		atomic_set(&host->cq_w, false);
+		atomic_set(&host->cq_wait_rdy, 0);
+		host->task_id_index = 0;
+		atomic_set(&host->is_data_dma, 0);
+		host->cur_rw_task = CQ_TASK_IDLE;
+		atomic_set(&host->cq_tuning_now, 0);
+
+		for (i = 0; i < EMMC_MAX_QUEUE_DEPTH; i++) {
+			host->data_mrq_queued[i] = false;
+			atomic_set(&mq->mqrq[i].index, 0);
+			mq->mqrq[i].sg = mmc_alloc_sg(host->max_segs,
+				GFP_KERNEL);
+			if (!mq->mqrq[i].sg)
+				ret = -ENOMEM;
+		}
+
+		if (ret) {
+			for (i = 0; i < EMMC_MAX_QUEUE_DEPTH; i++) {
+				kfree(mq->mqrq[i].sg);
+				mq->mqrq[i].sg = NULL;
+			}
+			return ret;
+		}
+
+		host->cmdq_thread = kthread_run(mmc_run_queue_thread, host,
+				"exe_cq/%d", host->index);
+	}
+#endif
 	else
 		q_depth = MMC_QUEUE_DEPTH;
 
@@ -465,7 +483,7 @@ static int mmc_mq_init(struct mmc_queue *mq, struct mmc_card *card,
 	blk_queue_rq_timeout(mq->queue, 60 * HZ);
 
 	mmc_setup_queue(mq, card);
-
+	/* inline crypto */
 	mmc_crypto_setup_queue(host, mq->queue);
 
 	return 0;
@@ -484,10 +502,20 @@ int mmc_init_queue(struct mmc_queue *mq, struct mmc_card *card,
 		   spinlock_t *lock, const char *subname)
 {
 	struct mmc_host *host = card->host;
-
+#ifdef CONFIG_MTK_EMMC_CQ_SUPPORT
+	int err;
+#endif
 	mq->card = card;
 
 	mq->use_cqe = host->cqe_enabled;
+
+#ifdef CONFIG_MTK_EMMC_CQ_SUPPORT
+	mq->use_swcq = host->swcq_enabled;
+	/* inline crypto */
+	err = mmc_init_crypto(card->host);
+	if (err)
+		return err;
+#endif
 
 	return mmc_mq_init(mq, card, lock);
 }
@@ -513,6 +541,7 @@ void mmc_cleanup_queue(struct mmc_queue *mq)
 {
 	struct request_queue *q = mq->queue;
 
+
 	/*
 	 * The legacy code handled the possibility of being suspended,
 	 * so do that here too.
@@ -520,8 +549,7 @@ void mmc_cleanup_queue(struct mmc_queue *mq)
 	if (blk_queue_quiesced(q))
 		blk_mq_unquiesce_queue(q);
 
-	if (likely(!blk_queue_dead(q)))
-		blk_cleanup_queue(q);
+	blk_cleanup_queue(q);
 	blk_mq_free_tag_set(&mq->tag_set);
 
 	/*

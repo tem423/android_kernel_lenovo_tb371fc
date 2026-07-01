@@ -195,7 +195,6 @@ static const struct nla_policy nft_rule_compat_policy[NFTA_RULE_COMPAT_MAX + 1] 
 static int nft_parse_compat(const struct nlattr *attr, u16 *proto, bool *inv)
 {
 	struct nlattr *tb[NFTA_RULE_COMPAT_MAX+1];
-	u32 l4proto;
 	u32 flags;
 	int err;
 
@@ -208,18 +207,12 @@ static int nft_parse_compat(const struct nlattr *attr, u16 *proto, bool *inv)
 		return -EINVAL;
 
 	flags = ntohl(nla_get_be32(tb[NFTA_RULE_COMPAT_FLAGS]));
-	if (flags & NFT_RULE_COMPAT_F_UNUSED ||
-	    flags & ~NFT_RULE_COMPAT_F_MASK)
+	if (flags & ~NFT_RULE_COMPAT_F_MASK)
 		return -EINVAL;
 	if (flags & NFT_RULE_COMPAT_F_INV)
 		*inv = true;
 
-	l4proto = ntohl(nla_get_be32(tb[NFTA_RULE_COMPAT_PROTO]));
-	if (l4proto > U16_MAX)
-		return -EINVAL;
-
-	*proto = l4proto;
-
+	*proto = ntohl(nla_get_be32(tb[NFTA_RULE_COMPAT_PROTO]));
 	return 0;
 }
 
@@ -582,13 +575,18 @@ nfnl_compat_fill_info(struct sk_buff *skb, u32 portid, u32 seq, u32 type,
 		      int rev, int target)
 {
 	struct nlmsghdr *nlh;
+	struct nfgenmsg *nfmsg;
 	unsigned int flags = portid ? NLM_F_MULTI : 0;
 
 	event = nfnl_msg_type(NFNL_SUBSYS_NFT_COMPAT, event);
-	nlh = nfnl_msg_put(skb, portid, seq, event, flags, family,
-			   NFNETLINK_V0, 0);
-	if (!nlh)
+	nlh = nlmsg_put(skb, portid, seq, event, sizeof(*nfmsg), flags);
+	if (nlh == NULL)
 		goto nlmsg_failure;
+
+	nfmsg = nlmsg_data(nlh);
+	nfmsg->nfgen_family = family;
+	nfmsg->version = NFNETLINK_V0;
+	nfmsg->res_id = 0;
 
 	if (nla_put_string(skb, NFTA_COMPAT_NAME, name) ||
 	    nla_put_be32(skb, NFTA_COMPAT_REV, htonl(rev)) ||

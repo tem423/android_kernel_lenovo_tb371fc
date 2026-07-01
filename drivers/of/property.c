@@ -919,10 +919,8 @@ of_fwnode_get_reference_args(const struct fwnode_handle *fwnode,
 						       nargs, index, &of_args);
 	if (ret < 0)
 		return ret;
-	if (!args) {
-		of_node_put(of_args.np);
+	if (!args)
 		return 0;
-	}
 
 	args->nargs = of_args.args_count;
 	args->fwnode = of_fwnode_handle(of_args.np);
@@ -1244,16 +1242,7 @@ DEFINE_SIMPLE_PROP(pinctrl2, "pinctrl-2", NULL)
 DEFINE_SIMPLE_PROP(pinctrl3, "pinctrl-3", NULL)
 DEFINE_SUFFIX_PROP(regulators, "-supply", NULL)
 DEFINE_SUFFIX_PROP(gpio, "-gpio", "#gpio-cells")
-
-static struct device_node *parse_gpios(struct device_node *np,
-				       const char *prop_name, int index)
-{
-	if (!strcmp_suffix(prop_name, ",nr-gpios"))
-		return NULL;
-
-	return parse_suffix_prop_cells(np, prop_name, index, "-gpios",
-				       "#gpio-cells");
-}
+DEFINE_SUFFIX_PROP(gpios, "-gpios", "#gpio-cells")
 
 static struct device_node *parse_iommu_maps(struct device_node *np,
 					    const char *prop_name, int index)
@@ -1357,7 +1346,8 @@ static int of_link_to_suppliers(struct device *dev,
 	return ret;
 }
 
-static bool of_devlink;
+
+static bool of_devlink = true;
 core_param(of_devlink, of_devlink, bool, 0);
 
 static int of_fwnode_add_links(const struct fwnode_handle *fwnode,

@@ -264,15 +264,42 @@ int __scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
 	struct request *req;
 	struct scsi_request *rq;
 	int ret = DRIVER_ERROR << 24;
+	u32 mq_flags;
 
-	req = blk_get_request(sdev->request_queue,
-			data_direction == DMA_TO_DEVICE ?
-			REQ_OP_SCSI_OUT : REQ_OP_SCSI_IN, BLK_MQ_REQ_PREEMPT);
-	if (IS_ERR(req))
+	/*
+	 * MTK PATCH
+	 *
+	 * While suspending normal IO request can not be issued.
+	 * But when async queue is full, sd_sync_cache() will wait
+	 * for async request to be done. But since it is request_queue is
+	 * in suspending state and no request is in LLD.
+	 * So this will cause hang.
+	 *
+	 * Use REQ_NOWAIT to avoid queue full durinig pm progress.
+	 *
+	 */
+	unsigned int op = (data_direction == DMA_TO_DEVICE ?
+		REQ_OP_SCSI_OUT : REQ_OP_SCSI_IN);
+
+	mq_flags = BLK_MQ_REQ_PREEMPT;
+
+	if (rq_flags & RQF_PM)
+		mq_flags |= BLK_MQ_REQ_NOWAIT;
+
+	req = blk_get_request(sdev->request_queue, op, mq_flags);
+	if (IS_ERR(req)) {
+		/*
+		 * MTK PATCH
+		 * pass the error code to the
+		 * generic layer
+		 */
+		if (req == ERR_PTR(-EAGAIN))
+			ret = -EAGAIN;
 		return ret;
+	}
 	rq = scsi_req(req);
 
-	if (bufflen &&	blk_rq_map_kern(sdev->request_queue, req,
+	if (bufflen && blk_rq_map_kern(sdev->request_queue, req,
 					buffer, bufflen, GFP_NOIO))
 		goto out;
 
@@ -419,7 +446,7 @@ static void scsi_single_lun_run(struct scsi_device *current_sdev)
 		spin_unlock_irqrestore(shost->host_lock, flags);
 		scsi_kick_queue(sdev->request_queue);
 		spin_lock_irqsave(shost->host_lock, flags);
-	
+
 		scsi_device_put(sdev);
 	}
  out:
@@ -876,7 +903,6 @@ static void scsi_io_completion_action(struct scsi_cmnd *cmd, int result)
 				case 0x07: /* operation in progress */
 				case 0x08: /* Long write in progress */
 				case 0x09: /* self test in progress */
-				case 0x11: /* notify (enable spinup) required */
 				case 0x14: /* space allocation in progress */
 				case 0x1a: /* start stop unit in progress */
 				case 0x1b: /* sanitize in progress */
@@ -1137,7 +1163,7 @@ static int scsi_init_sgtable(struct request *req, struct scsi_data_buffer *sdb)
 			blk_rq_nr_phys_segments(req), sdb->table.sgl)))
 		return BLKPREP_DEFER;
 
-	/* 
+	/*
 	 * Next, walk the list, and fill in the addresses and sizes of
 	 * each segment.
 	 */
@@ -1808,7 +1834,6 @@ static int scsi_dispatch_cmd(struct scsi_cmnd *cmd)
 		 */
 		SCSI_LOG_MLQUEUE(3, scmd_printk(KERN_INFO, cmd,
 			"queuecommand : device blocked\n"));
-		atomic_dec(&cmd->device->iorequest_cnt);
 		return SCSI_MLQUEUE_DEVICE_BUSY;
 	}
 
@@ -1841,7 +1866,6 @@ static int scsi_dispatch_cmd(struct scsi_cmnd *cmd)
 	trace_scsi_dispatch_cmd_start(cmd);
 	rtn = host->hostt->queuecommand(host, cmd);
 	if (rtn) {
-		atomic_dec(&cmd->device->iorequest_cnt);
 		trace_scsi_dispatch_cmd_error(cmd, rtn);
 		if (rtn != SCSI_MLQUEUE_DEVICE_BUSY &&
 		    rtn != SCSI_MLQUEUE_TARGET_BUSY)
@@ -1962,7 +1986,7 @@ static void scsi_request_fn(struct request_queue *q)
 
 		if (!scsi_host_queue_ready(q, shost, sdev))
 			goto host_not_ready;
-	
+
 		if (sdev->simple_tags)
 			cmd->flags |= SCMD_TAGGED;
 		else
@@ -2163,7 +2187,8 @@ out_put_budget:
 	case BLK_STS_OK:
 		break;
 	case BLK_STS_RESOURCE:
-		if (scsi_device_blocked(sdev))
+		if (atomic_read(&sdev->device_busy) ||
+		    scsi_device_blocked(sdev))
 			ret = BLK_STS_DEV_RESOURCE;
 		break;
 	default:
@@ -2585,7 +2610,7 @@ scsi_mode_select(struct scsi_device *sdev, int pf, int sp, int modepage,
 		real_buffer[1] = data->medium_type;
 		real_buffer[2] = data->device_specific;
 		real_buffer[3] = data->block_descriptor_length;
-		
+
 
 		cmd[0] = MODE_SELECT;
 		cmd[4] = len;
@@ -2669,7 +2694,7 @@ scsi_mode_sense(struct scsi_device *sdev, int dbd, int modepage,
 		if (scsi_sense_valid(sshdr)) {
 			if ((sshdr->sense_key == ILLEGAL_REQUEST) &&
 			    (sshdr->asc == 0x20) && (sshdr->ascq == 0)) {
-				/* 
+				/*
 				 * Invalid command operation code
 				 */
 				sdev->use_10_for_ms = 0;
@@ -2771,7 +2796,7 @@ scsi_device_set_state(struct scsi_device *sdev, enum scsi_device_state state)
 			goto illegal;
 		}
 		break;
-			
+
 	case SDEV_RUNNING:
 		switch (oldstate) {
 		case SDEV_CREATED:
@@ -3086,7 +3111,7 @@ static void scsi_wait_for_queuecommand(struct scsi_device *sdev)
  *	(which must be a legal transition).  When the device is in this
  *	state, only special requests will be accepted, all others will
  *	be deferred.  Since special requests may also be requeued requests,
- *	a successful return doesn't guarantee the device will be 
+ *	a successful return doesn't guarantee the device will be
  *	totally quiescent.
  *
  *	Must be called with user context, may sleep.
@@ -3213,10 +3238,10 @@ int scsi_internal_device_block_nowait(struct scsi_device *sdev)
 			return err;
 	}
 
-	/* 
+	/*
 	 * The device has transitioned to SDEV_BLOCK.  Stop the
 	 * block layer from calling the midlayer with this device's
-	 * request queue. 
+	 * request queue.
 	 */
 	if (q->mq_ops) {
 		blk_mq_quiesce_queue_nowait(q);
@@ -3266,7 +3291,7 @@ static int scsi_internal_device_block(struct scsi_device *sdev)
 
 	return err;
 }
- 
+
 void scsi_start_queue(struct scsi_device *sdev)
 {
 	struct request_queue *q = sdev->request_queue;

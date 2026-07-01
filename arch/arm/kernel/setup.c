@@ -558,11 +558,9 @@ void notrace cpu_init(void)
 	 * In Thumb-2, msr with an immediate value is not allowed.
 	 */
 #ifdef CONFIG_THUMB2_KERNEL
-#define PLC_l	"l"
-#define PLC_r	"r"
+#define PLC	"r"
 #else
-#define PLC_l	"I"
-#define PLC_r	"I"
+#define PLC	"I"
 #endif
 
 	/*
@@ -584,15 +582,15 @@ void notrace cpu_init(void)
 	"msr	cpsr_c, %9"
 	    :
 	    : "r" (stk),
-	      PLC_r (PSR_F_BIT | PSR_I_BIT | IRQ_MODE),
+	      PLC (PSR_F_BIT | PSR_I_BIT | IRQ_MODE),
 	      "I" (offsetof(struct stack, irq[0])),
-	      PLC_r (PSR_F_BIT | PSR_I_BIT | ABT_MODE),
+	      PLC (PSR_F_BIT | PSR_I_BIT | ABT_MODE),
 	      "I" (offsetof(struct stack, abt[0])),
-	      PLC_r (PSR_F_BIT | PSR_I_BIT | UND_MODE),
+	      PLC (PSR_F_BIT | PSR_I_BIT | UND_MODE),
 	      "I" (offsetof(struct stack, und[0])),
-	      PLC_r (PSR_F_BIT | PSR_I_BIT | FIQ_MODE),
+	      PLC (PSR_F_BIT | PSR_I_BIT | FIQ_MODE),
 	      "I" (offsetof(struct stack, fiq[0])),
-	      PLC_l (PSR_F_BIT | PSR_I_BIT | SVC_MODE)
+	      PLC (PSR_F_BIT | PSR_I_BIT | SVC_MODE)
 	    : "r14");
 #endif
 }
@@ -1084,8 +1082,6 @@ void __init hyp_mode_check(void)
 #endif
 }
 
-void __init __weak init_random_pool(void) { }
-
 void __init setup_arch(char **cmdline_p)
 {
 	const struct machine_desc *mdesc;
@@ -1105,7 +1101,11 @@ void __init setup_arch(char **cmdline_p)
 	}
 
 	machine_desc = mdesc;
+#ifdef CONFIG_OF
+	machine_name = of_flat_dt_get_machine_name();
+#else
 	machine_name = mdesc->name;
+#endif
 	dump_stack_set_arch_desc("%s", mdesc->name);
 
 	if (mdesc->reboot_mode != REBOOT_HARD)
@@ -1184,8 +1184,6 @@ void __init setup_arch(char **cmdline_p)
 
 	if (mdesc->init_early)
 		mdesc->init_early();
-
-	init_random_pool();
 }
 
 
@@ -1256,6 +1254,8 @@ static int c_show(struct seq_file *m, void *v)
 	int i, j;
 	u32 cpuid;
 
+	/* a hint message to notify that some process reads /proc/cpuinfo */
+	pr_debug("Dump cpuinfo\n");
 	for_each_online_cpu(i) {
 		/*
 		 * glibc reads /proc/cpuinfo to determine the number of
@@ -1264,6 +1264,9 @@ static int c_show(struct seq_file *m, void *v)
 		 */
 		seq_printf(m, "processor\t: %d\n", i);
 		cpuid = is_smp() ? per_cpu(cpu_data, i).cpuid : read_cpuid_id();
+		/* backward-compatibility for thrid-party applications */
+		seq_printf(m, "Processor\t: %s rev %d (%s)\n",
+			   cpu_name, cpuid & 15, elf_platform);
 		seq_printf(m, "model name\t: %s rev %d (%s)\n",
 			   cpu_name, cpuid & 15, elf_platform);
 

@@ -294,10 +294,8 @@ EXPORT_SYMBOL_GPL(fsg_lun_fsync_sub);
 void store_cdrom_address(u8 *dest, int msf, u32 addr)
 {
 	if (msf) {
-		/*
-		 * Convert to Minutes-Seconds-Frames.
-		 * Sector size is already set to 2048 bytes.
-		 */
+		/* Convert to Minutes-Seconds-Frames */
+		addr >>= 2;		/* Convert to 2048-byte frames */
 		addr += 2*75;		/* Lead-in occupies 2 seconds */
 		dest[3] = addr % 75;	/* Frames */
 		addr /= 75;
@@ -442,6 +440,29 @@ ssize_t fsg_store_file(struct fsg_lun *curlun, struct rw_semaphore *filesem,
 		LDBG(curlun, "eject attempt prevented\n");
 		return -EBUSY;				/* "Door is locked" */
 	}
+
+	pr_notice("%s file=%s, count=%d, curlun->cdrom=%d\n",
+			__func__, buf, (int)count, curlun->cdrom);
+
+	/*
+	 * WORKAROUND for Android:
+	 *   VOLD would clean the file path after switching to bicr.
+	 *   So when the lun is being a CD-ROM a.k.a. BICR.
+	 *   Don't clean the file path to empty.
+	 */
+	if (curlun->cdrom == 1 && count == 1)
+		return count;
+
+	/*
+	 * WORKAROUND: Should be closed the fsg lun for virtual cd-rom,
+	 * when switch to other usb functions.
+	 * Use the special keyword "off", because the init can
+	 * not parse the char '\n' in rc file and write into the sysfs.
+	 */
+	if (count == 3 &&
+			buf[0] == 'o' && buf[1] == 'f' && buf[2] == 'f' &&
+			fsg_lun_is_open(curlun))
+		((char *) buf)[0] = 0;
 
 	/* Remove a trailing newline */
 	if (count > 0 && buf[count-1] == '\n')

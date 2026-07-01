@@ -1,0 +1,256 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) 2021 MediaTek Inc.
+ */
+// gauge
+&bat_gm30 {
+    DISABLE_MTKBATTERY=<1>;
+};
+
+// hwinfo
+/ {
+     hwinfo_chg:HardwareInfo_chg {
+          compatible = "huaqin,hardinfo_charger";
+          status = "okay";
+          io-channels = <&adc 10>;
+          io-channel-names = "usb_burning_ntc";
+          usb-mos-crtl-gpio = <&pio 121 0x0>;
+          /* thermal */
+          /* Spruce code for OSPURCET-834 by tangsf2 at 2023.01.29 start */
+          battery,thermal-mitigation-20w = <4000000 3900000 3800000 3600000 3200000 2800000 2400000 2000000 1800000 1600000 1400000 1200000 1000000 800000 600000 500000 400000 300000>;
+          battery,thermal-mitigation-30w = <6000000 5450000 5300000 5000000 4600000 4200000 3800000 3400000 3200000 3000000 2800000 2600000 2400000 2400000 2200000 2100000 1800000 1500000>;
+          /* Spruce code for OSPURCET-834 by tangsf2 at 2023.01.29 end */
+     };
+};
+
+&i2c2{
+	mm8013: mm8013@55 {
+        compatible = "mediatek,mm8013";
+        reg = <0x55>;
+        status = "okay";
+	};
+};
+
+&lk_charger {
+    fast_charge_voltage = <3200000>; // precharge for lenovo of low bat threshold
+    DISABLE_MTKBATTERY=<1>;
+};
+
+// charge pump
+&i2c3 {
+     hqchgpump: hqchgpump@6F {
+          status = "okay";
+            compatible = "hq,chgpump-standalone";
+            reg = <0x6F>;
+
+            // sgm
+            interrupt-parent = <&pio>;
+            interrupts = <0 0>;            //irq num base on hardware design
+            sgm,irq-gpio = <&pio 20 0>;     //irq num base on hardware design
+            sgm,sgm41600,bat-ovp-disable = <1>;
+            sgm,sgm41600,bat-ocp-disable = <1>;
+            sgm,sgm41600,vdrop-ovp-disable = <1>;
+            sgm,sgm41600,bus-ovp-disable = <1>;
+            sgm,sgm41600,bus-ucp-disable = <1>;
+            sgm,sgm41600,bus-ocp-disable = <1>;
+            sgm,sgm41600,bat-ovp-threshold = <4525000>; //uV
+            sgm,sgm41600,bat-ocp-threshold = <7000000>;  //uA
+            sgm,sgm41600,ac-ovp-threshold = <12>;  //V
+            sgm,sgm41600,bus-ovp-threshold = <11000000>;  //uV
+            sgm,sgm41600,bus-ocp-threshold = <3500000>;   //uA
+            sgm,mode = <0>; // 0 alone 1 master 2 slave
+
+            //sc
+            sc,sc854x,irq-gpio = <&pio 20 IRQ_TYPE_EDGE_FALLING>;
+            sc,sc854x,bat-ovp-disable = <1>;
+            sc,sc854x,bat-ocp-disable = <1>;
+            sc,sc854x,vdrop-ovp-disable = <1>;
+            sc,sc854x,bus-ovp-disable = <1>;
+            sc,sc854x,bus-ucp-disable = <1>;
+            sc,sc854x,bus-ocp-disable = <1>;
+            sc,sc854x,bat-ovp-threshold = <4525>;/*mv*/
+            sc,sc854x,bat-ocp-threshold = <7000>;/*ma*/
+            sc,sc854x,ac-ovp-threshold = <12000>;/*mv*/
+            sc,sc854x,bus-ovp-threshold = <11000>;/*mv*/
+            sc,sc854x,bus-ocp-threshold = <3500>;/*ma*/
+            sc,sc854x,sense-resistor-mohm = <5>;/*mΩ*/
+            sc,mode = <9>; // sc,sc8549-standalone
+     };
+};
+
+// buck charge
+&i2c2 {
+     sc8960x@6B {
+          compatible = "sc,sc89601d";
+          reg = <0x6B>;
+          interrupt-parent = <&pio>;
+          interrupts = <111 IRQ_TYPE_EDGE_FALLING>;
+          sc,irq-gpio = <&pio 29 0>;
+          charger_name = "secondary_chg";
+          sc,chg-en-gpio = <&pio 111 0>;
+
+          sc,sc8960x,charge-detect-enable;
+          sc,sc8960x,usb-vlim = <4600>;
+          sc,sc8960x,usb-ilim = <500>;
+          sc,sc8960x,usb-vreg = <4400>;
+          sc,sc8960x,usb-ichg = <500>;
+
+          sc,sc8960x,precharge-current = <256>;
+          sc,sc8960x,termination-current = <60>;
+          sc,sc8960x,boost-voltage = <4998>;
+          sc,sc8960x,boost-current = <1200>;
+          sc,sc8960x,stat-pin-ctrl = <3>;
+
+          sc,sc8960x,vac-ovp-threshold = <14000>;
+     };
+
+     sgm4154x: sgm4154x@1A {
+          status = "okay";
+
+          compatible = "sgm,sgm41513D";
+          reg = <0x1A>;
+          interrupt-parent = <&pio>;
+          interrupts = <0 0>;           //irq num base on hardware design
+          sgm,irq-gpio = <&pio 29 0>;     //irq num base on hardware design
+          sgm,chg-en-gpio = <&pio 111 0>;   //gpio num base on hardware design  1.MTK parent node name is pio  2.QUALCOMM parent node name is tlmm or other
+
+          /* sw jeita  parameter customer defined*/
+          enable_sw_jeita;
+          jeita_temp_above_t4_cv = <0>;
+          jeita_temp_t3_to_t4_cv = <4100000>;
+          jeita_temp_t2_to_t3_cv = <4350000>;
+          jeita_temp_t1_to_t2_cv = <4350000>;
+          jeita_temp_t0_to_t1_cv = <0>;
+          jeita_temp_below_t0_cv = <0>;
+
+          jeita_temp_above_t4_cc_current = <0>;
+          jeita_temp_t3_to_t4_cc_current = <1000000>;
+          jeita_temp_t2_to_t3_cc_current = <1250000>;
+          jeita_temp_t1_to_t2_cc_current = <1000000>;
+          jeita_temp_below_t0_cc_current = <0>;
+
+          temp_t4_thres = <50>;
+          temp_t4_thres_minus_x_degree = <48>;
+          temp_t3_thres = <45>;
+          temp_t3_thres_minus_x_degree = <45>;
+          temp_t2_thres = <20>;
+          temp_t2_thres_plus_x_degree = <15>;
+          temp_t1_thres = <0>;
+          temp_t1_thres_plus_x_degree = <0>;
+          temp_t0_thres = <0>;
+          temp_t0_thres_plus_x_degree = <2>;
+          temp_neg_10_thres = <0>;
+     };
+};
+/* Spruce code for OSPURCET-344 by zhangjb18 at 2022.12.07 start */
+&mt6360_chg {
+     cv = <4450000>;
+     ieoc = <500000>;
+};
+/* Spruce code for OSPURCET-344 by zhangjb18 at 2022.12.07 end */
+&lk_charger {
+    fast_charge_voltage = <3200000>; // precharge for lenovo of low bat threshold
+};
+
+&charger {
+     /* common */
+     algorithm_name = "DualSwitchCharging";
+     battery_cv = <4450000>;
+     max_charger_voltage = <12000000>;
+     /* charging current */
+     ac_charger_current = <2050000>;
+     ac_charger_input_current = <2100000>;
+
+     /* sw jeita */
+     // common
+     temp_t4_thres = <50>;
+     temp_t4_thres_minus_x_degree = <48>;
+     temp_t3_thres = <45>;
+     temp_t3_thres_minus_x_degree = <43>;
+     temp_t2_thres = <15>;
+     temp_t2_thres_plus_x_degree = <17>;
+     temp_t1_thres = <5>;
+     temp_t1_thres_plus_x_degree = <7>;
+     temp_t0_thres = <0>;
+     /* Spruce code for OSPURCET-3205 by gujy6 at 2023.03.13 start */
+     temp_t0_thres_plus_x_degree = <0>;
+     /* Spruce code for OSPURCET-3205 by gujy6 at 2023.03.13 end */
+     temp_neg_10_thres = <0>;
+     // common charger jeita
+     enable_sw_jeita;
+     jeita_temp_above_t4_cv = <4200000>;
+     jeita_temp_t3_to_t4_cv = <4200000>;
+     jeita_temp_t2_to_t3_cv = <4450000>;
+     jeita_temp_t1_to_t2_cv = <4450000>;
+     jeita_temp_t0_to_t1_cv = <4450000>;
+     jeita_temp_below_t0_cv = <4450000>;
+     jeita_temp_above_t4_cur = <0>;
+     jeita_temp_t3_to_t4_cur = <3000000>;
+     jeita_temp_t2_to_t3_cur = <6000000>;
+     jeita_temp_t1_to_t2_cur = <3000000>;
+     jeita_temp_t0_to_t1_cur = <3000000>;
+     jeita_temp_below_t0_cur = <0>;
+
+     ffc_battery_cv = <4480000>;
+     ffc_vrecharge = <4380000>;
+     ffc_jeita_temp_above_t3_cv = <4200000>;
+     ffc_jeita_temp_t0_to_t3_cv = <4480000>;
+     ffc_jeita_temp_t0_to_t2_0_4420mv_cur = <3000000>;
+     ffc_jeita_temp_t0_to_t2_4420_4480mv_cur = <1500000>;
+     ffc_jeita_temp_t0_to_t2_cutoff_cur = <1200000>;
+     ffc_jeita_temp_t2_to_t3_cutoff_cur = <1700000>;
+     ffc_jeita_temp_t3_to_t4_cutoff_cur = <500000>;
+
+
+     /* pe+2.0 */
+     enable_pe_2;
+     /* dual charger */
+     /* Spruce code for OSPURCET-344 by zhangjb18 at 2022.12.27 start */
+     chg1_ta_ac_charger_current = <2500000>;
+     chg2_ta_ac_charger_current = <1500000>;
+     /* Spruce code for OSPURCET-344 by zhangjb18 at 2022.12.27 end */
+     /* Spruce code for OSPURCET-344 by zhangjb18 at 2022.12.08 start */
+     ta_stop_battery_soc = <95>;
+     /* Spruce code for OSPURCET-344 by zhangjb18 at 2022.12.08 end */
+
+     /* PD */
+     pd_vbus_low_bound = <5000000>;
+     pd_vbus_upper_bound = <10000000>;
+     /* Spruce code for OSPURCET-344 by zhangjb18 at 2022.12.08 start */
+     pd_stop_battery_soc = <95>;
+     /* Spruce code for OSPURCET-344 by zhangjb18 at 2022.12.08 end */
+};
+
+/*Spruce code for OSPURCET-40 by liugong2 at 20221201 start*/
+&adc {
+     ntc-table = <99912021 99905474 99898495 99891059 99883140 99874710				/* -40 */
+		  99865741 99856204 99846066 99835295 99823858 99811717
+		  99498836 99785176 99770696 99755354 99739070 99721830
+		  99703586 99684289 99663885 99642320 99619538 99595481
+		  99570086 99543292 99515031 99485236 99453835 99420756
+		  99385923 99349199 99310558 99269914 99227182 99182270
+		  99135149 99085662 99033710 98979189 98921995 98861952
+		  98799013 98733063 98663985 98591656 98515952 98436745
+		  98353902 98267290 98176770 98082200 97983437 97880331
+		  97772733 97660487 97543385 97421326 97294147 97161683
+		  97023765 96880242 96730920 96575619 96414167 96246382
+		  96072084 95891441 95703946 95509418 95307666 95098545
+		  94881844 94657374 94424963 94184422 93935570 93678228
+		  93412217 93137356 92853467 92560633 92258481 91946872
+		  91625611 91294589 90953287 90601850 90245135 89868052
+		  89486340 89093685 88689923 88275348 87849890 87413432
+		  86965923 86507310 86037589 85556661 85064524 84561252
+		  84046694 83521016 82984153 82436273 81878535 81309992
+		  80730684 80140684 79540218 78927886 78305251 77672395
+		  77029601 76377120 75716824 75047223 74368883 73681675
+		  72986075 72282353 71570927 70851744 70125537 69392588
+		  68652852 67907210 67155483 66398774 65636753 64872696
+		  64105047 63333186 62558055 61780256 60996854 60210801
+		  59423330 58634429 57844412 57057301 56269748 55482839
+		  54696649 53911688 53128423 52346688 51567385 50790189
+		  50016548 49246007 48479315 47716509 46957536 46203725
+		  45458748 44718768 43984234 42533147 41812988 41099506
+		  40392043 39691670 38997586
+                 >; /* 125 */
+};
+/*Spruce code for OSPURCET-40 by liugong2 at 20221201 end*/

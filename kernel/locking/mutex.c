@@ -28,7 +28,6 @@
 #include <linux/interrupt.h>
 #include <linux/debug_locks.h>
 #include <linux/osq_lock.h>
-#include <linux/delay.h>
 
 #ifdef CONFIG_DEBUG_MUTEXES
 # include "mutex-debug.h"
@@ -178,7 +177,7 @@ static inline bool __mutex_waiter_is_first(struct mutex *lock, struct mutex_wait
  * Add @waiter to a given location in the lock wait_list and set the
  * FLAG_WAITERS flag if it's the first waiter.
  */
-static void
+static void __sched
 __mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 		   struct list_head *list)
 {
@@ -187,16 +186,6 @@ __mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 	list_add_tail(&waiter->list, list);
 	if (__mutex_waiter_is_first(lock, waiter))
 		__mutex_set_flag(lock, MUTEX_FLAG_WAITERS);
-}
-
-static void
-__mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter)
-{
-	list_del(&waiter->list);
-	if (likely(list_empty(&lock->wait_list)))
-		__mutex_clear_flag(lock, MUTEX_FLAGS);
-
-	debug_mutex_remove_waiter(lock, waiter, current);
 }
 
 /*
@@ -664,17 +653,6 @@ mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 		 * values at the cost of a few extra spins.
 		 */
 		cpu_relax();
-
-		/*
-		 * On arm systems, we must slow down the waiter's repeated
-		 * aquisition of spin_mlock and atomics on the lock count, or
-		 * we risk starving out a thread attempting to release the
-		 * mutex. The mutex slowpath release must take spin lock
-		 * wait_lock. This spin lock can share a monitor with the
-		 * other waiter atomics in the mutex data structure, so must
-		 * take care to rate limit the waiters.
-		 */
-		udelay(1);
 	}
 
 	if (!waiter)
@@ -923,6 +901,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		    struct ww_acquire_ctx *ww_ctx, const bool use_ww_ctx)
 {
 	struct mutex_waiter waiter;
+	bool first = false;
 	struct ww_mutex *ww;
 	int ret;
 
@@ -997,8 +976,6 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 
 	set_current_state(state);
 	for (;;) {
-		bool first;
-
 		/*
 		 * Once we hold wait_lock, we're serialized against
 		 * mutex_unlock() handing the lock off to us, do a trylock
@@ -1027,9 +1004,15 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		spin_unlock(&lock->wait_lock);
 		schedule_preempt_disabled();
 
-		first = __mutex_waiter_is_first(lock, &waiter);
-		if (first)
-			__mutex_set_flag(lock, MUTEX_FLAG_HANDOFF);
+		/*
+		 * ww_mutex needs to always recheck its position since its waiter
+		 * list is not FIFO ordered.
+		 */
+		if (ww_ctx || !first) {
+			first = __mutex_waiter_is_first(lock, &waiter);
+			if (first)
+				__mutex_set_flag(lock, MUTEX_FLAG_HANDOFF);
+		}
 
 		set_current_state(state);
 		/*
@@ -1057,7 +1040,9 @@ acquired:
 			__ww_mutex_check_waiters(lock, ww_ctx);
 	}
 
-	__mutex_remove_waiter(lock, &waiter);
+	mutex_remove_waiter(lock, &waiter, current);
+	if (likely(list_empty(&lock->wait_list)))
+		__mutex_clear_flag(lock, MUTEX_FLAGS);
 
 	debug_mutex_free_waiter(&waiter);
 
@@ -1074,7 +1059,7 @@ skip_wait:
 
 err:
 	__set_current_state(TASK_RUNNING);
-	__mutex_remove_waiter(lock, &waiter);
+	mutex_remove_waiter(lock, &waiter, current);
 err_early_kill:
 	spin_unlock(&lock->wait_lock);
 	debug_mutex_free_waiter(&waiter);

@@ -623,7 +623,7 @@ fec_enet_txq_put_data_tso(struct fec_enet_priv_tx_q *txq, struct sk_buff *skb,
 		dev_kfree_skb_any(skb);
 		if (net_ratelimit())
 			netdev_err(ndev, "Tx DMA memory map failed\n");
-		return NETDEV_TX_OK;
+		return NETDEV_TX_BUSY;
 	}
 
 	bdp->cbd_datlen = cpu_to_fec16(size);
@@ -685,7 +685,7 @@ fec_enet_txq_put_hdr_tso(struct fec_enet_priv_tx_q *txq,
 			dev_kfree_skb_any(skb);
 			if (net_ratelimit())
 				netdev_err(ndev, "Tx DMA memory map failed\n");
-			return NETDEV_TX_OK;
+			return NETDEV_TX_BUSY;
 		}
 	}
 
@@ -1441,7 +1441,7 @@ fec_enet_rx_queue(struct net_device *ndev, int budget, u16 queue_id)
 			break;
 		pkt_received++;
 
-		writel(FEC_ENET_RXF_GET(queue_id), fep->hwp + FEC_IEVENT);
+		writel(FEC_ENET_RXF, fep->hwp + FEC_IEVENT);
 
 		/* Check for errors. */
 		status ^= BD_ENET_RX_LAST;
@@ -1798,7 +1798,6 @@ static void fec_enet_adjust_link(struct net_device *ndev)
 
 		/* if any of the above changed restart the FEC */
 		if (status_change) {
-			netif_stop_queue(ndev);
 			napi_disable(&fep->napi);
 			netif_tx_lock_bh(ndev);
 			fec_restart(ndev);
@@ -1808,7 +1807,6 @@ static void fec_enet_adjust_link(struct net_device *ndev)
 		}
 	} else {
 		if (fep->link) {
-			netif_stop_queue(ndev);
 			napi_disable(&fep->napi);
 			netif_tx_lock_bh(ndev);
 			fec_stop(ndev);
@@ -3223,9 +3221,7 @@ static int fec_enet_init(struct net_device *ndev)
 		return ret;
 	}
 
-	ret = fec_enet_alloc_queue(ndev);
-	if (ret)
-		return ret;
+	fec_enet_alloc_queue(ndev);
 
 	bd_size = (fep->total_tx_ring_size + fep->total_rx_ring_size) * dsize;
 
@@ -3233,8 +3229,7 @@ static int fec_enet_init(struct net_device *ndev)
 	cbd_base = dmam_alloc_coherent(&fep->pdev->dev, bd_size, &bd_dma,
 				       GFP_KERNEL);
 	if (!cbd_base) {
-		ret = -ENOMEM;
-		goto free_queue_mem;
+		return -ENOMEM;
 	}
 
 	memset(cbd_base, 0, bd_size);
@@ -3314,10 +3309,6 @@ static int fec_enet_init(struct net_device *ndev)
 		fec_enet_update_ethtool_stats(ndev);
 
 	return 0;
-
-free_queue_mem:
-	fec_enet_free_queue(ndev);
-	return ret;
 }
 
 #ifdef CONFIG_OF
@@ -3723,9 +3714,7 @@ fec_drv_remove(struct platform_device *pdev)
 
 	ret = pm_runtime_get_sync(&pdev->dev);
 	if (ret < 0)
-		dev_err(&pdev->dev,
-			"Failed to resume device in remove callback (%pe)\n",
-			ERR_PTR(ret));
+		return ret;
 
 	cancel_work_sync(&fep->tx_timeout_work);
 	fec_ptp_stop(pdev);
@@ -3737,18 +3726,13 @@ fec_drv_remove(struct platform_device *pdev)
 	if (of_phy_is_fixed_link(np))
 		of_phy_deregister_fixed_link(np);
 	of_node_put(fep->phy_node);
+	free_netdev(ndev);
 
-	/* After pm_runtime_get_sync() failed, the clks are still off, so skip
-	 * disabling them again.
-	 */
-	if (ret >= 0) {
-		clk_disable_unprepare(fep->clk_ahb);
-		clk_disable_unprepare(fep->clk_ipg);
-	}
+	clk_disable_unprepare(fep->clk_ahb);
+	clk_disable_unprepare(fep->clk_ipg);
 	pm_runtime_put_noidle(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 
-	free_netdev(ndev);
 	return 0;
 }
 

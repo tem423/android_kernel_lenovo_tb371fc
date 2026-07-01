@@ -54,8 +54,10 @@ static const struct mtk_ethtool_stats {
 };
 
 static const char * const mtk_clks_source_name[] = {
-	"ethif", "esw", "gp0", "gp1", "gp2", "trgpll", "sgmii_tx250m",
-	"sgmii_rx250m", "sgmii_cdr_ref", "sgmii_cdr_fb", "sgmii_ck", "eth2pll"
+	"ethif", "sgmiitop", "esw", "gp0", "gp1", "gp2", "fe", "trgpll",
+	"sgmii_tx250m", "sgmii_rx250m", "sgmii_cdr_ref", "sgmii_cdr_fb",
+	"sgmii2_tx250m", "sgmii2_rx250m", "sgmii2_cdr_ref", "sgmii2_cdr_fb",
+	"sgmii_ck", "eth2pll",
 };
 
 void mtk_w32(struct mtk_eth *eth, u32 val, unsigned reg)
@@ -165,47 +167,6 @@ static void mtk_gmac0_rgmii_adjust(struct mtk_eth *eth, int speed)
 	mtk_w32(eth, val, TRGMII_TCK_CTRL);
 }
 
-static void mtk_gmac_sgmii_hw_setup(struct mtk_eth *eth, int mac_id)
-{
-	u32 val;
-
-	/* Setup the link timer and QPHY power up inside SGMIISYS */
-	regmap_write(eth->sgmiisys, SGMSYS_PCS_LINK_TIMER,
-		     SGMII_LINK_TIMER_DEFAULT);
-
-	regmap_read(eth->sgmiisys, SGMSYS_SGMII_MODE, &val);
-	val |= SGMII_REMOTE_FAULT_DIS;
-	regmap_write(eth->sgmiisys, SGMSYS_SGMII_MODE, val);
-
-	regmap_read(eth->sgmiisys, SGMSYS_PCS_CONTROL_1, &val);
-	val |= SGMII_AN_RESTART;
-	regmap_write(eth->sgmiisys, SGMSYS_PCS_CONTROL_1, val);
-
-	regmap_read(eth->sgmiisys, SGMSYS_QPHY_PWR_STATE_CTRL, &val);
-	val &= ~SGMII_PHYA_PWD;
-	regmap_write(eth->sgmiisys, SGMSYS_QPHY_PWR_STATE_CTRL, val);
-
-	/* Determine MUX for which GMAC uses the SGMII interface */
-	if (MTK_HAS_CAPS(eth->soc->caps, MTK_DUAL_GMAC_SHARED_SGMII)) {
-		regmap_read(eth->ethsys, ETHSYS_SYSCFG0, &val);
-		val &= ~SYSCFG0_SGMII_MASK;
-		val |= !mac_id ? SYSCFG0_SGMII_GMAC1 : SYSCFG0_SGMII_GMAC2;
-		regmap_write(eth->ethsys, ETHSYS_SYSCFG0, val);
-
-		dev_info(eth->dev, "setup shared sgmii for gmac=%d\n",
-			 mac_id);
-	}
-
-	/* Setup the GMAC1 going through SGMII path when SoC also support
-	 * ESW on GMAC1
-	 */
-	if (MTK_HAS_CAPS(eth->soc->caps, MTK_GMAC1_ESW | MTK_GMAC1_SGMII) &&
-	    !mac_id) {
-		mtk_w32(eth, 0, MTK_MAC_MISC);
-		dev_info(eth->dev, "setup gmac1 going through sgmii");
-	}
-}
-
 static void mtk_phy_link_adjust(struct net_device *dev)
 {
 	struct mtk_mac *mac = netdev_priv(dev);
@@ -304,6 +265,7 @@ static int mtk_phy_connect(struct net_device *dev)
 	struct mtk_eth *eth;
 	struct device_node *np;
 	u32 val;
+	int err;
 
 	eth = mac->hw;
 	np = of_parse_phandle(mac->of_node, "phy-handle", 0);
@@ -313,6 +275,10 @@ static int mtk_phy_connect(struct net_device *dev)
 	if (!np)
 		return -ENODEV;
 
+	err = mtk_setup_hw_path(eth, mac->id, of_get_phy_mode(np));
+	if (err)
+		goto err_phy;
+
 	mac->ge_mode = 0;
 	switch (of_get_phy_mode(np)) {
 	case PHY_INTERFACE_MODE_TRGMII:
@@ -321,12 +287,10 @@ static int mtk_phy_connect(struct net_device *dev)
 	case PHY_INTERFACE_MODE_RGMII_RXID:
 	case PHY_INTERFACE_MODE_RGMII_ID:
 	case PHY_INTERFACE_MODE_RGMII:
-		break;
 	case PHY_INTERFACE_MODE_SGMII:
-		if (MTK_HAS_CAPS(eth->soc->caps, MTK_SGMII))
-			mtk_gmac_sgmii_hw_setup(eth, mac->id);
 		break;
 	case PHY_INTERFACE_MODE_MII:
+	case PHY_INTERFACE_MODE_GMII:
 		mac->ge_mode = 1;
 		break;
 	case PHY_INTERFACE_MODE_REVMII:
@@ -595,17 +559,6 @@ static inline void mtk_rx_get_desc(struct mtk_rx_dma *rxd,
 	rxd->rxd2 = READ_ONCE(dma_rxd->rxd2);
 	rxd->rxd3 = READ_ONCE(dma_rxd->rxd3);
 	rxd->rxd4 = READ_ONCE(dma_rxd->rxd4);
-}
-
-static void *mtk_max_lro_buf_alloc(gfp_t gfp_mask)
-{
-	unsigned int size = mtk_max_frag_size(MTK_MAX_LRO_RX_LENGTH);
-	unsigned long data;
-
-	data = __get_free_pages(gfp_mask | __GFP_COMP | __GFP_NOWARN,
-				get_order(size));
-
-	return (void *)data;
 }
 
 /* the qdma core needs scratch memory to be setup */
@@ -1016,10 +969,7 @@ static int mtk_poll_rx(struct napi_struct *napi, int budget,
 			goto release_desc;
 
 		/* alloc new buffer */
-		if (ring->frag_size <= PAGE_SIZE)
-			new_data = napi_alloc_frag(ring->frag_size);
-		else
-			new_data = mtk_max_lro_buf_alloc(GFP_ATOMIC);
+		new_data = napi_alloc_frag(ring->frag_size);
 		if (unlikely(!new_data)) {
 			netdev->stats.rx_dropped++;
 			goto release_desc;
@@ -1326,10 +1276,7 @@ static int mtk_rx_alloc(struct mtk_eth *eth, int ring_no, int rx_flag)
 		return -ENOMEM;
 
 	for (i = 0; i < rx_dma_size; i++) {
-		if (ring->frag_size <= PAGE_SIZE)
-			ring->data[i] = netdev_alloc_frag(ring->frag_size);
-		else
-			ring->data[i] = mtk_max_lro_buf_alloc(GFP_KERNEL);
+		ring->data[i] = netdev_alloc_frag(ring->frag_size);
 		if (!ring->data[i])
 			return -ENOMEM;
 	}
@@ -1592,9 +1539,6 @@ static int mtk_hwlro_get_fdir_entry(struct net_device *dev,
 	struct ethtool_rx_flow_spec *fsp =
 		(struct ethtool_rx_flow_spec *)&cmd->fs;
 
-	if (fsp->location >= ARRAY_SIZE(mac->hwlro_ip))
-		return -EINVAL;
-
 	/* only tcp dst ipv4 is meaningful, others are meaningless */
 	fsp->flow_type = TCP_V4_FLOW;
 	fsp->h_u.tcp_ip4_spec.ip4dst = ntohl(mac->hwlro_ip[fsp->location]);
@@ -1621,9 +1565,6 @@ static int mtk_hwlro_get_fdir_all(struct net_device *dev,
 	int i;
 
 	for (i = 0; i < MTK_MAX_LRO_IP_CNT; i++) {
-		if (cnt == cmd->rule_cnt)
-			return -EMSGSIZE;
-
 		if (mac->hwlro_ip[i]) {
 			rule_locs[cnt] = i;
 			cnt++;
@@ -1807,8 +1748,8 @@ static void mtk_poll_controller(struct net_device *dev)
 
 static int mtk_start_dma(struct mtk_eth *eth)
 {
-	u32 rx_2b_offset = (NET_IP_ALIGN == 2) ? MTK_RX_2B_OFFSET : 0;
 	int err;
+	u32 rx_2b_offet = (NET_IP_ALIGN == 2) ? MTK_RX_2B_OFFSET : 0;
 
 	err = mtk_dma_init(eth);
 	if (err) {
@@ -1824,7 +1765,7 @@ static int mtk_start_dma(struct mtk_eth *eth)
 		MTK_QDMA_GLO_CFG);
 
 	mtk_w32(eth,
-		MTK_RX_DMA_EN | rx_2b_offset |
+		MTK_RX_DMA_EN | rx_2b_offet |
 		MTK_RX_BT_32DWORDS | MTK_MULTI_EN,
 		MTK_PDMA_GLO_CFG);
 
@@ -2514,14 +2455,26 @@ static int mtk_probe(struct platform_device *pdev)
 		return PTR_ERR(eth->ethsys);
 	}
 
-	if (MTK_HAS_CAPS(eth->soc->caps, MTK_SGMII)) {
-		eth->sgmiisys =
-		syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
-						"mediatek,sgmiisys");
-		if (IS_ERR(eth->sgmiisys)) {
-			dev_err(&pdev->dev, "no sgmiisys regmap found\n");
-			return PTR_ERR(eth->sgmiisys);
+	if (MTK_HAS_CAPS(eth->soc->caps, MTK_INFRA)) {
+		eth->infra = syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
+							"mediatek,infracfg");
+		if (IS_ERR(eth->infra)) {
+			dev_info(&pdev->dev, "no ethsys regmap found\n");
+			return PTR_ERR(eth->infra);
 		}
+	}
+
+	if (MTK_HAS_CAPS(eth->soc->caps, MTK_SGMII)) {
+		eth->sgmii = devm_kzalloc(eth->dev, sizeof(*eth->sgmii),
+								GFP_KERNEL);
+		if (!eth->sgmii)
+			return -ENOMEM;
+
+		err = mtk_sgmii_init(eth->sgmii, pdev->dev.of_node,
+							eth->soc->ana_rgc3);
+
+		if (err)
+			return err;
 	}
 
 	if (eth->soc->required_pctl) {
@@ -2651,29 +2604,39 @@ static int mtk_remove(struct platform_device *pdev)
 }
 
 static const struct mtk_soc_data mt2701_data = {
-	.caps = MTK_GMAC1_TRGMII | MTK_HWLRO,
+	.caps = MT7623_CAPS | MTK_HWLRO,
 	.required_clks = MT7623_CLKS_BITMAP,
 	.required_pctl = true,
 };
 
 static const struct mtk_soc_data mt7622_data = {
-	.caps = MTK_DUAL_GMAC_SHARED_SGMII | MTK_GMAC1_ESW | MTK_HWLRO,
+	.ana_rgc3 = 0x2028,
+	.caps = MT7622_CAPS | MTK_HWLRO,
 	.required_clks = MT7622_CLKS_BITMAP,
 	.required_pctl = false,
 };
 
 static const struct mtk_soc_data mt7623_data = {
-	.caps = MTK_GMAC1_TRGMII | MTK_HWLRO,
+	.caps = MT7623_CAPS | MTK_HWLRO,
 	.required_clks = MT7623_CLKS_BITMAP,
 	.required_pctl = true,
+};
+
+static const struct mtk_soc_data leopard_data = {
+	.ana_rgc3 = 0x128,
+	.caps = LEOPARD_CAPS | MTK_HWLRO,
+	.required_clks = LEOPARD_CLKS_BITMAP,
+	.required_pctl = false,
 };
 
 const struct of_device_id of_mtk_match[] = {
 	{ .compatible = "mediatek,mt2701-eth", .data = &mt2701_data},
 	{ .compatible = "mediatek,mt7622-eth", .data = &mt7622_data},
 	{ .compatible = "mediatek,mt7623-eth", .data = &mt7623_data},
+	{ .compatible = "mediatek,mt7629-eth", .data = &leopard_data},
 	{},
 };
+
 MODULE_DEVICE_TABLE(of, of_mtk_match);
 
 static struct platform_driver mtk_driver = {

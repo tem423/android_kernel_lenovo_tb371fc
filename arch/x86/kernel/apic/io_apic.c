@@ -1958,8 +1958,7 @@ static struct irq_chip ioapic_chip __read_mostly = {
 	.irq_set_affinity	= ioapic_set_affinity,
 	.irq_retrigger		= irq_chip_retrigger_hierarchy,
 	.irq_get_irqchip_state	= ioapic_irq_get_chip_state,
-	.flags			= IRQCHIP_SKIP_SET_WAKE |
-				  IRQCHIP_AFFINITY_PRE_STARTUP,
+	.flags			= IRQCHIP_SKIP_SET_WAKE,
 };
 
 static struct irq_chip ioapic_ir_chip __read_mostly = {
@@ -1972,8 +1971,7 @@ static struct irq_chip ioapic_ir_chip __read_mostly = {
 	.irq_set_affinity	= ioapic_set_affinity,
 	.irq_retrigger		= irq_chip_retrigger_hierarchy,
 	.irq_get_irqchip_state	= ioapic_irq_get_chip_state,
-	.flags			= IRQCHIP_SKIP_SET_WAKE |
-				  IRQCHIP_AFFINITY_PRE_STARTUP,
+	.flags			= IRQCHIP_SKIP_SET_WAKE,
 };
 
 static inline void init_IO_APIC_traps(void)
@@ -2449,21 +2447,17 @@ static int io_apic_get_redir_entries(int ioapic)
 
 unsigned int arch_dynirq_lower_bound(unsigned int from)
 {
-	unsigned int ret;
-
 	/*
 	 * dmar_alloc_hwirq() may be called before setup_IO_APIC(), so use
 	 * gsi_top if ioapic_dynirq_base hasn't been initialized yet.
 	 */
-	ret = ioapic_dynirq_base ? : gsi_top;
-
+	if (!ioapic_initialized)
+		return gsi_top;
 	/*
-	 * For DT enabled machines ioapic_dynirq_base is irrelevant and
-	 * always 0. gsi_top can be 0 if there is no IO/APIC registered.
-	 * 0 is an invalid interrupt number for dynamic allocations. Return
-	 * @from instead.
+	 * For DT enabled machines ioapic_dynirq_base is irrelevant and not
+	 * updated. So simply return @from if ioapic_dynirq_base == 0.
 	 */
-	return ret ? : from;
+	return ioapic_dynirq_base ? : from;
 }
 
 #ifdef CONFIG_X86_32

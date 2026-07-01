@@ -4,7 +4,6 @@
  *
  * Copyright (C) 2011 Texas Instruments, Inc.
  * Copyright (C) 2011 Google, Inc.
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
  * All rights reserved.
  */
 
@@ -42,9 +41,7 @@ struct rpmsg_channel_info {
  * rpmsg_device - device that belong to the rpmsg bus
  * @dev: the device struct
  * @id: device id (used to match between rpmsg drivers and devices)
- * @driver_override: driver name to force a match; do not set directly,
- *                   because core frees it; use driver_set_override() to
- *                   set or clear it.
+ * @driver_override: driver name to force a match
  * @src: local address
  * @dst: destination address
  * @ept: the rpmsg endpoint of this channel
@@ -53,7 +50,7 @@ struct rpmsg_channel_info {
 struct rpmsg_device {
 	struct device dev;
 	struct rpmsg_device_id id;
-	const char *driver_override;
+	char *driver_override;
 	u32 src;
 	u32 dst;
 	struct rpmsg_endpoint *ept;
@@ -63,14 +60,12 @@ struct rpmsg_device {
 };
 
 typedef int (*rpmsg_rx_cb_t)(struct rpmsg_device *, void *, int, void *, u32);
-typedef int (*rpmsg_rx_sig_t)(struct rpmsg_device *, u32, u32);
 
 /**
  * struct rpmsg_endpoint - binds a local rpmsg address to its user
  * @rpdev: rpmsg channel device
  * @refcount: when this drops to zero, the ept is deallocated
  * @cb: rx callback handler
- * @sig_cb: rx serial signal handler
  * @cb_lock: must be taken before accessing/changing @cb
  * @addr: local rpmsg address
  * @priv: private data for the driver's use
@@ -93,7 +88,6 @@ struct rpmsg_endpoint {
 	struct rpmsg_device *rpdev;
 	struct kref refcount;
 	rpmsg_rx_cb_t cb;
-	rpmsg_rx_sig_t sig_cb;
 	struct mutex cb_lock;
 	u32 addr;
 	void *priv;
@@ -108,7 +102,6 @@ struct rpmsg_endpoint {
  * @probe: invoked when a matching rpmsg channel (i.e. device) is found
  * @remove: invoked when the rpmsg channel is removed
  * @callback: invoked when an inbound message is received on the channel
- * @signals: invoked when a serial signal change is received on the channel
  */
 struct rpmsg_driver {
 	struct device_driver drv;
@@ -116,13 +109,10 @@ struct rpmsg_driver {
 	int (*probe)(struct rpmsg_device *dev);
 	void (*remove)(struct rpmsg_device *dev);
 	int (*callback)(struct rpmsg_device *, void *, int, void *, u32);
-	int (*signals)(struct rpmsg_device *rpdev, u32 old, u32 new);
 };
 
 #if IS_ENABLED(CONFIG_RPMSG)
 
-int rpmsg_register_device_override(struct rpmsg_device *rpdev,
-				   const char *driver_override);
 int register_rpmsg_device(struct rpmsg_device *dev);
 void unregister_rpmsg_device(struct rpmsg_device *dev);
 int __register_rpmsg_driver(struct rpmsg_driver *drv, struct module *owner);
@@ -145,16 +135,7 @@ int rpmsg_trysend_offchannel(struct rpmsg_endpoint *ept, u32 src, u32 dst,
 __poll_t rpmsg_poll(struct rpmsg_endpoint *ept, struct file *filp,
 			poll_table *wait);
 
-int rpmsg_get_sigs(struct rpmsg_endpoint *ept, u32 *lsigs, u32 *rsigs);
-int rpmsg_set_sigs(struct rpmsg_endpoint *ept, u32 sigs);
-
 #else
-
-static inline int rpmsg_register_device_override(struct rpmsg_device *rpdev,
-						 const char *driver_override)
-{
-	return -ENXIO;
-}
 
 static inline int register_rpmsg_device(struct rpmsg_device *dev)
 {
@@ -196,7 +177,7 @@ static inline struct rpmsg_endpoint *rpmsg_create_ept(struct rpmsg_device *rpdev
 	/* This shouldn't be possible */
 	WARN_ON(1);
 
-	return NULL;
+	return ERR_PTR(-ENXIO);
 }
 
 static inline int rpmsg_send(struct rpmsg_endpoint *ept, void *data, int len)
@@ -259,23 +240,6 @@ static inline __poll_t rpmsg_poll(struct rpmsg_endpoint *ept,
 	WARN_ON(1);
 
 	return 0;
-}
-
-static inline int rpmsg_get_sigs(struct rpmsg_endpoint *ept, u32 *lsigs,
-				 u32 *rsigs)
-{
-	/* This shouldn't be possible */
-	WARN_ON(1);
-
-	return -ENXIO;
-}
-
-static inline int rpmsg_set_sigs(struct rpmsg_endpoint *ept, u32 sigs)
-{
-	/* This shouldn't be possible */
-	WARN_ON(1);
-
-	return -ENXIO;
 }
 
 #endif /* IS_ENABLED(CONFIG_RPMSG) */

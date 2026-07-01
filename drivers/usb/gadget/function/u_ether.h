@@ -16,7 +16,7 @@
 #include <linux/usb/cdc.h>
 #include <linux/netdevice.h>
 
-#define QMULT_DEFAULT 5
+#define QMULT_DEFAULT 50
 
 /*
  * dev_addr: initial value
@@ -25,18 +25,51 @@
  */
 #define USB_ETHERNET_MODULE_PARAMETERS() \
 	static unsigned qmult = QMULT_DEFAULT;				\
-	module_param(qmult, uint, S_IRUGO|S_IWUSR);			\
+	module_param(qmult, uint, 0644);			\
 	MODULE_PARM_DESC(qmult, "queue length multiplier at high/super speed");\
 									\
 	static char *dev_addr;						\
-	module_param(dev_addr, charp, S_IRUGO);				\
+	module_param(dev_addr, charp, 0644);				\
 	MODULE_PARM_DESC(dev_addr, "Device Ethernet Address");		\
 									\
 	static char *host_addr;						\
-	module_param(host_addr, charp, S_IRUGO);			\
+	module_param(host_addr, charp, 0644);			\
 	MODULE_PARM_DESC(host_addr, "Host Ethernet Address")
 
-struct eth_dev;
+struct eth_dev {
+	spinlock_t		lock;
+	struct gether		*port_usb;
+	struct net_device	*net;
+	struct usb_gadget	*gadget;
+	spinlock_t		req_lock;	/* guard {tx}_reqs */
+	spinlock_t		reqrx_lock;	/* guard {rx}_reqs */
+	struct list_head	tx_reqs, rx_reqs;
+	atomic_t		tx_qlen;
+#define TX_REQ_THRESHOLD	1
+	int			no_tx_req_used;
+	int			tx_skb_hold_count;
+	u32			tx_req_bufsize;
+	struct sk_buff_head	rx_frames;
+	unsigned int		qmult;
+	unsigned int		header_len;
+	unsigned int		ul_max_pkts_per_xfer;
+	unsigned int		dl_max_pkts_per_xfer;
+	uint32_t		dl_max_xfer_size;
+	struct sk_buff		*(*wrap)(struct gether *link,
+			struct sk_buff *skb);
+	int			(*unwrap)(struct gether *link,
+						struct sk_buff *skb,
+						struct sk_buff_head *list);
+	struct work_struct	work;
+	struct work_struct	rx_work;
+	struct work_struct	rx_work1;
+	struct work_struct	rps_map_work;
+	unsigned long		todo;
+#define	WORK_RX_MEMORY		0
+	bool			zlp;
+	u8			host_mac[ETH_ALEN];
+	u8			dev_mac[ETH_ALEN];
+};
 
 /*
  * This represents the USB side of an "ethernet" link, managed by a USB
@@ -69,9 +102,9 @@ struct gether {
 	bool				is_fixed;
 	u32				fixed_out_len;
 	u32				fixed_in_len;
-	unsigned int			ul_max_pkts_per_xfer;
-/* Max number of SKB packets to be used to create Multi Packet RNDIS */
-#define TX_SKB_HOLD_THRESHOLD		3
+	unsigned int		ul_max_pkts_per_xfer;
+	unsigned int		dl_max_pkts_per_xfer;
+	unsigned int		dl_max_transfer_len;
 	bool				multi_pkt_xfer;
 	bool				supports_multi_frame;
 	struct sk_buff			*(*wrap)(struct gether *port,
@@ -83,6 +116,7 @@ struct gether {
 	/* called on network open/close */
 	void				(*open)(struct gether *);
 	void				(*close)(struct gether *);
+	struct rndis_packet_msg_type	*header;
 };
 
 #define	DEFAULT_FILTER	(USB_CDC_PACKET_TYPE_BROADCAST \
@@ -248,24 +282,12 @@ unsigned gether_get_qmult(struct net_device *net);
  */
 int gether_get_ifname(struct net_device *net, char *name, int len);
 
-/**
- * gether_get_ul_max_pkts_per_xfer - get max pks/xfer for UL aggrregarion
- * @net: device representing this link
- */
-unsigned int gether_get_ul_max_pkts_per_xfer(struct net_device *net);
-
-/**
- * gether_set_ul_max_pkts_per_xfer - set max pks/xfer for UL aggrregarion
- * @net: device representing this link
- * @max: max number of packets
- */
-int gether_set_ul_max_pkts_per_xfer(struct net_device *net, unsigned int max);
-
 void gether_cleanup(struct eth_dev *dev);
 
 /* connect/disconnect is handled by individual functions */
 struct net_device *gether_connect(struct gether *);
 void gether_disconnect(struct gether *);
+void gether_update_dl_max_xfer_size(struct gether *link, uint32_t s);
 
 /* Some controllers can't support CDC Ethernet (ECM) ... */
 static inline bool can_support_ecm(struct usb_gadget *gadget)
@@ -280,4 +302,18 @@ static inline bool can_support_ecm(struct usb_gadget *gadget)
 	return true;
 }
 
+extern unsigned int rndis_test_last_resp_id;
+extern unsigned int rndis_test_last_msg_id;
+extern unsigned long rndis_test_reset_msg_cnt;
+extern unsigned long rndis_test_rx_usb_in;
+extern unsigned long rndis_test_rx_net_out;
+extern unsigned long rndis_test_rx_nomem;
+extern unsigned long rndis_test_rx_error;
+extern unsigned long rndis_test_tx_net_in;
+extern unsigned long rndis_test_tx_busy;
+extern unsigned long rndis_test_tx_stop;
+extern unsigned long rndis_test_tx_nomem;
+extern unsigned long rndis_test_tx_usb_out;
+extern unsigned long rndis_test_tx_complete;
+extern void rx_fill(struct eth_dev *dev, gfp_t gfp_flags);
 #endif /* __U_ETHER_H */

@@ -136,6 +136,14 @@ struct vivid_cec_work {
 struct vivid_dev {
 	unsigned			inst;
 	struct v4l2_device		v4l2_dev;
+#ifdef CONFIG_MEDIA_CONTROLLER
+	struct media_device		mdev;
+	struct media_pad		vid_cap_pad;
+	struct media_pad		vid_out_pad;
+	struct media_pad		vbi_cap_pad;
+	struct media_pad		vbi_out_pad;
+	struct media_pad		sdr_cap_pad;
+#endif
 	struct v4l2_ctrl_handler	ctrl_hdl_user_gen;
 	struct v4l2_ctrl_handler	ctrl_hdl_user_vid;
 	struct v4l2_ctrl_handler	ctrl_hdl_user_aud;
@@ -550,7 +558,5 @@ static inline bool vivid_is_hdmi_out(const struct vivid_dev *dev)
 {
 	return dev->output_type[dev->output] == HDMI;
 }
-
-bool vivid_validate_fb(const struct v4l2_framebuffer *a);
 
 #endif

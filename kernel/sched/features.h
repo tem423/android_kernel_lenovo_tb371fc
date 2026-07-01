@@ -50,7 +50,7 @@ SCHED_FEAT(NONTASK_CAPACITY, true)
  * Queue remote wakeups on the target CPU and process them
  * using the scheduler IPI. Reduces rq->lock contention/bounces.
  */
-SCHED_FEAT(TTWU_QUEUE, false)
+SCHED_FEAT(TTWU_QUEUE, true)
 
 /*
  * When doing wakeups, attempt to limit superfluous scans of the LLC domain.
@@ -78,7 +78,7 @@ SCHED_FEAT(WARN_DOUBLE_CLOCK, false)
 SCHED_FEAT(RT_PUSH_IPI, true)
 #endif
 
-SCHED_FEAT(RT_RUNTIME_SHARE, true)
+SCHED_FEAT(RT_RUNTIME_SHARE, false)
 SCHED_FEAT(LB_MIN, false)
 SCHED_FEAT(ATTACH_AGE_LOAD, true)
 
@@ -93,9 +93,14 @@ SCHED_FEAT(UTIL_EST, true)
 SCHED_FEAT(UTIL_EST_FASTUP, true)
 
 /*
+ * Utilization clamping lazy update.
+ */
+SCHED_FEAT(UCLAMP_LAZY_UPDATE, false)
+
+/*
  * Fast pre-selection of CPU candidates for EAS.
  */
-SCHED_FEAT(FIND_BEST_TARGET, true)
+SCHED_FEAT(FIND_BEST_TARGET, false)
 
 /*
  * Energy aware scheduling algorithm choices:
@@ -105,6 +110,11 @@ SCHED_FEAT(FIND_BEST_TARGET, true)
  *   those tasks through the mainline slow path.
  */
 SCHED_FEAT(EAS_PREFER_IDLE, true)
+#ifdef CONFIG_MTK_SCHED_LB_ENHANCEMENT
+SCHED_FEAT(SCHED_MTK_EAS, true)
+#else
+SCHED_FEAT(SCHED_MTK_EAS, false)
+#endif
 
 /*
  * Request max frequency from schedutil whenever a RT task is running.

@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: GPL-2.0-only
 #
 # Multifunction miscellaneous devices
 #
@@ -815,6 +814,48 @@ config MFD_MAX8998
 	  additional drivers must be enabled in order to use the functionality
 	  of the device.
 
+config MFD_MT6358
+	tristate "MediaTek MT6358 PMIC Support"
+	select MFD_CORE
+	select IRQ_DOMAIN
+	help
+	  Say yes here to add support for MediaTek MT6358 PMIC. This is
+	  a Power Management IC. This driver provides common support for
+	  accessing the device; additional drivers must be enabled in order
+	  to use the functionality of the device.
+
+config MFD_MT6362
+	tristate "MT6362 SPMI PMIC"
+	depends on OF
+	depends on SPMI
+	select REGMAP_SPMI
+	select REGMAP_IRQ
+	help
+	  This enables support for the Mediatek SPMI PMICs.
+	  These PMICs are currently used with the Mediatek series of
+	  SoCs.  Note, that this will only be useful paired with descriptions
+	  of the independent functions as children nodes in the device tree.
+
+config MFD_MT6360
+	tristate "Mediatek MT6360 SubPMIC"
+	select MFD_CORE
+	select REGMAP_I2C
+	depends on I2C
+	help
+	  Say Y here to enable MT6360 PMU/PMIC/LDO functional support.
+	  PMU part include charger, flashlight, rgb led
+	  PMIC part include 2-channel BUCKs and 2-channel LDOs
+	  LDO part include 4-channel LDOs
+
+config MT6358_MISC
+	tristate "MediaTek MT6358 MISC FUNCTIONS Support"
+	depends on MFD_MT6358
+	help
+	  Say yes here to add support for MediaTek MT6358 misc functions
+	  support. And this driver only provides some additional functions
+	  and depends on PMIC rtc module. it can be provide some APIs to
+	  other modules and store some misc information to rtc registers.
+
 config MFD_MT6397
 	tristate "MediaTek MT6397 PMIC Support"
 	select MFD_CORE
@@ -932,17 +973,6 @@ config MFD_PM8XXX
 	  Say M here if you want to include support for PM8xxx chips as a
 	  module. This will build a module called "pm8xxx-core".
 
-config MFD_I2C_PMIC
-	tristate "QTI I2C PMIC support"
-	depends on I2C && OF
-	select IRQ_DOMAIN
-	select REGMAP_I2C
-	help
-	  This enables support for controlling Qualcomm Technologies, Inc.
-	  PMICs over I2C. The driver controls interrupts, and provides register
-	  access for all of the device's peripherals.  Some QTI PMIC chips
-	  support communication over both I2C and SPMI.
-
 config MFD_QCOM_RPM
 	tristate "Qualcomm Resource Power Manager (RPM)"
 	depends on ARCH_QCOM && OF
@@ -971,6 +1001,20 @@ config MFD_SPMI_PMIC
 
 	  Say M here if you want to include support for the SPMI PMIC
 	  series as a module.  The module will be called "qcom-spmi-pmic".
+
+config MTK_MFD_SPMI_PMIC
+	tristate "Mediatek SPMI PMICs"
+	depends on OF
+	depends on SPMI
+	select REGMAP_SPMI
+	help
+	  This enables support for the Mediatek SPMI PMICs.
+	  These PMICs are currently used with the MT63xx series of
+	  SoCs.  Note, that this will only be useful paired with descriptions
+	  of the independent functions as children nodes in the device tree.
+
+	  Say M here if you want to include support for the SPMI PMIC
+	  series as a module.  The module will be called "mtk-spmi-pmic".
 
 config MFD_RDC321X
 	tristate "RDC R-321x southbridge"
@@ -1259,7 +1303,6 @@ config MFD_DAVINCI_VOICECODEC
 
 config MFD_TI_AM335X_TSCADC
 	tristate "TI ADC / Touch Screen chip support"
-	depends on ARCH_OMAP2PLUS || ARCH_K3 || COMPILE_TEST
 	select MFD_CORE
 	select REGMAP
 	select REGMAP_MMIO

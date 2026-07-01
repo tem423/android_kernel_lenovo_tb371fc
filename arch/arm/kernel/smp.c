@@ -51,9 +51,6 @@
 #include <asm/virt.h>
 #include <asm/mach/arch.h>
 #include <asm/mpu.h>
-#include <soc/qcom/minidump.h>
-
-#include <soc/qcom/lpm_levels.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/ipi.h>
@@ -252,6 +249,17 @@ int __cpu_disable(void)
 	if (ret)
 		return ret;
 
+#ifdef CONFIG_MTK_GIC_TARGET_ALL
+	{
+		unsigned long flags;
+
+		/*
+		 * we disable irq here to ensure target all feature
+		 * did not bother this cpu after status as offline
+		 */
+		local_irq_save(flags);
+	}
+#endif
 	/*
 	 * Take this CPU offline.  Once we clear this, we can't return,
 	 * and we must not schedule until we're ready to give up the cpu.
@@ -544,18 +552,6 @@ static void smp_cross_call(const struct cpumask *target, unsigned int ipinr)
 	__smp_cross_call(target, ipinr);
 }
 
-DEFINE_PER_CPU(bool, pending_ipi);
-static void smp_cross_call_common(const struct cpumask *cpumask,
-						unsigned int func)
-{
-	unsigned int cpu;
-
-	for_each_cpu(cpu, cpumask)
-		per_cpu(pending_ipi, cpu) = true;
-
-	smp_cross_call(cpumask, func);
-}
-
 void show_ipi_list(struct seq_file *p, int prec)
 {
 	unsigned int cpu, i;
@@ -584,32 +580,31 @@ u64 smp_irq_stat_cpu(unsigned int cpu)
 
 void arch_send_call_function_ipi_mask(const struct cpumask *mask)
 {
-	smp_cross_call_common(mask, IPI_CALL_FUNC);
+	smp_cross_call(mask, IPI_CALL_FUNC);
 }
 
 void arch_send_wakeup_ipi_mask(const struct cpumask *mask)
 {
-	smp_cross_call_common(mask, IPI_WAKEUP);
+	smp_cross_call(mask, IPI_WAKEUP);
 }
 
 void arch_send_call_function_single_ipi(int cpu)
 {
-	smp_cross_call_common(cpumask_of(cpu), IPI_CALL_FUNC);
+	smp_cross_call(cpumask_of(cpu), IPI_CALL_FUNC);
 }
 
 #ifdef CONFIG_IRQ_WORK
 void arch_irq_work_raise(void)
 {
 	if (arch_irq_work_has_interrupt())
-		smp_cross_call_common(cpumask_of(smp_processor_id()),
-				IPI_IRQ_WORK);
+		smp_cross_call(cpumask_of(smp_processor_id()), IPI_IRQ_WORK);
 }
 #endif
 
 #ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
 void tick_broadcast(const struct cpumask *mask)
 {
-	smp_cross_call_common(mask, IPI_TIMER);
+	smp_cross_call(mask, IPI_TIMER);
 }
 #endif
 
@@ -618,17 +613,16 @@ static DEFINE_RAW_SPINLOCK(stop_lock);
 /*
  * ipi_cpu_stop - handle IPI from smp_send_stop()
  */
-static void ipi_cpu_stop(unsigned int cpu, struct pt_regs *regs)
+static void ipi_cpu_stop(unsigned int cpu)
 {
 	if (system_state <= SYSTEM_RUNNING) {
 		raw_spin_lock(&stop_lock);
 		pr_crit("CPU%u: stopping\n", cpu);
 		dump_stack();
-		dump_stack_minidump(regs->uregs[13]);
 		raw_spin_unlock(&stop_lock);
 	}
 
-	set_cpu_active(cpu, false);
+	set_cpu_online(cpu, false);
 
 	local_fiq_disable();
 	local_irq_disable();
@@ -664,8 +658,11 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 {
 	unsigned int cpu = smp_processor_id();
 	struct pt_regs *old_regs = set_irq_regs(regs);
+	unsigned long long ts = 0;
+	int count = 0;
 
 	if ((unsigned)ipinr < NR_IPI) {
+		check_start_time_preempt(ipi_note, count, ts, ipinr);
 		trace_ipi_entry_rcuidle(ipi_types[ipinr]);
 		__inc_irq_stat(cpu, ipi_irqs[ipinr]);
 	}
@@ -694,7 +691,7 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 
 	case IPI_CPU_STOP:
 		irq_enter();
-		ipi_cpu_stop(cpu, regs);
+		ipi_cpu_stop(cpu);
 		irq_exit();
 		break;
 
@@ -726,10 +723,11 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 		break;
 	}
 
-	if ((unsigned)ipinr < NR_IPI)
+	if ((unsigned int)ipinr < NR_IPI) {
 		trace_ipi_exit_rcuidle(ipi_types[ipinr]);
-
-	per_cpu(pending_ipi, cpu) = false;
+		check_process_time_preempt(ipi_note, count, "ipi %d %s", ts,
+					   ipinr, ipi_types[ipinr]);
+	}
 	set_irq_regs(old_regs);
 }
 
@@ -737,7 +735,7 @@ void smp_send_reschedule(int cpu)
 {
 	if (__smp_update_ipi_history_cb)
 		__smp_update_ipi_history_cb(cpu);
-	smp_cross_call_common(cpumask_of(cpu), IPI_RESCHEDULE);
+	smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE);
 }
 
 void smp_send_stop(void)
@@ -748,14 +746,14 @@ void smp_send_stop(void)
 	cpumask_copy(&mask, cpu_online_mask);
 	cpumask_clear_cpu(smp_processor_id(), &mask);
 	if (!cpumask_empty(&mask))
-		smp_cross_call_common(&mask, IPI_CPU_STOP);
+		smp_cross_call(&mask, IPI_CPU_STOP);
 
 	/* Wait up to one second for other CPUs to stop */
 	timeout = USEC_PER_SEC;
-	while (num_active_cpus() > 1 && timeout--)
+	while (num_online_cpus() > 1 && timeout--)
 		udelay(1);
 
-	if (num_active_cpus() > 1)
+	if (num_online_cpus() > 1)
 		pr_warn("SMP: failed to stop secondary CPUs\n");
 }
 

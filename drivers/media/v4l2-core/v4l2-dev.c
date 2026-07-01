@@ -444,8 +444,22 @@ static int v4l2_release(struct inode *inode, struct file *filp)
 	struct video_device *vdev = video_devdata(filp);
 	int ret = 0;
 
-	if (vdev->fops->release)
-		ret = vdev->fops->release(filp);
+	/*
+	 * We need to serialize the release() with queueing new requests.
+	 * The release() may trigger the cancellation of a streaming
+	 * operation, and that should not be mixed with queueing a new
+	 * request at the same time.
+	 */
+	if (vdev->fops->release) {
+		if (v4l2_device_supports_requests(vdev->v4l2_dev)) {
+			mutex_lock(&vdev->v4l2_dev->mdev->req_queue_mutex);
+			ret = vdev->fops->release(filp);
+			mutex_unlock(&vdev->v4l2_dev->mdev->req_queue_mutex);
+		} else {
+			ret = vdev->fops->release(filp);
+		}
+	}
+
 	if (vdev->dev_debug & V4L2_DEV_DEBUG_FOP)
 		dprintk("%s: release\n",
 			video_device_node_name(vdev));
@@ -716,9 +730,6 @@ static void determine_valid_ioctls(struct video_device *vdev)
 		SET_VALID_IOCTL(ops, VIDIOC_ENUM_DV_TIMINGS, vidioc_enum_dv_timings);
 		SET_VALID_IOCTL(ops, VIDIOC_DV_TIMINGS_CAP, vidioc_dv_timings_cap);
 		SET_VALID_IOCTL(ops, VIDIOC_G_EDID, vidioc_g_edid);
-	} else {
-		/* ioctls valid for radio */
-		SET_VALID_IOCTL(ops, VIDIOC_DQBUF, vidioc_dqbuf);
 	}
 	if (is_tx && (is_radio || is_sdr)) {
 		/* radio transmitter only ioctls */

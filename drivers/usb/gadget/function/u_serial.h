@@ -12,7 +12,7 @@
 #include <linux/usb/composite.h>
 #include <linux/usb/cdc.h>
 
-#define MAX_U_SERIAL_PORTS	4
+#define MAX_U_SERIAL_PORTS	8
 
 struct f_serial_opts {
 	struct usb_function_instance func_inst;
@@ -50,8 +50,7 @@ struct gserial {
 };
 
 /* utilities to allocate/free request and buffer */
-struct usb_request *gs_alloc_req(struct usb_ep *ep, unsigned int len,
-					size_t extra_sz, gfp_t flags);
+struct usb_request *gs_alloc_req(struct usb_ep *ep, unsigned len, gfp_t flags);
 void gs_free_req(struct usb_ep *, struct usb_request *req);
 
 /* management of individual TTY ports */

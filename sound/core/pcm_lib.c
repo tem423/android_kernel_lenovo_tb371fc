@@ -359,8 +359,7 @@ static int snd_pcm_update_hw_ptr0(struct snd_pcm_substream *substream,
 		 * the elapsed time to detect xruns.
 		 */
 		jdelta = curr_jiffies - runtime->hw_ptr_jiffies;
-		if ((jdelta < runtime->hw_ptr_buffer_jiffies / 2) ||
-		    (runtime->hw_ptr_buffer_jiffies <= 0))
+		if (jdelta < runtime->hw_ptr_buffer_jiffies / 2)
 			goto no_delta_check;
 		hdelta = jdelta - delta * HZ / runtime->rate;
 		xrun_threshold = runtime->hw_ptr_buffer_jiffies / 2 + 1;
@@ -1723,11 +1722,6 @@ static int snd_pcm_lib_ioctl_channel_info(struct snd_pcm_substream *substream,
 	switch (runtime->access) {
 	case SNDRV_PCM_ACCESS_MMAP_INTERLEAVED:
 	case SNDRV_PCM_ACCESS_RW_INTERLEAVED:
-		if ((UINT_MAX/width) < info->channel) {
-			snd_printd("%s: integer overflow while multiply\n",
-				   __func__);
-			return -EINVAL;
-		}
 		info->first = info->channel * width;
 		info->step = runtime->channels * width;
 		break;
@@ -1735,12 +1729,6 @@ static int snd_pcm_lib_ioctl_channel_info(struct snd_pcm_substream *substream,
 	case SNDRV_PCM_ACCESS_RW_NONINTERLEAVED:
 	{
 		size_t size = runtime->dma_bytes / runtime->channels;
-
-		if ((size > 0) && ((UINT_MAX/(size * 8)) < info->channel)) {
-			snd_printd("%s: integer overflow while multiply\n",
-				   __func__);
-			return -EINVAL;
-		}
 		info->first = info->channel * size * 8;
 		info->step = width;
 		break;
@@ -1766,7 +1754,7 @@ static int snd_pcm_lib_ioctl_fifo_size(struct snd_pcm_substream *substream,
 		channels = params_channels(params);
 		frame_size = snd_pcm_format_size(format, channels);
 		if (frame_size > 0)
-			params->fifo_size /= frame_size;
+			params->fifo_size /= (unsigned)frame_size;
 	}
 	return 0;
 }
@@ -1863,7 +1851,7 @@ static int wait_for_avail(struct snd_pcm_substream *substream,
 		if (substream->wait_time) {
 			wait_time = substream->wait_time;
 		} else {
-			wait_time = 10;
+			wait_time = 2; /* 10 Modified by MTK */
 
 			if (runtime->rate) {
 				long t = runtime->period_size * 2 /
@@ -2081,9 +2069,6 @@ static int pcm_sanity_check(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime;
 	if (PCM_RUNTIME_CHECK(substream))
 		return -ENXIO;
-	/* TODO: consider and -EINVAL here */
-	if (substream->hw_no_buffer)
-		snd_printd("%s: warning this PCM is host less\n", __func__);
 	runtime = substream->runtime;
 	if (snd_BUG_ON(!substream->ops->copy_user && !runtime->dma_area))
 		return -EINVAL;
@@ -2239,15 +2224,10 @@ snd_pcm_sframes_t __snd_pcm_lib_xfer(struct snd_pcm_substream *substream,
 			snd_pcm_stream_unlock_irq(substream);
 			return -EINVAL;
 		}
-		if (!atomic_inc_unless_negative(&runtime->buffer_accessing)) {
-			err = -EBUSY;
-			goto _end_unlock;
-		}
 		snd_pcm_stream_unlock_irq(substream);
 		err = writer(substream, appl_ofs, data, offset, frames,
 			     transfer);
 		snd_pcm_stream_lock_irq(substream);
-		atomic_dec(&runtime->buffer_accessing);
 		if (err < 0)
 			goto _end_unlock;
 		err = pcm_accessible_state(runtime);
@@ -2505,8 +2485,10 @@ int snd_pcm_add_chmap_ctls(struct snd_pcm *pcm, int stream,
 	}
 	info->kctl->private_free = pcm_chmap_ctl_private_free;
 	err = snd_ctl_add(pcm->card, info->kctl);
-	if (err < 0)
-		return err;
+	if (err < 0) {
+		kfree(info);
+		return -ENOMEM;
+	}
 	pcm->streams[stream].chmap_kctl = info->kctl;
 	if (info_ret)
 		*info_ret = info;
