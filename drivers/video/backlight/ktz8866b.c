@@ -1,4 +1,4 @@
-#include "ktz8866.h"
+#include <linux/platform_data/ktz8866.h>
 
 /* ===== 全局变量 ===== */
 extern struct ktz8866 *g_ktz_b;
