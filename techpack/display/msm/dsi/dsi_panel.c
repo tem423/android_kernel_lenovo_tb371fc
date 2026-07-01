@@ -19,8 +19,8 @@
 #include <linux/backlight.h>
 #include <linux/device.h>
 
-/* 声明外部backlight_class */
-extern struct class *backlight_class;
+/* 声明外部backlight_class（在backlight core中定义并导出） */
+extern struct class backlight_class;
 
 /**
  * topology is currently defined by a set of following 3 values:
@@ -743,6 +743,7 @@ error:
 /* 辅助函数：通过名称查找backlight设备（4.19内核兼容） */
 static int backlight_dev_match_name(struct device *dev, const void *data)
 {
+    struct backlight_device *bd = to_backlight_device(dev);
     /* 使用dev_name获取设备名称 */
     return !strcmp(dev_name(dev), (const char *)data);
 }
@@ -760,7 +761,7 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl, u8 hbm)
     DSI_DEBUG("backlight type:%d lvl:%d\n", bl->type, bl_lvl);
 
     /* 控制KTZ8866A芯片（B芯片由A芯片自动同步） */
-    dev = class_find_device(backlight_class, NULL, "ktz8866a",
+    dev = class_find_device(&backlight_class, NULL, "ktz8866a",
                             backlight_dev_match_name);
     if (dev) {
         ktz_bd = to_backlight_device(dev);
