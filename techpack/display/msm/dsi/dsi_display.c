@@ -4474,12 +4474,6 @@ static int dsi_display_dfps_calc_front_porch(
 		return -EINVAL;
 	}
 
-	/*
-	 * Keep clock, other porches constant, use new fps, calc front porch
-	 * new_vtotal = old_vtotal * (old_fps / new_fps )
-	 * new_vfp - old_vfp = new_vtotal - old_vtotal
-	 * new_vfp = old_vfp + old_vtotal * ((old_fps - new_fps)/ new_fps)
-	 */
 	diff = abs(old_fps - new_fps);
 	add_porches = mult_frac(b_total, diff, new_fps);
 
@@ -4492,14 +4486,17 @@ static int dsi_display_dfps_calc_front_porch(
 			new_fps, a_total, b_total, b_fp, b_fp_new);
 
 	if (b_fp_new < 0) {
-		DSI_ERR("Invalid new_hfp calcluated%d\n", b_fp_new);
-		return -EINVAL;
+		DSI_INFO("DFPS calculation failed (%d), using Tianma defaults\n", b_fp_new);
+		/* 天马 NT36532 面板：
+		 * HFP = 201, VFP = 26
+		 * 原始 b_fp > 100 是 HFP，否则是 VFP
+		 */
+		if (b_fp > 100)
+			b_fp_new = 201;
+		else
+			b_fp_new = 26;
 	}
 
-	/**
-	 * TODO: To differentiate from clock method when communicating to the
-	 * other components, perhaps we should set clk here to original value
-	 */
 	*b_fp_out = b_fp_new;
 
 	return 0;
