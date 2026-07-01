@@ -11,7 +11,7 @@ static void init_bl_level_remap(void)
 {
     int i;
     for (i = 0; i <= BL_LEVEL_MAX; i++) {
-        bl_level_remap[i] = i;  /* 直接映射，不右移 */
+        bl_level_remap[i] = i;
     }
     bl_level_remap[0] = 0;
     pr_info("ktz8866a: bl_level_remap initialized (0-2047)\n");
@@ -49,13 +49,12 @@ static void ktz8866_set_brightness_locked(struct ktz8866 *bd, int brightness, bo
         return;
 
     mapped = bl_level_remap[brightness];
-    v[0] = mapped & 0x7;          /* LSB: bit 0-2 */
-    v[1] = (mapped >> 3) & 0xff;  /* MSB: bit 3-10 */
+    v[0] = mapped & 0x7;
+    v[1] = (mapped >> 3) & 0xff;
 
     dev_info(&bd->client->dev, "brightness=%d mapped=%d (0x%02x, 0x%02x)\n",
              brightness, mapped, v[0], v[1]);
 
-    /* 控制当前芯片 */
     if (mapped > 0) {
         ktz8866_writes(bd, KTZ8866_DISP_BL_ENABLE, 0x4f);
     } else {
@@ -66,7 +65,6 @@ static void ktz8866_set_brightness_locked(struct ktz8866 *bd, int brightness, bo
 
     bd->current_brightness = mapped;
 
-    /* 同步到B芯片 */
     if (sync_b && g_ktz_b && bd != g_ktz_b) {
         struct ktz8866 *b_chip = g_ktz_b;
         mutex_lock(&b_chip->lock);
@@ -85,11 +83,11 @@ static int ktz8866_backlight_notifier(struct notifier_block *nb,
     struct ktz8866 *ktz = container_of(nb, struct ktz8866, nb);
     int brightness;
 
-    if (!bd || action != BACKLIGHT_UPDATE_STATUS)
+    if (!bd || action != BACKLIGHT_UPDATE_SYSFS)  /* 4.19使用 BACKLIGHT_UPDATE_SYSFS */
         return NOTIFY_DONE;
 
-    /* 只拦截 panel0-backlight */
-    if (strcmp(bd->name, "panel0-backlight") != 0)
+    /* 使用 dev_name() 获取设备名称 */
+    if (strcmp(dev_name(&bd->dev), "panel0-backlight") != 0)
         return NOTIFY_DONE;
 
     brightness = bd->props.brightness;
@@ -98,7 +96,6 @@ static int ktz8866_backlight_notifier(struct notifier_block *nb,
 
     dev_info(&ktz->client->dev, "intercept panel0-backlight: brightness=%d\n", brightness);
 
-    /* 控制A芯片，同时同步B芯片 */
     ktz8866_set_brightness_locked(ktz, brightness, true);
 
     mutex_unlock(&ktz->lock);
@@ -157,7 +154,6 @@ static int ktz8866a_probe(struct i2c_client *client, const struct i2c_device_id 
     if (ret < 0)
         return ret;
 
-    /* A芯片申请GPIO */
     ret = devm_gpio_request_one(&client->dev, ktz->pdata->hw_en_gpio,
                                 GPIOF_DIR_OUT | GPIOF_INIT_HIGH, "KTZ8866_HW_EN");
     if (ret < 0) {
