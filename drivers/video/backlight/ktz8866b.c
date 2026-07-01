@@ -1,38 +1,39 @@
+/*
+ * KTZ8866B Driver - Backlight only
+ * compatible: "ktz,ktz8866b"
+ */
+
 #include <linux/platform_data/ktz8866.h>
 
 /* ===== 全局变量 ===== */
-extern struct ktz8866 *bd_b;
-extern struct ktz8866_status ktz8866_status;
+extern struct ktz8866 *g_ktz_a;
+static struct ktz8866 *g_ktz_b = NULL;
 
-/* ===== B芯片Probe ===== */
+/* ===== Probe ===== */
 static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-    struct ktz8866 *bd;
+    struct ktz8866 *ktz;
+    int ret;
 
-    dev_info(&client->dev, "KTZ8866B probing on %d-0x%02x\n",
+    dev_info(&client->dev, "KTZ8866B probing on bus %d, addr 0x%02x\n",
              client->adapter->nr, client->addr);
 
-    bd = devm_kzalloc(&client->dev, sizeof(*bd), GFP_KERNEL);
-    if (!bd)
+    ktz = devm_kzalloc(&client->dev, sizeof(*ktz), GFP_KERNEL);
+    if (!ktz)
         return -ENOMEM;
 
-    bd->client = client;
-    bd->chip = KTZ8866_B;
-    bd->pdata = NULL;
-    mutex_init(&bd->lock);
+    ktz->client = client;
+    ktz->pdata = NULL;  /* B芯片不申请GPIO */
+    ktz->is_a = false;
+    mutex_init(&ktz->lock);
 
-    if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
-        dev_err(&client->dev, "I2C doesn't support SMBUS_BYTE_DATA\n");
-        return -EIO;
-    }
+    /* 初始化背光（不初始化BIAS） */
+    ret = ktz8866_init_backlight(client);
+    if (ret < 0)
+        return ret;
 
-    bd_b = bd;
-    i2c_set_clientdata(client, bd);
-    ktz8866_status.ktz8866b_init = true;
-
-    if (ktz8866_status.ktz8866a_init && ktz8866_status.ktz8866b_init) {
-        dev_info(&client->dev, "Both chips initialized\n");
-    }
+    g_ktz_b = ktz;
+    i2c_set_clientdata(client, ktz);
 
     dev_info(&client->dev, "KTZ8866B probed successfully (slave)\n");
     return 0;
@@ -40,28 +41,33 @@ static int ktz8866b_probe(struct i2c_client *client, const struct i2c_device_id 
 
 static int ktz8866b_remove(struct i2c_client *client)
 {
-    bd_b = NULL;
-    ktz8866_status.ktz8866b_init = false;
+    struct ktz8866 *ktz = i2c_get_clientdata(client);
+
+    if (ktz) {
+        /* 关闭背光 */
+        ktz8866_write_byte(client, KTZ8866_REG_ENABLE, 0x00);
+        g_ktz_b = NULL;
+    }
     return 0;
 }
 
 static const struct i2c_device_id ktz8866b_ids[] = {
-    { "ktz8866b", KTZ8866_B },
+    { "ktz8866b", 0 },
     { },
 };
 MODULE_DEVICE_TABLE(i2c, ktz8866b_ids);
 
-static const struct of_device_id ktz8866b_match_table[] = {
+static const struct of_device_id ktz8866b_match[] = {
     { .compatible = "ktz,ktz8866b" },
     { },
 };
-MODULE_DEVICE_TABLE(of, ktz8866b_match_table);
+MODULE_DEVICE_TABLE(of, ktz8866b_match);
 
 static struct i2c_driver ktz8866b_driver = {
     .driver = {
         .name = "ktz8866b",
         .owner = THIS_MODULE,
-        .of_match_table = ktz8866b_match_table,
+        .of_match_table = ktz8866b_match,
     },
     .probe = ktz8866b_probe,
     .remove = ktz8866b_remove,
