@@ -851,16 +851,23 @@ static int subsys_shutdown(const struct subsys_desc *subsys, bool force_stop)
 
 static int subsys_powerup(const struct subsys_desc *subsys)
 {
-	struct pil_tz_data *d = subsys_to_data(subsys);
-	int ret = 0;
+    struct pil_tz_data *d = subsys_to_data(subsys);
+    int ret = 0;
 
-	if (subsys->stop_ack_irq)
-		reinit_completion(&d->stop_ack);
+    // ===== 新增：跳过 ADSP 自动加载 =====
+    if (subsys->name && !strcmp(subsys->name, "adsp")) {
+        pr_info("ADSP: auto-boot disabled, waiting for userspace\n");
+        return 0;
+    }
+    // ====================================
 
-	d->desc.fw_name = subsys->fw_name;
-	ret = pil_boot(&d->desc);
+    if (subsys->stop_ack_irq)
+        reinit_completion(&d->stop_ack);
 
-	return ret;
+    d->desc.fw_name = subsys->fw_name;
+    ret = pil_boot(&d->desc);
+
+    return ret;
 }
 
 static int subsys_ramdump(int enable, const struct subsys_desc *subsys)
