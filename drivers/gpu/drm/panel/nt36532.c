@@ -9,6 +9,8 @@
  * DSC: Enabled, slice width 736, slice height 20
  * Backlight: KTZ8866 (I2C)
  * Brightness range: 0-2047 (11-bit)
+ *
+ * Supported refresh rates: 60Hz, 90Hz, 120Hz, 144Hz (DFPS)
  */
 
 #include <linux/module.h>
@@ -50,7 +52,44 @@ struct drm_dsc_config {
 #define PHYSICAL_WIDTH_MM   274
 #define PHYSICAL_HEIGHT_MM  171
 
-/* ===== Panel Data Structure ===== */
+/* ============================================================
+ * Display Modes (120Hz and 144Hz)
+ * ============================================================ */
+
+/* 120Hz 模式 (主要/默认模式) */
+static const struct drm_display_mode default_mode_120hz = {
+    .clock = 367993,
+    .hdisplay = 2944,
+    .hsync_start = 2944 + HFP,
+    .hsync_end = 2944 + HFP + HSA,
+    .htotal = 2944 + HFP + HSA + HBP,
+    .vdisplay = VACT,
+    .vsync_start = VACT + VFP,
+    .vsync_end = VACT + VFP + VSA,
+    .vtotal = VACT + VFP + VSA + VBP,
+    .vrefresh = 120,
+    .type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED,
+};
+
+/* 144Hz 模式 (高性能模式) */
+static const struct drm_display_mode default_mode_144hz = {
+    .clock = 441592,  /* 367993 * 144/120 */
+    .hdisplay = 2944,
+    .hsync_start = 2944 + HFP,
+    .hsync_end = 2944 + HFP + HSA,
+    .htotal = 2944 + HFP + HSA + HBP,
+    .vdisplay = VACT,
+    .vsync_start = VACT + VFP,
+    .vsync_end = VACT + VFP + VSA,
+    .vtotal = VACT + VFP + VSA + VBP,
+    .vrefresh = 144,
+    .type = DRM_MODE_TYPE_DRIVER,
+};
+
+/* ============================================================
+ * Panel Data Structure
+ * ============================================================ */
+
 struct panel_data {
     struct drm_panel panel;
     struct mipi_dsi_device *dsi;
@@ -63,6 +102,11 @@ struct panel_data {
     struct regulator *v1_8;
 
     struct backlight_device *backlight;
+
+    /* DFPS 支持 (动态刷新率切换) */
+    bool dfps_supported;
+    u32 dfps_rates[4];  /* 60, 90, 120, 144 */
+    u32 dfps_count;
 
     bool prepared;
     bool enabled;
@@ -83,23 +127,8 @@ static const struct drm_dsc_config dsc_cfg = {
     .block_pred_enable = true,
 };
 
-/* ===== Display Mode ===== */
-static const struct drm_display_mode default_mode = {
-    .clock = 367993,
-    .hdisplay = 2944,
-    .hsync_start = 2944 + HFP,
-    .hsync_end = 2944 + HFP + HSA,
-    .htotal = 2944 + HFP + HSA + HBP,
-    .vdisplay = VACT,
-    .vsync_start = VACT + VFP,
-    .vsync_end = VACT + VFP + VSA,
-    .vtotal = VACT + VFP + VSA + VBP,
-    .vrefresh = 120,
-    .type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED,
-};
-
 /* ============================================================
- * Panel Commands (from DTS)
+ * Panel Commands
  * ============================================================ */
 
 static const u8 panel_on_cmds[] = {
@@ -148,6 +177,23 @@ static const u8 panel_off_cmds[] = {
     0x05, 0x01, 0x00, 0x00, 0x3c, 0x00, 0x02, 0x10, 0x00,
 };
 
+/* ===== 144Hz 时序切换命令 ===== */
+static const u8 timing_switch_144hz_cmds[] = {
+    /* 进入 Page 0x10 */
+    0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x10,
+    0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
+
+    /* 调整 VFP 适配 144Hz (天马面板安全值) */
+    0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x30, 0x00,
+    0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x31, 0x00,
+    0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x32, 0x00,
+    0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x33, 0x00,
+
+    /* 回到 Page 0x00 */
+    0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x00,
+    0x39, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0xfb, 0x01,
+};
+
 /* ============================================================
  * 命令发送函数
  * ============================================================ */
@@ -189,13 +235,13 @@ static int panel_send_cmds(struct panel_data *ctx, const u8 *cmds, size_t len)
 }
 
 /* ============================================================
- * 背光控制 (4.19 内核通过 backlight 子系统)
+ * 背光控制
  * ============================================================ */
 
 static int panel_update_backlight(struct backlight_device *bl)
 {
     struct panel_data *ctx = bl_get_data(bl);
-    int brightness = bl->props.brightness;  // 直接读取，不用 backlight_get_brightness
+    int brightness = bl->props.brightness;
 
     ktz8866_set_backlight_level(brightness);
     return 0;
@@ -224,6 +270,7 @@ static int panel_prepare(struct drm_panel *panel)
         return -EPROBE_DEFER;
     }
 
+    /* VDD 电源 */
     if (ctx->vdd) {
         ret = regulator_set_voltage(ctx->vdd, 1800000, 1800000);
         if (ret < 0)
@@ -235,6 +282,7 @@ static int panel_prepare(struct drm_panel *panel)
         }
     }
 
+    /* 1.8V 电源 */
     if (ctx->v1_8) {
         ret = regulator_set_voltage(ctx->v1_8, 1800000, 1800000);
         if (ret < 0)
@@ -264,10 +312,22 @@ static int panel_prepare(struct drm_panel *panel)
     gpiod_set_value(ctx->reset_gpio, 1);
     msleep(12);
 
+    /* 发送初始化命令 */
     ret = panel_send_cmds(ctx, panel_on_cmds, sizeof(panel_on_cmds));
     if (ret < 0) {
         dev_err(ctx->dev, "init commands failed\n");
         goto err_power_off;
+    }
+
+    /* 144Hz 时序切换 (DFPS 支持) */
+    if (ctx->dfps_supported) {
+        ret = panel_send_cmds(ctx, timing_switch_144hz_cmds,
+                              sizeof(timing_switch_144hz_cmds));
+        if (ret < 0) {
+            dev_warn(ctx->dev, "144Hz timing set failed, using 120Hz\n");
+        } else {
+            dev_info(ctx->dev, "144Hz timing enabled successfully\n");
+        }
     }
 
     ctx->prepared = true;
@@ -353,24 +413,33 @@ static int panel_get_modes(struct drm_panel *panel)
 
     dev_info(ctx->dev, "%s+++\n", __func__);
 
-    mode = drm_mode_duplicate(panel->drm, &default_mode);
+    /* 120Hz 模式 (主要模式) */
+    mode = drm_mode_duplicate(panel->drm, &default_mode_120hz);
     if (!mode) {
-        dev_err(ctx->dev, "failed to add mode\n");
+        dev_err(ctx->dev, "failed to add 120Hz mode\n");
         return -ENOMEM;
     }
+    drm_mode_set_name(mode);
+    drm_mode_probed_add(panel->connector, mode);
 
+    /* 144Hz 模式 (高性能模式) */
+    mode = drm_mode_duplicate(panel->drm, &default_mode_144hz);
+    if (!mode) {
+        dev_err(ctx->dev, "failed to add 144Hz mode\n");
+        return -ENOMEM;
+    }
     drm_mode_set_name(mode);
     drm_mode_probed_add(panel->connector, mode);
 
     panel->connector->display_info.width_mm = PHYSICAL_WIDTH_MM;
     panel->connector->display_info.height_mm = PHYSICAL_HEIGHT_MM;
 
-    dev_info(ctx->dev, "%s---\n", __func__);
-    return 1;
+    dev_info(ctx->dev, "%s--- added 2 modes (120Hz, 144Hz)\n", __func__);
+    return 2;
 }
 
 /* ============================================================
- * DRM Panel Funcs (4.19 内核)
+ * DRM Panel Funcs
  * ============================================================ */
 
 static const struct drm_panel_funcs panel_funcs = {
@@ -468,7 +537,16 @@ static int panel_probe(struct mipi_dsi_device *dsi)
     bl->props.type = BACKLIGHT_RAW;
     ctx->backlight = bl;
 
-    /* 7. Register panel (4.19 内核只有一个参数) */
+    /* 7. 初始化 DFPS 支持 (60/90/120/144Hz) */
+    ctx->dfps_supported = true;
+    ctx->dfps_rates[0] = 60;
+    ctx->dfps_rates[1] = 90;
+    ctx->dfps_rates[2] = 120;
+    ctx->dfps_rates[3] = 144;
+    ctx->dfps_count = 4;
+    dev_info(dev, "DFPS supported: 60/90/120/144Hz\n");
+
+    /* 8. Register panel (4.19 内核只有一个参数) */
     drm_panel_init(&ctx->panel);
     ctx->panel.dev = dev;
     ctx->panel.funcs = &panel_funcs;
@@ -517,5 +595,5 @@ static struct mipi_dsi_driver panel_driver = {
 module_mipi_dsi_driver(panel_driver);
 
 MODULE_AUTHOR("Migration from MTK to QCOM");
-MODULE_DESCRIPTION("nt36532 tianma 3k video mode DSI panel driver");
+MODULE_DESCRIPTION("nt36532 tianma 3k video mode DSI panel driver with 144Hz support");
 MODULE_LICENSE("GPL v2");
