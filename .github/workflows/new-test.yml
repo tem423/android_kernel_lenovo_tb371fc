@@ -27,7 +27,7 @@ jobs:
           # android-ndk: true
           # android-ndk-version:         r23b
           other-clang-url: https://github.com/ZyCromerZ/Clang
-          other-clang-branch: 14.0.6-20260619
+          other-clang-branch: 16.0.6-20260510
           anykernel3: true
           bootimg-url: https://github.com/tem423/android_kernel_lenovo_tb371fc/releases/download/originalboot/boot.img
           release: false
