@@ -6,7 +6,7 @@ on:
       source_repo:
         description: '源仓库地址 (例如: https://github.com/user/repo.git)'
         required: true
-        default: 'https://github.com/jsdizkcksv/kernel_xiaomi_sm8250.git'
+        default: 'https://github.com/UtsavBalar1231/kernel_xiaomi_sm8250.git'
       source_branch:
         description: '源分支名称'
         required: true
