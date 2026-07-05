@@ -11,14 +11,6 @@ on:
         description: '源分支名称'
         required: true
         default: 'android14-base'
-      commit_start:
-        description: '起始 Commit (包含)'
-        required: true
-        default: 'c87fcc8'
-      commit_end:
-        description: '结束 Commit (包含)'
-        required: true
-        default: 'c873287'
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
@@ -50,8 +42,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cherry-pick commits and push on conflict
+      - name: Cherry-pick specific commits and push on conflict
         run: |
+          # 定义要 cherry-pick 的指定提交列表
+          COMMIT_LIST="c87fcc8 8ec901c 7ab20ed 0b504d9 295ce1a 9195568 384ebbb fc5a0d2 79e11d9 4fefeee 1feef55 1fc5f41 e21eee2 4bb0f61 1acd9ce 357123c 5d4e986 2beac3d af1c74d 87b93a2 b88a0e7 c873287"
+          
           # 定义要跳过的提交列表（从输入参数获取）
           SKIP_COMMITS="${{ github.event.inputs.skip_commits }}"
           
@@ -61,27 +56,22 @@ jobs:
           git status --porcelain || echo "无变更"
           echo ""
           
-          # 获取提交列表
-          COMMITS=$(git rev-list --reverse ${{ github.event.inputs.commit_start }}^..${{ github.event.inputs.commit_end }})
-          TOTAL=$(echo "$COMMITS" | wc -l)
+          # 将提交列表转换为数组
+          COMMITS=($COMMIT_LIST)
+          TOTAL=${#COMMITS[@]}
           CURRENT=0
           APPLIED=0
           SKIPPED=0
           CONFLICT_COMMIT=""
           
           echo "📊 总共需要处理 $TOTAL 个提交"
+          echo "📋 提交列表: ${COMMITS[@]}"
           if [ -n "$SKIP_COMMITS" ]; then
             echo "⏭️ 将跳过以下提交: $SKIP_COMMITS"
           fi
           echo "========================================"
           
-          # 将提交列表保存到临时文件
-          echo "$COMMITS" > /tmp/commit_list.txt
-          
-          while IFS= read -r COMMIT; do
-            # 跳过空行
-            [ -z "$COMMIT" ] && continue
-            
+          for COMMIT in "${COMMITS[@]}"; do
             CURRENT=$((CURRENT + 1))
             
             # 检查是否在跳过列表中
@@ -161,10 +151,7 @@ jobs:
             CONFLICT_COMMIT="$COMMIT"
             break
             
-          done < /tmp/commit_list.txt
-          
-          # 清理临时文件
-          rm -f /tmp/commit_list.txt
+          done
           
           # 推送已应用的提交
           if [ $APPLIED -gt 0 ]; then
