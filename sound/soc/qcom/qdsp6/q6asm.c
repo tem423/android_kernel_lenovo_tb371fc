@@ -743,7 +743,7 @@ int q6asm_get_session_id(struct audio_client *c)
 {
 	return c->session;
 }
-// EXPORT_SYMBOL_GPL(q6asm_get_session_id);
+EXPORT_SYMBOL_GPL(q6asm_get_session_id);
 
 /**
  * q6asm_audio_client_alloc() - Allocate a new audio client
@@ -1016,7 +1016,7 @@ err:
 	kfree(pkt);
 	return rc;
 }
-// EXPORT_SYMBOL_GPL(q6asm_media_format_block_multi_ch_pcm);
+EXPORT_SYMBOL_GPL(q6asm_media_format_block_multi_ch_pcm);
 
 /**
  * q6asm_enc_cfg_blk_pcm_format_support() - setup pcm configuration for capture
@@ -1070,7 +1070,7 @@ err:
 	kfree(pkt);
 	return rc;
 }
-// EXPORT_SYMBOL_GPL(q6asm_enc_cfg_blk_pcm_format_support);
+EXPORT_SYMBOL_GPL(q6asm_enc_cfg_blk_pcm_format_support);
 
 /**
  * q6asm_read() - read data of period size from audio client
@@ -1126,7 +1126,7 @@ int q6asm_read(struct audio_client *ac)
 	kfree(pkt);
 	return rc;
 }
-// EXPORT_SYMBOL_GPL(q6asm_read);
+EXPORT_SYMBOL_GPL(q6asm_read);
 
 static int __q6asm_open_read(struct audio_client *ac,
 		uint32_t format, uint16_t bits_per_sample)
@@ -1185,7 +1185,7 @@ int q6asm_open_read(struct audio_client *ac, uint32_t format,
 {
 	return __q6asm_open_read(ac, format, bits_per_sample);
 }
-// EXPORT_SYMBOL_GPL(q6asm_open_read);
+EXPORT_SYMBOL_GPL(q6asm_open_read);
 
 /**
  * q6asm_write_async() - non blocking write
@@ -1252,7 +1252,7 @@ int q6asm_write_async(struct audio_client *ac, uint32_t len, uint32_t msw_ts,
 	kfree(pkt);
 	return rc;
 }
-// EXPORT_SYMBOL_GPL(q6asm_write_async);
+EXPORT_SYMBOL_GPL(q6asm_write_async);
 
 static void q6asm_reset_buf_state(struct audio_client *ac)
 {
@@ -1324,7 +1324,7 @@ int q6asm_cmd(struct audio_client *ac, int cmd)
 {
 	return __q6asm_cmd(ac, cmd, true);
 }
-// EXPORT_SYMBOL_GPL(q6asm_cmd);
+EXPORT_SYMBOL_GPL(q6asm_cmd);
 
 /**
  * q6asm_cmd_nowait() - non blocking, run cmd on audio client
@@ -1338,7 +1338,7 @@ int q6asm_cmd_nowait(struct audio_client *ac, int cmd)
 {
 	return __q6asm_cmd(ac, cmd, false);
 }
-// EXPORT_SYMBOL_GPL(q6asm_cmd_nowait);
+EXPORT_SYMBOL_GPL(q6asm_cmd_nowait);
 
 static int q6asm_probe(struct apr_device *adev)
 {
