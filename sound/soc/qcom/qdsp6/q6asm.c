@@ -796,7 +796,7 @@ struct audio_client *q6asm_audio_client_alloc(struct device *dev, q6asm_cb cb,
 
 	return ac;
 }
-EXPORT_SYMBOL_GPL(q6asm_audio_client_alloc);
+// EXPORT_SYMBOL_GPL(q6asm_audio_client_alloc);
 
 static int q6asm_ac_send_cmd_sync(struct audio_client *ac, struct apr_pkt *pkt)
 {
