@@ -743,7 +743,7 @@ int q6asm_get_session_id(struct audio_client *c)
 {
 	return c->session;
 }
-EXPORT_SYMBOL_GPL(q6asm_get_session_id);
+// EXPORT_SYMBOL_GPL(q6asm_get_session_id);
 
 /**
  * q6asm_audio_client_alloc() - Allocate a new audio client
