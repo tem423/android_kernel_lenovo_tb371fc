@@ -338,7 +338,7 @@ int q6asm_unmap_memory_regions(unsigned int dir, struct audio_client *ac)
 err:
 	return rc;
 }
-// EXPORT_SYMBOL_GPL(q6asm_unmap_memory_regions);
+EXPORT_SYMBOL_GPL(q6asm_unmap_memory_regions);
 
 static int __q6asm_memory_map_regions(struct audio_client *ac, int dir,
 				      size_t period_sz, unsigned int periods,
@@ -465,7 +465,7 @@ int q6asm_map_memory_regions(unsigned int dir, struct audio_client *ac,
 
 	return rc;
 }
-// EXPORT_SYMBOL_GPL(q6asm_map_memory_regions);
+EXPORT_SYMBOL_GPL(q6asm_map_memory_regions);
 
 static void q6asm_audio_client_release(struct kref *ref)
 {
@@ -492,7 +492,7 @@ void q6asm_audio_client_free(struct audio_client *ac)
 {
 	kref_put(&ac->refcount, q6asm_audio_client_release);
 }
-// EXPORT_SYMBOL_GPL(q6asm_audio_client_free);
+EXPORT_SYMBOL_GPL(q6asm_audio_client_free);
 
 static struct audio_client *q6asm_get_audio_client(struct q6asm *a,
 						   int session_id)
@@ -889,7 +889,7 @@ err:
 	kfree(pkt);
 	return rc;
 }
-// EXPORT_SYMBOL_GPL(q6asm_open_write);
+EXPORT_SYMBOL_GPL(q6asm_open_write);
 
 static int __q6asm_run(struct audio_client *ac, uint32_t flags,
 	      uint32_t msw_ts, uint32_t lsw_ts, bool wait)
@@ -940,7 +940,7 @@ int q6asm_run(struct audio_client *ac, uint32_t flags,
 {
 	return __q6asm_run(ac, flags, msw_ts, lsw_ts, true);
 }
-// EXPORT_SYMBOL_GPL(q6asm_run);
+EXPORT_SYMBOL_GPL(q6asm_run);
 
 /**
  * q6asm_run_nowait() - start the audio client withou blocking
@@ -957,7 +957,7 @@ int q6asm_run_nowait(struct audio_client *ac, uint32_t flags,
 {
 	return __q6asm_run(ac, flags, msw_ts, lsw_ts, false);
 }
-// EXPORT_SYMBOL_GPL(q6asm_run_nowait);
+EXPORT_SYMBOL_GPL(q6asm_run_nowait);
 
 /**
  * q6asm_media_format_block_multi_ch_pcm() - setup pcm configuration
@@ -1324,7 +1324,7 @@ int q6asm_cmd(struct audio_client *ac, int cmd)
 {
 	return __q6asm_cmd(ac, cmd, true);
 }
-EXPORT_SYMBOL_GPL(q6asm_cmd);
+// EXPORT_SYMBOL_GPL(q6asm_cmd);
 
 /**
  * q6asm_cmd_nowait() - non blocking, run cmd on audio client
