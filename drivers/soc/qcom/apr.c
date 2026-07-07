@@ -49,7 +49,7 @@ int apr_send_pkt(struct apr_device *adev, struct apr_pkt *pkt)
 
 	return ret ? ret : hdr->pkt_size;
 }
-EXPORT_SYMBOL_GPL(apr_send_pkt);
+// EXPORT_SYMBOL_GPL(apr_send_pkt);
 
 static void apr_dev_release(struct device *dev)
 {
