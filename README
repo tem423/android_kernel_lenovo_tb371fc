@@ -1,5 +1,6 @@
 这是我自己用tb q706f内核修改的，不属于官方内核
-ktz8866a驱动来自tb321fu
+触摸驱动来自https://github.com/ila-embsys/linux-android-msm-lenovo-p12
+ktz8866ab驱动来自tb321fu
 mm8013c06_battery驱动来自tb360zu
 ctn730来自tbq706f(不知道能不能用)
 面板驱动来自tb370fu(不知道能不能用)
