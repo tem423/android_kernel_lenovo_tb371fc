@@ -1338,7 +1338,7 @@ int q6asm_cmd_nowait(struct audio_client *ac, int cmd)
 {
 	return __q6asm_cmd(ac, cmd, false);
 }
-EXPORT_SYMBOL_GPL(q6asm_cmd_nowait);
+// EXPORT_SYMBOL_GPL(q6asm_cmd_nowait);
 
 static int q6asm_probe(struct apr_device *adev)
 {
