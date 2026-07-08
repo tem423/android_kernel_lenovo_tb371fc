@@ -889,7 +889,7 @@ err:
 	kfree(pkt);
 	return rc;
 }
-EXPORT_SYMBOL_GPL(q6asm_open_write);
+// EXPORT_SYMBOL_GPL(q6asm_open_write);
 
 static int __q6asm_run(struct audio_client *ac, uint32_t flags,
 	      uint32_t msw_ts, uint32_t lsw_ts, bool wait)
@@ -940,7 +940,7 @@ int q6asm_run(struct audio_client *ac, uint32_t flags,
 {
 	return __q6asm_run(ac, flags, msw_ts, lsw_ts, true);
 }
-EXPORT_SYMBOL_GPL(q6asm_run);
+// EXPORT_SYMBOL_GPL(q6asm_run);
 
 /**
  * q6asm_run_nowait() - start the audio client withou blocking
@@ -957,7 +957,7 @@ int q6asm_run_nowait(struct audio_client *ac, uint32_t flags,
 {
 	return __q6asm_run(ac, flags, msw_ts, lsw_ts, false);
 }
-EXPORT_SYMBOL_GPL(q6asm_run_nowait);
+// EXPORT_SYMBOL_GPL(q6asm_run_nowait);
 
 /**
  * q6asm_media_format_block_multi_ch_pcm() - setup pcm configuration
@@ -1126,7 +1126,7 @@ int q6asm_read(struct audio_client *ac)
 	kfree(pkt);
 	return rc;
 }
-EXPORT_SYMBOL_GPL(q6asm_read);
+// EXPORT_SYMBOL_GPL(q6asm_read);
 
 static int __q6asm_open_read(struct audio_client *ac,
 		uint32_t format, uint16_t bits_per_sample)
@@ -1185,7 +1185,7 @@ int q6asm_open_read(struct audio_client *ac, uint32_t format,
 {
 	return __q6asm_open_read(ac, format, bits_per_sample);
 }
-EXPORT_SYMBOL_GPL(q6asm_open_read);
+//EXPORT_SYMBOL_GPL(q6asm_open_read);
 
 /**
  * q6asm_write_async() - non blocking write
