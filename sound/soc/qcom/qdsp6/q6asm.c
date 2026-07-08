@@ -492,7 +492,7 @@ void q6asm_audio_client_free(struct audio_client *ac)
 {
 	kref_put(&ac->refcount, q6asm_audio_client_release);
 }
-EXPORT_SYMBOL_GPL(q6asm_audio_client_free);
+// EXPORT_SYMBOL_GPL(q6asm_audio_client_free);
 
 static struct audio_client *q6asm_get_audio_client(struct q6asm *a,
 						   int session_id)
