@@ -1,342 +1,366 @@
 /*
- * KTZ8866A Driver - BIAS + Backlight (Master)
- * compatible: "ktz,ktz8866a"
- * I2C bus 2, address 0x11
+ * KTZ Semiconductor KTZ8866a LED Driver
  *
- * Brightness mapping:
- *   LSB (0x04) = brightness & 0x07
- *   MSB (0x05) = brightness >> 3
- *   Max: 2047 (0x07FF)
+ * Copyright (C) 2013 Ideas on board SPRL
+ *
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
  */
 
-/*
- * KTZ8866A Driver - BIAS + Backlight (Master)
- */
+#include <linux/backlight.h>
+#include <linux/delay.h>
+#include <linux/err.h>
+#include <linux/fb.h>
+#include <linux/gpio.h>
+#include <linux/of.h>
+#include <linux/of_gpio.h>
+#include <linux/i2c.h>
+#include <linux/slab.h>
+#include <linux/module.h>
+#include <linux/ktz8866ab.h>
 
-#include <linux/platform_data/ktz8866.h>
+#define BL_I2C_ADDRESS                          0x11
+#define u8        unsigned char
+#define LCD_BL_I2C_ID_NAME "ktz8866a"
 
-/* ===== 全局变量（非 static，供 B 芯片引用） ===== */
-struct ktz8866 *g_ktz_a = NULL;
-struct ktz8866 *g_ktz_b = NULL;
-static struct ktz8866 *g_ktz_main = NULL;
+static DEFINE_MUTEX(read_lock);
+static DEFINE_MUTEX(a_store_lock);
+int g_ktz8866a_id = 0;
+extern int g_ktz8866b_id;
+static struct ktz8866_data *ktz8866a_driver_data;
+static struct i2c_client *lcd_bl_i2c_client;
+static int lcd_bl_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
+static void lcd_bl_i2c_remove(struct i2c_client *client);
 
-/* ===== I2C写操作 ===== */
-int ktz8866_write_byte(struct i2c_client *client, u8 reg, u8 value)
+extern int lcd_bl_bias_write_byte(unsigned char addr, unsigned char value);
+
+int lcd_bl_write_byte(unsigned char addr, unsigned char value)
 {
-    u8 write_data[2] = {reg, value};
-    int ret;
+        int ret = 0;
+        unsigned char write_data[2] = {0};
 
-    if (!client)
-        return -EINVAL;
+        write_data[0] = addr;
+        write_data[1] = value;
 
-    ret = i2c_master_send(client, write_data, 2);
-    if (ret < 0)
-        pr_err("[KTZ8866] write 0x%02x=0x%02x failed: %d\n", reg, value, ret);
-    return ret;
-}
-EXPORT_SYMBOL(ktz8866_write_byte);
+        if (NULL == lcd_bl_i2c_client) {
+                dev_warn(&lcd_bl_i2c_client->dev, "[LCD][BL] lcd_bl_i2c_client is null!!\n");
+                return -EINVAL;
+        }
+        ret = i2c_master_send(lcd_bl_i2c_client, write_data, 2);
 
-/* ===== I2C读操作 ===== */
-int ktz8866_read_byte(struct i2c_client *client, u8 reg, u8 *value)
-{
-    u8 buffer = reg;
-    int ret;
+        if (ret < 0)
+                dev_warn(&lcd_bl_i2c_client->dev, "[LCD][BL] i2c write data fail !!\n");
 
-    if (!client || !value)
-        return -EINVAL;
-
-    ret = i2c_master_send(client, &buffer, 1);
-    if (ret < 0)
         return ret;
-
-    ret = i2c_master_recv(client, value, 1);
-    if (ret < 0)
-        return ret;
-
-    return 0;
 }
-EXPORT_SYMBOL(ktz8866_read_byte);
 
-/* ===== 设置亮度（同时控制A和B） ===== */
-void ktz8866_set_brightness(struct ktz8866 *dev, int brightness)
+static int lcd_bl_read_byte(u8 regnum)
 {
-    u8 lsb, msb;
+        u8 buffer[1], reg_value[1];
+        int res = 0;
 
-    if (!dev)
+        if (NULL == lcd_bl_i2c_client) {
+                dev_warn(&lcd_bl_i2c_client->dev, "[LCD][BL] lcd_bl_i2c_client is null!!\n");
+                return -EINVAL;
+        }
+
+        mutex_lock(&read_lock);
+
+        buffer[0] = regnum;
+        res = i2c_master_send(lcd_bl_i2c_client, buffer, 0x1);
+        if (res <= 0)        {
+          mutex_unlock(&read_lock);
+          dev_warn(&lcd_bl_i2c_client->dev, "read reg send res = %d\n", res);
+          return res;
+        }
+        res = i2c_master_recv(lcd_bl_i2c_client, reg_value, 0x1);
+        if (res <= 0) {
+          mutex_unlock(&read_lock);
+          dev_warn(&lcd_bl_i2c_client->dev, "read reg recv res = %d\n", res);
+          return res;
+        }
+        mutex_unlock(&read_lock);
+
+        return reg_value[0];
+}
+
+static const struct of_device_id i2c_of_match[] = {
+        { .compatible = "ktz,ktz8866a", },
+        {},
+};
+
+static const struct i2c_device_id lcd_bl_i2c_id[] = {
+        {LCD_BL_I2C_ID_NAME, 0},
+        {},
+};
+
+static struct i2c_driver lcd_bl_i2c_driver = {
+/************************************************************
+Attention:
+Althouh i2c_bus do not use .id_table to match, but it must be defined,
+otherwise the probe function will not be executed!
+************************************************************/
+        .id_table = lcd_bl_i2c_id,
+        .probe = lcd_bl_i2c_probe,
+        .remove = lcd_bl_i2c_remove,
+        .driver = {
+                .owner = THIS_MODULE,
+                .name = LCD_BL_I2C_ID_NAME,
+                .of_match_table = i2c_of_match,
+        },
+};
+
+static int ktz8866a_id_read(void)
+{
+        int id_a = 0;
+
+        id_a = lcd_bl_read_byte(ktz8866a_regs[0].reg);//read ktz8866a id reg
+        if (id_a <= 0)        {
+          dev_warn(&lcd_bl_i2c_client->dev, "read id_a error!!! id_a = 0x%2X\n", id_a);
+          return 0;
+        }
+        pr_info("%s: read id_a = 0x%2X\n", __func__, id_a);
+
+        return id_a;
+}
+
+static long int  ktz8866_id_read(void)
+{
+        long int ktz8866_id = 0;
+
+        pr_info("ktz8866a_id = 0x%2X, ktz8866b_id = 0x%2X\n", g_ktz8866a_id, g_ktz8866b_id);
+        if (( g_ktz8866a_id <=0 ) ||  ( g_ktz8866b_id <=0 )) {
+                        pr_err("%s: read ktz8866 id error!!!\n", __func__);
+                        return 0;
+        }
+
+        ktz8866_id = (g_ktz8866a_id <<8) | g_ktz8866b_id;
+        pr_info("ktz8866_id = 0x%4X\n", ktz8866_id);
+
+        return ktz8866_id;
+}
+
+static ssize_t ktz8866_id_show (struct device *dev,
+struct device_attribute *attr, char *buf)
+{
+        return scnprintf(buf, PAGE_SIZE, "0x%04X\n", ktz8866_id_read());
+}
+static DEVICE_ATTR(ktz8866_id, 0444, ktz8866_id_show, NULL);
+/*****************************************************************************
+ * for ktz8866a to registe
+ *****************************************************************************/
+static ssize_t ktz8866a_registers_show (struct device *dev,
+struct device_attribute *attr, char *buf)
+{
+        struct ktz8866_data *driver_data = i2c_get_clientdata(lcd_bl_i2c_client);
+        int reg_count = 0;
+        int i, n = 0;
+        u8 value = 0;
+        struct ktz8866_reg *regs_p;
+
+        reg_count = sizeof(ktz8866a_regs) / sizeof(ktz8866a_regs[0]);
+        regs_p = ktz8866a_regs;
+
+        if (atomic_read(&driver_data->suspended)) {
+                pr_err("%s: can't read: driver suspended\nlcd_bl_write_byte", __func__);
+                n += scnprintf(buf + n, PAGE_SIZE - n,
+                        "Unable to read ktz8866a_i2c_client[0] registers: driver suspended\n");
+        } else {
+                pr_info("%s: read all registers\n", __func__);
+                for (i = 0, n = 0; i < reg_count; i++) {
+                        value = lcd_bl_read_byte(regs_p[i].reg);
+                        n += scnprintf(buf + n, PAGE_SIZE - n,
+                                "%-30s (0x%02x) = 0x%02X\n",
+                                        regs_p[i].name, regs_p[i].reg, value);
+                }
+        }
+
+        return n;
+}
+
+static ssize_t ktz8866a_registers_store (struct device *dev,
+        struct device_attribute *attr, const char *buf, size_t size)
+{
+        struct ktz8866_data *driver_data = i2c_get_clientdata(lcd_bl_i2c_client);
+        unsigned reg;
+        unsigned value;
+
+        if (atomic_read(&driver_data->suspended)) {
+                pr_err("%s: can't write: driver suspended\n", __func__);
+                return -ENODEV;
+        }
+        sscanf(buf, "%02x %02x", &reg, &value);
+        if (value > 0xFF)
+                return -EINVAL;
+        pr_info("%s: writing reg 0x%02x = 0x%02x\n", __func__, reg, value);
+
+        mutex_lock(&a_store_lock);
+        lcd_bl_write_byte(reg, (uint8_t)value);
+        mutex_unlock(&a_store_lock);
+
+        return size;
+}
+
+static DEVICE_ATTR(ktz8866a_reg, 0664, ktz8866a_registers_show, ktz8866a_registers_store);
+
+static int ktz8866a_common_init(struct i2c_client *client)
+{
+        struct ktz8866_data *driver_data = NULL;
+        int ret = 0;
+
+        pr_info("%s+\n", __func__);
+        /* We should be able to read and write byte data */
+        if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
+                pr_err ("%s: I2C_FUNC_I2C not supported\n", __func__);
+                return -ENOTSUPP;
+        }
+
+        driver_data = kzalloc(sizeof(struct ktz8866_data), GFP_KERNEL);
+        if (driver_data == NULL) {
+                pr_err ("%s: driver_data kzalloc failed\n", __func__);
+                return -ENOMEM;
+        }
+        memset (driver_data, 0, sizeof (*driver_data));
+
+        driver_data->client = client;
+        i2c_set_clientdata (client, driver_data);
+        atomic_set(&driver_data->suspended, 0);
+
+        driver_data->led_dev.name = LCD_BL_I2C_ID_NAME;
+        ret = led_classdev_register (&client->dev, &driver_data->led_dev);
+        if (ret) {
+                pr_err("%s: led_classdev_register %s failed: %d\n", __func__, LCD_BL_I2C_ID_NAME, ret);
+                goto led_classdev_register_failed;
+        }
+
+        pr_info("%s: register ktz8866a ok\n", __func__);
+        ktz8866a_driver_data = driver_data;
+        ret = device_create_file(ktz8866a_driver_data->led_dev.dev, &dev_attr_ktz8866a_reg);
+        if (ret) {
+          pr_err("%s: ktz8866a unable to create suspend device file for %s: %d\n", __func__, LCD_BL_I2C_ID_NAME, ret);
+          goto device_create_file_failed;
+        }
+        ret = device_create_file(ktz8866a_driver_data->led_dev.dev, &dev_attr_ktz8866_id);
+        if (ret) {
+          pr_err("%s: ktz8866_id unable to create suspend device file for %s: %d\n", __func__, LCD_BL_I2C_ID_NAME, ret);
+          goto device_create_file_failed2;
+        }
+        dev_set_drvdata (&client->dev, ktz8866a_driver_data);
+
+        g_ktz8866a_id = ktz8866a_id_read();
+        pr_info("%s-\n", __func__);
+
+        return 0;
+
+device_create_file_failed2:
+        device_remove_file (ktz8866a_driver_data->led_dev.dev, &dev_attr_ktz8866_id);
+device_create_file_failed:
+        device_remove_file (ktz8866a_driver_data->led_dev.dev, &dev_attr_ktz8866a_reg);
+        kfree (ktz8866a_driver_data);
+led_classdev_register_failed:
+        led_classdev_unregister(&driver_data->led_dev);
+        kfree (driver_data);
+
+        return ret;
+}
+
+int lcd_bl_set_led_brightness(int value)//for set bringhtness
+{
+
+        if (value < 0) {
+                dev_warn(&lcd_bl_i2c_client->dev, "value=%d\n", value);
+                return 0;
+        }
+
+        dev_warn(&lcd_bl_i2c_client->dev, "lcm 8866 bl = %d\n", value);
+
+        if (value > 0) {
+                lcd_bl_write_byte(KTZ8866_DISP_BB_LSB, value & 0x07);// lsb
+                lcd_bl_write_byte(KTZ8866_DISP_BB_MSB, (value >> 3) & 0xFF);// msb
+                lcd_bl_bias_write_byte(KTZ8866_DISP_BB_LSB, value & 0x07);// lsb
+                lcd_bl_bias_write_byte(KTZ8866_DISP_BB_MSB, (value >> 3) & 0xFF);// msb
+                lcd_bl_write_byte(KTZ8866_DISP_BL_ENABLE, 0x7F); /* BL enabled and Current sink 1/2/3/4/5/6 enabled；*/
+                lcd_bl_bias_write_byte(KTZ8866_DISP_BL_ENABLE, 0x7F); /* BL enabled and Current sink 1/2/3/4/5/6 enabled；*/
+        } else {
+                lcd_bl_write_byte(KTZ8866_DISP_BB_LSB, 0x00);// lsb
+                lcd_bl_write_byte(KTZ8866_DISP_BB_MSB, 0x00);// msb
+                lcd_bl_bias_write_byte(KTZ8866_DISP_BB_LSB, 0x00);// lsb
+                lcd_bl_bias_write_byte(KTZ8866_DISP_BB_MSB, 0x00);// msb
+                lcd_bl_write_byte(KTZ8866_DISP_BL_ENABLE, 0x00); /* BL enabled and Current sink 1/2/3/4/5/6 disabled；*/
+                lcd_bl_bias_write_byte(KTZ8866_DISP_BL_ENABLE, 0x00); /* BL enabled and Current sink 1/2/3/4/5/6 disabled；*/
+        }
+
+        return 0;
+}
+EXPORT_SYMBOL(lcd_bl_set_led_brightness);
+
+void lcd_bl_set_reg(void)
+{
+        int ret = 0;
+
+        ret = lcd_bl_write_byte(KTZ8866_DISP_BC1, 0XFA); /* BL_CFG1；OVP=40V，线性调光，PWM disabled */
+        ret = lcd_bl_write_byte(KTZ8866_DISP_BC2, 0xED); /* BL_CFG2；dimming 512ms */
+        ret = lcd_bl_write_byte(KTZ8866_DISP_DIMMING, 0xAA); /* Turn ON/OFF RAMP time  512ms */
+        ret = lcd_bl_write_byte(KTZ8866_DISP_OPTION2, 0x37); /* BL_OPTION2；电感4.7uH，BL_CURRENT_LIMIT 2.5A；*/
+        ret = lcd_bl_write_byte(KTZ8866_DISP_FULL_CURRENT, 0xAD); /* Backlight Full-scale LED Current 22mA/CH；*/
+        if(ret < 0) {
+                dev_warn(&lcd_bl_i2c_client->dev, "set reg fail!");
+        } else {
+                dev_warn(&lcd_bl_i2c_client->dev, "set reg succrss!");
+        }
+}
+EXPORT_SYMBOL(lcd_bl_set_reg);
+
+static int lcd_bl_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
+{
+        int ret;
+        if (NULL == client) {
+                dev_warn(&lcd_bl_i2c_client->dev, "[LCD][BL] i2c_client is NULL\n");
+                return -EINVAL;
+        }
+
+        lcd_bl_i2c_client = client;
+
+        dev_warn(&lcd_bl_i2c_client->dev, "bias_backlight, i2c address: %0x\n", client->addr);
+
+        ret = lcd_bl_write_byte(KTZ8866_DISP_BC2, 0xED);/* BL_CFG2；dimming 512ms */
+        ret = lcd_bl_write_byte(KTZ8866_DISP_BC1, 0XFA); /* BL_CFG1；OVP=40V，线性调光，PWM disabled */
+        ret = lcd_bl_write_byte(KTZ8866_DISP_DIMMING, 0xAA); /* Turn ON/OFF RAMP time  512ms */
+        ret = lcd_bl_write_byte(KTZ8866_DISP_OPTION2, 0x37); /* BL_OPTION2；电感4.7uH，BL_CURRENT_LIMIT 2.5A；*/
+        ret = lcd_bl_write_byte(KTZ8866_DISP_FULL_CURRENT, 0xAD); /* Backlight Full-scale LED Current 22mA/CH；*/
+        ret = lcd_bl_write_byte(KTZ8866_DISP_BL_ENABLE, 0x7F); /* BL enabled and Current sink 1/2/3/4/5/6 enabled；*/
+
+        if (ret < 0) {
+                dev_warn(&lcd_bl_i2c_client->dev, "I2C write reg is fail!");
+                return -EINVAL;
+        } else {
+                dev_warn(&lcd_bl_i2c_client->dev, "I2C write reg is success!");
+        }
+
+        ktz8866a_common_init(lcd_bl_i2c_client);
+        return 0;
+}
+
+static void lcd_bl_i2c_remove(struct i2c_client *client)
+{
+        struct ktz8866_data *ktz8866a_driver_data = i2c_get_clientdata(lcd_bl_i2c_client);
+        struct ktz8866_data *driver_data = i2c_get_clientdata(lcd_bl_i2c_client);
+
+        device_remove_file (ktz8866a_driver_data->led_dev.dev, &dev_attr_ktz8866_id);
+        device_remove_file (ktz8866a_driver_data->led_dev.dev, &dev_attr_ktz8866a_reg);
+        kfree (ktz8866a_driver_data);
+        led_classdev_unregister(&driver_data->led_dev);
+        kfree (driver_data);
+
+        lcd_bl_i2c_client = NULL;
+        i2c_unregister_device(client);
         return;
-
-    if (brightness < 0)
-        brightness = 0;
-    if (brightness > KTZ8866_BL_MAX)
-        brightness = KTZ8866_BL_MAX;
-
-    /*
-     * 映射公式：
-     * LSB (0x04) = brightness & 0x07   (低3位)
-     * MSB (0x05) = brightness >> 3     (高8位)
-     */
-    lsb = brightness & 0x07;
-    msb = (brightness >> 3) & 0xFF;
-
-    dev_dbg(&dev->client->dev, "brightness=%d (LSB=0x%02x, MSB=0x%02x)\n",
-            brightness, lsb, msb);
-
-    mutex_lock(&dev->lock);
-
-    /* 写自己 (A芯片) */
-    ktz8866_write_byte(dev->client, KTZ8866_REG_LSB, lsb);
-    ktz8866_write_byte(dev->client, KTZ8866_REG_MSB, msb);
-
-    /* 同步写入B芯片 */
-    if (g_ktz_b && g_ktz_b != dev) {
-        mutex_lock(&g_ktz_b->lock);
-        ktz8866_write_byte(g_ktz_b->client, KTZ8866_REG_LSB, lsb);
-        ktz8866_write_byte(g_ktz_b->client, KTZ8866_REG_MSB, msb);
-        mutex_unlock(&g_ktz_b->lock);
-    }
-
-    dev->brightness = brightness;
-    mutex_unlock(&dev->lock);
-}
-EXPORT_SYMBOL(ktz8866_set_brightness);
-
-/* ===== 初始化BIAS偏压 ===== */
-int ktz8866_init_bias(struct i2c_client *client)
-{
-    int ret;
-
-    if (!client)
-        return -EINVAL;
-
-    dev_info(&client->dev, "Initializing BIAS\n");
-
-    ret = ktz8866_write_byte(client, KTZ8866_REG_BOOST_CFG, 0x2E);
-    if (ret < 0) return ret;
-    ret = ktz8866_write_byte(client, KTZ8866_REG_OUTP_CFG, 0x24);
-    if (ret < 0) return ret;
-    ret = ktz8866_write_byte(client, KTZ8866_REG_OUTN_CFG, 0x24);
-    if (ret < 0) return ret;
-    ret = ktz8866_write_byte(client, KTZ8866_REG_CTRL, 0x99);
-    if (ret < 0) return ret;
-
-    dev_info(&client->dev, "BIAS init success\n");
-    return 0;
-}
-EXPORT_SYMBOL(ktz8866_init_bias);
-
-/* ===== 初始化背光 ===== */
-int ktz8866_init_backlight(struct i2c_client *client)
-{
-    int ret;
-
-    if (!client)
-        return -EINVAL;
-
-    dev_info(&client->dev, "Initializing Backlight\n");
-
-    ret = ktz8866_write_byte(client, KTZ8866_REG_CFG1, 0xDA);
-    if (ret < 0) return ret;
-    ret = ktz8866_write_byte(client, KTZ8866_REG_OPTION2, 0x37);
-    if (ret < 0) return ret;
-    ret = ktz8866_write_byte(client, KTZ8866_REG_CURRENT, 0xA0);
-    if (ret < 0) return ret;
-    ret = ktz8866_write_byte(client, KTZ8866_REG_ENABLE, 0x4F);
-    if (ret < 0) return ret;
-    ret = ktz8866_write_byte(client, KTZ8866_REG_CFG2, 0xFD);
-    if (ret < 0) return ret;
-
-    dev_info(&client->dev, "Backlight init success\n");
-    return 0;
-}
-EXPORT_SYMBOL(ktz8866_init_backlight);
-
-/* ===== 解析设备树GPIO ===== */
-static int ktz8866_parse_dt(struct device *dev, struct ktz8866_platform_data *pdata)
-{
-    struct device_node *np = dev->of_node;
-
-    pdata->hw_en_gpio = of_get_named_gpio_flags(np, "ktz8866,hwen-gpio", 0, NULL);
-    pdata->enp_gpio = of_get_named_gpio_flags(np, "ktz8866,enp-gpio", 0, NULL);
-    pdata->enn_gpio = of_get_named_gpio_flags(np, "ktz8866,enn-gpio", 0, NULL);
-
-    if (pdata->hw_en_gpio < 0 || pdata->enp_gpio < 0 || pdata->enn_gpio < 0) {
-        dev_err(dev, "GPIO parse failed\n");
-        return -EINVAL;
-    }
-
-    dev_info(dev, "GPIO: hwen=%d, enp=%d, enn=%d\n",
-             pdata->hw_en_gpio, pdata->enp_gpio, pdata->enn_gpio);
-    return 0;
 }
 
-/* ===== 申请GPIO ===== */
-static int ktz8866_request_gpio(struct device *dev, struct ktz8866_platform_data *pdata)
-{
-    int ret;
+module_i2c_driver(lcd_bl_i2c_driver);
 
-    ret = devm_gpio_request_one(dev, pdata->hw_en_gpio,
-                                GPIOF_DIR_OUT | GPIOF_INIT_HIGH, "KTZ8866_HW_EN");
-    if (ret < 0) {
-        dev_err(dev, "HW_EN GPIO request failed\n");
-        return ret;
-    }
-
-    ret = devm_gpio_request_one(dev, pdata->enp_gpio,
-                                GPIOF_DIR_OUT | GPIOF_INIT_HIGH, "KTZ8866_ENP");
-    if (ret < 0) {
-        dev_err(dev, "ENP GPIO request failed\n");
-        return ret;
-    }
-
-    ret = devm_gpio_request_one(dev, pdata->enn_gpio,
-                                GPIOF_DIR_OUT | GPIOF_INIT_LOW, "KTZ8866_ENN");
-    if (ret < 0) {
-        dev_err(dev, "ENN GPIO request failed\n");
-        return ret;
-    }
-
-    dev_info(dev, "GPIO requested successfully\n");
-    return 0;
-}
-
-/* ===== 设置GPIO状态 ===== */
-static void ktz8866_set_gpio(struct ktz8866_platform_data *pdata, bool enable)
-{
-    if (!pdata)
-        return;
-
-    gpio_set_value(pdata->hw_en_gpio, enable ? 1 : 0);
-    gpio_set_value(pdata->enp_gpio, enable ? 1 : 0);
-    gpio_set_value(pdata->enn_gpio, enable ? 0 : 1);
-}
-
-/* ===== 简化接口：设置背光亮度 ===== */
-void ktz8866_set_backlight_level(int brightness)
-{
-    if (g_ktz_main)
-        ktz8866_set_brightness(g_ktz_main, brightness);
-    else
-        pr_err("[KTZ8866] driver not ready\n");
-}
-EXPORT_SYMBOL(ktz8866_set_backlight_level);
-
-/* ===== 简化接口：使能偏压 ===== */
-void ktz8866_enable_bias(int enable)
-{
-    if (g_ktz_main && g_ktz_main->pdata) {
-        struct ktz8866_platform_data *pdata = g_ktz_main->pdata;
-        gpio_set_value(pdata->hw_en_gpio, enable ? 1 : 0);
-        gpio_set_value(pdata->enp_gpio, enable ? 1 : 0);
-        gpio_set_value(pdata->enn_gpio, enable ? 0 : 1);
-    } else {
-        pr_err("[KTZ8866] cannot set bias: driver not ready\n");
-    }
-}
-EXPORT_SYMBOL(ktz8866_enable_bias);
-
-/* ===== 检查驱动是否就绪 ===== */
-bool ktz8866_is_ready(void)
-{
-    return (g_ktz_main != NULL);
-}
-EXPORT_SYMBOL(ktz8866_is_ready);
-
-/* ===== Probe ===== */
-static int ktz8866a_probe(struct i2c_client *client, const struct i2c_device_id *id)
-{
-    struct ktz8866 *ktz;
-    struct ktz8866_platform_data *pdata;
-    int ret;
-
-    dev_info(&client->dev, "KTZ8866A probing on bus %d, addr 0x%02x\n",
-             client->adapter->nr, client->addr);
-
-    ktz = devm_kzalloc(&client->dev, sizeof(*ktz), GFP_KERNEL);
-    if (!ktz)
-        return -ENOMEM;
-
-    pdata = devm_kzalloc(&client->dev, sizeof(*pdata), GFP_KERNEL);
-    if (!pdata)
-        return -ENOMEM;
-
-    ktz->client = client;
-    ktz->pdata = pdata;
-    ktz->is_a = true;
-    mutex_init(&ktz->lock);
-
-    ret = ktz8866_parse_dt(&client->dev, pdata);
-    if (ret < 0)
-        return ret;
-
-    ret = ktz8866_request_gpio(&client->dev, pdata);
-    if (ret < 0)
-        return ret;
-
-    /* 使能GPIO */
-    ktz8866_set_gpio(pdata, true);
-    msleep(10);
-
-    /* 初始化BIAS */
-    ret = ktz8866_init_bias(client);
-    if (ret < 0)
-        return ret;
-
-    /* 初始化背光 */
-    ret = ktz8866_init_backlight(client);
-    if (ret < 0)
-        return ret;
-
-    g_ktz_a = ktz;
-    g_ktz_main = ktz;
-    i2c_set_clientdata(client, ktz);
-
-    /* 默认亮度100 */
-    ktz8866_set_brightness(ktz, 100);
-
-    dev_info(&client->dev, "KTZ8866A probed successfully\n");
-    return 0;
-}
-
-/* ===== Remove ===== */
-static int ktz8866a_remove(struct i2c_client *client)
-{
-    struct ktz8866 *ktz = i2c_get_clientdata(client);
-
-    if (ktz) {
-        ktz8866_set_brightness(ktz, 0);
-        if (g_ktz_a == ktz)
-            g_ktz_a = NULL;
-        if (g_ktz_main == ktz)
-            g_ktz_main = NULL;
-    }
-    return 0;
-}
-
-static const struct i2c_device_id ktz8866a_ids[] = {
-    { "ktz8866a", 0 },
-    { },
-};
-MODULE_DEVICE_TABLE(i2c, ktz8866a_ids);
-
-static const struct of_device_id ktz8866a_match[] = {
-    { .compatible = "ktz,ktz8866a" },
-    { },
-};
-MODULE_DEVICE_TABLE(of, ktz8866a_match);
-
-static struct i2c_driver ktz8866a_driver = {
-    .driver = {
-        .name = "ktz8866a",
-        .owner = THIS_MODULE,
-        .of_match_table = ktz8866a_match,
-    },
-    .probe = ktz8866a_probe,
-    .remove = ktz8866a_remove,
-    .id_table = ktz8866a_ids,
-};
-
-module_i2c_driver(ktz8866a_driver);
-
-MODULE_DESCRIPTION("KTZ8866A BIAS + Backlight Driver (Master)");
-MODULE_AUTHOR("Your Name");
-MODULE_LICENSE("GPL v2");
+MODULE_AUTHOR("caiyifeng <caiyifeng@huanqin.com>");
+MODULE_DESCRIPTION("LCD BL I2C Driver");
+MODULE_LICENSE("GPL");
