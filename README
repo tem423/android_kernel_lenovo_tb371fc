@@ -1,1 +1,6 @@
 这是我自己用tb q706f内核修改的，不属于官方内核
+ktz8866a驱动来自tb321fu
+mm8013c06_battery驱动来自tb360zu
+ctn730来自tbq706f(不知道能不能用)
+面板驱动来自tb370fu(不知道能不能用)
+基线是https://github.com/UtsavBalar1231/kernel_xiaomi_sm8250的android14-base
