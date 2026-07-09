@@ -55,7 +55,7 @@ int lcd_bl_bias_write_byte(unsigned char addr, unsigned char value)
 }
 EXPORT_SYMBOL(lcd_bl_bias_write_byte);
 
-struct ktz8866_reg ktz8866b_regs[]
+struct ktz8866_reg ktz8866b_regs[] = {
 	{"KTZ8866B_DISP_ID", KTZ8866_DISP_ID},
 	{"KTZ8866B_DISP_BC1", KTZ8866_DISP_BC1},
 	{"KTZ8866B_DISP_BC2", KTZ8866_DISP_BC2},
