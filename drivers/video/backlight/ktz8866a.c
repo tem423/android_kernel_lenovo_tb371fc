@@ -32,7 +32,7 @@ extern int g_ktz8866b_id;
 static struct ktz8866_data *ktz8866a_driver_data;
 static struct i2c_client *lcd_bl_i2c_client;
 static int lcd_bl_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
-static void lcd_bl_i2c_remove(struct i2c_client *client);
+static int lcd_bl_i2c_remove(struct i2c_client *client);
 
 extern int lcd_bl_bias_write_byte(unsigned char addr, unsigned char value);
 
@@ -343,7 +343,7 @@ static int lcd_bl_i2c_probe(struct i2c_client *client, const struct i2c_device_i
         return 0;
 }
 
-static void lcd_bl_i2c_remove(struct i2c_client *client)
+static int lcd_bl_i2c_remove(struct i2c_client *client)
 {
         struct ktz8866_data *ktz8866a_driver_data = i2c_get_clientdata(lcd_bl_i2c_client);
         struct ktz8866_data *driver_data = i2c_get_clientdata(lcd_bl_i2c_client);
@@ -356,7 +356,7 @@ static void lcd_bl_i2c_remove(struct i2c_client *client)
 
         lcd_bl_i2c_client = NULL;
         i2c_unregister_device(client);
-        return;
+        return 0;
 }
 
 module_i2c_driver(lcd_bl_i2c_driver);
