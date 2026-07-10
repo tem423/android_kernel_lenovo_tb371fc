@@ -1,4 +1,5 @@
 这是我自己用tb q706f内核修改的，不属于官方内核
+目前因为apr超时音频无法使用
 触摸驱动来自https://github.com/ila-embsys/linux-android-msm-lenovo-p12
 ktz8866ab驱动来自tb321fu
 mm8013c06_battery驱动来自tb360zu
