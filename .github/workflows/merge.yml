@@ -63,18 +63,18 @@ jobs:
 
     - name: Push branch and create PR
       env:
-        MERGE_PAT: ${{ secrets.PAT_TOKEN }}
+        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         BRANCH: ${{ steps.vars.outputs.BRANCH }}
         BASE: ${{ steps.vars.outputs.BASE }}
         TAG: ${{ steps.vars.outputs.TAG }}
       run: |
-        if [ -z "$MERGE_PAT" ]; then
-          echo "ERROR: repository secret MERGE_PAT is not set. Please add a PAT with repo permissions to the repository secrets named MERGE_PAT."
+        if [ -z "$PAT_TOKEN" ]; then
+          echo "ERROR: repository secret PAT_TOKEN is not set. Please add a PAT with repo permissions to the repository secrets named PAT_TOKEN."
           exit 1
         fi
 
         # push branch (include token in remote URL)
-        git remote set-url origin "https://x-access-token:${MERGE_PAT}@github.com/${{ github.repository }}"
+        git remote set-url origin "https://x-access-token:${PAT_TOKEN}@github.com/${{ github.repository }}"
         git push origin "HEAD:${BRANCH}" --force
 
         # prepare PR body
@@ -92,7 +92,7 @@ jobs:
         API_URL="https://api.github.com/repos/${{ github.repository }}/pulls"
         PAYLOAD=$(jq -n --arg title "$TITLE" --arg head "$BRANCH" --arg base "$BASE" --arg body "$BODY" --argjson draft $DRAFT '{title: $title, head: $head, base: $base, body: $body, draft: $draft}')
         echo "Creating PR: $TITLE"
-        RESPONSE=$(curl -s -H "Authorization: token ${MERGE_PAT}" -H "Accept: application/vnd.github+json" "$API_URL" -d "$PAYLOAD")
+        RESPONSE=$(curl -s -H "Authorization: token ${PAT_TOKEN}" -H "Accept: application/vnd.github+json" "$API_URL" -d "$PAYLOAD")
         echo "$RESPONSE" | jq '.html_url // .message' > pr_url.txt
         echo "PR result:"
         cat pr_url.txt
