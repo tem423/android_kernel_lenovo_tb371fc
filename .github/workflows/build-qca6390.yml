@@ -69,7 +69,7 @@ jobs:
           mkdir -p output
           find drivers/staging/qcacld-3.0 -name "*.ko" -exec cp {} output/ \;
           for f in output/*.ko; do
-            strip --strip-debug "$f"
+            aarch64-linux-gnu-strip --strip-debug "$f" || strip --strip-debug "$f" || true
           done
           ls -lh output/
 
