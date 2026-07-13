@@ -6,23 +6,23 @@ on:
       source_repo:
         description: '源仓库地址 (例如: https://github.com/user/repo.git)'
         required: true
-        default: https://github.com/ila-embsys/linux-android-msm-lenovo-p12.git
+        default: 'https://github.com/jsdizkcksv/kernel_xiaomi_sm8250.git'
       source_branch:
         description: '源分支名称'
         required: true
-        default: 'tb371fc'
+        default: 'backport-5.10-bpf'
       commit_start:
         description: '起始 Commit (包含)'
         required: true
-        default: '70e9b1a'
+        default: '1a6da61'
       commit_end:
         description: '结束 Commit (包含)'
         required: true
-        default: '7709a49'
+        default: 'e7087c9'
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
-        default: '接近原厂源码'
+        default: '合bpf'
       skip_commits:
         description: '要跳过的提交列表（用空格分隔，例如: c74ef2fe8516 1a6da61bf1ba）'
         required: false
