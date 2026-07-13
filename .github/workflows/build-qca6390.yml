@@ -1,0 +1,74 @@
+name: Build qca6390 wlan.ko
+
+on:
+  workflow_dispatch:
+    inputs:
+      kernel-branch:
+        description: 'Branch to build'
+        required: true
+        default: 'resolve-conflicts'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential gcc-aarch64-linux-gnu bc bison flex libssl-dev
+
+      - name: Setup clang
+        run: |
+          git clone https://github.com/sticpaper/Snapdragon-LLVM-ARM-Compiler-10.0.7-for-Android-NDK $HOME/clang --depth=1 -b main
+
+      - name: Setup GCC
+        run: |
+          git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ $HOME/gcc-64 --depth=1 -b android11-release
+
+      - name: Checkout kernel
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.kernel-branch }}
+          fetch-depth: 1
+          path: kernel
+
+      - name: Build qca6390 wlan.ko
+        working-directory: kernel
+        run: |
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android-
+          export PATH=$HOME/clang/bin:$HOME/gcc-64/bin:$PATH
+
+          # Generate base config
+          make CC=clang CROSS_COMPILE=aarch64-linux-android- CLANG_TRIPLE=aarch64-linux-gnu- vendor/tb371fc_defconfig
+
+          # Enable QCA6390 WLAN module
+          scripts/config --enable CONFIG_QCA_CLD_WLAN
+          scripts/config --module CONFIG_QCA_CLD_WLAN
+          scripts/config --enable CONFIG_CNSS_QCA6390
+          scripts/config --enable CONFIG_WLAN_FEATURE_11AX
+          scripts/config --enable CONFIG_WLAN_FEATURE_DFS_OFFLOAD
+          scripts/config --enable CONFIG_BUS_AUTO_SUSPEND
+          scripts/config --enable CONFIG_DIRECT_BUF_RX_ENABLE
+          scripts/config --enable CONFIG_WMI_DBR_SUPPORT
+
+          make CC=clang CROSS_COMPILE=aarch64-linux-android- CLANG_TRIPLE=aarch64-linux-gnu- olddefconfig
+
+          # Prepare kernel
+          make CC=clang CROSS_COMPILE=aarch64-linux-android- CLANG_TRIPLE=aarch64-linux-gnu- -j$(nproc) prepare scripts
+
+          # Build qca6390 wlan module
+          make CC=clang CROSS_COMPILE=aarch64-linux-android- CLANG_TRIPLE=aarch64-linux-gnu- -j$(nproc) \
+            M=drivers/staging/qcacld-3.0 \
+            WLAN_ROOT=$(pwd)/drivers/staging/qcacld-3.0 \
+            MODNAME=wlan \
+            CONFIG_QCA_CLD_WLAN=m \
+            CONFIG_CNSS_QCA6390=y \
+            modules
+
+      - name: Upload wlan.ko
+        uses: actions/upload-artifact@v4
+        with:
+          name: qca6390-wlan-ko
+          path: kernel/drivers/staging/qcacld-3.0/**/*.ko
