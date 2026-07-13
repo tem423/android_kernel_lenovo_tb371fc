@@ -43,15 +43,13 @@ jobs:
           # Generate base config
           make CC=clang CROSS_COMPILE=aarch64-linux-android- CLANG_TRIPLE=aarch64-linux-gnu- vendor/tb371fc_defconfig
 
-          # Enable QCA6390 WLAN module
+          # Load qca6390 specific config
+          cat drivers/staging/qcacld-3.0/configs/qca6390_defconfig >> .config
+
+          # Ensure WLAN module is enabled
           scripts/config --enable CONFIG_QCA_CLD_WLAN
           scripts/config --module CONFIG_QCA_CLD_WLAN
           scripts/config --enable CONFIG_CNSS_QCA6390
-          scripts/config --enable CONFIG_WLAN_FEATURE_11AX
-          scripts/config --enable CONFIG_WLAN_FEATURE_DFS_OFFLOAD
-          scripts/config --enable CONFIG_BUS_AUTO_SUSPEND
-          scripts/config --enable CONFIG_DIRECT_BUF_RX_ENABLE
-          scripts/config --enable CONFIG_WMI_DBR_SUPPORT
 
           make CC=clang CROSS_COMPILE=aarch64-linux-android- CLANG_TRIPLE=aarch64-linux-gnu- olddefconfig
 
@@ -71,7 +69,7 @@ jobs:
           mkdir -p output
           find drivers/staging/qcacld-3.0 -name "*.ko" -exec cp {} output/ \;
           for f in output/*.ko; do
-            aarch64-linux-gnu-strip --strip-unneeded "$f"
+            strip --strip-debug "$f"
           done
           ls -lh output/
 
