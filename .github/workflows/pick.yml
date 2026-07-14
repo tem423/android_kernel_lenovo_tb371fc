@@ -14,11 +14,11 @@ on:
       commit_start:
         description: '起始 Commit (包含)'
         required: true
-        default: 'fc93bc8'
+        default: 'c036663'
       commit_end:
         description: '结束 Commit (包含)'
         required: true
-        default: '9b1f3c8'
+        default: 'c036663'
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
