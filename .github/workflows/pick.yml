@@ -14,7 +14,7 @@ on:
       commit_start:
         description: '起始 Commit (包含)'
         required: true
-        default: 'fc93bc8'
+        default: '933f686'
       commit_end:
         description: '结束 Commit (包含)'
         required: true
