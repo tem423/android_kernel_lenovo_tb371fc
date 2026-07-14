@@ -6,7 +6,7 @@ on:
       source_repo:
         description: '源仓库地址 (例如: https://github.com/user/repo.git)'
         required: true
-        default: 'https://github.com/jsdizkcksv/kernel_xiaomi_sm8250.git'
+        default: 'https://github.com/ApartTUSITU/kernel_xiaomi_sm8250_mod.git'
       source_branch:
         description: '源分支名称'
         required: true
@@ -14,11 +14,11 @@ on:
       commit_start:
         description: '起始 Commit (包含)'
         required: true
-        default: '5ea82fe'
+        default: '933f686'
       commit_end:
         description: '结束 Commit (包含)'
         required: true
-        default: 'e7087c9'
+        default: '9b1f3c8'
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
@@ -26,7 +26,7 @@ on:
       skip_commits:
         description: '要跳过的提交列表（用空格分隔，例如: c74ef2fe8516 1a6da61bf1ba）'
         required: false
-        default: '5ea82fe85812528e612a98d46865935622ba2bc5'
+        default: '62ed6962cb669ba51224034948fb4e00946570f9'
 
 jobs:
   cherry-pick:
