@@ -26,7 +26,7 @@ on:
       skip_commits:
         description: '要跳过的提交列表（用空格分隔，例如: c74ef2fe8516 1a6da61bf1ba）'
         required: false
-        default: ''
+        default: '5ea82fe85812528e612a98d46865935622ba2bc5'
 
 jobs:
   cherry-pick:
