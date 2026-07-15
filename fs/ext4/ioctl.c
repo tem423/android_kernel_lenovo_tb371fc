@@ -1318,15 +1318,10 @@ long ext4_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case FS_IOC_GETFSMAP:
 	case FS_IOC_ENABLE_VERITY:
 	case FS_IOC_MEASURE_VERITY:
-<<<<<<< HEAD
-	case FS_IOC_READ_VERITY_METADATA:
-	case EXT4_IOC_FSGETXATTR:
-	case EXT4_IOC_FSSETXATTR:
-=======
 	case EXT4_IOC_FSGETXATTR:
 	case EXT4_IOC_FSSETXATTR:
 	case FS_IOC_READ_VERITY_METADATA:
->>>>>>> upstream/android16-base
+
 		break;
 	default:
 		return -ENOIOCTLCMD;
