@@ -31,7 +31,7 @@ jobs:
         id: revert_step
         continue-on-error: true
         run: |
-          git revert 5d65d87 --no-edit
+          git revert bfd00dd --no-edit
           echo "status=success" >> $GITHUB_OUTPUT
 
       - name: 检查结果并推送
