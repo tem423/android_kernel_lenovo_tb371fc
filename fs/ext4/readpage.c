@@ -160,10 +160,6 @@ static bool bio_post_read_required(struct bio *bio)
  */
 static void mpage_end_io(struct bio *bio)
 {
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/android16-base
 	if (bio_post_read_required(bio)) {
 		struct bio_post_read_ctx *ctx = bio->bi_private;
 
