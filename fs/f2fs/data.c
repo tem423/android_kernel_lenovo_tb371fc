@@ -739,14 +739,8 @@ int f2fs_submit_page_bio(struct f2fs_io_info *fio)
 	inc_page_count(fio->sbi, is_read_io(fio->op) ?
 			__read_io_type(page) : WB_DATA_TYPE(fio->page));
 
-<<<<<<< HEAD
-	if (is_read_io(fio->op))
-		__submit_bio(fio->sbi, bio, fio->type);
-	else
-		__submit_bio(fio->sbi, bio, fio->type);
-=======
+
 	__submit_bio(fio->sbi, bio, fio->type);
->>>>>>> upstream/android16-base
 	return 0;
 }
 
@@ -935,14 +929,10 @@ alloc_new:
 	if (!bio) {
 		bio = __bio_alloc(fio, BIO_MAX_PAGES);
 		f2fs_set_bio_crypt_ctx(bio, fio->page->mapping->host,
-<<<<<<< HEAD
-				       fio->page->index, fio,
-				       GFP_NOIO);
-=======
+
 				       fio->page->index, fio, GFP_NOIO);
 
 		bio_set_op_attrs(bio, fio->op, fio->op_flags);
->>>>>>> upstream/android16-base
 
 		add_bio_entry(fio->sbi, bio, page, fio->temp);
 	} else {
@@ -1059,15 +1049,11 @@ static struct bio *f2fs_grab_read_bio(struct inode *inode, block_t blkaddr,
 	bio_set_op_attrs(bio, REQ_OP_READ, op_flag);
 	if (!bio)
 		return ERR_PTR(-ENOMEM);
-<<<<<<< HEAD
-	bio->bi_iter.bi_sector = sector;
-	f2fs_set_bio_crypt_ctx(bio, inode, first_idx, NULL, GFP_NOFS);
-=======
+
 
 	f2fs_set_bio_crypt_ctx(bio, inode, first_idx, NULL, GFP_NOFS);
 
 	bio->bi_iter.bi_sector = sector;
->>>>>>> upstream/android16-base
 	bio->bi_end_io = f2fs_read_end_io;
 
 	if (fscrypt_inode_uses_fs_layer_crypto(inode))
