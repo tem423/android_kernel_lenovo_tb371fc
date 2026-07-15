@@ -12,6 +12,11 @@
 #include <linux/slab.h>
 #include <linux/verification.h>
 
+/* Forward declaration */
+int __fsverity_verify_signature(const struct inode *inode, const u8 *signature,
+				size_t sig_size, const u8 *file_digest,
+				unsigned int digest_algorithm);
+
 /*
  * /proc/sys/fs/verity/require_signatures
  * If 1, all verity files must have a valid builtin signature.
