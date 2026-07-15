@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-obj-$(CONFIG_INCREMENTAL_FS)	+= incrementalfs.o
+obj-	+= incrementalfs.o
 
 incrementalfs-y := \
 	data_mgmt.o \
@@ -10,4 +10,4 @@ incrementalfs-y := \
 	sysfs.o \
 	vfs.o
 
-incrementalfs-$(CONFIG_FS_VERITY) += verity.o
+# incrementalfs- += verity.o  # disabled: verity.c corrupted
