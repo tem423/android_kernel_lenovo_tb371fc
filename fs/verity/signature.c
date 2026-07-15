@@ -40,11 +40,7 @@ static struct key *fsverity_keyring;
 int fsverity_verify_signature(const struct fsverity_info *vi,
 			      const u8 *signature, size_t sig_size)
 {
-<<<<<<< HEAD
-	const struct inode *inode = vi->inode;
-	const struct fsverity_hash_alg *hash_alg = vi->tree_params.hash_alg;
-	struct fsverity_formatted_digest *d;
-=======
+
 	unsigned int digest_algorithm =
 		vi->tree_params.hash_alg - fsverity_hash_algs;
 
@@ -72,7 +68,6 @@ int __fsverity_verify_signature(const struct inode *inode, const u8 *signature,
 	struct fsverity_formatted_digest *d;
 	struct fsverity_hash_alg *hash_alg = fsverity_get_hash_alg(inode,
 							digest_algorithm);
->>>>>>> upstream/android16-base
 	int err;
 
 	if (sig_size == 0) {
@@ -106,11 +101,8 @@ int __fsverity_verify_signature(const struct inode *inode, const u8 *signature,
 	memcpy(d->magic, "FSVerity", 8);
 	d->digest_algorithm = cpu_to_le16(hash_alg - fsverity_hash_algs);
 	d->digest_size = cpu_to_le16(hash_alg->digest_size);
-<<<<<<< HEAD
-	memcpy(d->digest, vi->file_digest, hash_alg->digest_size);
-=======
+
 	memcpy(d->digest, file_digest, hash_alg->digest_size);
->>>>>>> upstream/android16-base
 
 	err = verify_pkcs7_signature(d, sizeof(*d) + hash_alg->digest_size,
 				     signature, sig_size, fsverity_keyring,
@@ -132,16 +124,12 @@ int __fsverity_verify_signature(const struct inode *inode, const u8 *signature,
 		return err;
 	}
 
-<<<<<<< HEAD
-	return 0;
-}
-=======
+
 	pr_debug("Valid signature for file digest %s:%*phN\n",
 		 hash_alg->name, hash_alg->digest_size, file_digest);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(__fsverity_verify_signature);
->>>>>>> upstream/android16-base
 
 #ifdef CONFIG_SYSCTL
 static struct ctl_table_header *fsverity_sysctl_header;
