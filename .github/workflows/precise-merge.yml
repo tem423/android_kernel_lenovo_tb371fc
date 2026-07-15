@@ -6,11 +6,11 @@ on:
       upstream_repo:
         description: 'Upstream repo (owner/repo)'
         required: true
-        default: 'ila-embsys/linux-android-msm-lenovo-p12'
+        default: 'tem423/android_kernel_lenovo_tb371fc'
       upstream_branch:
         description: 'Upstream branch'
         required: true
-        default: 'android-4.19-stable'
+        default: 'android16-base'
       source_branch:
         description: 'Source branch to merge from'
         required: true
