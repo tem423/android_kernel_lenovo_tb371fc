@@ -1,0 +1,45 @@
+name: Revert with Conflict Handling
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: '目标分支'
+        required: true
+        default: '合bpf'
+
+permissions:
+  contents: write
+
+jobs:
+  revert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: 配置 Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: 尝试 revert
+        continue-on-error: true  # 即使冲突也继续
+        id: revert_step
+        run: |
+          git revert 5d65d87 --no-edit || echo "CONFLICT=true" >> $GITHUB_OUTPUT
+
+      - name: 检查结果
+        run: |
+          if [ "${{ steps.revert_step.outputs.CONFLICT }}" == "true" ]; then
+            echo "⚠️ 发生冲突，请手动解决"
+            git status
+            exit 1  # 失败，让开发者手动处理
+          else
+            echo "✅ Revert 成功，推送中..."
+            git push origin ${{ github.event.inputs.branch }}
+          fi        token: ${{ secrets.PAT_TOKEN }}
