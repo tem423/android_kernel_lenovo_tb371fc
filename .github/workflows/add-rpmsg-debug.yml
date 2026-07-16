@@ -1,0 +1,51 @@
+name: Add rpmsg bus match debug
+on:
+  workflow_dispatch:
+jobs:
+  add-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test-audio-fix
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+      - name: Add debug to rpmsg bus match and probe
+        run: |
+          python3 << 'PYEOF'
+          with open("drivers/rpmsg/rpmsg_core.c", "r") as f:
+              content = f.read()
+          
+          # 1. Add debug in rpmsg_dev_match to log every match attempt
+          old_match = 'static int rpmsg_dev_match(struct device *dev, struct device_driver *drv)\n{\n\tstruct rpmsg_device *rpdev = to_rpmsg_device(dev);\n\tstruct rpmsg_driver *rpdrv = to_rpmsg_driver(drv);\n\tconst struct rpmsg_device_id *ids = rpdrv->id_table;\n\tunsigned int i;\n\n\tif (rpdev->driver_override)\n\t\treturn !strcmp(rpdev->driver_override, drv->name);'
+          
+          new_match = 'static int rpmsg_dev_match(struct device *dev, struct device_driver *drv)\n{\n\tstruct rpmsg_device *rpdev = to_rpmsg_device(dev);\n\tstruct rpmsg_driver *rpdrv = to_rpmsg_driver(drv);\n\tconst struct rpmsg_device_id *ids = rpdrv->id_table;\n\tunsigned int i;\n\n\tif (!strncmp(rpdev->id.name, "apr_audio_svc", 13))\n\t\tpr_info("rpmsg_match: dev=%s drv=%s\\n", dev_name(dev), drv->name);\n\n\tif (rpdev->driver_override)\n\t\treturn !strcmp(rpdev->driver_override, drv->name);'
+          
+          content = content.replace(old_match, new_match, 1)
+          
+          # 2. Add debug in rpmsg_dev_probe
+          old_probe = 'static int rpmsg_dev_probe(struct device *dev)\n{\n\tstruct rpmsg_driver *rpdrv;\n\tstruct rpmsg_device *rpdev;\n\tint ret;'
+          
+          new_probe = 'static int rpmsg_dev_probe(struct device *dev)\n{\n\tstruct rpmsg_driver *rpdrv;\n\tstruct rpmsg_device *rpdev;\n\tint ret;\n\tif (dev->driver)\n\t\tpr_info("rpmsg_probe: dev=%s drv=%s\\n", dev_name(dev), dev->driver->name);'
+          
+          content = content.replace(old_probe, new_probe, 1)
+          
+          with open("drivers/rpmsg/rpmsg_core.c", "w") as f:
+              f.write(content)
+          
+          if "rpmsg_match: dev=" in content:
+              print("OK: rpmsg_dev_match debug added")
+          else:
+              print("FAIL: rpmsg_dev_match debug not found")
+          if "rpmsg_probe: dev=" in content:
+              print("OK: rpmsg_dev_probe debug added")
+          else:
+              print("FAIL: rpmsg_dev_probe debug not found")
+          PYEOF
+      - name: Commit and push
+        run: |
+          git config user.email "tem423@users.noreply.github.com"
+          git config user.name "tem423"
+          git add -A
+          git commit -m "Add debug to rpmsg bus match and probe to trace driver binding" || echo "No changes"
+          git push origin test-audio-fix
