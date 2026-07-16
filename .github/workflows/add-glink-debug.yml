@@ -1,0 +1,68 @@
+name: Add GLINK Debug Logs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  add-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test-audio-fix
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Add pr_info debug to qcom_glink_native.c
+        run: |
+          FILE="drivers/rpmsg/qcom_glink_native.c"
+          
+          # Add debug in qcom_glink_native_intr - before switch(cmd)
+          sed -i '/switch (cmd) {/{
+            /qcom_glink_native_intr/{
+              a\ \t\tpr_info("glink_intr: cmd=%d param1=%u param2=%u\\n", cmd, param1, param2);
+            }
+          }' "$FILE"
+          
+          # More reliable approach: use python to add debug at specific functions
+          python3 << 'PYEOF'
+          import re
+          
+          with open("drivers/rpmsg/qcom_glink_native.c", "r") as f:
+              content = f.read()
+          
+          # 1. Add debug in qcom_glink_native_intr - right after "cmd = le16_to_cpu(msg.cmd);"
+          old1 = "\t\tcmd = le16_to_cpu(msg.cmd);\n\t\tparam1 = le16_to_cpu(msg.param1);\n\t\tparam2 = le32_to_cpu(msg.param2);\n\n\t\tswitch (cmd) {\n\t\tcase GLINK_CMD_VERSION:"
+          new1 = "\t\tcmd = le16_to_cpu(msg.cmd);\n\t\tparam1 = le16_to_cpu(msg.param1);\n\t\tparam2 = le32_to_cpu(msg.param2);\n\n\t\tif (cmd == GLINK_CMD_OPEN)\n\t\t\tpr_info(\"glink_intr: GLINK_CMD_OPEN param1=%u param2=%u\\n\", param1, param2);\n\n\t\tswitch (cmd) {\n\t\tcase GLINK_CMD_VERSION:"
+          
+          content = content.replace(old1, new1, 1)
+          
+          # 2. Add debug in qcom_glink_work - inside the GLINK_CMD_OPEN case
+          old2 = "\t\tcase GLINK_CMD_OPEN:\n\t\t\tqcom_glink_rx_open(glink, param1, msg->data);"
+          new2 = "\t\tcase GLINK_CMD_OPEN:\n\t\t\tpr_info(\"glink_work: GLINK_CMD_OPEN param1=%u\\n\", param1);\n\t\t\tqcom_glink_rx_open(glink, param1, msg->data);"
+          
+          content = content.replace(old2, new2, 1)
+          
+          with open("drivers/rpmsg/qcom_glink_native.c", "w") as f:
+              f.write(content)
+          
+          # Verify changes were made
+          if "glink_intr: GLINK_CMD_OPEN" in content:
+              print("SUCCESS: intr debug added")
+          else:
+              print("FAIL: intr debug not found")
+              
+          if "glink_work: GLINK_CMD_OPEN" in content:
+              print("SUCCESS: work debug added")
+          else:
+              print("FAIL: work debug not found")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.email "tem423@users.noreply.github.com"
+          git config user.name "tem423"
+          git add -A
+          git diff --cached --stat
+          git commit -m "Add GLINK debug logs to trace apr_audio_svc endpoint creation" || echo "No changes to commit"
+          git push origin test-audio-fix
