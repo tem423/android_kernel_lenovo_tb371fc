@@ -1,4 +1,4 @@
-name: Add rpmsg bus match debug
+name: Add rpmsg match detail debug
 on:
   workflow_dispatch:
 jobs:
@@ -10,42 +10,41 @@ jobs:
           ref: test-audio-fix
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
-      - name: Add debug to rpmsg bus match and probe
+      - name: Add detailed match debug
         run: |
           python3 << 'PYEOF'
           with open("drivers/rpmsg/rpmsg_core.c", "r") as f:
               content = f.read()
           
-          # 1. Add debug in rpmsg_dev_match to log every match attempt
-          old_match = 'static int rpmsg_dev_match(struct device *dev, struct device_driver *drv)\n{\n\tstruct rpmsg_device *rpdev = to_rpmsg_device(dev);\n\tstruct rpmsg_driver *rpdrv = to_rpmsg_driver(drv);\n\tconst struct rpmsg_device_id *ids = rpdrv->id_table;\n\tunsigned int i;\n\n\tif (rpdev->driver_override)\n\t\treturn !strcmp(rpdev->driver_override, drv->name);'
+          # Replace the existing apr_audio_svc debug with detailed version
+          old = '\tif (!strncmp(rpdev->id.name, "apr_audio_svc", 13))\n\t\tpr_info("rpmsg_match: dev=%s drv=%s\\n", dev_name(dev), drv->name);'
           
-          new_match = 'static int rpmsg_dev_match(struct device *dev, struct device_driver *drv)\n{\n\tstruct rpmsg_device *rpdev = to_rpmsg_device(dev);\n\tstruct rpmsg_driver *rpdrv = to_rpmsg_driver(drv);\n\tconst struct rpmsg_device_id *ids = rpdrv->id_table;\n\tunsigned int i;\n\n\tif (!strncmp(rpdev->id.name, "apr_audio_svc", 13))\n\t\tpr_info("rpmsg_match: dev=%s drv=%s\\n", dev_name(dev), drv->name);\n\n\tif (rpdev->driver_override)\n\t\treturn !strcmp(rpdev->driver_override, drv->name);'
+          new = '\tif (!strncmp(rpdev->id.name, "apr_audio_svc", 13)) {\n\t\tpr_info("rpmsg_match: dev=%s drv=%s ids=%p id_table0=%s override=%p\\n",\n\t\t\tdev_name(dev), drv->name, ids,\n\t\t\tids && ids[0].name[0] ? ids[0].name : \"(empty)\",\n\t\t\trpdev->driver_override);\n\t}'
           
-          content = content.replace(old_match, new_match, 1)
+          content = content.replace(old, new, 1)
           
-          # 2. Add debug in rpmsg_dev_probe
-          old_probe = 'static int rpmsg_dev_probe(struct device *dev)\n{\n\tstruct rpmsg_driver *rpdrv;\n\tstruct rpmsg_device *rpdev;\n\tint ret;'
+          # Also add return value debug after the id_table loop
+          old2 = '\treturn of_driver_match_device(dev, drv);\n}'
+          new2 = '\t{\n\t\tint _ret = of_driver_match_device(dev, drv);\n\t\tif (!strncmp(rpdev->id.name, "apr_audio_svc", 13))\n\t\t\tpr_info("rpmsg_match: apr_audio_svc falling to OF match, result=%d\\n", _ret);\n\t\treturn _ret;\n\t}\n}'
           
-          new_probe = 'static int rpmsg_dev_probe(struct device *dev)\n{\n\tstruct rpmsg_driver *rpdrv;\n\tstruct rpmsg_device *rpdev;\n\tint ret;\n\tif (dev->driver)\n\t\tpr_info("rpmsg_probe: dev=%s drv=%s\\n", dev_name(dev), dev->driver->name);'
-          
-          content = content.replace(old_probe, new_probe, 1)
+          content = content.replace(old2, new2, 1)
           
           with open("drivers/rpmsg/rpmsg_core.c", "w") as f:
               f.write(content)
           
-          if "rpmsg_match: dev=" in content:
-              print("OK: rpmsg_dev_match debug added")
+          if "id_table0=" in content:
+              print("OK: detailed match debug added")
           else:
-              print("FAIL: rpmsg_dev_match debug not found")
-          if "rpmsg_probe: dev=" in content:
-              print("OK: rpmsg_dev_probe debug added")
+              print("FAIL: detailed match debug not found")
+          if "falling to OF match" in content:
+              print("OK: OF fallback debug added")
           else:
-              print("FAIL: rpmsg_dev_probe debug not found")
+              print("FAIL: OF fallback debug not found")
           PYEOF
       - name: Commit and push
         run: |
           git config user.email "tem423@users.noreply.github.com"
           git config user.name "tem423"
           git add -A
-          git commit -m "Add debug to rpmsg bus match and probe to trace driver binding" || echo "No changes"
+          git commit -m "Add detailed debug: id_table pointer and OF fallback for apr_audio_svc" || echo "No changes"
           git push origin test-audio-fix
