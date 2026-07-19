@@ -1,4 +1,4 @@
-name: Sync Kernel from Specific Commit
+name: 克隆分支
 
 on:
   workflow_dispatch:
