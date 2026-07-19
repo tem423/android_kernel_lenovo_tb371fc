@@ -6,4 +6,4 @@ mm8013c06_battery驱动来自tb360zu
 其他电池驱动来自tbq706所以功能不全充电速度慢
 ctn730来自tbq706f(不知道能不能用)
 基线是https://github.com/UtsavBalar1231/kernel_xiaomi_sm8250 的android14-base
-总修改记录:启动触摸驱动的return 0，修正signal.c,添加hqsysfs和huaqinhardware驱动，加ktz8866a和b，加mm8013驱动修改smb5的注册名以调用mm8013，混合tbq706f代码
+总修改记录:启动触摸驱动的return 0，修正signal.c,添加hqsysfs和huaqinhardware驱动，加ktz8866a和b，加mm8013驱动修改smb5的注册名以读取mm8013，混合tbq706f代码，更新lz4和lz4hc
