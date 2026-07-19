@@ -1,4 +1,4 @@
-name: pick backport-5.10-bpf
+name: backport-5.10-bpf
 
 on:
   workflow_dispatch:
