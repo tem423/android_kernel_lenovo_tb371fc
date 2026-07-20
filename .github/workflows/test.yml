@@ -1,4 +1,4 @@
-name: Android Kernel Build Action
+name: 编译内核
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
 jobs:
   build-kernel:
     name: Build Kernel
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Build
         uses: tem423/kernel_build_action@main
