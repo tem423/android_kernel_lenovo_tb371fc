@@ -1,4 +1,4 @@
-name: 克隆分支
+name: clone
 
 on:
   workflow_dispatch:
