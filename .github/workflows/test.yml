@@ -1,4 +1,4 @@
-name: 编译内核
+name: Android Kernel Build Action
 
 on:
   workflow_dispatch:
