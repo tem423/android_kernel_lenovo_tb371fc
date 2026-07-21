@@ -1,0 +1,27 @@
+name: Copy audio-techpack to audio-test
+on:
+  workflow_dispatch:
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audio-test
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Fetch audio-techpack and replace techpack/audio
+        run: |
+          git remote add audio https://github.com/tem423/android_kernel_lenovo_tb371fc.git
+          git fetch audio audio-techpack
+          
+          rm -rf techpack/audio/*
+          git archive audio/audio-techpack | tar -x -C techpack/audio/
+          
+          git add -A
+          git diff --cached --stat
+          git config user.email "tem423@users.noreply.github.com"
+          git config user.name "tem423"
+          git commit -m "Replace techpack/audio with audio-techpack content" || echo "No changes"
+          git push origin audio-test
