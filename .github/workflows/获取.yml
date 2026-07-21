@@ -17,14 +17,14 @@ jobs:
     - name: Clone and force push as branch
       run: |
         # 克隆LineageOS内核仓库
-        git clone https://github.com/LineageOS/android_kernel_qcom_sm8250.git kernel-temp
+        git clone https://git.codelinaro.org/clo/la/platform/vendor/opensource/audio-kernel.git kernel-temp
         cd kernel-temp
         
         # 切换到指定的commit
-        git checkout 7236e11edc9a2e258d50e773614ae0153fe303d4
+        git checkout LA.UM.9.12.r1-14900-SMxx50.QSSI13.0
         
         # 创建固定名称的分支（如果存在则先删除）
-        branch_name="android16-base"
+        branch_name="audio-techpack"
         
         # 删除本地分支（如果存在）
         git branch -D $branch_name 2>/dev/null || true
