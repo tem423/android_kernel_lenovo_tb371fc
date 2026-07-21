@@ -1,4 +1,4 @@
-name: Fix core.h not found
+name: Fix broken core.h symlink
 on:
   workflow_dispatch:
 jobs:
@@ -11,18 +11,17 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
-      - name: Add soc/ to include path in audio Makefile
+      - name: Replace broken symlink with actual file
         run: |
-          FILE="techpack/audio/Makefile"
-          
-          # Add soc/ include path after the existing include/uapi path
-          sed -i '/-I$(srctree)\/techpack\/audio\/include$/a LINUXINCLUDE    += \\\n                -I$(srctree)/techpack/audio/soc' "$FILE"
+          rm -f techpack/audio/soc/core.h
+          cp drivers/pinctrl/core.h techpack/audio/soc/core.h
           
           echo "=== Verify ==="
-          grep -n "soc\|LINUXINCLUDE" "$FILE" | head -20
+          ls -la techpack/audio/soc/core.h
+          head -3 techpack/audio/soc/core.h
           
           git add -A
           git config user.email "tem423@users.noreply.github.com"
           git config user.name "tem423"
-          git commit -m "Add soc/ to include path to fix core.h not found" || echo "No changes"
+          git commit -m "Replace broken core.h symlink with actual file content" || echo "No changes"
           git push origin audio-test
