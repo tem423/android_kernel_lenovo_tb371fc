@@ -1,4 +1,4 @@
-name: Fix broken core.h symlink
+name: Fix all broken symlinks in audio-techpack
 on:
   workflow_dispatch:
 jobs:
@@ -11,17 +11,35 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
-      - name: Replace broken symlink with actual file
+      - name: Find and fix all broken symlinks
         run: |
-          rm -f techpack/audio/soc/core.h
-          cp drivers/pinctrl/core.h techpack/audio/soc/core.h
+          echo "=== Finding broken symlinks ==="
+          find techpack/audio -type l | while read link; do
+            target=$(readlink "$link")
+            if [ ! -e "$link" ]; then
+              echo "BROKEN: $link -> $target"
+              
+              # Try to find the target in the kernel source tree
+              basename=$(basename "$target")
+              found=$(find drivers/ include/ -name "$basename" 2>/dev/null | head -1)
+              
+              if [ -n "$found" ]; then
+                echo "  FOUND: $found"
+                rm "$link"
+                cp "$found" "$link"
+                echo "  FIXED"
+              else
+                echo "  NOT FOUND - removing symlink"
+                rm "$link"
+                echo "  REMOVED"
+              fi
+            fi
+          done
           
-          echo "=== Verify ==="
-          ls -la techpack/audio/soc/core.h
-          head -3 techpack/audio/soc/core.h
-          
+          echo "=== Summary ==="
+          git diff --stat
           git add -A
           git config user.email "tem423@users.noreply.github.com"
           git config user.name "tem423"
-          git commit -m "Replace broken core.h symlink with actual file content" || echo "No changes"
+          git commit -m "Fix all broken symlinks in audio-techpack" || echo "No changes"
           git push origin audio-test
