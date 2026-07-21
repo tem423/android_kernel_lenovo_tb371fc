@@ -1,0 +1,28 @@
+name: Fix audio-test build errors
+on:
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audio-test
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Add missing SND_JACK defines to jack.h
+        run: |
+          FILE="include/sound/jack.h"
+          
+          # Add SND_JACK_MICROPHONE2 and SND_JACK_ANC_HEADPHONE before SND_JACK_BTN_0
+          sed -i 's/\tSND_JACK_BTN_0\t\t= 0x8000,/\tSND_JACK_MICROPHONE2\t= 0x0200,\n\tSND_JACK_ANC_HEADPHONE\t= 0x10000,\n\tSND_JACK_BTN_0\t\t= 0x8000,/' "$FILE"
+          
+          echo "=== Verify ==="
+          grep -n "MICROPHONE2\|ANC_HEADPHONE" "$FILE"
+          
+          git add -A
+          git config user.email "tem423@users.noreply.github.com"
+          git config user.name "tem423"
+          git commit -m "Add SND_JACK_MICROPHONE2 and SND_JACK_ANC_HEADPHONE to jack.h" || echo "No changes"
+          git push origin audio-test
