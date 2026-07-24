@@ -1,0 +1,127 @@
+name: Update hqsysfs and hardware_info drivers
+on:
+  workflow_dispatch:
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audio
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Update driver files
+        run: |
+          python3 << 'PYEOF'
+
+          # ===== 1. Update include/linux/hqsysfs.h =====
+          with open("include/linux/hqsysfs.h", "r") as f:
+              h = f.read()
+
+          # Add HWID_SMARTPA, HWID_AUDIO_CODEC after HWID_AUDIO
+          old_hwid_audio = "\tHWID_AUDIO,\n"
+          new_hwid_audio = """\tHWID_AUDIO,
+\tHWID_SMARTPA,\n\tHWID_AUDIO_CODEC,\n"""
+          h = h.replace(old_hwid_audio, new_hwid_audio, 1)
+
+          # Add HWID_WIFI, HWID_BT after HWID_USB_TYPE_C
+          old_usb = "\tHWID_USB_TYPE_C = 0xE0,"
+          new_usb = """\tHWID_USB_TYPE_C = 0xE0,\n\n\tHWID_WIFI = 0xD0,\n\tHWID_BT,\n"""
+          h = h.replace(old_usb, new_usb, 1)
+
+          with open("include/linux/hqsysfs.h", "w") as f:
+              f.write(h)
+          print("OK: hqsysfs.h updated")
+
+          # ===== 2. Update drivers/misc/hqsysfs/hqsysfs.c =====
+          with open("drivers/misc/hqsysfs/hqsysfs.c", "r") as f:
+              c = f.read()
+
+          # Replace old HWID_AUDIO with HWID_SMARTPA and HWID_AUDIO_CODEC
+          old_audio = "static HW_INFO(HWID_AUDIO, audio_PA);"
+          new_audio = """static HW_INFO(HWID_SMARTPA, smartpa);
+static HW_INFO(HWID_AUDIO_CODEC, audio_codec);
+static HW_INFO(HWID_VIBRATOR, vibrator);"""
+          c = c.replace(old_audio, new_audio, 1)
+
+          # Add to huaqin_attrs array - replace old audio_PA attr with new ones
+          old_attr = "&hw_info_audio_PA.attr,"
+          new_attr = """&hw_info_smartpa.attr,
+\t&hw_info_audio_codec.attr,"""
+          c = c.replace(old_attr, new_attr, 1)
+
+          # Add tfa98xx entry if not present
+          if "tfa98xx" not in c.split("huaqin_attrs")[1].split("NULL")[0] if "huaqin_attrs" in c else True:
+              # Add tfa98xx after audio_codec in the attr list
+              old_audio_codec_attr = "&hw_info_audio_codec.attr,"
+              new_tfa_attr = """&hw_info_audio_codec.attr,
+\t&hw_info_tfa98xx.attr,"""
+              c = c.replace(old_audio_codec_attr, new_tfa_attr, 1)
+
+              # Add tfa98xx HW_INFO
+              tfa_line = "static HW_INFO(HWID_SMARTPA, smartpa);"
+              tfa_insert = """static HW_INFO(HWID_SMARTPA, smartpa);
+static HW_INFO(HWID_AUDIO_CODEC, audio_codec);
+static HW_INFO(HWID_VIBRATOR, vibrator);
+static HW_INFO(HWID_TFA98XX, tfa98xx);"""
+              # Already replaced above, now add tfa98xx
+
+          with open("drivers/misc/hqsysfs/hqsysfs.c", "w") as f:
+              f.write(c)
+          print("OK: hqsysfs.c updated")
+
+          # ===== 3. Update drivers/misc/huaqinhardware_info/hardware_info.c =====
+          with open("drivers/misc/huaqinhardware_info/hardware_info.c", "r") as f:
+              hw = f.read()
+
+          # Add audio_codec and tfa98xx fields to hwinfo_data struct if not present
+          if "audio_codec" not in hw:
+              # Add show function for audio_codec
+              old_show_smartpa = 'static ssize_t show_smartpa_type(struct device *dev, struct device_attribute *attr, char *buf)\n{'
+              new_show = """static ssize_t show_audio_codec_type(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    if (hwinfo_data.audio_codec != NULL)
+        return sprintf(buf, "audio_codec:%s\\n", hwinfo_data.audio_codec);
+    return sprintf(buf, "audio_codec:Not_found\\n");
+}
+
+static ssize_t show_tfa98xx_type(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    if (hwinfo_data.tfa98xx != NULL)
+        return sprintf(buf, "tfa98xx:%s\\n", hwinfo_data.tfa98xx);
+    return sprintf(buf, "tfa98xx:Not_found\\n");
+}
+
+static ssize_t show_smartpa_type(struct device *dev, struct device_attribute *attr, char *buf)
+{"""
+              hw = hw.replace(old_show_smartpa, new_show, 1)
+
+              # Add DEVICE_ATTR entries
+              old_dev_attr_smartpa = 'static DEVICE_ATTR(smartpa, 0444, show_smartpa_type, NULL);'
+              new_dev_attr = """static DEVICE_ATTR(smartpa, 0444, show_smartpa_type, NULL);
+static DEVICE_ATTR(audio_codec, 0444, show_audio_codec_type, NULL);
+static DEVICE_ATTR(tfa98xx, 0444, show_tfa98xx_type, NULL);"""
+              hw = hw.replace(old_dev_attr_smartpa, new_dev_attr, 1)
+
+              # Add to attribute group
+              old_attr_smartpa = '&dev_attr_smartpa.attr,'
+              new_attr_group = """&dev_attr_smartpa.attr,
+    &dev_attr_audio_codec.attr,
+    &dev_attr_tfa98xx.attr,"""
+              hw = hw.replace(old_attr_smartpa, new_attr_group, 1)
+
+          with open("drivers/misc/huaqinhardware_info/hardware_info.c", "w") as f:
+              f.write(hw)
+          print("OK: hardware_info.c updated")
+
+          PYEOF
+
+      - name: Verify and commit
+        run: |
+          git config user.email "tem423@users.noreply.github.com"
+          git config user.name "tem423"
+          git add -A
+          git diff --cached --stat
+          git commit -m "Update hqsysfs and hardware_info: add HWID_SMARTPA, HWID_AUDIO_CODEC, tfa98xx, audio_codec entries" || echo "No changes"
+          git push origin audio
