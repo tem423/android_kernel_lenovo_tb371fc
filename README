@@ -2,7 +2,8 @@
 目前音频无法使用，关机不可充电，刷新率锁120，播放器0.5倍速
 触摸驱动来自https://github.com/ila-embsys/linux-android-msm-lenovo-p12
 ktz8866ab驱动来自tb321fu
-mm8013c06_battery，huaqinhardware和hqsysfs驱动来自tb360zu
+mm8013c06_battery和huaqinhardware驱动来自tb360zu
+huaqinhardware_info驱动来自tb370fu
 其他电池驱动来自tbq706所以功能不全充电速度慢
 ctn730来自tbq706f(不知道能不能用)
 基线是https://github.com/UtsavBalar1231/kernel_xiaomi_sm8250 的android14-base
