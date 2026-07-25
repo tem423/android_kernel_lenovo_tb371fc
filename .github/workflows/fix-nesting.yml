@@ -1,4 +1,4 @@
-name: Fix nesting
+name: Fix techpack audio nesting
 on:
   push:
     branches: [audio]
@@ -12,25 +12,26 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 1
 
-      - name: Fix nesting
+      - name: Fix
         run: |
-          if [ -d techpack/audio/techpack/audio ]; then
-            mkdir -p /tmp/audio_backup
-            cp -r techpack/audio/techpack/audio/* /tmp/audio_backup/
-            rm -rf techpack/audio/*
-            cp -r /tmp/audio_backup/* techpack/audio/
-            echo "Fixed"
-          else
-            echo "No nesting found"
-          fi
+          # Remove the wrongly nested path
+          rm -rf techpack/audio/*
           
+          # Extract to repo root (preserving techpack/audio/ prefix)
+          git remote add eddie https://github.com/Eddie07/android_kernel_tb128fu.git
+          git fetch eddie lineage-20.0
+          git archive eddie/lineage-20.0 -- techpack/audio | tar -x
+          
+          echo "=== Verify ==="
           ls techpack/audio/
-          ls techpack/audio/ipc/ 2>/dev/null | head -5
+          ls techpack/audio/ipc/ | head -5
+          ls techpack/audio/soc/ | head -5
 
       - name: Push
         run: |
           git config user.email "tem423@users.noreply.github.com"
           git config user.name "tem423"
           git add -A
-          git commit -m "Fix nesting" || echo "No changes"
+          git diff --cached --stat
+          git commit -m "Fix techpack/audio structure from Eddie07 lineage-20.0" || echo "No changes"
           git push origin audio
