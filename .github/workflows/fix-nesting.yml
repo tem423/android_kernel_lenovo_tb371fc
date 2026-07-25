@@ -1,0 +1,36 @@
+name: Fix nesting
+on:
+  push:
+    branches: [audio]
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audio
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Fix nesting
+        run: |
+          if [ -d techpack/audio/techpack/audio ]; then
+            mkdir -p /tmp/audio_backup
+            cp -r techpack/audio/techpack/audio/* /tmp/audio_backup/
+            rm -rf techpack/audio/*
+            cp -r /tmp/audio_backup/* techpack/audio/
+            echo "Fixed"
+          else
+            echo "No nesting found"
+          fi
+          
+          ls techpack/audio/
+          ls techpack/audio/ipc/ 2>/dev/null | head -5
+
+      - name: Push
+        run: |
+          git config user.email "tem423@users.noreply.github.com"
+          git config user.name "tem423"
+          git add -A
+          git commit -m "Fix nesting" || echo "No changes"
+          git push origin audio
