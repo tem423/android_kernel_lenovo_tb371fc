@@ -3900,7 +3900,6 @@ static bool dsi_display_is_seamless_dfps_possible(
 
 	cur = display->panel->cur_mode;
 
-	/* 只检查时序参数，不限制刷新率 */
 	if (cur->timing.h_active != tgt->timing.h_active) {
 		DSI_DEBUG("timing.h_active differs %d %d\n",
 				cur->timing.h_active, tgt->timing.h_active);
@@ -3936,6 +3935,8 @@ static bool dsi_display_is_seamless_dfps_possible(
 		return false;
 	}
 
+	/* skip polarity comparison */
+
 	if (cur->timing.v_active != tgt->timing.v_active) {
 		DSI_DEBUG("timing.v_active differs %d %d\n",
 				cur->timing.v_active,
@@ -3965,9 +3966,20 @@ static bool dsi_display_is_seamless_dfps_possible(
 			return false;
 	}
 
-	/* 允许任意刷新率切换，包括 144Hz */
-	DSI_INFO("Seamless DFPS allowed: %dHz -> %dHz\n",
-			cur->timing.refresh_rate, tgt->timing.refresh_rate);
+	/* skip polarity comparison */
+
+	if (cur->timing.refresh_rate == tgt->timing.refresh_rate)
+		DSI_DEBUG("timing.refresh_rate identical %d %d\n",
+				cur->timing.refresh_rate,
+				tgt->timing.refresh_rate);
+
+	if (cur->pixel_clk_khz != tgt->pixel_clk_khz)
+		DSI_DEBUG("pixel_clk_khz differs %d %d\n",
+				cur->pixel_clk_khz, tgt->pixel_clk_khz);
+
+	if (cur->dsi_mode_flags != tgt->dsi_mode_flags)
+		DSI_DEBUG("flags differs %d %d\n",
+				cur->dsi_mode_flags, tgt->dsi_mode_flags);
 
 	return true;
 }
@@ -4462,6 +4474,12 @@ static int dsi_display_dfps_calc_front_porch(
 		return -EINVAL;
 	}
 
+	/*
+	 * Keep clock, other porches constant, use new fps, calc front porch
+	 * new_vtotal = old_vtotal * (old_fps / new_fps )
+	 * new_vfp - old_vfp = new_vtotal - old_vtotal
+	 * new_vfp = old_vfp + old_vtotal * ((old_fps - new_fps)/ new_fps)
+	 */
 	diff = abs(old_fps - new_fps);
 	add_porches = mult_frac(b_total, diff, new_fps);
 
@@ -4473,28 +4491,17 @@ static int dsi_display_dfps_calc_front_porch(
 	DSI_DEBUG("fps %u a %u b %u b_fp %u new_fp %d\n",
 			new_fps, a_total, b_total, b_fp, b_fp_new);
 
-	/* 144Hz 特殊处理：强制使用天马面板安全值 */
-	if (new_fps == 144) {
-		if (b_fp > 100)
-			b_fp_new = 201;  /* HFP 安全值 */
-		else
-			b_fp_new = 26;   /* VFP 安全值 */
-		DSI_INFO("144Hz mode: forcing %s=%d\n",
-				b_fp > 100 ? "HFP" : "VFP", b_fp_new);
-		goto done;
-	}
-
-	/* 通用容错：计算结果为负时使用默认值 */
 	if (b_fp_new < 0) {
-		DSI_INFO("DFPS calculation failed (%d), using Tianma defaults\n", b_fp_new);
-		if (b_fp > 100)
-			b_fp_new = 201;
-		else
-			b_fp_new = 26;
+		DSI_ERR("Invalid new_hfp calcluated%d\n", b_fp_new);
+		return -EINVAL;
 	}
 
-done:
+	/**
+	 * TODO: To differentiate from clock method when communicating to the
+	 * other components, perhaps we should set clk here to original value
+	 */
 	*b_fp_out = b_fp_new;
+
 	return 0;
 }
 
@@ -4549,6 +4556,7 @@ static int dsi_display_get_dfps_timing(struct dsi_display *display,
 			return -EINVAL;
 		}
 	}
+	/* TODO: Remove this direct reference to the dsi_ctrl */
 	timing = &per_ctrl_mode.timing;
 
 	switch (dfps_caps.type) {
@@ -4563,14 +4571,6 @@ static int dsi_display_get_dfps_timing(struct dsi_display *display,
 		SDE_EVT32(SDE_EVTLOG_FUNC_CASE1, DSI_DFPS_IMMEDIATE_VFP,
 			curr_refresh_rate, timing->refresh_rate,
 			timing->v_front_porch, adj_mode->timing.v_front_porch);
-		
-		/* 验证 VFP 值是否合理，天马 NT36532 典型 VFP 为 26 */
-		if (adj_mode->timing.v_front_porch < 10 ||
-		    adj_mode->timing.v_front_porch > 100) {
-			DSI_INFO("VFP value %d abnormal, forcing to 26\n",
-					adj_mode->timing.v_front_porch);
-			adj_mode->timing.v_front_porch = 26;
-		}
 		break;
 
 	case DSI_DFPS_IMMEDIATE_HFP:
