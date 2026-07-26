@@ -1,0 +1,28 @@
+name: Merge android16-base into 鍚堝苟
+on:
+  workflow_dispatch:
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 鍚堝苟
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Merge
+        run: |
+          git remote add origin https://github.com/tem423/android_kernel_lenovo_tb371fc.git
+          git fetch origin android16-base
+          git merge origin/android16-base --no-edit 2>&1 || {
+            echo "=== CONFLICT ==="
+            git diff --name-only --diff-filter=U
+            echo "=== DONE ==="
+          }
+
+      - name: Push
+        run: |
+          git config user.email "tem423@users.noreply.github.com"
+          git config user.name "tem423"
+          git push origin HEAD:鍚堝苟
