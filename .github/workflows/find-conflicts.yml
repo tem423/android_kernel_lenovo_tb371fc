@@ -1,0 +1,14 @@
+name: Find merge conflicts
+on:
+  workflow_dispatch:
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: merge-android-upstream
+          token: ${{ secrets.PAT_TOKEN }}
+      - name: Find conflict markers
+        run: |
+          grep -rn "<<<<<<" --include="*.c" --include="*.h" --include="*.S" --include="*.dts" --include="*.dtsi" --include="Makefile" --include="Kconfig" --include="Kbuild" --include="*.py" --include="*.sh" --include="*.yaml" --include="*.yml" --include="*.cfg" --include="*.conf" --include="*.txt" . || echo "NO_CONFLICTS_FOUND"
