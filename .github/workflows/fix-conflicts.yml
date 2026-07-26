@@ -1,0 +1,97 @@
+name: Resolve all merge conflicts
+on:
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: merge-android-upstream
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Resolve conflicts with Python
+        run: |
+          python3 << 'PYEOF'
+          import re, os
+
+          def resolve_file(filepath, strategy="upstream"):
+              """Resolve merge conflicts in a file.
+              strategy: 'upstream' = keep upstream/android16-base side,
+                        'head' = keep HEAD side,
+                        'small' = auto-resolve small conflicts by picking upstream
+              """
+              with open(filepath, 'r') as f:
+                  content = f.read()
+              
+              pattern = r'<<<<<<< HEAD\n(.*?)=======\n(.*?)>>>>>>> upstream/android16-base\n'
+              matches = list(re.finditer(pattern, content, re.DOTALL))
+              
+              if not matches:
+                  print(f"  No conflicts in {filepath}")
+                  return False
+              
+              print(f"  Found {len(matches)} conflict(s) in {filepath}")
+              
+              for m in reversed(matches):
+                  head = m.group(1)
+                  upstream = m.group(2)
+                  
+                  if strategy == "upstream" or strategy == "small":
+                      replacement = upstream
+                  elif strategy == "head":
+                      replacement = head
+                  else:
+                      replacement = upstream
+                  
+                  content = content[:m.start()] + replacement + content[m.end():]
+              
+              with open(filepath, 'w') as f:
+                  f.write(content)
+              print(f"  Resolved {filepath}")
+              return True
+
+          # Small conflicts: take upstream
+          small_files = [
+              "scripts/kconfig/Makefile",
+              "drivers/hid/intel-ish-hid/Makefile",
+              "drivers/usb/gadget/composite.c",
+              "net/bpfilter/Makefile",
+              "scripts/dtc/Makefile",
+              "fs/verity/enable.c",
+          ]
+          
+          # Whole-file conflicts: take upstream (has 4.19.325 patches)
+          whole_files = [
+              "fs/ext4/inode.c",
+              "fs/f2fs/f2fs.h",
+              "fs/f2fs/data.c",
+          ]
+          
+          for f in small_files:
+              resolve_file(f, "small")
+          
+          for f in whole_files:
+              resolve_file(f, "upstream")
+          
+          print("\nAll conflicts resolved!")
+          PYEOF
+
+      - name: Verify no conflict markers remain
+        run: |
+          result=$(grep -rn "<<<<<<" fs/ scripts/kconfig/Makefile scripts/dtc/Makefile drivers/hid/intel-ish-hid/Makefile drivers/usb/gadget/composite.c net/bpfilter/Makefile --include="*.c" --include="*.h" --include="Makefile" 2>/dev/null || true)
+          if [ -n "$result" ]; then
+            echo "CONFLICT MARKERS STILL PRESENT:"
+            echo "$result"
+            exit 1
+          fi
+          echo "All conflict markers removed!"
+
+      - name: Commit and push
+        run: |
+          git config user.name "MiMoCode"
+          git config user.email "mimo@bot.local"
+          git add -A
+          git diff --cached --stat
+          git commit -m "Resolve all merge conflicts from android16-base merge"
+          git push
