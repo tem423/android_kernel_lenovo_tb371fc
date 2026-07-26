@@ -1,0 +1,17 @@
+name: Fix kconfig merge conflict
+on:
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: merge-android-upstream
+          token: ${{ secrets.PAT_TOKEN }}
+      - name: Fix conflict markers in scripts/kconfig/Makefile
+        run: |
+          sed -i '/<<<<<<< HEAD/,/>>>>>>> upstream\/android16-base/c\HOSTCFLAGS_zconf.lex.o\t:= -I $(srctree)/$(src)\nHOSTCFLAGS_zconf.tab.o\t:= -I $(srctree)/$(src)' scripts/kconfig/Makefile
+          git add scripts/kconfig/Makefile
+          git commit -m "Resolve merge conflict in scripts/kconfig/Makefile"
+          git push
