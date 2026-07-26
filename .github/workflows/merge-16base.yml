@@ -13,7 +13,7 @@ jobs:
 
       - name: Fetch and merge
         run: |
-          git fetch origin "鍚堝苟:merge_branch"
+          git fetch origin 合并
           git fetch origin android16-base
           
           git checkout merge_branch
@@ -26,4 +26,4 @@ jobs:
           
           git config user.email "tem423@users.noreply.github.com"
           git config user.name "tem423"
-          git push origin merge_branch:"鍚堝苟"
+          git push origin 合并
