@@ -1488,109 +1488,82 @@ static int dsi_panel_parse_dyn_clk_caps(struct dsi_panel *panel)
 
 static int dsi_panel_parse_dfps_caps(struct dsi_panel *panel)
 {
-    int rc = 0;
-    bool supported = false;
-    struct dsi_dfps_capabilities *dfps_caps = &panel->dfps_caps;
-    struct dsi_parser_utils *utils = &panel->utils;
-    const char *name = panel->name;
-    const char *type;
-    u32 i;
+	int rc = 0;
+	bool supported = false;
+	struct dsi_dfps_capabilities *dfps_caps = &panel->dfps_caps;
+	struct dsi_parser_utils *utils = &panel->utils;
+	const char *name = panel->name;
+	const char *type;
+	u32 i;
 
-    supported = utils->read_bool(utils->data,
-            "qcom,mdss-dsi-pan-enable-dynamic-fps");
+	supported = utils->read_bool(utils->data,
+			"qcom,mdss-dsi-pan-enable-dynamic-fps");
 
-    if (!supported) {
-        DSI_DEBUG("[%s] DFPS is not supported\n", name);
-        dfps_caps->dfps_support = false;
-        return rc;
-    }
+	if (!supported) {
+		DSI_DEBUG("[%s] DFPS is not supported\n", name);
+		dfps_caps->dfps_support = false;
+		return rc;
+	}
 
-    type = utils->get_property(utils->data,
-            "qcom,mdss-dsi-pan-fps-update", NULL);
-    if (!type) {
-        DSI_ERR("[%s] dfps type not defined\n", name);
-        rc = -EINVAL;
-        goto error;
-    } else if (!strcmp(type, "dfps_suspend_resume_mode")) {
-        dfps_caps->type = DSI_DFPS_SUSPEND_RESUME;
-    } else if (!strcmp(type, "dfps_immediate_clk_mode")) {
-        dfps_caps->type = DSI_DFPS_IMMEDIATE_CLK;
-    } else if (!strcmp(type, "dfps_immediate_porch_mode_hfp")) {
-        dfps_caps->type = DSI_DFPS_IMMEDIATE_HFP;
-    } else if (!strcmp(type, "dfps_immediate_porch_mode_vfp")) {
-        dfps_caps->type = DSI_DFPS_IMMEDIATE_VFP;
-    } else {
-        DSI_ERR("[%s] dfps type is not recognized\n", name);
-        rc = -EINVAL;
-        goto error;
-    }
+	type = utils->get_property(utils->data,
+			"qcom,mdss-dsi-pan-fps-update", NULL);
+	if (!type) {
+		DSI_ERR("[%s] dfps type not defined\n", name);
+		rc = -EINVAL;
+		goto error;
+	} else if (!strcmp(type, "dfps_suspend_resume_mode")) {
+		dfps_caps->type = DSI_DFPS_SUSPEND_RESUME;
+	} else if (!strcmp(type, "dfps_immediate_clk_mode")) {
+		dfps_caps->type = DSI_DFPS_IMMEDIATE_CLK;
+	} else if (!strcmp(type, "dfps_immediate_porch_mode_hfp")) {
+		dfps_caps->type = DSI_DFPS_IMMEDIATE_HFP;
+	} else if (!strcmp(type, "dfps_immediate_porch_mode_vfp")) {
+		dfps_caps->type = DSI_DFPS_IMMEDIATE_VFP;
+	} else {
+		DSI_ERR("[%s] dfps type is not recognized\n", name);
+		rc = -EINVAL;
+		goto error;
+	}
 
-    dfps_caps->dfps_list_len = utils->count_u32_elems(utils->data,
-                  "qcom,dsi-supported-dfps-list");
-    if (dfps_caps->dfps_list_len < 1) {
-        DSI_ERR("[%s] dfps refresh list not present\n", name);
-        rc = -EINVAL;
-        goto error;
-    }
+	dfps_caps->dfps_list_len = utils->count_u32_elems(utils->data,
+				  "qcom,dsi-supported-dfps-list");
+	if (dfps_caps->dfps_list_len < 1) {
+		DSI_ERR("[%s] dfps refresh list not present\n", name);
+		rc = -EINVAL;
+		goto error;
+	}
 
-    dfps_caps->dfps_list = kcalloc(dfps_caps->dfps_list_len, sizeof(u32),
-            GFP_KERNEL);
-    if (!dfps_caps->dfps_list) {
-        rc = -ENOMEM;
-        goto error;
-    }
+	dfps_caps->dfps_list = kcalloc(dfps_caps->dfps_list_len, sizeof(u32),
+			GFP_KERNEL);
+	if (!dfps_caps->dfps_list) {
+		rc = -ENOMEM;
+		goto error;
+	}
 
-    rc = utils->read_u32_array(utils->data,
-            "qcom,dsi-supported-dfps-list",
-            dfps_caps->dfps_list,
-            dfps_caps->dfps_list_len);
-    if (rc) {
-        DSI_ERR("[%s] dfps refresh rate list parse failed\n", name);
-        rc = -EINVAL;
-        goto error;
-    }
-    dfps_caps->dfps_support = true;
+	rc = utils->read_u32_array(utils->data,
+			"qcom,dsi-supported-dfps-list",
+			dfps_caps->dfps_list,
+			dfps_caps->dfps_list_len);
+	if (rc) {
+		DSI_ERR("[%s] dfps refresh rate list parse failed\n", name);
+		rc = -EINVAL;
+		goto error;
+	}
+	dfps_caps->dfps_support = true;
 
-    /* ========== 在这里添加 144Hz ========== */
-    {
-        bool has_144 = false;
-        int j;
-        for (j = 0; j < dfps_caps->dfps_list_len; j++) {
-            if (dfps_caps->dfps_list[j] == 144) {
-                has_144 = true;
-                break;
-            }
-        }
-        if (!has_144) {
-            u32 *new_list = kcalloc(dfps_caps->dfps_list_len + 1, sizeof(u32), GFP_KERNEL);
-            if (new_list) {
-                memcpy(new_list, dfps_caps->dfps_list, dfps_caps->dfps_list_len * sizeof(u32));
-                new_list[dfps_caps->dfps_list_len] = 144;
-                kfree(dfps_caps->dfps_list);
-                dfps_caps->dfps_list = new_list;
-                dfps_caps->dfps_list_len++;
-                DSI_INFO("[%s] Force added 144Hz to DFPS list\n", name);
-            }
-        }
-    }
-    /* ========== 添加结束 ========== */
+	/* calculate max and min fps */
+	dfps_caps->max_refresh_rate = dfps_caps->dfps_list[0];
+	dfps_caps->min_refresh_rate = dfps_caps->dfps_list[0];
 
-    /* calculate max and min fps */
-    dfps_caps->max_refresh_rate = dfps_caps->dfps_list[0];
-    dfps_caps->min_refresh_rate = dfps_caps->dfps_list[0];
-
-    for (i = 1; i < dfps_caps->dfps_list_len; i++) {
-        if (dfps_caps->dfps_list[i] < dfps_caps->min_refresh_rate)
-            dfps_caps->min_refresh_rate = dfps_caps->dfps_list[i];
-        else if (dfps_caps->dfps_list[i] > dfps_caps->max_refresh_rate)
-            dfps_caps->max_refresh_rate = dfps_caps->dfps_list[i];
-    }
-
-    DSI_INFO("[%s] DFPS: min=%d, max=%d, count=%d\n",
-             name, dfps_caps->min_refresh_rate, dfps_caps->max_refresh_rate, dfps_caps->dfps_list_len);
+	for (i = 1; i < dfps_caps->dfps_list_len; i++) {
+		if (dfps_caps->dfps_list[i] < dfps_caps->min_refresh_rate)
+			dfps_caps->min_refresh_rate = dfps_caps->dfps_list[i];
+		else if (dfps_caps->dfps_list[i] > dfps_caps->max_refresh_rate)
+			dfps_caps->max_refresh_rate = dfps_caps->dfps_list[i];
+	}
 
 error:
-    return rc;
+	return rc;
 }
 
 static int dsi_panel_parse_video_host_config(struct dsi_video_engine_cfg *cfg,
