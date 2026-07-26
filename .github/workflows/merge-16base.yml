@@ -5,18 +5,25 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone and merge
+      - uses: actions/checkout@v4
+        with:
+          ref: 4.19.315
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Fetch and merge
         run: |
-          git clone --branch 鍚堝苟 --single-branch https://github.com/tem423/android_kernel_lenovo_tb371fc.git repo
-          cd repo
-          git remote add origin https://github.com/tem423/android_kernel_lenovo_tb371fc.git
+          git fetch origin "鍚堝苟:merge_branch"
           git fetch origin android16-base
+          
+          git checkout merge_branch
           git merge origin/android16-base --no-edit 2>&1 || {
             echo "=== CONFLICT ==="
             git diff --name-only --diff-filter=U | head -30
             echo "=== DONE ==="
             exit 0
           }
+          
           git config user.email "tem423@users.noreply.github.com"
           git config user.name "tem423"
-          git push origin HEAD:鍚堝苟
+          git push origin merge_branch:"鍚堝苟"
