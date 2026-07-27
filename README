@@ -9,3 +9,5 @@ ctn730来自tbq706f(不知道能不能用)
 lz4和lz4hc是从https://github.com/AstideLabs/android_kernel_xiaomi_sm8250移植的
 基线是https://github.com/UtsavBalar1231/kernel_xiaomi_sm8250 的android14-base
 总修改记录:启动触摸驱动的return 0，修正signal.c,添加hqsysfs和huaqinhardware驱动，加ktz8866a和b，加mm8013驱动修改smb5的注册名以读取mm8013，混合tbq706f代码，更新lz4和lz4hc
+合bpf分支backpport了5.10的bpf有ebpf
+内核特性:开启lz4，lz4hc和zstd
