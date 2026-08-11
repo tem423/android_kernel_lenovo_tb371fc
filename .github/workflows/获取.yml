@@ -14,24 +14,9 @@ jobs:
         token: ${{ secrets.PAT_TOKEN }}
         fetch-depth: 0
 
-    - name: Clone AOSP kernel and force push specific commit as branch
+    - name: Clone and force push lineage-23.2 branch
       run: |
-        # 1. 完整克隆 AOSP 内核仓库（不限制深度，确保能获取所有历史）
-        git clone https://android.googlesource.com/kernel/common kernel-temp
+        git clone --branch lineage-23.2 --single-branch https://github.com/LineageOS/android_kernel_qcom_sm8250.git kernel-temp
         cd kernel-temp
-        
-        # 2. 切换到目标提交 g076ac12bde16
-        git checkout g076ac12bde16
-        
-        # 3. 基于这个特定提交创建新分支
-        branch_name="aosp-kernel-g076ac12"
-        git checkout -b $branch_name
-        
-        # 4. 设置推送目标为你自己的 GitHub 仓库
         git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
-        
-        # 5. 删除远程已存在的同名分支（如有），然后强制推送
-        git push origin :$branch_name 2>/dev/null || true
-        git push origin $branch_name --force
-        
-        echo "Branch $branch_name synced to commit g076ac12bde16 (from 2025-06-30)"
+        git push origin lineage-23.2 --force
