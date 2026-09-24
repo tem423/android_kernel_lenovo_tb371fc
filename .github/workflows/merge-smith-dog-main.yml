@@ -1,0 +1,63 @@
+name: Merge smith-dog main into 4.19.325
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_repo:
+        description: 'Upstream repo (owner/repo)'
+        required: true
+        default: 'smith-dog/kernel-tb371fc'
+      upstream_branch:
+        description: 'Upstream branch'
+        required: true
+        default: 'main'
+      source_branch:
+        description: 'Source branch to merge into'
+        required: true
+        default: '4.19.325'
+      merge_branch:
+        description: 'Branch to create with the merge result'
+        required: true
+        default: 'merge-smith-dog-main'
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.source_branch }}
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --global user.email "tem423@users.noreply.github.com"
+          git config --global user.name "tem423"
+
+      - name: Add upstream remote and fetch
+        run: |
+          git remote add upstream https://github.com/${{ github.event.inputs.upstream_repo }}.git
+          git fetch upstream ${{ github.event.inputs.upstream_branch }}
+
+      - name: Create merge branch and merge
+        run: |
+          git checkout -b ${{ github.event.inputs.merge_branch }}
+          git merge upstream/${{ github.event.inputs.upstream_branch }} \
+            --no-edit --allow-unrelated-histories || true
+
+      - name: Show conflicts
+        run: |
+          echo "=== Files with conflict markers ==="
+          grep -rl "<<<<<<< HEAD" --include="*.c" --include="*.h" . 2>/dev/null | head -50 || echo "No conflict markers"
+          echo ""
+          echo "=== Unmerged files ==="
+          git diff --name-only --diff-filter=U 2>/dev/null | head -50 || echo "None"
+
+      - name: Commit and push
+        run: |
+          git add -A
+          git commit -m "Merge upstream ${{ github.event.inputs.upstream_repo }} ${{ github.event.inputs.upstream_branch }} into ${{ github.event.inputs.source_branch }}" --allow-empty
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
+          git push origin ${{ github.event.inputs.merge_branch }} --force
