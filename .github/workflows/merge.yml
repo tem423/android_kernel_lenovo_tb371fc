@@ -10,11 +10,11 @@ on:
       upstream_branch:
         description: 'Upstream branch'
         required: true
-        default: 'android16-base'
+        default: 'main'
       source_branch:
         description: 'Source branch to merge from'
         required: true
-        default: 'main'
+        default: 'android16-base'
 
 jobs:
   merge:
