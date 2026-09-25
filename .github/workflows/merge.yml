@@ -14,7 +14,7 @@ on:
       source_branch:
         description: 'Source branch to merge from'
         required: true
-        default: 'android14'
+        default: 'main'
 
 jobs:
   merge:
