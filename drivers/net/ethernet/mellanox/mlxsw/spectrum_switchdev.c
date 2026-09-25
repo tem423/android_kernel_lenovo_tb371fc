@@ -2072,12 +2072,20 @@ void mlxsw_sp_port_bridge_leave(struct mlxsw_sp_port *mlxsw_sp_port,
 static void
 mlxsw_sp_fdb_call_notifiers(enum switchdev_notifier_type type,
 			    const char *mac, u16 vid,
+<<<<<<< HEAD
 			    struct net_device *dev)
+=======
+			    struct net_device *dev, bool offloaded)
+>>>>>>> origin/android16-base
 {
 	struct switchdev_notifier_fdb_info info;
 
 	info.addr = mac;
 	info.vid = vid;
+<<<<<<< HEAD
+=======
+	info.offloaded = offloaded;
+>>>>>>> origin/android16-base
 	call_switchdev_notifiers(type, dev, &info.info);
 }
 
@@ -2129,7 +2137,11 @@ do_fdb_op:
 	if (!do_notification)
 		return;
 	type = adding ? SWITCHDEV_FDB_ADD_TO_BRIDGE : SWITCHDEV_FDB_DEL_TO_BRIDGE;
+<<<<<<< HEAD
 	mlxsw_sp_fdb_call_notifiers(type, mac, vid, bridge_port->dev);
+=======
+	mlxsw_sp_fdb_call_notifiers(type, mac, vid, bridge_port->dev, adding);
+>>>>>>> origin/android16-base
 
 	return;
 
@@ -2189,7 +2201,11 @@ do_fdb_op:
 	if (!do_notification)
 		return;
 	type = adding ? SWITCHDEV_FDB_ADD_TO_BRIDGE : SWITCHDEV_FDB_DEL_TO_BRIDGE;
+<<<<<<< HEAD
 	mlxsw_sp_fdb_call_notifiers(type, mac, vid, bridge_port->dev);
+=======
+	mlxsw_sp_fdb_call_notifiers(type, mac, vid, bridge_port->dev, adding);
+>>>>>>> origin/android16-base
 
 	return;
 
@@ -2294,7 +2310,11 @@ static void mlxsw_sp_switchdev_event_work(struct work_struct *work)
 			break;
 		mlxsw_sp_fdb_call_notifiers(SWITCHDEV_FDB_OFFLOADED,
 					    fdb_info->addr,
+<<<<<<< HEAD
 					    fdb_info->vid, dev);
+=======
+					    fdb_info->vid, dev, true);
+>>>>>>> origin/android16-base
 		break;
 	case SWITCHDEV_FDB_DEL_TO_DEVICE:
 		fdb_info = &switchdev_work->fdb_info;

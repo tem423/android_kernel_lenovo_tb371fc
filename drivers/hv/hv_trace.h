@@ -320,7 +320,11 @@ DEFINE_EVENT(vmbus_channel, vmbus_on_event,
 );
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/hv
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE hv_trace
 #endif /* _HV_TRACE_H */

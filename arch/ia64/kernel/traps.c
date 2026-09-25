@@ -85,7 +85,11 @@ die (const char *str, struct pt_regs *regs, long err)
 	if (panic_on_oops)
 		panic("Fatal exception");
 
+<<<<<<< HEAD
   	do_exit(SIGSEGV);
+=======
+	make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 	return 0;
 }
 

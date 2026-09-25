@@ -3101,6 +3101,10 @@ static int __qedf_probe(struct pci_dev *pdev, int mode)
 	}
 
 	/* Start the Slowpath-process */
+<<<<<<< HEAD
+=======
+	memset(&slowpath_params, 0, sizeof(struct qed_slowpath_params));
+>>>>>>> origin/android16-base
 	slowpath_params.int_mode = QED_INT_MODE_MSIX;
 	slowpath_params.drv_major = QEDF_DRIVER_MAJOR_VER;
 	slowpath_params.drv_minor = QEDF_DRIVER_MINOR_VER;
@@ -3345,11 +3349,14 @@ err2:
 err1:
 	scsi_host_put(lport->host);
 err0:
+<<<<<<< HEAD
 	if (qedf) {
 		QEDF_INFO(&qedf->dbg_ctx, QEDF_LOG_DISC, "Probe done.\n");
 
 		clear_bit(QEDF_PROBING, &qedf->flags);
 	}
+=======
+>>>>>>> origin/android16-base
 	return rc;
 }
 

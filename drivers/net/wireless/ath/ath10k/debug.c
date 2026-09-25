@@ -1146,7 +1146,11 @@ void ath10k_debug_get_et_strings(struct ieee80211_hw *hw,
 				 u32 sset, u8 *data)
 {
 	if (sset == ETH_SS_STATS)
+<<<<<<< HEAD
 		memcpy(data, *ath10k_gstrings_stats,
+=======
+		memcpy(data, ath10k_gstrings_stats,
+>>>>>>> origin/android16-base
 		       sizeof(ath10k_gstrings_stats));
 }
 

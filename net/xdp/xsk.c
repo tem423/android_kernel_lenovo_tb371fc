@@ -289,17 +289,30 @@ static int xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
 	return (xs->zc) ? xsk_zc_xmit(sk) : xsk_generic_xmit(sk, m, total_len);
 }
 
+<<<<<<< HEAD
 static unsigned int xsk_poll(struct file *file, struct socket *sock,
 			     struct poll_table_struct *wait)
 {
 	unsigned int mask = datagram_poll(file, sock, wait);
+=======
+static __poll_t xsk_poll(struct file *file, struct socket *sock,
+			     struct poll_table_struct *wait)
+{
+	__poll_t mask = datagram_poll(file, sock, wait);
+>>>>>>> origin/android16-base
 	struct sock *sk = sock->sk;
 	struct xdp_sock *xs = xdp_sk(sk);
 
 	if (xs->rx && !xskq_empty_desc(xs->rx))
+<<<<<<< HEAD
 		mask |= POLLIN | POLLRDNORM;
 	if (xs->tx && !xskq_full_desc(xs->tx))
 		mask |= POLLOUT | POLLWRNORM;
+=======
+		mask |= EPOLLIN | EPOLLRDNORM;
+	if (xs->tx && !xskq_full_desc(xs->tx))
+		mask |= EPOLLOUT | EPOLLWRNORM;
+>>>>>>> origin/android16-base
 
 	return mask;
 }
@@ -515,6 +528,11 @@ static int xsk_setsockopt(struct socket *sock, int level, int optname,
 		struct xdp_umem_reg mr;
 		struct xdp_umem *umem;
 
+<<<<<<< HEAD
+=======
+		if (optlen < sizeof(mr))
+			return -EINVAL;
+>>>>>>> origin/android16-base
 		if (copy_from_user(&mr, optval, sizeof(mr)))
 			return -EFAULT;
 
@@ -542,6 +560,11 @@ static int xsk_setsockopt(struct socket *sock, int level, int optname,
 		struct xsk_queue **q;
 		int entries;
 
+<<<<<<< HEAD
+=======
+		if (optlen < sizeof(entries))
+			return -EINVAL;
+>>>>>>> origin/android16-base
 		if (copy_from_user(&entries, optval, sizeof(entries)))
 			return -EFAULT;
 

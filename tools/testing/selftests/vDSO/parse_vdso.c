@@ -77,6 +77,7 @@ static struct vdso_info
 	ELF(Verdef) *verdef;
 } vdso_info;
 
+<<<<<<< HEAD
 /* Straight from the ELF specification. */
 static unsigned long elf_hash(const unsigned char *name)
 {
@@ -85,6 +86,22 @@ static unsigned long elf_hash(const unsigned char *name)
 	{
 		h = (h << 4) + *name++;
 		if (g = h & 0xf0000000)
+=======
+/*
+ * Straight from the ELF specification...and then tweaked slightly, in order to
+ * avoid a few clang warnings.
+ */
+static unsigned long elf_hash(const char *name)
+{
+	unsigned long h = 0, g;
+	const unsigned char *uch_name = (const unsigned char *)name;
+
+	while (*uch_name)
+	{
+		h = (h << 4) + *uch_name++;
+		g = h & 0xf0000000;
+		if (g)
+>>>>>>> origin/android16-base
 			h ^= g >> 24;
 		h &= ~g;
 	}

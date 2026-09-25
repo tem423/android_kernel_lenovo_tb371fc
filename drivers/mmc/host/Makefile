@@ -85,11 +85,14 @@ obj-$(CONFIG_MMC_SDHCI_OF_ESDHC)	+= sdhci-of-esdhc.o
 obj-$(CONFIG_MMC_SDHCI_OF_HLWD)		+= sdhci-of-hlwd.o
 obj-$(CONFIG_MMC_SDHCI_OF_DWCMSHC)	+= sdhci-of-dwcmshc.o
 obj-$(CONFIG_MMC_SDHCI_BCM_KONA)	+= sdhci-bcm-kona.o
+<<<<<<< HEAD
 # huaqin add for SD card bringup by liufurong at 20190201 start
 ifeq ($(CONFIG_MMC_SDHCI_BH201),y)
 obj-$(CONFIG_MMC_SDHCI_MSM)		+= sdhci-bh201.o
 endif
 # huaqin add for SD card bringup by liufurong at 20190201 end
+=======
+>>>>>>> origin/android16-base
 obj-$(CONFIG_MMC_SDHCI_IPROC)		+= sdhci-iproc.o
 obj-$(CONFIG_MMC_SDHCI_MSM)		+= sdhci-msm.o
 obj-$(CONFIG_MMC_SDHCI_ST)		+= sdhci-st.o

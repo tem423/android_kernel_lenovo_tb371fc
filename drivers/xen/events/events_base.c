@@ -83,6 +83,7 @@ const struct evtchn_ops *evtchn_ops;
 static DEFINE_MUTEX(irq_mapping_update_lock);
 
 /*
+<<<<<<< HEAD
  * Lock protecting event handling loop against removing event channels.
  * Adding of event channels is no issue as the associated IRQ becomes active
  * only after everything is setup (before request_[threaded_]irq() the handler
@@ -98,6 +99,14 @@ static DEFINE_RWLOCK(evtchn_rwlock);
  *   evtchn_rwlock
  *     IRQ-desc lock
  *       percpu eoi_list_lock
+=======
+ * Lock hierarchy:
+ *
+ * irq_mapping_update_lock
+ *   IRQ-desc lock
+ *     percpu eoi_list_lock
+ *       irq_info->lock
+>>>>>>> origin/android16-base
  */
 
 static LIST_HEAD(xen_irq_list_head);
@@ -132,12 +141,20 @@ static void disable_dynirq(struct irq_data *data);
 
 static DEFINE_PER_CPU(unsigned int, irq_epoch);
 
+<<<<<<< HEAD
 static void clear_evtchn_to_irq_row(unsigned row)
+=======
+static void clear_evtchn_to_irq_row(int *evtchn_row)
+>>>>>>> origin/android16-base
 {
 	unsigned col;
 
 	for (col = 0; col < EVTCHN_PER_ROW; col++)
+<<<<<<< HEAD
 		WRITE_ONCE(evtchn_to_irq[row][col], -1);
+=======
+		WRITE_ONCE(evtchn_row[col], -1);
+>>>>>>> origin/android16-base
 }
 
 static void clear_evtchn_to_irq_all(void)
@@ -147,7 +164,11 @@ static void clear_evtchn_to_irq_all(void)
 	for (row = 0; row < EVTCHN_ROW(xen_evtchn_max_channels()); row++) {
 		if (evtchn_to_irq[row] == NULL)
 			continue;
+<<<<<<< HEAD
 		clear_evtchn_to_irq_row(row);
+=======
+		clear_evtchn_to_irq_row(evtchn_to_irq[row]);
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -155,6 +176,10 @@ static int set_evtchn_to_irq(unsigned evtchn, unsigned irq)
 {
 	unsigned row;
 	unsigned col;
+<<<<<<< HEAD
+=======
+	int *evtchn_row;
+>>>>>>> origin/android16-base
 
 	if (evtchn >= xen_evtchn_max_channels())
 		return -EINVAL;
@@ -167,11 +192,26 @@ static int set_evtchn_to_irq(unsigned evtchn, unsigned irq)
 		if (irq == -1)
 			return 0;
 
+<<<<<<< HEAD
 		evtchn_to_irq[row] = (int *)get_zeroed_page(GFP_KERNEL);
 		if (evtchn_to_irq[row] == NULL)
 			return -ENOMEM;
 
 		clear_evtchn_to_irq_row(row);
+=======
+		evtchn_row = (int *) __get_free_pages(GFP_KERNEL, 0);
+		if (evtchn_row == NULL)
+			return -ENOMEM;
+
+		clear_evtchn_to_irq_row(evtchn_row);
+
+		/*
+		 * We've prepared an empty row for the mapping. If a different
+		 * thread was faster inserting it, we can drop ours.
+		 */
+		if (cmpxchg(&evtchn_to_irq[row], NULL, evtchn_row) != NULL)
+			free_page((unsigned long) evtchn_row);
+>>>>>>> origin/android16-base
 	}
 
 	WRITE_ONCE(evtchn_to_irq[row][col], irq);
@@ -204,6 +244,25 @@ static void set_info_for_irq(unsigned int irq, struct irq_info *info)
 		irq_set_chip_data(irq, info);
 }
 
+<<<<<<< HEAD
+=======
+static void delayed_free_irq(struct work_struct *work)
+{
+	struct irq_info *info = container_of(to_rcu_work(work), struct irq_info,
+					     rwork);
+	unsigned int irq = info->irq;
+
+	/* Remove the info pointer only now, with no potential users left. */
+	set_info_for_irq(irq, NULL);
+
+	kfree(info);
+
+	/* Legacy IRQ descriptors are managed by the arch. */
+	if (irq >= nr_legacy_irqs())
+		irq_free_desc(irq);
+}
+
+>>>>>>> origin/android16-base
 /* Constructors for packed IRQ information. */
 static int xen_irq_info_common_setup(struct irq_info *info,
 				     unsigned irq,
@@ -219,6 +278,11 @@ static int xen_irq_info_common_setup(struct irq_info *info,
 	info->irq = irq;
 	info->evtchn = evtchn;
 	info->cpu = cpu;
+<<<<<<< HEAD
+=======
+	info->mask_reason = EVT_MASK_REASON_EXPLICIT;
+	raw_spin_lock_init(&info->lock);
+>>>>>>> origin/android16-base
 
 	ret = set_evtchn_to_irq(evtchn, irq);
 	if (ret < 0)
@@ -285,6 +349,10 @@ static int xen_irq_info_pirq_setup(unsigned irq,
 static void xen_irq_info_cleanup(struct irq_info *info)
 {
 	set_evtchn_to_irq(info->evtchn, -1);
+<<<<<<< HEAD
+=======
+	xen_evtchn_port_remove(info->evtchn, info->cpu);
+>>>>>>> origin/android16-base
 	info->evtchn = 0;
 }
 
@@ -365,6 +433,37 @@ unsigned int cpu_from_evtchn(unsigned int evtchn)
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static void do_mask(struct irq_info *info, u8 reason)
+{
+	unsigned long flags;
+
+	raw_spin_lock_irqsave(&info->lock, flags);
+
+	if (!info->mask_reason)
+		mask_evtchn(info->evtchn);
+
+	info->mask_reason |= reason;
+
+	raw_spin_unlock_irqrestore(&info->lock, flags);
+}
+
+static void do_unmask(struct irq_info *info, u8 reason)
+{
+	unsigned long flags;
+
+	raw_spin_lock_irqsave(&info->lock, flags);
+
+	info->mask_reason &= ~reason;
+
+	if (!info->mask_reason)
+		unmask_evtchn(info->evtchn);
+
+	raw_spin_unlock_irqrestore(&info->lock, flags);
+}
+
+>>>>>>> origin/android16-base
 #ifdef CONFIG_X86
 static bool pirq_check_eoi_map(unsigned irq)
 {
@@ -444,7 +543,13 @@ static void lateeoi_list_add(struct irq_info *info)
 
 	spin_lock_irqsave(&eoi->eoi_list_lock, flags);
 
+<<<<<<< HEAD
 	if (list_empty(&eoi->eoi_list)) {
+=======
+	elem = list_first_entry_or_null(&eoi->eoi_list, struct irq_info,
+					eoi_list);
+	if (!elem || info->eoi_time < elem->eoi_time) {
+>>>>>>> origin/android16-base
 		list_add(&info->eoi_list, &eoi->eoi_list);
 		mod_delayed_work_on(info->eoi_cpu, system_wq,
 				    &eoi->delayed, delay);
@@ -492,7 +597,14 @@ static void xen_irq_lateeoi_locked(struct irq_info *info, bool spurious)
 	}
 
 	info->eoi_time = 0;
+<<<<<<< HEAD
 	unmask_evtchn(evtchn);
+=======
+
+	/* is_active hasn't been reset yet, do it now. */
+	smp_store_release(&info->is_active, 0);
+	do_unmask(info, EVT_MASK_REASON_EOI_PENDING);
+>>>>>>> origin/android16-base
 }
 
 static void xen_irq_lateeoi_worker(struct work_struct *work)
@@ -504,33 +616,60 @@ static void xen_irq_lateeoi_worker(struct work_struct *work)
 
 	eoi = container_of(to_delayed_work(work), struct lateeoi_work, delayed);
 
+<<<<<<< HEAD
 	read_lock_irqsave(&evtchn_rwlock, flags);
 
 	while (true) {
 		spin_lock(&eoi->eoi_list_lock);
+=======
+	rcu_read_lock();
+
+	while (true) {
+		spin_lock_irqsave(&eoi->eoi_list_lock, flags);
+>>>>>>> origin/android16-base
 
 		info = list_first_entry_or_null(&eoi->eoi_list, struct irq_info,
 						eoi_list);
 
+<<<<<<< HEAD
 		if (info == NULL || now < info->eoi_time) {
 			spin_unlock(&eoi->eoi_list_lock);
+=======
+		if (info == NULL)
+			break;
+
+		if (now < info->eoi_time) {
+			mod_delayed_work_on(info->eoi_cpu, system_wq,
+					    &eoi->delayed,
+					    info->eoi_time - now);
+>>>>>>> origin/android16-base
 			break;
 		}
 
 		list_del_init(&info->eoi_list);
 
+<<<<<<< HEAD
 		spin_unlock(&eoi->eoi_list_lock);
+=======
+		spin_unlock_irqrestore(&eoi->eoi_list_lock, flags);
+>>>>>>> origin/android16-base
 
 		info->eoi_time = 0;
 
 		xen_irq_lateeoi_locked(info, false);
 	}
 
+<<<<<<< HEAD
 	if (info)
 		mod_delayed_work_on(info->eoi_cpu, system_wq,
 				    &eoi->delayed, info->eoi_time - now);
 
 	read_unlock_irqrestore(&evtchn_rwlock, flags);
+=======
+	spin_unlock_irqrestore(&eoi->eoi_list_lock, flags);
+
+	rcu_read_unlock();
+>>>>>>> origin/android16-base
 }
 
 static void xen_cpu_init_eoi(unsigned int cpu)
@@ -545,16 +684,25 @@ static void xen_cpu_init_eoi(unsigned int cpu)
 void xen_irq_lateeoi(unsigned int irq, unsigned int eoi_flags)
 {
 	struct irq_info *info;
+<<<<<<< HEAD
 	unsigned long flags;
 
 	read_lock_irqsave(&evtchn_rwlock, flags);
+=======
+
+	rcu_read_lock();
+>>>>>>> origin/android16-base
 
 	info = info_for_irq(irq);
 
 	if (info)
 		xen_irq_lateeoi_locked(info, eoi_flags & XEN_EOI_FLAG_SPURIOUS);
 
+<<<<<<< HEAD
 	read_unlock_irqrestore(&evtchn_rwlock, flags);
+=======
+	rcu_read_unlock();
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(xen_irq_lateeoi);
 
@@ -573,6 +721,10 @@ static void xen_irq_init(unsigned irq)
 
 	info->type = IRQT_UNBOUND;
 	info->refcnt = -1;
+<<<<<<< HEAD
+=======
+	INIT_RCU_WORK(&info->rwork, delayed_free_irq);
+>>>>>>> origin/android16-base
 
 	set_info_for_irq(irq, info);
 
@@ -625,18 +777,25 @@ static int __must_check xen_allocate_irq_gsi(unsigned gsi)
 static void xen_free_irq(unsigned irq)
 {
 	struct irq_info *info = info_for_irq(irq);
+<<<<<<< HEAD
 	unsigned long flags;
+=======
+>>>>>>> origin/android16-base
 
 	if (WARN_ON(!info))
 		return;
 
+<<<<<<< HEAD
 	write_lock_irqsave(&evtchn_rwlock, flags);
 
+=======
+>>>>>>> origin/android16-base
 	if (!list_empty(&info->eoi_list))
 		lateeoi_list_del(info);
 
 	list_del(&info->list);
 
+<<<<<<< HEAD
 	set_info_for_irq(irq, NULL);
 
 	WARN_ON(info->refcnt > 0);
@@ -650,6 +809,11 @@ static void xen_free_irq(unsigned irq)
 		return;
 
 	irq_free_desc(irq);
+=======
+	WARN_ON(info->refcnt > 0);
+
+	queue_rcu_work(system_wq, &info->rwork);
+>>>>>>> origin/android16-base
 }
 
 static void xen_evtchn_close(unsigned int port)
@@ -661,6 +825,15 @@ static void xen_evtchn_close(unsigned int port)
 		BUG();
 }
 
+<<<<<<< HEAD
+=======
+static void event_handler_exit(struct irq_info *info)
+{
+	smp_store_release(&info->is_active, 0);
+	clear_evtchn(info->evtchn);
+}
+
+>>>>>>> origin/android16-base
 static void pirq_query_unmask(int irq)
 {
 	struct physdev_irq_status_query irq_status;
@@ -679,7 +852,12 @@ static void pirq_query_unmask(int irq)
 
 static void eoi_pirq(struct irq_data *data)
 {
+<<<<<<< HEAD
 	int evtchn = evtchn_from_irq(data->irq);
+=======
+	struct irq_info *info = info_for_irq(data->irq);
+	int evtchn = info ? info->evtchn : 0;
+>>>>>>> origin/android16-base
 	struct physdev_eoi eoi = { .irq = pirq_from_irq(data->irq) };
 	int rc = 0;
 
@@ -688,6 +866,7 @@ static void eoi_pirq(struct irq_data *data)
 
 	if (unlikely(irqd_is_setaffinity_pending(data)) &&
 	    likely(!irqd_irq_disabled(data))) {
+<<<<<<< HEAD
 		int masked = test_and_set_mask(evtchn);
 
 		clear_evtchn(evtchn);
@@ -698,6 +877,17 @@ static void eoi_pirq(struct irq_data *data)
 			unmask_evtchn(evtchn);
 	} else
 		clear_evtchn(evtchn);
+=======
+		do_mask(info, EVT_MASK_REASON_TEMPORARY);
+
+		event_handler_exit(info);
+
+		irq_move_masked_irq(data);
+
+		do_unmask(info, EVT_MASK_REASON_TEMPORARY);
+	} else
+		event_handler_exit(info);
+>>>>>>> origin/android16-base
 
 	if (pirq_needs_eoi(data->irq)) {
 		rc = HYPERVISOR_physdev_op(PHYSDEVOP_eoi, &eoi);
@@ -748,7 +938,12 @@ static unsigned int __startup_pirq(unsigned int irq)
 		goto err;
 
 out:
+<<<<<<< HEAD
 	unmask_evtchn(evtchn);
+=======
+	do_unmask(info, EVT_MASK_REASON_EXPLICIT);
+
+>>>>>>> origin/android16-base
 	eoi_pirq(irq_get_irq_data(irq));
 
 	return 0;
@@ -775,7 +970,11 @@ static void shutdown_pirq(struct irq_data *data)
 	if (!VALID_EVTCHN(evtchn))
 		return;
 
+<<<<<<< HEAD
 	mask_evtchn(evtchn);
+=======
+	do_mask(info, EVT_MASK_REASON_EXPLICIT);
+>>>>>>> origin/android16-base
 	xen_evtchn_close(evtchn);
 	xen_irq_info_cleanup(info);
 }
@@ -1532,6 +1731,11 @@ void handle_irq_for_port(evtchn_port_t port, struct evtchn_loop_ctrl *ctrl)
 	}
 
 	info = info_for_irq(irq);
+<<<<<<< HEAD
+=======
+	if (xchg_acquire(&info->is_active, 1))
+		return;
+>>>>>>> origin/android16-base
 
 	if (ctrl->defer_eoi) {
 		info->eoi_cpu = smp_processor_id();
@@ -1551,7 +1755,18 @@ static void __xen_evtchn_do_upcall(void)
 	unsigned count;
 	struct evtchn_loop_ctrl ctrl = { 0 };
 
+<<<<<<< HEAD
 	read_lock(&evtchn_rwlock);
+=======
+	/*
+	 * When closing an event channel the associated IRQ must not be freed
+	 * until all cpus have left the event handling loop. This is ensured
+	 * by taking the rcu_read_lock() while handling events, as freeing of
+	 * the IRQ is handled via queue_rcu_work() _after_ closing the event
+	 * channel.
+	 */
+	rcu_read_lock();
+>>>>>>> origin/android16-base
 
 	do {
 		vcpu_info->evtchn_upcall_pending = 0;
@@ -1568,7 +1783,11 @@ static void __xen_evtchn_do_upcall(void)
 	} while (count != 1 || vcpu_info->evtchn_upcall_pending);
 
 out:
+<<<<<<< HEAD
 	read_unlock(&evtchn_rwlock);
+=======
+	rcu_read_unlock();
+>>>>>>> origin/android16-base
 
 	/*
 	 * Increment irq_epoch only now to defer EOIs only for
@@ -1634,10 +1853,17 @@ void rebind_evtchn_irq(int evtchn, int irq)
 }
 
 /* Rebind an evtchn so that it gets delivered to a specific cpu */
+<<<<<<< HEAD
 static int xen_rebind_evtchn_to_cpu(int evtchn, unsigned int tcpu)
 {
 	struct evtchn_bind_vcpu bind_vcpu;
 	int masked;
+=======
+static int xen_rebind_evtchn_to_cpu(struct irq_info *info, unsigned int tcpu)
+{
+	struct evtchn_bind_vcpu bind_vcpu;
+	evtchn_port_t evtchn = info ? info->evtchn : 0;
+>>>>>>> origin/android16-base
 
 	if (!VALID_EVTCHN(evtchn))
 		return -1;
@@ -1653,7 +1879,11 @@ static int xen_rebind_evtchn_to_cpu(int evtchn, unsigned int tcpu)
 	 * Mask the event while changing the VCPU binding to prevent
 	 * it being delivered on an unexpected VCPU.
 	 */
+<<<<<<< HEAD
 	masked = test_and_set_mask(evtchn);
+=======
+	do_mask(info, EVT_MASK_REASON_TEMPORARY);
+>>>>>>> origin/android16-base
 
 	/*
 	 * If this fails, it usually just indicates that we're dealing with a
@@ -1663,8 +1893,12 @@ static int xen_rebind_evtchn_to_cpu(int evtchn, unsigned int tcpu)
 	if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_vcpu, &bind_vcpu) >= 0)
 		bind_evtchn_to_cpu(evtchn, tcpu);
 
+<<<<<<< HEAD
 	if (!masked)
 		unmask_evtchn(evtchn);
+=======
+	do_unmask(info, EVT_MASK_REASON_TEMPORARY);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -1673,7 +1907,11 @@ static int set_affinity_irq(struct irq_data *data, const struct cpumask *dest,
 			    bool force)
 {
 	unsigned tcpu = cpumask_first_and(dest, cpu_online_mask);
+<<<<<<< HEAD
 	int ret = xen_rebind_evtchn_to_cpu(evtchn_from_irq(data->irq), tcpu);
+=======
+	int ret = xen_rebind_evtchn_to_cpu(info_for_irq(data->irq), tcpu);
+>>>>>>> origin/android16-base
 
 	if (!ret)
 		irq_data_update_effective_affinity(data, cpumask_of(tcpu));
@@ -1692,29 +1930,51 @@ EXPORT_SYMBOL_GPL(xen_set_affinity_evtchn);
 
 static void enable_dynirq(struct irq_data *data)
 {
+<<<<<<< HEAD
 	int evtchn = evtchn_from_irq(data->irq);
 
 	if (VALID_EVTCHN(evtchn))
 		unmask_evtchn(evtchn);
+=======
+	struct irq_info *info = info_for_irq(data->irq);
+	evtchn_port_t evtchn = info ? info->evtchn : 0;
+
+	if (VALID_EVTCHN(evtchn))
+		do_unmask(info, EVT_MASK_REASON_EXPLICIT);
+>>>>>>> origin/android16-base
 }
 
 static void disable_dynirq(struct irq_data *data)
 {
+<<<<<<< HEAD
 	int evtchn = evtchn_from_irq(data->irq);
 
 	if (VALID_EVTCHN(evtchn))
 		mask_evtchn(evtchn);
+=======
+	struct irq_info *info = info_for_irq(data->irq);
+	evtchn_port_t evtchn = info ? info->evtchn : 0;
+
+	if (VALID_EVTCHN(evtchn))
+		do_mask(info, EVT_MASK_REASON_EXPLICIT);
+>>>>>>> origin/android16-base
 }
 
 static void ack_dynirq(struct irq_data *data)
 {
+<<<<<<< HEAD
 	int evtchn = evtchn_from_irq(data->irq);
+=======
+	struct irq_info *info = info_for_irq(data->irq);
+	evtchn_port_t evtchn = info ? info->evtchn : 0;
+>>>>>>> origin/android16-base
 
 	if (!VALID_EVTCHN(evtchn))
 		return;
 
 	if (unlikely(irqd_is_setaffinity_pending(data)) &&
 	    likely(!irqd_irq_disabled(data))) {
+<<<<<<< HEAD
 		int masked = test_and_set_mask(evtchn);
 
 		clear_evtchn(evtchn);
@@ -1725,6 +1985,17 @@ static void ack_dynirq(struct irq_data *data)
 			unmask_evtchn(evtchn);
 	} else
 		clear_evtchn(evtchn);
+=======
+		do_mask(info, EVT_MASK_REASON_TEMPORARY);
+
+		event_handler_exit(info);
+
+		irq_move_masked_irq(data);
+
+		do_unmask(info, EVT_MASK_REASON_TEMPORARY);
+	} else
+		event_handler_exit(info);
+>>>>>>> origin/android16-base
 }
 
 static void mask_ack_dynirq(struct irq_data *data)
@@ -1733,18 +2004,65 @@ static void mask_ack_dynirq(struct irq_data *data)
 	ack_dynirq(data);
 }
 
+<<<<<<< HEAD
 static int retrigger_dynirq(struct irq_data *data)
 {
 	unsigned int evtchn = evtchn_from_irq(data->irq);
 	int masked;
+=======
+static void lateeoi_ack_dynirq(struct irq_data *data)
+{
+	struct irq_info *info = info_for_irq(data->irq);
+	evtchn_port_t evtchn = info ? info->evtchn : 0;
+
+	if (!VALID_EVTCHN(evtchn))
+		return;
+
+	do_mask(info, EVT_MASK_REASON_EOI_PENDING);
+
+	if (unlikely(irqd_is_setaffinity_pending(data)) &&
+	    likely(!irqd_irq_disabled(data))) {
+		do_mask(info, EVT_MASK_REASON_TEMPORARY);
+
+		clear_evtchn(evtchn);
+
+		irq_move_masked_irq(data);
+
+		do_unmask(info, EVT_MASK_REASON_TEMPORARY);
+	} else
+		clear_evtchn(evtchn);
+}
+
+static void lateeoi_mask_ack_dynirq(struct irq_data *data)
+{
+	struct irq_info *info = info_for_irq(data->irq);
+	evtchn_port_t evtchn = info ? info->evtchn : 0;
+
+	if (VALID_EVTCHN(evtchn)) {
+		do_mask(info, EVT_MASK_REASON_EXPLICIT);
+		ack_dynirq(data);
+	}
+}
+
+static int retrigger_dynirq(struct irq_data *data)
+{
+	struct irq_info *info = info_for_irq(data->irq);
+	evtchn_port_t evtchn = info ? info->evtchn : 0;
+>>>>>>> origin/android16-base
 
 	if (!VALID_EVTCHN(evtchn))
 		return 0;
 
+<<<<<<< HEAD
 	masked = test_and_set_mask(evtchn);
 	set_evtchn(evtchn);
 	if (!masked)
 		unmask_evtchn(evtchn);
+=======
+	do_mask(info, EVT_MASK_REASON_TEMPORARY);
+	set_evtchn(evtchn);
+	do_unmask(info, EVT_MASK_REASON_TEMPORARY);
+>>>>>>> origin/android16-base
 
 	return 1;
 }
@@ -1839,10 +2157,18 @@ static void restore_cpu_ipis(unsigned int cpu)
 /* Clear an irq's pending state, in preparation for polling on it */
 void xen_clear_irq_pending(int irq)
 {
+<<<<<<< HEAD
 	int evtchn = evtchn_from_irq(irq);
 
 	if (VALID_EVTCHN(evtchn))
 		clear_evtchn(evtchn);
+=======
+	struct irq_info *info = info_for_irq(irq);
+	evtchn_port_t evtchn = info ? info->evtchn : 0;
+
+	if (VALID_EVTCHN(evtchn))
+		event_handler_exit(info);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(xen_clear_irq_pending);
 void xen_set_irq_pending(int irq)
@@ -1950,8 +2276,13 @@ static struct irq_chip xen_lateeoi_chip __read_mostly = {
 	.irq_mask		= disable_dynirq,
 	.irq_unmask		= enable_dynirq,
 
+<<<<<<< HEAD
 	.irq_ack		= mask_ack_dynirq,
 	.irq_mask_ack		= mask_ack_dynirq,
+=======
+	.irq_ack		= lateeoi_ack_dynirq,
+	.irq_mask_ack		= lateeoi_mask_ack_dynirq,
+>>>>>>> origin/android16-base
 
 	.irq_set_affinity	= set_affinity_irq,
 	.irq_retrigger		= retrigger_dynirq,
@@ -1987,6 +2318,7 @@ static struct irq_chip xen_percpu_chip __read_mostly = {
 	.irq_ack		= ack_dynirq,
 };
 
+<<<<<<< HEAD
 int xen_set_callback_via(uint64_t via)
 {
 	struct xen_hvm_param a;
@@ -1997,6 +2329,8 @@ int xen_set_callback_via(uint64_t via)
 }
 EXPORT_SYMBOL_GPL(xen_set_callback_via);
 
+=======
+>>>>>>> origin/android16-base
 #ifdef CONFIG_XEN_PVHVM
 /* Vector callbacks are better than PCI interrupts to receive event
  * channel notifications because we can receive vector callbacks on any
@@ -2023,8 +2357,13 @@ void xen_callback_vector(void)
 void xen_callback_vector(void) {}
 #endif
 
+<<<<<<< HEAD
 static bool fifo_events = true;
 module_param(fifo_events, bool, 0);
+=======
+bool xen_fifo_events = true;
+module_param_named(fifo_events, xen_fifo_events, bool, 0);
+>>>>>>> origin/android16-base
 
 static int xen_evtchn_cpu_prepare(unsigned int cpu)
 {
@@ -2053,10 +2392,19 @@ void __init xen_init_IRQ(void)
 	int ret = -EINVAL;
 	unsigned int evtchn;
 
+<<<<<<< HEAD
 	if (fifo_events)
 		ret = xen_evtchn_fifo_init();
 	if (ret < 0)
 		xen_evtchn_2l_init();
+=======
+	if (xen_fifo_events)
+		ret = xen_evtchn_fifo_init();
+	if (ret < 0) {
+		xen_evtchn_2l_init();
+		xen_fifo_events = false;
+	}
+>>>>>>> origin/android16-base
 
 	xen_cpu_init_eoi(smp_processor_id());
 

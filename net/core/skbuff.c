@@ -401,7 +401,15 @@ struct sk_buff *__netdev_alloc_skb(struct net_device *dev, unsigned int len,
 
 	len += NET_SKB_PAD;
 
+<<<<<<< HEAD
 	if ((len > SKB_WITH_OVERHEAD(PAGE_SIZE)) ||
+=======
+	/* If requested length is either too small or too big,
+	 * we use kmalloc() for skb->head allocation.
+	 */
+	if (len <= SKB_WITH_OVERHEAD(1024) ||
+	    len > SKB_WITH_OVERHEAD(PAGE_SIZE) ||
+>>>>>>> origin/android16-base
 	    (gfp_mask & (__GFP_DIRECT_RECLAIM | GFP_DMA))) {
 		skb = __alloc_skb(len, gfp_mask, SKB_ALLOC_RX, NUMA_NO_NODE);
 		if (!skb)
@@ -462,13 +470,25 @@ EXPORT_SYMBOL(__netdev_alloc_skb);
 struct sk_buff *__napi_alloc_skb(struct napi_struct *napi, unsigned int len,
 				 gfp_t gfp_mask)
 {
+<<<<<<< HEAD
 	struct napi_alloc_cache *nc = this_cpu_ptr(&napi_alloc_cache);
+=======
+	struct napi_alloc_cache *nc;
+>>>>>>> origin/android16-base
 	struct sk_buff *skb;
 	void *data;
 
 	len += NET_SKB_PAD + NET_IP_ALIGN;
 
+<<<<<<< HEAD
 	if ((len > SKB_WITH_OVERHEAD(PAGE_SIZE)) ||
+=======
+	/* If requested length is either too small or too big,
+	 * we use kmalloc() for skb->head allocation.
+	 */
+	if (len <= SKB_WITH_OVERHEAD(1024) ||
+	    len > SKB_WITH_OVERHEAD(PAGE_SIZE) ||
+>>>>>>> origin/android16-base
 	    (gfp_mask & (__GFP_DIRECT_RECLAIM | GFP_DMA))) {
 		skb = __alloc_skb(len, gfp_mask, SKB_ALLOC_RX, NUMA_NO_NODE);
 		if (!skb)
@@ -476,6 +496,10 @@ struct sk_buff *__napi_alloc_skb(struct napi_struct *napi, unsigned int len,
 		goto skb_success;
 	}
 
+<<<<<<< HEAD
+=======
+	nc = this_cpu_ptr(&napi_alloc_cache);
+>>>>>>> origin/android16-base
 	len += SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
 	len = SKB_DATA_ALIGN(len);
 
@@ -1856,6 +1880,15 @@ int pskb_trim_rcsum_slow(struct sk_buff *skb, unsigned int len)
 		skb->csum = csum_block_sub(skb->csum,
 					   skb_checksum(skb, len, delta, 0),
 					   len);
+<<<<<<< HEAD
+=======
+	} else if (skb->ip_summed == CHECKSUM_PARTIAL) {
+		int hdlen = (len > skb_headlen(skb)) ? skb_headlen(skb) : len;
+		int offset = skb_checksum_start_offset(skb) + skb->csum_offset;
+
+		if (offset + sizeof(__sum16) > hdlen)
+			return -EINVAL;
+>>>>>>> origin/android16-base
 	}
 	return __pskb_trim(skb, len);
 }
@@ -1941,6 +1974,12 @@ void *__pskb_pull_tail(struct sk_buff *skb, int delta)
 				insp = list;
 			} else {
 				/* Eaten partially. */
+<<<<<<< HEAD
+=======
+				if (skb_is_gso(skb) && !list->head_frag &&
+				    skb_headlen(list))
+					skb_shinfo(skb)->gso_type |= SKB_GSO_DODGY;
+>>>>>>> origin/android16-base
 
 				if (skb_shared(list)) {
 					/* Sucks! We need to fork list. :-( */
@@ -1965,7 +2004,11 @@ void *__pskb_pull_tail(struct sk_buff *skb, int delta)
 		/* Free pulled out fragments. */
 		while ((list = skb_shinfo(skb)->frag_list) != insp) {
 			skb_shinfo(skb)->frag_list = list->next;
+<<<<<<< HEAD
 			kfree_skb(list);
+=======
+			consume_skb(list);
+>>>>>>> origin/android16-base
 		}
 		/* And insert new clone at head. */
 		if (clone) {
@@ -2693,8 +2736,16 @@ skb_zerocopy_headlen(const struct sk_buff *from)
 
 	if (!from->head_frag ||
 	    skb_headlen(from) < L1_CACHE_BYTES ||
+<<<<<<< HEAD
 	    skb_shinfo(from)->nr_frags >= MAX_SKB_FRAGS)
 		hlen = skb_headlen(from);
+=======
+	    skb_shinfo(from)->nr_frags >= MAX_SKB_FRAGS) {
+		hlen = skb_headlen(from);
+		if (!hlen)
+			hlen = from->len;
+	}
+>>>>>>> origin/android16-base
 
 	if (skb_has_frag_list(from))
 		hlen = from->len;
@@ -3080,7 +3131,23 @@ EXPORT_SYMBOL(skb_split);
  */
 static int skb_prepare_for_shift(struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	return skb_cloned(skb) && pskb_expand_head(skb, 0, 0, GFP_ATOMIC);
+=======
+	int ret = 0;
+
+	if (skb_cloned(skb)) {
+		/* Save and restore truesize: pskb_expand_head() may reallocate
+		 * memory where ksize(kmalloc(S)) != ksize(kmalloc(S)), but we
+		 * cannot change truesize at this point.
+		 */
+		unsigned int save_truesize = skb->truesize;
+
+		ret = pskb_expand_head(skb, 0, 0, GFP_ATOMIC);
+		skb->truesize = save_truesize;
+	}
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -3516,15 +3583,21 @@ struct sk_buff *skb_segment(struct sk_buff *head_skb,
 	struct sk_buff *segs = NULL;
 	struct sk_buff *tail = NULL;
 	struct sk_buff *list_skb = skb_shinfo(head_skb)->frag_list;
+<<<<<<< HEAD
 	skb_frag_t *frag = skb_shinfo(head_skb)->frags;
 	unsigned int mss = skb_shinfo(head_skb)->gso_size;
 	unsigned int doffset = head_skb->data - skb_mac_header(head_skb);
 	struct sk_buff *frag_skb = head_skb;
+=======
+	unsigned int mss = skb_shinfo(head_skb)->gso_size;
+	unsigned int doffset = head_skb->data - skb_mac_header(head_skb);
+>>>>>>> origin/android16-base
 	unsigned int offset = doffset;
 	unsigned int tnl_hlen = skb_tnl_header_len(head_skb);
 	unsigned int partial_segs = 0;
 	unsigned int headroom;
 	unsigned int len = head_skb->len;
+<<<<<<< HEAD
 	__be16 proto;
 	bool csum, sg;
 	int nfrags = skb_shinfo(head_skb)->nr_frags;
@@ -3550,6 +3623,36 @@ struct sk_buff *skb_segment(struct sk_buff *head_skb,
 		 */
 		if (mss != GSO_BY_FRAGS && mss != skb_headlen(head_skb))
 			features &= ~NETIF_F_SG;
+=======
+	struct sk_buff *frag_skb;
+	skb_frag_t *frag;
+	__be16 proto;
+	bool csum, sg;
+	int err = -ENOMEM;
+	int i = 0;
+	int nfrags, pos;
+	int dummy;
+
+	if ((skb_shinfo(head_skb)->gso_type & SKB_GSO_DODGY) &&
+	    mss != GSO_BY_FRAGS && mss != skb_headlen(head_skb)) {
+		struct sk_buff *check_skb;
+
+		for (check_skb = list_skb; check_skb; check_skb = check_skb->next) {
+			if (skb_headlen(check_skb) && !check_skb->head_frag) {
+				/* gso_size is untrusted, and we have a frag_list with
+				 * a linear non head_frag item.
+				 *
+				 * If head_skb's headlen does not fit requested gso_size,
+				 * it means that the frag_list members do NOT terminate
+				 * on exact gso_size boundaries. Hence we cannot perform
+				 * skb_frag_t page sharing. Therefore we must fallback to
+				 * copying the frag_list skbs; we do so by disabling SG.
+				 */
+				features &= ~NETIF_F_SG;
+				break;
+			}
+		}
+>>>>>>> origin/android16-base
 	}
 
 	__skb_push(head_skb, doffset);
@@ -3594,8 +3697,14 @@ struct sk_buff *skb_segment(struct sk_buff *head_skb,
 		/* GSO partial only requires that we trim off any excess that
 		 * doesn't fit into an MSS sized block, so take care of that
 		 * now.
+<<<<<<< HEAD
 		 */
 		partial_segs = len / mss;
+=======
+		 * Cap len to not accidentally hit GSO_BY_FRAGS.
+		 */
+		partial_segs = min(len, (unsigned int)(GSO_BY_FRAGS - 1)) / mss;
+>>>>>>> origin/android16-base
 		if (partial_segs > 1)
 			mss *= partial_segs;
 		else
@@ -3606,6 +3715,16 @@ normal:
 	headroom = skb_headroom(head_skb);
 	pos = skb_headlen(head_skb);
 
+<<<<<<< HEAD
+=======
+	if (skb_orphan_frags(head_skb, GFP_ATOMIC))
+		return ERR_PTR(-ENOMEM);
+
+	nfrags = skb_shinfo(head_skb)->nr_frags;
+	frag = skb_shinfo(head_skb)->frags;
+	frag_skb = head_skb;
+
+>>>>>>> origin/android16-base
 	do {
 		struct sk_buff *nskb;
 		skb_frag_t *nskb_frag;
@@ -3630,6 +3749,13 @@ normal:
 		    (skb_headlen(list_skb) == len || sg)) {
 			BUG_ON(skb_headlen(list_skb) > len);
 
+<<<<<<< HEAD
+=======
+			nskb = skb_clone(list_skb, GFP_ATOMIC);
+			if (unlikely(!nskb))
+				goto err;
+
+>>>>>>> origin/android16-base
 			i = 0;
 			nfrags = skb_shinfo(list_skb)->nr_frags;
 			frag = skb_shinfo(list_skb)->frags;
@@ -3648,12 +3774,17 @@ normal:
 				frag++;
 			}
 
+<<<<<<< HEAD
 			nskb = skb_clone(list_skb, GFP_ATOMIC);
 			list_skb = list_skb->next;
 
 			if (unlikely(!nskb))
 				goto err;
 
+=======
+			list_skb = list_skb->next;
+
+>>>>>>> origin/android16-base
 			if (unlikely(pskb_trim(nskb, len))) {
 				kfree_skb(nskb);
 				goto err;
@@ -3718,12 +3849,24 @@ normal:
 		skb_shinfo(nskb)->tx_flags |= skb_shinfo(head_skb)->tx_flags &
 					      SKBTX_SHARED_FRAG;
 
+<<<<<<< HEAD
 		if (skb_orphan_frags(frag_skb, GFP_ATOMIC) ||
 		    skb_zerocopy_clone(nskb, frag_skb, GFP_ATOMIC))
+=======
+		if (skb_zerocopy_clone(nskb, frag_skb, GFP_ATOMIC))
+>>>>>>> origin/android16-base
 			goto err;
 
 		while (pos < offset + len) {
 			if (i >= nfrags) {
+<<<<<<< HEAD
+=======
+				if (skb_orphan_frags(list_skb, GFP_ATOMIC) ||
+				    skb_zerocopy_clone(nskb, list_skb,
+						       GFP_ATOMIC))
+					goto err;
+
+>>>>>>> origin/android16-base
 				i = 0;
 				nfrags = skb_shinfo(list_skb)->nr_frags;
 				frag = skb_shinfo(list_skb)->frags;
@@ -3737,10 +3880,13 @@ normal:
 					i--;
 					frag--;
 				}
+<<<<<<< HEAD
 				if (skb_orphan_frags(frag_skb, GFP_ATOMIC) ||
 				    skb_zerocopy_clone(nskb, frag_skb,
 						       GFP_ATOMIC))
 					goto err;
+=======
+>>>>>>> origin/android16-base
 
 				list_skb = list_skb->next;
 			}
@@ -4268,7 +4414,11 @@ struct sk_buff *sock_dequeue_err_skb(struct sock *sk)
 	if (skb && (skb_next = skb_peek(q))) {
 		icmp_next = is_icmp_err_skb(skb_next);
 		if (icmp_next)
+<<<<<<< HEAD
 			sk->sk_err = SKB_EXT_ERR(skb_next)->ee.ee_origin;
+=======
+			sk->sk_err = SKB_EXT_ERR(skb_next)->ee.ee_errno;
+>>>>>>> origin/android16-base
 	}
 	spin_unlock_irqrestore(&q->lock, flags);
 
@@ -4350,7 +4500,11 @@ static bool skb_may_tx_timestamp(struct sock *sk, bool tsonly)
 {
 	bool ret;
 
+<<<<<<< HEAD
 	if (likely(sysctl_tstamp_allow_data || tsonly))
+=======
+	if (likely(READ_ONCE(sysctl_tstamp_allow_data) || tsonly))
+>>>>>>> origin/android16-base
 		return true;
 
 	read_lock_bh(&sk->sk_callback_lock);
@@ -4413,6 +4567,14 @@ void __skb_tstamp_tx(struct sk_buff *orig_skb,
 			skb = alloc_skb(0, GFP_ATOMIC);
 	} else {
 		skb = skb_clone(orig_skb, GFP_ATOMIC);
+<<<<<<< HEAD
+=======
+
+		if (skb_orphan_frags_rx(skb, GFP_ATOMIC)) {
+			kfree_skb(skb);
+			return;
+		}
+>>>>>>> origin/android16-base
 	}
 	if (!skb)
 		return;
@@ -5455,7 +5617,11 @@ static int pskb_carve_frag_list(struct sk_buff *skb,
 	/* Free pulled out fragments. */
 	while ((list = shinfo->frag_list) != insp) {
 		shinfo->frag_list = list->next;
+<<<<<<< HEAD
 		kfree_skb(list);
+=======
+		consume_skb(list);
+>>>>>>> origin/android16-base
 	}
 	/* And insert new clone at head. */
 	if (clone) {

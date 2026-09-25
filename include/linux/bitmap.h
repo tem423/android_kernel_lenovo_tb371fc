@@ -212,12 +212,21 @@ extern int bitmap_print_to_pagebuf(bool list, char *buf,
 #define small_const_nbits(nbits) \
 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG && (nbits) > 0)
 
+<<<<<<< HEAD
+=======
+#define bitmap_size(nbits)	(ALIGN(nbits, BITS_PER_LONG) / BITS_PER_BYTE)
+
+>>>>>>> origin/android16-base
 static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
 {
 	if (small_const_nbits(nbits))
 		*dst = 0UL;
 	else {
+<<<<<<< HEAD
 		unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
+=======
+		unsigned int len = bitmap_size(nbits);
+>>>>>>> origin/android16-base
 		memset(dst, 0, len);
 	}
 }
@@ -227,7 +236,11 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 	if (small_const_nbits(nbits))
 		*dst = ~0UL;
 	else {
+<<<<<<< HEAD
 		unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
+=======
+		unsigned int len = bitmap_size(nbits);
+>>>>>>> origin/android16-base
 		memset(dst, 0xff, len);
 	}
 }
@@ -238,7 +251,11 @@ static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
 	if (small_const_nbits(nbits))
 		*dst = *src;
 	else {
+<<<<<<< HEAD
 		unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
+=======
+		unsigned int len = bitmap_size(nbits);
+>>>>>>> origin/android16-base
 		memcpy(dst, src, len);
 	}
 }
@@ -254,6 +271,21 @@ static inline void bitmap_copy_clear_tail(unsigned long *dst,
 		dst[nbits / BITS_PER_LONG] &= BITMAP_LAST_WORD_MASK(nbits);
 }
 
+<<<<<<< HEAD
+=======
+static inline void bitmap_copy_and_extend(unsigned long *to,
+					  const unsigned long *from,
+					  unsigned int count, unsigned int size)
+{
+	unsigned int copy = BITS_TO_LONGS(count);
+
+	memcpy(to, from, copy * sizeof(long));
+	if (count % BITS_PER_LONG)
+		to[copy - 1] &= BITMAP_LAST_WORD_MASK(count);
+	memset(to + copy, 0, bitmap_size(size) - copy * sizeof(long));
+}
+
+>>>>>>> origin/android16-base
 /*
  * On 32-bit systems bitmaps are represented as u32 arrays internally, and
  * therefore conversion is not needed when copying data from/to arrays of u32.

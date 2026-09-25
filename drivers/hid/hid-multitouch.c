@@ -72,6 +72,10 @@ MODULE_LICENSE("GPL");
 #define MT_QUIRK_STICKY_FINGERS		BIT(16)
 #define MT_QUIRK_ASUS_CUSTOM_UP		BIT(17)
 #define MT_QUIRK_WIN8_PTP_BUTTONS	BIT(18)
+<<<<<<< HEAD
+=======
+#define MT_QUIRK_SEPARATE_APP_REPORT	BIT(19)
+>>>>>>> origin/android16-base
 
 #define MT_INPUTMODE_TOUCHSCREEN	0x02
 #define MT_INPUTMODE_TOUCHPAD		0x03
@@ -107,6 +111,10 @@ struct mt_usages {
 struct mt_application {
 	struct list_head list;
 	unsigned int application;
+<<<<<<< HEAD
+=======
+	unsigned int report_id;
+>>>>>>> origin/android16-base
 	struct list_head mt_usages;	/* mt usages list */
 
 	__s32 quirks;
@@ -207,6 +215,10 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app);
 #define MT_CLS_VTL				0x0110
 #define MT_CLS_GOOGLE				0x0111
 #define MT_CLS_RAZER_BLADE_STEALTH		0x0112
+<<<<<<< HEAD
+=======
+#define MT_CLS_SMART_TECH			0x0113
+>>>>>>> origin/android16-base
 
 #define MT_DEFAULT_MAXCONTACT	10
 #define MT_MAX_MAXCONTACT	250
@@ -357,6 +369,15 @@ static const struct mt_class mt_classes[] = {
 			MT_QUIRK_CONTACT_CNT_ACCURATE |
 			MT_QUIRK_WIN8_PTP_BUTTONS,
 	},
+<<<<<<< HEAD
+=======
+	{ .name = MT_CLS_SMART_TECH,
+		.quirks = MT_QUIRK_ALWAYS_VALID |
+			MT_QUIRK_IGNORE_DUPLICATES |
+			MT_QUIRK_CONTACT_CNT_ACCURATE |
+			MT_QUIRK_SEPARATE_APP_REPORT,
+	},
+>>>>>>> origin/android16-base
 	{ }
 };
 
@@ -513,8 +534,14 @@ static struct mt_usages *mt_allocate_usage(struct hid_device *hdev,
 }
 
 static struct mt_application *mt_allocate_application(struct mt_device *td,
+<<<<<<< HEAD
 						      unsigned int application)
 {
+=======
+						      struct hid_report *report)
+{
+	unsigned int application = report->application;
+>>>>>>> origin/android16-base
 	struct mt_application *mt_application;
 
 	mt_application = devm_kzalloc(&td->hdev->dev, sizeof(*mt_application),
@@ -539,6 +566,10 @@ static struct mt_application *mt_allocate_application(struct mt_device *td,
 	mt_application->scantime = DEFAULT_ZERO;
 	mt_application->raw_cc = DEFAULT_ZERO;
 	mt_application->quirks = td->mtclass.quirks;
+<<<<<<< HEAD
+=======
+	mt_application->report_id = report->id;
+>>>>>>> origin/android16-base
 
 	list_add_tail(&mt_application->list, &td->applications);
 
@@ -546,19 +577,37 @@ static struct mt_application *mt_allocate_application(struct mt_device *td,
 }
 
 static struct mt_application *mt_find_application(struct mt_device *td,
+<<<<<<< HEAD
 						  unsigned int application)
 {
+=======
+						  struct hid_report *report)
+{
+	unsigned int application = report->application;
+>>>>>>> origin/android16-base
 	struct mt_application *tmp, *mt_application = NULL;
 
 	list_for_each_entry(tmp, &td->applications, list) {
 		if (application == tmp->application) {
+<<<<<<< HEAD
 			mt_application = tmp;
 			break;
+=======
+			if (!(td->mtclass.quirks & MT_QUIRK_SEPARATE_APP_REPORT) ||
+			    tmp->report_id == report->id) {
+				mt_application = tmp;
+				break;
+			}
+>>>>>>> origin/android16-base
 		}
 	}
 
 	if (!mt_application)
+<<<<<<< HEAD
 		mt_application = mt_allocate_application(td, application);
+=======
+		mt_application = mt_allocate_application(td, report);
+>>>>>>> origin/android16-base
 
 	return mt_application;
 }
@@ -575,7 +624,11 @@ static struct mt_report_data *mt_allocate_report_data(struct mt_device *td,
 		return NULL;
 
 	rdata->report = report;
+<<<<<<< HEAD
 	rdata->application = mt_find_application(td, report->application);
+=======
+	rdata->application = mt_find_application(td, report);
+>>>>>>> origin/android16-base
 
 	if (!rdata->application) {
 		devm_kfree(&td->hdev->dev, rdata);
@@ -588,9 +641,19 @@ static struct mt_report_data *mt_allocate_report_data(struct mt_device *td,
 		if (!(HID_MAIN_ITEM_VARIABLE & field->flags))
 			continue;
 
+<<<<<<< HEAD
 		for (n = 0; n < field->report_count; n++) {
 			if (field->usage[n].hid == HID_DG_CONTACTID)
 				rdata->is_mt_collection = true;
+=======
+		if (field->logical == HID_DG_FINGER || td->hdev->group != HID_GROUP_MULTITOUCH_WIN_8) {
+			for (n = 0; n < field->report_count; n++) {
+				if (field->usage[n].hid == HID_DG_CONTACTID) {
+					rdata->is_mt_collection = true;
+					break;
+				}
+			}
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -1135,7 +1198,11 @@ static void mt_touch_report(struct hid_device *hid,
 	int contact_count = -1;
 
 	/* sticky fingers release in progress, abort */
+<<<<<<< HEAD
 	if (test_and_set_bit(MT_IO_FLAGS_RUNNING, &td->mt_io_flags))
+=======
+	if (test_and_set_bit_lock(MT_IO_FLAGS_RUNNING, &td->mt_io_flags))
+>>>>>>> origin/android16-base
 		return;
 
 	scantime = *app->scantime;
@@ -1216,7 +1283,11 @@ static void mt_touch_report(struct hid_device *hid,
 			del_timer(&td->release_timer);
 	}
 
+<<<<<<< HEAD
 	clear_bit(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
+=======
+	clear_bit_unlock(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
+>>>>>>> origin/android16-base
 }
 
 static int mt_touch_input_configured(struct hid_device *hdev,
@@ -1328,6 +1399,16 @@ static int mt_input_mapping(struct hid_device *hdev, struct hid_input *hi,
 		return mt_touch_input_mapping(hdev, hi, field, usage, bit, max,
 					      application);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * some egalax touchscreens have "application == DG_TOUCHSCREEN"
+	 * for the stylus. Overwrite the hid_input application
+	 */
+	if (field->physical == HID_DG_STYLUS)
+		hi->application = HID_DG_STYLUS;
+
+>>>>>>> origin/android16-base
 	/* let hid-core decide for the others */
 	return 0;
 }
@@ -1514,16 +1595,23 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app)
 static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
 {
 	struct mt_device *td = hid_get_drvdata(hdev);
+<<<<<<< HEAD
 	char *name;
 	const char *suffix = NULL;
 	unsigned int application = 0;
+=======
+	const char *suffix = NULL;
+>>>>>>> origin/android16-base
 	struct mt_report_data *rdata;
 	struct mt_application *mt_application = NULL;
 	struct hid_report *report;
 	int ret;
 
 	list_for_each_entry(report, &hi->reports, hidinput_list) {
+<<<<<<< HEAD
 		application = report->application;
+=======
+>>>>>>> origin/android16-base
 		rdata = mt_find_report_data(td, report);
 		if (!rdata) {
 			hid_err(hdev, "failed to allocate data for report\n");
@@ -1538,6 +1626,7 @@ static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
 			if (ret)
 				return ret;
 		}
+<<<<<<< HEAD
 
 		/*
 		 * some egalax touchscreens have "application == DG_TOUCHSCREEN"
@@ -1589,6 +1678,43 @@ static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
 			hi->input->name = name;
 		}
 	}
+=======
+	}
+
+	switch (hi->application) {
+	case HID_GD_KEYBOARD:
+	case HID_GD_KEYPAD:
+	case HID_GD_MOUSE:
+	case HID_DG_TOUCHPAD:
+	case HID_GD_SYSTEM_CONTROL:
+	case HID_CP_CONSUMER_CONTROL:
+	case HID_GD_WIRELESS_RADIO_CTLS:
+	case HID_GD_SYSTEM_MULTIAXIS:
+		/* already handled by hid core */
+		break;
+	case HID_DG_TOUCHSCREEN:
+		/* we do not set suffix = "Touchscreen" */
+		hi->input->name = hdev->name;
+		break;
+	case HID_DG_STYLUS:
+		/* force BTN_STYLUS to allow tablet matching in udev */
+		__set_bit(BTN_STYLUS, hi->input->keybit);
+		break;
+	case HID_VD_ASUS_CUSTOM_MEDIA_KEYS:
+		suffix = "Custom Media Keys";
+		break;
+	case HID_DG_PEN:
+		suffix = "Stylus";
+		break;
+	default:
+		suffix = "UNKNOWN";
+		break;
+	}
+
+	if (suffix)
+		hi->input->name = devm_kasprintf(&hdev->dev, GFP_KERNEL,
+						 "%s %s", hdev->name, suffix);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -1658,11 +1784,19 @@ static void mt_expired_timeout(struct timer_list *t)
 	 * An input report came in just before we release the sticky fingers,
 	 * it will take care of the sticky fingers.
 	 */
+<<<<<<< HEAD
 	if (test_and_set_bit(MT_IO_FLAGS_RUNNING, &td->mt_io_flags))
 		return;
 	if (test_bit(MT_IO_FLAGS_PENDING_SLOTS, &td->mt_io_flags))
 		mt_release_contacts(hdev);
 	clear_bit(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
+=======
+	if (test_and_set_bit_lock(MT_IO_FLAGS_RUNNING, &td->mt_io_flags))
+		return;
+	if (test_bit(MT_IO_FLAGS_PENDING_SLOTS, &td->mt_io_flags))
+		mt_release_contacts(hdev);
+	clear_bit_unlock(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
+>>>>>>> origin/android16-base
 }
 
 static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
@@ -1801,6 +1935,15 @@ static const struct hid_device_id mt_devices[] = {
 			   USB_VENDOR_ID_LENOVO,
 			   USB_DEVICE_ID_LENOVO_X1_TAB) },
 
+<<<<<<< HEAD
+=======
+	/* Lenovo X1 TAB Gen 3 */
+	{ .driver_data = MT_CLS_WIN_8_DUAL,
+		HID_DEVICE(BUS_USB, HID_GROUP_MULTITOUCH_WIN_8,
+			   USB_VENDOR_ID_LENOVO,
+			   USB_DEVICE_ID_LENOVO_X1_TAB3) },
+
+>>>>>>> origin/android16-base
 	/* Anton devices */
 	{ .driver_data = MT_CLS_EXPORT_ALL_INPUTS,
 		MT_USB_DEVICE(USB_VENDOR_ID_ANTON,
@@ -1968,6 +2111,19 @@ static const struct hid_device_id mt_devices[] = {
 		MT_USB_DEVICE(USB_VENDOR_ID_HANVON_ALT,
 			USB_DEVICE_ID_HANVON_ALT_MULTITOUCH) },
 
+<<<<<<< HEAD
+=======
+	/* HONOR GLO-GXXX panel */
+	{ .driver_data = MT_CLS_VTL,
+		HID_DEVICE(BUS_I2C, HID_GROUP_MULTITOUCH_WIN_8,
+			0x347d, 0x7853) },
+
+	/* HONOR MagicBook Art 14 touchpad */
+	{ .driver_data = MT_CLS_VTL,
+		HID_DEVICE(BUS_I2C, HID_GROUP_MULTITOUCH_WIN_8,
+			0x35cc, 0x0104) },
+
+>>>>>>> origin/android16-base
 	/* Ilitek dual touch panel */
 	{  .driver_data = MT_CLS_NSMU,
 		MT_USB_DEVICE(USB_VENDOR_ID_ILITEK,
@@ -2036,6 +2192,13 @@ static const struct hid_device_id mt_devices[] = {
 		HID_DEVICE(BUS_I2C, HID_GROUP_MULTITOUCH_WIN_8,
 			USB_VENDOR_ID_SYNAPTICS, 0x8323) },
 
+<<<<<<< HEAD
+=======
+	/* Smart Tech panels */
+	{ .driver_data = MT_CLS_SMART_TECH,
+		MT_USB_DEVICE(0x0b8c, 0x0092)},
+
+>>>>>>> origin/android16-base
 	/* Stantum panels */
 	{ .driver_data = MT_CLS_CONFIDENCE,
 		MT_USB_DEVICE(USB_VENDOR_ID_STANTUM_STM,
@@ -2107,6 +2270,12 @@ static const struct hid_device_id mt_devices[] = {
 	{ .driver_data = MT_CLS_GOOGLE,
 		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY, USB_VENDOR_ID_GOOGLE,
 			USB_DEVICE_ID_GOOGLE_TOUCH_ROSE) },
+<<<<<<< HEAD
+=======
+	{ .driver_data = MT_CLS_GOOGLE,
+		HID_DEVICE(BUS_USB, HID_GROUP_MULTITOUCH_WIN_8, USB_VENDOR_ID_GOOGLE,
+			USB_DEVICE_ID_GOOGLE_WHISKERS) },
+>>>>>>> origin/android16-base
 
 	/* Generic MT device */
 	{ HID_DEVICE(HID_BUS_ANY, HID_GROUP_MULTITOUCH, HID_ANY_ID, HID_ANY_ID) },

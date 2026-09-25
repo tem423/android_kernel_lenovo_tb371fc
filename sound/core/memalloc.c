@@ -179,6 +179,10 @@ int snd_dma_alloc_pages(int type, struct device *device, size_t size,
 	if (WARN_ON(!dmab))
 		return -ENXIO;
 
+<<<<<<< HEAD
+=======
+	size = PAGE_ALIGN(size);
+>>>>>>> origin/android16-base
 	dmab->dev.type = type;
 	dmab->dev.dev = device;
 	dmab->bytes = 0;

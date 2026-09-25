@@ -24,7 +24,11 @@ static const char *tomoyo_loader;
 static int __init tomoyo_loader_setup(char *str)
 {
 	tomoyo_loader = str;
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 __setup("TOMOYO_loader=", tomoyo_loader_setup);
@@ -63,7 +67,11 @@ static const char *tomoyo_trigger;
 static int __init tomoyo_trigger_setup(char *str)
 {
 	tomoyo_trigger = str;
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 __setup("TOMOYO_trigger=", tomoyo_trigger_setup);

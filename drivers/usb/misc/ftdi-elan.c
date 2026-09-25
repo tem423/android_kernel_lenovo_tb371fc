@@ -202,6 +202,10 @@ static void ftdi_elan_delete(struct kref *kref)
 	mutex_unlock(&ftdi_module_lock);
 	kfree(ftdi->bulk_in_buffer);
 	ftdi->bulk_in_buffer = NULL;
+<<<<<<< HEAD
+=======
+	kfree(ftdi);
+>>>>>>> origin/android16-base
 }
 
 static void ftdi_elan_put_kref(struct usb_ftdi *ftdi)

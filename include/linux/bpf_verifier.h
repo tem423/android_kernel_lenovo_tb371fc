@@ -41,6 +41,10 @@ enum bpf_reg_liveness {
 };
 
 struct bpf_reg_state {
+<<<<<<< HEAD
+=======
+	/* Ordering of fields matters.  See states_equal() */
+>>>>>>> origin/android16-base
 	enum bpf_reg_type type;
 	union {
 		/* valid when type == PTR_TO_PACKET */
@@ -62,7 +66,10 @@ struct bpf_reg_state {
 	 * came from, when one is tested for != NULL.
 	 */
 	u32 id;
+<<<<<<< HEAD
 	/* Ordering of fields matters.  See states_equal() */
+=======
+>>>>>>> origin/android16-base
 	/* For scalar types (SCALAR_VALUE), this represents our knowledge of
 	 * the actual value.
 	 * For pointer types, this represents the variable part of the offset
@@ -79,15 +86,25 @@ struct bpf_reg_state {
 	s64 smax_value; /* maximum possible (s64)value */
 	u64 umin_value; /* minimum possible (u64)value */
 	u64 umax_value; /* maximum possible (u64)value */
+<<<<<<< HEAD
+=======
+	/* parentage chain for liveness checking */
+	struct bpf_reg_state *parent;
+>>>>>>> origin/android16-base
 	/* Inside the callee two registers can be both PTR_TO_STACK like
 	 * R1=fp-8 and R2=fp-8, but one of them points to this function stack
 	 * while another to the caller's stack. To differentiate them 'frameno'
 	 * is used which is an index in bpf_verifier_state->frame[] array
 	 * pointing to bpf_func_state.
+<<<<<<< HEAD
 	 * This field must be second to last, for states_equal() reasons.
 	 */
 	u32 frameno;
 	/* This field must be last, for states_equal() reasons. */
+=======
+	 */
+	u32 frameno;
+>>>>>>> origin/android16-base
 	enum bpf_reg_liveness live;
 };
 
@@ -110,7 +127,10 @@ struct bpf_stack_state {
  */
 struct bpf_func_state {
 	struct bpf_reg_state regs[MAX_BPF_REG];
+<<<<<<< HEAD
 	struct bpf_verifier_state *parent;
+=======
+>>>>>>> origin/android16-base
 	/* index of call instruction that called into this func */
 	int callsite;
 	/* stack frame number of this function state from pov of
@@ -128,11 +148,24 @@ struct bpf_func_state {
 	struct bpf_stack_state *stack;
 };
 
+<<<<<<< HEAD
+=======
+struct bpf_id_pair {
+	u32 old;
+	u32 cur;
+};
+
+/* Maximum number of register states that can exist at once */
+#define BPF_ID_MAP_SIZE (MAX_BPF_REG + MAX_BPF_STACK / BPF_REG_SIZE)
+>>>>>>> origin/android16-base
 #define MAX_CALL_FRAMES 8
 struct bpf_verifier_state {
 	/* call stack tracking */
 	struct bpf_func_state *frame[MAX_CALL_FRAMES];
+<<<<<<< HEAD
 	struct bpf_verifier_state *parent;
+=======
+>>>>>>> origin/android16-base
 	u32 curframe;
 	bool speculative;
 };
@@ -144,10 +177,18 @@ struct bpf_verifier_state_list {
 };
 
 /* Possible states for alu_state member. */
+<<<<<<< HEAD
 #define BPF_ALU_SANITIZE_SRC		1U
 #define BPF_ALU_SANITIZE_DST		2U
 #define BPF_ALU_NEG_VALUE		(1U << 2)
 #define BPF_ALU_NON_POINTER		(1U << 3)
+=======
+#define BPF_ALU_SANITIZE_SRC		(1U << 0)
+#define BPF_ALU_SANITIZE_DST		(1U << 1)
+#define BPF_ALU_NEG_VALUE		(1U << 2)
+#define BPF_ALU_NON_POINTER		(1U << 3)
+#define BPF_ALU_IMMEDIATE		(1U << 4)
+>>>>>>> origin/android16-base
 #define BPF_ALU_SANITIZE		(BPF_ALU_SANITIZE_SRC | \
 					 BPF_ALU_SANITIZE_DST)
 
@@ -159,8 +200,13 @@ struct bpf_insn_aux_data {
 		u32 alu_limit;			/* limit for add/sub register with pointer */
 	};
 	int ctx_field_size; /* the ctx field size for load insn, maybe 0 */
+<<<<<<< HEAD
 	int sanitize_stack_off; /* stack slot to be cleared */
 	bool seen; /* this insn was processed by the verifier */
+=======
+	bool seen; /* this insn was processed by the verifier */
+	bool sanitize_stack_spill; /* subject to Spectre v4 sanitation */
+>>>>>>> origin/android16-base
 	u8 alu_state; /* used in combination with alu_limit */
 };
 
@@ -209,11 +255,19 @@ struct bpf_verifier_env {
 	struct bpf_map *used_maps[MAX_USED_MAPS]; /* array of map's used by eBPF program */
 	u32 used_map_cnt;		/* number of used maps */
 	u32 id_gen;			/* used to generate unique reg IDs */
+<<<<<<< HEAD
+=======
+	bool explore_alu_limits;
+>>>>>>> origin/android16-base
 	bool allow_ptr_leaks;
 	bool seen_direct_write;
 	struct bpf_insn_aux_data *insn_aux_data; /* array of per-insn state */
 	struct bpf_verifier_log log;
 	struct bpf_subprog_info subprog_info[BPF_MAX_SUBPROGS + 1];
+<<<<<<< HEAD
+=======
+	struct bpf_id_pair idmap_scratch[BPF_ID_MAP_SIZE];
+>>>>>>> origin/android16-base
 	u32 subprog_cnt;
 };
 

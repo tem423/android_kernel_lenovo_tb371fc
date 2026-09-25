@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
+=======
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 #include <linux/module.h>
 #include <linux/init.h>
@@ -36,6 +40,11 @@
 #define ROULEUR_HPHL_CROSS_CONN_THRESHOLD 350
 #define ROULEUR_HPHR_CROSS_CONN_THRESHOLD 350
 
+<<<<<<< HEAD
+=======
+#define IMPED_NUM_RETRY 5
+
+>>>>>>> origin/android16-base
 static struct wcd_mbhc_register
 	wcd_mbhc_registers[WCD_MBHC_REG_FUNC_MAX] = {
 	WCD_MBHC_REGISTER("WCD_MBHC_L_DET_EN",
@@ -457,6 +466,13 @@ static void rouleur_mbhc_get_result_params(struct rouleur_priv *rouleur,
 		__func__, *zdet);
 	/* Start discharge */
 	regmap_update_bits(rouleur->regmap, ROULEUR_ANA_MBHC_ZDET, 0x20, 0x00);
+<<<<<<< HEAD
+=======
+	/* Discharge operation takes time for the HPH PA to ramp down to 0V.
+	 * Add finite amunt of delay to complete ramp down.
+	 */
+	usleep_range(40000, 40010);
+>>>>>>> origin/android16-base
 }
 
 static void rouleur_mbhc_zdet_start(struct snd_soc_component *component,
@@ -471,9 +487,12 @@ static void rouleur_mbhc_zdet_start(struct snd_soc_component *component,
 	/* HPHL pull down switch to force OFF */
 	regmap_update_bits(rouleur->regmap,
 			  ROULEUR_ANA_HPHPA_CNP_CTL_2, 0x30, 0x00);
+<<<<<<< HEAD
 	/* Averaging enable for reliable results */
 	regmap_update_bits(rouleur->regmap,
 			   ROULEUR_ANA_MBHC_ZDET_ANA_CTL, 0x80, 0x80);
+=======
+>>>>>>> origin/android16-base
 	/* ZDET left measurement enable */
 	regmap_update_bits(rouleur->regmap,
 			   ROULEUR_ANA_MBHC_ZDET, 0x80, 0x80);
@@ -483,8 +502,11 @@ static void rouleur_mbhc_zdet_start(struct snd_soc_component *component,
 	regmap_update_bits(rouleur->regmap,
 			   ROULEUR_ANA_MBHC_ZDET, 0x80, 0x00);
 	regmap_update_bits(rouleur->regmap,
+<<<<<<< HEAD
 			   ROULEUR_ANA_MBHC_ZDET_ANA_CTL, 0x80, 0x00);
 	regmap_update_bits(rouleur->regmap,
+=======
+>>>>>>> origin/android16-base
 			  ROULEUR_ANA_HPHPA_CNP_CTL_2, 0x30, 0x20);
 
 	*zl = zdet;
@@ -495,9 +517,12 @@ z_right:
 	/* HPHR pull down switch to force OFF */
 	regmap_update_bits(rouleur->regmap,
 			  ROULEUR_ANA_HPHPA_CNP_CTL_2, 0x0C, 0x00);
+<<<<<<< HEAD
 	/* Averaging enable for reliable results */
 	regmap_update_bits(rouleur->regmap,
 			   ROULEUR_ANA_MBHC_ZDET_ANA_CTL, 0x80, 0x80);
+=======
+>>>>>>> origin/android16-base
 	/* ZDET right measurement enable */
 	regmap_update_bits(rouleur->regmap,
 			   ROULEUR_ANA_MBHC_ZDET, 0x40, 0x40);
@@ -508,13 +533,65 @@ z_right:
 	regmap_update_bits(rouleur->regmap,
 			   ROULEUR_ANA_MBHC_ZDET, 0x40, 0x00);
 	regmap_update_bits(rouleur->regmap,
+<<<<<<< HEAD
 			   ROULEUR_ANA_MBHC_ZDET_ANA_CTL, 0x80, 0x00);
 	regmap_update_bits(rouleur->regmap,
+=======
+>>>>>>> origin/android16-base
 			  ROULEUR_ANA_HPHPA_CNP_CTL_2, 0x0C, 0x08);
 
 	*zr = zdet;
 }
 
+<<<<<<< HEAD
+=======
+static void rouleur_mbhc_impedance_fn(struct snd_soc_component *component,
+				      int32_t *z1L, int32_t *z1R,
+				      int32_t *zl, int32_t *zr)
+{
+	int i;
+	bool is_zl_calculted = false;
+	bool is_zr_calculted = false;
+
+	/*
+	 * Calculate impedance for multiple times until IMPED_NUM_RETRY
+	 * stop calculating if the result is within the threshold
+	 */
+	for (i = 0; i < IMPED_NUM_RETRY; i++) {
+		if (!is_zl_calculted) {
+			/* Start of left ch impedance calculation */
+			rouleur_mbhc_zdet_start(component, z1L, NULL);
+			if ((*z1L == ROULEUR_ZDET_FLOATING_IMPEDANCE) ||
+				(*z1L > ROULEUR_ZDET_VAL_100K))
+				*zl = ROULEUR_ZDET_FLOATING_IMPEDANCE;
+			else {
+				*zl = *z1L/1000;
+				is_zl_calculted = true;
+			}
+		}
+		if (!is_zr_calculted) {
+			/* Start of right ch impedance calculation */
+			rouleur_mbhc_zdet_start(component, NULL, z1R);
+			if ((*z1R == ROULEUR_ZDET_FLOATING_IMPEDANCE) ||
+				(*z1R > ROULEUR_ZDET_VAL_100K))
+				*zr = ROULEUR_ZDET_FLOATING_IMPEDANCE;
+			else {
+				*zr = *z1R/1000;
+				is_zr_calculted = true;
+			}
+		}
+
+		if (is_zl_calculted && is_zr_calculted)
+			break;
+	}
+
+	dev_dbg(component->dev, "%s: impedance on HPH_L = %d(ohms)\n",
+		__func__, *zl);
+	dev_dbg(component->dev, "%s: impedance on HPH_R = %d(ohms)\n",
+		__func__, *zr);
+}
+
+>>>>>>> origin/android16-base
 static void rouleur_wcd_mbhc_calc_impedance(struct wcd_mbhc *mbhc, uint32_t *zl,
 					  uint32_t *zr)
 {
@@ -564,6 +641,7 @@ static void rouleur_wcd_mbhc_calc_impedance(struct wcd_mbhc *mbhc, uint32_t *zl,
 	/* 1ms delay needed after disable surge protection */
 	usleep_range(1000, 1010);
 
+<<<<<<< HEAD
 	/* Start of left ch impedance calculation */
 	rouleur_mbhc_zdet_start(component, &z1L, NULL);
 	if ((z1L == ROULEUR_ZDET_FLOATING_IMPEDANCE) ||
@@ -585,6 +663,17 @@ static void rouleur_wcd_mbhc_calc_impedance(struct wcd_mbhc *mbhc, uint32_t *zl,
 
 	dev_dbg(component->dev, "%s: impedance on HPH_R = %d(ohms)\n",
 		__func__, *zr);
+=======
+	/* Averaging enable for reliable impedance results */
+	regmap_update_bits(rouleur->regmap,
+			   ROULEUR_ANA_MBHC_ZDET_ANA_CTL, 0x80, 0x80);
+
+	rouleur_mbhc_impedance_fn(component, &z1L, &z1R, zl, zr);
+
+	/* Disable averaging after impedance calculation */
+	regmap_update_bits(rouleur->regmap,
+			   ROULEUR_ANA_MBHC_ZDET_ANA_CTL, 0x80, 0x00);
+>>>>>>> origin/android16-base
 
 	/* Mono/stereo detection */
 	if ((*zl == ROULEUR_ZDET_FLOATING_IMPEDANCE) &&

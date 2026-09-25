@@ -108,11 +108,24 @@ static void nft_counter_reset(struct nft_counter_percpu_priv __percpu *priv,
 			      struct nft_counter *total)
 {
 	struct nft_counter *this_cpu;
+<<<<<<< HEAD
 
 	local_bh_disable();
 	this_cpu = this_cpu_ptr(priv->counter);
 	this_cpu->packets -= total->packets;
 	this_cpu->bytes -= total->bytes;
+=======
+	seqcount_t *myseq;
+
+	local_bh_disable();
+	this_cpu = this_cpu_ptr(priv->counter);
+	myseq = this_cpu_ptr(&nft_counter_seq);
+
+	write_seqcount_begin(myseq);
+	this_cpu->packets -= total->packets;
+	this_cpu->bytes -= total->bytes;
+	write_seqcount_end(myseq);
+>>>>>>> origin/android16-base
 	local_bh_enable();
 }
 

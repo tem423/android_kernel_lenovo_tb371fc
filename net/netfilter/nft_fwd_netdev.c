@@ -20,7 +20,11 @@
 #include <net/ip.h>
 
 struct nft_fwd_netdev {
+<<<<<<< HEAD
 	enum nft_registers	sreg_dev:8;
+=======
+	u8	sreg_dev;
+>>>>>>> origin/android16-base
 };
 
 static void nft_fwd_netdev_eval(const struct nft_expr *expr,
@@ -49,8 +53,13 @@ static int nft_fwd_netdev_init(const struct nft_ctx *ctx,
 	if (tb[NFTA_FWD_SREG_DEV] == NULL)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	priv->sreg_dev = nft_parse_register(tb[NFTA_FWD_SREG_DEV]);
 	return nft_validate_register_load(priv->sreg_dev, sizeof(int));
+=======
+	return nft_parse_register_load(tb[NFTA_FWD_SREG_DEV], &priv->sreg_dev,
+				       sizeof(int));
+>>>>>>> origin/android16-base
 }
 
 static const struct nft_expr_ops nft_fwd_netdev_ingress_ops;
@@ -69,8 +78,13 @@ nla_put_failure:
 }
 
 struct nft_fwd_neigh {
+<<<<<<< HEAD
 	enum nft_registers	sreg_dev:8;
 	enum nft_registers	sreg_addr:8;
+=======
+	u8			sreg_dev;
+	u8			sreg_addr;
+>>>>>>> origin/android16-base
 	u8			nfproto;
 };
 
@@ -148,8 +162,11 @@ static int nft_fwd_neigh_init(const struct nft_ctx *ctx,
 	    !tb[NFTA_FWD_NFPROTO])
 		return -EINVAL;
 
+<<<<<<< HEAD
 	priv->sreg_dev = nft_parse_register(tb[NFTA_FWD_SREG_DEV]);
 	priv->sreg_addr = nft_parse_register(tb[NFTA_FWD_SREG_ADDR]);
+=======
+>>>>>>> origin/android16-base
 	priv->nfproto = ntohl(nla_get_be32(tb[NFTA_FWD_NFPROTO]));
 
 	switch (priv->nfproto) {
@@ -163,11 +180,21 @@ static int nft_fwd_neigh_init(const struct nft_ctx *ctx,
 		return -EOPNOTSUPP;
 	}
 
+<<<<<<< HEAD
 	err = nft_validate_register_load(priv->sreg_dev, sizeof(int));
 	if (err < 0)
 		return err;
 
 	return nft_validate_register_load(priv->sreg_addr, addr_len);
+=======
+	err = nft_parse_register_load(tb[NFTA_FWD_SREG_DEV], &priv->sreg_dev,
+				      sizeof(int));
+	if (err < 0)
+		return err;
+
+	return nft_parse_register_load(tb[NFTA_FWD_SREG_ADDR], &priv->sreg_addr,
+				       addr_len);
+>>>>>>> origin/android16-base
 }
 
 static const struct nft_expr_ops nft_fwd_netdev_ingress_ops;

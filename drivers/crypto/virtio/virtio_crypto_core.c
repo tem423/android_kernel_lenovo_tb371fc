@@ -34,6 +34,7 @@ virtcrypto_clear_request(struct virtio_crypto_request *vc_req)
 	}
 }
 
+<<<<<<< HEAD
 static void virtcrypto_dataq_callback(struct virtqueue *vq)
 {
 	struct virtio_crypto *vcrypto = vq->vdev->priv;
@@ -55,6 +56,30 @@ static void virtcrypto_dataq_callback(struct virtqueue *vq)
 		}
 	} while (!virtqueue_enable_cb(vq));
 	spin_unlock_irqrestore(&vcrypto->data_vq[qid].lock, flags);
+=======
+static void virtcrypto_done_task(unsigned long data)
+{
+	struct data_queue *data_vq = (struct data_queue *)data;
+	struct virtqueue *vq = data_vq->vq;
+	struct virtio_crypto_request *vc_req;
+	unsigned int len;
+
+	do {
+		virtqueue_disable_cb(vq);
+		while ((vc_req = virtqueue_get_buf(vq, &len)) != NULL) {
+			if (vc_req->alg_cb)
+				vc_req->alg_cb(vc_req, len);
+		}
+	} while (!virtqueue_enable_cb(vq));
+}
+
+static void virtcrypto_dataq_callback(struct virtqueue *vq)
+{
+	struct virtio_crypto *vcrypto = vq->vdev->priv;
+	struct data_queue *dq = &vcrypto->data_vq[vq->index];
+
+	tasklet_schedule(&dq->done_task);
+>>>>>>> origin/android16-base
 }
 
 static int virtcrypto_find_vqs(struct virtio_crypto *vi)
@@ -111,6 +136,11 @@ static int virtcrypto_find_vqs(struct virtio_crypto *vi)
 			ret = -ENOMEM;
 			goto err_engine;
 		}
+<<<<<<< HEAD
+=======
+		tasklet_init(&vi->data_vq[i].done_task, virtcrypto_done_task,
+				(unsigned long)&vi->data_vq[i]);
+>>>>>>> origin/android16-base
 	}
 
 	kfree(names);
@@ -443,11 +473,20 @@ static void virtcrypto_free_unused_reqs(struct virtio_crypto *vcrypto)
 static void virtcrypto_remove(struct virtio_device *vdev)
 {
 	struct virtio_crypto *vcrypto = vdev->priv;
+<<<<<<< HEAD
+=======
+	int i;
+>>>>>>> origin/android16-base
 
 	dev_info(&vdev->dev, "Start virtcrypto_remove.\n");
 
 	if (virtcrypto_dev_started(vcrypto))
 		virtcrypto_dev_stop(vcrypto);
+<<<<<<< HEAD
+=======
+	for (i = 0; i < vcrypto->max_data_queues; i++)
+		tasklet_kill(&vcrypto->data_vq[i].done_task);
+>>>>>>> origin/android16-base
 	vdev->config->reset(vdev);
 	virtcrypto_free_unused_reqs(vcrypto);
 	virtcrypto_clear_crypto_engines(vcrypto);

@@ -364,6 +364,7 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
 	pa = pte_pfn(*ptep);
 
 	/* On radix we can do hugepage mappings for io, so handle that */
+<<<<<<< HEAD
 	if (hugepage_shift) {
 		pa <<= hugepage_shift;
 		pa |= token & ((1ul << hugepage_shift) - 1);
@@ -372,6 +373,13 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
 		pa |= token & (PAGE_SIZE - 1);
 	}
 
+=======
+	if (!hugepage_shift)
+		hugepage_shift = PAGE_SHIFT;
+
+	pa <<= PAGE_SHIFT;
+	pa |= token & ((1ul << hugepage_shift) - 1);
+>>>>>>> origin/android16-base
 	return pa;
 }
 

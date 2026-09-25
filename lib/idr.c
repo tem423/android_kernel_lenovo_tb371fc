@@ -103,7 +103,11 @@ EXPORT_SYMBOL_GPL(idr_alloc);
  * @end: The maximum ID (exclusive).
  * @gfp: Memory allocation flags.
  *
+<<<<<<< HEAD
  * Allocates an unused ID in the range specified by @nextid and @end.  If
+=======
+ * Allocates an unused ID in the range specified by @start and @end.  If
+>>>>>>> origin/android16-base
  * @end is <= 0, it is treated as one larger than %INT_MAX.  This allows
  * callers to use @start + N as @end as long as N is within integer range.
  * The search for an unused ID will start at the last ID allocated and will
@@ -471,7 +475,11 @@ static void ida_remove(struct ida *ida, int id)
 	} else {
 		btmp = bitmap->bitmap;
 	}
+<<<<<<< HEAD
 	if (!test_bit(offset, btmp))
+=======
+	if (!bitmap || !test_bit(offset, btmp))
+>>>>>>> origin/android16-base
 		goto err;
 
 	__clear_bit(offset, btmp);
@@ -573,7 +581,13 @@ void ida_free(struct ida *ida, unsigned int id)
 {
 	unsigned long flags;
 
+<<<<<<< HEAD
 	BUG_ON((int)id < 0);
+=======
+	if ((int)id < 0)
+		return;
+
+>>>>>>> origin/android16-base
 	xa_lock_irqsave(&ida->ida_rt, flags);
 	ida_remove(ida, id);
 	xa_unlock_irqrestore(&ida->ida_rt, flags);

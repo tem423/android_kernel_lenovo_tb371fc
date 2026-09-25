@@ -68,7 +68,10 @@ static void batadv_dat_purge(struct work_struct *work);
  */
 static void batadv_dat_start_timer(struct batadv_priv *bat_priv)
 {
+<<<<<<< HEAD
 	INIT_DELAYED_WORK(&bat_priv->dat.work, batadv_dat_purge);
+=======
+>>>>>>> origin/android16-base
 	queue_delayed_work(batadv_event_workqueue, &bat_priv->dat.work,
 			   msecs_to_jiffies(10000));
 }
@@ -783,6 +786,10 @@ int batadv_dat_init(struct batadv_priv *bat_priv)
 	if (!bat_priv->dat.hash)
 		return -ENOMEM;
 
+<<<<<<< HEAD
+=======
+	INIT_DELAYED_WORK(&bat_priv->dat.work, batadv_dat_purge);
+>>>>>>> origin/android16-base
 	batadv_dat_start_timer(bat_priv);
 
 	batadv_tvlv_handler_register(bat_priv, batadv_dat_tvlv_ogm_handler_v1,

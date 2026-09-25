@@ -349,12 +349,20 @@ int smc_rx_recvmsg(struct smc_sock *smc, struct msghdr *msg,
 				}
 				break;
 			}
+<<<<<<< HEAD
+=======
+			if (!timeo)
+				return -EAGAIN;
+>>>>>>> origin/android16-base
 			if (signal_pending(current)) {
 				read_done = sock_intr_errno(timeo);
 				break;
 			}
+<<<<<<< HEAD
 			if (!timeo)
 				return -EAGAIN;
+=======
+>>>>>>> origin/android16-base
 		}
 
 		if (!smc_rx_data_available(conn)) {

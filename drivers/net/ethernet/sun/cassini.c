@@ -1337,7 +1337,11 @@ static void cas_init_rx_dma(struct cas *cp)
 	writel(val, cp->regs + REG_RX_PAGE_SIZE);
 
 	/* enable the header parser if desired */
+<<<<<<< HEAD
 	if (CAS_HP_FIRMWARE == cas_prog_null)
+=======
+	if (&CAS_HP_FIRMWARE[0] == &cas_prog_null[0])
+>>>>>>> origin/android16-base
 		return;
 
 	val = CAS_BASE(HP_CFG_NUM_CPU, CAS_NCPUS > 63 ? 0 : CAS_NCPUS);
@@ -2291,7 +2295,11 @@ static int cas_rx_ringN(struct cas *cp, int ring, int budget)
 	drops = 0;
 	while (1) {
 		struct cas_rx_comp *rxc = rxcs + entry;
+<<<<<<< HEAD
 		struct sk_buff *uninitialized_var(skb);
+=======
+		struct sk_buff *skb;
+>>>>>>> origin/android16-base
 		int type, len;
 		u64 words[4];
 		int i, dring;
@@ -3807,7 +3815,11 @@ static void cas_reset(struct cas *cp, int blkflag)
 
 	/* program header parser */
 	if ((cp->cas_flags & CAS_FLAG_TARGET_ABORT) ||
+<<<<<<< HEAD
 	    (CAS_HP_ALT_FIRMWARE == cas_prog_null)) {
+=======
+	    (&CAS_HP_ALT_FIRMWARE[0] == &cas_prog_null[0])) {
+>>>>>>> origin/android16-base
 		cas_load_firmware(cp, CAS_HP_FIRMWARE);
 	} else {
 		cas_load_firmware(cp, CAS_HP_ALT_FIRMWARE);
@@ -5138,6 +5150,11 @@ err_out_iounmap:
 		cas_shutdown(cp);
 	mutex_unlock(&cp->pm_mutex);
 
+<<<<<<< HEAD
+=======
+	vfree(cp->fw_data);
+
+>>>>>>> origin/android16-base
 	pci_iounmap(pdev, cp->regs);
 
 

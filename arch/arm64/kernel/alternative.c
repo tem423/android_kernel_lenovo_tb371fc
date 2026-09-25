@@ -42,7 +42,11 @@ struct alt_region {
 /*
  * Check if the target PC is within an alternative block.
  */
+<<<<<<< HEAD
 static bool branch_insn_requires_update(struct alt_instr *alt, unsigned long pc)
+=======
+static __always_inline bool branch_insn_requires_update(struct alt_instr *alt, unsigned long pc)
+>>>>>>> origin/android16-base
 {
 	unsigned long replptr = (unsigned long)ALT_REPL_PTR(alt);
 	return !(pc >= replptr && pc <= (replptr + alt->alt_len));
@@ -50,7 +54,11 @@ static bool branch_insn_requires_update(struct alt_instr *alt, unsigned long pc)
 
 #define align_down(x, a)	((unsigned long)(x) & ~(((unsigned long)(a)) - 1))
 
+<<<<<<< HEAD
 static u32 get_alt_insn(struct alt_instr *alt, __le32 *insnptr, __le32 *altinsnptr)
+=======
+static __always_inline u32 get_alt_insn(struct alt_instr *alt, __le32 *insnptr, __le32 *altinsnptr)
+>>>>>>> origin/android16-base
 {
 	u32 insn;
 
@@ -95,7 +103,11 @@ static u32 get_alt_insn(struct alt_instr *alt, __le32 *insnptr, __le32 *altinsnp
 	return insn;
 }
 
+<<<<<<< HEAD
 static void patch_alternative(struct alt_instr *alt,
+=======
+static noinstr void patch_alternative(struct alt_instr *alt,
+>>>>>>> origin/android16-base
 			      __le32 *origptr, __le32 *updptr, int nr_inst)
 {
 	__le32 *replptr;

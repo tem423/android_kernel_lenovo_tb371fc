@@ -28,6 +28,11 @@ ifdef CONFIG_GCOV_PROFILE_FTRACE
 GCOV_PROFILE := y
 endif
 
+<<<<<<< HEAD
+=======
+CFLAGS_bpf_trace.o := -I$(src)
+
+>>>>>>> origin/android16-base
 CFLAGS_trace_benchmark.o := -I$(src)
 CFLAGS_trace_events_filter.o := -I$(src)
 
@@ -78,6 +83,10 @@ endif
 ifeq ($(CONFIG_TRACING),y)
 obj-$(CONFIG_KGDB_KDB) += trace_kdb.o
 endif
+<<<<<<< HEAD
+=======
+obj-$(CONFIG_DYNAMIC_EVENTS) += trace_dynevent.o
+>>>>>>> origin/android16-base
 obj-$(CONFIG_PROBE_EVENTS) += trace_probe.o
 obj-$(CONFIG_UPROBE_EVENTS) += trace_uprobe.o
 

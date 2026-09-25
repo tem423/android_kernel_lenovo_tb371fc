@@ -34,6 +34,12 @@
 /* HCI priority */
 #define HCI_PRIO_MAX	7
 
+<<<<<<< HEAD
+=======
+/* HCI maximum id value */
+#define HCI_MAX_ID 10000
+
+>>>>>>> origin/android16-base
 /* HCI Core structures */
 struct inquiry_data {
 	bdaddr_t	bdaddr;
@@ -526,6 +532,10 @@ struct hci_chan {
 	struct sk_buff_head data_q;
 	unsigned int	sent;
 	__u8		state;
+<<<<<<< HEAD
+=======
+	bool		amp;
+>>>>>>> origin/android16-base
 };
 
 struct hci_conn_params {
@@ -655,7 +665,10 @@ void hci_inquiry_cache_flush(struct hci_dev *hdev);
 /* ----- HCI Connections ----- */
 enum {
 	HCI_CONN_AUTH_PEND,
+<<<<<<< HEAD
 	HCI_CONN_REAUTH_PEND,
+=======
+>>>>>>> origin/android16-base
 	HCI_CONN_ENCRYPT_PEND,
 	HCI_CONN_RSWITCH_PEND,
 	HCI_CONN_MODE_CHANGE_PEND,
@@ -1041,6 +1054,10 @@ struct hci_dev *hci_alloc_dev(void);
 void hci_free_dev(struct hci_dev *hdev);
 int hci_register_dev(struct hci_dev *hdev);
 void hci_unregister_dev(struct hci_dev *hdev);
+<<<<<<< HEAD
+=======
+void hci_cleanup_dev(struct hci_dev *hdev);
+>>>>>>> origin/android16-base
 int hci_suspend_dev(struct hci_dev *hdev);
 int hci_resume_dev(struct hci_dev *hdev);
 int hci_reset_dev(struct hci_dev *hdev);
@@ -1426,6 +1443,7 @@ static inline int hci_check_conn_params(u16 min, u16 max, u16 latency,
 {
 	u16 max_latency;
 
+<<<<<<< HEAD
 	if (min > max || min < 6 || max > 3200)
 		return -EINVAL;
 
@@ -1438,6 +1456,48 @@ static inline int hci_check_conn_params(u16 min, u16 max, u16 latency,
 	max_latency = (to_multiplier * 4 / max) - 1;
 	if (latency > 499 || latency > max_latency)
 		return -EINVAL;
+=======
+	if (min > max) {
+		BT_WARN("min %d > max %d", min, max);
+		return -EINVAL;
+	}
+
+	if (min < 6) {
+		BT_WARN("min %d < 6", min);
+		return -EINVAL;
+	}
+
+	if (max > 3200) {
+		BT_WARN("max %d > 3200", max);
+		return -EINVAL;
+	}
+
+	if (to_multiplier < 10) {
+		BT_WARN("to_multiplier %d < 10", to_multiplier);
+		return -EINVAL;
+	}
+
+	if (to_multiplier > 3200) {
+		BT_WARN("to_multiplier %d > 3200", to_multiplier);
+		return -EINVAL;
+	}
+
+	if (max >= to_multiplier * 8) {
+		BT_WARN("max %d >= to_multiplier %d * 8", max, to_multiplier);
+		return -EINVAL;
+	}
+
+	max_latency = (to_multiplier * 4 / max) - 1;
+	if (latency > 499) {
+		BT_WARN("latency %d > 499", latency);
+		return -EINVAL;
+	}
+
+	if (latency > max_latency) {
+		BT_WARN("latency %d > max_latency %d", latency, max_latency);
+		return -EINVAL;
+	}
+>>>>>>> origin/android16-base
 
 	return 0;
 }

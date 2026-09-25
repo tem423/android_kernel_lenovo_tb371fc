@@ -84,8 +84,13 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
 	return error;
 }
 
+<<<<<<< HEAD
 static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
                      int force)
+=======
+void __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
+		int force)
+>>>>>>> origin/android16-base
 {
 	write_lock_irq(&filp->f_owner.lock);
 	if (force || !filp->f_owner.pid) {
@@ -95,12 +100,17 @@ static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
 
 		if (pid) {
 			const struct cred *cred = current_cred();
+<<<<<<< HEAD
+=======
+			security_file_set_fowner(filp);
+>>>>>>> origin/android16-base
 			filp->f_owner.uid = cred->uid;
 			filp->f_owner.euid = cred->euid;
 		}
 	}
 	write_unlock_irq(&filp->f_owner.lock);
 }
+<<<<<<< HEAD
 
 void __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
 		int force)
@@ -108,6 +118,8 @@ void __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
 	security_file_set_fowner(filp);
 	f_modown(filp, pid, type, force);
 }
+=======
+>>>>>>> origin/android16-base
 EXPORT_SYMBOL(__f_setown);
 
 int f_setown(struct file *filp, unsigned long arg, int force)
@@ -143,7 +155,11 @@ EXPORT_SYMBOL(f_setown);
 
 void f_delown(struct file *filp)
 {
+<<<<<<< HEAD
 	f_modown(filp, NULL, PIDTYPE_TGID, 1);
+=======
+	__f_setown(filp, NULL, PIDTYPE_TGID, 1);
+>>>>>>> origin/android16-base
 }
 
 pid_t f_getown(struct file *filp)
@@ -779,9 +795,16 @@ void send_sigio(struct fown_struct *fown, int fd, int band)
 {
 	struct task_struct *p;
 	enum pid_type type;
+<<<<<<< HEAD
 	struct pid *pid;
 	
 	read_lock(&fown->lock);
+=======
+	unsigned long flags;
+	struct pid *pid;
+	
+	read_lock_irqsave(&fown->lock, flags);
+>>>>>>> origin/android16-base
 
 	type = fown->pid_type;
 	pid = fown->pid;
@@ -802,7 +825,11 @@ void send_sigio(struct fown_struct *fown, int fd, int band)
 		read_unlock(&tasklist_lock);
 	}
  out_unlock_fown:
+<<<<<<< HEAD
 	read_unlock(&fown->lock);
+=======
+	read_unlock_irqrestore(&fown->lock, flags);
+>>>>>>> origin/android16-base
 }
 
 static void send_sigurg_to_task(struct task_struct *p,
@@ -817,9 +844,16 @@ int send_sigurg(struct fown_struct *fown)
 	struct task_struct *p;
 	enum pid_type type;
 	struct pid *pid;
+<<<<<<< HEAD
 	int ret = 0;
 	
 	read_lock(&fown->lock);
+=======
+	unsigned long flags;
+	int ret = 0;
+	
+	read_lock_irqsave(&fown->lock, flags);
+>>>>>>> origin/android16-base
 
 	type = fown->pid_type;
 	pid = fown->pid;
@@ -842,7 +876,11 @@ int send_sigurg(struct fown_struct *fown)
 		read_unlock(&tasklist_lock);
 	}
  out_unlock_fown:
+<<<<<<< HEAD
 	read_unlock(&fown->lock);
+=======
+	read_unlock_irqrestore(&fown->lock, flags);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -991,13 +1029,21 @@ static void kill_fasync_rcu(struct fasync_struct *fa, int sig, int band)
 {
 	while (fa) {
 		struct fown_struct *fown;
+<<<<<<< HEAD
+=======
+		unsigned long flags;
+>>>>>>> origin/android16-base
 
 		if (fa->magic != FASYNC_MAGIC) {
 			printk(KERN_ERR "kill_fasync: bad magic number in "
 			       "fasync_struct!\n");
 			return;
 		}
+<<<<<<< HEAD
 		read_lock(&fa->fa_lock);
+=======
+		read_lock_irqsave(&fa->fa_lock, flags);
+>>>>>>> origin/android16-base
 		if (fa->fa_file) {
 			fown = &fa->fa_file->f_owner;
 			/* Don't send SIGURG to processes which have not set a
@@ -1006,7 +1052,11 @@ static void kill_fasync_rcu(struct fasync_struct *fa, int sig, int band)
 			if (!(sig == SIGURG && fown->signum == 0))
 				send_sigio(fown, fa->fa_fd, band);
 		}
+<<<<<<< HEAD
 		read_unlock(&fa->fa_lock);
+=======
+		read_unlock_irqrestore(&fa->fa_lock, flags);
+>>>>>>> origin/android16-base
 		fa = rcu_dereference(fa->fa_next);
 	}
 }

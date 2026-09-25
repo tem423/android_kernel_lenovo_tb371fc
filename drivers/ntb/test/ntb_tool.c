@@ -367,14 +367,26 @@ static ssize_t tool_fn_write(struct tool_ctx *tc,
 	u64 bits;
 	int n;
 
+<<<<<<< HEAD
+=======
+	if (*offp)
+		return 0;
+
+>>>>>>> origin/android16-base
 	buf = kmalloc(size + 1, GFP_KERNEL);
 	if (!buf)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	ret = simple_write_to_buffer(buf, size, offp, ubuf, size);
 	if (ret < 0) {
 		kfree(buf);
 		return ret;
+=======
+	if (copy_from_user(buf, ubuf, size)) {
+		kfree(buf);
+		return -EFAULT;
+>>>>>>> origin/android16-base
 	}
 
 	buf[size] = 0;
@@ -996,6 +1008,11 @@ static int tool_init_mws(struct tool_ctx *tc)
 		tc->peers[pidx].outmws =
 			devm_kcalloc(&tc->ntb->dev, tc->peers[pidx].outmw_cnt,
 				   sizeof(*tc->peers[pidx].outmws), GFP_KERNEL);
+<<<<<<< HEAD
+=======
+		if (tc->peers[pidx].outmws == NULL)
+			return -ENOMEM;
+>>>>>>> origin/android16-base
 
 		for (widx = 0; widx < tc->peers[pidx].outmw_cnt; widx++) {
 			tc->peers[pidx].outmws[widx].pidx = pidx;

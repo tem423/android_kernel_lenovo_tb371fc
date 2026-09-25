@@ -369,6 +369,10 @@ static int pic32_spi_dma_config(struct pic32_spi *pic32s, u32 dma_width)
 	struct dma_slave_config cfg;
 	int ret;
 
+<<<<<<< HEAD
+=======
+	memset(&cfg, 0, sizeof(cfg));
+>>>>>>> origin/android16-base
 	cfg.device_fc = true;
 	cfg.src_addr = pic32s->dma_base + buf_offset;
 	cfg.dst_addr = pic32s->dma_base + buf_offset;
@@ -839,6 +843,10 @@ static int pic32_spi_probe(struct platform_device *pdev)
 	return 0;
 
 err_bailout:
+<<<<<<< HEAD
+=======
+	pic32_spi_dma_unprep(pic32s);
+>>>>>>> origin/android16-base
 	clk_disable_unprepare(pic32s->clk);
 err_master:
 	spi_master_put(master);

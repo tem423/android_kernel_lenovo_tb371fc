@@ -1,6 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+>>>>>>> origin/android16-base
  */
 
 #undef TRACE_SYSTEM
@@ -304,6 +307,7 @@ TRACE_EVENT(dfc_watchdog,
 		__entry->mux_id, __entry->bearer_id, __entry->event)
 );
 
+<<<<<<< HEAD
 TRACE_EVENT(dfc_set_powersave_mode,
 
 	TP_PROTO(int enable),
@@ -322,6 +326,8 @@ TRACE_EVENT(dfc_set_powersave_mode,
 		__entry->enable ? "enable" : "disable")
 );
 
+=======
+>>>>>>> origin/android16-base
 #endif /* _TRACE_DFC_H */
 
 /* This part must be outside protection */

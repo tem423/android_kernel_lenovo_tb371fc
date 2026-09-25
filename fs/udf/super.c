@@ -57,6 +57,10 @@
 #include <linux/crc-itu-t.h>
 #include <linux/log2.h>
 #include <asm/byteorder.h>
+<<<<<<< HEAD
+=======
+#include <linux/iversion.h>
+>>>>>>> origin/android16-base
 
 #include "udf_sb.h"
 #include "udf_i.h"
@@ -85,6 +89,16 @@ enum {
 #define UDF_MAX_LVID_NESTING 1000
 
 enum { UDF_MAX_LINKS = 0xffff };
+<<<<<<< HEAD
+=======
+/*
+ * We limit filesize to 4TB. This is arbitrary as the on-disk format supports
+ * more but because the file space is described by a linked list of extents,
+ * each of which can have at most 1GB, the creation and handling of extents
+ * gets unusably slow beyond certain point...
+ */
+#define UDF_MAX_FILESIZE (1ULL << 42)
+>>>>>>> origin/android16-base
 
 /* These are the "meat" - everything else is stuffing */
 static int udf_fill_super(struct super_block *, void *, int);
@@ -112,6 +126,7 @@ struct logicalVolIntegrityDescImpUse *udf_sb_lvidiu(struct super_block *sb)
 		return NULL;
 	lvid = (struct logicalVolIntegrityDesc *)UDF_SB(sb)->s_lvid_bh->b_data;
 	partnum = le32_to_cpu(lvid->numOfPartitions);
+<<<<<<< HEAD
 	if ((sb->s_blocksize - sizeof(struct logicalVolIntegrityDescImpUse) -
 	     offsetof(struct logicalVolIntegrityDesc, impUse)) /
 	     (2 * sizeof(uint32_t)) < partnum) {
@@ -122,6 +137,12 @@ struct logicalVolIntegrityDescImpUse *udf_sb_lvidiu(struct super_block *sb)
 	/* The offset is to skip freeSpaceTable and sizeTable arrays */
 	offset = partnum * 2 * sizeof(uint32_t);
 	return (struct logicalVolIntegrityDescImpUse *)&(lvid->impUse[offset]);
+=======
+	/* The offset is to skip freeSpaceTable and sizeTable arrays */
+	offset = partnum * 2 * sizeof(uint32_t);
+	return (struct logicalVolIntegrityDescImpUse *)
+					(((uint8_t *)(lvid + 1)) + offset);
+>>>>>>> origin/android16-base
 }
 
 /* UDF filesystem type */
@@ -151,12 +172,25 @@ static struct inode *udf_alloc_inode(struct super_block *sb)
 
 	ei->i_unique = 0;
 	ei->i_lenExtents = 0;
+<<<<<<< HEAD
 	ei->i_next_alloc_block = 0;
 	ei->i_next_alloc_goal = 0;
 	ei->i_strat4096 = 0;
 	init_rwsem(&ei->i_data_sem);
 	ei->cached_extent.lstart = -1;
 	spin_lock_init(&ei->i_extent_cache_lock);
+=======
+	ei->i_lenStreams = 0;
+	ei->i_next_alloc_block = 0;
+	ei->i_next_alloc_goal = 0;
+	ei->i_strat4096 = 0;
+	ei->i_streamdir = 0;
+	ei->i_hidden = 0;
+	init_rwsem(&ei->i_data_sem);
+	ei->cached_extent.lstart = -1;
+	spin_lock_init(&ei->i_extent_cache_lock);
+	inode_set_iversion(&ei->vfs_inode, 1);
+>>>>>>> origin/android16-base
 
 	return &ei->vfs_inode;
 }
@@ -176,7 +210,11 @@ static void init_once(void *foo)
 {
 	struct udf_inode_info *ei = (struct udf_inode_info *)foo;
 
+<<<<<<< HEAD
 	ei->i_ext.i_data = NULL;
+=======
+	ei->i_data = NULL;
+>>>>>>> origin/android16-base
 	inode_init_once(&ei->vfs_inode);
 }
 
@@ -576,6 +614,14 @@ static int udf_parse_options(char *options, struct udf_options *uopt,
 			if (!remount) {
 				if (uopt->nls_map)
 					unload_nls(uopt->nls_map);
+<<<<<<< HEAD
+=======
+				/*
+				 * load_nls() failure is handled later in
+				 * udf_fill_super() after all options are
+				 * parsed.
+				 */
+>>>>>>> origin/android16-base
 				uopt->nls_map = load_nls(args[0].from);
 				uopt->flags |= (1 << UDF_FLAG_NLS_MAP);
 			}
@@ -1043,12 +1089,25 @@ static int udf_fill_partdesc_info(struct super_block *sb,
 	struct udf_part_map *map;
 	struct udf_sb_info *sbi = UDF_SB(sb);
 	struct partitionHeaderDesc *phd;
+<<<<<<< HEAD
+=======
+	u32 sum;
+>>>>>>> origin/android16-base
 	int err;
 
 	map = &sbi->s_partmaps[p_index];
 
 	map->s_partition_len = le32_to_cpu(p->partitionLength); /* blocks */
 	map->s_partition_root = le32_to_cpu(p->partitionStartingLocation);
+<<<<<<< HEAD
+=======
+	if (check_add_overflow(map->s_partition_root, map->s_partition_len,
+			       &sum)) {
+		udf_err(sb, "Partition %d has invalid location %u + %u\n",
+			p_index, map->s_partition_root, map->s_partition_len);
+		return -EFSCORRUPTED;
+	}
+>>>>>>> origin/android16-base
 
 	if (p->accessType == cpu_to_le32(PD_ACCESS_TYPE_READ_ONLY))
 		map->s_partition_flags |= UDF_PART_FLAG_READ_ONLY;
@@ -1104,6 +1163,17 @@ static int udf_fill_partdesc_info(struct super_block *sb,
 		bitmap->s_extPosition = le32_to_cpu(
 				phd->unallocSpaceBitmap.extPosition);
 		map->s_partition_flags |= UDF_PART_FLAG_UNALLOC_BITMAP;
+<<<<<<< HEAD
+=======
+		/* Check whether math over bitmap won't overflow. */
+		if (check_add_overflow(map->s_partition_len,
+				       sizeof(struct spaceBitmapDesc) << 3,
+				       &sum)) {
+			udf_err(sb, "Partition %d is too long (%u)\n", p_index,
+				map->s_partition_len);
+			return -EFSCORRUPTED;
+		}
+>>>>>>> origin/android16-base
 		udf_debug("unallocSpaceBitmap (part %d) @ %u\n",
 			  p_index, bitmap->s_extPosition);
 	}
@@ -1204,7 +1274,11 @@ static int udf_load_vat(struct super_block *sb, int p_index, int type1_index)
 			vat20 = (struct virtualAllocationTable20 *)bh->b_data;
 		} else {
 			vat20 = (struct virtualAllocationTable20 *)
+<<<<<<< HEAD
 							vati->i_ext.i_data;
+=======
+							vati->i_data;
+>>>>>>> origin/android16-base
 		}
 
 		map->s_type_specific.s_virtual.s_start_offset =
@@ -1529,6 +1603,10 @@ static void udf_load_logicalvolint(struct super_block *sb, struct kernel_extent_
 	struct udf_sb_info *sbi = UDF_SB(sb);
 	struct logicalVolIntegrityDesc *lvid;
 	int indirections = 0;
+<<<<<<< HEAD
+=======
+	u32 parts, impuselen;
+>>>>>>> origin/android16-base
 
 	while (++indirections <= UDF_MAX_LVID_NESTING) {
 		final_bh = NULL;
@@ -1555,15 +1633,36 @@ static void udf_load_logicalvolint(struct super_block *sb, struct kernel_extent_
 
 		lvid = (struct logicalVolIntegrityDesc *)final_bh->b_data;
 		if (lvid->nextIntegrityExt.extLength == 0)
+<<<<<<< HEAD
 			return;
+=======
+			goto check;
+>>>>>>> origin/android16-base
 
 		loc = leea_to_cpu(lvid->nextIntegrityExt);
 	}
 
 	udf_warn(sb, "Too many LVID indirections (max %u), ignoring.\n",
 		UDF_MAX_LVID_NESTING);
+<<<<<<< HEAD
 	brelse(sbi->s_lvid_bh);
 	sbi->s_lvid_bh = NULL;
+=======
+out_err:
+	brelse(sbi->s_lvid_bh);
+	sbi->s_lvid_bh = NULL;
+	return;
+check:
+	parts = le32_to_cpu(lvid->numOfPartitions);
+	impuselen = le32_to_cpu(lvid->lengthOfImpUse);
+	if (parts >= sb->s_blocksize || impuselen >= sb->s_blocksize ||
+	    sizeof(struct logicalVolIntegrityDesc) + impuselen +
+	    2 * parts * sizeof(u32) > sb->s_blocksize) {
+		udf_warn(sb, "Corrupted LVID (parts=%u, impuselen=%u), "
+			 "ignoring.\n", parts, impuselen);
+		goto out_err;
+	}
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -2290,7 +2389,11 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
 		ret = -ENOMEM;
 		goto error_out;
 	}
+<<<<<<< HEAD
 	sb->s_maxbytes = MAX_LFS_FILESIZE;
+=======
+	sb->s_maxbytes = UDF_MAX_FILESIZE;
+>>>>>>> origin/android16-base
 	sb->s_max_links = UDF_MAX_LINKS;
 	return 0;
 

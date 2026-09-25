@@ -14,6 +14,10 @@
 #include <asm/archrandom.h>
 #include <asm/machdep.h>
 #include <asm/plpar_wrappers.h>
+<<<<<<< HEAD
+=======
+#include "pseries.h"
+>>>>>>> origin/android16-base
 
 
 static int pseries_get_random_long(unsigned long *v)
@@ -28,12 +32,17 @@ static int pseries_get_random_long(unsigned long *v)
 	return 0;
 }
 
+<<<<<<< HEAD
 static __init int rng_init(void)
+=======
+void __init pseries_rng_init(void)
+>>>>>>> origin/android16-base
 {
 	struct device_node *dn;
 
 	dn = of_find_compatible_node(NULL, NULL, "ibm,random");
 	if (!dn)
+<<<<<<< HEAD
 		return -ENODEV;
 
 	pr_info("Registering arch random hook.\n");
@@ -44,3 +53,9 @@ static __init int rng_init(void)
 	return 0;
 }
 machine_subsys_initcall(pseries, rng_init);
+=======
+		return;
+	ppc_md.get_random_seed = pseries_get_random_long;
+	of_node_put(dn);
+}
+>>>>>>> origin/android16-base

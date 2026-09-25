@@ -285,7 +285,11 @@ agp_ioc_init(void __iomem *ioc_regs)
         return 0;
 }
 
+<<<<<<< HEAD
 static int
+=======
+static int __init
+>>>>>>> origin/android16-base
 lba_find_capability(int cap)
 {
 	struct _parisc_agp_info *info = &parisc_agp_info;
@@ -370,7 +374,11 @@ fail:
 	return error;
 }
 
+<<<<<<< HEAD
 static int
+=======
+static int __init
+>>>>>>> origin/android16-base
 find_quicksilver(struct device *dev, void *data)
 {
 	struct parisc_device **lba = data;
@@ -382,11 +390,17 @@ find_quicksilver(struct device *dev, void *data)
 	return 0;
 }
 
+<<<<<<< HEAD
 static int
 parisc_agp_init(void)
 {
 	extern struct sba_device *sba_list;
 
+=======
+static int __init
+parisc_agp_init(void)
+{
+>>>>>>> origin/android16-base
 	int err = -1;
 	struct parisc_device *sba = NULL, *lba = NULL;
 	struct lba_device *lbadev = NULL;

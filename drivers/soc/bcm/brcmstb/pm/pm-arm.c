@@ -689,13 +689,22 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
 	const struct of_device_id *of_id = NULL;
 	struct device_node *dn;
 	void __iomem *base;
+<<<<<<< HEAD
 	int ret, i;
+=======
+	int ret, i, s;
+>>>>>>> origin/android16-base
 
 	/* AON ctrl registers */
 	base = brcmstb_ioremap_match(aon_ctrl_dt_ids, 0, NULL);
 	if (IS_ERR(base)) {
 		pr_err("error mapping AON_CTRL\n");
+<<<<<<< HEAD
 		return PTR_ERR(base);
+=======
+		ret = PTR_ERR(base);
+		goto aon_err;
+>>>>>>> origin/android16-base
 	}
 	ctrl.aon_ctrl_base = base;
 
@@ -705,8 +714,15 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
 		/* Assume standard offset */
 		ctrl.aon_sram = ctrl.aon_ctrl_base +
 				     AON_CTRL_SYSTEM_DATA_RAM_OFS;
+<<<<<<< HEAD
 	} else {
 		ctrl.aon_sram = base;
+=======
+		s = 0;
+	} else {
+		ctrl.aon_sram = base;
+		s = 1;
+>>>>>>> origin/android16-base
 	}
 
 	writel_relaxed(0, ctrl.aon_sram + AON_REG_PANIC);
@@ -716,7 +732,12 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
 				     (const void **)&ddr_phy_data);
 	if (IS_ERR(base)) {
 		pr_err("error mapping DDR PHY\n");
+<<<<<<< HEAD
 		return PTR_ERR(base);
+=======
+		ret = PTR_ERR(base);
+		goto ddr_phy_err;
+>>>>>>> origin/android16-base
 	}
 	ctrl.support_warm_boot = ddr_phy_data->supports_warm_boot;
 	ctrl.pll_status_offset = ddr_phy_data->pll_status_offset;
@@ -736,17 +757,30 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
 	for_each_matching_node(dn, ddr_shimphy_dt_ids) {
 		i = ctrl.num_memc;
 		if (i >= MAX_NUM_MEMC) {
+<<<<<<< HEAD
+=======
+			of_node_put(dn);
+>>>>>>> origin/android16-base
 			pr_warn("too many MEMCs (max %d)\n", MAX_NUM_MEMC);
 			break;
 		}
 
 		base = of_io_request_and_map(dn, 0, dn->full_name);
 		if (IS_ERR(base)) {
+<<<<<<< HEAD
+=======
+			of_node_put(dn);
+>>>>>>> origin/android16-base
 			if (!ctrl.support_warm_boot)
 				break;
 
 			pr_err("error mapping DDR SHIMPHY %d\n", i);
+<<<<<<< HEAD
 			return PTR_ERR(base);
+=======
+			ret = PTR_ERR(base);
+			goto ddr_shimphy_err;
+>>>>>>> origin/android16-base
 		}
 		ctrl.memcs[i].ddr_shimphy_base = base;
 		ctrl.num_memc++;
@@ -757,14 +791,27 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
 	for_each_matching_node(dn, brcmstb_memc_of_match) {
 		base = of_iomap(dn, 0);
 		if (!base) {
+<<<<<<< HEAD
 			pr_err("error mapping DDR Sequencer %d\n", i);
 			return -ENOMEM;
+=======
+			of_node_put(dn);
+			pr_err("error mapping DDR Sequencer %d\n", i);
+			ret = -ENOMEM;
+			goto brcmstb_memc_err;
+>>>>>>> origin/android16-base
 		}
 
 		of_id = of_match_node(brcmstb_memc_of_match, dn);
 		if (!of_id) {
 			iounmap(base);
+<<<<<<< HEAD
 			return -EINVAL;
+=======
+			of_node_put(dn);
+			ret = -EINVAL;
+			goto brcmstb_memc_err;
+>>>>>>> origin/android16-base
 		}
 
 		ddr_seq_data = of_id->data;
@@ -784,6 +831,7 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
 	dn = of_find_matching_node(NULL, sram_dt_ids);
 	if (!dn) {
 		pr_err("SRAM not found\n");
+<<<<<<< HEAD
 		return -EINVAL;
 	}
 
@@ -791,13 +839,31 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
 	if (ret) {
 		pr_err("error setting up SRAM for PM\n");
 		return ret;
+=======
+		ret = -EINVAL;
+		goto brcmstb_memc_err;
+	}
+
+	ret = brcmstb_init_sram(dn);
+	of_node_put(dn);
+	if (ret) {
+		pr_err("error setting up SRAM for PM\n");
+		goto brcmstb_memc_err;
+>>>>>>> origin/android16-base
 	}
 
 	ctrl.pdev = pdev;
 
 	ctrl.s3_params = kmalloc(sizeof(*ctrl.s3_params), GFP_KERNEL);
+<<<<<<< HEAD
 	if (!ctrl.s3_params)
 		return -ENOMEM;
+=======
+	if (!ctrl.s3_params) {
+		ret = -ENOMEM;
+		goto s3_params_err;
+	}
+>>>>>>> origin/android16-base
 	ctrl.s3_params_pa = dma_map_single(&pdev->dev, ctrl.s3_params,
 					   sizeof(*ctrl.s3_params),
 					   DMA_TO_DEVICE);
@@ -817,7 +883,25 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
 
 out:
 	kfree(ctrl.s3_params);
+<<<<<<< HEAD
 
+=======
+s3_params_err:
+	iounmap(ctrl.boot_sram);
+brcmstb_memc_err:
+	for (i--; i >= 0; i--)
+		iounmap(ctrl.memcs[i].ddr_ctrl);
+ddr_shimphy_err:
+	for (i = 0; i < ctrl.num_memc; i++)
+		iounmap(ctrl.memcs[i].ddr_shimphy_base);
+
+	iounmap(ctrl.memcs[0].ddr_phy_base);
+ddr_phy_err:
+	iounmap(ctrl.aon_ctrl_base);
+	if (s)
+		iounmap(ctrl.aon_sram);
+aon_err:
+>>>>>>> origin/android16-base
 	pr_warn("PM: initialization failed with code %d\n", ret);
 
 	return ret;

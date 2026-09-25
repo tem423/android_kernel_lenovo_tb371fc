@@ -13,6 +13,10 @@
 #include <linux/delayacct.h>
 #include <linux/pid_namespace.h>
 #include <linux/cgroupstats.h>
+<<<<<<< HEAD
+=======
+#include <linux/cpu.h>
+>>>>>>> origin/android16-base
 
 #include <trace/events/cgroup.h>
 
@@ -58,6 +62,10 @@ int cgroup_attach_task_all(struct task_struct *from, struct task_struct *tsk)
 	int retval = 0;
 
 	mutex_lock(&cgroup_mutex);
+<<<<<<< HEAD
+=======
+	get_online_cpus();
+>>>>>>> origin/android16-base
 	percpu_down_write(&cgroup_threadgroup_rwsem);
 	for_each_root(root) {
 		struct cgroup *from_cgrp;
@@ -74,6 +82,10 @@ int cgroup_attach_task_all(struct task_struct *from, struct task_struct *tsk)
 			break;
 	}
 	percpu_up_write(&cgroup_threadgroup_rwsem);
+<<<<<<< HEAD
+=======
+	put_online_cpus();
+>>>>>>> origin/android16-base
 	mutex_unlock(&cgroup_mutex);
 
 	return retval;
@@ -379,10 +391,16 @@ static int pidlist_array_load(struct cgroup *cgrp, enum cgroup_filetype type,
 	}
 	css_task_iter_end(&it);
 	length = n;
+<<<<<<< HEAD
 	/* now sort & (if procs) strip out duplicates */
 	sort(array, length, sizeof(pid_t), cmppid, NULL);
 	if (type == CGROUP_FILE_PROCS)
 		length = pidlist_uniq(array, length);
+=======
+	/* now sort & strip out duplicates (tgids or recycled thread PIDs) */
+	sort(array, length, sizeof(pid_t), cmppid, NULL);
+	length = pidlist_uniq(array, length);
+>>>>>>> origin/android16-base
 
 	l = cgroup_pidlist_find_create(cgrp, type);
 	if (!l) {
@@ -413,6 +431,10 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 	 * next pid to display, if any
 	 */
 	struct kernfs_open_file *of = s->private;
+<<<<<<< HEAD
+=======
+	struct cgroup_file_ctx *ctx = of->priv;
+>>>>>>> origin/android16-base
 	struct cgroup *cgrp = seq_css(s)->cgroup;
 	struct cgroup_pidlist *l;
 	enum cgroup_filetype type = seq_cft(s)->private;
@@ -422,6 +444,7 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 	mutex_lock(&cgrp->pidlist_mutex);
 
 	/*
+<<<<<<< HEAD
 	 * !NULL @of->priv indicates that this isn't the first start()
 	 * after open.  If the matching pidlist is around, we can use that.
 	 * Look for it.  Note that @of->priv can't be used directly.  It
@@ -429,11 +452,21 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 	 */
 	if (of->priv)
 		of->priv = cgroup_pidlist_find(cgrp, type);
+=======
+	 * !NULL @ctx->procs1.pidlist indicates that this isn't the first
+	 * start() after open. If the matching pidlist is around, we can use
+	 * that. Look for it. Note that @ctx->procs1.pidlist can't be used
+	 * directly. It could already have been destroyed.
+	 */
+	if (ctx->procs1.pidlist)
+		ctx->procs1.pidlist = cgroup_pidlist_find(cgrp, type);
+>>>>>>> origin/android16-base
 
 	/*
 	 * Either this is the first start() after open or the matching
 	 * pidlist has been destroyed inbetween.  Create a new one.
 	 */
+<<<<<<< HEAD
 	if (!of->priv) {
 		ret = pidlist_array_load(cgrp, type,
 					 (struct cgroup_pidlist **)&of->priv);
@@ -441,6 +474,14 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 			return ERR_PTR(ret);
 	}
 	l = of->priv;
+=======
+	if (!ctx->procs1.pidlist) {
+		ret = pidlist_array_load(cgrp, type, &ctx->procs1.pidlist);
+		if (ret)
+			return ERR_PTR(ret);
+	}
+	l = ctx->procs1.pidlist;
+>>>>>>> origin/android16-base
 
 	if (pid) {
 		int end = l->length;
@@ -468,7 +509,12 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 static void cgroup_pidlist_stop(struct seq_file *s, void *v)
 {
 	struct kernfs_open_file *of = s->private;
+<<<<<<< HEAD
 	struct cgroup_pidlist *l = of->priv;
+=======
+	struct cgroup_file_ctx *ctx = of->priv;
+	struct cgroup_pidlist *l = ctx->procs1.pidlist;
+>>>>>>> origin/android16-base
 
 	if (l)
 		mod_delayed_work(cgroup_pidlist_destroy_wq, &l->destroy_dwork,
@@ -479,7 +525,12 @@ static void cgroup_pidlist_stop(struct seq_file *s, void *v)
 static void *cgroup_pidlist_next(struct seq_file *s, void *v, loff_t *pos)
 {
 	struct kernfs_open_file *of = s->private;
+<<<<<<< HEAD
 	struct cgroup_pidlist *l = of->priv;
+=======
+	struct cgroup_file_ctx *ctx = of->priv;
+	struct cgroup_pidlist *l = ctx->procs1.pidlist;
+>>>>>>> origin/android16-base
 	pid_t *p = v;
 	pid_t *end = l->list + l->length;
 	/*
@@ -522,10 +573,18 @@ static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 		goto out_unlock;
 
 	/*
+<<<<<<< HEAD
 	 * Even if we're attaching all tasks in the thread group, we only
 	 * need to check permissions on one of them.
 	 */
 	cred = current_cred();
+=======
+	 * Even if we're attaching all tasks in the thread group, we only need
+	 * to check permissions on one of them. Check permissions using the
+	 * credentials from file open to protect against inherited fd attacks.
+	 */
+	cred = of->file->f_cred;
+>>>>>>> origin/android16-base
 	tcred = get_task_cred(task);
 	if (!uid_eq(cred->euid, GLOBAL_ROOT_UID) &&
 	    !uid_eq(cred->euid, tcred->uid) &&
@@ -565,6 +624,17 @@ static ssize_t cgroup_release_agent_write(struct kernfs_open_file *of,
 
 	BUILD_BUG_ON(sizeof(cgrp->root->release_agent_path) < PATH_MAX);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Release agent gets called with all capabilities,
+	 * require capabilities to set release agent.
+	 */
+	if ((of->file->f_cred->user_ns != &init_user_ns) ||
+	    !capable(CAP_SYS_ADMIN))
+		return -EPERM;
+
+>>>>>>> origin/android16-base
 	cgrp = cgroup_kn_lock_live(of->kn, false);
 	if (!cgrp)
 		return -ENODEV;
@@ -837,6 +907,13 @@ static int cgroup1_rename(struct kernfs_node *kn, struct kernfs_node *new_parent
 	struct cgroup *cgrp = kn->priv;
 	int ret;
 
+<<<<<<< HEAD
+=======
+	/* do not accept '\n' to prevent making /proc/<pid>/cgroup unparsable */
+	if (strchr(new_name_str, '\n'))
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	if (kernfs_type(kn) != KERNFS_DIR)
 		return -ENOTDIR;
 	if (kn->parent != new_parent)
@@ -1036,6 +1113,10 @@ static int cgroup1_remount(struct kernfs_root *kf_root, int *flags, char *data)
 {
 	int ret = 0;
 	struct cgroup_root *root = cgroup_root_from_kf(kf_root);
+<<<<<<< HEAD
+=======
+	struct cgroup_namespace *ns = current->nsproxy->cgroup_ns;
+>>>>>>> origin/android16-base
 	struct cgroup_sb_opts opts;
 	u16 added_mask, removed_mask;
 
@@ -1049,6 +1130,15 @@ static int cgroup1_remount(struct kernfs_root *kf_root, int *flags, char *data)
 	if (opts.subsys_mask != root->subsys_mask || opts.release_agent)
 		pr_warn("option changes via remount are deprecated (pid=%d comm=%s)\n",
 			task_tgid_nr(current), current->comm);
+<<<<<<< HEAD
+=======
+	/* See cgroup1_mount release_agent handling */
+	if (opts.release_agent &&
+	    ((ns->user_ns != &init_user_ns) || !capable(CAP_SYS_ADMIN))) {
+		ret = -EINVAL;
+		goto out_unlock;
+	}
+>>>>>>> origin/android16-base
 
 	added_mask = opts.subsys_mask & ~root->subsys_mask;
 	removed_mask = root->subsys_mask & ~opts.subsys_mask;
@@ -1187,6 +1277,18 @@ struct dentry *cgroup1_mount(struct file_system_type *fs_type, int flags,
 		ret = -EPERM;
 		goto out_unlock;
 	}
+<<<<<<< HEAD
+=======
+	/*
+	 * Release agent gets called with all capabilities,
+	 * require capabilities to set release agent.
+	 */
+	if (opts.release_agent &&
+	    ((ns->user_ns != &init_user_ns) || !capable(CAP_SYS_ADMIN))) {
+		ret = -EINVAL;
+		goto out_unlock;
+	}
+>>>>>>> origin/android16-base
 
 	root = kzalloc(sizeof(*root), GFP_KERNEL);
 	if (!root) {

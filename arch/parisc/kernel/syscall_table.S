@@ -195,7 +195,11 @@
 	ENTRY_COMP(sysinfo)
 	ENTRY_SAME(shutdown)
 	ENTRY_SAME(fsync)
+<<<<<<< HEAD
 	ENTRY_SAME(madvise)
+=======
+	ENTRY_OURS(madvise)
+>>>>>>> origin/android16-base
 	ENTRY_SAME(clone_wrapper)	/* 120 */
 	ENTRY_SAME(setdomainname)
 	ENTRY_COMP(sendfile)

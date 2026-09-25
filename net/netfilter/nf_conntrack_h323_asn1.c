@@ -536,6 +536,11 @@ static int decode_seq(struct bitstr *bs, const struct field_t *f,
 	/* Get fields bitmap */
 	if (nf_h323_error_boundary(bs, 0, f->sz))
 		return H323_ERROR_BOUND;
+<<<<<<< HEAD
+=======
+	if (f->sz > 32)
+		return H323_ERROR_RANGE;
+>>>>>>> origin/android16-base
 	bmp = get_bitmap(bs, f->sz);
 	if (base)
 		*(unsigned int *)base = bmp;
@@ -592,6 +597,11 @@ static int decode_seq(struct bitstr *bs, const struct field_t *f,
 	bmp2_len = get_bits(bs, 7) + 1;
 	if (nf_h323_error_boundary(bs, 0, bmp2_len))
 		return H323_ERROR_BOUND;
+<<<<<<< HEAD
+=======
+	if (bmp2_len > 32)
+		return H323_ERROR_RANGE;
+>>>>>>> origin/android16-base
 	bmp2 = get_bitmap(bs, bmp2_len);
 	bmp |= bmp2 >> f->sz;
 	if (base)

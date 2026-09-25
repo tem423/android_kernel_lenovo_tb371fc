@@ -50,7 +50,10 @@
 					 STM32_MDMA_SHIFT(mask))
 
 #define STM32_MDMA_GISR0		0x0000 /* MDMA Int Status Reg 1 */
+<<<<<<< HEAD
 #define STM32_MDMA_GISR1		0x0004 /* MDMA Int Status Reg 2 */
+=======
+>>>>>>> origin/android16-base
 
 /* MDMA Channel x interrupt/status register */
 #define STM32_MDMA_CISR(x)		(0x40 + 0x40 * (x)) /* x = 0..62 */
@@ -194,7 +197,11 @@
 #define STM32_MDMA_CTBR(x)		(0x68 + 0x40 * (x))
 #define STM32_MDMA_CTBR_DBUS		BIT(17)
 #define STM32_MDMA_CTBR_SBUS		BIT(16)
+<<<<<<< HEAD
 #define STM32_MDMA_CTBR_TSEL_MASK	GENMASK(7, 0)
+=======
+#define STM32_MDMA_CTBR_TSEL_MASK	GENMASK(5, 0)
+>>>>>>> origin/android16-base
 #define STM32_MDMA_CTBR_TSEL(n)		STM32_MDMA_SET(n, \
 						      STM32_MDMA_CTBR_TSEL_MASK)
 
@@ -206,7 +213,11 @@
 
 #define STM32_MDMA_MAX_BUF_LEN		128
 #define STM32_MDMA_MAX_BLOCK_LEN	65536
+<<<<<<< HEAD
 #define STM32_MDMA_MAX_CHANNELS		63
+=======
+#define STM32_MDMA_MAX_CHANNELS		32
+>>>>>>> origin/android16-base
 #define STM32_MDMA_MAX_REQUESTS		256
 #define STM32_MDMA_MAX_BURST		128
 #define STM32_MDMA_VERY_HIGH_PRIORITY	0x11
@@ -521,7 +532,11 @@ static int stm32_mdma_set_xfer_param(struct stm32_mdma_chan *chan,
 	src_maxburst = chan->dma_config.src_maxburst;
 	dst_maxburst = chan->dma_config.dst_maxburst;
 
+<<<<<<< HEAD
 	ccr = stm32_mdma_read(dmadev, STM32_MDMA_CCR(chan->id));
+=======
+	ccr = stm32_mdma_read(dmadev, STM32_MDMA_CCR(chan->id)) & ~STM32_MDMA_CCR_EN;
+>>>>>>> origin/android16-base
 	ctcr = stm32_mdma_read(dmadev, STM32_MDMA_CTCR(chan->id));
 	ctbr = stm32_mdma_read(dmadev, STM32_MDMA_CTBR(chan->id));
 
@@ -949,7 +964,11 @@ stm32_mdma_prep_dma_memcpy(struct dma_chan *c, dma_addr_t dest, dma_addr_t src,
 	if (!desc)
 		return NULL;
 
+<<<<<<< HEAD
 	ccr = stm32_mdma_read(dmadev, STM32_MDMA_CCR(chan->id));
+=======
+	ccr = stm32_mdma_read(dmadev, STM32_MDMA_CCR(chan->id)) & ~STM32_MDMA_CCR_EN;
+>>>>>>> origin/android16-base
 	ctcr = stm32_mdma_read(dmadev, STM32_MDMA_CTCR(chan->id));
 	ctbr = stm32_mdma_read(dmadev, STM32_MDMA_CTBR(chan->id));
 	cbndtr = stm32_mdma_read(dmadev, STM32_MDMA_CBNDTR(chan->id));
@@ -1218,6 +1237,13 @@ static int stm32_mdma_resume(struct dma_chan *c)
 	unsigned long flags;
 	u32 status, reg;
 
+<<<<<<< HEAD
+=======
+	/* Transfer can be terminated */
+	if (!chan->desc || (stm32_mdma_read(dmadev, STM32_MDMA_CCR(chan->id)) & STM32_MDMA_CCR_EN))
+		return -EPERM;
+
+>>>>>>> origin/android16-base
 	hwdesc = chan->desc->node[chan->curr_hwdesc].hwdesc;
 
 	spin_lock_irqsave(&chan->vchan.lock, flags);
@@ -1361,6 +1387,7 @@ static irqreturn_t stm32_mdma_irq_handler(int irq, void *devid)
 
 	/* Find out which channel generates the interrupt */
 	status = readl_relaxed(dmadev->base + STM32_MDMA_GISR0);
+<<<<<<< HEAD
 	if (status) {
 		id = __ffs(status);
 	} else {
@@ -1376,6 +1403,13 @@ static irqreturn_t stm32_mdma_irq_handler(int irq, void *devid)
 		 */
 		id += 32;
 	}
+=======
+	if (!status) {
+		dev_dbg(mdma2dev(dmadev), "spurious it\n");
+		return IRQ_NONE;
+	}
+	id = __ffs(status);
+>>>>>>> origin/android16-base
 
 	chan = &dmadev->chan[id];
 	if (!chan) {

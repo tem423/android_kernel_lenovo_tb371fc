@@ -60,26 +60,50 @@ struct __coeff {
 #define PSC_CURRENT_IN_L	(PSC_NUM_CLASSES)
 #define PSC_POWER_L		(PSC_NUM_CLASSES + 1)
 
+<<<<<<< HEAD
 static struct __coeff lm25066_coeff[6][PSC_NUM_CLASSES + 2] = {
 	[lm25056] = {
 		[PSC_VOLTAGE_IN] = {
 			.m = 16296,
+=======
+static struct __coeff lm25066_coeff[][PSC_NUM_CLASSES + 2] = {
+	[lm25056] = {
+		[PSC_VOLTAGE_IN] = {
+			.m = 16296,
+			.b = 1343,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_CURRENT_IN] = {
 			.m = 13797,
+<<<<<<< HEAD
+=======
+			.b = -1833,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_CURRENT_IN_L] = {
 			.m = 6726,
+<<<<<<< HEAD
+=======
+			.b = -537,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_POWER] = {
 			.m = 5501,
+<<<<<<< HEAD
+=======
+			.b = -2908,
+>>>>>>> origin/android16-base
 			.R = -3,
 		},
 		[PSC_POWER_L] = {
 			.m = 26882,
+<<<<<<< HEAD
+=======
+			.b = -5646,
+>>>>>>> origin/android16-base
 			.R = -4,
 		},
 		[PSC_TEMPERATURE] = {
@@ -91,26 +115,50 @@ static struct __coeff lm25066_coeff[6][PSC_NUM_CLASSES + 2] = {
 	[lm25066] = {
 		[PSC_VOLTAGE_IN] = {
 			.m = 22070,
+<<<<<<< HEAD
+=======
+			.b = -1800,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_VOLTAGE_OUT] = {
 			.m = 22070,
+<<<<<<< HEAD
+=======
+			.b = -1800,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_CURRENT_IN] = {
 			.m = 13661,
+<<<<<<< HEAD
+=======
+			.b = -5200,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_CURRENT_IN_L] = {
 			.m = 6852,
+<<<<<<< HEAD
+=======
+			.b = -3100,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_POWER] = {
 			.m = 736,
+<<<<<<< HEAD
+=======
+			.b = -3300,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_POWER_L] = {
 			.m = 369,
+<<<<<<< HEAD
+=======
+			.b = -1900,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_TEMPERATURE] = {
@@ -120,26 +168,50 @@ static struct __coeff lm25066_coeff[6][PSC_NUM_CLASSES + 2] = {
 	[lm5064] = {
 		[PSC_VOLTAGE_IN] = {
 			.m = 4611,
+<<<<<<< HEAD
+=======
+			.b = -642,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_VOLTAGE_OUT] = {
 			.m = 4621,
+<<<<<<< HEAD
+=======
+			.b = 423,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_CURRENT_IN] = {
 			.m = 10742,
+<<<<<<< HEAD
+=======
+			.b = 1552,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_CURRENT_IN_L] = {
 			.m = 5456,
+<<<<<<< HEAD
+=======
+			.b = 2118,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_POWER] = {
 			.m = 1204,
+<<<<<<< HEAD
+=======
+			.b = 8524,
+>>>>>>> origin/android16-base
 			.R = -3,
 		},
 		[PSC_POWER_L] = {
 			.m = 612,
+<<<<<<< HEAD
+=======
+			.b = 11202,
+>>>>>>> origin/android16-base
 			.R = -3,
 		},
 		[PSC_TEMPERATURE] = {
@@ -149,26 +221,50 @@ static struct __coeff lm25066_coeff[6][PSC_NUM_CLASSES + 2] = {
 	[lm5066] = {
 		[PSC_VOLTAGE_IN] = {
 			.m = 4587,
+<<<<<<< HEAD
+=======
+			.b = -1200,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_VOLTAGE_OUT] = {
 			.m = 4587,
+<<<<<<< HEAD
+=======
+			.b = -2400,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_CURRENT_IN] = {
 			.m = 10753,
+<<<<<<< HEAD
+=======
+			.b = -1200,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_CURRENT_IN_L] = {
 			.m = 5405,
+<<<<<<< HEAD
+=======
+			.b = -600,
+>>>>>>> origin/android16-base
 			.R = -2,
 		},
 		[PSC_POWER] = {
 			.m = 1204,
+<<<<<<< HEAD
+=======
+			.b = -6000,
+>>>>>>> origin/android16-base
 			.R = -3,
 		},
 		[PSC_POWER_L] = {
 			.m = 605,
+<<<<<<< HEAD
+=======
+			.b = -8000,
+>>>>>>> origin/android16-base
 			.R = -3,
 		},
 		[PSC_TEMPERATURE] = {

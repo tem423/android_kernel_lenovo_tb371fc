@@ -229,7 +229,11 @@ cifs_statfs(struct dentry *dentry, struct kstatfs *buf)
 		rc = server->ops->queryfs(xid, tcon, buf);
 
 	free_xid(xid);
+<<<<<<< HEAD
 	return 0;
+=======
+	return rc;
+>>>>>>> origin/android16-base
 }
 
 static long cifs_fallocate(struct file *file, int mode, loff_t off, loff_t len)
@@ -663,11 +667,14 @@ cifs_get_root(struct smb_vol *vol, struct super_block *sb)
 		struct inode *dir = d_inode(dentry);
 		struct dentry *child;
 
+<<<<<<< HEAD
 		if (!dir) {
 			dput(dentry);
 			dentry = ERR_PTR(-ENOENT);
 			break;
 		}
+=======
+>>>>>>> origin/android16-base
 		if (!S_ISDIR(dir->i_mode)) {
 			dput(dentry);
 			dentry = ERR_PTR(-ENOTDIR);
@@ -684,7 +691,11 @@ cifs_get_root(struct smb_vol *vol, struct super_block *sb)
 		while (*s && *s != sep)
 			s++;
 
+<<<<<<< HEAD
 		child = lookup_one_len_unlocked(p, dentry, s - p);
+=======
+		child = lookup_positive_unlocked(p, dentry, s - p);
+>>>>>>> origin/android16-base
 		dput(dentry);
 		dentry = child;
 	} while (!IS_ERR(dentry));
@@ -779,6 +790,10 @@ cifs_smb3_do_mount(struct file_system_type *fs_type,
 
 out_super:
 	deactivate_locked_super(sb);
+<<<<<<< HEAD
+=======
+	return root;
+>>>>>>> origin/android16-base
 out:
 	cifs_cleanup_volume_info(volume_info);
 	return root;
@@ -812,7 +827,11 @@ cifs_loose_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	ssize_t rc;
 	struct inode *inode = file_inode(iocb->ki_filp);
 
+<<<<<<< HEAD
 	if (iocb->ki_filp->f_flags & O_DIRECT)
+=======
+	if (iocb->ki_flags & IOCB_DIRECT)
+>>>>>>> origin/android16-base
 		return cifs_user_readv(iocb, iter);
 
 	rc = cifs_revalidate_mapping(inode);
@@ -974,6 +993,10 @@ const struct inode_operations cifs_file_inode_ops = {
 
 const struct inode_operations cifs_symlink_inode_ops = {
 	.get_link = cifs_get_link,
+<<<<<<< HEAD
+=======
+	.setattr = cifs_setattr,
+>>>>>>> origin/android16-base
 	.permission = cifs_permission,
 	.listxattr = cifs_listxattr,
 };

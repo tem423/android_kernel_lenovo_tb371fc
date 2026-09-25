@@ -26,9 +26,12 @@ phandle prom_chosen_node;
  * routines in the prom library.
  * It gets passed the pointer to the PROM vector.
  */
+<<<<<<< HEAD
 
 extern void prom_cif_init(void *);
 
+=======
+>>>>>>> origin/android16-base
 void __init prom_init(void *cif_handler)
 {
 	phandle node;

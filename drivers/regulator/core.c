@@ -1154,7 +1154,10 @@ static int _regulator_do_enable(struct regulator_dev *rdev);
 /**
  * set_machine_constraints - sets regulator constraints
  * @rdev: regulator source
+<<<<<<< HEAD
  * @constraints: constraints to apply
+=======
+>>>>>>> origin/android16-base
  *
  * Allows platform initialisation code to define and constrain
  * regulator circuits e.g. valid voltage/current ranges, etc.  NOTE:
@@ -1162,12 +1165,17 @@ static int _regulator_do_enable(struct regulator_dev *rdev);
  * regulator operations to proceed i.e. set_voltage, set_current_limit,
  * set_mode.
  */
+<<<<<<< HEAD
 static int set_machine_constraints(struct regulator_dev *rdev,
 	const struct regulation_constraints *constraints)
+=======
+static int set_machine_constraints(struct regulator_dev *rdev)
+>>>>>>> origin/android16-base
 {
 	int ret = 0;
 	const struct regulator_ops *ops = rdev->desc->ops;
 
+<<<<<<< HEAD
 	if (constraints)
 		rdev->constraints = kmemdup(constraints, sizeof(*constraints),
 					    GFP_KERNEL);
@@ -1177,6 +1185,8 @@ static int set_machine_constraints(struct regulator_dev *rdev,
 	if (!rdev->constraints)
 		return -ENOMEM;
 
+=======
+>>>>>>> origin/android16-base
 	ret = machine_constraints_voltage(rdev, rdev->constraints);
 	if (ret != 0)
 		return ret;
@@ -1216,6 +1226,7 @@ static int set_machine_constraints(struct regulator_dev *rdev,
 		}
 	}
 
+<<<<<<< HEAD
 	/* If the constraints say the regulator should be on at this point
 	 * and we have control then make sure it is enabled.
 	 */
@@ -1227,6 +1238,8 @@ static int set_machine_constraints(struct regulator_dev *rdev,
 		}
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if ((rdev->constraints->ramp_delay || rdev->constraints->ramp_disable)
 		&& ops->set_ramp_delay) {
 		ret = ops->set_ramp_delay(rdev, rdev->constraints->ramp_delay);
@@ -1272,6 +1285,44 @@ static int set_machine_constraints(struct regulator_dev *rdev,
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	/* If the constraints say the regulator should be on at this point
+	 * and we have control then make sure it is enabled.
+	 */
+	if (rdev->constraints->always_on || rdev->constraints->boot_on) {
+		/* If we want to enable this regulator, make sure that we know
+		 * the supplying regulator.
+		 */
+		if (rdev->supply_name && !rdev->supply)
+			return -EPROBE_DEFER;
+
+		/* If supplying regulator has already been enabled,
+		 * it's not intended to have use_count increment
+		 * when rdev is only boot-on.
+		 */
+		if (rdev->supply &&
+		    (rdev->constraints->always_on ||
+		     !regulator_is_enabled(rdev->supply))) {
+			ret = regulator_enable(rdev->supply);
+			if (ret < 0) {
+				_regulator_put(rdev->supply);
+				rdev->supply = NULL;
+				return ret;
+			}
+		}
+
+		ret = _regulator_do_enable(rdev);
+		if (ret < 0 && ret != -EINVAL) {
+			rdev_err(rdev, "failed to enable\n");
+			return ret;
+		}
+
+		if (rdev->constraints->always_on)
+			rdev->use_count++;
+	}
+
+>>>>>>> origin/android16-base
 	print_constraints(rdev);
 	return 0;
 }
@@ -1297,6 +1348,10 @@ static int set_supply(struct regulator_dev *rdev,
 
 	rdev->supply = create_regulator(supply_rdev, &rdev->dev, "SUPPLY");
 	if (rdev->supply == NULL) {
+<<<<<<< HEAD
+=======
+		module_put(supply_rdev->owner);
+>>>>>>> origin/android16-base
 		err = -ENOMEM;
 		return err;
 	}
@@ -1597,6 +1652,10 @@ static struct regulator_dev *regulator_dev_lookup(struct device *dev,
 		node = of_get_regulator(dev, supply);
 		if (node) {
 			r = of_find_regulator_by_node(node);
+<<<<<<< HEAD
+=======
+			of_node_put(node);
+>>>>>>> origin/android16-base
 			if (r)
 				return r;
 
@@ -1641,13 +1700,21 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 {
 	struct regulator_dev *r;
 	struct device *dev = rdev->dev.parent;
+<<<<<<< HEAD
 	int ret;
+=======
+	int ret = 0;
+>>>>>>> origin/android16-base
 
 	/* No supply to resovle? */
 	if (!rdev->supply_name)
 		return 0;
 
+<<<<<<< HEAD
 	/* Supply already resolved? */
+=======
+	/* Supply already resolved? (fast-path without locking contention) */
+>>>>>>> origin/android16-base
 	if (rdev->supply)
 		return 0;
 
@@ -1657,7 +1724,11 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 
 		/* Did the lookup explicitly defer for us? */
 		if (ret == -EPROBE_DEFER)
+<<<<<<< HEAD
 			return ret;
+=======
+			goto out;
+>>>>>>> origin/android16-base
 
 		if (have_full_constraints()) {
 			r = dummy_regulator_rdev;
@@ -1665,10 +1736,29 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 		} else {
 			dev_err(dev, "Failed to resolve %s-supply for %s\n",
 				rdev->supply_name, rdev->desc->name);
+<<<<<<< HEAD
 			return -EPROBE_DEFER;
 		}
 	}
 
+=======
+			ret = -EPROBE_DEFER;
+			goto out;
+		}
+	}
+
+	if (r == rdev) {
+		dev_err(dev, "Supply for %s (%s) resolved to itself\n",
+			rdev->desc->name, rdev->supply_name);
+		if (!have_full_constraints()) {
+			ret = -EINVAL;
+			goto out;
+		}
+		r = dummy_regulator_rdev;
+		get_device(&r->dev);
+	}
+
+>>>>>>> origin/android16-base
 	/*
 	 * If the supply's parent device is not the same as the
 	 * regulator's parent device, then ensure the parent device
@@ -1678,7 +1768,12 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 	if (r->dev.parent && r->dev.parent != rdev->dev.parent) {
 		if (!device_is_bound(r->dev.parent)) {
 			put_device(&r->dev);
+<<<<<<< HEAD
 			return -EPROBE_DEFER;
+=======
+			ret = -EPROBE_DEFER;
+			goto out;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -1686,16 +1781,60 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 	ret = regulator_resolve_supply(r);
 	if (ret < 0) {
 		put_device(&r->dev);
+<<<<<<< HEAD
 		return ret;
+=======
+		goto out;
+	}
+
+	/*
+	 * Recheck rdev->supply with rdev->mutex lock held to avoid a race
+	 * between rdev->supply null check and setting rdev->supply in
+	 * set_supply() from concurrent tasks.
+	 */
+	regulator_lock(rdev);
+
+	/* Supply just resolved by a concurrent task? */
+	if (rdev->supply) {
+		regulator_unlock(rdev);
+		put_device(&r->dev);
+		goto out;
+>>>>>>> origin/android16-base
 	}
 
 	ret = set_supply(rdev, r);
 	if (ret < 0) {
+<<<<<<< HEAD
 		put_device(&r->dev);
 		return ret;
 	}
 
 	return 0;
+=======
+		regulator_unlock(rdev);
+		put_device(&r->dev);
+		goto out;
+	}
+
+	regulator_unlock(rdev);
+
+	/*
+	 * In set_machine_constraints() we may have turned this regulator on
+	 * but we couldn't propagate to the supply if it hadn't been resolved
+	 * yet.  Do it now.
+	 */
+	if (rdev->use_count) {
+		ret = regulator_enable(rdev->supply);
+		if (ret < 0) {
+			_regulator_put(rdev->supply);
+			rdev->supply = NULL;
+			goto out;
+		}
+	}
+
+out:
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 /* Internal regulator request function */
@@ -2719,6 +2858,10 @@ struct regmap *regulator_get_regmap(struct regulator *regulator)
 
 	return map ? map : ERR_PTR(-EOPNOTSUPP);
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL_GPL(regulator_get_regmap);
+>>>>>>> origin/android16-base
 
 /**
  * regulator_get_hardware_vsel_register - get the HW voltage selector register
@@ -3498,6 +3641,11 @@ static int _regulator_get_voltage(struct regulator_dev *rdev)
 		ret = rdev->desc->fixed_uV;
 	} else if (rdev->supply) {
 		ret = _regulator_get_voltage(rdev->supply->rdev);
+<<<<<<< HEAD
+=======
+	} else if (rdev->supply_name) {
+		return -EPROBE_DEFER;
+>>>>>>> origin/android16-base
 	} else {
 		return -EINVAL;
 	}
@@ -4484,7 +4632,11 @@ static void rdev_init_debugfs(struct regulator_dev *rdev)
 	}
 
 	rdev->debugfs = debugfs_create_dir(rname, debugfs_root);
+<<<<<<< HEAD
 	if (!rdev->debugfs) {
+=======
+	if (IS_ERR(rdev->debugfs)) {
+>>>>>>> origin/android16-base
 		rdev_warn(rdev, "Failed to create debugfs directory\n");
 		return;
 	}
@@ -4677,7 +4829,10 @@ struct regulator_dev *
 regulator_register(const struct regulator_desc *regulator_desc,
 		   const struct regulator_config *cfg)
 {
+<<<<<<< HEAD
 	const struct regulation_constraints *constraints = NULL;
+=======
+>>>>>>> origin/android16-base
 	const struct regulator_init_data *init_data;
 	struct regulator_config *config = NULL;
 	static atomic_t regulator_no = ATOMIC_INIT(-1);
@@ -4778,14 +4933,31 @@ regulator_register(const struct regulator_desc *regulator_desc,
 
 	/* set regulator constraints */
 	if (init_data)
+<<<<<<< HEAD
 		constraints = &init_data->constraints;
+=======
+		rdev->constraints = kmemdup(&init_data->constraints,
+					    sizeof(*rdev->constraints),
+					    GFP_KERNEL);
+	else
+		rdev->constraints = kzalloc(sizeof(*rdev->constraints),
+					    GFP_KERNEL);
+	if (!rdev->constraints) {
+		ret = -ENOMEM;
+		goto wash;
+	}
+>>>>>>> origin/android16-base
 
 	if (init_data && init_data->supply_regulator)
 		rdev->supply_name = init_data->supply_regulator;
 	else if (regulator_desc->supply_name)
 		rdev->supply_name = regulator_desc->supply_name;
 
+<<<<<<< HEAD
 	ret = set_machine_constraints(rdev, constraints);
+=======
+	ret = set_machine_constraints(rdev);
+>>>>>>> origin/android16-base
 	if (ret == -EPROBE_DEFER) {
 		/* Regulator might be in bypass mode and so needs its supply
 		 * to set the constraints */
@@ -4794,7 +4966,11 @@ regulator_register(const struct regulator_desc *regulator_desc,
 		 * that is just being created */
 		ret = regulator_resolve_supply(rdev);
 		if (!ret)
+<<<<<<< HEAD
 			ret = set_machine_constraints(rdev, constraints);
+=======
+			ret = set_machine_constraints(rdev);
+>>>>>>> origin/android16-base
 		else
 			rdev_dbg(rdev, "unable to resolve supply early: %pe\n",
 				 ERR_PTR(ret));
@@ -5273,7 +5449,11 @@ static int __init regulator_init(void)
 	ret = class_register(&regulator_class);
 
 	debugfs_root = debugfs_create_dir("regulator", NULL);
+<<<<<<< HEAD
 	if (!debugfs_root)
+=======
+	if (IS_ERR(debugfs_root))
+>>>>>>> origin/android16-base
 		pr_warn("regulator: Failed to create debugfs directory\n");
 
 	debugfs_create_file("supply_map", 0444, debugfs_root, NULL,

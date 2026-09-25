@@ -67,6 +67,7 @@ struct inode *udf_new_inode(struct inode *dir, umode_t mode)
 		iinfo->i_efe = 1;
 		if (UDF_VERS_USE_EXTENDED_FE > sbi->s_udfrev)
 			sbi->s_udfrev = UDF_VERS_USE_EXTENDED_FE;
+<<<<<<< HEAD
 		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
 					    sizeof(struct extendedFileEntry),
 					    GFP_KERNEL);
@@ -77,6 +78,18 @@ struct inode *udf_new_inode(struct inode *dir, umode_t mode)
 					    GFP_KERNEL);
 	}
 	if (!iinfo->i_ext.i_data) {
+=======
+		iinfo->i_data = kzalloc(inode->i_sb->s_blocksize -
+					sizeof(struct extendedFileEntry),
+					GFP_KERNEL);
+	} else {
+		iinfo->i_efe = 0;
+		iinfo->i_data = kzalloc(inode->i_sb->s_blocksize -
+					sizeof(struct fileEntry),
+					GFP_KERNEL);
+	}
+	if (!iinfo->i_data) {
+>>>>>>> origin/android16-base
 		iput(inode);
 		return ERR_PTR(-ENOMEM);
 	}

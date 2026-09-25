@@ -31,11 +31,28 @@
 
 struct uhid_device {
 	struct mutex devlock;
+<<<<<<< HEAD
+=======
+
+	/* This flag tracks whether the HID device is usable for commands from
+	 * userspace. The flag is already set before hid_add_device(), which
+	 * runs in workqueue context, to allow hid_add_device() to communicate
+	 * with userspace.
+	 * However, if hid_add_device() fails, the flag is cleared without
+	 * holding devlock.
+	 * We guarantee that if @running changes from true to false while you're
+	 * holding @devlock, it's still fine to access @hid.
+	 */
+>>>>>>> origin/android16-base
 	bool running;
 
 	__u8 *rd_data;
 	uint rd_size;
 
+<<<<<<< HEAD
+=======
+	/* When this is NULL, userspace may use UHID_CREATE/UHID_CREATE2. */
+>>>>>>> origin/android16-base
 	struct hid_device *hid;
 	struct uhid_event input_buf;
 
@@ -66,9 +83,24 @@ static void uhid_device_add_worker(struct work_struct *work)
 	if (ret) {
 		hid_err(uhid->hid, "Cannot register HID device: error %d\n", ret);
 
+<<<<<<< HEAD
 		hid_destroy_device(uhid->hid);
 		uhid->hid = NULL;
 		uhid->running = false;
+=======
+		/* We used to call hid_destroy_device() here, but that's really
+		 * messy to get right because we have to coordinate with
+		 * concurrent writes from userspace that might be in the middle
+		 * of using uhid->hid.
+		 * Just leave uhid->hid as-is for now, and clean it up when
+		 * userspace tries to close or reinitialize the uhid instance.
+		 *
+		 * However, we do have to clear the ->running flag and do a
+		 * wakeup to make sure userspace knows that the device is gone.
+		 */
+		uhid->running = false;
+		wake_up_interruptible(&uhid->report_wait);
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -176,12 +208,15 @@ static int __uhid_report_queue_and_wait(struct uhid_device *uhid,
 	uhid_queue(uhid, ev);
 	spin_unlock_irqrestore(&uhid->qlock, flags);
 
+<<<<<<< HEAD
 	if ((uhid->hid->vendor == 0x17ef) && (uhid->hid->product == 0x6127)) {
 		hid_warn(uhid->hid, "Don't wait for 6127 BT keyboard pack\n");
 		ret = -EIO;
 		uhid->report_running = false;
 		return ret;
 	}
+=======
+>>>>>>> origin/android16-base
 	ret = wait_event_interruptible_timeout(uhid->report_wait,
 				!uhid->report_running || !uhid->running,
 				5 * HZ);
@@ -384,6 +419,10 @@ struct hid_ll_driver uhid_hid_driver = {
 	.parse = uhid_hid_parse,
 	.raw_request = uhid_hid_raw_request,
 	.output_report = uhid_hid_output_report,
+<<<<<<< HEAD
+=======
+	.max_buffer_size = UHID_DATA_MAX,
+>>>>>>> origin/android16-base
 };
 EXPORT_SYMBOL_GPL(uhid_hid_driver);
 
@@ -483,7 +522,11 @@ static int uhid_dev_create2(struct uhid_device *uhid,
 	void *rd_data;
 	int ret;
 
+<<<<<<< HEAD
 	if (uhid->running)
+=======
+	if (uhid->hid)
+>>>>>>> origin/android16-base
 		return -EALREADY;
 
 	rd_size = ev->u.create2.rd_size;
@@ -565,7 +608,11 @@ static int uhid_dev_create(struct uhid_device *uhid,
 
 static int uhid_dev_destroy(struct uhid_device *uhid)
 {
+<<<<<<< HEAD
 	if (!uhid->running)
+=======
+	if (!uhid->hid)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	uhid->running = false;
@@ -574,6 +621,10 @@ static int uhid_dev_destroy(struct uhid_device *uhid)
 	cancel_work_sync(&uhid->worker);
 
 	hid_destroy_device(uhid->hid);
+<<<<<<< HEAD
+=======
+	uhid->hid = NULL;
+>>>>>>> origin/android16-base
 	kfree(uhid->rd_data);
 
 	return 0;

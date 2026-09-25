@@ -1585,6 +1585,12 @@ out:
 		input_unregister_device(gspca_dev->input_dev);
 #endif
 	v4l2_ctrl_handler_free(gspca_dev->vdev.ctrl_handler);
+<<<<<<< HEAD
+=======
+	v4l2_device_unregister(&gspca_dev->v4l2_dev);
+	if (sd_desc->probe_error)
+		sd_desc->probe_error(gspca_dev);
+>>>>>>> origin/android16-base
 	kfree(gspca_dev->usb_buf);
 	kfree(gspca_dev);
 	return ret;

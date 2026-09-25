@@ -25,6 +25,10 @@ int efi_set_mapping_permissions(struct mm_struct *mm, efi_memory_desc_t *md);
 ({									\
 	efi_virtmap_load();						\
 	__efi_fpsimd_begin();						\
+<<<<<<< HEAD
+=======
+	raw_spin_lock(&efi_rt_lock);					\
+>>>>>>> origin/android16-base
 })
 
 #define arch_efi_call_virt(p, f, args...)				\
@@ -36,10 +40,18 @@ int efi_set_mapping_permissions(struct mm_struct *mm, efi_memory_desc_t *md);
 
 #define arch_efi_call_virt_teardown()					\
 ({									\
+<<<<<<< HEAD
+=======
+	raw_spin_unlock(&efi_rt_lock);					\
+>>>>>>> origin/android16-base
 	__efi_fpsimd_end();						\
 	efi_virtmap_unload();						\
 })
 
+<<<<<<< HEAD
+=======
+extern raw_spinlock_t efi_rt_lock;
+>>>>>>> origin/android16-base
 efi_status_t __efi_rt_asm_wrapper(void *, const char *, ...);
 
 #define ARCH_EFI_IRQ_FLAGS_MASK (PSR_D_BIT | PSR_A_BIT | PSR_I_BIT | PSR_F_BIT)

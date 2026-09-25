@@ -172,7 +172,11 @@ void ide_input_data(ide_drive_t *drive, struct ide_cmd *cmd, void *buf,
 	u8 mmio = (hwif->host_flags & IDE_HFLAG_MMIO) ? 1 : 0;
 
 	if (io_32bit) {
+<<<<<<< HEAD
 		unsigned long uninitialized_var(flags);
+=======
+		unsigned long flags;
+>>>>>>> origin/android16-base
 
 		if ((io_32bit & 2) && !mmio) {
 			local_irq_save(flags);
@@ -216,7 +220,11 @@ void ide_output_data(ide_drive_t *drive, struct ide_cmd *cmd, void *buf,
 	u8 mmio = (hwif->host_flags & IDE_HFLAG_MMIO) ? 1 : 0;
 
 	if (io_32bit) {
+<<<<<<< HEAD
 		unsigned long uninitialized_var(flags);
+=======
+		unsigned long flags;
+>>>>>>> origin/android16-base
 
 		if ((io_32bit & 2) && !mmio) {
 			local_irq_save(flags);

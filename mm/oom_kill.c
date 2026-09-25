@@ -1350,6 +1350,7 @@ bool out_of_memory(struct oom_control *oc)
 }
 
 /*
+<<<<<<< HEAD
  * The pagefault handler calls here because it is out of memory, so kill a
  * memory-hogging task. If oom_lock is held by somebody else, a parallel oom
  * killing is already in progress so do nothing.
@@ -1363,6 +1364,17 @@ void pagefault_out_of_memory(void)
 		.gfp_mask = 0,
 		.order = 0,
 	};
+=======
+ * The pagefault handler calls here because some allocation has failed. We have
+ * to take care of the memcg OOM here because this is the only safe context without
+ * any locks held but let the oom killer triggered from the allocation context care
+ * about the global OOM.
+ */
+void pagefault_out_of_memory(void)
+{
+	static DEFINE_RATELIMIT_STATE(pfoom_rs, DEFAULT_RATELIMIT_INTERVAL,
+				      DEFAULT_RATELIMIT_BURST);
+>>>>>>> origin/android16-base
 
 	if (IS_ENABLED(CONFIG_HAVE_LOW_MEMORY_KILLER) ||
 	    IS_ENABLED(CONFIG_HAVE_USERSPACE_LOW_MEMORY_KILLER))
@@ -1371,10 +1383,18 @@ void pagefault_out_of_memory(void)
 	if (mem_cgroup_oom_synchronize(true))
 		return;
 
+<<<<<<< HEAD
 	if (!mutex_trylock(&oom_lock))
 		return;
 	out_of_memory(&oc);
 	mutex_unlock(&oom_lock);
+=======
+	if (fatal_signal_pending(current))
+		return;
+
+	if (__ratelimit(&pfoom_rs))
+		pr_warn("Huh VM_FAULT_OOM leaked out to the #PF handler. Retrying PF\n");
+>>>>>>> origin/android16-base
 }
 
 void add_to_oom_reaper(struct task_struct *p)

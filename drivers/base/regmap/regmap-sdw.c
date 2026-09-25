@@ -12,7 +12,11 @@ static int regmap_sdw_write(void *context, unsigned int reg, unsigned int val)
 	struct device *dev = context;
 	struct sdw_slave *slave = dev_to_sdw_dev(dev);
 
+<<<<<<< HEAD
 	return sdw_write(slave, reg, val);
+=======
+	return sdw_write_no_pm(slave, reg, val);
+>>>>>>> origin/android16-base
 }
 
 static int regmap_sdw_read(void *context, unsigned int reg, unsigned int *val)
@@ -21,7 +25,11 @@ static int regmap_sdw_read(void *context, unsigned int reg, unsigned int *val)
 	struct sdw_slave *slave = dev_to_sdw_dev(dev);
 	int read;
 
+<<<<<<< HEAD
 	read = sdw_read(slave, reg);
+=======
+	read = sdw_read_no_pm(slave, reg);
+>>>>>>> origin/android16-base
 	if (read < 0)
 		return read;
 

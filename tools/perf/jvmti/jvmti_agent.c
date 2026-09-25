@@ -45,10 +45,18 @@
 static char jit_path[PATH_MAX];
 static void *marker_addr;
 
+<<<<<<< HEAD
+=======
+#ifndef HAVE_GETTID
+>>>>>>> origin/android16-base
 static inline pid_t gettid(void)
 {
 	return (pid_t)syscall(__NR_gettid);
 }
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> origin/android16-base
 
 static int get_e_machine(struct jitheader *hdr)
 {

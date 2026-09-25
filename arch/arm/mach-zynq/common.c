@@ -84,6 +84,10 @@ static int __init zynq_get_revision(void)
 	}
 
 	zynq_devcfg_base = of_iomap(np, 0);
+<<<<<<< HEAD
+=======
+	of_node_put(np);
+>>>>>>> origin/android16-base
 	if (!zynq_devcfg_base) {
 		pr_err("%s: Unable to map I/O memory\n", __func__);
 		return -1;

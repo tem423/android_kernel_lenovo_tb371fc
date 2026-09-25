@@ -137,7 +137,11 @@ TRACE_EVENT(hw_interval_param,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../sound/core
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE pcm_param_trace
 #include <trace/define_trace.h>

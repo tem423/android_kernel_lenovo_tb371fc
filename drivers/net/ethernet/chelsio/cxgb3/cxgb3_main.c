@@ -1304,6 +1304,10 @@ static int cxgb_up(struct adapter *adap)
 		if (ret < 0) {
 			CH_ERR(adap, "failed to bind qsets, err %d\n", ret);
 			t3_intr_disable(adap);
+<<<<<<< HEAD
+=======
+			quiesce_rx(adap);
+>>>>>>> origin/android16-base
 			free_irq_resources(adap);
 			err = ret;
 			goto out;

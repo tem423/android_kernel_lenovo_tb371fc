@@ -30,6 +30,10 @@
 #include <linux/iommu.h>
 #include <linux/kmemleak.h>
 #include <linux/mem_encrypt.h>
+<<<<<<< HEAD
+=======
+#include <linux/iopoll.h>
+>>>>>>> origin/android16-base
 #include <asm/pci-direct.h>
 #include <asm/iommu.h>
 #include <asm/gart.h>
@@ -89,7 +93,11 @@
 #define ACPI_DEVFLAG_LINT1              0x80
 #define ACPI_DEVFLAG_ATSDIS             0x10000000
 
+<<<<<<< HEAD
 #define LOOP_TIMEOUT	100000
+=======
+#define LOOP_TIMEOUT	2000000
+>>>>>>> origin/android16-base
 /*
  * ACPI table definitions
  *
@@ -772,6 +780,10 @@ static int iommu_ga_log_enable(struct amd_iommu *iommu)
 		status = readl(iommu->mmio_base + MMIO_STATUS_OFFSET);
 		if (status & (MMIO_STATUS_GALOG_RUN_MASK))
 			break;
+<<<<<<< HEAD
+=======
+		udelay(10);
+>>>>>>> origin/android16-base
 	}
 
 	if (i >= LOOP_TIMEOUT)
@@ -1407,8 +1419,22 @@ static int __init init_iommu_from_acpi(struct amd_iommu *iommu,
 	return 0;
 }
 
+<<<<<<< HEAD
 static void __init free_iommu_one(struct amd_iommu *iommu)
 {
+=======
+static void __init free_sysfs(struct amd_iommu *iommu)
+{
+	if (iommu->iommu.dev) {
+		iommu_device_unregister(&iommu->iommu);
+		iommu_device_sysfs_remove(&iommu->iommu);
+	}
+}
+
+static void __init free_iommu_one(struct amd_iommu *iommu)
+{
+	free_sysfs(iommu);
+>>>>>>> origin/android16-base
 	free_command_buffer(iommu);
 	free_event_buffer(iommu);
 	free_ppr_log(iommu);
@@ -1731,6 +1757,12 @@ static int __init iommu_init_pci(struct amd_iommu *iommu)
 	/* Prevent binding other PCI device drivers to IOMMU devices */
 	iommu->dev->match_driver = false;
 
+<<<<<<< HEAD
+=======
+	/* ACPI _PRT won't have an IRQ for IOMMU */
+	iommu->dev->irq_managed = 1;
+
+>>>>>>> origin/android16-base
 	pci_read_config_dword(iommu->dev, cap_ptr + MMIO_CAP_HDR_OFFSET,
 			      &iommu->cap);
 	pci_read_config_dword(iommu->dev, cap_ptr + MMIO_RANGE_OFFSET,
@@ -2944,6 +2976,16 @@ static int __init parse_ivrs_acpihid(char *str)
 		return 1;
 	}
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Ignore leading zeroes after ':', so e.g., AMDI0095:00
+	 * will match AMDI0095:0 in the second strcmp in acpi_dev_hid_uid_match
+	 */
+	while (*uid == '0' && *(uid + 1))
+		uid++;
+
+>>>>>>> origin/android16-base
 	i = early_acpihid_map_size++;
 	memcpy(early_acpihid_map[i].hid, hid, strlen(hid));
 	memcpy(early_acpihid_map[i].uid, uid, strlen(uid));

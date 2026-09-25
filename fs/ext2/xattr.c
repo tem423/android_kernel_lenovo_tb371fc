@@ -664,10 +664,17 @@ ext2_xattr_set2(struct inode *inode, struct buffer_head *old_bh,
 			/* We need to allocate a new block */
 			ext2_fsblk_t goal = ext2_group_first_block_no(sb,
 						EXT2_I(inode)->i_block_group);
+<<<<<<< HEAD
 			int block = ext2_new_block(inode, goal, &error);
 			if (error)
 				goto cleanup;
 			ea_idebug(inode, "creating block %d", block);
+=======
+			ext2_fsblk_t block = ext2_new_block(inode, goal, &error);
+			if (error)
+				goto cleanup;
+			ea_idebug(inode, "creating block %lu", block);
+>>>>>>> origin/android16-base
 
 			new_bh = sb_getblk(sb, block);
 			if (unlikely(!new_bh)) {

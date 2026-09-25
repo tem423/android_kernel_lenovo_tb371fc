@@ -316,7 +316,18 @@ int ip_cmsg_send(struct sock *sk, struct msghdr *msg, struct ipcm_cookie *ipc,
 			ipc->tos = val;
 			ipc->priority = rt_tos2priority(ipc->tos);
 			break;
+<<<<<<< HEAD
 
+=======
+		case IP_PROTOCOL:
+			if (cmsg->cmsg_len != CMSG_LEN(sizeof(int)))
+				return -EINVAL;
+			val = *(int *)CMSG_DATA(cmsg);
+			if (val < 1 || val > 255)
+				return -EINVAL;
+			ipc->protocol = val;
+			break;
+>>>>>>> origin/android16-base
 		default:
 			return -EINVAL;
 		}
@@ -1522,6 +1533,12 @@ static int do_ip_getsockopt(struct sock *sk, int level, int optname,
 	case IP_MINTTL:
 		val = inet->min_ttl;
 		break;
+<<<<<<< HEAD
+=======
+	case IP_PROTOCOL:
+		val = inet_sk(sk)->inet_num;
+		break;
+>>>>>>> origin/android16-base
 	default:
 		release_sock(sk);
 		return -ENOPROTOOPT;

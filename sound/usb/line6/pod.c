@@ -169,8 +169,14 @@ static struct line6_pcm_properties pod_pcm_properties = {
 	.bytes_per_channel = 3 /* SNDRV_PCM_FMTBIT_S24_3LE */
 };
 
+<<<<<<< HEAD
 static const char pod_version_header[] = {
 	0xf2, 0x7e, 0x7f, 0x06, 0x02
+=======
+
+static const char pod_version_header[] = {
+	0xf0, 0x7e, 0x7f, 0x06, 0x02
+>>>>>>> origin/android16-base
 };
 
 /* forward declarations: */
@@ -420,11 +426,14 @@ static int pod_init(struct usb_line6 *line6,
 	if (err < 0)
 		return err;
 
+<<<<<<< HEAD
 	/* initialize MIDI subsystem: */
 	err = line6_init_midi(line6);
 	if (err < 0)
 		return err;
 
+=======
+>>>>>>> origin/android16-base
 	/* initialize PCM subsystem: */
 	err = line6_init_pcm(line6, &pod_pcm_properties);
 	if (err < 0)

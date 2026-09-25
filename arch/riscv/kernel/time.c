@@ -12,6 +12,11 @@
  *   GNU General Public License for more details.
  */
 
+<<<<<<< HEAD
+=======
+#include <linux/of_clk.h>
+#include <linux/clockchips.h>
+>>>>>>> origin/android16-base
 #include <linux/clocksource.h>
 #include <linux/delay.h>
 #include <asm/sbi.h>
@@ -29,5 +34,13 @@ void __init time_init(void)
 	riscv_timebase = prop;
 
 	lpj_fine = riscv_timebase / HZ;
+<<<<<<< HEAD
 	timer_probe();
+=======
+
+	of_clk_init(NULL);
+	timer_probe();
+
+	tick_setup_hrtimer_broadcast();
+>>>>>>> origin/android16-base
 }

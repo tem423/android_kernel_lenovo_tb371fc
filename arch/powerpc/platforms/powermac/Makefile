@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0
 CFLAGS_bootx_init.o  		+= -fPIC
+<<<<<<< HEAD
+=======
+CFLAGS_bootx_init.o  		+= $(call cc-option, -fno-stack-protector)
+>>>>>>> origin/android16-base
 
 ifdef CONFIG_FUNCTION_TRACER
 # Do not trace early boot code

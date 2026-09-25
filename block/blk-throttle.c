@@ -1383,6 +1383,10 @@ static void tg_conf_updated(struct throtl_grp *tg, bool global)
 		   tg_bps_limit(tg, READ), tg_bps_limit(tg, WRITE),
 		   tg_iops_limit(tg, READ), tg_iops_limit(tg, WRITE));
 
+<<<<<<< HEAD
+=======
+	rcu_read_lock();
+>>>>>>> origin/android16-base
 	/*
 	 * Update has_rules[] flags for the updated tg's subtree.  A tg is
 	 * considered to have rules if either the tg itself or any of its
@@ -1410,6 +1414,10 @@ static void tg_conf_updated(struct throtl_grp *tg, bool global)
 		this_tg->latency_target = max(this_tg->latency_target,
 				parent_tg->latency_target);
 	}
+<<<<<<< HEAD
+=======
+	rcu_read_unlock();
+>>>>>>> origin/android16-base
 
 	/*
 	 * We're already holding queue_lock and know @tg is valid.  Let's
@@ -2437,6 +2445,10 @@ int blk_throtl_init(struct request_queue *q)
 void blk_throtl_exit(struct request_queue *q)
 {
 	BUG_ON(!q->td);
+<<<<<<< HEAD
+=======
+	del_timer_sync(&q->td->service_queue.pending_timer);
+>>>>>>> origin/android16-base
 	throtl_shutdown_wq(q);
 	blkcg_deactivate_policy(q, &blkcg_policy_throtl);
 	free_percpu(q->td->latency_buckets[READ]);

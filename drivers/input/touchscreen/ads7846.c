@@ -35,6 +35,10 @@
 #include <linux/regulator/consumer.h>
 #include <linux/module.h>
 #include <asm/irq.h>
+<<<<<<< HEAD
+=======
+#include <asm/unaligned.h>
+>>>>>>> origin/android16-base
 
 /*
  * This code has been heavily tested on a Nokia 770, and lightly
@@ -199,6 +203,29 @@ struct ads7846 {
 #define	REF_ON	(READ_12BIT_DFR(x, 1, 1))
 #define	REF_OFF	(READ_12BIT_DFR(y, 0, 0))
 
+<<<<<<< HEAD
+=======
+static int get_pendown_state(struct ads7846 *ts)
+{
+	if (ts->get_pendown_state)
+		return ts->get_pendown_state();
+
+	return !gpio_get_value(ts->gpio_pendown);
+}
+
+static void ads7846_report_pen_up(struct ads7846 *ts)
+{
+	struct input_dev *input = ts->input;
+
+	input_report_key(input, BTN_TOUCH, 0);
+	input_report_abs(input, ABS_PRESSURE, 0);
+	input_sync(input);
+
+	ts->pendown = false;
+	dev_vdbg(&ts->spi->dev, "UP\n");
+}
+
+>>>>>>> origin/android16-base
 /* Must be called with ts->lock held */
 static void ads7846_stop(struct ads7846 *ts)
 {
@@ -215,6 +242,13 @@ static void ads7846_stop(struct ads7846 *ts)
 static void ads7846_restart(struct ads7846 *ts)
 {
 	if (!ts->disabled && !ts->suspended) {
+<<<<<<< HEAD
+=======
+		/* Check if pen was released since last stop */
+		if (ts->pendown && !get_pendown_state(ts))
+			ads7846_report_pen_up(ts);
+
+>>>>>>> origin/android16-base
 		/* Tell IRQ thread that it may poll the device. */
 		ts->stopped = false;
 		mb();
@@ -410,7 +444,11 @@ static int ads7845_read12_ser(struct device *dev, unsigned command)
 
 	if (status == 0) {
 		/* BE12 value, then padding */
+<<<<<<< HEAD
 		status = be16_to_cpu(*((u16 *)&req->sample[1]));
+=======
+		status = get_unaligned_be16(&req->sample[1]);
+>>>>>>> origin/android16-base
 		status = status >> 3;
 		status &= 0x0fff;
 	}
@@ -605,6 +643,7 @@ static const struct attribute_group ads784x_attr_group = {
 
 /*--------------------------------------------------------------------------*/
 
+<<<<<<< HEAD
 static int get_pendown_state(struct ads7846 *ts)
 {
 	if (ts->get_pendown_state)
@@ -613,6 +652,8 @@ static int get_pendown_state(struct ads7846 *ts)
 	return !gpio_get_value(ts->gpio_pendown);
 }
 
+=======
+>>>>>>> origin/android16-base
 static void null_wait_for_sync(void)
 {
 }
@@ -773,6 +814,7 @@ static void ads7846_report_state(struct ads7846 *ts)
 	if (x == MAX_12BIT)
 		x = 0;
 
+<<<<<<< HEAD
 	if (ts->model == 7843) {
 		Rt = ts->pressure_max / 2;
 	} else if (ts->model == 7845) {
@@ -781,14 +823,26 @@ static void ads7846_report_state(struct ads7846 *ts)
 		else
 			Rt = 0;
 		dev_vdbg(&ts->spi->dev, "x/y: %d/%d, PD %d\n", x, y, Rt);
+=======
+	if (ts->model == 7843 || ts->model == 7845) {
+		Rt = ts->pressure_max / 2;
+>>>>>>> origin/android16-base
 	} else if (likely(x && z1)) {
 		/* compute touch pressure resistance using equation #2 */
 		Rt = z2;
 		Rt -= z1;
+<<<<<<< HEAD
 		Rt *= x;
 		Rt *= ts->x_plate_ohms;
 		Rt /= z1;
 		Rt = (Rt + 2047) >> 12;
+=======
+		Rt *= ts->x_plate_ohms;
+		Rt = DIV_ROUND_CLOSEST(Rt, 16);
+		Rt *= x;
+		Rt /= z1;
+		Rt = DIV_ROUND_CLOSEST(Rt, 256);
+>>>>>>> origin/android16-base
 	} else {
 		Rt = 0;
 	}
@@ -871,6 +925,7 @@ static irqreturn_t ads7846_irq(int irq, void *handle)
 				   msecs_to_jiffies(TS_POLL_PERIOD));
 	}
 
+<<<<<<< HEAD
 	if (ts->pendown && !ts->stopped) {
 		struct input_dev *input = ts->input;
 
@@ -881,6 +936,10 @@ static irqreturn_t ads7846_irq(int irq, void *handle)
 		ts->pendown = false;
 		dev_vdbg(&ts->spi->dev, "UP\n");
 	}
+=======
+	if (ts->pendown && !ts->stopped)
+		ads7846_report_pen_up(ts);
+>>>>>>> origin/android16-base
 
 	return IRQ_HANDLED;
 }
@@ -1364,8 +1423,14 @@ static int ads7846_probe(struct spi_device *spi)
 			pdata->y_min ? : 0,
 			pdata->y_max ? : MAX_12BIT,
 			0, 0);
+<<<<<<< HEAD
 	input_set_abs_params(input_dev, ABS_PRESSURE,
 			pdata->pressure_min, pdata->pressure_max, 0, 0);
+=======
+	if (ts->model != 7845)
+		input_set_abs_params(input_dev, ABS_PRESSURE,
+				pdata->pressure_min, pdata->pressure_max, 0, 0);
+>>>>>>> origin/android16-base
 
 	ads7846_setup_spi_msg(ts, pdata);
 

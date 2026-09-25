@@ -100,7 +100,10 @@ struct ufx_data {
 	struct kref kref;
 	int fb_count;
 	bool virtualized; /* true when physical usb device not present */
+<<<<<<< HEAD
 	struct delayed_work free_framebuffer_work;
+=======
+>>>>>>> origin/android16-base
 	atomic_t usb_active; /* 0 = update virtual buffer, but no usb traffic */
 	atomic_t lost_pixels; /* 1 = a render op failed. Need screen refresh */
 	u8 *edid; /* null until we read edid from hw or get from sysfs */
@@ -140,6 +143,11 @@ static int ufx_submit_urb(struct ufx_data *dev, struct urb * urb, size_t len);
 static int ufx_alloc_urb_list(struct ufx_data *dev, int count, size_t size);
 static void ufx_free_urb_list(struct ufx_data *dev);
 
+<<<<<<< HEAD
+=======
+static DEFINE_MUTEX(disconnect_mutex);
+
+>>>>>>> origin/android16-base
 /* reads a control register */
 static int ufx_reg_read(struct ufx_data *dev, u32 index, u32 *data)
 {
@@ -1073,9 +1081,19 @@ static int ufx_ops_open(struct fb_info *info, int user)
 	if (user == 0 && !console)
 		return -EBUSY;
 
+<<<<<<< HEAD
 	/* If the USB device is gone, we don't accept new opens */
 	if (dev->virtualized)
 		return -ENODEV;
+=======
+	mutex_lock(&disconnect_mutex);
+
+	/* If the USB device is gone, we don't accept new opens */
+	if (dev->virtualized) {
+		mutex_unlock(&disconnect_mutex);
+		return -ENODEV;
+	}
+>>>>>>> origin/android16-base
 
 	dev->fb_count++;
 
@@ -1099,6 +1117,11 @@ static int ufx_ops_open(struct fb_info *info, int user)
 	pr_debug("open /dev/fb%d user=%d fb_info=%p count=%d",
 		info->node, user, info, dev->fb_count);
 
+<<<<<<< HEAD
+=======
+	mutex_unlock(&disconnect_mutex);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1111,6 +1134,7 @@ static void ufx_free(struct kref *kref)
 {
 	struct ufx_data *dev = container_of(kref, struct ufx_data, kref);
 
+<<<<<<< HEAD
 	/* this function will wait for all in-flight urbs to complete */
 	if (dev->urbs.count > 0)
 		ufx_free_urb_list(dev);
@@ -1120,6 +1144,26 @@ static void ufx_free(struct kref *kref)
 	kfree(dev);
 }
 
+=======
+	kfree(dev);
+}
+
+static void ufx_ops_destory(struct fb_info *info)
+{
+	struct ufx_data *dev = info->par;
+	int node = info->node;
+
+	/* Assume info structure is freed after this point */
+	framebuffer_release(info);
+
+	pr_debug("fb_info for /dev/fb%d has been freed", node);
+
+	/* release reference taken by kref_init in probe() */
+	kref_put(&dev->kref, ufx_free);
+}
+
+
+>>>>>>> origin/android16-base
 static void ufx_release_urb_work(struct work_struct *work)
 {
 	struct urb_node *unode = container_of(work, struct urb_node,
@@ -1128,6 +1172,7 @@ static void ufx_release_urb_work(struct work_struct *work)
 	up(&unode->dev->urbs.limit_sem);
 }
 
+<<<<<<< HEAD
 static void ufx_free_framebuffer_work(struct work_struct *work)
 {
 	struct ufx_data *dev = container_of(work, struct ufx_data,
@@ -1136,6 +1181,11 @@ static void ufx_free_framebuffer_work(struct work_struct *work)
 	int node = info->node;
 
 	unregister_framebuffer(info);
+=======
+static void ufx_free_framebuffer(struct ufx_data *dev)
+{
+	struct fb_info *info = dev->info;
+>>>>>>> origin/android16-base
 
 	if (info->cmap.len != 0)
 		fb_dealloc_cmap(&info->cmap);
@@ -1147,11 +1197,14 @@ static void ufx_free_framebuffer_work(struct work_struct *work)
 
 	dev->info = NULL;
 
+<<<<<<< HEAD
 	/* Assume info structure is freed after this point */
 	framebuffer_release(info);
 
 	pr_debug("fb_info for /dev/fb%d has been freed", node);
 
+=======
+>>>>>>> origin/android16-base
 	/* ref taken in probe() as part of registering framebfufer */
 	kref_put(&dev->kref, ufx_free);
 }
@@ -1163,11 +1216,20 @@ static int ufx_ops_release(struct fb_info *info, int user)
 {
 	struct ufx_data *dev = info->par;
 
+<<<<<<< HEAD
+=======
+	mutex_lock(&disconnect_mutex);
+
+>>>>>>> origin/android16-base
 	dev->fb_count--;
 
 	/* We can't free fb_info here - fbmem will touch it when we return */
 	if (dev->virtualized && (dev->fb_count == 0))
+<<<<<<< HEAD
 		schedule_delayed_work(&dev->free_framebuffer_work, HZ);
+=======
+		ufx_free_framebuffer(dev);
+>>>>>>> origin/android16-base
 
 	if ((dev->fb_count == 0) && (info->fbdefio)) {
 		fb_deferred_io_cleanup(info);
@@ -1181,6 +1243,11 @@ static int ufx_ops_release(struct fb_info *info, int user)
 
 	kref_put(&dev->kref, ufx_free);
 
+<<<<<<< HEAD
+=======
+	mutex_unlock(&disconnect_mutex);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1287,6 +1354,10 @@ static struct fb_ops ufx_ops = {
 	.fb_blank = ufx_ops_blank,
 	.fb_check_var = ufx_ops_check_var,
 	.fb_set_par = ufx_ops_set_par,
+<<<<<<< HEAD
+=======
+	.fb_destroy = ufx_ops_destory,
+>>>>>>> origin/android16-base
 };
 
 /* Assumes &info->lock held by caller
@@ -1662,6 +1733,10 @@ static int ufx_usb_probe(struct usb_interface *interface,
 	info->par = dev;
 	info->pseudo_palette = dev->pseudo_palette;
 	info->fbops = &ufx_ops;
+<<<<<<< HEAD
+=======
+	INIT_LIST_HEAD(&info->modelist);
+>>>>>>> origin/android16-base
 
 	retval = fb_alloc_cmap(&info->cmap, 256, 0);
 	if (retval < 0) {
@@ -1669,11 +1744,14 @@ static int ufx_usb_probe(struct usb_interface *interface,
 		goto destroy_modedb;
 	}
 
+<<<<<<< HEAD
 	INIT_DELAYED_WORK(&dev->free_framebuffer_work,
 			  ufx_free_framebuffer_work);
 
 	INIT_LIST_HEAD(&info->modelist);
 
+=======
+>>>>>>> origin/android16-base
 	retval = ufx_reg_read(dev, 0x3000, &id_rev);
 	check_warn_goto_error(retval, "error %d reading 0x3000 register from device", retval);
 	dev_dbg(dev->gdev, "ID_REV register value 0x%08x", id_rev);
@@ -1746,8 +1824,17 @@ e_nomem:
 static void ufx_usb_disconnect(struct usb_interface *interface)
 {
 	struct ufx_data *dev;
+<<<<<<< HEAD
 
 	dev = usb_get_intfdata(interface);
+=======
+	struct fb_info *info;
+
+	mutex_lock(&disconnect_mutex);
+
+	dev = usb_get_intfdata(interface);
+	info = dev->info;
+>>>>>>> origin/android16-base
 
 	pr_debug("USB disconnect starting\n");
 
@@ -1761,12 +1848,26 @@ static void ufx_usb_disconnect(struct usb_interface *interface)
 
 	/* if clients still have us open, will be freed on last close */
 	if (dev->fb_count == 0)
+<<<<<<< HEAD
 		schedule_delayed_work(&dev->free_framebuffer_work, 0);
 
 	/* release reference taken by kref_init in probe() */
 	kref_put(&dev->kref, ufx_free);
 
 	/* consider ufx_data freed */
+=======
+		ufx_free_framebuffer(dev);
+
+	/* this function will wait for all in-flight urbs to complete */
+	if (dev->urbs.count > 0)
+		ufx_free_urb_list(dev);
+
+	pr_debug("freeing ufx_data %p", dev);
+
+	unregister_framebuffer(info);
+
+	mutex_unlock(&disconnect_mutex);
+>>>>>>> origin/android16-base
 }
 
 static struct usb_driver ufx_driver = {

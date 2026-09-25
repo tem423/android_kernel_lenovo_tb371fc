@@ -1791,7 +1791,13 @@ static void br_multicast_pim(struct net_bridge *br,
 	    pim_hdr_type(pimhdr) != PIM_TYPE_HELLO)
 		return;
 
+<<<<<<< HEAD
 	br_multicast_mark_router(br, port);
+=======
+	spin_lock(&br->multicast_lock);
+	br_multicast_mark_router(br, port);
+	spin_unlock(&br->multicast_lock);
+>>>>>>> origin/android16-base
 }
 
 static int br_multicast_ipv4_rcv(struct net_bridge *br,

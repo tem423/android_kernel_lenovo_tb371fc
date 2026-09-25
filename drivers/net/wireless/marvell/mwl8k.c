@@ -1469,6 +1469,10 @@ static int mwl8k_txq_init(struct ieee80211_hw *hw, int index)
 	txq->skb = kcalloc(MWL8K_TX_DESCS, sizeof(*txq->skb), GFP_KERNEL);
 	if (txq->skb == NULL) {
 		pci_free_consistent(priv->pdev, size, txq->txd, txq->txd_dma);
+<<<<<<< HEAD
+=======
+		txq->txd = NULL;
+>>>>>>> origin/android16-base
 		return -ENOMEM;
 	}
 
@@ -2710,7 +2714,11 @@ __mwl8k_cmd_mac_multicast_adr(struct ieee80211_hw *hw, int allmulti,
 		cmd->action |= cpu_to_le16(MWL8K_ENABLE_RX_MULTICAST);
 		cmd->numaddr = cpu_to_le16(mc_count);
 		netdev_hw_addr_list_for_each(ha, mc_list) {
+<<<<<<< HEAD
 			memcpy(cmd->addr[i], ha->addr, ETH_ALEN);
+=======
+			memcpy(cmd->addr[i++], ha->addr, ETH_ALEN);
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -5792,8 +5800,13 @@ static void mwl8k_fw_state_machine(const struct firmware *fw, void *context)
 fail:
 	priv->fw_state = FW_STATE_ERROR;
 	complete(&priv->firmware_loading_complete);
+<<<<<<< HEAD
 	device_release_driver(&priv->pdev->dev);
 	mwl8k_release_firmware(priv);
+=======
+	mwl8k_release_firmware(priv);
+	device_release_driver(&priv->pdev->dev);
+>>>>>>> origin/android16-base
 }
 
 #define MAX_RESTART_ATTEMPTS 1

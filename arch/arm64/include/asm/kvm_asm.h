@@ -40,9 +40,15 @@
 /* Translate a kernel address of @sym into its equivalent linear mapping */
 #define kvm_ksym_ref(sym)						\
 	({								\
+<<<<<<< HEAD
 		void *val = &sym;					\
 		if (!is_kernel_in_hyp_mode())				\
 			val = lm_alias(&sym);				\
+=======
+		void *val = __va_function(sym);				\
+		if (!is_kernel_in_hyp_mode())				\
+			val = lm_alias(val);				\
+>>>>>>> origin/android16-base
 		val;							\
 	 })
 

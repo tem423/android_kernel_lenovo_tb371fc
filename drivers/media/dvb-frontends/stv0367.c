@@ -128,14 +128,22 @@ static const s32 stv0367cab_RF_LookUp2[RF_LOOKUP_TABLE2_SIZE][RF_LOOKUP_TABLE2_S
 	}
 };
 
+<<<<<<< HEAD
 static
 int stv0367_writeregs(struct stv0367_state *state, u16 reg, u8 *data, int len)
 {
 	u8 buf[MAX_XFER_SIZE];
+=======
+static noinline_for_stack
+int stv0367_writereg(struct stv0367_state *state, u16 reg, u8 data)
+{
+	u8 buf[3] = { MSB(reg), LSB(reg), data };
+>>>>>>> origin/android16-base
 	struct i2c_msg msg = {
 		.addr = state->config->demod_address,
 		.flags = 0,
 		.buf = buf,
+<<<<<<< HEAD
 		.len = len + 2
 	};
 	int ret;
@@ -155,15 +163,29 @@ int stv0367_writeregs(struct stv0367_state *state, u16 reg, u8 *data, int len)
 	if (i2cdebug)
 		printk(KERN_DEBUG "%s: [%02x] %02x: %02x\n", __func__,
 			state->config->demod_address, reg, buf[2]);
+=======
+		.len = 3,
+	};
+	int ret;
+
+	if (i2cdebug)
+		printk(KERN_DEBUG "%s: [%02x] %02x: %02x\n", __func__,
+			state->config->demod_address, reg, data);
+>>>>>>> origin/android16-base
 
 	ret = i2c_transfer(state->i2c, &msg, 1);
 	if (ret != 1)
 		printk(KERN_ERR "%s: i2c write error! ([%02x] %02x: %02x)\n",
+<<<<<<< HEAD
 			__func__, state->config->demod_address, reg, buf[2]);
+=======
+			__func__, state->config->demod_address, reg, data);
+>>>>>>> origin/android16-base
 
 	return (ret != 1) ? -EREMOTEIO : 0;
 }
 
+<<<<<<< HEAD
 static int stv0367_writereg(struct stv0367_state *state, u16 reg, u8 data)
 {
 	u8 tmp = data; /* see gcc.gnu.org/bugzilla/show_bug.cgi?id=81715 */
@@ -172,6 +194,10 @@ static int stv0367_writereg(struct stv0367_state *state, u16 reg, u8 data)
 }
 
 static u8 stv0367_readreg(struct stv0367_state *state, u16 reg)
+=======
+static noinline_for_stack
+u8 stv0367_readreg(struct stv0367_state *state, u16 reg)
+>>>>>>> origin/android16-base
 {
 	u8 b0[] = { 0, 0 };
 	u8 b1[] = { 0 };
@@ -1760,7 +1786,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(stv0367ter_attach);
+=======
+EXPORT_SYMBOL_GPL(stv0367ter_attach);
+>>>>>>> origin/android16-base
 
 static int stv0367cab_gate_ctrl(struct dvb_frontend *fe, int enable)
 {
@@ -2933,7 +2963,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(stv0367cab_attach);
+=======
+EXPORT_SYMBOL_GPL(stv0367cab_attach);
+>>>>>>> origin/android16-base
 
 /*
  * Functions for operation on Digital Devices hardware
@@ -3354,7 +3388,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(stv0367ddb_attach);
+=======
+EXPORT_SYMBOL_GPL(stv0367ddb_attach);
+>>>>>>> origin/android16-base
 
 MODULE_PARM_DESC(debug, "Set debug");
 MODULE_PARM_DESC(i2c_debug, "Set i2c debug");

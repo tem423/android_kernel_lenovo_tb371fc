@@ -82,8 +82,13 @@ static int __init aspeed_i2c_ic_of_init(struct device_node *node,
 	}
 
 	i2c_ic->parent_irq = irq_of_parse_and_map(node, 0);
+<<<<<<< HEAD
 	if (i2c_ic->parent_irq < 0) {
 		ret = i2c_ic->parent_irq;
+=======
+	if (!i2c_ic->parent_irq) {
+		ret = -EINVAL;
+>>>>>>> origin/android16-base
 		goto err_iounmap;
 	}
 

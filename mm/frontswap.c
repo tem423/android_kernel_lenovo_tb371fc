@@ -447,7 +447,11 @@ static int __frontswap_shrink(unsigned long target_pages,
 void frontswap_shrink(unsigned long target_pages)
 {
 	unsigned long pages_to_unuse = 0;
+<<<<<<< HEAD
 	int uninitialized_var(type), ret;
+=======
+	int type, ret;
+>>>>>>> origin/android16-base
 
 	/*
 	 * we don't want to hold swap_lock while doing a very

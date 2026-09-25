@@ -1558,6 +1558,10 @@ struct radeon_dpm {
 	void                    *priv;
 	u32			new_active_crtcs;
 	int			new_active_crtc_count;
+<<<<<<< HEAD
+=======
+	int			high_pixelclock_count;
+>>>>>>> origin/android16-base
 	u32			current_active_crtcs;
 	int			current_active_crtc_count;
 	bool single_display;

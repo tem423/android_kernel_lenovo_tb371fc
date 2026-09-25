@@ -367,6 +367,14 @@ tid_t txBegin(struct super_block *sb, int flag)
 	jfs_info("txBegin: flag = 0x%x", flag);
 	log = JFS_SBI(sb)->log;
 
+<<<<<<< HEAD
+=======
+	if (!log) {
+		jfs_error(sb, "read-only filesystem\n");
+		return 0;
+	}
+
+>>>>>>> origin/android16-base
 	TXN_LOCK();
 
 	INCREMENT(TxStat.txBegin);

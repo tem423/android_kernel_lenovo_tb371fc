@@ -65,7 +65,11 @@ ipt_mangle_out(struct sk_buff *skb, const struct nf_hook_state *state)
 		    iph->daddr != daddr ||
 		    skb->mark != mark ||
 		    iph->tos != tos) {
+<<<<<<< HEAD
 			err = ip_route_me_harder(state->net, skb, RTN_UNSPEC);
+=======
+			err = ip_route_me_harder(state->net, state->sk, skb, RTN_UNSPEC);
+>>>>>>> origin/android16-base
 			if (err < 0)
 				ret = NF_DROP_ERR(err);
 		}

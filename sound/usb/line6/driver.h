@@ -31,7 +31,11 @@
 #define LINE6_FALLBACK_INTERVAL 10
 #define LINE6_FALLBACK_MAXPACKETSIZE 16
 
+<<<<<<< HEAD
 #define LINE6_TIMEOUT 1
+=======
+#define LINE6_TIMEOUT 1000
+>>>>>>> origin/android16-base
 #define LINE6_BUFSIZE_LISTEN 64
 #define LINE6_MIDI_MESSAGE_MAXLEN 256
 

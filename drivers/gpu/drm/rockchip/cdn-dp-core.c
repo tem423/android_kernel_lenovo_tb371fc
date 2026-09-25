@@ -81,6 +81,10 @@ static int cdn_dp_grf_write(struct cdn_dp_device *dp,
 	ret = regmap_write(dp->grf, reg, val);
 	if (ret) {
 		DRM_DEV_ERROR(dp->dev, "Could not write to GRF: %d\n", ret);
+<<<<<<< HEAD
+=======
+		clk_disable_unprepare(dp->grf_clk);
+>>>>>>> origin/android16-base
 		return ret;
 	}
 
@@ -283,8 +287,14 @@ static int cdn_dp_connector_get_modes(struct drm_connector *connector)
 	return ret;
 }
 
+<<<<<<< HEAD
 static int cdn_dp_connector_mode_valid(struct drm_connector *connector,
 				       struct drm_display_mode *mode)
+=======
+static enum drm_mode_status
+cdn_dp_connector_mode_valid(struct drm_connector *connector,
+			    struct drm_display_mode *mode)
+>>>>>>> origin/android16-base
 {
 	struct cdn_dp_device *dp = connector_to_dp(connector);
 	struct drm_display_info *display_info = &dp->connector.display_info;
@@ -1154,6 +1164,10 @@ static int cdn_dp_probe(struct platform_device *pdev)
 	struct cdn_dp_device *dp;
 	struct extcon_dev *extcon;
 	struct phy *phy;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 	int i;
 
 	dp = devm_kzalloc(dev, sizeof(*dp), GFP_KERNEL);
@@ -1194,9 +1208,25 @@ static int cdn_dp_probe(struct platform_device *pdev)
 	mutex_init(&dp->lock);
 	dev_set_drvdata(dev, dp);
 
+<<<<<<< HEAD
 	cdn_dp_audio_codec_init(dp, dev);
 
 	return component_add(dev, &cdn_dp_component_ops);
+=======
+	ret = cdn_dp_audio_codec_init(dp, dev);
+	if (ret)
+		return ret;
+
+	ret = component_add(dev, &cdn_dp_component_ops);
+	if (ret)
+		goto err_audio_deinit;
+
+	return 0;
+
+err_audio_deinit:
+	platform_device_unregister(dp->audio_pdev);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int cdn_dp_remove(struct platform_device *pdev)

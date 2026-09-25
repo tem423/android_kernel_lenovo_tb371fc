@@ -108,7 +108,10 @@ struct cpuinfo_parisc {
 	unsigned long cpu_loc;      /* CPU location from PAT firmware */
 	unsigned int state;
 	struct parisc_device *dev;
+<<<<<<< HEAD
 	unsigned long loops_per_jiffy;
+=======
+>>>>>>> origin/android16-base
 };
 
 extern struct system_cpuinfo_parisc boot_cpu_data;

@@ -85,7 +85,11 @@ struct ad2s1210_state {
 static const int ad2s1210_mode_vals[4][2] = {
 	[MOD_POS] = { 0, 0 },
 	[MOD_VEL] = { 0, 1 },
+<<<<<<< HEAD
 	[MOD_CONFIG] = { 1, 0 },
+=======
+	[MOD_CONFIG] = { 1, 1 },
+>>>>>>> origin/android16-base
 };
 
 static inline void ad2s1210_set_mode(enum ad2s1210_mode mode,

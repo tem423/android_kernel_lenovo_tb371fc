@@ -551,4 +551,9 @@ static inline bool vivid_is_hdmi_out(const struct vivid_dev *dev)
 	return dev->output_type[dev->output] == HDMI;
 }
 
+<<<<<<< HEAD
+=======
+bool vivid_validate_fb(const struct v4l2_framebuffer *a);
+
+>>>>>>> origin/android16-base
 #endif

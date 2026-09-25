@@ -78,6 +78,7 @@ struct topa_entry {
 	u64	rsvd2	: 1;
 	u64	size	: 4;
 	u64	rsvd3	: 2;
+<<<<<<< HEAD
 	u64	base	: 36;
 	u64	rsvd4	: 16;
 };
@@ -106,6 +107,15 @@ enum pt_capabilities {
 	PT_CAP_psb_periods,
 };
 
+=======
+	u64	base	: 40;
+	u64	rsvd4	: 12;
+};
+
+/* TSC to Core Crystal Clock Ratio */
+#define CPUID_TSC_LEAF		0x15
+
+>>>>>>> origin/android16-base
 struct pt_pmu {
 	struct pmu		pmu;
 	u32			caps[PT_CPUID_REGS_NUM * PT_CPUID_LEAVES];

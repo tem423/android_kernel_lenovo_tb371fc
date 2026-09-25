@@ -88,6 +88,12 @@ static int vendor_command(struct cypress *dev, unsigned char request,
 				 USB_DIR_IN | USB_TYPE_VENDOR | USB_RECIP_OTHER,
 				 address, data, iobuf, CYPRESS_MAX_REQSIZE,
 				 USB_CTRL_GET_TIMEOUT);
+<<<<<<< HEAD
+=======
+	/* we must not process garbage */
+	if (retval < 2)
+		goto err_buf;
+>>>>>>> origin/android16-base
 
 	/* store returned data (more READs to be added) */
 	switch (request) {
@@ -107,6 +113,10 @@ static int vendor_command(struct cypress *dev, unsigned char request,
 			break;
 	}
 
+<<<<<<< HEAD
+=======
+err_buf:
+>>>>>>> origin/android16-base
 	kfree(iobuf);
 error:
 	return retval;

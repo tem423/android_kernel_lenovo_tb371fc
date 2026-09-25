@@ -916,7 +916,11 @@ static int hex2bitmap(const char *str, unsigned long *bitmap, int bits)
  */
 static int modify_bitmap(const char *str, unsigned long *bitmap, int bits)
 {
+<<<<<<< HEAD
 	int a, i, z;
+=======
+	unsigned long a, i, z;
+>>>>>>> origin/android16-base
 	char *np, sign;
 
 	/* bits needs to be a multiple of 8 */

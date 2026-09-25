@@ -75,6 +75,10 @@ static const char *pci_bus_speed_strings[] = {
 	"5.0 GT/s PCIe",	/* 0x15 */
 	"8.0 GT/s PCIe",	/* 0x16 */
 	"16.0 GT/s PCIe",	/* 0x17 */
+<<<<<<< HEAD
+=======
+	"32.0 GT/s PCIe",	/* 0x18 */
+>>>>>>> origin/android16-base
 };
 
 static ssize_t bus_speed_read(enum pci_bus_speed speed, char *buf)
@@ -114,6 +118,10 @@ static void pci_slot_release(struct kobject *kobj)
 	up_read(&pci_bus_sem);
 
 	list_del(&slot->list);
+<<<<<<< HEAD
+=======
+	pci_bus_put(slot->bus);
+>>>>>>> origin/android16-base
 
 	kfree(slot);
 }
@@ -295,7 +303,11 @@ placeholder:
 		goto err;
 	}
 
+<<<<<<< HEAD
 	slot->bus = parent;
+=======
+	slot->bus = pci_bus_get(parent);
+>>>>>>> origin/android16-base
 	slot->number = slot_nr;
 
 	slot->kobj.kset = pci_slots_kset;
@@ -303,10 +315,20 @@ placeholder:
 	slot_name = make_slot_name(name);
 	if (!slot_name) {
 		err = -ENOMEM;
+<<<<<<< HEAD
+=======
+		pci_bus_put(slot->bus);
+>>>>>>> origin/android16-base
 		kfree(slot);
 		goto err;
 	}
 
+<<<<<<< HEAD
+=======
+	INIT_LIST_HEAD(&slot->list);
+	list_add(&slot->list, &parent->slots);
+
+>>>>>>> origin/android16-base
 	err = kobject_init_and_add(&slot->kobj, &pci_slot_ktype, NULL,
 				   "%s", slot_name);
 	if (err) {
@@ -314,9 +336,12 @@ placeholder:
 		goto err;
 	}
 
+<<<<<<< HEAD
 	INIT_LIST_HEAD(&slot->list);
 	list_add(&slot->list, &parent->slots);
 
+=======
+>>>>>>> origin/android16-base
 	down_read(&pci_bus_sem);
 	list_for_each_entry(dev, &parent->devices, bus_list)
 		if (PCI_SLOT(dev->devfn) == slot_nr)

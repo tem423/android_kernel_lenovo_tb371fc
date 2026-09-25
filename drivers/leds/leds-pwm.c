@@ -41,9 +41,14 @@ struct led_pwm_data {
 	struct pwm_device	*pwm;
 	struct pwm_setting	pwm_setting;
 	struct led_setting	led_setting;
+<<<<<<< HEAD
 	unsigned int		active_low;
 	unsigned int		period;
 	int			duty;
+=======
+	struct pwm_state	pwmstate;
+	unsigned int		active_low;
+>>>>>>> origin/android16-base
 	bool			blinking;
 };
 
@@ -156,6 +161,7 @@ static int led_pwm_blink_set(struct led_classdev *led_cdev,
 	return rc;
 }
 
+<<<<<<< HEAD
 static void __led_pwm_set(struct led_pwm_data *led_data)
 {
 	int new_duty = led_data->duty;
@@ -168,18 +174,25 @@ static void __led_pwm_set(struct led_pwm_data *led_data)
 		pwm_enable(led_data->pwm);
 }
 
+=======
+>>>>>>> origin/android16-base
 static int led_pwm_set(struct led_classdev *led_cdev,
 		       enum led_brightness brightness)
 {
 	struct led_pwm_data *led_data =
 		container_of(led_cdev, struct led_pwm_data, cdev);
 	unsigned int max = led_data->cdev.max_brightness;
+<<<<<<< HEAD
 	unsigned long long duty =  led_data->period;
+=======
+	unsigned long long duty = led_data->pwmstate.period;
+>>>>>>> origin/android16-base
 
 	duty *= brightness;
 	do_div(duty, max);
 
 	if (led_data->active_low)
+<<<<<<< HEAD
 		duty = led_data->period - duty;
 
 	led_data->duty = duty;
@@ -188,6 +201,13 @@ static int led_pwm_set(struct led_classdev *led_cdev,
 	__led_pwm_set(led_data);
 
 	return 0;
+=======
+		duty = led_data->pwmstate.period - duty;
+
+	led_data->pwmstate.duty_cycle = duty;
+	led_data->pwmstate.enabled = true;
+	return pwm_apply_state(led_data->pwm, &led_data->pwmstate);
+>>>>>>> origin/android16-base
 }
 
 static inline size_t sizeof_pwm_leds_priv(int num_leds)
@@ -206,7 +226,10 @@ static int led_pwm_add(struct device *dev, struct led_pwm_priv *priv,
 		       struct led_pwm *led, struct device_node *child)
 {
 	struct led_pwm_data *led_data = &priv->leds[priv->num_leds];
+<<<<<<< HEAD
 	struct pwm_args pargs;
+=======
+>>>>>>> origin/android16-base
 	int ret;
 
 	led_data->active_low = led->active_low;
@@ -232,6 +255,7 @@ static int led_pwm_add(struct device *dev, struct led_pwm_priv *priv,
 	led_data->cdev.brightness_set_blocking = led_pwm_set;
 	led_data->cdev.blink_set = led_pwm_blink_set;
 
+<<<<<<< HEAD
 	/*
 	 * FIXME: pwm_apply_args() should be removed when switching to the
 	 * atomic PWM API.
@@ -243,6 +267,12 @@ static int led_pwm_add(struct device *dev, struct led_pwm_priv *priv,
 	led_data->period = pargs.period;
 	if (!led_data->period && (led->pwm_period_ns > 0))
 		led_data->period = led->pwm_period_ns;
+=======
+	pwm_init_state(led_data->pwm, &led_data->pwmstate);
+
+	if (!led_data->pwmstate.period)
+		led_data->pwmstate.period = led->pwm_period_ns;
+>>>>>>> origin/android16-base
 
 	ret = led_classdev_register(dev, &led_data->cdev);
 	if (ret == 0) {

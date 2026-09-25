@@ -220,7 +220,10 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
 {
 	struct tty_port *port;
 	unsigned char ch, r1, drop, error, flag;
+<<<<<<< HEAD
 	int loops = 0;
+=======
+>>>>>>> origin/android16-base
 
 	/* Sanity check, make sure the old bug is no longer happening */
 	if (uap->port.state == NULL) {
@@ -303,6 +306,7 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
 		if (r1 & Rx_OVR)
 			tty_insert_flip_char(port, 0, TTY_OVERRUN);
 	next_char:
+<<<<<<< HEAD
 		/* We can get stuck in an infinite loop getting char 0 when the
 		 * line is in a wrong HW state, we break that here.
 		 * When that happens, I disable the receive side of the driver.
@@ -312,16 +316,21 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
 		 */
 		if ((++loops) > 1000)
 			goto flood;
+=======
+>>>>>>> origin/android16-base
 		ch = read_zsreg(uap, R0);
 		if (!(ch & Rx_CH_AV))
 			break;
 	}
 
 	return true;
+<<<<<<< HEAD
  flood:
 	pmz_interrupt_control(uap, 0);
 	pmz_error("pmz: rx irq flood !\n");
 	return true;
+=======
+>>>>>>> origin/android16-base
 }
 
 static void pmz_status_handle(struct uart_pmac_port *uap)

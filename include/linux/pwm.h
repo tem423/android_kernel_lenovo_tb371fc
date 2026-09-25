@@ -44,8 +44,13 @@ struct pwm_args {
 };
 
 enum {
+<<<<<<< HEAD
 	PWMF_REQUESTED = 1 << 0,
 	PWMF_EXPORTED = 1 << 1,
+=======
+	PWMF_REQUESTED = 0,
+	PWMF_EXPORTED = 1,
+>>>>>>> origin/android16-base
 };
 
 /**

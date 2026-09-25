@@ -16,13 +16,28 @@
 #define DEF_MAX_RECLAIM_PREFREE_SEGMENTS	4096	/* 8GB in maximum */
 
 #define F2FS_MIN_SEGMENTS	9 /* SB + 2 (CP + SIT + NAT) + SSA + MAIN */
+<<<<<<< HEAD
+=======
+#define F2FS_MIN_META_SEGMENTS	8 /* SB + 2 (CP + SIT + NAT) + SSA */
+>>>>>>> origin/android16-base
 
 /* L: Logical segment # in volume, R: Relative segment # in main area */
 #define GET_L2R_SEGNO(free_i, segno)	((segno) - (free_i)->start_segno)
 #define GET_R2L_SEGNO(free_i, segno)	((segno) + (free_i)->start_segno)
 
 #define IS_DATASEG(t)	((t) <= CURSEG_COLD_DATA)
+<<<<<<< HEAD
 #define IS_NODESEG(t)	((t) >= CURSEG_HOT_NODE)
+=======
+#define IS_NODESEG(t)	((t) >= CURSEG_HOT_NODE && (t) <= CURSEG_COLD_NODE)
+#define SE_PAGETYPE(se)	((IS_NODESEG((se)->type) ? NODE : DATA))
+
+static inline void sanity_check_seg_type(struct f2fs_sb_info *sbi,
+						unsigned short seg_type)
+{
+	f2fs_bug_on(sbi, seg_type >= NR_PERSISTENT_LOG);
+}
+>>>>>>> origin/android16-base
 
 #define IS_HOT(t)	((t) == CURSEG_HOT_NODE || (t) == CURSEG_HOT_DATA)
 #define IS_WARM(t)	((t) == CURSEG_WARM_NODE || (t) == CURSEG_WARM_DATA)
@@ -34,7 +49,13 @@
 	 ((seg) == CURSEG_I(sbi, CURSEG_COLD_DATA)->segno) ||	\
 	 ((seg) == CURSEG_I(sbi, CURSEG_HOT_NODE)->segno) ||	\
 	 ((seg) == CURSEG_I(sbi, CURSEG_WARM_NODE)->segno) ||	\
+<<<<<<< HEAD
 	 ((seg) == CURSEG_I(sbi, CURSEG_COLD_NODE)->segno))
+=======
+	 ((seg) == CURSEG_I(sbi, CURSEG_COLD_NODE)->segno) ||	\
+	 ((seg) == CURSEG_I(sbi, CURSEG_COLD_DATA_PINNED)->segno) ||	\
+	 ((seg) == CURSEG_I(sbi, CURSEG_ALL_DATA_ATGC)->segno))
+>>>>>>> origin/android16-base
 
 #define IS_CURSEC(sbi, secno)						\
 	(((secno) == CURSEG_I(sbi, CURSEG_HOT_DATA)->segno /		\
@@ -48,7 +69,15 @@
 	 ((secno) == CURSEG_I(sbi, CURSEG_WARM_NODE)->segno /		\
 	  (sbi)->segs_per_sec) ||	\
 	 ((secno) == CURSEG_I(sbi, CURSEG_COLD_NODE)->segno /		\
+<<<<<<< HEAD
 	  (sbi)->segs_per_sec))	\
+=======
+	  (sbi)->segs_per_sec) ||	\
+	 ((secno) == CURSEG_I(sbi, CURSEG_COLD_DATA_PINNED)->segno /	\
+	  (sbi)->segs_per_sec) ||	\
+	 ((secno) == CURSEG_I(sbi, CURSEG_ALL_DATA_ATGC)->segno /	\
+	  (sbi)->segs_per_sec))
+>>>>>>> origin/android16-base
 
 #define MAIN_BLKADDR(sbi)						\
 	(SM_I(sbi) ? SM_I(sbi)->main_blkaddr : 				\
@@ -87,12 +116,24 @@
 		GET_SEGNO_FROM_SEG0(sbi, blk_addr)))
 #define BLKS_PER_SEC(sbi)					\
 	((sbi)->segs_per_sec * (sbi)->blocks_per_seg)
+<<<<<<< HEAD
 #define GET_SEC_FROM_SEG(sbi, segno)				\
 	((segno) / (sbi)->segs_per_sec)
 #define GET_SEG_FROM_SEC(sbi, secno)				\
 	((secno) * (sbi)->segs_per_sec)
 #define GET_ZONE_FROM_SEC(sbi, secno)				\
 	((secno) / (sbi)->secs_per_zone)
+=======
+#define CAP_BLKS_PER_SEC(sbi)					\
+	((sbi)->segs_per_sec * (sbi)->blocks_per_seg -		\
+	 (sbi)->unusable_blocks_per_sec)
+#define GET_SEC_FROM_SEG(sbi, segno)				\
+	(((segno) == -1) ? -1: (segno) / (sbi)->segs_per_sec)
+#define GET_SEG_FROM_SEC(sbi, secno)				\
+	((secno) * (sbi)->segs_per_sec)
+#define GET_ZONE_FROM_SEC(sbi, secno)				\
+	(((secno) == -1) ? -1: (secno) / (sbi)->secs_per_zone)
+>>>>>>> origin/android16-base
 #define GET_ZONE_FROM_SEG(sbi, segno)				\
 	GET_ZONE_FROM_SEC(sbi, GET_SEC_FROM_SEG(sbi, segno))
 
@@ -129,6 +170,7 @@ enum {
 };
 
 /*
+<<<<<<< HEAD
  * In the victim_sel_policy->alloc_mode, there are two block allocation modes.
  * LFS writes data sequentially with cleaning operations.
  * SSR (Slack Space Recycle) reuses obsolete space without cleaning operations.
@@ -142,10 +184,33 @@ enum {
  * In the victim_sel_policy->gc_mode, there are two gc, aka cleaning, modes.
  * GC_CB is based on cost-benefit algorithm.
  * GC_GREEDY is based on greedy algorithm.
+=======
+ * In the victim_sel_policy->alloc_mode, there are three block allocation modes.
+ * LFS writes data sequentially with cleaning operations.
+ * SSR (Slack Space Recycle) reuses obsolete space without cleaning operations.
+ * AT_SSR (Age Threshold based Slack Space Recycle) merges fragments into
+ * fragmented segment which has similar aging degree.
+ */
+enum {
+	LFS = 0,
+	SSR,
+	AT_SSR,
+};
+
+/*
+ * In the victim_sel_policy->gc_mode, there are three gc, aka cleaning, modes.
+ * GC_CB is based on cost-benefit algorithm.
+ * GC_GREEDY is based on greedy algorithm.
+ * GC_AT is based on age-threshold algorithm.
+>>>>>>> origin/android16-base
  */
 enum {
 	GC_CB = 0,
 	GC_GREEDY,
+<<<<<<< HEAD
+=======
+	GC_AT,
+>>>>>>> origin/android16-base
 	ALLOC_NEXT,
 	FLUSH_DEVICE,
 	MAX_GC_POLICY,
@@ -154,24 +219,45 @@ enum {
 /*
  * BG_GC means the background cleaning job.
  * FG_GC means the on-demand cleaning job.
+<<<<<<< HEAD
  * FORCE_FG_GC means on-demand cleaning job in background.
+=======
+>>>>>>> origin/android16-base
  */
 enum {
 	BG_GC = 0,
 	FG_GC,
+<<<<<<< HEAD
 	FORCE_FG_GC,
+=======
+>>>>>>> origin/android16-base
 };
 
 /* for a function parameter to select a victim segment */
 struct victim_sel_policy {
 	int alloc_mode;			/* LFS or SSR */
 	int gc_mode;			/* GC_CB or GC_GREEDY */
+<<<<<<< HEAD
 	unsigned long *dirty_segmap;	/* dirty segment bitmap */
 	unsigned int max_search;	/* maximum # of segments to search */
 	unsigned int offset;		/* last scanned bitmap offset */
 	unsigned int ofs_unit;		/* bitmap search unit */
 	unsigned int min_cost;		/* minimum cost */
 	unsigned int min_segno;		/* segment # having min. cost */
+=======
+	unsigned long *dirty_bitmap;	/* dirty segment/section bitmap */
+	unsigned int max_search;	/*
+					 * maximum # of segments/sections
+					 * to search
+					 */
+	unsigned int offset;		/* last scanned bitmap offset */
+	unsigned int ofs_unit;		/* bitmap search unit */
+	unsigned int min_cost;		/* minimum cost */
+	unsigned long long oldest_age;	/* oldest age of segments having the same min cost */
+	unsigned int min_segno;		/* segment # having min. cost */
+	unsigned long long age;		/* mtime of GCed section*/
+	unsigned long long age_threshold;/* age threshold */
+>>>>>>> origin/android16-base
 };
 
 struct seg_entry {
@@ -184,7 +270,11 @@ struct seg_entry {
 	unsigned char *cur_valid_map_mir;	/* mirror of current valid bitmap */
 #endif
 	/*
+<<<<<<< HEAD
 	 * # of valid blocks and the validity bitmap stored in the the last
+=======
+	 * # of valid blocks and the validity bitmap stored in the last
+>>>>>>> origin/android16-base
 	 * checkpoint pack. This information is used by the SSR mode.
 	 */
 	unsigned char *ckpt_valid_map;	/* validity bitmap of blocks last cp */
@@ -196,6 +286,7 @@ struct sec_entry {
 	unsigned int valid_blocks;	/* # of valid blocks in a section */
 };
 
+<<<<<<< HEAD
 struct segment_allocation {
 	void (*allocate_segment)(struct f2fs_sb_info *, int, bool);
 };
@@ -211,6 +302,17 @@ struct inmem_pages {
 struct sit_info {
 	const struct segment_allocation *s_ops;
 
+=======
+#define MAX_SKIP_GC_COUNT			16
+
+struct revoke_entry {
+	struct list_head list;
+	block_t old_addr;		/* for revoking when fail to commit */
+	pgoff_t index;
+};
+
+struct sit_info {
+>>>>>>> origin/android16-base
 	block_t sit_base_addr;		/* start block address of SIT area */
 	block_t sit_blocks;		/* # of blocks used by SIT area */
 	block_t written_valid_blocks;	/* # of valid blocks in main area */
@@ -237,6 +339,11 @@ struct sit_info {
 	unsigned long long mounted_time;	/* mount time */
 	unsigned long long min_mtime;		/* min. modification time */
 	unsigned long long max_mtime;		/* max. modification time */
+<<<<<<< HEAD
+=======
+	unsigned long long dirty_min_mtime;	/* rerange candidates in GC_AT */
+	unsigned long long dirty_max_mtime;	/* rerange candidates in GC_AT */
+>>>>>>> origin/android16-base
 
 	unsigned int last_victim[MAX_GC_POLICY]; /* last victim segment # */
 };
@@ -266,15 +373,29 @@ enum dirty_type {
 struct dirty_seglist_info {
 	const struct victim_selection *v_ops;	/* victim selction operation */
 	unsigned long *dirty_segmap[NR_DIRTY_TYPE];
+<<<<<<< HEAD
 	struct mutex seglist_lock;		/* lock for segment bitmaps */
 	int nr_dirty[NR_DIRTY_TYPE];		/* # of dirty segments */
 	unsigned long *victim_secmap;		/* background GC victims */
+=======
+	unsigned long *dirty_secmap;
+	struct mutex seglist_lock;		/* lock for segment bitmaps */
+	int nr_dirty[NR_DIRTY_TYPE];		/* # of dirty segments */
+	unsigned long *victim_secmap;		/* background GC victims */
+	unsigned long *pinned_secmap;		/* pinned victims from foreground GC */
+	unsigned int pinned_secmap_cnt;		/* count of victims which has pinned data */
+	bool enable_pin_section;		/* enable pinning section */
+>>>>>>> origin/android16-base
 };
 
 /* victim selection function for cleaning and SSR */
 struct victim_selection {
 	int (*get_victim)(struct f2fs_sb_info *, unsigned int *,
+<<<<<<< HEAD
 							int, int, char);
+=======
+					int, int, char, unsigned long long);
+>>>>>>> origin/android16-base
 };
 
 /* for active log information */
@@ -284,10 +405,19 @@ struct curseg_info {
 	struct rw_semaphore journal_rwsem;	/* protect journal area */
 	struct f2fs_journal *journal;		/* cached journal info */
 	unsigned char alloc_type;		/* current allocation type */
+<<<<<<< HEAD
+=======
+	unsigned short seg_type;		/* segment type like CURSEG_XXX_TYPE */
+>>>>>>> origin/android16-base
 	unsigned int segno;			/* current segment number */
 	unsigned short next_blkoff;		/* next block offset to write */
 	unsigned int zone;			/* current zone number */
 	unsigned int next_segno;		/* preallocated segment */
+<<<<<<< HEAD
+=======
+	int fragment_remained_chunk;		/* remained block size in a chunk for block fragmentation mode */
+	bool inited;				/* indicate inmem log is inited */
+>>>>>>> origin/android16-base
 };
 
 struct sit_entry_set {
@@ -301,8 +431,11 @@ struct sit_entry_set {
  */
 static inline struct curseg_info *CURSEG_I(struct f2fs_sb_info *sbi, int type)
 {
+<<<<<<< HEAD
 	if (type == CURSEG_COLD_DATA_PINNED)
 		type = CURSEG_COLD_DATA;
+=======
+>>>>>>> origin/android16-base
 	return (struct curseg_info *)(SM_I(sbi)->curseg_array + type);
 }
 
@@ -334,8 +467,25 @@ static inline unsigned int get_valid_blocks(struct f2fs_sb_info *sbi,
 }
 
 static inline unsigned int get_ckpt_valid_blocks(struct f2fs_sb_info *sbi,
+<<<<<<< HEAD
 				unsigned int segno)
 {
+=======
+				unsigned int segno, bool use_section)
+{
+	if (use_section && __is_large_section(sbi)) {
+		unsigned int start_segno = START_SEGNO(segno);
+		unsigned int blocks = 0;
+		int i;
+
+		for (i = 0; i < sbi->segs_per_sec; i++, start_segno++) {
+			struct seg_entry *se = get_seg_entry(sbi, start_segno);
+
+			blocks += se->ckpt_valid_blocks;
+		}
+		return blocks;
+	}
+>>>>>>> origin/android16-base
 	return get_seg_entry(sbi, segno)->ckpt_valid_blocks;
 }
 
@@ -407,6 +557,10 @@ static inline void __set_free(struct f2fs_sb_info *sbi, unsigned int segno)
 	unsigned int secno = GET_SEC_FROM_SEG(sbi, segno);
 	unsigned int start_segno = GET_SEG_FROM_SEC(sbi, secno);
 	unsigned int next;
+<<<<<<< HEAD
+=======
+	unsigned int usable_segs = f2fs_usable_segs_in_sec(sbi, segno);
+>>>>>>> origin/android16-base
 
 	spin_lock(&free_i->segmap_lock);
 	clear_bit(segno, free_i->free_segmap);
@@ -414,7 +568,11 @@ static inline void __set_free(struct f2fs_sb_info *sbi, unsigned int segno)
 
 	next = find_next_bit(free_i->free_segmap,
 			start_segno + sbi->segs_per_sec, start_segno);
+<<<<<<< HEAD
 	if (next >= start_segno + sbi->segs_per_sec) {
+=======
+	if (next >= start_segno + usable_segs) {
+>>>>>>> origin/android16-base
 		clear_bit(secno, free_i->free_secmap);
 		free_i->free_sections++;
 	}
@@ -434,22 +592,38 @@ static inline void __set_inuse(struct f2fs_sb_info *sbi,
 }
 
 static inline void __set_test_and_free(struct f2fs_sb_info *sbi,
+<<<<<<< HEAD
 		unsigned int segno)
+=======
+		unsigned int segno, bool inmem)
+>>>>>>> origin/android16-base
 {
 	struct free_segmap_info *free_i = FREE_I(sbi);
 	unsigned int secno = GET_SEC_FROM_SEG(sbi, segno);
 	unsigned int start_segno = GET_SEG_FROM_SEC(sbi, secno);
 	unsigned int next;
+<<<<<<< HEAD
+=======
+	unsigned int usable_segs = f2fs_usable_segs_in_sec(sbi, segno);
+>>>>>>> origin/android16-base
 
 	spin_lock(&free_i->segmap_lock);
 	if (test_and_clear_bit(segno, free_i->free_segmap)) {
 		free_i->free_segments++;
 
+<<<<<<< HEAD
 		if (IS_CURSEC(sbi, secno))
 			goto skip_free;
 		next = find_next_bit(free_i->free_segmap,
 				start_segno + sbi->segs_per_sec, start_segno);
 		if (next >= start_segno + sbi->segs_per_sec) {
+=======
+		if (!inmem && IS_CURSEC(sbi, secno))
+			goto skip_free;
+		next = find_next_bit(free_i->free_segmap,
+				start_segno + sbi->segs_per_sec, start_segno);
+		if (next >= start_segno + usable_segs) {
+>>>>>>> origin/android16-base
 			if (test_and_clear_bit(secno, free_i->free_secmap))
 				free_i->free_sections++;
 		}
@@ -496,9 +670,16 @@ static inline unsigned int free_segments(struct f2fs_sb_info *sbi)
 	return FREE_I(sbi)->free_segments;
 }
 
+<<<<<<< HEAD
 static inline int reserved_segments(struct f2fs_sb_info *sbi)
 {
 	return SM_I(sbi)->reserved_segments;
+=======
+static inline unsigned int reserved_segments(struct f2fs_sb_info *sbi)
+{
+	return SM_I(sbi)->reserved_segments +
+			SM_I(sbi)->additional_reserved_segments;
+>>>>>>> origin/android16-base
 }
 
 static inline unsigned int free_sections(struct f2fs_sb_info *sbi)
@@ -528,6 +709,7 @@ static inline int overprovision_segments(struct f2fs_sb_info *sbi)
 
 static inline int reserved_sections(struct f2fs_sb_info *sbi)
 {
+<<<<<<< HEAD
 	return GET_SEC_FROM_SEG(sbi, (unsigned int)reserved_segments(sbi));
 }
 
@@ -536,14 +718,28 @@ static inline bool has_curseg_enough_space(struct f2fs_sb_info *sbi)
 	unsigned int node_blocks = get_pages(sbi, F2FS_DIRTY_NODES) +
 					get_pages(sbi, F2FS_DIRTY_DENTS);
 	unsigned int dent_blocks = get_pages(sbi, F2FS_DIRTY_DENTS);
+=======
+	return GET_SEC_FROM_SEG(sbi, reserved_segments(sbi));
+}
+
+static inline bool has_curseg_enough_space(struct f2fs_sb_info *sbi,
+			unsigned int node_blocks, unsigned int dent_blocks)
+{
+
+>>>>>>> origin/android16-base
 	unsigned int segno, left_blocks;
 	int i;
 
 	/* check current node segment */
 	for (i = CURSEG_HOT_NODE; i <= CURSEG_COLD_NODE; i++) {
 		segno = CURSEG_I(sbi, i)->segno;
+<<<<<<< HEAD
 		left_blocks = sbi->blocks_per_seg -
 			get_seg_entry(sbi, segno)->ckpt_valid_blocks;
+=======
+		left_blocks = f2fs_usable_blks_in_seg(sbi, segno) -
+				get_seg_entry(sbi, segno)->ckpt_valid_blocks;
+>>>>>>> origin/android16-base
 
 		if (node_blocks > left_blocks)
 			return false;
@@ -551,7 +747,11 @@ static inline bool has_curseg_enough_space(struct f2fs_sb_info *sbi)
 
 	/* check current data segment */
 	segno = CURSEG_I(sbi, CURSEG_HOT_DATA)->segno;
+<<<<<<< HEAD
 	left_blocks = sbi->blocks_per_seg -
+=======
+	left_blocks = f2fs_usable_blks_in_seg(sbi, segno) -
+>>>>>>> origin/android16-base
 			get_seg_entry(sbi, segno)->ckpt_valid_blocks;
 	if (dent_blocks > left_blocks)
 		return false;
@@ -561,19 +761,43 @@ static inline bool has_curseg_enough_space(struct f2fs_sb_info *sbi)
 static inline bool has_not_enough_free_secs(struct f2fs_sb_info *sbi,
 					int freed, int needed)
 {
+<<<<<<< HEAD
 	int node_secs = get_blocktype_secs(sbi, F2FS_DIRTY_NODES);
 	int dent_secs = get_blocktype_secs(sbi, F2FS_DIRTY_DENTS);
 	int imeta_secs = get_blocktype_secs(sbi, F2FS_DIRTY_IMETA);
+=======
+	unsigned int total_node_blocks = get_pages(sbi, F2FS_DIRTY_NODES) +
+					get_pages(sbi, F2FS_DIRTY_DENTS) +
+					get_pages(sbi, F2FS_DIRTY_IMETA);
+	unsigned int total_dent_blocks = get_pages(sbi, F2FS_DIRTY_DENTS);
+	unsigned int node_secs = total_node_blocks / CAP_BLKS_PER_SEC(sbi);
+	unsigned int dent_secs = total_dent_blocks / CAP_BLKS_PER_SEC(sbi);
+	unsigned int node_blocks = total_node_blocks % CAP_BLKS_PER_SEC(sbi);
+	unsigned int dent_blocks = total_dent_blocks % CAP_BLKS_PER_SEC(sbi);
+	unsigned int free, need_lower, need_upper;
+>>>>>>> origin/android16-base
 
 	if (unlikely(is_sbi_flag_set(sbi, SBI_POR_DOING)))
 		return false;
 
+<<<<<<< HEAD
 	if (free_sections(sbi) + freed == reserved_sections(sbi) + needed &&
 			has_curseg_enough_space(sbi))
 		return false;
 	return (free_sections(sbi) + freed) <=
 		(node_secs + 2 * dent_secs + imeta_secs +
 		reserved_sections(sbi) + needed);
+=======
+	free = free_sections(sbi) + freed;
+	need_lower = node_secs + dent_secs + reserved_sections(sbi) + needed;
+	need_upper = need_lower + (node_blocks ? 1 : 0) + (dent_blocks ? 1 : 0);
+
+	if (free > need_upper)
+		return false;
+	else if (free <= need_lower)
+		return true;
+	return !has_curseg_enough_space(sbi, node_blocks, dent_blocks);
+>>>>>>> origin/android16-base
 }
 
 static inline bool f2fs_is_checkpoint_ready(struct f2fs_sb_info *sbi)
@@ -610,7 +834,13 @@ static inline int utilization(struct f2fs_sb_info *sbi)
  *                     pages over min_fsync_blocks. (=default option)
  * F2FS_IPU_ASYNC - do IPU given by asynchronous write requests.
  * F2FS_IPU_NOCACHE - disable IPU bio cache.
+<<<<<<< HEAD
  * F2FS_IPUT_DISABLE - disable IPU. (=default option in LFS mode)
+=======
+ * F2FS_IPU_HONOR_OPU_WRITE - use OPU write prior to IPU write if inode has
+ *                            FI_OPU_WRITE flag.
+ * F2FS_IPU_DISABLE - disable IPU. (=default option in LFS mode)
+>>>>>>> origin/android16-base
  */
 #define DEF_MIN_IPU_UTIL	70
 #define DEF_MIN_FSYNC_BLOCKS	8
@@ -626,6 +856,10 @@ enum {
 	F2FS_IPU_FSYNC,
 	F2FS_IPU_ASYNC,
 	F2FS_IPU_NOCACHE,
+<<<<<<< HEAD
+=======
+	F2FS_IPU_HONOR_OPU_WRITE,
+>>>>>>> origin/android16-base
 };
 
 static inline unsigned int curseg_segno(struct f2fs_sb_info *sbi,
@@ -673,35 +907,69 @@ static inline int check_block_count(struct f2fs_sb_info *sbi,
 	bool is_valid  = test_bit_le(0, raw_sit->valid_map) ? true : false;
 	int valid_blocks = 0;
 	int cur_pos = 0, next_pos;
+<<<<<<< HEAD
+=======
+	unsigned int usable_blks_per_seg = f2fs_usable_blks_in_seg(sbi, segno);
+>>>>>>> origin/android16-base
 
 	/* check bitmap with valid block count */
 	do {
 		if (is_valid) {
 			next_pos = find_next_zero_bit_le(&raw_sit->valid_map,
+<<<<<<< HEAD
 					sbi->blocks_per_seg,
+=======
+					usable_blks_per_seg,
+>>>>>>> origin/android16-base
 					cur_pos);
 			valid_blocks += next_pos - cur_pos;
 		} else
 			next_pos = find_next_bit_le(&raw_sit->valid_map,
+<<<<<<< HEAD
 					sbi->blocks_per_seg,
 					cur_pos);
 		cur_pos = next_pos;
 		is_valid = !is_valid;
 	} while (cur_pos < sbi->blocks_per_seg);
+=======
+					usable_blks_per_seg,
+					cur_pos);
+		cur_pos = next_pos;
+		is_valid = !is_valid;
+	} while (cur_pos < usable_blks_per_seg);
+>>>>>>> origin/android16-base
 
 	if (unlikely(GET_SIT_VBLOCKS(raw_sit) != valid_blocks)) {
 		f2fs_err(sbi, "Mismatch valid blocks %d vs. %d",
 			 GET_SIT_VBLOCKS(raw_sit), valid_blocks);
 		set_sbi_flag(sbi, SBI_NEED_FSCK);
+<<<<<<< HEAD
 		return -EFSCORRUPTED;
 	}
 
 	/* check segment usage, and check boundary of a given segment number */
 	if (unlikely(GET_SIT_VBLOCKS(raw_sit) > sbi->blocks_per_seg
+=======
+		f2fs_handle_error(sbi, ERROR_INCONSISTENT_SIT);
+		return -EFSCORRUPTED;
+	}
+
+	if (usable_blks_per_seg < sbi->blocks_per_seg)
+		f2fs_bug_on(sbi, find_next_bit_le(&raw_sit->valid_map,
+				sbi->blocks_per_seg,
+				usable_blks_per_seg) != sbi->blocks_per_seg);
+
+	/* check segment usage, and check boundary of a given segment number */
+	if (unlikely(GET_SIT_VBLOCKS(raw_sit) > usable_blks_per_seg
+>>>>>>> origin/android16-base
 					|| segno > TOTAL_SEGS(sbi) - 1)) {
 		f2fs_err(sbi, "Wrong valid blocks %d or segno %u",
 			 GET_SIT_VBLOCKS(raw_sit), segno);
 		set_sbi_flag(sbi, SBI_NEED_FSCK);
+<<<<<<< HEAD
+=======
+		f2fs_handle_error(sbi, ERROR_INCONSISTENT_SIT);
+>>>>>>> origin/android16-base
 		return -EFSCORRUPTED;
 	}
 	return 0;

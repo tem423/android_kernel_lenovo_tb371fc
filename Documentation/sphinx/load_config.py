@@ -3,7 +3,11 @@
 
 import os
 import sys
+<<<<<<< HEAD
 from sphinx.util.pycompat import execfile_
+=======
+from sphinx.util.osutil import fs_encoding
+>>>>>>> origin/android16-base
 
 # ------------------------------------------------------------------------------
 def loadConfig(namespace):
@@ -25,7 +29,13 @@ def loadConfig(namespace):
             sys.stdout.write("load additional sphinx-config: %s\n" % config_file)
             config = namespace.copy()
             config['__file__'] = config_file
+<<<<<<< HEAD
             execfile_(config_file, config)
+=======
+            with open(config_file, 'rb') as f:
+                code = compile(f.read(), fs_encoding, 'exec')
+                exec(code, config)
+>>>>>>> origin/android16-base
             del config['__file__']
             namespace.update(config)
         else:

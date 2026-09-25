@@ -273,6 +273,7 @@ done:
 	mutex_unlock(&dev->phy_mutex);
 }
 
+<<<<<<< HEAD
 static int smsc95xx_mdio_read_nopm(struct net_device *netdev, int phy_id,
 				   int idx)
 {
@@ -283,6 +284,20 @@ static void smsc95xx_mdio_write_nopm(struct net_device *netdev, int phy_id,
 				     int idx, int regval)
 {
 	__smsc95xx_mdio_write(netdev, phy_id, idx, regval, 1);
+=======
+static int smsc95xx_mdio_read_nopm(struct usbnet *dev, int idx)
+{
+	struct mii_if_info *mii = &dev->mii;
+
+	return __smsc95xx_mdio_read(dev->net, mii->phy_id, idx, 1);
+}
+
+static void smsc95xx_mdio_write_nopm(struct usbnet *dev, int idx, int regval)
+{
+	struct mii_if_info *mii = &dev->mii;
+
+	__smsc95xx_mdio_write(dev->net, mii->phy_id, idx, regval, 1);
+>>>>>>> origin/android16-base
 }
 
 static int smsc95xx_mdio_read(struct net_device *netdev, int phy_id, int idx)
@@ -467,7 +482,11 @@ static unsigned int smsc95xx_hash(char addr[ETH_ALEN])
 static void smsc95xx_set_multicast(struct net_device *netdev)
 {
 	struct usbnet *dev = netdev_priv(netdev);
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	unsigned long flags;
 	int ret;
 
@@ -562,7 +581,11 @@ static int smsc95xx_phy_update_flowcontrol(struct usbnet *dev, u8 duplex,
 
 static int smsc95xx_link_reset(struct usbnet *dev)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	struct mii_if_info *mii = &dev->mii;
 	struct ethtool_cmd ecmd = { .cmd = ETHTOOL_GSET };
 	unsigned long flags;
@@ -632,7 +655,11 @@ static void smsc95xx_status(struct usbnet *dev, struct urb *urb)
 
 static void set_carrier(struct usbnet *dev, bool link)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 
 	if (pdata->link_ok == link)
 		return;
@@ -761,7 +788,11 @@ static void smsc95xx_ethtool_get_wol(struct net_device *net,
 				     struct ethtool_wolinfo *wolinfo)
 {
 	struct usbnet *dev = netdev_priv(net);
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 
 	wolinfo->supported = SUPPORTED_WAKE;
 	wolinfo->wolopts = pdata->wolopts;
@@ -771,7 +802,11 @@ static int smsc95xx_ethtool_set_wol(struct net_device *net,
 				    struct ethtool_wolinfo *wolinfo)
 {
 	struct usbnet *dev = netdev_priv(net);
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	int ret;
 
 	if (wolinfo->wolopts & ~SUPPORTED_WAKE)
@@ -810,7 +845,11 @@ static int get_mdix_status(struct net_device *net)
 static void set_mdix_status(struct net_device *net, __u8 mdix_ctrl)
 {
 	struct usbnet *dev = netdev_priv(net);
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	int buf;
 
 	if ((pdata->chip_id == ID_REV_CHIP_ID_9500A_) ||
@@ -859,7 +898,11 @@ static int smsc95xx_get_link_ksettings(struct net_device *net,
 				       struct ethtool_link_ksettings *cmd)
 {
 	struct usbnet *dev = netdev_priv(net);
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	int retval;
 
 	retval = usbnet_get_link_ksettings(net, cmd);
@@ -874,7 +917,11 @@ static int smsc95xx_set_link_ksettings(struct net_device *net,
 				       const struct ethtool_link_ksettings *cmd)
 {
 	struct usbnet *dev = netdev_priv(net);
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	int retval;
 
 	if (pdata->mdix_ctrl != cmd->base.eth_tp_mdix_ctrl)
@@ -956,7 +1003,11 @@ static int smsc95xx_set_mac_address(struct usbnet *dev)
 /* starts the TX path */
 static int smsc95xx_start_tx_path(struct usbnet *dev)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	unsigned long flags;
 	int ret;
 
@@ -976,7 +1027,11 @@ static int smsc95xx_start_tx_path(struct usbnet *dev)
 /* Starts the Receive path */
 static int smsc95xx_start_rx_path(struct usbnet *dev, int in_pm)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	unsigned long flags;
 
 	spin_lock_irqsave(&pdata->mac_cr_lock, flags);
@@ -1033,8 +1088,13 @@ static int smsc95xx_phy_initialize(struct usbnet *dev)
 
 static int smsc95xx_reset(struct usbnet *dev)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
 	u32 read_buf, write_buf, burst_cap;
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+	u32 read_buf, burst_cap;
+>>>>>>> origin/android16-base
 	int ret = 0, timeout;
 
 	netif_dbg(dev, ifup, dev->net, "entering smsc95xx_reset\n");
@@ -1054,7 +1114,11 @@ static int smsc95xx_reset(struct usbnet *dev)
 
 	if (timeout >= 100) {
 		netdev_warn(dev->net, "timeout waiting for completion of Lite Reset\n");
+<<<<<<< HEAD
 		return ret;
+=======
+		return -ETIMEDOUT;
+>>>>>>> origin/android16-base
 	}
 
 	ret = smsc95xx_write_reg(dev, PM_CTRL, PM_CTL_PHY_RST_);
@@ -1176,10 +1240,20 @@ static int smsc95xx_reset(struct usbnet *dev)
 		return ret;
 	netif_dbg(dev, ifup, dev->net, "ID_REV = 0x%08x\n", read_buf);
 
+<<<<<<< HEAD
 	/* Configure GPIO pins as LED outputs */
 	write_buf = LED_GPIO_CFG_SPD_LED | LED_GPIO_CFG_LNK_LED |
 		LED_GPIO_CFG_FDX_LED;
 	ret = smsc95xx_write_reg(dev, LED_GPIO_CFG, write_buf);
+=======
+	ret = smsc95xx_read_reg(dev, LED_GPIO_CFG, &read_buf);
+	if (ret < 0)
+		return ret;
+	/* Configure GPIO pins as LED outputs */
+	read_buf |= LED_GPIO_CFG_SPD_LED | LED_GPIO_CFG_LNK_LED |
+		    LED_GPIO_CFG_FDX_LED;
+	ret = smsc95xx_write_reg(dev, LED_GPIO_CFG, read_buf);
+>>>>>>> origin/android16-base
 	if (ret < 0)
 		return ret;
 
@@ -1261,7 +1335,11 @@ static const struct net_device_ops smsc95xx_netdev_ops = {
 
 static int smsc95xx_bind(struct usbnet *dev, struct usb_interface *intf)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = NULL;
+=======
+	struct smsc95xx_priv *pdata;
+>>>>>>> origin/android16-base
 	u32 val;
 	int ret;
 
@@ -1273,6 +1351,7 @@ static int smsc95xx_bind(struct usbnet *dev, struct usb_interface *intf)
 		return ret;
 	}
 
+<<<<<<< HEAD
 	dev->data[0] = (unsigned long)kzalloc(sizeof(struct smsc95xx_priv),
 					      GFP_KERNEL);
 
@@ -1280,6 +1359,14 @@ static int smsc95xx_bind(struct usbnet *dev, struct usb_interface *intf)
 	if (!pdata)
 		return -ENOMEM;
 
+=======
+	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
+	if (!pdata)
+		return -ENOMEM;
+
+	dev->driver_priv = pdata;
+
+>>>>>>> origin/android16-base
 	spin_lock_init(&pdata->mac_cr_lock);
 
 	/* LAN95xx devices do not alter the computed checksum of 0 to 0xffff.
@@ -1342,6 +1429,7 @@ free_pdata:
 
 static void smsc95xx_unbind(struct usbnet *dev, struct usb_interface *intf)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
 
 	if (pdata) {
@@ -1351,6 +1439,13 @@ static void smsc95xx_unbind(struct usbnet *dev, struct usb_interface *intf)
 		pdata = NULL;
 		dev->data[0] = 0;
 	}
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+
+	cancel_delayed_work_sync(&pdata->carrier_check);
+	netif_dbg(dev, ifdown, dev->net, "free pdata\n");
+	kfree(pdata);
+>>>>>>> origin/android16-base
 }
 
 static u32 smsc_crc(const u8 *buffer, size_t len, int filter)
@@ -1361,30 +1456,46 @@ static u32 smsc_crc(const u8 *buffer, size_t len, int filter)
 
 static int smsc95xx_enable_phy_wakeup_interrupts(struct usbnet *dev, u16 mask)
 {
+<<<<<<< HEAD
 	struct mii_if_info *mii = &dev->mii;
+=======
+>>>>>>> origin/android16-base
 	int ret;
 
 	netdev_dbg(dev->net, "enabling PHY wakeup interrupts\n");
 
 	/* read to clear */
+<<<<<<< HEAD
 	ret = smsc95xx_mdio_read_nopm(dev->net, mii->phy_id, PHY_INT_SRC);
+=======
+	ret = smsc95xx_mdio_read_nopm(dev, PHY_INT_SRC);
+>>>>>>> origin/android16-base
 	if (ret < 0)
 		return ret;
 
 	/* enable interrupt source */
+<<<<<<< HEAD
 	ret = smsc95xx_mdio_read_nopm(dev->net, mii->phy_id, PHY_INT_MASK);
+=======
+	ret = smsc95xx_mdio_read_nopm(dev, PHY_INT_MASK);
+>>>>>>> origin/android16-base
 	if (ret < 0)
 		return ret;
 
 	ret |= mask;
 
+<<<<<<< HEAD
 	smsc95xx_mdio_write_nopm(dev->net, mii->phy_id, PHY_INT_MASK, ret);
+=======
+	smsc95xx_mdio_write_nopm(dev, PHY_INT_MASK, ret);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
 
 static int smsc95xx_link_ok_nopm(struct usbnet *dev)
 {
+<<<<<<< HEAD
 	struct mii_if_info *mii = &dev->mii;
 	int ret;
 
@@ -1394,6 +1505,16 @@ static int smsc95xx_link_ok_nopm(struct usbnet *dev)
 		return ret;
 
 	ret = smsc95xx_mdio_read_nopm(dev->net, mii->phy_id, MII_BMSR);
+=======
+	int ret;
+
+	/* first, a dummy read, needed to latch some MII phys */
+	ret = smsc95xx_mdio_read_nopm(dev, MII_BMSR);
+	if (ret < 0)
+		return ret;
+
+	ret = smsc95xx_mdio_read_nopm(dev, MII_BMSR);
+>>>>>>> origin/android16-base
 	if (ret < 0)
 		return ret;
 
@@ -1402,7 +1523,11 @@ static int smsc95xx_link_ok_nopm(struct usbnet *dev)
 
 static int smsc95xx_enter_suspend0(struct usbnet *dev)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	u32 val;
 	int ret;
 
@@ -1441,8 +1566,12 @@ static int smsc95xx_enter_suspend0(struct usbnet *dev)
 
 static int smsc95xx_enter_suspend1(struct usbnet *dev)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
 	struct mii_if_info *mii = &dev->mii;
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	u32 val;
 	int ret;
 
@@ -1450,17 +1579,29 @@ static int smsc95xx_enter_suspend1(struct usbnet *dev)
 	 * compatibility with non-standard link partners
 	 */
 	if (pdata->features & FEATURE_PHY_NLP_CROSSOVER)
+<<<<<<< HEAD
 		smsc95xx_mdio_write_nopm(dev->net, mii->phy_id,	PHY_EDPD_CONFIG,
 			PHY_EDPD_CONFIG_DEFAULT);
 
 	/* enable energy detect power-down mode */
 	ret = smsc95xx_mdio_read_nopm(dev->net, mii->phy_id, PHY_MODE_CTRL_STS);
+=======
+		smsc95xx_mdio_write_nopm(dev, PHY_EDPD_CONFIG,
+					 PHY_EDPD_CONFIG_DEFAULT);
+
+	/* enable energy detect power-down mode */
+	ret = smsc95xx_mdio_read_nopm(dev, PHY_MODE_CTRL_STS);
+>>>>>>> origin/android16-base
 	if (ret < 0)
 		return ret;
 
 	ret |= MODE_CTRL_STS_EDPWRDOWN_;
 
+<<<<<<< HEAD
 	smsc95xx_mdio_write_nopm(dev->net, mii->phy_id, PHY_MODE_CTRL_STS, ret);
+=======
+	smsc95xx_mdio_write_nopm(dev, PHY_MODE_CTRL_STS, ret);
+>>>>>>> origin/android16-base
 
 	/* enter SUSPEND1 mode */
 	ret = smsc95xx_read_reg_nopm(dev, PM_CTRL, &val);
@@ -1489,7 +1630,11 @@ static int smsc95xx_enter_suspend1(struct usbnet *dev)
 
 static int smsc95xx_enter_suspend2(struct usbnet *dev)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	u32 val;
 	int ret;
 
@@ -1511,7 +1656,11 @@ static int smsc95xx_enter_suspend2(struct usbnet *dev)
 
 static int smsc95xx_enter_suspend3(struct usbnet *dev)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	u32 val;
 	int ret;
 
@@ -1550,7 +1699,11 @@ static int smsc95xx_enter_suspend3(struct usbnet *dev)
 
 static int smsc95xx_autosuspend(struct usbnet *dev, u32 link_up)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	int ret;
 
 	if (!netif_running(dev->net)) {
@@ -1598,7 +1751,11 @@ static int smsc95xx_autosuspend(struct usbnet *dev, u32 link_up)
 static int smsc95xx_suspend(struct usb_interface *intf, pm_message_t message)
 {
 	struct usbnet *dev = usb_get_intfdata(intf);
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	u32 val, link_up;
 	int ret;
 
@@ -1869,7 +2026,11 @@ static int smsc95xx_resume(struct usb_interface *intf)
 	u32 val;
 
 	BUG_ON(!dev);
+<<<<<<< HEAD
 	pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 	suspend_flags = pdata->suspend_flags;
 
 	netdev_dbg(dev->net, "resume suspend_flags=0x%02x\n", suspend_flags);
@@ -1924,9 +2085,17 @@ static int smsc95xx_reset_resume(struct usb_interface *intf)
 
 static void smsc95xx_rx_csum_offload(struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	skb->csum = *(u16 *)(skb_tail_pointer(skb) - 2);
 	skb->ip_summed = CHECKSUM_COMPLETE;
 	skb_trim(skb, skb->len - 2);
+=======
+	u16 *csum_ptr = (u16 *)(skb_tail_pointer(skb) - 2);
+
+	skb->csum = (__force __wsum)get_unaligned(csum_ptr);
+	skb->ip_summed = CHECKSUM_COMPLETE;
+	skb_trim(skb, skb->len - 2); /* remove csum */
+>>>>>>> origin/android16-base
 }
 
 static int smsc95xx_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
@@ -1950,6 +2119,15 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 		size = (u16)((header & RX_STS_FL_) >> 16);
 		align_count = (4 - ((size + NET_IP_ALIGN) % 4)) % 4;
 
+<<<<<<< HEAD
+=======
+		if (unlikely(size > skb->len)) {
+			netif_dbg(dev, rx_err, dev->net,
+				  "size err header=0x%08x\n", header);
+			return 0;
+		}
+
+>>>>>>> origin/android16-base
 		if (unlikely(header & RX_STS_ES_)) {
 			netif_dbg(dev, rx_err, dev->net,
 				  "Error header=0x%08x\n", header);
@@ -1979,25 +2157,40 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 				if (dev->net->features & NETIF_F_RXCSUM)
 					smsc95xx_rx_csum_offload(skb);
 				skb_trim(skb, skb->len - 4); /* remove fcs */
+<<<<<<< HEAD
 				skb->truesize = size + sizeof(struct sk_buff);
+=======
+>>>>>>> origin/android16-base
 
 				return 1;
 			}
 
+<<<<<<< HEAD
 			ax_skb = skb_clone(skb, GFP_ATOMIC);
+=======
+			ax_skb = netdev_alloc_skb_ip_align(dev->net, size);
+>>>>>>> origin/android16-base
 			if (unlikely(!ax_skb)) {
 				netdev_warn(dev->net, "Error allocating skb\n");
 				return 0;
 			}
 
+<<<<<<< HEAD
 			ax_skb->len = size;
 			ax_skb->data = packet;
 			skb_set_tail_pointer(ax_skb, size);
+=======
+			skb_put(ax_skb, size);
+			memcpy(ax_skb->data, packet, size);
+>>>>>>> origin/android16-base
 
 			if (dev->net->features & NETIF_F_RXCSUM)
 				smsc95xx_rx_csum_offload(ax_skb);
 			skb_trim(ax_skb, ax_skb->len - 4); /* remove fcs */
+<<<<<<< HEAD
 			ax_skb->truesize = size + sizeof(struct sk_buff);
+=======
+>>>>>>> origin/android16-base
 
 			usbnet_skb_return(dev, ax_skb);
 		}
@@ -2075,7 +2268,11 @@ static struct sk_buff *smsc95xx_tx_fixup(struct usbnet *dev,
 
 static int smsc95xx_manage_power(struct usbnet *dev, int on)
 {
+<<<<<<< HEAD
 	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
+=======
+	struct smsc95xx_priv *pdata = dev->driver_priv;
+>>>>>>> origin/android16-base
 
 	dev->intf->needs_remote_wakeup = on;
 

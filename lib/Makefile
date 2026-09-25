@@ -202,6 +202,10 @@ obj-$(CONFIG_MPILIB) += mpi/
 obj-$(CONFIG_SIGNATURE) += digsig.o
 
 lib-$(CONFIG_CLZ_TAB) += clz_tab.o
+<<<<<<< HEAD
+=======
+lib-$(CONFIG_LIB_MEMNEQ) += memneq.o
+>>>>>>> origin/android16-base
 
 obj-$(CONFIG_DDR) += jedec_ddr_data.o
 

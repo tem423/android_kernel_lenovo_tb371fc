@@ -681,7 +681,11 @@ kci_test_ipsec_offload()
 	    tmpl proto esp src $srcip dst $dstip spi 9 \
 	    mode transport reqid 42
 	check_err $?
+<<<<<<< HEAD
 	ip x p add dir out src $dstip/24 dst $srcip/24 \
+=======
+	ip x p add dir in src $dstip/24 dst $srcip/24 \
+>>>>>>> origin/android16-base
 	    tmpl proto esp src $dstip dst $srcip spi 9 \
 	    mode transport reqid 42
 	check_err $?

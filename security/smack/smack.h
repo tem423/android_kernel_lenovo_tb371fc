@@ -120,6 +120,10 @@ struct inode_smack {
 struct task_smack {
 	struct smack_known	*smk_task;	/* label for access control */
 	struct smack_known	*smk_forked;	/* label when forked */
+<<<<<<< HEAD
+=======
+	struct smack_known	*smk_transmuted;/* label when transmuted */
+>>>>>>> origin/android16-base
 	struct list_head	smk_rules;	/* per task access rules */
 	struct mutex		smk_rules_lock;	/* lock for the rules */
 	struct list_head	smk_relabel;	/* transit allowed labels */

@@ -255,6 +255,10 @@
 };
 
 &usb20_otg {
+<<<<<<< HEAD
+=======
+	dr_mode = "host";
+>>>>>>> origin/android16-base
 	status = "okay";
 };
 

@@ -1512,12 +1512,24 @@ static void dwc2_hc_start_transfer(struct dwc2_hsotg *hsotg,
 			if (num_packets > max_hc_pkt_count) {
 				num_packets = max_hc_pkt_count;
 				chan->xfer_len = num_packets * chan->max_packet;
+<<<<<<< HEAD
+=======
+			} else if (chan->ep_is_in) {
+				/*
+				 * Always program an integral # of max packets
+				 * for IN transfers.
+				 * Note: This assumes that the input buffer is
+				 * aligned and sized accordingly.
+				 */
+				chan->xfer_len = num_packets * chan->max_packet;
+>>>>>>> origin/android16-base
 			}
 		} else {
 			/* Need 1 packet for transfer length of 0 */
 			num_packets = 1;
 		}
 
+<<<<<<< HEAD
 		if (chan->ep_is_in)
 			/*
 			 * Always program an integral # of max packets for IN
@@ -1525,6 +1537,8 @@ static void dwc2_hc_start_transfer(struct dwc2_hsotg *hsotg,
 			 */
 			chan->xfer_len = num_packets * chan->max_packet;
 
+=======
+>>>>>>> origin/android16-base
 		if (chan->ep_type == USB_ENDPOINT_XFER_INT ||
 		    chan->ep_type == USB_ENDPOINT_XFER_ISOC)
 			/*
@@ -2928,8 +2942,16 @@ enum dwc2_transaction_type dwc2_hcd_select_transactions(
 			hsotg->available_host_channels--;
 		}
 		qh = list_entry(qh_ptr, struct dwc2_qh, qh_list_entry);
+<<<<<<< HEAD
 		if (dwc2_assign_and_init_hc(hsotg, qh))
 			break;
+=======
+		if (dwc2_assign_and_init_hc(hsotg, qh)) {
+			if (hsotg->params.uframe_sched)
+				hsotg->available_host_channels++;
+			break;
+		}
+>>>>>>> origin/android16-base
 
 		/*
 		 * Move the QH from the periodic ready schedule to the
@@ -2962,8 +2984,16 @@ enum dwc2_transaction_type dwc2_hcd_select_transactions(
 			hsotg->available_host_channels--;
 		}
 
+<<<<<<< HEAD
 		if (dwc2_assign_and_init_hc(hsotg, qh))
 			break;
+=======
+		if (dwc2_assign_and_init_hc(hsotg, qh)) {
+			if (hsotg->params.uframe_sched)
+				hsotg->available_host_channels++;
+			break;
+		}
+>>>>>>> origin/android16-base
 
 		/*
 		 * Move the QH from the non-periodic inactive schedule to the
@@ -4319,6 +4349,11 @@ void dwc2_host_complete(struct dwc2_hsotg *hsotg, struct dwc2_qtd *qtd,
 			 urb->actual_length);
 
 	if (usb_pipetype(urb->pipe) == PIPE_ISOCHRONOUS) {
+<<<<<<< HEAD
+=======
+		if (!hsotg->params.dma_desc_enable)
+			urb->start_frame = qtd->qh->start_active_frame;
+>>>>>>> origin/android16-base
 		urb->error_count = dwc2_hcd_urb_get_error_count(qtd->urb);
 		for (i = 0; i < urb->number_of_packets; ++i) {
 			urb->iso_frame_desc[i].actual_length =
@@ -4844,8 +4879,13 @@ fail3:
 	if (qh_allocated && qh->channel && qh->channel->qh == qh)
 		qh->channel->qh = NULL;
 fail2:
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&hsotg->lock, flags);
 	urb->hcpriv = NULL;
+=======
+	urb->hcpriv = NULL;
+	spin_unlock_irqrestore(&hsotg->lock, flags);
+>>>>>>> origin/android16-base
 	kfree(qtd);
 	qtd = NULL;
 fail1:
@@ -5233,6 +5273,13 @@ int dwc2_hcd_init(struct dwc2_hsotg *hsotg)
 	hcd->has_tt = 1;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+<<<<<<< HEAD
+=======
+	if (!res) {
+		retval = -EINVAL;
+		goto error2;
+	}
+>>>>>>> origin/android16-base
 	hcd->rsrc_start = res->start;
 	hcd->rsrc_len = resource_size(res);
 
@@ -5475,9 +5522,22 @@ int dwc2_backup_host_registers(struct dwc2_hsotg *hsotg)
 	/* Backup Host regs */
 	hr = &hsotg->hr_backup;
 	hr->hcfg = dwc2_readl(hsotg, HCFG);
+<<<<<<< HEAD
 	hr->haintmsk = dwc2_readl(hsotg, HAINTMSK);
 	for (i = 0; i < hsotg->params.host_channels; ++i)
 		hr->hcintmsk[i] = dwc2_readl(hsotg, HCINTMSK(i));
+=======
+	hr->hflbaddr = dwc2_readl(hsotg, HFLBADDR);
+	hr->haintmsk = dwc2_readl(hsotg, HAINTMSK);
+	for (i = 0; i < hsotg->params.host_channels; ++i) {
+		hr->hcchar[i] = dwc2_readl(hsotg, HCCHAR(i));
+		hr->hcsplt[i] = dwc2_readl(hsotg, HCSPLT(i));
+		hr->hcintmsk[i] = dwc2_readl(hsotg, HCINTMSK(i));
+		hr->hctsiz[i] = dwc2_readl(hsotg, HCTSIZ(i));
+		hr->hcidma[i] = dwc2_readl(hsotg, HCDMA(i));
+		hr->hcidmab[i] = dwc2_readl(hsotg, HCDMAB(i));
+	}
+>>>>>>> origin/android16-base
 
 	hr->hprt0 = dwc2_read_hprt0(hsotg);
 	hr->hfir = dwc2_readl(hsotg, HFIR);
@@ -5511,10 +5571,24 @@ int dwc2_restore_host_registers(struct dwc2_hsotg *hsotg)
 	hr->valid = false;
 
 	dwc2_writel(hsotg, hr->hcfg, HCFG);
+<<<<<<< HEAD
 	dwc2_writel(hsotg, hr->haintmsk, HAINTMSK);
 
 	for (i = 0; i < hsotg->params.host_channels; ++i)
 		dwc2_writel(hsotg, hr->hcintmsk[i], HCINTMSK(i));
+=======
+	dwc2_writel(hsotg, hr->hflbaddr, HFLBADDR);
+	dwc2_writel(hsotg, hr->haintmsk, HAINTMSK);
+
+	for (i = 0; i < hsotg->params.host_channels; ++i) {
+		dwc2_writel(hsotg, hr->hcchar[i], HCCHAR(i));
+		dwc2_writel(hsotg, hr->hcsplt[i], HCSPLT(i));
+		dwc2_writel(hsotg, hr->hcintmsk[i], HCINTMSK(i));
+		dwc2_writel(hsotg, hr->hctsiz[i], HCTSIZ(i));
+		dwc2_writel(hsotg, hr->hcidma[i], HCDMA(i));
+		dwc2_writel(hsotg, hr->hcidmab[i], HCDMAB(i));
+	}
+>>>>>>> origin/android16-base
 
 	dwc2_writel(hsotg, hr->hprt0, HPRT0);
 	dwc2_writel(hsotg, hr->hfir, HFIR);
@@ -5559,7 +5633,11 @@ int dwc2_host_enter_hibernation(struct dwc2_hsotg *hsotg)
 	dwc2_writel(hsotg, hprt0, HPRT0);
 
 	/* Wait for the HPRT0.PrtSusp register field to be set */
+<<<<<<< HEAD
 	if (dwc2_hsotg_wait_bit_set(hsotg, HPRT0, HPRT0_SUSP, 3000))
+=======
+	if (dwc2_hsotg_wait_bit_set(hsotg, HPRT0, HPRT0_SUSP, 5000))
+>>>>>>> origin/android16-base
 		dev_warn(hsotg->dev, "Suspend wasn't generated\n");
 
 	/*
@@ -5679,10 +5757,19 @@ int dwc2_host_exit_hibernation(struct dwc2_hsotg *hsotg, int rem_wakeup,
 	dwc2_writel(hsotg, hr->hcfg, HCFG);
 
 	/* De-assert Wakeup Logic */
+<<<<<<< HEAD
 	gpwrdn = dwc2_readl(hsotg, GPWRDN);
 	gpwrdn &= ~GPWRDN_PMUACTV;
 	dwc2_writel(hsotg, gpwrdn, GPWRDN);
 	udelay(10);
+=======
+	if (!(rem_wakeup && hsotg->hw_params.snpsid >= DWC2_CORE_REV_4_30a)) {
+		gpwrdn = dwc2_readl(hsotg, GPWRDN);
+		gpwrdn &= ~GPWRDN_PMUACTV;
+		dwc2_writel(hsotg, gpwrdn, GPWRDN);
+		udelay(10);
+	}
+>>>>>>> origin/android16-base
 
 	hprt0 = hr->hprt0;
 	hprt0 |= HPRT0_PWR;
@@ -5707,6 +5794,16 @@ int dwc2_host_exit_hibernation(struct dwc2_hsotg *hsotg, int rem_wakeup,
 		hprt0 |= HPRT0_RES;
 		dwc2_writel(hsotg, hprt0, HPRT0);
 
+<<<<<<< HEAD
+=======
+		/* De-assert Wakeup Logic */
+		if ((rem_wakeup && hsotg->hw_params.snpsid >= DWC2_CORE_REV_4_30a)) {
+			gpwrdn = dwc2_readl(hsotg, GPWRDN);
+			gpwrdn &= ~GPWRDN_PMUACTV;
+			dwc2_writel(hsotg, gpwrdn, GPWRDN);
+			udelay(10);
+		}
+>>>>>>> origin/android16-base
 		/* Wait for Resume time and then program HPRT again */
 		mdelay(100);
 		hprt0 &= ~HPRT0_RES;
@@ -5740,7 +5837,19 @@ int dwc2_host_exit_hibernation(struct dwc2_hsotg *hsotg, int rem_wakeup,
 		return ret;
 	}
 
+<<<<<<< HEAD
 	dwc2_hcd_rem_wakeup(hsotg);
+=======
+	if (rem_wakeup) {
+		dwc2_hcd_rem_wakeup(hsotg);
+		/*
+		 * Change "port_connect_status_change" flag to re-enumerate,
+		 * because after exit from hibernation port connection status
+		 * is not detected.
+		 */
+		hsotg->flags.b.port_connect_status_change = 1;
+	}
+>>>>>>> origin/android16-base
 
 	hsotg->hibernated = 0;
 	hsotg->bus_suspended = 0;

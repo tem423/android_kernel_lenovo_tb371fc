@@ -397,7 +397,12 @@ MPI mpi_read_raw_from_sgl(struct scatterlist *sgl, unsigned int nbytes)
 
 	while (sg_miter_next(&miter)) {
 		buff = miter.addr;
+<<<<<<< HEAD
 		len = miter.length;
+=======
+		len = min_t(unsigned, miter.length, nbytes);
+		nbytes -= len;
+>>>>>>> origin/android16-base
 
 		for (x = 0; x < len; x++) {
 			a <<= 8;

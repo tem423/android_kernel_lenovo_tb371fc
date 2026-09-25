@@ -1923,6 +1923,11 @@ void __audit_inode_child(struct inode *parent,
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	cond_resched();
+
+>>>>>>> origin/android16-base
 	/* is there a matching child entry? */
 	list_for_each_entry(n, &context->names_list, list) {
 		/* can only match entries that have a name */

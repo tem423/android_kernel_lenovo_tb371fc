@@ -108,11 +108,23 @@ static int s3fwrn5_nci_send(struct nci_dev *ndev, struct sk_buff *skb)
 	}
 
 	ret = s3fwrn5_write(info, skb);
+<<<<<<< HEAD
 	if (ret < 0)
 		kfree_skb(skb);
 
 	mutex_unlock(&info->mutex);
 	return ret;
+=======
+	if (ret < 0) {
+		kfree_skb(skb);
+		mutex_unlock(&info->mutex);
+		return ret;
+	}
+
+	consume_skb(skb);
+	mutex_unlock(&info->mutex);
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static int s3fwrn5_nci_post_setup(struct nci_dev *ndev)

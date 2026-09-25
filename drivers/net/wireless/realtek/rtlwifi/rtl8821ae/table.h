@@ -52,7 +52,13 @@ extern u32 RTL8821AE_AGC_TAB_ARRAY[];
 extern u32 RTL8812AE_AGC_TAB_1TARRAYLEN;
 extern u32 RTL8812AE_AGC_TAB_ARRAY[];
 extern u32 RTL8812AE_TXPWR_LMT_ARRAY_LEN;
+<<<<<<< HEAD
 extern u8 *RTL8812AE_TXPWR_LMT[];
 extern u32 RTL8821AE_TXPWR_LMT_ARRAY_LEN;
 extern u8 *RTL8821AE_TXPWR_LMT[];
+=======
+extern const char *RTL8812AE_TXPWR_LMT[];
+extern u32 RTL8821AE_TXPWR_LMT_ARRAY_LEN;
+extern const char *RTL8821AE_TXPWR_LMT[];
+>>>>>>> origin/android16-base
 #endif

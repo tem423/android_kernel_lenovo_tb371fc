@@ -139,12 +139,19 @@ static void ixp4xx_setup_port(struct ata_port *ap,
 
 static int ixp4xx_pata_probe(struct platform_device *pdev)
 {
+<<<<<<< HEAD
 	unsigned int irq;
+=======
+>>>>>>> origin/android16-base
 	struct resource *cs0, *cs1;
 	struct ata_host *host;
 	struct ata_port *ap;
 	struct ixp4xx_pata_data *data = dev_get_platdata(&pdev->dev);
 	int ret;
+<<<<<<< HEAD
+=======
+	int irq;
+>>>>>>> origin/android16-base
 
 	cs0 = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	cs1 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
@@ -169,8 +176,17 @@ static int ixp4xx_pata_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	irq = platform_get_irq(pdev, 0);
+<<<<<<< HEAD
 	if (irq)
 		irq_set_irq_type(irq, IRQ_TYPE_EDGE_RISING);
+=======
+	if (irq > 0)
+		irq_set_irq_type(irq, IRQ_TYPE_EDGE_RISING);
+	else if (irq < 0)
+		return irq;
+	else
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	/* Setup expansion bus chip selects */
 	*data->cs0_cfg = data->cs0_bits;

@@ -223,8 +223,13 @@ static int tve200_probe(struct platform_device *pdev)
 	}
 
 	irq = platform_get_irq(pdev, 0);
+<<<<<<< HEAD
 	if (!irq) {
 		ret = -EINVAL;
+=======
+	if (irq < 0) {
+		ret = irq;
+>>>>>>> origin/android16-base
 		goto clk_disable;
 	}
 

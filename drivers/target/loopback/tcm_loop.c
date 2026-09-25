@@ -409,6 +409,10 @@ static int tcm_loop_setup_hba_bus(struct tcm_loop_hba *tl_hba, int tcm_loop_host
 	ret = device_register(&tl_hba->dev);
 	if (ret) {
 		pr_err("device_register() failed for tl_hba->dev: %d\n", ret);
+<<<<<<< HEAD
+=======
+		put_device(&tl_hba->dev);
+>>>>>>> origin/android16-base
 		return -ENODEV;
 	}
 
@@ -1103,7 +1107,11 @@ check_len:
 	 */
 	ret = tcm_loop_setup_hba_bus(tl_hba, tcm_loop_hba_no_cnt);
 	if (ret)
+<<<<<<< HEAD
 		goto out;
+=======
+		return ERR_PTR(ret);
+>>>>>>> origin/android16-base
 
 	sh = tl_hba->sh;
 	tcm_loop_hba_no_cnt++;

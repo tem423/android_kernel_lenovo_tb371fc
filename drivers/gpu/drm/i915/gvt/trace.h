@@ -377,7 +377,11 @@ TRACE_EVENT(render_mmio,
 
 /* This part must be out of protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/gpu/drm/i915/gvt
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace
 #include <trace/define_trace.h>

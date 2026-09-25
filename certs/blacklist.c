@@ -157,7 +157,11 @@ static int __init blacklist_init(void)
 			      KEY_USR_VIEW | KEY_USR_READ |
 			      KEY_USR_SEARCH,
 			      KEY_ALLOC_NOT_IN_QUOTA |
+<<<<<<< HEAD
 			      KEY_FLAG_KEEP,
+=======
+			      KEY_ALLOC_SET_KEEP,
+>>>>>>> origin/android16-base
 			      NULL, NULL);
 	if (IS_ERR(blacklist_keyring))
 		panic("Can't allocate system blacklist keyring\n");

@@ -27,6 +27,10 @@ static int check_cpu_dscr_default(char *file, unsigned long val)
 	rc = read(fd, buf, sizeof(buf));
 	if (rc == -1) {
 		perror("read() failed");
+<<<<<<< HEAD
+=======
+		close(fd);
+>>>>>>> origin/android16-base
 		return 1;
 	}
 	close(fd);
@@ -68,8 +72,15 @@ static int check_all_cpu_dscr_defaults(unsigned long val)
 		if (access(file, F_OK))
 			continue;
 
+<<<<<<< HEAD
 		if (check_cpu_dscr_default(file, val))
 			return 1;
+=======
+		if (check_cpu_dscr_default(file, val)) {
+			closedir(sysfs);
+			return 1;
+		}
+>>>>>>> origin/android16-base
 	}
 	closedir(sysfs);
 	return 0;

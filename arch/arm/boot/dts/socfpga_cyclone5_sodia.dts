@@ -128,7 +128,11 @@
         flash0: n25q512a@0 {
 		#address-cells = <1>;
 		#size-cells = <1>;
+<<<<<<< HEAD
 		compatible = "n25q512a";
+=======
+		compatible = "micron,n25q512a", "jedec,spi-nor";
+>>>>>>> origin/android16-base
 		reg = <0>;
 		spi-max-frequency = <100000000>;
 

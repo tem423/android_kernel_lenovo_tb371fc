@@ -222,56 +222,88 @@
 		};
 
 		cluster1_core0_watchdog: wdt@c000000 {
+<<<<<<< HEAD
 			compatible = "arm,sp805-wdt", "arm,primecell";
+=======
+			compatible = "arm,sp805", "arm,primecell";
+>>>>>>> origin/android16-base
 			reg = <0x0 0xc000000 0x0 0x1000>;
 			clocks = <&clockgen 4 3>, <&clockgen 4 3>;
 			clock-names = "apb_pclk", "wdog_clk";
 		};
 
 		cluster1_core1_watchdog: wdt@c010000 {
+<<<<<<< HEAD
 			compatible = "arm,sp805-wdt", "arm,primecell";
+=======
+			compatible = "arm,sp805", "arm,primecell";
+>>>>>>> origin/android16-base
 			reg = <0x0 0xc010000 0x0 0x1000>;
 			clocks = <&clockgen 4 3>, <&clockgen 4 3>;
 			clock-names = "apb_pclk", "wdog_clk";
 		};
 
 		cluster2_core0_watchdog: wdt@c100000 {
+<<<<<<< HEAD
 			compatible = "arm,sp805-wdt", "arm,primecell";
+=======
+			compatible = "arm,sp805", "arm,primecell";
+>>>>>>> origin/android16-base
 			reg = <0x0 0xc100000 0x0 0x1000>;
 			clocks = <&clockgen 4 3>, <&clockgen 4 3>;
 			clock-names = "apb_pclk", "wdog_clk";
 		};
 
 		cluster2_core1_watchdog: wdt@c110000 {
+<<<<<<< HEAD
 			compatible = "arm,sp805-wdt", "arm,primecell";
+=======
+			compatible = "arm,sp805", "arm,primecell";
+>>>>>>> origin/android16-base
 			reg = <0x0 0xc110000 0x0 0x1000>;
 			clocks = <&clockgen 4 3>, <&clockgen 4 3>;
 			clock-names = "apb_pclk", "wdog_clk";
 		};
 
 		cluster3_core0_watchdog: wdt@c200000 {
+<<<<<<< HEAD
 			compatible = "arm,sp805-wdt", "arm,primecell";
+=======
+			compatible = "arm,sp805", "arm,primecell";
+>>>>>>> origin/android16-base
 			reg = <0x0 0xc200000 0x0 0x1000>;
 			clocks = <&clockgen 4 3>, <&clockgen 4 3>;
 			clock-names = "apb_pclk", "wdog_clk";
 		};
 
 		cluster3_core1_watchdog: wdt@c210000 {
+<<<<<<< HEAD
 			compatible = "arm,sp805-wdt", "arm,primecell";
+=======
+			compatible = "arm,sp805", "arm,primecell";
+>>>>>>> origin/android16-base
 			reg = <0x0 0xc210000 0x0 0x1000>;
 			clocks = <&clockgen 4 3>, <&clockgen 4 3>;
 			clock-names = "apb_pclk", "wdog_clk";
 		};
 
 		cluster4_core0_watchdog: wdt@c300000 {
+<<<<<<< HEAD
 			compatible = "arm,sp805-wdt", "arm,primecell";
+=======
+			compatible = "arm,sp805", "arm,primecell";
+>>>>>>> origin/android16-base
 			reg = <0x0 0xc300000 0x0 0x1000>;
 			clocks = <&clockgen 4 3>, <&clockgen 4 3>;
 			clock-names = "apb_pclk", "wdog_clk";
 		};
 
 		cluster4_core1_watchdog: wdt@c310000 {
+<<<<<<< HEAD
 			compatible = "arm,sp805-wdt", "arm,primecell";
+=======
+			compatible = "arm,sp805", "arm,primecell";
+>>>>>>> origin/android16-base
 			reg = <0x0 0xc310000 0x0 0x1000>;
 			clocks = <&clockgen 4 3>, <&clockgen 4 3>;
 			clock-names = "apb_pclk", "wdog_clk";
@@ -479,7 +511,10 @@
 			clocks = <&clockgen 4 3>;
 			clock-names = "dspi";
 			spi-num-chipselects = <5>;
+<<<<<<< HEAD
 			bus-num = <0>;
+=======
+>>>>>>> origin/android16-base
 		};
 
 		esdhc: esdhc@2140000 {

@@ -594,7 +594,11 @@ static void b43_nphy_adjust_lna_gain_table(struct b43_wldev *dev)
 	u16 data[4];
 	s16 gain[2];
 	u16 minmax[2];
+<<<<<<< HEAD
 	static const u16 lna_gain[4] = { -2, 10, 19, 25 };
+=======
+	static const s16 lna_gain[4] = { -2, 10, 19, 25 };
+>>>>>>> origin/android16-base
 
 	if (nphy->hang_avoid)
 		b43_nphy_stay_in_carrier_search(dev, 1);
@@ -5320,7 +5324,11 @@ static void b43_nphy_restore_cal(struct b43_wldev *dev)
 
 	for (i = 0; i < 4; i++) {
 		if (dev->phy.rev >= 3)
+<<<<<<< HEAD
 			table[i] = coef[i];
+=======
+			coef[i] = table[i];
+>>>>>>> origin/android16-base
 		else
 			coef[i] = 0;
 	}
@@ -5655,7 +5663,11 @@ static int b43_nphy_rev2_cal_rx_iq(struct b43_wldev *dev,
 	u8 rfctl[2];
 	u8 afectl_core;
 	u16 tmp[6];
+<<<<<<< HEAD
 	u16 uninitialized_var(cur_hpf1), uninitialized_var(cur_hpf2), cur_lna;
+=======
+	u16 cur_hpf1, cur_hpf2, cur_lna;
+>>>>>>> origin/android16-base
 	u32 real, imag;
 	enum nl80211_band band;
 

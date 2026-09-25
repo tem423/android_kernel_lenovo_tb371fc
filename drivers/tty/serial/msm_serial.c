@@ -603,6 +603,12 @@ static void msm_start_rx_dma(struct msm_port *msm_port)
 	u32 val;
 	int ret;
 
+<<<<<<< HEAD
+=======
+	if (IS_ENABLED(CONFIG_CONSOLE_POLL))
+		return;
+
+>>>>>>> origin/android16-base
 	if (!dma->chan)
 		return;
 
@@ -1590,6 +1596,10 @@ static inline struct uart_port *msm_get_port_from_line(unsigned int line)
 static void __msm_console_write(struct uart_port *port, const char *s,
 				unsigned int count, bool is_uartdm)
 {
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 	int i;
 	int num_newlines = 0;
 	bool replaced = false;
@@ -1607,6 +1617,11 @@ static void __msm_console_write(struct uart_port *port, const char *s,
 			num_newlines++;
 	count += num_newlines;
 
+<<<<<<< HEAD
+=======
+	local_irq_save(flags);
+
+>>>>>>> origin/android16-base
 	if (port->sysrq)
 		locked = 0;
 	else if (oops_in_progress)
@@ -1652,6 +1667,11 @@ static void __msm_console_write(struct uart_port *port, const char *s,
 
 	if (locked)
 		spin_unlock(&port->lock);
+<<<<<<< HEAD
+=======
+
+	local_irq_restore(flags);
+>>>>>>> origin/android16-base
 }
 
 static void msm_console_write(struct console *co, const char *s,

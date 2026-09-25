@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2015-2017, 2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
+=======
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 #include <linux/module.h>
 #include <linux/init.h>
@@ -93,11 +97,20 @@ static int msm_digcdc_clock_control(bool flag)
 				       __func__);
 				/*
 				 * Avoid access to lpass register
+<<<<<<< HEAD
 				 * as clock enable failed during SSR.
 				 */
 				if (ret == -ENODEV)
 					msm_dig_cdc->regmap->cache_only = true;
 				return ret;
+=======
+				 * as clock enable failed during SSR/PDR.
+				 */
+				msm_dig_cdc->regmap->cache_only = true;
+				return ret;
+			} else {
+				msm_dig_cdc->regmap->cache_only = false;
+>>>>>>> origin/android16-base
 			}
 			pr_debug("enabled digital codec core clk\n");
 			atomic_set(&pdata->int_mclk0_enabled, true);
@@ -1140,8 +1153,15 @@ static int msm_dig_cdc_event_notify(struct notifier_block *block,
 		break;
 	case DIG_CDC_EVENT_SSR_UP:
 		regcache_cache_only(msm_dig_cdc->regmap, false);
+<<<<<<< HEAD
 		regcache_mark_dirty(msm_dig_cdc->regmap);
 
+=======
+		if ((msm_dig_cdc->regmap) != NULL && (msm_dig_cdc->regmap->lock) != NULL &&
+			(msm_dig_cdc->regmap->lock_arg) != NULL) {
+			regcache_mark_dirty(msm_dig_cdc->regmap);
+		}
+>>>>>>> origin/android16-base
 		mutex_lock(&pdata->cdc_int_mclk0_mutex);
 		pdata->digital_cdc_core_clk.enable = 1;
 		ret = afe_set_lpass_clock_v2(
@@ -1155,7 +1175,14 @@ static int msm_dig_cdc_event_notify(struct notifier_block *block,
 		}
 		mutex_unlock(&pdata->cdc_int_mclk0_mutex);
 
+<<<<<<< HEAD
 		regcache_sync(msm_dig_cdc->regmap);
+=======
+		if ((msm_dig_cdc->regmap) != NULL && (msm_dig_cdc->regmap->lock) != NULL &&
+                        (msm_dig_cdc->regmap->lock_arg) != NULL) {
+			regcache_sync(msm_dig_cdc->regmap);
+		}
+>>>>>>> origin/android16-base
 
 		mutex_lock(&pdata->cdc_int_mclk0_mutex);
 		pdata->digital_cdc_core_clk.enable = 0;

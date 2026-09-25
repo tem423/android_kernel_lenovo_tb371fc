@@ -66,11 +66,23 @@ of_init(struct nvkm_bios *bios, const char *name)
 	return ERR_PTR(-EINVAL);
 }
 
+<<<<<<< HEAD
+=======
+static void of_fini(void *p)
+{
+	kfree(p);
+}
+
+>>>>>>> origin/android16-base
 const struct nvbios_source
 nvbios_of = {
 	.name = "OpenFirmware",
 	.init = of_init,
+<<<<<<< HEAD
 	.fini = (void(*)(void *))kfree,
+=======
+	.fini = of_fini,
+>>>>>>> origin/android16-base
 	.read = of_read,
 	.size = of_size,
 	.rw = false,

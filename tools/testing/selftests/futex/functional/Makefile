@@ -3,11 +3,19 @@ INCLUDES := -I../include -I../../
 CFLAGS := $(CFLAGS) -g -O2 -Wall -D_GNU_SOURCE -pthread $(INCLUDES)
 LDFLAGS := $(LDFLAGS) -pthread -lrt
 
+<<<<<<< HEAD
 HEADERS := \
 	../include/futextest.h \
 	../include/atomic.h \
 	../include/logging.h
 TEST_GEN_FILES := \
+=======
+LOCAL_HDRS := \
+	../include/futextest.h \
+	../include/atomic.h \
+	../include/logging.h
+TEST_GEN_PROGS := \
+>>>>>>> origin/android16-base
 	futex_wait_timeout \
 	futex_wait_wouldblock \
 	futex_requeue_pi \
@@ -21,5 +29,8 @@ TEST_PROGS := run.sh
 top_srcdir = ../../../../..
 KSFT_KHDR_INSTALL := 1
 include ../../lib.mk
+<<<<<<< HEAD
 
 $(TEST_GEN_FILES): $(HEADERS)
+=======
+>>>>>>> origin/android16-base

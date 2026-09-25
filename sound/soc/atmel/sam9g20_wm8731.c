@@ -225,6 +225,10 @@ static int at91sam9g20ek_audio_probe(struct platform_device *pdev)
 	cpu_np = of_parse_phandle(np, "atmel,ssc-controller", 0);
 	if (!cpu_np) {
 		dev_err(&pdev->dev, "dai and pcm info missing\n");
+<<<<<<< HEAD
+=======
+		of_node_put(codec_np);
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 	at91sam9g20ek_dai.cpu_of_node = cpu_np;

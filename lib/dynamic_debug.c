@@ -242,7 +242,15 @@ static int ddebug_tokenize(char *buf, char *words[], int maxwords)
 		} else {
 			for (end = buf; *end && !isspace(*end); end++)
 				;
+<<<<<<< HEAD
 			BUG_ON(end == buf);
+=======
+			if (end == buf) {
+				pr_err("parse err after word:%d=%s\n", nwords,
+				       nwords ? words[nwords - 1] : "<none>");
+				return -EINVAL;
+			}
+>>>>>>> origin/android16-base
 		}
 
 		/* `buf' is start of word, `end' is one past its end */
@@ -327,10 +335,13 @@ static int ddebug_parse_query(char *words[], int nwords,
 	}
 	memset(query, 0, sizeof(*query));
 
+<<<<<<< HEAD
 	if (modname)
 		/* support $modname.dyndbg=<multiple queries> */
 		query->module = modname;
 
+=======
+>>>>>>> origin/android16-base
 	for (i = 0; i < nwords; i += 2) {
 		if (!strcmp(words[i], "func")) {
 			rc = check_set(&query->function, words[i+1], "func");
@@ -379,6 +390,16 @@ static int ddebug_parse_query(char *words[], int nwords,
 		if (rc)
 			return rc;
 	}
+<<<<<<< HEAD
+=======
+	if (!query->module && modname)
+		/*
+		 * support $modname.dyndbg=<multiple queries>, when
+		 * not given in the query itself
+		 */
+		query->module = modname;
+
+>>>>>>> origin/android16-base
 	vpr_info_dq(query, "parsed");
 	return 0;
 }
@@ -985,7 +1006,11 @@ static int __init dynamic_debug_init(void)
 	int n = 0, entries = 0, modct = 0;
 	int verbose_bytes = 0;
 
+<<<<<<< HEAD
 	if (__start___verbose == __stop___verbose) {
+=======
+	if (&__start___verbose == &__stop___verbose) {
+>>>>>>> origin/android16-base
 		pr_warn("_ddebug table is empty in a CONFIG_DYNAMIC_DEBUG build\n");
 		return 1;
 	}

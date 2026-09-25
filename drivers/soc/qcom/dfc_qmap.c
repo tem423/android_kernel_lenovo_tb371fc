@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+>>>>>>> origin/android16-base
  */
 
 #include <net/pkt_sched.h>
@@ -12,7 +15,10 @@
 #include "dfc_defs.h"
 
 #define QMAP_DFC_VER		1
+<<<<<<< HEAD
 #define QMAP_PS_MAX_BEARERS	32
+=======
+>>>>>>> origin/android16-base
 
 #define QMAP_CMD_DONE		-1
 
@@ -25,7 +31,10 @@
 #define QMAP_DFC_IND		11
 #define QMAP_DFC_QUERY		12
 #define QMAP_DFC_END_MARKER	13
+<<<<<<< HEAD
 #define QMAP_DFC_POWERSAVE	14
+=======
+>>>>>>> origin/android16-base
 
 struct qmap_hdr {
 	u8	cd_pad;
@@ -124,6 +133,7 @@ struct qmap_dfc_end_marker_cnf {
 	u32			reserved4;
 } __aligned(1);
 
+<<<<<<< HEAD
 struct qmap_dfc_powersave_req {
 	struct qmap_cmd_hdr	hdr;
 	u8			cmd_ver;
@@ -140,6 +150,8 @@ struct qmap_dfc_powersave_req {
 	u8			reserved4[3];
 } __aligned(1);
 
+=======
+>>>>>>> origin/android16-base
 static struct dfc_flow_status_ind_msg_v01 qmap_flow_ind;
 static struct dfc_tx_link_status_ind_msg_v01 qmap_tx_ind;
 static struct dfc_qmi_data __rcu *qmap_dfc_data;
@@ -149,16 +161,24 @@ static void *rmnet_ctl_handle;
 static void dfc_qmap_send_end_marker_cnf(struct qos_info *qos,
 					 u8 bearer_id, u16 seq, u32 tx_id);
 
+<<<<<<< HEAD
 static int dfc_qmap_send_cmd(struct sk_buff *skb)
+=======
+static void dfc_qmap_send_cmd(struct sk_buff *skb)
+>>>>>>> origin/android16-base
 {
 	trace_dfc_qmap(skb->data, skb->len, false);
 
 	if (rmnet_ctl_send_client(rmnet_ctl_handle, skb)) {
 		pr_err("Failed to send to rmnet ctl\n");
 		kfree_skb(skb);
+<<<<<<< HEAD
 		return -ECOMM;
 	}
 	return 0;
+=======
+	}
+>>>>>>> origin/android16-base
 }
 
 static void dfc_qmap_send_inband_ack(struct dfc_qmi_data *dfc,
@@ -472,6 +492,7 @@ static void dfc_qmap_send_end_marker_cnf(struct qos_info *qos,
 	rmnet_map_tx_qmap_cmd(skb);
 }
 
+<<<<<<< HEAD
 static int dfc_qmap_send_powersave(u8 enable, u8 num_bearers, u8 *bearer_id)
 {
 	struct sk_buff *skb;
@@ -531,6 +552,8 @@ int dfc_qmap_set_powersave(u8 enable, u8 num_bearers, u8 *bearer_id)
 	return dfc_qmap_send_powersave(enable, num_bearers, bearer_id);
 }
 
+=======
+>>>>>>> origin/android16-base
 void dfc_qmap_send_ack(struct qos_info *qos, u8 bearer_id, u16 seq, u8 type)
 {
 	struct rmnet_bearer_map *bearer;
@@ -579,8 +602,12 @@ int dfc_qmap_client_init(void *port, int index, struct svc_info *psvc,
 
 	pr_info("DFC QMAP init\n");
 
+<<<<<<< HEAD
 	if (!qmi->ps_ext)
 		dfc_qmap_send_config(data);
+=======
+	dfc_qmap_send_config(data);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

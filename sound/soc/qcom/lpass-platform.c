@@ -81,8 +81,15 @@ static int lpass_platform_pcmops_open(struct snd_pcm_substream *substream)
 	else
 		dma_ch = 0;
 
+<<<<<<< HEAD
 	if (dma_ch < 0)
 		return dma_ch;
+=======
+	if (dma_ch < 0) {
+		kfree(data);
+		return dma_ch;
+	}
+>>>>>>> origin/android16-base
 
 	drvdata->substream[dma_ch] = substream;
 
@@ -103,6 +110,10 @@ static int lpass_platform_pcmops_open(struct snd_pcm_substream *substream)
 	ret = snd_pcm_hw_constraint_integer(runtime,
 			SNDRV_PCM_HW_PARAM_PERIODS);
 	if (ret < 0) {
+<<<<<<< HEAD
+=======
+		kfree(data);
+>>>>>>> origin/android16-base
 		dev_err(soc_runtime->dev, "setting constraints failed: %d\n",
 			ret);
 		return -EINVAL;

@@ -235,12 +235,24 @@ int pinctrl_dt_to_map(struct pinctrl *p, struct pinctrl_dev *pctldev)
 	for (state = 0; ; state++) {
 		/* Retrieve the pinctrl-* property */
 		propname = kasprintf(GFP_KERNEL, "pinctrl-%d", state);
+<<<<<<< HEAD
+=======
+		if (!propname) {
+			ret = -ENOMEM;
+			goto err;
+		}
+>>>>>>> origin/android16-base
 		prop = of_find_property(np, propname, &size);
 		kfree(propname);
 		if (!prop) {
 			if (state == 0) {
+<<<<<<< HEAD
 				of_node_put(np);
 				return -ENODEV;
+=======
+				ret = -ENODEV;
+				goto err;
+>>>>>>> origin/android16-base
 			}
 			break;
 		}

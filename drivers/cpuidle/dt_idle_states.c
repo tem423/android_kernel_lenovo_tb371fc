@@ -224,6 +224,10 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
 	 * also be 0 on platforms with missing DT idle states or legacy DT
 	 * configuration predating the DT idle states bindings.
 	 */
+<<<<<<< HEAD
 	return i;
+=======
+	return state_idx - start_idx;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(dt_init_idle_driver);

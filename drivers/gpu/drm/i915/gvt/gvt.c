@@ -128,7 +128,11 @@ static bool intel_get_gvt_attrs(struct attribute ***type_attrs,
 	return true;
 }
 
+<<<<<<< HEAD
 static bool intel_gvt_init_vgpu_type_groups(struct intel_gvt *gvt)
+=======
+static int intel_gvt_init_vgpu_type_groups(struct intel_gvt *gvt)
+>>>>>>> origin/android16-base
 {
 	int i, j;
 	struct intel_vgpu_type *type;
@@ -146,7 +150,11 @@ static bool intel_gvt_init_vgpu_type_groups(struct intel_gvt *gvt)
 		gvt_vgpu_type_groups[i] = group;
 	}
 
+<<<<<<< HEAD
 	return true;
+=======
+	return 0;
+>>>>>>> origin/android16-base
 
 unwind:
 	for (j = 0; j < i; j++) {
@@ -154,7 +162,11 @@ unwind:
 		kfree(group);
 	}
 
+<<<<<<< HEAD
 	return false;
+=======
+	return -ENOMEM;
+>>>>>>> origin/android16-base
 }
 
 static void intel_gvt_cleanup_vgpu_type_groups(struct intel_gvt *gvt)
@@ -416,7 +428,11 @@ int intel_gvt_init_device(struct drm_i915_private *dev_priv)
 		goto out_clean_thread;
 
 	ret = intel_gvt_init_vgpu_type_groups(gvt);
+<<<<<<< HEAD
 	if (ret == false) {
+=======
+	if (ret) {
+>>>>>>> origin/android16-base
 		gvt_err("failed to init vgpu type groups: %d\n", ret);
 		goto out_clean_types;
 	}

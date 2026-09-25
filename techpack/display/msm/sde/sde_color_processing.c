@@ -19,7 +19,10 @@
 #include "sde_core_irq.h"
 #include "dsi_panel.h"
 #include "sde_hw_color_proc_common_v4.h"
+<<<<<<< HEAD
 #include "sde_connector.h"
+=======
+>>>>>>> origin/android16-base
 
 struct sde_cp_node {
 	u32 property_id;
@@ -45,6 +48,7 @@ struct sde_cp_prop_attach {
 	uint64_t val;
 };
 
+<<<<<<< HEAD
 struct pcc_check_info {
 	uint32_t crtc_id;
 	bool initialized;
@@ -55,6 +59,8 @@ struct pcc_check_info {
 
 static struct pcc_check_info pcc_info;
 
+=======
+>>>>>>> origin/android16-base
 #define ALIGNED_OFFSET (U32_MAX & ~(LTM_GUARD_BYTES))
 
 static void dspp_pcc_install_property(struct drm_crtc *crtc);
@@ -246,6 +252,7 @@ static int set_dspp_vlut_feature(struct sde_hw_dspp *hw_dspp,
 	return ret;
 }
 
+<<<<<<< HEAD
 static struct drm_msm_pcc color_transform_pcc_cfg = {
 	.r.c = 0, .r.r = 32768, .r.g = 0, .r.b = 0,
 	.g.c = 0, .g.r = 0, .g.g = 32768, .g.b = 0,
@@ -275,11 +282,14 @@ void sde_dspp_clear_pcc(struct sde_hw_cp_cfg *hw_cfg)
 	pcc_cfg_clear.b.b = color_transform_pcc_cfg.b.b;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int set_dspp_pcc_feature(struct sde_hw_dspp *hw_dspp,
 				struct sde_hw_cp_cfg *hw_cfg,
 				struct sde_crtc *hw_crtc)
 {
 	int ret = 0;
+<<<<<<< HEAD
 	struct drm_msm_pcc *pcc_cfg;
 
 	if (!hw_dspp || !hw_dspp->ops.setup_pcc)
@@ -302,6 +312,13 @@ static int set_dspp_pcc_feature(struct sde_hw_dspp *hw_dspp,
 
 		hw_dspp->ops.setup_pcc(hw_dspp, hw_cfg);
 	}
+=======
+
+	if (!hw_dspp || !hw_dspp->ops.setup_pcc)
+		ret = -EINVAL;
+	else
+		hw_dspp->ops.setup_pcc(hw_dspp, hw_cfg);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -1371,7 +1388,11 @@ static void _sde_cp_crtc_enable_hist_irq(struct sde_crtc *sde_crtc)
 	struct sde_hw_dspp *hw_dspp = NULL;
 	struct sde_crtc_irq_info *node = NULL;
 	int i, irq_idx, ret = 0;
+<<<<<<< HEAD
 	unsigned long flags, state_flags;
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 
 	if (!crtc_drm) {
 		DRM_ERROR("invalid crtc %pK\n", crtc_drm);
@@ -1401,6 +1422,7 @@ static void _sde_cp_crtc_enable_hist_irq(struct sde_crtc *sde_crtc)
 
 	spin_lock_irqsave(&sde_crtc->spin_lock, flags);
 	node = _sde_cp_get_intr_node(DRM_EVENT_HISTOGRAM, sde_crtc);
+<<<<<<< HEAD
 
 	if (!node) {
 		spin_unlock_irqrestore(&sde_crtc->spin_lock, flags);
@@ -1408,6 +1430,14 @@ static void _sde_cp_crtc_enable_hist_irq(struct sde_crtc *sde_crtc)
 	}
 
 	spin_lock_irqsave(&node->state_lock, state_flags);
+=======
+	spin_unlock_irqrestore(&sde_crtc->spin_lock, flags);
+
+	if (!node)
+		return;
+
+	spin_lock_irqsave(&node->state_lock, flags);
+>>>>>>> origin/android16-base
 	if (node->state == IRQ_DISABLED) {
 		ret = sde_core_irq_enable(kms, &irq_idx, 1);
 		if (ret)
@@ -1415,8 +1445,12 @@ static void _sde_cp_crtc_enable_hist_irq(struct sde_crtc *sde_crtc)
 		else
 			node->state = IRQ_ENABLED;
 	}
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&node->state_lock, state_flags);
 	spin_unlock_irqrestore(&sde_crtc->spin_lock, flags);
+=======
+	spin_unlock_irqrestore(&node->state_lock, flags);
+>>>>>>> origin/android16-base
 }
 
 static int sde_cp_crtc_checkfeature(struct sde_cp_node *prop_node,
@@ -1526,7 +1560,10 @@ static void sde_cp_crtc_setfeature(struct sde_cp_node *prop_node,
 			hw_cfg.mixer_info = hw_lm;
 			hw_cfg.displayh = num_mixers * hw_lm->cfg.out_width;
 			hw_cfg.displayv = hw_lm->cfg.out_height;
+<<<<<<< HEAD
 			hw_cfg.mi_dimlayer_type = sde_crtc->mi_dimlayer_type;
+=======
+>>>>>>> origin/android16-base
 
 			ret = set_feature(hw_dspp, &hw_cfg, sde_crtc);
 			if (ret)
@@ -1991,12 +2028,15 @@ int sde_cp_crtc_set_property(struct drm_crtc *crtc,
 	struct sde_crtc *sde_crtc = NULL;
 	int ret = 0, i = 0, dspp_cnt, lm_cnt;
 	u8 found = 0;
+<<<<<<< HEAD
 	bool fod_changed = false;
 
 	if (!pcc_info.initialized) {
 		pcc_info.crtc_id = crtc->base.id;
 		pcc_info.initialized = true;
 	}
+=======
+>>>>>>> origin/android16-base
 
 	if (!crtc || !property) {
 		DRM_ERROR("invalid crtc %pK property %pK\n", crtc, property);
@@ -2009,6 +2049,7 @@ int sde_cp_crtc_set_property(struct drm_crtc *crtc,
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	if (!strncmp(property->name, "mi_fod_sync_info", sizeof("mi_fod_sync_info"))
 		&& pcc_info.crtc_id == crtc->base.id) {
 		if ((val & MI_DIMLAYER_FOD_HBM_OVERLAY) != (pcc_info.fod_val & MI_DIMLAYER_FOD_HBM_OVERLAY)) {
@@ -2039,6 +2080,13 @@ int sde_cp_crtc_set_property(struct drm_crtc *crtc,
 				found = 1;
 				break;
 			}
+=======
+	mutex_lock(&sde_crtc->crtc_cp_lock);
+	list_for_each_entry(prop_node, &sde_crtc->feature_list, feature_list) {
+		if (property->base.id == prop_node->property_id) {
+			found = 1;
+			break;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -2090,6 +2138,7 @@ int sde_cp_crtc_set_property(struct drm_crtc *crtc,
 	/* remove the property from dirty list */
 	list_del_init(&prop_node->dirty_list);
 
+<<<<<<< HEAD
 	if (!val) {
 		ret = sde_cp_disable_crtc_property(crtc, property, prop_node);
 	} else {
@@ -2101,6 +2150,13 @@ int sde_cp_crtc_set_property(struct drm_crtc *crtc,
 						  prop_node, val);
 		}
 	}
+=======
+	if (!val)
+		ret = sde_cp_disable_crtc_property(crtc, property, prop_node);
+	else
+		ret = sde_cp_enable_crtc_property(crtc, property,
+						  prop_node, val);
+>>>>>>> origin/android16-base
 
 	if (!ret) {
 		/* remove the property from active list */
@@ -2108,10 +2164,13 @@ int sde_cp_crtc_set_property(struct drm_crtc *crtc,
 		/* Mark the feature as dirty */
 		sde_cp_update_list(prop_node, sde_crtc, true);
 	}
+<<<<<<< HEAD
 
 	if (fod_changed) {
 		ret = -ENOENT;
 	}
+=======
+>>>>>>> origin/android16-base
 exit:
 	mutex_unlock(&sde_crtc->crtc_cp_lock);
 	return ret;
@@ -2192,7 +2251,10 @@ void sde_cp_crtc_destroy_properties(struct drm_crtc *crtc)
 	}
 	sde_crtc->ltm_buffer_cnt = 0;
 	sde_crtc->ltm_hist_en = false;
+<<<<<<< HEAD
 	sde_crtc->hist_irq_idx = -1;
+=======
+>>>>>>> origin/android16-base
 
 	mutex_destroy(&sde_crtc->crtc_cp_lock);
 	INIT_LIST_HEAD(&sde_crtc->active_list);
@@ -2288,7 +2350,10 @@ void sde_cp_crtc_clear(struct drm_crtc *crtc)
 	}
 	sde_crtc->ltm_buffer_cnt = 0;
 	sde_crtc->ltm_hist_en = false;
+<<<<<<< HEAD
 	sde_crtc->hist_irq_idx = -1;
+=======
+>>>>>>> origin/android16-base
 	INIT_LIST_HEAD(&sde_crtc->ltm_buf_free);
 	INIT_LIST_HEAD(&sde_crtc->ltm_buf_busy);
 }
@@ -2495,6 +2560,7 @@ static void dspp_ltm_install_property(struct drm_crtc *crtc)
 	char feature_name[256];
 	struct sde_kms *kms = NULL;
 	struct sde_mdss_cfg *catalog = NULL;
+<<<<<<< HEAD
 	u32 version = 0, ltm_sw_fuse = 0;
 
 	kms = get_kms(crtc);
@@ -2504,6 +2570,11 @@ static void dspp_ltm_install_property(struct drm_crtc *crtc)
 	}
 
 	ltm_sw_fuse = sde_hw_get_ltm_sw_fuse_value(kms->hw_sw_fuse);
+=======
+	u32 version;
+
+	kms = get_kms(crtc);
+>>>>>>> origin/android16-base
 	catalog = kms->catalog;
 	version = catalog->dspp[0].sblk->ltm.version >> 16;
 	snprintf(feature_name, ARRAY_SIZE(feature_name), "%s%d",
@@ -3074,13 +3145,45 @@ static void sde_cp_hist_interrupt_cb(void *arg, int irq_idx)
 	struct sde_crtc *crtc = arg;
 	struct drm_crtc *crtc_drm = &crtc->base;
 	struct sde_hw_dspp *hw_dspp;
+<<<<<<< HEAD
 	u32 lock_hist = 1;
 	u32 i;
+=======
+	struct sde_kms *kms;
+	struct sde_crtc_irq_info *node = NULL;
+	u32 i;
+	int ret = 0;
+	unsigned long flags;
+
+	/* disable histogram irq */
+	kms = get_kms(crtc_drm);
+	spin_lock_irqsave(&crtc->spin_lock, flags);
+	node = _sde_cp_get_intr_node(DRM_EVENT_HISTOGRAM, crtc);
+	spin_unlock_irqrestore(&crtc->spin_lock, flags);
+
+	if (!node) {
+		DRM_DEBUG_DRIVER("cannot find histogram event node in crtc\n");
+		return;
+	}
+
+	spin_lock_irqsave(&node->state_lock, flags);
+	if (node->state == IRQ_ENABLED) {
+		if (sde_core_irq_disable_nolock(kms, irq_idx)) {
+			DRM_ERROR("failed to disable irq %d, ret %d\n",
+				irq_idx, ret);
+			spin_unlock_irqrestore(&node->state_lock, flags);
+			return;
+		}
+		node->state = IRQ_DISABLED;
+	}
+	spin_unlock_irqrestore(&node->state_lock, flags);
+>>>>>>> origin/android16-base
 
 	/* lock histogram buffer */
 	for (i = 0; i < crtc->num_mixers; i++) {
 		hw_dspp = crtc->mixers[i].hw_dspp;
 		if (hw_dspp && hw_dspp->ops.lock_histogram)
+<<<<<<< HEAD
 			hw_dspp->ops.lock_histogram(hw_dspp, &lock_hist);
 	}
 
@@ -3088,6 +3191,14 @@ static void sde_cp_hist_interrupt_cb(void *arg, int irq_idx)
 	/* notify histogram event */
 	sde_crtc_event_queue(crtc_drm, sde_cp_notify_hist_event,
 						&crtc->hist_irq_idx, true);
+=======
+			hw_dspp->ops.lock_histogram(hw_dspp, NULL);
+	}
+
+	/* notify histogram event */
+	sde_crtc_event_queue(crtc_drm, sde_cp_notify_hist_event,
+							NULL, true);
+>>>>>>> origin/android16-base
 }
 
 static void sde_cp_notify_hist_event(struct drm_crtc *crtc_drm, void *arg)
@@ -3097,12 +3208,19 @@ static void sde_cp_notify_hist_event(struct drm_crtc *crtc_drm, void *arg)
 	struct drm_event event;
 	struct drm_msm_hist *hist_data;
 	struct sde_kms *kms;
+<<<<<<< HEAD
 	struct sde_crtc_irq_info *node = NULL;
 	unsigned long flags, state_flags;
 	int ret, irq_idx;
 	u32 i, lock_hist = 0;
 
 	if (!crtc_drm || !arg) {
+=======
+	int ret;
+	u32 i;
+
+	if (!crtc_drm) {
+>>>>>>> origin/android16-base
 		DRM_ERROR("invalid crtc %pK\n", crtc_drm);
 		return;
 	}
@@ -3113,12 +3231,19 @@ static void sde_cp_notify_hist_event(struct drm_crtc *crtc_drm, void *arg)
 		return;
 	}
 
+<<<<<<< HEAD
+=======
+	if (!crtc->hist_blob)
+		return;
+
+>>>>>>> origin/android16-base
 	kms = get_kms(crtc_drm);
 	if (!kms || !kms->dev) {
 		SDE_ERROR("invalid arg(s)\n");
 		return;
 	}
 
+<<<<<<< HEAD
 	/* disable histogram irq */
 	spin_lock_irqsave(&crtc->spin_lock, flags);
 	node = _sde_cp_get_intr_node(DRM_EVENT_HISTOGRAM, crtc);
@@ -3177,6 +3302,8 @@ static void sde_cp_notify_hist_event(struct drm_crtc *crtc_drm, void *arg)
 	if (!crtc->hist_blob)
 		return;
 
+=======
+>>>>>>> origin/android16-base
 	ret = pm_runtime_get_sync(kms->dev->dev);
 	if (ret < 0) {
 		SDE_ERROR("failed to enable power resource %d\n", ret);

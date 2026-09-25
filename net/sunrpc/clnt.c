@@ -112,7 +112,12 @@ static void rpc_clnt_remove_pipedir(struct rpc_clnt *clnt)
 
 	pipefs_sb = rpc_get_sb_net(net);
 	if (pipefs_sb) {
+<<<<<<< HEAD
 		__rpc_clnt_remove_pipedir(clnt);
+=======
+		if (pipefs_sb == clnt->pipefs_sb)
+			__rpc_clnt_remove_pipedir(clnt);
+>>>>>>> origin/android16-base
 		rpc_put_sb_net(net);
 	}
 }
@@ -152,6 +157,11 @@ rpc_setup_pipedir(struct super_block *pipefs_sb, struct rpc_clnt *clnt)
 {
 	struct dentry *dentry;
 
+<<<<<<< HEAD
+=======
+	clnt->pipefs_sb = pipefs_sb;
+
+>>>>>>> origin/android16-base
 	if (clnt->cl_program->pipe_dir_name != NULL) {
 		dentry = rpc_setup_pipedir_sb(pipefs_sb, clnt);
 		if (IS_ERR(dentry))
@@ -1267,7 +1277,11 @@ static int rpc_sockname(struct net *net, struct sockaddr *sap, size_t salen,
 		break;
 	default:
 		err = -EAFNOSUPPORT;
+<<<<<<< HEAD
 		goto out;
+=======
+		goto out_release;
+>>>>>>> origin/android16-base
 	}
 	if (err < 0) {
 		dprintk("RPC:       can't bind UDP socket (%d)\n", err);
@@ -1814,9 +1828,12 @@ call_bind_status(struct rpc_task *task)
 			status = -EOPNOTSUPP;
 			break;
 		}
+<<<<<<< HEAD
 		if (task->tk_rebind_retry == 0)
 			break;
 		task->tk_rebind_retry--;
+=======
+>>>>>>> origin/android16-base
 		rpc_delay(task, 3*HZ);
 		goto retry_timeout;
 	case -ETIMEDOUT:

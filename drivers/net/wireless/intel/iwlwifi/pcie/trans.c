@@ -666,7 +666,10 @@ static int iwl_pcie_set_hw_ready(struct iwl_trans *trans)
 int iwl_pcie_prepare_card_hw(struct iwl_trans *trans)
 {
 	int ret;
+<<<<<<< HEAD
 	int t = 0;
+=======
+>>>>>>> origin/android16-base
 	int iter;
 
 	IWL_DEBUG_INFO(trans, "iwl_trans_prepare_card_hw enter\n");
@@ -681,6 +684,11 @@ int iwl_pcie_prepare_card_hw(struct iwl_trans *trans)
 	usleep_range(1000, 2000);
 
 	for (iter = 0; iter < 10; iter++) {
+<<<<<<< HEAD
+=======
+		int t = 0;
+
+>>>>>>> origin/android16-base
 		/* If HW is not ready, prepare the conditions to check again */
 		iwl_set_bit(trans, CSR_HW_IF_CONFIG_REG,
 			    CSR_HW_IF_CONFIG_REG_PREPARE);
@@ -1363,8 +1371,12 @@ static int iwl_trans_pcie_start_fw(struct iwl_trans *trans,
 	/* This may fail if AMT took ownership of the device */
 	if (iwl_pcie_prepare_card_hw(trans)) {
 		IWL_WARN(trans, "Exit HW not ready\n");
+<<<<<<< HEAD
 		ret = -EIO;
 		goto out;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 	}
 
 	iwl_enable_rfkill_int(trans);
@@ -2121,6 +2133,7 @@ static int iwl_trans_pcie_read_mem(struct iwl_trans *trans, u32 addr,
 				   void *buf, int dwords)
 {
 	unsigned long flags;
+<<<<<<< HEAD
 	int offs, ret = 0;
 	u32 *vals = buf;
 
@@ -2133,6 +2146,40 @@ static int iwl_trans_pcie_read_mem(struct iwl_trans *trans, u32 addr,
 		ret = -EBUSY;
 	}
 	return ret;
+=======
+	int offs = 0;
+	u32 *vals = buf;
+
+	while (offs < dwords) {
+		/* limit the time we spin here under lock to 1/2s */
+		unsigned long end = jiffies + HZ / 2;
+		bool resched = false;
+
+		if (iwl_trans_grab_nic_access(trans, &flags)) {
+			iwl_write32(trans, HBUS_TARG_MEM_RADDR,
+				    addr + 4 * offs);
+
+			while (offs < dwords) {
+				vals[offs] = iwl_read32(trans,
+							HBUS_TARG_MEM_RDAT);
+				offs++;
+
+				if (time_after(jiffies, end)) {
+					resched = true;
+					break;
+				}
+			}
+			iwl_trans_release_nic_access(trans, &flags);
+
+			if (resched)
+				cond_resched();
+		} else {
+			return -EBUSY;
+		}
+	}
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static int iwl_trans_pcie_write_mem(struct iwl_trans *trans, u32 addr,

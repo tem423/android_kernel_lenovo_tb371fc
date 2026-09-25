@@ -854,6 +854,7 @@ struct dsi_ctrl_hw_ops {
 	 * @cmd_mode:»       Boolean to indicate command mode operation.
 	 */
 	u32 (*log_line_count)(struct dsi_ctrl_hw *ctrl, bool cmd_mode);
+<<<<<<< HEAD
 
 	/**
 	 * hw.ops.configure_cmddma_window() - configure DMA window for CMD TX
@@ -873,6 +874,8 @@ struct dsi_ctrl_hw_ops {
 	 */
 	void (*reset_trig_ctrl)(struct dsi_ctrl_hw *ctrl,
 			struct dsi_host_common_cfg *cfg);
+=======
+>>>>>>> origin/android16-base
 };
 
 /*
@@ -910,7 +913,10 @@ struct dsi_ctrl_hw {
 	void __iomem *te_rd_ptr_reg;
 	void __iomem *line_count_reg;
 	u32 disp_cc_length;
+<<<<<<< HEAD
 	void __iomem *mdp_intf_base;
+=======
+>>>>>>> origin/android16-base
 	u32 index;
 
 	/* features */
@@ -923,7 +929,10 @@ struct dsi_ctrl_hw {
 
 	bool phy_isolation_enabled;
 	bool null_insertion_enabled;
+<<<<<<< HEAD
 	bool reset_trig_ctrl;
+=======
+>>>>>>> origin/android16-base
 };
 
 #endif /* _DSI_CTRL_HW_H_ */

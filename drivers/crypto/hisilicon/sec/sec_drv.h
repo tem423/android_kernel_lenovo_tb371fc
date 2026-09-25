@@ -347,7 +347,11 @@ struct sec_queue {
 	DECLARE_BITMAP(unprocessed, SEC_QUEUE_LEN);
 	DECLARE_KFIFO_PTR(softqueue, typeof(struct sec_request_el *));
 	bool havesoftqueue;
+<<<<<<< HEAD
 	struct mutex queuelock;
+=======
+	spinlock_t queuelock;
+>>>>>>> origin/android16-base
 	void *shadow[SEC_QUEUE_LEN];
 };
 

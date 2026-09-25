@@ -3,10 +3,18 @@
 #include <linux/spinlock.h>
 #include <linux/once.h>
 #include <linux/random.h>
+<<<<<<< HEAD
+=======
+#include <linux/module.h>
+>>>>>>> origin/android16-base
 
 struct once_work {
 	struct work_struct work;
 	struct static_key_true *key;
+<<<<<<< HEAD
+=======
+	struct module *module;
+>>>>>>> origin/android16-base
 };
 
 static void once_deferred(struct work_struct *w)
@@ -16,10 +24,18 @@ static void once_deferred(struct work_struct *w)
 	work = container_of(w, struct once_work, work);
 	BUG_ON(!static_key_enabled(work->key));
 	static_branch_disable(work->key);
+<<<<<<< HEAD
 	kfree(work);
 }
 
 static void once_disable_jump(struct static_key_true *key)
+=======
+	module_put(work->module);
+	kfree(work);
+}
+
+static void once_disable_jump(struct static_key_true *key, struct module *mod)
+>>>>>>> origin/android16-base
 {
 	struct once_work *w;
 
@@ -29,6 +45,11 @@ static void once_disable_jump(struct static_key_true *key)
 
 	INIT_WORK(&w->work, once_deferred);
 	w->key = key;
+<<<<<<< HEAD
+=======
+	w->module = mod;
+	__module_get(mod);
+>>>>>>> origin/android16-base
 	schedule_work(&w->work);
 }
 
@@ -53,11 +74,51 @@ bool __do_once_start(bool *done, unsigned long *flags)
 EXPORT_SYMBOL(__do_once_start);
 
 void __do_once_done(bool *done, struct static_key_true *once_key,
+<<<<<<< HEAD
 		    unsigned long *flags)
+=======
+		    unsigned long *flags, struct module *mod)
+>>>>>>> origin/android16-base
 	__releases(once_lock)
 {
 	*done = true;
 	spin_unlock_irqrestore(&once_lock, *flags);
+<<<<<<< HEAD
 	once_disable_jump(once_key);
 }
 EXPORT_SYMBOL(__do_once_done);
+=======
+	once_disable_jump(once_key, mod);
+}
+EXPORT_SYMBOL(__do_once_done);
+
+static DEFINE_MUTEX(once_mutex);
+
+bool __do_once_slow_start(bool *done)
+	__acquires(once_mutex)
+{
+	mutex_lock(&once_mutex);
+	if (*done) {
+		mutex_unlock(&once_mutex);
+		/* Keep sparse happy by restoring an even lock count on
+		 * this mutex. In case we return here, we don't call into
+		 * __do_once_done but return early in the DO_ONCE_SLOW() macro.
+		 */
+		__acquire(once_mutex);
+		return false;
+	}
+
+	return true;
+}
+EXPORT_SYMBOL(__do_once_slow_start);
+
+void __do_once_slow_done(bool *done, struct static_key_true *once_key,
+			 struct module *mod)
+	__releases(once_mutex)
+{
+	*done = true;
+	mutex_unlock(&once_mutex);
+	once_disable_jump(once_key, mod);
+}
+EXPORT_SYMBOL(__do_once_slow_done);
+>>>>>>> origin/android16-base

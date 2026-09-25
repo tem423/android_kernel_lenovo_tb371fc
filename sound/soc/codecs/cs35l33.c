@@ -26,13 +26,19 @@
 #include <sound/soc-dapm.h>
 #include <sound/initval.h>
 #include <sound/tlv.h>
+<<<<<<< HEAD
 #include <linux/gpio.h>
+=======
+>>>>>>> origin/android16-base
 #include <linux/gpio/consumer.h>
 #include <sound/cs35l33.h>
 #include <linux/pm_runtime.h>
 #include <linux/regulator/consumer.h>
 #include <linux/regulator/machine.h>
+<<<<<<< HEAD
 #include <linux/of_gpio.h>
+=======
+>>>>>>> origin/android16-base
 #include <linux/of.h>
 #include <linux/of_device.h>
 #include <linux/of_irq.h>
@@ -1171,7 +1177,11 @@ static int cs35l33_i2c_probe(struct i2c_client *i2c_client,
 
 	/* We could issue !RST or skip it based on AMP topology */
 	cs35l33->reset_gpio = devm_gpiod_get_optional(&i2c_client->dev,
+<<<<<<< HEAD
 			"reset-gpios", GPIOD_OUT_HIGH);
+=======
+			"reset", GPIOD_OUT_HIGH);
+>>>>>>> origin/android16-base
 	if (IS_ERR(cs35l33->reset_gpio)) {
 		dev_err(&i2c_client->dev, "%s ERROR: Can't get reset GPIO\n",
 			__func__);
@@ -1204,6 +1214,10 @@ static int cs35l33_i2c_probe(struct i2c_client *i2c_client,
 		dev_err(&i2c_client->dev,
 			"CS35L33 Device ID (%X). Expected ID %X\n",
 			devid, CS35L33_CHIP_ID);
+<<<<<<< HEAD
+=======
+		ret = -EINVAL;
+>>>>>>> origin/android16-base
 		goto err_enable;
 	}
 

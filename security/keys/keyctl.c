@@ -922,14 +922,29 @@ long keyctl_chown_key(key_serial_t id, uid_t user, gid_t group)
 	ret = -EACCES;
 	down_write(&key->sem);
 
+<<<<<<< HEAD
 	if (!capable(CAP_SYS_ADMIN)) {
 		/* only the sysadmin can chown a key to some other UID */
 		if (user != (uid_t) -1 && !uid_eq(key->uid, uid))
 			goto error_put;
+=======
+	{
+		bool is_privileged_op = false;
+
+		/* only the sysadmin can chown a key to some other UID */
+		if (user != (uid_t) -1 && !uid_eq(key->uid, uid))
+			is_privileged_op = true;
+>>>>>>> origin/android16-base
 
 		/* only the sysadmin can set the key's GID to a group other
 		 * than one of those that the current process subscribes to */
 		if (group != (gid_t) -1 && !gid_eq(gid, key->gid) && !in_group_p(gid))
+<<<<<<< HEAD
+=======
+			is_privileged_op = true;
+
+		if (is_privileged_op && !capable(CAP_SYS_ADMIN))
+>>>>>>> origin/android16-base
 			goto error_put;
 	}
 
@@ -1029,7 +1044,11 @@ long keyctl_setperm_key(key_serial_t id, key_perm_t perm)
 	down_write(&key->sem);
 
 	/* if we're not the sysadmin, we can only change a key that we own */
+<<<<<<< HEAD
 	if (capable(CAP_SYS_ADMIN) || uid_eq(key->uid, current_fsuid())) {
+=======
+	if (uid_eq(key->uid, current_fsuid()) || capable(CAP_SYS_ADMIN)) {
+>>>>>>> origin/android16-base
 		key->perm = perm;
 		ret = 0;
 	}

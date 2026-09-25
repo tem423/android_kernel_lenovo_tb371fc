@@ -671,7 +671,11 @@ static int create_linear_device(struct dm_target *ti, dev_t dev,
 static int android_verity_ctr(struct dm_target *ti, unsigned argc, char **argv)
 {
 	dev_t uninitialized_var(dev);
+<<<<<<< HEAD
 	struct android_metadata *metadata = NULL;
+=======
+	struct android_metadata *metadata;
+>>>>>>> origin/android16-base
 	int err = 0, i, mode;
 	char *key_id = NULL, *table_ptr, dummy, *target_device;
 	char *verity_table_args[VERITY_TABLE_ARGS + 2 + VERITY_TABLE_OPT_FEC_ARGS];
@@ -733,7 +737,11 @@ static int android_verity_ctr(struct dm_target *ti, unsigned argc, char **argv)
 		}
 		DMERR("Error while extracting metadata");
 		handle_error();
+<<<<<<< HEAD
 		goto free_metadata;
+=======
+		return err;
+>>>>>>> origin/android16-base
 	}
 
 	if (verity_enabled) {
@@ -864,11 +872,18 @@ static int android_verity_ctr(struct dm_target *ti, unsigned argc, char **argv)
 	}
 
 free_metadata:
+<<<<<<< HEAD
 	if (metadata) {
 		kfree(metadata->header);
 		kfree(metadata->verity_table);
 	}
 	kfree(metadata);
+=======
+	kfree(metadata->header);
+	kfree(metadata->verity_table);
+	kfree(metadata);
+
+>>>>>>> origin/android16-base
 	return err;
 }
 

@@ -72,7 +72,11 @@ struct snd_info_private_data {
 };
 
 static int snd_info_version_init(void);
+<<<<<<< HEAD
 static void snd_info_disconnect(struct snd_info_entry *entry);
+=======
+static void snd_info_clear_entries(struct snd_info_entry *entry);
+>>>>>>> origin/android16-base
 
 /*
 
@@ -127,9 +131,15 @@ static loff_t snd_info_entry_llseek(struct file *file, loff_t offset, int orig)
 	entry = data->entry;
 	mutex_lock(&entry->access);
 	if (entry->c.ops->llseek) {
+<<<<<<< HEAD
 		offset = entry->c.ops->llseek(entry,
 					      data->file_private_data,
 					      file, offset, orig);
+=======
+		ret = entry->c.ops->llseek(entry,
+					   data->file_private_data,
+					   file, offset, orig);
+>>>>>>> origin/android16-base
 		goto out;
 	}
 
@@ -610,11 +620,24 @@ void snd_info_card_disconnect(struct snd_card *card)
 {
 	if (!card)
 		return;
+<<<<<<< HEAD
 	mutex_lock(&info_mutex);
 	proc_remove(card->proc_root_link);
 	card->proc_root_link = NULL;
 	if (card->proc_root)
 		snd_info_disconnect(card->proc_root);
+=======
+
+	proc_remove(card->proc_root_link);
+	if (card->proc_root)
+		proc_remove(card->proc_root->p);
+
+	mutex_lock(&info_mutex);
+	if (card->proc_root)
+		snd_info_clear_entries(card->proc_root);
+	card->proc_root_link = NULL;
+	card->proc_root = NULL;
+>>>>>>> origin/android16-base
 	mutex_unlock(&info_mutex);
 }
 
@@ -787,15 +810,23 @@ struct snd_info_entry *snd_info_create_card_entry(struct snd_card *card,
 }
 EXPORT_SYMBOL(snd_info_create_card_entry);
 
+<<<<<<< HEAD
 static void snd_info_disconnect(struct snd_info_entry *entry)
+=======
+static void snd_info_clear_entries(struct snd_info_entry *entry)
+>>>>>>> origin/android16-base
 {
 	struct snd_info_entry *p;
 
 	if (!entry->p)
 		return;
 	list_for_each_entry(p, &entry->children, list)
+<<<<<<< HEAD
 		snd_info_disconnect(p);
 	proc_remove(entry->p);
+=======
+		snd_info_clear_entries(p);
+>>>>>>> origin/android16-base
 	entry->p = NULL;
 }
 
@@ -812,8 +843,14 @@ void snd_info_free_entry(struct snd_info_entry * entry)
 	if (!entry)
 		return;
 	if (entry->p) {
+<<<<<<< HEAD
 		mutex_lock(&info_mutex);
 		snd_info_disconnect(entry);
+=======
+		proc_remove(entry->p);
+		mutex_lock(&info_mutex);
+		snd_info_clear_entries(entry);
+>>>>>>> origin/android16-base
 		mutex_unlock(&info_mutex);
 	}
 

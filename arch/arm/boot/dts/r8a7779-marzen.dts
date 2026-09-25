@@ -146,7 +146,11 @@
 	status = "okay";
 
 	clocks = <&mstp1_clks R8A7779_CLK_DU>, <&x3_clk>;
+<<<<<<< HEAD
 	clock-names = "du", "dclkin.0";
+=======
+	clock-names = "du.0", "dclkin.0";
+>>>>>>> origin/android16-base
 
 	ports {
 		port@0 {

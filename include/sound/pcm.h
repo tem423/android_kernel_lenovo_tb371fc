@@ -450,6 +450,13 @@ struct snd_pcm_runtime {
 	/* -- OSS things -- */
 	struct snd_pcm_oss_runtime oss;
 #endif
+<<<<<<< HEAD
+=======
+#ifndef __GENKSYMS__
+	struct mutex buffer_mutex;	/* protect for buffer changes */
+	atomic_t buffer_accessing;	/* >0: in r/w operation, <0: blocked */
+#endif
+>>>>>>> origin/android16-base
 };
 
 struct snd_pcm_group {		/* keep linked substreams */

@@ -139,7 +139,11 @@ struct aa_profile {
 
 	const char *attach;
 	struct aa_dfa *xmatch;
+<<<<<<< HEAD
 	int xmatch_len;
+=======
+	unsigned int xmatch_len;
+>>>>>>> origin/android16-base
 	enum audit_mode audit;
 	long mode;
 	u32 path_flags;

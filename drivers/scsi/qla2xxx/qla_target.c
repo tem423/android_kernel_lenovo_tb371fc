@@ -1037,6 +1037,19 @@ void qlt_free_session_done(struct work_struct *work)
 		    "%s: sess %p logout completed\n", __func__, sess);
 	}
 
+<<<<<<< HEAD
+=======
+	/* check for any straggling io left behind */
+	if (!(sess->flags & FCF_FCP2_DEVICE) &&
+	    qla2x00_eh_wait_for_pending_commands(sess->vha, sess->d_id.b24, 0, WAIT_TARGET)) {
+		ql_log(ql_log_warn, vha, 0x3027,
+		    "IO not return. Resetting.\n");
+		set_bit(ISP_ABORT_NEEDED, &vha->dpc_flags);
+		qla2xxx_wake_dpc(vha);
+		qla2x00_wait_for_chip_reset(vha);
+	}
+
+>>>>>>> origin/android16-base
 	if (sess->logo_ack_needed) {
 		sess->logo_ack_needed = 0;
 		qla24xx_async_notify_ack(vha, sess,
@@ -1571,10 +1584,18 @@ void qlt_stop_phase2(struct qla_tgt *tgt)
 		return;
 	}
 
+<<<<<<< HEAD
+=======
+	mutex_lock(&tgt->ha->optrom_mutex);
+>>>>>>> origin/android16-base
 	mutex_lock(&vha->vha_tgt.tgt_mutex);
 	tgt->tgt_stop = 0;
 	tgt->tgt_stopped = 1;
 	mutex_unlock(&vha->vha_tgt.tgt_mutex);
+<<<<<<< HEAD
+=======
+	mutex_unlock(&tgt->ha->optrom_mutex);
+>>>>>>> origin/android16-base
 
 	ql_dbg(ql_dbg_tgt_mgt, vha, 0xf00c, "Stop of tgt %p finished\n",
 	    tgt);
@@ -3214,8 +3235,13 @@ int qlt_xmit_response(struct qla_tgt_cmd *cmd, int xmit_type,
 			"RESET-RSP online/active/old-count/new-count = %d/%d/%d/%d.\n",
 			vha->flags.online, qla2x00_reset_active(vha),
 			cmd->reset_count, qpair->chip_reset);
+<<<<<<< HEAD
 		spin_unlock_irqrestore(qpair->qp_lock_ptr, flags);
 		return 0;
+=======
+		res = 0;
+		goto out_unmap_unlock;
+>>>>>>> origin/android16-base
 	}
 
 	/* Does F/W have an IOCBs for this request */
@@ -3337,10 +3363,13 @@ int qlt_rdy_to_xfer(struct qla_tgt_cmd *cmd)
 	prm.sg = NULL;
 	prm.req_cnt = 1;
 
+<<<<<<< HEAD
 	/* Calculate number of entries and segments required */
 	if (qlt_pci_map_calc_cnt(&prm) != 0)
 		return -EAGAIN;
 
+=======
+>>>>>>> origin/android16-base
 	if (!qpair->fw_started || (cmd->reset_count != qpair->chip_reset) ||
 	    (cmd->sess && cmd->sess->deleted)) {
 		/*
@@ -3356,6 +3385,13 @@ int qlt_rdy_to_xfer(struct qla_tgt_cmd *cmd)
 		return 0;
 	}
 
+<<<<<<< HEAD
+=======
+	/* Calculate number of entries and segments required */
+	if (qlt_pci_map_calc_cnt(&prm) != 0)
+		return -EAGAIN;
+
+>>>>>>> origin/android16-base
 	spin_lock_irqsave(qpair->qp_lock_ptr, flags);
 	/* Does F/W have an IOCBs for this request */
 	res = qlt_check_reserve_free_req(qpair, prm.req_cnt);
@@ -3751,6 +3787,12 @@ int qlt_abort_cmd(struct qla_tgt_cmd *cmd)
 
 	spin_lock_irqsave(&cmd->cmd_lock, flags);
 	if (cmd->aborted) {
+<<<<<<< HEAD
+=======
+		if (cmd->sg_mapped)
+			qlt_unmap_sg(vha, cmd);
+
+>>>>>>> origin/android16-base
 		spin_unlock_irqrestore(&cmd->cmd_lock, flags);
 		/*
 		 * It's normal to see 2 calls in this path:
@@ -3783,9 +3825,12 @@ void qlt_free_cmd(struct qla_tgt_cmd *cmd)
 
 	BUG_ON(cmd->cmd_in_wq);
 
+<<<<<<< HEAD
 	if (cmd->sg_mapped)
 		qlt_unmap_sg(cmd->vha, cmd);
 
+=======
+>>>>>>> origin/android16-base
 	if (!cmd->q_full)
 		qlt_decr_num_pend_cmds(cmd->vha);
 

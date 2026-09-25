@@ -61,9 +61,16 @@ static vm_fault_t ttm_bo_vm_fault_idle(struct ttm_buffer_object *bo,
 
 	/*
 	 * If possible, avoid waiting for GPU with mmap_sem
+<<<<<<< HEAD
 	 * held.
 	 */
 	if (vmf->flags & FAULT_FLAG_ALLOW_RETRY) {
+=======
+	 * held.  We only do this if the fault allows retry and this
+	 * is the first attempt.
+	 */
+	if (fault_flag_allow_retry_first(vmf->flags)) {
+>>>>>>> origin/android16-base
 		ret = VM_FAULT_RETRY;
 		if (vmf->flags & FAULT_FLAG_RETRY_NOWAIT)
 			goto out_unlock;
@@ -136,7 +143,16 @@ static vm_fault_t ttm_bo_vm_fault(struct vm_fault *vmf)
 		if (err != -EBUSY)
 			return VM_FAULT_NOPAGE;
 
+<<<<<<< HEAD
 		if (vmf->flags & FAULT_FLAG_ALLOW_RETRY) {
+=======
+		/*
+		 * If the fault allows retry and this is the first
+		 * fault attempt, we try to release the mmap_sem
+		 * before waiting
+		 */
+		if (fault_flag_allow_retry_first(vmf->flags)) {
+>>>>>>> origin/android16-base
 			if (!(vmf->flags & FAULT_FLAG_RETRY_NOWAIT)) {
 				ttm_bo_get(bo);
 				up_read(&vmf->vma->vm_mm->mmap_sem);

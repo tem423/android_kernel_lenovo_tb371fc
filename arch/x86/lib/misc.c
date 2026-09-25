@@ -6,7 +6,11 @@
  */
 int num_digits(int val)
 {
+<<<<<<< HEAD
 	int m = 10;
+=======
+	long long m = 10;
+>>>>>>> origin/android16-base
 	int d = 1;
 
 	if (val < 0) {

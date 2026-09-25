@@ -52,7 +52,11 @@ ieee802154_subif_frame(struct ieee802154_sub_if_data *sdata,
 
 	switch (mac_cb(skb)->dest.mode) {
 	case IEEE802154_ADDR_NONE:
+<<<<<<< HEAD
 		if (mac_cb(skb)->dest.mode != IEEE802154_ADDR_NONE)
+=======
+		if (hdr->source.mode != IEEE802154_ADDR_NONE)
+>>>>>>> origin/android16-base
 			/* FIXME: check if we are PAN coordinator */
 			skb->pkt_type = PACKET_OTHERHOST;
 		else
@@ -140,7 +144,11 @@ static int
 ieee802154_parse_frame_start(struct sk_buff *skb, struct ieee802154_hdr *hdr)
 {
 	int hlen;
+<<<<<<< HEAD
 	struct ieee802154_mac_cb *cb = mac_cb_init(skb);
+=======
+	struct ieee802154_mac_cb *cb = mac_cb(skb);
+>>>>>>> origin/android16-base
 
 	skb_reset_mac_header(skb);
 
@@ -302,8 +310,14 @@ void
 ieee802154_rx_irqsafe(struct ieee802154_hw *hw, struct sk_buff *skb, u8 lqi)
 {
 	struct ieee802154_local *local = hw_to_local(hw);
+<<<<<<< HEAD
 
 	mac_cb(skb)->lqi = lqi;
+=======
+	struct ieee802154_mac_cb *cb = mac_cb_init(skb);
+
+	cb->lqi = lqi;
+>>>>>>> origin/android16-base
 	skb->pkt_type = IEEE802154_RX_MSG;
 	skb_queue_tail(&local->skb_queue, skb);
 	tasklet_schedule(&local->tasklet);

@@ -44,5 +44,9 @@
 #define VIRTIO_ID_VSOCK        19 /* virtio vsock transport */
 #define VIRTIO_ID_CRYPTO       20 /* virtio crypto */
 #define VIRTIO_ID_PMEM         27 /* virtio pmem */
+<<<<<<< HEAD
+=======
+#define VIRTIO_ID_MAC80211_HWSIM 29 /* virtio mac80211-hwsim */
+>>>>>>> origin/android16-base
 
 #endif /* _LINUX_VIRTIO_IDS_H */

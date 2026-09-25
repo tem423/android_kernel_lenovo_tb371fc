@@ -196,6 +196,18 @@
  *	Returns 0 if @name and @value have been successfully set,
  *	-EOPNOTSUPP if no security attribute is needed, or
  *	-ENOMEM on memory allocation failure.
+<<<<<<< HEAD
+=======
+ * @inode_init_security_anon:
+ *      Set up the incore security field for the new anonymous inode
+ *      and return whether the inode creation is permitted by the security
+ *      module or not.
+ *      @inode contains the inode structure
+ *      @name name of the anonymous inode class
+ *      @context_inode optional related inode
+ *	Returns 0 on success, -EACCES if the security module denies the
+ *	creation of this inode, or another -errno upon other errors.
+>>>>>>> origin/android16-base
  * @inode_create:
  *	Check permission to create a regular file.
  *	@dir contains inode structure of the parent of the new file.
@@ -466,6 +478,15 @@
  *	simple integer value.  When @arg represents a user space pointer, it
  *	should never be used by the security module.
  *	Return 0 if permission is granted.
+<<<<<<< HEAD
+=======
+ * @file_ioctl_compat:
+ *	@file contains the file structure.
+ *	@cmd contains the operation to perform.
+ *	@arg contains the operational arguments.
+ *	Check permission for a compat ioctl operation on @file.
+ *	Return 0 if permission is granted.
+>>>>>>> origin/android16-base
  * @mmap_addr :
  *	Check permissions for a mmap operation at @addr.
  *	@addr contains virtual address that will be used for the operation.
@@ -1211,11 +1232,16 @@
  *
  * @binder_set_context_mgr:
  *	Check whether @mgr is allowed to be the binder context manager.
+<<<<<<< HEAD
  *	@mgr contains the task_struct for the task being registered.
+=======
+ *	@mgr contains the struct cred for the current binder process.
+>>>>>>> origin/android16-base
  *	Return 0 if permission is granted.
  * @binder_transaction:
  *	Check whether @from is allowed to invoke a binder transaction call
  *	to @to.
+<<<<<<< HEAD
  *	@from contains the task_struct for the sending task.
  *	@to contains the task_struct for the receiving task.
  * @binder_transfer_binder:
@@ -1227,6 +1253,19 @@
  *	@from contains the task_struct for the sending task.
  *	@file contains the struct file being transferred.
  *	@to contains the task_struct for the receiving task.
+=======
+ *	@from contains the struct cred for the sending process.
+ *	@to contains the struct cred for the receiving process.
+ * @binder_transfer_binder:
+ *	Check whether @from is allowed to transfer a binder reference to @to.
+ *	@from contains the struct cred for the sending process.
+ *	@to contains the struct cred for the receiving process.
+ * @binder_transfer_file:
+ *	Check whether @from is allowed to transfer @file to @to.
+ *	@from contains the struct cred for the sending process.
+ *	@file contains the struct file being transferred.
+ *	@to contains the struct cred for the receiving process.
+>>>>>>> origin/android16-base
  *
  * @ptrace_access_check:
  *	Check permission before allowing the current process to trace the
@@ -1428,6 +1467,7 @@
  *
  */
 union security_list_options {
+<<<<<<< HEAD
 	int (*binder_set_context_mgr)(struct task_struct *mgr);
 	int (*binder_transaction)(struct task_struct *from,
 					struct task_struct *to);
@@ -1435,6 +1475,15 @@ union security_list_options {
 					struct task_struct *to);
 	int (*binder_transfer_file)(struct task_struct *from,
 					struct task_struct *to,
+=======
+	int (*binder_set_context_mgr)(const struct cred *mgr);
+	int (*binder_transaction)(const struct cred *from,
+					const struct cred *to);
+	int (*binder_transfer_binder)(const struct cred *from,
+					const struct cred *to);
+	int (*binder_transfer_file)(const struct cred *from,
+					const struct cred *to,
+>>>>>>> origin/android16-base
 					struct file *file);
 
 	int (*ptrace_access_check)(struct task_struct *child,
@@ -1516,6 +1565,12 @@ union security_list_options {
 					const struct qstr *qstr,
 					const char **name, void **value,
 					size_t *len);
+<<<<<<< HEAD
+=======
+	int (*inode_init_security_anon)(struct inode *inode,
+					const struct qstr *name,
+					const struct inode *context_inode);
+>>>>>>> origin/android16-base
 	int (*inode_create)(struct inode *dir, struct dentry *dentry,
 				umode_t mode);
 	int (*inode_link)(struct dentry *old_dentry, struct inode *dir,
@@ -1563,6 +1618,11 @@ union security_list_options {
 	void (*file_free_security)(struct file *file);
 	int (*file_ioctl)(struct file *file, unsigned int cmd,
 				unsigned long arg);
+<<<<<<< HEAD
+=======
+	int (*file_ioctl_compat)(struct file *file, unsigned int cmd,
+				unsigned long arg);
+>>>>>>> origin/android16-base
 	int (*mmap_addr)(unsigned long addr);
 	int (*mmap_file)(struct file *file, unsigned long reqprot,
 				unsigned long prot, unsigned long flags);
@@ -1839,6 +1899,10 @@ struct security_hook_heads {
 	struct hlist_head inode_alloc_security;
 	struct hlist_head inode_free_security;
 	struct hlist_head inode_init_security;
+<<<<<<< HEAD
+=======
+	struct hlist_head inode_init_security_anon;
+>>>>>>> origin/android16-base
 	struct hlist_head inode_create;
 	struct hlist_head inode_link;
 	struct hlist_head inode_unlink;
@@ -1869,6 +1933,10 @@ struct security_hook_heads {
 	struct hlist_head file_alloc_security;
 	struct hlist_head file_free_security;
 	struct hlist_head file_ioctl;
+<<<<<<< HEAD
+=======
+	struct hlist_head file_ioctl_compat;
+>>>>>>> origin/android16-base
 	struct hlist_head mmap_addr;
 	struct hlist_head mmap_file;
 	struct hlist_head file_mprotect;

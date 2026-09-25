@@ -567,7 +567,11 @@ DEFINE_EVENT(xhci_dbc_log_request, xhci_dbc_giveback_request,
 /* this part must be outside header guard */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/usb/host
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE xhci-trace

@@ -1455,7 +1455,11 @@ static int ican3_napi(struct napi_struct *napi, int budget)
 
 	/* process all communication messages */
 	while (true) {
+<<<<<<< HEAD
 		struct ican3_msg uninitialized_var(msg);
+=======
+		struct ican3_msg msg;
+>>>>>>> origin/android16-base
 		ret = ican3_recv_msg(mod, &msg);
 		if (ret)
 			break;

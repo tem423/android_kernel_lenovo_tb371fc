@@ -169,6 +169,7 @@ undo:
 		__del_gref(gref);
 	}
 
+<<<<<<< HEAD
 	/* It's possible for the target domain to map the just-allocated grant
 	 * references by blindly guessing their IDs; if this is done, then
 	 * __del_gref will leave them in the queue_gref list. They need to be
@@ -177,12 +178,19 @@ undo:
 	 */
 	if (unlikely(!list_empty(&queue_gref)))
 		list_splice_tail(&queue_gref, &gref_list);
+=======
+>>>>>>> origin/android16-base
 	mutex_unlock(&gref_mutex);
 	return rc;
 }
 
 static void __del_gref(struct gntalloc_gref *gref)
 {
+<<<<<<< HEAD
+=======
+	unsigned long addr;
+
+>>>>>>> origin/android16-base
 	if (gref->notify.flags & UNMAP_NOTIFY_CLEAR_BYTE) {
 		uint8_t *tmp = kmap(gref->page);
 		tmp[gref->notify.pgoff] = 0;
@@ -196,6 +204,7 @@ static void __del_gref(struct gntalloc_gref *gref)
 	gref->notify.flags = 0;
 
 	if (gref->gref_id) {
+<<<<<<< HEAD
 		if (gnttab_query_foreign_access(gref->gref_id))
 			return;
 
@@ -203,14 +212,24 @@ static void __del_gref(struct gntalloc_gref *gref)
 			return;
 
 		gnttab_free_grant_reference(gref->gref_id);
+=======
+		if (gref->page) {
+			addr = (unsigned long)page_to_virt(gref->page);
+			gnttab_end_foreign_access(gref->gref_id, 0, addr);
+		} else
+			gnttab_free_grant_reference(gref->gref_id);
+>>>>>>> origin/android16-base
 	}
 
 	gref_size--;
 	list_del(&gref->next_gref);
 
+<<<<<<< HEAD
 	if (gref->page)
 		__free_page(gref->page);
 
+=======
+>>>>>>> origin/android16-base
 	kfree(gref);
 }
 

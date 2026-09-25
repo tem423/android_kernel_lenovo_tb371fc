@@ -255,7 +255,11 @@ static int stm32_spi_prepare_mbr(struct stm32_spi *spi, u32 speed_hz)
 	u32 div, mbrdiv;
 
 	/* Ensure spi->clk_rate is even */
+<<<<<<< HEAD
 	div = DIV_ROUND_UP(spi->clk_rate & ~0x1, speed_hz);
+=======
+	div = DIV_ROUND_CLOSEST(spi->clk_rate & ~0x1, speed_hz);
+>>>>>>> origin/android16-base
 
 	/*
 	 * SPI framework set xfer->speed_hz to master->max_speed_hz if
@@ -299,9 +303,15 @@ static u32 stm32_spi_prepare_fthlv(struct stm32_spi *spi)
 
 	/* align packet size with data registers access */
 	if (spi->cur_bpw > 8)
+<<<<<<< HEAD
 		fthlv -= (fthlv % 2); /* multiple of 2 */
 	else
 		fthlv -= (fthlv % 4); /* multiple of 4 */
+=======
+		fthlv += (fthlv % 2) ? 1 : 0;
+	else
+		fthlv += (fthlv % 4) ? (4 - (fthlv % 4)) : 0;
+>>>>>>> origin/android16-base
 
 	return fthlv;
 }
@@ -992,6 +1002,13 @@ static int stm32_spi_transfer_one(struct spi_master *master,
 	struct stm32_spi *spi = spi_master_get_devdata(master);
 	int ret;
 
+<<<<<<< HEAD
+=======
+	/* Don't do anything on 0 bytes transfers */
+	if (transfer->len == 0)
+		return 0;
+
+>>>>>>> origin/android16-base
 	spi->tx_buf = transfer->tx_buf;
 	spi->rx_buf = transfer->rx_buf;
 	spi->tx_len = spi->tx_buf ? transfer->len : 0;

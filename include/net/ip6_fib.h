@@ -243,7 +243,11 @@ static inline bool fib6_get_cookie_safe(const struct fib6_info *f6i,
 	fn = rcu_dereference(f6i->fib6_node);
 
 	if (fn) {
+<<<<<<< HEAD
 		*cookie = fn->fn_sernum;
+=======
+		*cookie = READ_ONCE(fn->fn_sernum);
+>>>>>>> origin/android16-base
 		/* pairs with smp_wmb() in fib6_update_sernum_upto_root() */
 		smp_rmb();
 		status = true;

@@ -70,6 +70,10 @@ obj-$(CONFIG_DM_INTEGRITY)	+= dm-integrity.o
 obj-$(CONFIG_DM_ZONED)		+= dm-zoned.o
 obj-$(CONFIG_DM_WRITECACHE)	+= dm-writecache.o
 obj-$(CONFIG_DM_BOW)		+= dm-bow.o
+<<<<<<< HEAD
+=======
+obj-$(CONFIG_DM_USER)		+= dm-user.o
+>>>>>>> origin/android16-base
 
 ifeq ($(CONFIG_DM_UEVENT),y)
 dm-mod-objs			+= dm-uevent.o

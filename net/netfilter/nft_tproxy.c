@@ -13,9 +13,15 @@
 #endif
 
 struct nft_tproxy {
+<<<<<<< HEAD
 	enum nft_registers      sreg_addr:8;
 	enum nft_registers      sreg_port:8;
 	u8			family;
+=======
+	u8	sreg_addr;
+	u8	sreg_port;
+	u8	family;
+>>>>>>> origin/android16-base
 };
 
 static void nft_tproxy_eval_v4(const struct nft_expr *expr,
@@ -30,6 +36,15 @@ static void nft_tproxy_eval_v4(const struct nft_expr *expr,
 	__be16 tport = 0;
 	struct sock *sk;
 
+<<<<<<< HEAD
+=======
+	if (pkt->tprot != IPPROTO_TCP &&
+	    pkt->tprot != IPPROTO_UDP) {
+		regs->verdict.code = NFT_BREAK;
+		return;
+	}
+
+>>>>>>> origin/android16-base
 	hp = skb_header_pointer(skb, ip_hdrlen(skb), sizeof(_hdr), &_hdr);
 	if (!hp) {
 		regs->verdict.code = NFT_BREAK;
@@ -91,7 +106,12 @@ static void nft_tproxy_eval_v6(const struct nft_expr *expr,
 
 	memset(&taddr, 0, sizeof(taddr));
 
+<<<<<<< HEAD
 	if (!pkt->tprot_set) {
+=======
+	if (pkt->tprot != IPPROTO_TCP &&
+	    pkt->tprot != IPPROTO_UDP) {
+>>>>>>> origin/android16-base
 		regs->verdict.code = NFT_BREAK;
 		return;
 	}
@@ -247,15 +267,25 @@ static int nft_tproxy_init(const struct nft_ctx *ctx,
 	}
 
 	if (tb[NFTA_TPROXY_REG_ADDR]) {
+<<<<<<< HEAD
 		priv->sreg_addr = nft_parse_register(tb[NFTA_TPROXY_REG_ADDR]);
 		err = nft_validate_register_load(priv->sreg_addr, alen);
+=======
+		err = nft_parse_register_load(tb[NFTA_TPROXY_REG_ADDR],
+					      &priv->sreg_addr, alen);
+>>>>>>> origin/android16-base
 		if (err < 0)
 			return err;
 	}
 
 	if (tb[NFTA_TPROXY_REG_PORT]) {
+<<<<<<< HEAD
 		priv->sreg_port = nft_parse_register(tb[NFTA_TPROXY_REG_PORT]);
 		err = nft_validate_register_load(priv->sreg_port, sizeof(u16));
+=======
+		err = nft_parse_register_load(tb[NFTA_TPROXY_REG_PORT],
+					      &priv->sreg_port, sizeof(u16));
+>>>>>>> origin/android16-base
 		if (err < 0)
 			return err;
 	}
@@ -282,6 +312,21 @@ static int nft_tproxy_dump(struct sk_buff *skb,
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int nft_tproxy_validate(const struct nft_ctx *ctx,
+			       const struct nft_expr *expr,
+			       const struct nft_data **data)
+{
+	if (ctx->family != NFPROTO_IPV4 &&
+	    ctx->family != NFPROTO_IPV6 &&
+	    ctx->family != NFPROTO_INET)
+		return -EOPNOTSUPP;
+
+	return nft_chain_validate_hooks(ctx->chain, 1 << NF_INET_PRE_ROUTING);
+}
+
+>>>>>>> origin/android16-base
 static struct nft_expr_type nft_tproxy_type;
 static const struct nft_expr_ops nft_tproxy_ops = {
 	.type		= &nft_tproxy_type,
@@ -289,6 +334,10 @@ static const struct nft_expr_ops nft_tproxy_ops = {
 	.eval		= nft_tproxy_eval,
 	.init		= nft_tproxy_init,
 	.dump		= nft_tproxy_dump,
+<<<<<<< HEAD
+=======
+	.validate	= nft_tproxy_validate,
+>>>>>>> origin/android16-base
 };
 
 static struct nft_expr_type nft_tproxy_type __read_mostly = {

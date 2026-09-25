@@ -139,9 +139,16 @@ static int __of_iio_channel_get(struct iio_channel *channel,
 
 	idev = bus_find_device(&iio_bus_type, NULL, iiospec.np,
 			       iio_dev_node_match);
+<<<<<<< HEAD
 	of_node_put(iiospec.np);
 	if (idev == NULL)
 		return -EPROBE_DEFER;
+=======
+	if (idev == NULL) {
+		of_node_put(iiospec.np);
+		return -EPROBE_DEFER;
+	}
+>>>>>>> origin/android16-base
 
 	indio_dev = dev_to_iio_dev(idev);
 	channel->indio_dev = indio_dev;
@@ -149,6 +156,10 @@ static int __of_iio_channel_get(struct iio_channel *channel,
 		index = indio_dev->info->of_xlate(indio_dev, &iiospec);
 	else
 		index = __of_iio_simple_xlate(indio_dev, &iiospec);
+<<<<<<< HEAD
+=======
+	of_node_put(iiospec.np);
+>>>>>>> origin/android16-base
 	if (index < 0)
 		goto err_put;
 	channel->channel = &indio_dev->channels[index];
@@ -591,6 +602,7 @@ EXPORT_SYMBOL_GPL(iio_read_channel_average_raw);
 static int iio_convert_raw_to_processed_unlocked(struct iio_channel *chan,
 	int raw, int *processed, unsigned int scale)
 {
+<<<<<<< HEAD
 	int scale_type, scale_val, scale_val2, offset;
 	s64 raw64 = raw;
 	int ret;
@@ -598,20 +610,59 @@ static int iio_convert_raw_to_processed_unlocked(struct iio_channel *chan,
 	ret = iio_channel_read(chan, &offset, NULL, IIO_CHAN_INFO_OFFSET);
 	if (ret >= 0)
 		raw64 += offset;
+=======
+	int scale_type, scale_val, scale_val2;
+	int offset_type, offset_val, offset_val2;
+	s64 raw64 = raw;
+
+	offset_type = iio_channel_read(chan, &offset_val, &offset_val2,
+				       IIO_CHAN_INFO_OFFSET);
+	if (offset_type >= 0) {
+		switch (offset_type) {
+		case IIO_VAL_INT:
+			break;
+		case IIO_VAL_INT_PLUS_MICRO:
+		case IIO_VAL_INT_PLUS_NANO:
+			/*
+			 * Both IIO_VAL_INT_PLUS_MICRO and IIO_VAL_INT_PLUS_NANO
+			 * implicitely truncate the offset to it's integer form.
+			 */
+			break;
+		case IIO_VAL_FRACTIONAL:
+			offset_val /= offset_val2;
+			break;
+		case IIO_VAL_FRACTIONAL_LOG2:
+			offset_val >>= offset_val2;
+			break;
+		default:
+			return -EINVAL;
+		}
+
+		raw64 += offset_val;
+	}
+>>>>>>> origin/android16-base
 
 	scale_type = iio_channel_read(chan, &scale_val, &scale_val2,
 					IIO_CHAN_INFO_SCALE);
 	if (scale_type < 0) {
 		/*
+<<<<<<< HEAD
 		 * Just pass raw values as processed if no scaling is
 		 * available.
 		 */
 		*processed = raw;
+=======
+		 * If no channel scaling is available apply consumer scale to
+		 * raw value and return.
+		 */
+		*processed = raw * scale;
+>>>>>>> origin/android16-base
 		return 0;
 	}
 
 	switch (scale_type) {
 	case IIO_VAL_INT:
+<<<<<<< HEAD
 		*processed = raw64 * scale_val;
 		break;
 	case IIO_VAL_INT_PLUS_MICRO:
@@ -619,14 +670,29 @@ static int iio_convert_raw_to_processed_unlocked(struct iio_channel *chan,
 			*processed = -raw64 * scale_val;
 		else
 			*processed = raw64 * scale_val;
+=======
+		*processed = raw64 * scale_val * scale;
+		break;
+	case IIO_VAL_INT_PLUS_MICRO:
+		if (scale_val2 < 0)
+			*processed = -raw64 * scale_val * scale;
+		else
+			*processed = raw64 * scale_val * scale;
+>>>>>>> origin/android16-base
 		*processed += div_s64(raw64 * (s64)scale_val2 * scale,
 				      1000000LL);
 		break;
 	case IIO_VAL_INT_PLUS_NANO:
 		if (scale_val2 < 0)
+<<<<<<< HEAD
 			*processed = -raw64 * scale_val;
 		else
 			*processed = raw64 * scale_val;
+=======
+			*processed = -raw64 * scale_val * scale;
+		else
+			*processed = raw64 * scale_val * scale;
+>>>>>>> origin/android16-base
 		*processed += div_s64(raw64 * (s64)scale_val2 * scale,
 				      1000000000LL);
 		break;

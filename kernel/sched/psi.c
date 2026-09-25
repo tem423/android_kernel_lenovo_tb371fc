@@ -1164,7 +1164,10 @@ struct psi_trigger *psi_trigger_create(struct psi_group *group,
 	t->event = 0;
 	t->last_event_time = 0;
 	init_waitqueue_head(&t->event_wait);
+<<<<<<< HEAD
 	kref_init(&t->refcount);
+=======
+>>>>>>> origin/android16-base
 	get_task_comm(t->comm, current);
 	timer_setup(&t->wdog_timer, ulmk_watchdog_fn, TIMER_DEFERRABLE);
 
@@ -1199,6 +1202,7 @@ struct psi_trigger *psi_trigger_create(struct psi_group *group,
 	return t;
 }
 
+<<<<<<< HEAD
 static void psi_trigger_destroy(struct kref *ref)
 {
 	struct psi_trigger *t = container_of(ref, struct psi_trigger, refcount);
@@ -1213,6 +1217,27 @@ static void psi_trigger_destroy(struct kref *ref)
 	 * from under a polling process.
 	 */
 	wake_up_interruptible(&t->event_wait);
+=======
+void psi_trigger_destroy(struct psi_trigger *t)
+{
+	struct psi_group *group;
+	struct kthread_worker *kworker_to_destroy = NULL;
+
+	/*
+	 * We do not check psi_disabled since it might have been disabled after
+	 * the trigger got created.
+	 */
+	if (!t)
+		return;
+
+	group = t->group;
+	/*
+	 * Wakeup waiters to stop polling and clear the queue to prevent it from
+	 * being accessed later. Can happen if cgroup is deleted from under a
+	 * polling process.
+	 */
+	wake_up_pollfree(&t->event_wait);
+>>>>>>> origin/android16-base
 
 	mutex_lock(&group->trigger_lock);
 
@@ -1243,9 +1268,15 @@ static void psi_trigger_destroy(struct kref *ref)
 	mutex_unlock(&group->trigger_lock);
 
 	/*
+<<<<<<< HEAD
 	 * Wait for both *trigger_ptr from psi_trigger_replace and
 	 * poll_kworker RCUs to complete their read-side critical sections
 	 * before destroying the trigger and optionally the poll_kworker
+=======
+	 * Wait for psi_schedule_poll_work RCU to complete its read-side
+	 * critical section before destroying the trigger and optionally the
+	 * poll_task.
+>>>>>>> origin/android16-base
 	 */
 	synchronize_rcu();
 	/*
@@ -1267,6 +1298,7 @@ static void psi_trigger_destroy(struct kref *ref)
 	kfree(t);
 }
 
+<<<<<<< HEAD
 void psi_trigger_replace(void **trigger_ptr, struct psi_trigger *new)
 {
 	struct psi_trigger *old = *trigger_ptr;
@@ -1279,6 +1311,8 @@ void psi_trigger_replace(void **trigger_ptr, struct psi_trigger *new)
 		kref_put(&old->refcount, psi_trigger_destroy);
 }
 
+=======
+>>>>>>> origin/android16-base
 __poll_t psi_trigger_poll(void **trigger_ptr,
 				struct file *file, poll_table *wait)
 {
@@ -1288,6 +1322,7 @@ __poll_t psi_trigger_poll(void **trigger_ptr,
 	if (static_branch_likely(&psi_disabled))
 		return DEFAULT_POLLMASK | EPOLLERR | EPOLLPRI;
 
+<<<<<<< HEAD
 	rcu_read_lock();
 
 	t = rcu_dereference(*(void __rcu __force **)trigger_ptr);
@@ -1298,6 +1333,11 @@ __poll_t psi_trigger_poll(void **trigger_ptr,
 	kref_get(&t->refcount);
 
 	rcu_read_unlock();
+=======
+	t = smp_load_acquire(trigger_ptr);
+	if (!t)
+		return DEFAULT_POLLMASK | EPOLLERR | EPOLLPRI;
+>>>>>>> origin/android16-base
 
 	poll_wait(file, &t->event_wait, wait);
 
@@ -1307,8 +1347,11 @@ __poll_t psi_trigger_poll(void **trigger_ptr,
 			ulmk_watchdog_pet(&t->wdog_timer);
 	}
 
+<<<<<<< HEAD
 	kref_put(&t->refcount, psi_trigger_destroy);
 
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -1332,6 +1375,7 @@ static ssize_t psi_write(struct file *file, const char __user *user_buf,
 
 	buf[buf_size - 1] = '\0';
 
+<<<<<<< HEAD
 	new = psi_trigger_create(&psi_system, buf, nbytes, res);
 	if (IS_ERR(new))
 		return PTR_ERR(new);
@@ -1340,6 +1384,26 @@ static ssize_t psi_write(struct file *file, const char __user *user_buf,
 	/* Take seq->lock to protect seq->private from concurrent writes */
 	mutex_lock(&seq->lock);
 	psi_trigger_replace(&seq->private, new);
+=======
+	seq = file->private_data;
+
+	/* Take seq->lock to protect seq->private from concurrent writes */
+	mutex_lock(&seq->lock);
+
+	/* Allow only one trigger per file descriptor */
+	if (seq->private) {
+		mutex_unlock(&seq->lock);
+		return -EBUSY;
+	}
+
+	new = psi_trigger_create(&psi_system, buf, nbytes, res);
+	if (IS_ERR(new)) {
+		mutex_unlock(&seq->lock);
+		return PTR_ERR(new);
+	}
+
+	smp_store_release(&seq->private, new);
+>>>>>>> origin/android16-base
 	mutex_unlock(&seq->lock);
 
 	return nbytes;
@@ -1374,7 +1438,11 @@ static int psi_fop_release(struct inode *inode, struct file *file)
 {
 	struct seq_file *seq = file->private_data;
 
+<<<<<<< HEAD
 	psi_trigger_replace(&seq->private, NULL);
+=======
+	psi_trigger_destroy(seq->private);
+>>>>>>> origin/android16-base
 	return single_release(inode, file);
 }
 

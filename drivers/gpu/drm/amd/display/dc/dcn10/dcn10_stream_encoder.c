@@ -620,6 +620,15 @@ void enc1_stream_encoder_set_mst_bandwidth(
 				x),
 			26));
 
+<<<<<<< HEAD
+=======
+	// If y rounds up to integer, carry it over to x.
+	if (y >> 26) {
+		x += 1;
+		y = 0;
+	}
+
+>>>>>>> origin/android16-base
 	REG_SET_2(DP_MSE_RATE_CNTL, 0,
 		DP_MSE_RATE_X, x,
 		DP_MSE_RATE_Y, y);

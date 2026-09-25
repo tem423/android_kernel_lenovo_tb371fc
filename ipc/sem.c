@@ -494,7 +494,11 @@ static struct sem_array *sem_alloc(size_t nsems)
 		return NULL;
 
 	size = sizeof(*sma) + nsems * sizeof(sma->sems[0]);
+<<<<<<< HEAD
 	sma = kvmalloc(size, GFP_KERNEL);
+=======
+	sma = kvmalloc(size, GFP_KERNEL_ACCOUNT);
+>>>>>>> origin/android16-base
 	if (unlikely(!sma))
 		return NULL;
 
@@ -1813,7 +1817,11 @@ static inline int get_undo_list(struct sem_undo_list **undo_listp)
 
 	undo_list = current->sysvsem.undo_list;
 	if (!undo_list) {
+<<<<<<< HEAD
 		undo_list = kzalloc(sizeof(*undo_list), GFP_KERNEL);
+=======
+		undo_list = kzalloc(sizeof(*undo_list), GFP_KERNEL_ACCOUNT);
+>>>>>>> origin/android16-base
 		if (undo_list == NULL)
 			return -ENOMEM;
 		spin_lock_init(&undo_list->lock);
@@ -1897,7 +1905,12 @@ static struct sem_undo *find_alloc_undo(struct ipc_namespace *ns, int semid)
 	rcu_read_unlock();
 
 	/* step 2: allocate new undo structure */
+<<<<<<< HEAD
 	new = kzalloc(sizeof(struct sem_undo) + sizeof(short)*nsems, GFP_KERNEL);
+=======
+	new = kzalloc(sizeof(struct sem_undo) + sizeof(short)*nsems,
+		      GFP_KERNEL_ACCOUNT);
+>>>>>>> origin/android16-base
 	if (!new) {
 		ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
 		return ERR_PTR(-ENOMEM);
@@ -2148,6 +2161,10 @@ static long do_semtimedop(int semid, struct sembuf __user *tsops,
 		 * scenarios where we were awakened externally, during the
 		 * window between wake_q_add() and wake_up_q().
 		 */
+<<<<<<< HEAD
+=======
+		rcu_read_lock();
+>>>>>>> origin/android16-base
 		error = READ_ONCE(queue.status);
 		if (error != -EINTR) {
 			/*
@@ -2157,10 +2174,17 @@ static long do_semtimedop(int semid, struct sembuf __user *tsops,
 			 * overwritten by the previous owner of the semaphore.
 			 */
 			smp_mb();
+<<<<<<< HEAD
 			goto out_free;
 		}
 
 		rcu_read_lock();
+=======
+			rcu_read_unlock();
+			goto out_free;
+		}
+
+>>>>>>> origin/android16-base
 		locknum = sem_lock(sma, sops, nsops);
 
 		if (!ipc_valid_object(&sma->sem_perm))

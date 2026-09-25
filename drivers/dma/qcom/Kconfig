@@ -9,6 +9,10 @@ config QCOM_BAM_DMA
 
 config QCOM_HIDMA_MGMT
 	tristate "Qualcomm Technologies HIDMA Management support"
+<<<<<<< HEAD
+=======
+	depends on HAS_IOMEM
+>>>>>>> origin/android16-base
 	select DMA_ENGINE
 	help
 	  Enable support for the Qualcomm Technologies HIDMA Management.

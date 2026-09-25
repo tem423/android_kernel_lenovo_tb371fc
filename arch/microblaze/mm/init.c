@@ -289,11 +289,14 @@ asmlinkage void __init mmu_init(void)
 {
 	unsigned int kstart, ksize;
 
+<<<<<<< HEAD
 	if (!memblock.reserved.cnt) {
 		pr_emerg("Error memory count\n");
 		machine_restart(NULL);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if ((u32) memblock.memory.regions[0].size < 0x400000) {
 		pr_emerg("Memory must be greater than 4MB\n");
 		machine_restart(NULL);

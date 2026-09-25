@@ -444,4 +444,8 @@ MODULE_DESCRIPTION("Conexant CX22700 DVB-T Demodulator driver");
 MODULE_AUTHOR("Holger Waechtler");
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(cx22700_attach);
+=======
+EXPORT_SYMBOL_GPL(cx22700_attach);
+>>>>>>> origin/android16-base

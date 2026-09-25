@@ -119,9 +119,15 @@ static inline void apply_alternatives_module(void *start, size_t length) { }
 	.popsection
 	.pushsection .altinstr_replacement, "ax"
 663:	\insn2
+<<<<<<< HEAD
 664:	.popsection
 	.org	. - (664b-663b) + (662b-661b)
 	.org	. - (662b-661b) + (664b-663b)
+=======
+664:	.org	. - (664b-663b) + (662b-661b)
+	.org	. - (662b-661b) + (664b-663b)
+	.popsection
+>>>>>>> origin/android16-base
 	.endif
 .endm
 
@@ -191,11 +197,19 @@ static inline void apply_alternatives_module(void *start, size_t length) { }
  */
 .macro alternative_endif
 664:
+<<<<<<< HEAD
 	.if .Lasm_alt_mode==0
 	.popsection
 	.endif
 	.org	. - (664b-663b) + (662b-661b)
 	.org	. - (662b-661b) + (664b-663b)
+=======
+	.org	. - (664b-663b) + (662b-661b)
+	.org	. - (662b-661b) + (664b-663b)
+	.if .Lasm_alt_mode==0
+	.popsection
+	.endif
+>>>>>>> origin/android16-base
 .endm
 
 /*

@@ -1091,9 +1091,15 @@ static void sm_release(struct mtd_blktrans_dev *dev)
 {
 	struct sm_ftl *ftl = dev->priv;
 
+<<<<<<< HEAD
 	mutex_lock(&ftl->mutex);
 	del_timer_sync(&ftl->timer);
 	cancel_work_sync(&ftl->flush_work);
+=======
+	del_timer_sync(&ftl->timer);
+	cancel_work_sync(&ftl->flush_work);
+	mutex_lock(&ftl->mutex);
+>>>>>>> origin/android16-base
 	sm_cache_flush(ftl);
 	mutex_unlock(&ftl->mutex);
 }

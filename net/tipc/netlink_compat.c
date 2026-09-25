@@ -101,6 +101,10 @@ static int tipc_add_tlv(struct sk_buff *skb, u16 type, void *data, u16 len)
 		return -EMSGSIZE;
 
 	skb_put(skb, TLV_SPACE(len));
+<<<<<<< HEAD
+=======
+	memset(tlv, 0, TLV_SPACE(len));
+>>>>>>> origin/android16-base
 	tlv->tlv_type = htons(type);
 	tlv->tlv_len = htons(TLV_LENGTH(len));
 	if (len && data)
@@ -671,7 +675,11 @@ static int tipc_nl_compat_link_dump(struct tipc_nl_compat_msg *msg,
 	if (err)
 		return err;
 
+<<<<<<< HEAD
 	link_info.dest = nla_get_flag(link[TIPC_NLA_LINK_DEST]);
+=======
+	link_info.dest = htonl(nla_get_flag(link[TIPC_NLA_LINK_DEST]));
+>>>>>>> origin/android16-base
 	link_info.up = htonl(nla_get_flag(link[TIPC_NLA_LINK_UP]));
 	nla_strlcpy(link_info.str, link[TIPC_NLA_LINK_NAME],
 		    TIPC_MAX_LINK_NAME);
@@ -865,7 +873,11 @@ static int tipc_nl_compat_name_table_dump_header(struct tipc_nl_compat_msg *msg)
 	};
 
 	ntq = (struct tipc_name_table_query *)TLV_DATA(msg->req);
+<<<<<<< HEAD
 	if (TLV_GET_DATA_LEN(msg->req) < sizeof(struct tipc_name_table_query))
+=======
+	if (TLV_GET_DATA_LEN(msg->req) < (int)sizeof(struct tipc_name_table_query))
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	depth = ntohl(ntq->depth);

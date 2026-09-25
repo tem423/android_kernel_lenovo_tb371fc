@@ -129,6 +129,10 @@ static struct platform_driver a10sr_reset_driver = {
 	.probe	= a10sr_reset_probe,
 	.driver = {
 		.name		= "altr_a10sr_reset",
+<<<<<<< HEAD
+=======
+		.of_match_table	= a10sr_reset_of_match,
+>>>>>>> origin/android16-base
 	},
 };
 module_platform_driver(a10sr_reset_driver);

@@ -365,7 +365,11 @@ atmel_pmecc_create_user(struct atmel_pmecc *pmecc,
 	size = ALIGN(size, sizeof(s32));
 	size += (req->ecc.strength + 1) * sizeof(s32) * 3;
 
+<<<<<<< HEAD
 	user = kzalloc(size, GFP_KERNEL);
+=======
+	user = devm_kzalloc(pmecc->dev, size, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!user)
 		return ERR_PTR(-ENOMEM);
 
@@ -411,12 +415,15 @@ atmel_pmecc_create_user(struct atmel_pmecc *pmecc,
 }
 EXPORT_SYMBOL_GPL(atmel_pmecc_create_user);
 
+<<<<<<< HEAD
 void atmel_pmecc_destroy_user(struct atmel_pmecc_user *user)
 {
 	kfree(user);
 }
 EXPORT_SYMBOL_GPL(atmel_pmecc_destroy_user);
 
+=======
+>>>>>>> origin/android16-base
 static int get_strength(struct atmel_pmecc_user *user)
 {
 	const int *strengths = user->pmecc->caps->strengths;

@@ -431,7 +431,11 @@ struct spu_hw {
 	u32 num_chan;
 };
 
+<<<<<<< HEAD
 struct device_private {
+=======
+struct bcm_device_private {
+>>>>>>> origin/android16-base
 	struct platform_device *pdev;
 
 	struct spu_hw spu;
@@ -478,6 +482,10 @@ struct device_private {
 	struct mbox_chan **mbox;
 };
 
+<<<<<<< HEAD
 extern struct device_private iproc_priv;
+=======
+extern struct bcm_device_private iproc_priv;
+>>>>>>> origin/android16-base
 
 #endif

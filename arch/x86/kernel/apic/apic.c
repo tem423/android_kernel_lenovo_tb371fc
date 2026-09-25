@@ -41,6 +41,10 @@
 #include <asm/x86_init.h>
 #include <asm/pgalloc.h>
 #include <linux/atomic.h>
+<<<<<<< HEAD
+=======
+#include <asm/barrier.h>
+>>>>>>> origin/android16-base
 #include <asm/mpspec.h>
 #include <asm/i8259.h>
 #include <asm/proto.h>
@@ -165,7 +169,11 @@ static __init int setup_apicpmtimer(char *s)
 {
 	apic_calibrate_pmtmr = 1;
 	notsc_setup(NULL);
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 __setup("apicpmtimer", setup_apicpmtimer);
 #endif
@@ -402,10 +410,16 @@ static unsigned int reserve_eilvt_offset(int offset, unsigned int new)
 		if (vector && !eilvt_entry_is_changeable(vector, new))
 			/* may not change if vectors are different */
 			return rsvd;
+<<<<<<< HEAD
 		rsvd = atomic_cmpxchg(&eilvt_offsets[offset], rsvd, new);
 	} while (rsvd != new);
 
 	rsvd &= ~APIC_EILVT_MASKED;
+=======
+	} while (!atomic_try_cmpxchg(&eilvt_offsets[offset], &rsvd, new));
+
+	rsvd = new & ~APIC_EILVT_MASKED;
+>>>>>>> origin/android16-base
 	if (rsvd && rsvd != vector)
 		pr_info("LVT offset %d assigned for vector 0x%02x\n",
 			offset, rsvd);
@@ -465,6 +479,12 @@ static int lapic_next_deadline(unsigned long delta,
 {
 	u64 tsc;
 
+<<<<<<< HEAD
+=======
+	/* This MSR is special and need a special fence: */
+	weak_wrmsr_fence();
+
+>>>>>>> origin/android16-base
 	tsc = rdtsc();
 	wrmsrl(MSR_IA32_TSC_DEADLINE, tsc + (((u64) delta) * TSC_DIVISOR));
 	return 0;
@@ -481,7 +501,23 @@ static int lapic_timer_shutdown(struct clock_event_device *evt)
 	v = apic_read(APIC_LVTT);
 	v |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
 	apic_write(APIC_LVTT, v);
+<<<<<<< HEAD
 	apic_write(APIC_TMICT, 0);
+=======
+
+	/*
+	 * Setting APIC_LVT_MASKED (above) should be enough to tell
+	 * the hardware that this timer will never fire. But AMD
+	 * erratum 411 and some Intel CPU behavior circa 2024 say
+	 * otherwise.  Time for belt and suspenders programming: mask
+	 * the timer _and_ zero the counter registers:
+	 */
+	if (v & APIC_LVT_TIMER_TSCDEADLINE)
+		wrmsrl(MSR_IA32_TSC_DEADLINE, 0);
+	else
+		apic_write(APIC_TMICT, 0);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1813,20 +1849,36 @@ static __init void try_to_enable_x2apic(int remap_mode)
 		return;
 
 	if (remap_mode != IRQ_REMAP_X2APIC_MODE) {
+<<<<<<< HEAD
 		/* IR is required if there is APIC ID > 255 even when running
 		 * under KVM
 		 */
 		if (max_physical_apicid > 255 ||
 		    !x86_init.hyper.x2apic_available()) {
+=======
+		/*
+		 * Using X2APIC without IR is not architecturally supported
+		 * on bare metal but may be supported in guests.
+		 */
+		if (!x86_init.hyper.x2apic_available()) {
+>>>>>>> origin/android16-base
 			pr_info("x2apic: IRQ remapping doesn't support X2APIC mode\n");
 			x2apic_disable();
 			return;
 		}
 
 		/*
+<<<<<<< HEAD
 		 * without IR all CPUs can be addressed by IOAPIC/MSI
 		 * only in physical mode
 		 */
+=======
+		 * Without IR, all CPUs can be addressed by IOAPIC/MSI only
+		 * in physical mode, and CPUs with an APIC ID that cannnot
+		 * be addressed must not be brought online.
+		 */
+		x2apic_set_max_apicid(255);
+>>>>>>> origin/android16-base
 		x2apic_phys = 1;
 	}
 	x2apic_enable();
@@ -2273,6 +2325,14 @@ static int cpuid_to_apicid[] = {
 	[0 ... NR_CPUS - 1] = -1,
 };
 
+<<<<<<< HEAD
+=======
+bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
+{
+	return phys_id == cpuid_to_apicid[cpu];
+}
+
+>>>>>>> origin/android16-base
 #ifdef CONFIG_SMP
 /**
  * apic_id_is_primary_thread - Check whether APIC ID belongs to a primary thread
@@ -2496,6 +2556,10 @@ void __init apic_bsp_setup(bool upmode)
 	end_local_APIC_setup();
 	irq_remap_enable_fault_handling();
 	setup_IO_APIC();
+<<<<<<< HEAD
+=======
+	lapic_update_legacy_vectors();
+>>>>>>> origin/android16-base
 }
 
 #ifdef CONFIG_UP_LATE_INIT

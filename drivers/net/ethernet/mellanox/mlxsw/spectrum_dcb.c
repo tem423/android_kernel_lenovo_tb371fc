@@ -227,8 +227,11 @@ static int mlxsw_sp_dcbnl_ieee_setets(struct net_device *dev,
 static int mlxsw_sp_dcbnl_app_validate(struct net_device *dev,
 				       struct dcb_app *app)
 {
+<<<<<<< HEAD
 	int prio;
 
+=======
+>>>>>>> origin/android16-base
 	if (app->priority >= IEEE_8021QAZ_MAX_TCS) {
 		netdev_err(dev, "APP entry with priority value %u is invalid\n",
 			   app->priority);
@@ -242,6 +245,7 @@ static int mlxsw_sp_dcbnl_app_validate(struct net_device *dev,
 				   app->protocol);
 			return -EINVAL;
 		}
+<<<<<<< HEAD
 
 		/* Warn about any DSCP APP entries with the same PID. */
 		prio = fls(dcb_ieee_getapp_mask(dev, app));
@@ -253,6 +257,8 @@ static int mlxsw_sp_dcbnl_app_validate(struct net_device *dev,
 				netdev_warn(dev, "Ignoring new priority %d for DSCP %d in favor of current value of %d\n",
 					    app->priority, app->protocol, prio);
 		}
+=======
+>>>>>>> origin/android16-base
 		break;
 
 	case IEEE_8021QAZ_APP_SEL_ETHERTYPE:

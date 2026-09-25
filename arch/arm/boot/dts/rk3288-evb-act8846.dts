@@ -53,7 +53,11 @@
 		vin-supply = <&vcc_sys>;
 	};
 
+<<<<<<< HEAD
 	hym8563@51 {
+=======
+	rtc@51 {
+>>>>>>> origin/android16-base
 		compatible = "haoyu,hym8563";
 		reg = <0x51>;
 

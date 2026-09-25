@@ -194,7 +194,13 @@ static int caam_rsa_count_leading_zeros(struct scatterlist *sgl,
 		if (len && *buff)
 			break;
 
+<<<<<<< HEAD
 		sg_miter_next(&miter);
+=======
+		if (!sg_miter_next(&miter))
+			break;
+
+>>>>>>> origin/android16-base
 		buff = miter.addr;
 		len = miter.length;
 

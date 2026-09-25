@@ -240,9 +240,13 @@ int fcp_avc_transaction(struct fw_unit *unit,
 	t.response_match_bytes = response_match_bytes;
 	t.state = STATE_PENDING;
 	init_waitqueue_head(&t.wait);
+<<<<<<< HEAD
 
 	if (*(const u8 *)command == 0x00 || *(const u8 *)command == 0x03)
 		t.deferrable = true;
+=======
+	t.deferrable = (*(const u8 *)command == 0x00 || *(const u8 *)command == 0x03);
+>>>>>>> origin/android16-base
 
 	spin_lock_irq(&transactions_lock);
 	list_add_tail(&t.list, &transactions);

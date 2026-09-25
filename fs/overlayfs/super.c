@@ -87,7 +87,11 @@ static void ovl_dentry_release(struct dentry *dentry)
 static struct dentry *ovl_d_real(struct dentry *dentry,
 				 const struct inode *inode)
 {
+<<<<<<< HEAD
 	struct dentry *real;
+=======
+	struct dentry *real = NULL, *lower;
+>>>>>>> origin/android16-base
 
 	/* It's an overlay file */
 	if (inode && d_inode(dentry) == inode)
@@ -106,9 +110,16 @@ static struct dentry *ovl_d_real(struct dentry *dentry,
 	if (real && !inode && ovl_has_upperdata(d_inode(dentry)))
 		return real;
 
+<<<<<<< HEAD
 	real = ovl_dentry_lowerdata(dentry);
 	if (!real)
 		goto bug;
+=======
+	lower = ovl_dentry_lowerdata(dentry);
+	if (!lower)
+		goto bug;
+	real = lower;
+>>>>>>> origin/android16-base
 
 	/* Handle recursion */
 	real = d_real(real, inode);
@@ -116,8 +127,15 @@ static struct dentry *ovl_d_real(struct dentry *dentry,
 	if (!inode || inode == d_inode(real))
 		return real;
 bug:
+<<<<<<< HEAD
 	WARN(1, "ovl_d_real(%pd4, %s:%lu): real dentry not found\n", dentry,
 	     inode ? inode->i_sb->s_id : "NULL", inode ? inode->i_ino : 0);
+=======
+	WARN(1, "%s(%pd4, %s:%lu): real dentry (%p/%lu) not found\n",
+	     __func__, dentry, inode ? inode->i_sb->s_id : "NULL",
+	     inode ? inode->i_ino : 0, real,
+	     real && d_inode(real) ? d_inode(real)->i_ino : 0);
+>>>>>>> origin/android16-base
 	return dentry;
 }
 
@@ -270,8 +288,13 @@ static int ovl_sync_fs(struct super_block *sb, int wait)
 		return 0;
 
 	/*
+<<<<<<< HEAD
 	 * If this is a sync(2) call or an emergency sync, all the super blocks
 	 * will be iterated, including upper_sb, so no need to do anything.
+=======
+	 * Not called for sync(2) call or an emergency sync (SB_I_SKIP_SYNC).
+	 * All the super blocks will be iterated, including upper_sb.
+>>>>>>> origin/android16-base
 	 *
 	 * If this is a syncfs(2) call, then we do need to call
 	 * sync_filesystem() on upper_sb, but enough if we do it when being
@@ -672,10 +695,21 @@ retry:
 			goto retry;
 		}
 
+<<<<<<< HEAD
 		work = ovl_create_real(dir, work, OVL_CATTR(attr.ia_mode));
 		err = PTR_ERR(work);
 		if (IS_ERR(work))
 			goto out_err;
+=======
+		err = ovl_mkdir_real(dir, &work, attr.ia_mode);
+		if (err)
+			goto out_dput;
+
+		/* Weird filesystem returning with hashed negative (kernfs)? */
+		err = -EINVAL;
+		if (d_really_is_negative(work))
+			goto out_dput;
+>>>>>>> origin/android16-base
 
 		/*
 		 * Try to remove POSIX ACL xattrs from workdir.  We are good if:
@@ -1515,7 +1549,12 @@ out_err:
  * - upper/work dir of any overlayfs instance
  */
 static int ovl_check_layer(struct super_block *sb, struct ovl_fs *ofs,
+<<<<<<< HEAD
 			   struct dentry *dentry, const char *name)
+=======
+			   struct dentry *dentry, const char *name,
+			   bool is_lower)
+>>>>>>> origin/android16-base
 {
 	struct dentry *next = dentry, *parent;
 	int err = 0;
@@ -1527,7 +1566,11 @@ static int ovl_check_layer(struct super_block *sb, struct ovl_fs *ofs,
 
 	/* Walk back ancestors to root (inclusive) looking for traps */
 	while (!err && parent != next) {
+<<<<<<< HEAD
 		if (ovl_lookup_trap_inode(sb, parent)) {
+=======
+		if (is_lower && ovl_lookup_trap_inode(sb, parent)) {
+>>>>>>> origin/android16-base
 			err = -ELOOP;
 			pr_err("overlayfs: overlapping %s path\n", name);
 		} else if (ovl_is_inuse(parent)) {
@@ -1553,7 +1596,11 @@ static int ovl_check_overlapping_layers(struct super_block *sb,
 
 	if (ofs->upper_mnt) {
 		err = ovl_check_layer(sb, ofs, ofs->upper_mnt->mnt_root,
+<<<<<<< HEAD
 				      "upperdir");
+=======
+				      "upperdir", false);
+>>>>>>> origin/android16-base
 		if (err)
 			return err;
 
@@ -1564,7 +1611,12 @@ static int ovl_check_overlapping_layers(struct super_block *sb,
 		 * workbasedir.  In that case, we already have their traps in
 		 * inode cache and we will catch that case on lookup.
 		 */
+<<<<<<< HEAD
 		err = ovl_check_layer(sb, ofs, ofs->workbasedir, "workdir");
+=======
+		err = ovl_check_layer(sb, ofs, ofs->workbasedir, "workdir",
+				      false);
+>>>>>>> origin/android16-base
 		if (err)
 			return err;
 	}
@@ -1572,7 +1624,11 @@ static int ovl_check_overlapping_layers(struct super_block *sb,
 	for (i = 0; i < ofs->numlower; i++) {
 		err = ovl_check_layer(sb, ofs,
 				      ofs->lower_layers[i].mnt->mnt_root,
+<<<<<<< HEAD
 				      "lowerdir");
+=======
+				      "lowerdir", true);
+>>>>>>> origin/android16-base
 		if (err)
 			return err;
 	}
@@ -1694,6 +1750,10 @@ static int ovl_fill_super(struct super_block *sb, void *data, int silent)
 	sb->s_xattr = ovl_xattr_handlers;
 	sb->s_fs_info = ofs;
 	sb->s_flags |= SB_POSIXACL;
+<<<<<<< HEAD
+=======
+	sb->s_iflags |= SB_I_SKIP_SYNC;
+>>>>>>> origin/android16-base
 
 	err = -ENOMEM;
 	root_dentry = d_make_root(ovl_new_inode(sb, S_IFDIR, 0));

@@ -117,7 +117,11 @@ static int i5500_temp_probe(struct pci_dev *pdev,
 	u32 tstimer;
 	s8 tsfsc;
 
+<<<<<<< HEAD
 	err = pci_enable_device(pdev);
+=======
+	err = pcim_enable_device(pdev);
+>>>>>>> origin/android16-base
 	if (err) {
 		dev_err(&pdev->dev, "Failed to enable device\n");
 		return err;

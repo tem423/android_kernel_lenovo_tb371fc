@@ -2627,19 +2627,33 @@ static void dm_init_fsync(struct net_device *dev)
 	priv->ieee80211->fsync_seconddiff_ratethreshold = 200;
 	priv->ieee80211->fsync_state = Default_Fsync;
 	priv->framesyncMonitor = 1;	/* current default 0xc38 monitor on */
+<<<<<<< HEAD
 	timer_setup(&priv->fsync_timer, dm_fsync_timer_callback, 0);
+=======
+	INIT_DELAYED_WORK(&priv->fsync_work, dm_fsync_work_callback);
+>>>>>>> origin/android16-base
 }
 
 static void dm_deInit_fsync(struct net_device *dev)
 {
 	struct r8192_priv *priv = ieee80211_priv(dev);
 
+<<<<<<< HEAD
 	del_timer_sync(&priv->fsync_timer);
 }
 
 void dm_fsync_timer_callback(struct timer_list *t)
 {
 	struct r8192_priv *priv = from_timer(priv, t, fsync_timer);
+=======
+	cancel_delayed_work_sync(&priv->fsync_work);
+}
+
+void dm_fsync_work_callback(struct work_struct *work)
+{
+	struct r8192_priv *priv =
+	    container_of(work, struct r8192_priv, fsync_work.work);
+>>>>>>> origin/android16-base
 	struct net_device *dev = priv->ieee80211->dev;
 	u32 rate_index, rate_count = 0, rate_count_diff = 0;
 	bool		bSwitchFromCountDiff = false;
@@ -2706,6 +2720,7 @@ void dm_fsync_timer_callback(struct timer_list *t)
 			}
 		}
 		if (bDoubleTimeInterval) {
+<<<<<<< HEAD
 			if (timer_pending(&priv->fsync_timer))
 				del_timer_sync(&priv->fsync_timer);
 			priv->fsync_timer.expires = jiffies +
@@ -2717,6 +2732,18 @@ void dm_fsync_timer_callback(struct timer_list *t)
 			priv->fsync_timer.expires = jiffies +
 				msecs_to_jiffies(priv->ieee80211->fsync_time_interval);
 			add_timer(&priv->fsync_timer);
+=======
+			cancel_delayed_work_sync(&priv->fsync_work);
+			schedule_delayed_work(&priv->fsync_work,
+					      msecs_to_jiffies(priv
+					      ->ieee80211->fsync_time_interval *
+					      priv->ieee80211->fsync_multiple_timeinterval));
+		} else {
+			cancel_delayed_work_sync(&priv->fsync_work);
+			schedule_delayed_work(&priv->fsync_work,
+					      msecs_to_jiffies(priv
+					      ->ieee80211->fsync_time_interval));
+>>>>>>> origin/android16-base
 		}
 	} else {
 		/* Let Register return to default value; */
@@ -2744,7 +2771,11 @@ static void dm_EndSWFsync(struct net_device *dev)
 	struct r8192_priv *priv = ieee80211_priv(dev);
 
 	RT_TRACE(COMP_HALDM, "%s\n", __func__);
+<<<<<<< HEAD
 	del_timer_sync(&(priv->fsync_timer));
+=======
+	cancel_delayed_work_sync(&priv->fsync_work);
+>>>>>>> origin/android16-base
 
 	/* Let Register return to default value; */
 	if (priv->bswitch_fsync) {
@@ -2786,11 +2817,17 @@ static void dm_StartSWFsync(struct net_device *dev)
 		if (priv->ieee80211->fsync_rate_bitmap &  rateBitmap)
 			priv->rate_record += priv->stats.received_rate_histogram[1][rateIndex];
 	}
+<<<<<<< HEAD
 	if (timer_pending(&priv->fsync_timer))
 		del_timer_sync(&priv->fsync_timer);
 	priv->fsync_timer.expires = jiffies +
 			msecs_to_jiffies(priv->ieee80211->fsync_time_interval);
 	add_timer(&priv->fsync_timer);
+=======
+	cancel_delayed_work_sync(&priv->fsync_work);
+	schedule_delayed_work(&priv->fsync_work,
+			      msecs_to_jiffies(priv->ieee80211->fsync_time_interval));
+>>>>>>> origin/android16-base
 
 	write_nic_dword(dev, rOFDM0_RxDetector2, 0x465c12cd);
 

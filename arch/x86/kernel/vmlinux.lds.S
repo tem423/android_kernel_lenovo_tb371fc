@@ -389,7 +389,11 @@ SECTIONS
 	.brk : AT(ADDR(.brk) - LOAD_OFFSET) {
 		__brk_base = .;
 		. += 64 * 1024;		/* 64k alignment slop space */
+<<<<<<< HEAD
 		*(.brk_reservation)	/* areas brk users have reserved */
+=======
+		*(.bss..brk)		/* areas brk users have reserved */
+>>>>>>> origin/android16-base
 		__brk_limit = .;
 	}
 

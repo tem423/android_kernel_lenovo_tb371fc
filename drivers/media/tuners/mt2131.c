@@ -284,7 +284,11 @@ struct dvb_frontend * mt2131_attach(struct dvb_frontend *fe,
 	fe->tuner_priv = priv;
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(mt2131_attach);
+=======
+EXPORT_SYMBOL_GPL(mt2131_attach);
+>>>>>>> origin/android16-base
 
 MODULE_AUTHOR("Steven Toth");
 MODULE_DESCRIPTION("Microtune MT2131 silicon tuner driver");

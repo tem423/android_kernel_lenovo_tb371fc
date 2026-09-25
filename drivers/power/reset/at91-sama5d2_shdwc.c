@@ -36,7 +36,11 @@
 
 #define AT91_SHDW_MR	0x04		/* Shut Down Mode Register */
 #define AT91_SHDW_WKUPDBC_SHIFT	24
+<<<<<<< HEAD
 #define AT91_SHDW_WKUPDBC_MASK	GENMASK(31, 16)
+=======
+#define AT91_SHDW_WKUPDBC_MASK	GENMASK(26, 24)
+>>>>>>> origin/android16-base
 #define AT91_SHDW_WKUPDBC(x)	(((x) << AT91_SHDW_WKUPDBC_SHIFT) \
 						& AT91_SHDW_WKUPDBC_MASK)
 

@@ -188,7 +188,11 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 
 	retval = __handle_irq_event_percpu(desc, &flags);
 
+<<<<<<< HEAD
 	add_interrupt_randomness(desc->irq_data.irq, flags);
+=======
+	add_interrupt_randomness(desc->irq_data.irq);
+>>>>>>> origin/android16-base
 
 	if (!noirqdebug)
 		note_interrupt(desc, retval);

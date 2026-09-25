@@ -517,6 +517,10 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
 	return;
 
 out_register:
+<<<<<<< HEAD
+=======
+	list_del(&data->list);
+>>>>>>> origin/android16-base
 	hwmon_device_unregister(data->hwmon_dev);
 out_user:
 	ipmi_destroy_user(data->user);

@@ -268,9 +268,24 @@ static void module_assert_mutex_or_preempt(void)
 #endif
 }
 
+<<<<<<< HEAD
 static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
 module_param(sig_enforce, bool_enable_only, 0644);
 
+=======
+#ifdef CONFIG_MODULE_SIG
+static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
+module_param(sig_enforce, bool_enable_only, 0644);
+
+void set_module_sig_enforced(void)
+{
+	sig_enforce = true;
+}
+#else
+#define sig_enforce false
+#endif
+
+>>>>>>> origin/android16-base
 /*
  * Export sig_enforce kernel cmdline parameter to allow other subsystems rely
  * on that instead of directly to CONFIG_MODULE_SIG_FORCE config.
@@ -415,7 +430,11 @@ static bool each_symbol_in_section(const struct symsearch *arr,
 }
 
 /* Returns true as soon as fn returns true, otherwise false. */
+<<<<<<< HEAD
 bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
+=======
+static bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
+>>>>>>> origin/android16-base
 				    struct module *owner,
 				    void *data),
 			 void *data)
@@ -476,7 +495,10 @@ bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
 	}
 	return false;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(each_symbol_section);
+=======
+>>>>>>> origin/android16-base
 
 struct find_symbol_arg {
 	/* Input */
@@ -488,6 +510,10 @@ struct find_symbol_arg {
 	struct module *owner;
 	const s32 *crc;
 	const struct kernel_symbol *sym;
+<<<<<<< HEAD
+=======
+	enum mod_license license;
+>>>>>>> origin/android16-base
 };
 
 static bool check_symbol(const struct symsearch *syms,
@@ -497,9 +523,15 @@ static bool check_symbol(const struct symsearch *syms,
 	struct find_symbol_arg *fsa = data;
 
 	if (!fsa->gplok) {
+<<<<<<< HEAD
 		if (syms->licence == GPL_ONLY)
 			return false;
 		if (syms->licence == WILL_BE_GPL_ONLY && fsa->warn) {
+=======
+		if (syms->license == GPL_ONLY)
+			return false;
+		if (syms->license == WILL_BE_GPL_ONLY && fsa->warn) {
+>>>>>>> origin/android16-base
 			pr_warn("Symbol %s is being used by a non-GPL module, "
 				"which will not be allowed in the future\n",
 				fsa->name);
@@ -521,6 +553,10 @@ static bool check_symbol(const struct symsearch *syms,
 	fsa->owner = owner;
 	fsa->crc = symversion(syms->crcs, symnum);
 	fsa->sym = &syms->start[symnum];
+<<<<<<< HEAD
+=======
+	fsa->license = syms->license;
+>>>>>>> origin/android16-base
 	return true;
 }
 
@@ -568,9 +604,16 @@ static bool find_symbol_in_section(const struct symsearch *syms,
 
 /* Find a symbol and return it, along with, (optional) crc and
  * (optional) module which owns it.  Needs preempt disabled or module_mutex. */
+<<<<<<< HEAD
 const struct kernel_symbol *find_symbol(const char *name,
 					struct module **owner,
 					const s32 **crc,
+=======
+static const struct kernel_symbol *find_symbol(const char *name,
+					struct module **owner,
+					const s32 **crc,
+					enum mod_license *license,
+>>>>>>> origin/android16-base
 					bool gplok,
 					bool warn)
 {
@@ -585,13 +628,21 @@ const struct kernel_symbol *find_symbol(const char *name,
 			*owner = fsa.owner;
 		if (crc)
 			*crc = fsa.crc;
+<<<<<<< HEAD
+=======
+		if (license)
+			*license = fsa.license;
+>>>>>>> origin/android16-base
 		return fsa.sym;
 	}
 
 	pr_debug("Failed to find symbol %s\n", name);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(find_symbol);
+=======
+>>>>>>> origin/android16-base
 
 /*
  * Search for module by name: must hold module_mutex (or preempt disabled
@@ -851,7 +902,11 @@ static int add_module_usage(struct module *a, struct module *b)
 }
 
 /* Module a uses b: caller needs module_mutex() */
+<<<<<<< HEAD
 int ref_module(struct module *a, struct module *b)
+=======
+static int ref_module(struct module *a, struct module *b)
+>>>>>>> origin/android16-base
 {
 	int err;
 
@@ -870,7 +925,10 @@ int ref_module(struct module *a, struct module *b)
 	}
 	return 0;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(ref_module);
+=======
+>>>>>>> origin/android16-base
 
 /* Clear the unload stuff of the module. */
 static void module_unload_free(struct module *mod)
@@ -1059,7 +1117,11 @@ void __symbol_put(const char *symbol)
 	struct module *owner;
 
 	preempt_disable();
+<<<<<<< HEAD
 	if (!find_symbol(symbol, &owner, NULL, true, false))
+=======
+	if (!find_symbol(symbol, &owner, NULL, NULL, true, false))
+>>>>>>> origin/android16-base
 		BUG();
 	module_put(owner);
 	preempt_enable();
@@ -1151,11 +1213,18 @@ static inline void module_unload_free(struct module *mod)
 {
 }
 
+<<<<<<< HEAD
 int ref_module(struct module *a, struct module *b)
 {
 	return strong_try_module_get(b);
 }
 EXPORT_SYMBOL_GPL(ref_module);
+=======
+static int ref_module(struct module *a, struct module *b)
+{
+	return strong_try_module_get(b);
+}
+>>>>>>> origin/android16-base
 
 static inline int module_unload_init(struct module *mod)
 {
@@ -1338,7 +1407,11 @@ static inline int check_modstruct_version(const struct load_info *info,
 	 * locking is necessary -- use preempt_disable() to placate lockdep.
 	 */
 	preempt_disable();
+<<<<<<< HEAD
 	if (!find_symbol("module_layout", NULL, &crc, true, false)) {
+=======
+	if (!find_symbol("module_layout", NULL, &crc, NULL, true, false)) {
+>>>>>>> origin/android16-base
 		preempt_enable();
 		BUG();
 	}
@@ -1387,6 +1460,10 @@ static const struct kernel_symbol *resolve_symbol(struct module *mod,
 	struct module *owner;
 	const struct kernel_symbol *sym;
 	const s32 *crc;
+<<<<<<< HEAD
+=======
+	enum mod_license license;
+>>>>>>> origin/android16-base
 	int err;
 
 	/*
@@ -1396,7 +1473,11 @@ static const struct kernel_symbol *resolve_symbol(struct module *mod,
 	 */
 	sched_annotate_sleep();
 	mutex_lock(&module_mutex);
+<<<<<<< HEAD
 	sym = find_symbol(name, &owner, &crc,
+=======
+	sym = find_symbol(name, &owner, &crc, &license,
+>>>>>>> origin/android16-base
 			  !(mod->taints & (1 << TAINT_PROPRIETARY_MODULE)), true);
 	if (!sym)
 		goto unlock;
@@ -1806,7 +1887,10 @@ static int mod_sysfs_init(struct module *mod)
 	if (err)
 		mod_kobject_put(mod);
 
+<<<<<<< HEAD
 	/* delay uevent until full sysfs population */
+=======
+>>>>>>> origin/android16-base
 out:
 	return err;
 }
@@ -1843,7 +1927,10 @@ static int mod_sysfs_setup(struct module *mod,
 	add_sect_attrs(mod, info);
 	add_notes_attrs(mod, info);
 
+<<<<<<< HEAD
 	kobject_uevent(&mod->mkobj.kobj, KOBJ_ADD);
+=======
+>>>>>>> origin/android16-base
 	return 0;
 
 out_unreg_modinfo_attrs:
@@ -2235,15 +2322,37 @@ static void free_module(struct module *mod)
 void *__symbol_get(const char *symbol)
 {
 	struct module *owner;
+<<<<<<< HEAD
 	const struct kernel_symbol *sym;
 
 	preempt_disable();
 	sym = find_symbol(symbol, &owner, NULL, true, true);
 	if (sym && strong_try_module_get(owner))
+=======
+	enum mod_license license;
+	const struct kernel_symbol *sym;
+
+	preempt_disable();
+	sym = find_symbol(symbol, &owner, NULL, &license, true, true);
+	if (!sym)
+		goto fail;
+	if (license != GPL_ONLY) {
+		pr_warn("failing symbol_get of non-GPLONLY symbol %s.\n",
+			symbol);
+		goto fail;
+	}
+	if (strong_try_module_get(owner))
+>>>>>>> origin/android16-base
 		sym = NULL;
 	preempt_enable();
 
 	return sym ? (void *)kernel_symbol_value(sym) : NULL;
+<<<<<<< HEAD
+=======
+fail:
+	preempt_enable();
+	return NULL;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(__symbol_get);
 
@@ -2274,7 +2383,11 @@ static int verify_export_symbols(struct module *mod)
 	for (i = 0; i < ARRAY_SIZE(arr); i++) {
 		for (s = arr[i].sym; s < arr[i].sym + arr[i].num; s++) {
 			if (find_symbol(kernel_symbol_name(s), &owner, NULL,
+<<<<<<< HEAD
 					true, false)) {
+=======
+					NULL, true, false)) {
+>>>>>>> origin/android16-base
 				pr_err("%s: exports duplicate symbol %s"
 				       " (owned by %s)\n",
 				       mod->name, kernel_symbol_name(s),
@@ -2286,6 +2399,24 @@ static int verify_export_symbols(struct module *mod)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static bool ignore_undef_symbol(Elf_Half emachine, const char *name)
+{
+	/*
+	 * On x86, PIC code and Clang non-PIC code may have call foo@PLT. GNU as
+	 * before 2.37 produces an unreferenced _GLOBAL_OFFSET_TABLE_ on x86-64.
+	 * i386 has a similar problem but may not deserve a fix.
+	 *
+	 * If we ever have to ignore many symbols, consider refactoring the code to
+	 * only warn if referenced by a relocation.
+	 */
+	if (emachine == EM_386 || emachine == EM_X86_64)
+		return !strcmp(name, "_GLOBAL_OFFSET_TABLE_");
+	return false;
+}
+
+>>>>>>> origin/android16-base
 /* Change all symbols so that st_value encodes the pointer directly. */
 static int simplify_symbols(struct module *mod, const struct load_info *info)
 {
@@ -2331,8 +2462,15 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 				break;
 			}
 
+<<<<<<< HEAD
 			/* Ok if weak.  */
 			if (!ksym && ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
+=======
+			/* Ok if weak or ignored.  */
+			if (!ksym &&
+			    (ELF_ST_BIND(sym[i].st_info) == STB_WEAK ||
+			     ignore_undef_symbol(info->hdr->e_machine, name)))
+>>>>>>> origin/android16-base
 				break;
 
 			ret = PTR_ERR(ksym) ?: -ENOENT;
@@ -3440,7 +3578,12 @@ static bool finished_loading(const char *name)
 	sched_annotate_sleep();
 	mutex_lock(&module_mutex);
 	mod = find_module_all(name, strlen(name), true);
+<<<<<<< HEAD
 	ret = !mod || mod->state == MODULE_STATE_LIVE;
+=======
+	ret = !mod || mod->state == MODULE_STATE_LIVE
+		|| mod->state == MODULE_STATE_GOING;
+>>>>>>> origin/android16-base
 	mutex_unlock(&module_mutex);
 
 	return ret;
@@ -3488,12 +3631,15 @@ static noinline int do_init_module(struct module *mod)
 	}
 	freeinit->module_init = mod->init_layout.base;
 
+<<<<<<< HEAD
 	/*
 	 * We want to find out whether @mod uses async during init.  Clear
 	 * PF_USED_ASYNC.  async_schedule*() will set it.
 	 */
 	current->flags &= ~PF_USED_ASYNC;
 
+=======
+>>>>>>> origin/android16-base
 	do_mod_ctors(mod);
 	/* Start the module */
 	if (mod->init != NULL)
@@ -3514,6 +3660,7 @@ static noinline int do_init_module(struct module *mod)
 	blocking_notifier_call_chain(&module_notify_list,
 				     MODULE_STATE_LIVE, mod);
 
+<<<<<<< HEAD
 	/*
 	 * We need to finish all async code before the module init sequence
 	 * is done.  This has potential to deadlock.  For example, a newly
@@ -3532,6 +3679,20 @@ static noinline int do_init_module(struct module *mod)
 	 * http://thread.gmane.org/gmane.linux.kernel/1420814
 	 */
 	if (!mod->async_probe_requested && (current->flags & PF_USED_ASYNC))
+=======
+	/* Delay uevent until module has finished its init routine */
+	kobject_uevent(&mod->mkobj.kobj, KOBJ_ADD);
+
+	/*
+	 * We need to finish all async code before the module init sequence
+	 * is done. This has potential to deadlock if synchronous module
+	 * loading is requested from async (which is not allowed!).
+	 *
+	 * See commit 0fdff3ec6d87 ("async, kmod: warn on synchronous
+	 * request_module() from async workers") for more details.
+	 */
+	if (!mod->async_probe_requested)
+>>>>>>> origin/android16-base
 		async_synchronize_full();
 
 	ftrace_free_mem(mod, mod->init_layout.base, mod->init_layout.base +
@@ -3606,20 +3767,49 @@ static int add_unformed_module(struct module *mod)
 
 	mod->state = MODULE_STATE_UNFORMED;
 
+<<<<<<< HEAD
 again:
 	mutex_lock(&module_mutex);
 	old = find_module_all(mod->name, strlen(mod->name), true);
 	if (old != NULL) {
 		if (old->state != MODULE_STATE_LIVE) {
+=======
+	mutex_lock(&module_mutex);
+	old = find_module_all(mod->name, strlen(mod->name), true);
+	if (old != NULL) {
+		if (old->state == MODULE_STATE_COMING
+		    || old->state == MODULE_STATE_UNFORMED) {
+>>>>>>> origin/android16-base
 			/* Wait in case it fails to load. */
 			mutex_unlock(&module_mutex);
 			err = wait_event_interruptible(module_wq,
 					       finished_loading(mod->name));
 			if (err)
 				goto out_unlocked;
+<<<<<<< HEAD
 			goto again;
 		}
 		err = -EEXIST;
+=======
+
+			/* The module might have gone in the meantime. */
+			mutex_lock(&module_mutex);
+			old = find_module_all(mod->name, strlen(mod->name),
+					      true);
+		}
+
+		/*
+		 * We are here only when the same module was being loaded. Do
+		 * not try to load it again right now. It prevents long delays
+		 * caused by serialized module load failures. It might happen
+		 * when more devices of the same type trigger load of
+		 * a particular module.
+		 */
+		if (old && old->state == MODULE_STATE_LIVE)
+			err = -EEXIST;
+		else
+			err = -EBUSY;
+>>>>>>> origin/android16-base
 		goto out;
 	}
 	mod_update_bounds(mod);
@@ -3856,6 +4046,10 @@ static int load_module(struct load_info *info, const char __user *uargs,
 				     MODULE_STATE_GOING, mod);
 	klp_module_going(mod);
  bug_cleanup:
+<<<<<<< HEAD
+=======
+	mod->state = MODULE_STATE_GOING;
+>>>>>>> origin/android16-base
 	/* module_bug_cleanup needs module_mutex protection */
 	mutex_lock(&module_mutex);
 	module_bug_cleanup(mod);
@@ -4193,10 +4387,17 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
 static void cfi_init(struct module *mod)
 {
 #ifdef CONFIG_CFI_CLANG
+<<<<<<< HEAD
 	preempt_disable();
 	mod->cfi_check =
 		(cfi_check_fn)mod_find_symname(mod, CFI_CHECK_FN_NAME);
 	preempt_enable();
+=======
+	rcu_read_lock_sched();
+	mod->cfi_check =
+		(cfi_check_fn)mod_find_symname(mod, CFI_CHECK_FN_NAME);
+	rcu_read_unlock_sched();
+>>>>>>> origin/android16-base
 	cfi_module_add(mod, module_addr_min, module_addr_max);
 #endif
 }
@@ -4399,7 +4600,10 @@ struct module *__module_address(unsigned long addr)
 	}
 	return mod;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(__module_address);
+=======
+>>>>>>> origin/android16-base
 
 /*
  * is_module_text_address - is this address inside module code?
@@ -4438,7 +4642,10 @@ struct module *__module_text_address(unsigned long addr)
 	}
 	return mod;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(__module_text_address);
+=======
+>>>>>>> origin/android16-base
 
 /* Don't grab lock, we're oopsing. */
 void print_modules(void)

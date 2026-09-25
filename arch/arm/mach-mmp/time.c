@@ -52,18 +52,35 @@
 static void __iomem *mmp_timer_base = TIMERS_VIRT_BASE;
 
 /*
+<<<<<<< HEAD
  * FIXME: the timer needs some delay to stablize the counter capture
  */
 static inline uint32_t timer_read(void)
 {
 	int delay = 100;
+=======
+ * Read the timer through the CVWR register. Delay is required after requesting
+ * a read. The CR register cannot be directly read due to metastability issues
+ * documented in the PXA168 software manual.
+ */
+static inline uint32_t timer_read(void)
+{
+	uint32_t val;
+	int delay = 3;
+>>>>>>> origin/android16-base
 
 	__raw_writel(1, mmp_timer_base + TMR_CVWR(1));
 
 	while (delay--)
+<<<<<<< HEAD
 		cpu_relax();
 
 	return __raw_readl(mmp_timer_base + TMR_CVWR(1));
+=======
+		val = __raw_readl(mmp_timer_base + TMR_CVWR(1));
+
+	return val;
+>>>>>>> origin/android16-base
 }
 
 static u64 notrace mmp_read_sched_clock(void)

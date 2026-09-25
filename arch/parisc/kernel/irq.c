@@ -380,7 +380,15 @@ static inline int eirr_to_irq(unsigned long eirr)
 /*
  * IRQ STACK - used for irq handler
  */
+<<<<<<< HEAD
 #define IRQ_STACK_SIZE      (4096 << 3) /* 32k irq stack size */
+=======
+#ifdef CONFIG_64BIT
+#define IRQ_STACK_SIZE      (4096 << 4) /* 64k irq stack size */
+#else
+#define IRQ_STACK_SIZE      (4096 << 3) /* 32k irq stack size */
+#endif
+>>>>>>> origin/android16-base
 
 union irq_stack_union {
 	unsigned long stack[IRQ_STACK_SIZE/sizeof(unsigned long)];
@@ -388,7 +396,11 @@ union irq_stack_union {
 	volatile unsigned int lock[1];
 };
 
+<<<<<<< HEAD
 DEFINE_PER_CPU(union irq_stack_union, irq_stack_union) = {
+=======
+static DEFINE_PER_CPU(union irq_stack_union, irq_stack_union) = {
+>>>>>>> origin/android16-base
 		.slock = { 1,1,1,1 },
 	};
 #endif

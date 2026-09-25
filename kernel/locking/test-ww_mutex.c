@@ -439,7 +439,10 @@ retry:
 	} while (!time_after(jiffies, stress->timeout));
 
 	kfree(order);
+<<<<<<< HEAD
 	kfree(stress);
+=======
+>>>>>>> origin/android16-base
 }
 
 struct reorder_lock {
@@ -504,7 +507,10 @@ out:
 	list_for_each_entry_safe(ll, ln, &locks, link)
 		kfree(ll);
 	kfree(order);
+<<<<<<< HEAD
 	kfree(stress);
+=======
+>>>>>>> origin/android16-base
 }
 
 static void stress_one_work(struct work_struct *work)
@@ -525,8 +531,11 @@ static void stress_one_work(struct work_struct *work)
 			break;
 		}
 	} while (!time_after(jiffies, stress->timeout));
+<<<<<<< HEAD
 
 	kfree(stress);
+=======
+>>>>>>> origin/android16-base
 }
 
 #define STRESS_INORDER BIT(0)
@@ -537,15 +546,34 @@ static void stress_one_work(struct work_struct *work)
 static int stress(int nlocks, int nthreads, unsigned int flags)
 {
 	struct ww_mutex *locks;
+<<<<<<< HEAD
 	int n;
+=======
+	struct stress *stress_array;
+	int n, count;
+>>>>>>> origin/android16-base
 
 	locks = kmalloc_array(nlocks, sizeof(*locks), GFP_KERNEL);
 	if (!locks)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	for (n = 0; n < nlocks; n++)
 		ww_mutex_init(&locks[n], &ww_class);
 
+=======
+	stress_array = kmalloc_array(nthreads, sizeof(*stress_array),
+				     GFP_KERNEL);
+	if (!stress_array) {
+		kfree(locks);
+		return -ENOMEM;
+	}
+
+	for (n = 0; n < nlocks; n++)
+		ww_mutex_init(&locks[n], &ww_class);
+
+	count = 0;
+>>>>>>> origin/android16-base
 	for (n = 0; nthreads; n++) {
 		struct stress *stress;
 		void (*fn)(struct work_struct *work);
@@ -569,9 +597,13 @@ static int stress(int nlocks, int nthreads, unsigned int flags)
 		if (!fn)
 			continue;
 
+<<<<<<< HEAD
 		stress = kmalloc(sizeof(*stress), GFP_KERNEL);
 		if (!stress)
 			break;
+=======
+		stress = &stress_array[count++];
+>>>>>>> origin/android16-base
 
 		INIT_WORK(&stress->work, fn);
 		stress->locks = locks;
@@ -586,6 +618,10 @@ static int stress(int nlocks, int nthreads, unsigned int flags)
 
 	for (n = 0; n < nlocks; n++)
 		ww_mutex_destroy(&locks[n]);
+<<<<<<< HEAD
+=======
+	kfree(stress_array);
+>>>>>>> origin/android16-base
 	kfree(locks);
 
 	return 0;

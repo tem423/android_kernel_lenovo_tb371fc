@@ -309,6 +309,11 @@ static void digicolor_uart_set_termios(struct uart_port *port,
 	case CS8:
 	default:
 		config |= UA_CONFIG_CHAR_LEN;
+<<<<<<< HEAD
+=======
+		termios->c_cflag &= ~CSIZE;
+		termios->c_cflag |= CS8;
+>>>>>>> origin/android16-base
 		break;
 	}
 
@@ -472,10 +477,17 @@ static int digicolor_uart_probe(struct platform_device *pdev)
 		return PTR_ERR(uart_clk);
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+<<<<<<< HEAD
 	dp->port.mapbase = res->start;
 	dp->port.membase = devm_ioremap_resource(&pdev->dev, res);
 	if (IS_ERR(dp->port.membase))
 		return PTR_ERR(dp->port.membase);
+=======
+	dp->port.membase = devm_ioremap_resource(&pdev->dev, res);
+	if (IS_ERR(dp->port.membase))
+		return PTR_ERR(dp->port.membase);
+	dp->port.mapbase = res->start;
+>>>>>>> origin/android16-base
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0)

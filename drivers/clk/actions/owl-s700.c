@@ -160,6 +160,10 @@ static struct clk_div_table hdmia_div_table[] = {
 
 static struct clk_div_table rmii_div_table[] = {
 	{0, 4},   {1, 10},
+<<<<<<< HEAD
+=======
+	{0, 0}
+>>>>>>> origin/android16-base
 };
 
 /* divider clocks */

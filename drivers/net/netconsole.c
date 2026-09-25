@@ -727,6 +727,10 @@ restart:
 				/* rtnl_lock already held
 				 * we might sleep in __netpoll_cleanup()
 				 */
+<<<<<<< HEAD
+=======
+				nt->enabled = false;
+>>>>>>> origin/android16-base
 				spin_unlock_irqrestore(&target_list_lock, flags);
 
 				__netpoll_cleanup(&nt->np);
@@ -734,7 +738,10 @@ restart:
 				spin_lock_irqsave(&target_list_lock, flags);
 				dev_put(nt->np.dev);
 				nt->np.dev = NULL;
+<<<<<<< HEAD
 				nt->enabled = false;
+=======
+>>>>>>> origin/android16-base
 				stopped = true;
 				netconsole_target_put(nt);
 				goto restart;

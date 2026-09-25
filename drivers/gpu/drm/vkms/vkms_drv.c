@@ -39,7 +39,10 @@ static void vkms_release(struct drm_device *dev)
 	struct vkms_device *vkms = container_of(dev, struct vkms_device, drm);
 
 	platform_device_unregister(vkms->platform);
+<<<<<<< HEAD
 	drm_atomic_helper_shutdown(&vkms->drm);
+=======
+>>>>>>> origin/android16-base
 	drm_mode_config_cleanup(&vkms->drm);
 	drm_dev_fini(&vkms->drm);
 }
@@ -137,6 +140,10 @@ static void __exit vkms_exit(void)
 	}
 
 	drm_dev_unregister(&vkms_device->drm);
+<<<<<<< HEAD
+=======
+	drm_atomic_helper_shutdown(&vkms_device->drm);
+>>>>>>> origin/android16-base
 	drm_dev_put(&vkms_device->drm);
 
 	kfree(vkms_device);

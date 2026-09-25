@@ -15,6 +15,7 @@
  * start of every function.  In mcount, apart from the function's address (in
  * lr), we need to get hold of the function's caller's address.
  *
+<<<<<<< HEAD
  * Older GCCs (pre-4.4) inserted a call to a routine called mcount like this:
  *
  *	bl	mcount
@@ -32,6 +33,10 @@
  *
  * Newer GCCs (4.4+) solve this problem by introducing a new version of mcount,
  * with call sites like:
+=======
+ * Newer GCCs (4.4+) solve this problem by using a version of mcount with call
+ * sites like:
+>>>>>>> origin/android16-base
  *
  *	push	{lr}
  *	bl	__gnu_mcount_nc
@@ -46,6 +51,7 @@
  * allows it to be clobbered in subroutines and doesn't use it to hold
  * parameters.)
  *
+<<<<<<< HEAD
  * When using dynamic ftrace, we patch out the mcount call by a "mov r0, r0"
  * for the mcount case, and a "pop {lr}" for the __gnu_mcount_nc case (see
  * arch/arm/kernel/ftrace.c).
@@ -57,6 +63,12 @@
 #endif
 #endif
 
+=======
+ * When using dynamic ftrace, we patch out the mcount call by a "pop {lr}"
+ * instead of the __gnu_mcount_nc call (see arch/arm/kernel/ftrace.c).
+ */
+
+>>>>>>> origin/android16-base
 .macro mcount_adjust_addr rd, rn
 	bic	\rd, \rn, #1		@ clear the Thumb bit if present
 	sub	\rd, \rd, #MCOUNT_INSN_SIZE
@@ -209,6 +221,7 @@ ftrace_graph_call\suffix:
 	mcount_exit
 .endm
 
+<<<<<<< HEAD
 #ifdef CONFIG_OLD_MCOUNT
 /*
  * mcount
@@ -254,6 +267,8 @@ ENDPROC(ftrace_graph_caller_old)
 .purgem mcount_exit
 #endif
 
+=======
+>>>>>>> origin/android16-base
 /*
  * __gnu_mcount_nc
  */

@@ -226,7 +226,11 @@
 		reg = <0x28>;
 		#gpio-cells = <2>;
 		gpio-controller;
+<<<<<<< HEAD
 		ngpio = <32>;
+=======
+		ngpios = <62>;
+>>>>>>> origin/android16-base
 	};
 
 	sgtl5000: codec@a {

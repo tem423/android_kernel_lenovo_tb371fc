@@ -187,7 +187,11 @@ int sock_diag_register(const struct sock_diag_handler *hndl)
 	if (sock_diag_handlers[hndl->family])
 		err = -EBUSY;
 	else
+<<<<<<< HEAD
 		sock_diag_handlers[hndl->family] = hndl;
+=======
+		WRITE_ONCE(sock_diag_handlers[hndl->family], hndl);
+>>>>>>> origin/android16-base
 	mutex_unlock(&sock_diag_table_mutex);
 
 	return err;
@@ -203,7 +207,11 @@ void sock_diag_unregister(const struct sock_diag_handler *hnld)
 
 	mutex_lock(&sock_diag_table_mutex);
 	BUG_ON(sock_diag_handlers[family] != hnld);
+<<<<<<< HEAD
 	sock_diag_handlers[family] = NULL;
+=======
+	WRITE_ONCE(sock_diag_handlers[family], NULL);
+>>>>>>> origin/android16-base
 	mutex_unlock(&sock_diag_table_mutex);
 }
 EXPORT_SYMBOL_GPL(sock_diag_unregister);
@@ -221,7 +229,11 @@ static int __sock_diag_cmd(struct sk_buff *skb, struct nlmsghdr *nlh)
 		return -EINVAL;
 	req->sdiag_family = array_index_nospec(req->sdiag_family, AF_MAX);
 
+<<<<<<< HEAD
 	if (sock_diag_handlers[req->sdiag_family] == NULL)
+=======
+	if (READ_ONCE(sock_diag_handlers[req->sdiag_family]) == NULL)
+>>>>>>> origin/android16-base
 		sock_load_diag_module(req->sdiag_family, 0);
 
 	mutex_lock(&sock_diag_table_mutex);
@@ -280,12 +292,20 @@ static int sock_diag_bind(struct net *net, int group)
 	switch (group) {
 	case SKNLGRP_INET_TCP_DESTROY:
 	case SKNLGRP_INET_UDP_DESTROY:
+<<<<<<< HEAD
 		if (!sock_diag_handlers[AF_INET])
+=======
+		if (!READ_ONCE(sock_diag_handlers[AF_INET]))
+>>>>>>> origin/android16-base
 			sock_load_diag_module(AF_INET, 0);
 		break;
 	case SKNLGRP_INET6_TCP_DESTROY:
 	case SKNLGRP_INET6_UDP_DESTROY:
+<<<<<<< HEAD
 		if (!sock_diag_handlers[AF_INET6])
+=======
+		if (!READ_ONCE(sock_diag_handlers[AF_INET6]))
+>>>>>>> origin/android16-base
 			sock_load_diag_module(AF_INET6, 0);
 		break;
 	}

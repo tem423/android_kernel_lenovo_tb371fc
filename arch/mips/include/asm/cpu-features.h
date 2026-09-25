@@ -111,7 +111,28 @@
 #define cpu_has_tx39_cache	__opt(MIPS_CPU_TX39_CACHE)
 #endif
 #ifndef cpu_has_octeon_cache
+<<<<<<< HEAD
 #define cpu_has_octeon_cache	0
+=======
+#define cpu_has_octeon_cache						\
+({									\
+	int __res;							\
+									\
+	switch (boot_cpu_type()) {					\
+	case CPU_CAVIUM_OCTEON:						\
+	case CPU_CAVIUM_OCTEON_PLUS:					\
+	case CPU_CAVIUM_OCTEON2:					\
+	case CPU_CAVIUM_OCTEON3:					\
+		__res = 1;						\
+		break;							\
+									\
+	default:							\
+		__res = 0;						\
+	}								\
+									\
+	__res;								\
+})
+>>>>>>> origin/android16-base
 #endif
 /* Don't override `cpu_has_fpu' to 1 or the "nofpu" option won't work.  */
 #ifndef cpu_has_fpu
@@ -332,7 +353,11 @@
 ({									\
 	int __res;							\
 									\
+<<<<<<< HEAD
 	switch (current_cpu_type()) {					\
+=======
+	switch (boot_cpu_type()) {					\
+>>>>>>> origin/android16-base
 	case CPU_M14KC:							\
 	case CPU_74K:							\
 	case CPU_1074K:							\

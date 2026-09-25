@@ -816,14 +816,36 @@ static int fsi_clk_enable(struct device *dev,
 			return ret;
 		}
 
+<<<<<<< HEAD
 		clk_enable(clock->xck);
 		clk_enable(clock->ick);
 		clk_enable(clock->div);
+=======
+		ret = clk_enable(clock->xck);
+		if (ret)
+			goto err;
+		ret = clk_enable(clock->ick);
+		if (ret)
+			goto disable_xck;
+		ret = clk_enable(clock->div);
+		if (ret)
+			goto disable_ick;
+>>>>>>> origin/android16-base
 
 		clock->count++;
 	}
 
 	return ret;
+<<<<<<< HEAD
+=======
+
+disable_ick:
+	clk_disable(clock->ick);
+disable_xck:
+	clk_disable(clock->xck);
+err:
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int fsi_clk_disable(struct device *dev,

@@ -101,6 +101,7 @@ changes occur:
 	translations for software managed TLB configurations.
 	The sparc64 port currently does this.
 
+<<<<<<< HEAD
 6) ``void tlb_migrate_finish(struct mm_struct *mm)``
 
 	This interface is called at the end of an explicit
@@ -111,6 +112,8 @@ changes occur:
 	The ia64 sn2 platform is one example of a platform
 	that uses this interface.
 
+=======
+>>>>>>> origin/android16-base
 Next, we have the cache flushing interfaces.  In general, when Linux
 is changing an existing virtual-->physical mapping to a new value,
 the sequence will be in one of the following forms::

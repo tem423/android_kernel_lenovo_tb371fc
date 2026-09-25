@@ -26,6 +26,10 @@ extern char *fw_getcmdline(void);
 extern void fw_meminit(void);
 extern char *fw_getenv(char *name);
 extern unsigned long fw_getenvl(char *name);
+<<<<<<< HEAD
 extern void fw_init_early_console(char port);
+=======
+extern void fw_init_early_console(void);
+>>>>>>> origin/android16-base
 
 #endif /* __ASM_FW_H_ */

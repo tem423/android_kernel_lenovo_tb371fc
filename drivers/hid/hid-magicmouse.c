@@ -343,7 +343,11 @@ static int magicmouse_raw_event(struct hid_device *hdev,
 		magicmouse_raw_event(hdev, report, data + 2, data[1]);
 		magicmouse_raw_event(hdev, report, data + 2 + data[1],
 			size - 2 - data[1]);
+<<<<<<< HEAD
 		break;
+=======
+		return 0;
+>>>>>>> origin/android16-base
 	default:
 		return 0;
 	}

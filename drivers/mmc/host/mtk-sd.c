@@ -928,6 +928,7 @@ static void msdc_track_cmd_data(struct msdc_host *host,
 static void msdc_request_done(struct msdc_host *host, struct mmc_request *mrq)
 {
 	unsigned long flags;
+<<<<<<< HEAD
 	bool ret;
 
 	ret = cancel_delayed_work(&host->req_timeout);
@@ -935,6 +936,15 @@ static void msdc_request_done(struct msdc_host *host, struct mmc_request *mrq)
 		/* delay work already running */
 		return;
 	}
+=======
+
+	/*
+	 * No need check the return value of cancel_delayed_work, as only ONE
+	 * path will go here!
+	 */
+	cancel_delayed_work(&host->req_timeout);
+
+>>>>>>> origin/android16-base
 	spin_lock_irqsave(&host->lock, flags);
 	host->mrq = NULL;
 	spin_unlock_irqrestore(&host->lock, flags);
@@ -952,7 +962,11 @@ static bool msdc_cmd_done(struct msdc_host *host, int events,
 	bool done = false;
 	bool sbc_error;
 	unsigned long flags;
+<<<<<<< HEAD
 	u32 *rsp = cmd->resp;
+=======
+	u32 *rsp;
+>>>>>>> origin/android16-base
 
 	if (mrq->sbc && cmd == mrq->cmd &&
 	    (events & (MSDC_INT_ACMDRDY | MSDC_INT_ACMDCRCERR
@@ -973,6 +987,10 @@ static bool msdc_cmd_done(struct msdc_host *host, int events,
 
 	if (done)
 		return true;
+<<<<<<< HEAD
+=======
+	rsp = cmd->resp;
+>>>>>>> origin/android16-base
 
 	sdr_clr_bits(host->base + MSDC_INTEN, cmd_ints_mask);
 
@@ -1154,7 +1172,11 @@ static void msdc_data_xfer_next(struct msdc_host *host,
 static bool msdc_data_xfer_done(struct msdc_host *host, u32 events,
 				struct mmc_request *mrq, struct mmc_data *data)
 {
+<<<<<<< HEAD
 	struct mmc_command *stop = data->stop;
+=======
+	struct mmc_command *stop;
+>>>>>>> origin/android16-base
 	unsigned long flags;
 	bool done;
 	unsigned int check_data = events &
@@ -1170,6 +1192,10 @@ static bool msdc_data_xfer_done(struct msdc_host *host, u32 events,
 
 	if (done)
 		return true;
+<<<<<<< HEAD
+=======
+	stop = data->stop;
+>>>>>>> origin/android16-base
 
 	if (check_data || (stop && stop->error)) {
 		dev_dbg(host->dev, "DMA status: 0x%8X\n",
@@ -1910,7 +1936,11 @@ static int msdc_drv_probe(struct platform_device *pdev)
 
 	host->irq = platform_get_irq(pdev, 0);
 	if (host->irq < 0) {
+<<<<<<< HEAD
 		ret = -EINVAL;
+=======
+		ret = host->irq;
+>>>>>>> origin/android16-base
 		goto host_free;
 	}
 

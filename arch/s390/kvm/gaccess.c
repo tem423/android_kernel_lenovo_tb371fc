@@ -794,6 +794,7 @@ static int low_address_protection_enabled(struct kvm_vcpu *vcpu,
 	return 1;
 }
 
+<<<<<<< HEAD
 static int guest_page_range(struct kvm_vcpu *vcpu, unsigned long ga, u8 ar,
 			    unsigned long *pages, unsigned long nr_pages,
 			    const union asce asce, enum gacc_mode mode)
@@ -804,10 +805,61 @@ static int guest_page_range(struct kvm_vcpu *vcpu, unsigned long ga, u8 ar,
 
 	lap_enabled = low_address_protection_enabled(vcpu, asce);
 	while (nr_pages) {
+=======
+/**
+ * guest_range_to_gpas() - Calculate guest physical addresses of page fragments
+ * covering a logical range
+ * @vcpu: virtual cpu
+ * @ga: guest address, start of range
+ * @ar: access register
+ * @gpas: output argument, may be NULL
+ * @len: length of range in bytes
+ * @asce: address-space-control element to use for translation
+ * @mode: access mode
+ *
+ * Translate a logical range to a series of guest absolute addresses,
+ * such that the concatenation of page fragments starting at each gpa make up
+ * the whole range.
+ * The translation is performed as if done by the cpu for the given @asce, @ar,
+ * @mode and state of the @vcpu.
+ * If the translation causes an exception, its program interruption code is
+ * returned and the &struct kvm_s390_pgm_info pgm member of @vcpu is modified
+ * such that a subsequent call to kvm_s390_inject_prog_vcpu() will inject
+ * a correct exception into the guest.
+ * The resulting gpas are stored into @gpas, unless it is NULL.
+ *
+ * Note: All fragments except the first one start at the beginning of a page.
+ *	 When deriving the boundaries of a fragment from a gpa, all but the last
+ *	 fragment end at the end of the page.
+ *
+ * Return:
+ * * 0		- success
+ * * <0		- translation could not be performed, for example if  guest
+ *		  memory could not be accessed
+ * * >0		- an access exception occurred. In this case the returned value
+ *		  is the program interruption code and the contents of pgm may
+ *		  be used to inject an exception into the guest.
+ */
+static int guest_range_to_gpas(struct kvm_vcpu *vcpu, unsigned long ga, u8 ar,
+			       unsigned long *gpas, unsigned long len,
+			       const union asce asce, enum gacc_mode mode)
+{
+	psw_t *psw = &vcpu->arch.sie_block->gpsw;
+	unsigned int offset = offset_in_page(ga);
+	unsigned int fragment_len;
+	int lap_enabled, rc = 0;
+	enum prot_type prot;
+	unsigned long gpa;
+
+	lap_enabled = low_address_protection_enabled(vcpu, asce);
+	while (min(PAGE_SIZE - offset, len) > 0) {
+		fragment_len = min(PAGE_SIZE - offset, len);
+>>>>>>> origin/android16-base
 		ga = kvm_s390_logical_to_effective(vcpu, ga);
 		if (mode == GACC_STORE && lap_enabled && is_low_address(ga))
 			return trans_exc(vcpu, PGM_PROTECTION, ga, ar, mode,
 					 PROT_TYPE_LA);
+<<<<<<< HEAD
 		ga &= PAGE_MASK;
 		if (psw_bits(*psw).dat) {
 			rc = guest_translate(vcpu, ga, pages, asce, mode, &prot);
@@ -816,24 +868,67 @@ static int guest_page_range(struct kvm_vcpu *vcpu, unsigned long ga, u8 ar,
 		} else {
 			*pages = kvm_s390_real_to_abs(vcpu, ga);
 			if (kvm_is_error_gpa(vcpu->kvm, *pages))
+=======
+		if (psw_bits(*psw).dat) {
+			rc = guest_translate(vcpu, ga, &gpa, asce, mode, &prot);
+			if (rc < 0)
+				return rc;
+		} else {
+			gpa = kvm_s390_real_to_abs(vcpu, ga);
+			if (kvm_is_error_gpa(vcpu->kvm, gpa))
+>>>>>>> origin/android16-base
 				rc = PGM_ADDRESSING;
 		}
 		if (rc)
 			return trans_exc(vcpu, rc, ga, ar, mode, prot);
+<<<<<<< HEAD
 		ga += PAGE_SIZE;
 		pages++;
 		nr_pages--;
+=======
+		if (gpas)
+			*gpas++ = gpa;
+		offset = 0;
+		ga += fragment_len;
+		len -= fragment_len;
+>>>>>>> origin/android16-base
 	}
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int access_guest_page(struct kvm *kvm, enum gacc_mode mode, gpa_t gpa,
+			     void *data, unsigned int len)
+{
+	const unsigned int offset = offset_in_page(gpa);
+	const gfn_t gfn = gpa_to_gfn(gpa);
+	int rc;
+
+	if (!gfn_to_memslot(kvm, gfn))
+		return PGM_ADDRESSING;
+	if (mode == GACC_STORE)
+		rc = kvm_write_guest_page(kvm, gfn, data, offset, len);
+	else
+		rc = kvm_read_guest_page(kvm, gfn, data, offset, len);
+	return rc;
+}
+
+>>>>>>> origin/android16-base
 int access_guest(struct kvm_vcpu *vcpu, unsigned long ga, u8 ar, void *data,
 		 unsigned long len, enum gacc_mode mode)
 {
 	psw_t *psw = &vcpu->arch.sie_block->gpsw;
+<<<<<<< HEAD
 	unsigned long _len, nr_pages, gpa, idx;
 	unsigned long pages_array[2];
 	unsigned long *pages;
+=======
+	unsigned long nr_pages, idx;
+	unsigned long gpa_array[2];
+	unsigned int fragment_len;
+	unsigned long *gpas;
+>>>>>>> origin/android16-base
 	int need_ipte_lock;
 	union asce asce;
 	int rc;
@@ -845,14 +940,22 @@ int access_guest(struct kvm_vcpu *vcpu, unsigned long ga, u8 ar, void *data,
 	if (rc)
 		return rc;
 	nr_pages = (((ga & ~PAGE_MASK) + len - 1) >> PAGE_SHIFT) + 1;
+<<<<<<< HEAD
 	pages = pages_array;
 	if (nr_pages > ARRAY_SIZE(pages_array))
 		pages = vmalloc(array_size(nr_pages, sizeof(unsigned long)));
 	if (!pages)
+=======
+	gpas = gpa_array;
+	if (nr_pages > ARRAY_SIZE(gpa_array))
+		gpas = vmalloc(array_size(nr_pages, sizeof(unsigned long)));
+	if (!gpas)
+>>>>>>> origin/android16-base
 		return -ENOMEM;
 	need_ipte_lock = psw_bits(*psw).dat && !asce.r;
 	if (need_ipte_lock)
 		ipte_lock(vcpu);
+<<<<<<< HEAD
 	rc = guest_page_range(vcpu, ga, ar, pages, nr_pages, asce, mode);
 	for (idx = 0; idx < nr_pages && !rc; idx++) {
 		gpa = *(pages + idx) + (ga & ~PAGE_MASK);
@@ -869,17 +972,36 @@ int access_guest(struct kvm_vcpu *vcpu, unsigned long ga, u8 ar, void *data,
 		ipte_unlock(vcpu);
 	if (nr_pages > ARRAY_SIZE(pages_array))
 		vfree(pages);
+=======
+	rc = guest_range_to_gpas(vcpu, ga, ar, gpas, len, asce, mode);
+	for (idx = 0; idx < nr_pages && !rc; idx++) {
+		fragment_len = min(PAGE_SIZE - offset_in_page(gpas[idx]), len);
+		rc = access_guest_page(vcpu->kvm, mode, gpas[idx], data, fragment_len);
+		len -= fragment_len;
+		data += fragment_len;
+	}
+	if (need_ipte_lock)
+		ipte_unlock(vcpu);
+	if (nr_pages > ARRAY_SIZE(gpa_array))
+		vfree(gpas);
+>>>>>>> origin/android16-base
 	return rc;
 }
 
 int access_guest_real(struct kvm_vcpu *vcpu, unsigned long gra,
 		      void *data, unsigned long len, enum gacc_mode mode)
 {
+<<<<<<< HEAD
 	unsigned long _len, gpa;
+=======
+	unsigned int fragment_len;
+	unsigned long gpa;
+>>>>>>> origin/android16-base
 	int rc = 0;
 
 	while (len && !rc) {
 		gpa = kvm_s390_real_to_abs(vcpu, gra);
+<<<<<<< HEAD
 		_len = min(PAGE_SIZE - (gpa & ~PAGE_MASK), len);
 		if (mode)
 			rc = write_guest_abs(vcpu, gpa, data, _len);
@@ -889,6 +1011,16 @@ int access_guest_real(struct kvm_vcpu *vcpu, unsigned long gra,
 		gra += _len;
 		data += _len;
 	}
+=======
+		fragment_len = min(PAGE_SIZE - offset_in_page(gpa), len);
+		rc = access_guest_page(vcpu->kvm, mode, gpa, data, fragment_len);
+		len -= fragment_len;
+		gra += fragment_len;
+		data += fragment_len;
+	}
+	if (rc > 0)
+		vcpu->arch.pgm.code = rc;
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -904,8 +1036,11 @@ int access_guest_real(struct kvm_vcpu *vcpu, unsigned long gra,
 int guest_translate_address(struct kvm_vcpu *vcpu, unsigned long gva, u8 ar,
 			    unsigned long *gpa, enum gacc_mode mode)
 {
+<<<<<<< HEAD
 	psw_t *psw = &vcpu->arch.sie_block->gpsw;
 	enum prot_type prot;
+=======
+>>>>>>> origin/android16-base
 	union asce asce;
 	int rc;
 
@@ -913,6 +1048,7 @@ int guest_translate_address(struct kvm_vcpu *vcpu, unsigned long gva, u8 ar,
 	rc = get_vcpu_asce(vcpu, &asce, gva, ar, mode);
 	if (rc)
 		return rc;
+<<<<<<< HEAD
 	if (is_low_address(gva) && low_address_protection_enabled(vcpu, asce)) {
 		if (mode == GACC_STORE)
 			return trans_exc(vcpu, PGM_PROTECTION, gva, 0,
@@ -930,6 +1066,9 @@ int guest_translate_address(struct kvm_vcpu *vcpu, unsigned long gva, u8 ar,
 	}
 
 	return rc;
+=======
+	return guest_range_to_gpas(vcpu, gva, ar, gpa, 1, asce, mode);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -938,6 +1077,7 @@ int guest_translate_address(struct kvm_vcpu *vcpu, unsigned long gva, u8 ar,
 int check_gva_range(struct kvm_vcpu *vcpu, unsigned long gva, u8 ar,
 		    unsigned long length, enum gacc_mode mode)
 {
+<<<<<<< HEAD
 	unsigned long gpa;
 	unsigned long currlen;
 	int rc = 0;
@@ -949,6 +1089,16 @@ int check_gva_range(struct kvm_vcpu *vcpu, unsigned long gva, u8 ar,
 		gva += currlen;
 		length -= currlen;
 	}
+=======
+	union asce asce;
+	int rc = 0;
+
+	rc = get_vcpu_asce(vcpu, &asce, gva, ar, mode);
+	if (rc)
+		return rc;
+	ipte_lock(vcpu);
+	rc = guest_range_to_gpas(vcpu, gva, ar, NULL, length, asce, mode);
+>>>>>>> origin/android16-base
 	ipte_unlock(vcpu);
 
 	return rc;

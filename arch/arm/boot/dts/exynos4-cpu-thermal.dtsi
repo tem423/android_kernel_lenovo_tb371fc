@@ -10,7 +10,11 @@
 / {
 thermal-zones {
 	cpu_thermal: cpu-thermal {
+<<<<<<< HEAD
 		thermal-sensors = <&tmu 0>;
+=======
+		thermal-sensors = <&tmu>;
+>>>>>>> origin/android16-base
 		polling-delay-passive = <0>;
 		polling-delay = <0>;
 		trips {

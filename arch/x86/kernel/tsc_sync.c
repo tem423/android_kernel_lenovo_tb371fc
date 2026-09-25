@@ -151,11 +151,17 @@ bool tsc_store_and_check_tsc_adjust(bool bootcpu)
 	cur->warned = false;
 
 	/*
+<<<<<<< HEAD
 	 * If a non-zero TSC value for socket 0 may be valid then the default
 	 * adjusted value cannot assumed to be zero either.
 	 */
 	if (tsc_async_resets)
 		cur->adjusted = bootval;
+=======
+	 * The default adjust value cannot be assumed to be zero on any socket.
+	 */
+	cur->adjusted = bootval;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Check whether this CPU is the first in a package to come up. In

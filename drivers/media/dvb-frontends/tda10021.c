@@ -525,4 +525,8 @@ MODULE_DESCRIPTION("Philips TDA10021 DVB-C demodulator driver");
 MODULE_AUTHOR("Ralph Metzler, Holger Waechtler, Markus Schulz");
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(tda10021_attach);
+=======
+EXPORT_SYMBOL_GPL(tda10021_attach);
+>>>>>>> origin/android16-base

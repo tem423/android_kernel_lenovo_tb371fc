@@ -392,7 +392,11 @@ static int tbf_change(struct Qdisc *sch, struct nlattr *opt,
 	if (child) {
 		qdisc_tree_reduce_backlog(q->qdisc, q->qdisc->q.qlen,
 					  q->qdisc->qstats.backlog);
+<<<<<<< HEAD
 		qdisc_destroy(q->qdisc);
+=======
+		qdisc_put(q->qdisc);
+>>>>>>> origin/android16-base
 		q->qdisc = child;
 	}
 	q->limit = qopt->limit;
@@ -438,7 +442,11 @@ static void tbf_destroy(struct Qdisc *sch)
 	struct tbf_sched_data *q = qdisc_priv(sch);
 
 	qdisc_watchdog_cancel(&q->watchdog);
+<<<<<<< HEAD
 	qdisc_destroy(q->qdisc);
+=======
+	qdisc_put(q->qdisc);
+>>>>>>> origin/android16-base
 }
 
 static int tbf_dump(struct Qdisc *sch, struct sk_buff *skb)

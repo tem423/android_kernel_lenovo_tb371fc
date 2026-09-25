@@ -2841,10 +2841,17 @@ static int get_ms_information(struct scsi_cmnd *srb, struct rtsx_chip *chip)
 	}
 
 	if (dev_info_id == 0x15) {
+<<<<<<< HEAD
 		buf_len = 0x3A;
 		data_len = 0x3A;
 	} else {
 		buf_len = 0x6A;
+=======
+		buf_len = 0x3C;
+		data_len = 0x3A;
+	} else {
+		buf_len = 0x6C;
+>>>>>>> origin/android16-base
 		data_len = 0x6A;
 	}
 
@@ -2895,11 +2902,15 @@ static int get_ms_information(struct scsi_cmnd *srb, struct rtsx_chip *chip)
 	}
 
 	rtsx_stor_set_xfer_buf(buf, buf_len, srb);
+<<<<<<< HEAD
 
 	if (dev_info_id == 0x15)
 		scsi_set_resid(srb, scsi_bufflen(srb) - 0x3C);
 	else
 		scsi_set_resid(srb, scsi_bufflen(srb) - 0x6C);
+=======
+	scsi_set_resid(srb, scsi_bufflen(srb) - buf_len);
+>>>>>>> origin/android16-base
 
 	kfree(buf);
 	return STATUS_SUCCESS;

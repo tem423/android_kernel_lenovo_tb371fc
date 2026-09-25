@@ -821,9 +821,15 @@ static void pm3fb_write_mode(struct fb_info *info)
 
 	wmb();
 	{
+<<<<<<< HEAD
 		unsigned char uninitialized_var(m);	/* ClkPreScale */
 		unsigned char uninitialized_var(n);	/* ClkFeedBackScale */
 		unsigned char uninitialized_var(p);	/* ClkPostScale */
+=======
+		unsigned char m;	/* ClkPreScale */
+		unsigned char n;	/* ClkFeedBackScale */
+		unsigned char p;	/* ClkPostScale */
+>>>>>>> origin/android16-base
 		unsigned long pixclock = PICOS2KHZ(info->var.pixclock);
 
 		(void)pm3fb_calculate_clock(pixclock, &m, &n, &p);

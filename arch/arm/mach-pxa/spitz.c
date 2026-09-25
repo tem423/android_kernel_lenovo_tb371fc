@@ -13,7 +13,10 @@
  */
 
 #include <linux/kernel.h>
+<<<<<<< HEAD
 #include <linux/module.h>	/* symbol_get ; symbol_put */
+=======
+>>>>>>> origin/android16-base
 #include <linux/platform_device.h>
 #include <linux/delay.h>
 #include <linux/gpio_keys.h>
@@ -517,6 +520,7 @@ static struct pxa2xx_spi_chip spitz_ads7846_chip = {
 	.gpio_cs		= SPITZ_GPIO_ADS7846_CS,
 };
 
+<<<<<<< HEAD
 static void spitz_bl_kick_battery(void)
 {
 	void (*kick_batt)(void);
@@ -528,6 +532,8 @@ static void spitz_bl_kick_battery(void)
 	}
 }
 
+=======
+>>>>>>> origin/android16-base
 static struct corgi_lcd_platform_data spitz_lcdcon_info = {
 	.init_mode		= CORGI_LCD_MODE_VGA,
 	.max_intensity		= 0x2f,
@@ -535,7 +541,11 @@ static struct corgi_lcd_platform_data spitz_lcdcon_info = {
 	.limit_mask		= 0x0b,
 	.gpio_backlight_cont	= SPITZ_GPIO_BACKLIGHT_CONT,
 	.gpio_backlight_on	= SPITZ_GPIO_BACKLIGHT_ON,
+<<<<<<< HEAD
 	.kick_battery		= spitz_bl_kick_battery,
+=======
+	.kick_battery		= sharpsl_battery_kick,
+>>>>>>> origin/android16-base
 };
 
 static struct pxa2xx_spi_chip spitz_lcdcon_chip = {

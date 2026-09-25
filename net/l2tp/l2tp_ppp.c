@@ -1380,11 +1380,19 @@ static int pppol2tp_getsockopt(struct socket *sock, int level, int optname,
 	if (get_user(len, optlen))
 		return -EFAULT;
 
+<<<<<<< HEAD
 	len = min_t(unsigned int, len, sizeof(int));
 
 	if (len < 0)
 		return -EINVAL;
 
+=======
+	if (len < 0)
+		return -EINVAL;
+
+	len = min_t(unsigned int, len, sizeof(int));
+
+>>>>>>> origin/android16-base
 	err = -ENOTCONN;
 	if (sk->sk_user_data == NULL)
 		goto end;

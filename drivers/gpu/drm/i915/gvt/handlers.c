@@ -651,7 +651,11 @@ static int update_fdi_rx_iir_status(struct intel_vgpu *vgpu,
 	else if (FDI_RX_IMR_TO_PIPE(offset) != INVALID_INDEX)
 		index = FDI_RX_IMR_TO_PIPE(offset);
 	else {
+<<<<<<< HEAD
 		gvt_vgpu_err("Unsupport registers %x\n", offset);
+=======
+		gvt_vgpu_err("Unsupported registers %x\n", offset);
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 

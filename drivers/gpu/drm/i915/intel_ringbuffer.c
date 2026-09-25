@@ -1083,7 +1083,11 @@ int intel_ring_pin(struct intel_ring *ring,
 	if (unlikely(ret))
 		return ret;
 
+<<<<<<< HEAD
 	if (i915_vma_is_map_and_fenceable(vma))
+=======
+	if (i915_vma_is_map_and_fenceable(vma) && !HAS_LLC(vma->vm->i915))
+>>>>>>> origin/android16-base
 		addr = (void __force *)i915_vma_pin_iomap(vma);
 	else
 		addr = i915_gem_object_pin_map(vma->obj, map);
@@ -1118,7 +1122,11 @@ void intel_ring_unpin(struct intel_ring *ring)
 	/* Discard any unused bytes beyond that submitted to hw. */
 	intel_ring_reset(ring, ring->tail);
 
+<<<<<<< HEAD
 	if (i915_vma_is_map_and_fenceable(ring->vma))
+=======
+	if (i915_vma_is_map_and_fenceable(ring->vma) && !HAS_LLC(ring->vma->vm->i915))
+>>>>>>> origin/android16-base
 		i915_vma_unpin_iomap(ring->vma);
 	else
 		i915_gem_object_unpin_map(ring->vma->obj);
@@ -1132,10 +1140,18 @@ static struct i915_vma *
 intel_ring_create_vma(struct drm_i915_private *dev_priv, int size)
 {
 	struct i915_address_space *vm = &dev_priv->ggtt.vm;
+<<<<<<< HEAD
 	struct drm_i915_gem_object *obj;
 	struct i915_vma *vma;
 
 	obj = i915_gem_object_create_stolen(dev_priv, size);
+=======
+	struct drm_i915_gem_object *obj = NULL;
+	struct i915_vma *vma;
+
+	if (!HAS_LLC(dev_priv))
+		obj = i915_gem_object_create_stolen(dev_priv, size);
+>>>>>>> origin/android16-base
 	if (!obj)
 		obj = i915_gem_object_create_internal(dev_priv, size);
 	if (IS_ERR(obj))

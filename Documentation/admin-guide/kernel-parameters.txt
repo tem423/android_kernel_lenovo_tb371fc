@@ -571,6 +571,15 @@
 			loops can be debugged more effectively on production
 			systems.
 
+<<<<<<< HEAD
+=======
+	clocksource.max_cswd_read_retries= [KNL]
+			Number of clocksource_watchdog() retries due to
+			external delays before the clock will be marked
+			unstable.  Defaults to three retries, that is,
+			four attempts to read the clock under test.
+
+>>>>>>> origin/android16-base
 	clearcpuid=BITNUM[,BITNUM...] [X86]
 			Disable CPUID feature X for the kernel. See
 			arch/x86/include/asm/cpufeatures.h for the valid bit
@@ -817,10 +826,13 @@
 
 	debugpat	[X86] Enable PAT debugging
 
+<<<<<<< HEAD
 	decnet.addr=	[HW,NET]
 			Format: <area>[,<node>]
 			See also Documentation/networking/decnet.txt.
 
+=======
+>>>>>>> origin/android16-base
 	default_hugepagesz=
 			[same as hugepagesz=] The size of the default
 			HugeTLB page size. This is the size represented by
@@ -1304,6 +1316,29 @@
 			Format: off | on
 			default: on
 
+<<<<<<< HEAD
+=======
+	gather_data_sampling=
+			[X86,INTEL] Control the Gather Data Sampling (GDS)
+			mitigation.
+
+			Gather Data Sampling is a hardware vulnerability which
+			allows unprivileged speculative access to data which was
+			previously stored in vector registers.
+
+			This issue is mitigated by default in updated microcode.
+			The mitigation may have a performance impact but can be
+			disabled. On systems without the microcode mitigation
+			disabling AVX serves as a mitigation.
+
+			force:	Disable AVX to mitigate systems without
+				microcode mitigation. No effect if the microcode
+				mitigation is present. Known to cause crashes in
+				userspace with buggy AVX enumeration.
+
+			off:    Disable GDS mitigation.
+
+>>>>>>> origin/android16-base
 	gcov_persist=	[GCOV] When non-zero (default), profiling data for
 			kernel modules is saved and remains accessible via
 			debugfs, even when the module is unloaded/reloaded.
@@ -1449,6 +1484,11 @@
 			architectures force reset to be always executed
 	i8042.unlock	[HW] Unlock (ignore) the keylock
 	i8042.kbdreset	[HW] Reset device connected to KBD port
+<<<<<<< HEAD
+=======
+	i8042.probe_defer
+			[HW] Allow deferred probing upon i8042 probe errors
+>>>>>>> origin/android16-base
 
 	i810=		[HW,DRM]
 
@@ -2038,8 +2078,17 @@
 			Default is 1 (enabled)
 
 	kvm-intel.emulate_invalid_guest_state=
+<<<<<<< HEAD
 			[KVM,Intel] Enable emulation of invalid guest states
 			Default is 0 (disabled)
+=======
+			[KVM,Intel] Disable emulation of invalid guest state.
+			Ignored if kvm-intel.enable_unrestricted_guest=1, as
+			guest state is never invalid for unrestricted guests.
+			This param doesn't apply to nested guests (L2), as KVM
+			never emulates invalid L2 guest state.
+			Default is 1 (enabled)
+>>>>>>> origin/android16-base
 
 	kvm-intel.flexpriority=
 			[KVM,Intel] Disable FlexPriority feature (TPR shadow).
@@ -2572,6 +2621,7 @@
 				Disable all optional CPU mitigations.  This
 				improves system performance, but it may also
 				expose users to several CPU vulnerabilities.
+<<<<<<< HEAD
 				Equivalent to: nopti [X86,PPC]
 					       kpti=0 [ARM64]
 					       nospectre_v1 [PPC]
@@ -2585,6 +2635,25 @@
 					       mds=off [X86]
 					       tsx_async_abort=off [X86]
 					       kvm.nx_huge_pages=off [X86]
+=======
+				Equivalent to: gather_data_sampling=off [X86]
+					       kpti=0 [ARM64]
+					       kvm.nx_huge_pages=off [X86]
+					       l1tf=off [X86]
+					       mds=off [X86]
+					       mmio_stale_data=off [X86]
+					       no_entry_flush [PPC]
+					       no_uaccess_flush [PPC]
+					       nobp=0 [S390]
+					       nopti [X86,PPC]
+					       nospectre_v1 [PPC]
+					       nospectre_v1 [X86]
+					       nospectre_v2 [X86,PPC,S390,ARM64]
+					       spec_store_bypass_disable=off [X86,PPC]
+					       spectre_v2_user=off [X86]
+					       ssbd=force-off [ARM64]
+					       tsx_async_abort=off [X86]
+>>>>>>> origin/android16-base
 
 				Exceptions:
 					       This does not have any effect on
@@ -2606,6 +2675,10 @@
 				Equivalent to: l1tf=flush,nosmt [X86]
 					       mds=full,nosmt [X86]
 					       tsx_async_abort=full,nosmt [X86]
+<<<<<<< HEAD
+=======
+					       mmio_stale_data=full,nosmt [X86]
+>>>>>>> origin/android16-base
 
 	mminit_loglevel=
 			[KNL] When CONFIG_DEBUG_MEMORY_INIT is set, this
@@ -2615,6 +2688,43 @@
 			log everything. Information is printed at KERN_DEBUG
 			so loglevel=8 may also need to be specified.
 
+<<<<<<< HEAD
+=======
+	mmio_stale_data=
+			[X86,INTEL] Control mitigation for the Processor
+			MMIO Stale Data vulnerabilities.
+
+			Processor MMIO Stale Data is a class of
+			vulnerabilities that may expose data after an MMIO
+			operation. Exposed data could originate or end in
+			the same CPU buffers as affected by MDS and TAA.
+			Therefore, similar to MDS and TAA, the mitigation
+			is to clear the affected CPU buffers.
+
+			This parameter controls the mitigation. The
+			options are:
+
+			full       - Enable mitigation on vulnerable CPUs
+
+			full,nosmt - Enable mitigation and disable SMT on
+				     vulnerable CPUs.
+
+			off        - Unconditionally disable mitigation
+
+			On MDS or TAA affected machines,
+			mmio_stale_data=off can be prevented by an active
+			MDS or TAA mitigation as these vulnerabilities are
+			mitigated with the same mechanism so in order to
+			disable this mitigation, you need to specify
+			mds=off and tsx_async_abort=off too.
+
+			Not specifying this option is equivalent to
+			mmio_stale_data=full.
+
+			For details see:
+			Documentation/admin-guide/hw-vuln/processor_mmio_stale_data.rst
+
+>>>>>>> origin/android16-base
 	module.sig_enforce
 			[KNL] When CONFIG_MODULE_SIG is set, this means that
 			modules without (valid) signatures will fail to load.
@@ -2895,6 +3005,11 @@
 
 	noefi		Disable EFI runtime services support.
 
+<<<<<<< HEAD
+=======
+	no_entry_flush  [PPC] Don't flush the L1-D cache when entering the kernel.
+
+>>>>>>> origin/android16-base
 	noexec		[IA-64]
 
 	noexec		[X86]
@@ -2944,6 +3059,12 @@
 	nospec_store_bypass_disable
 			[HW] Disable all mitigations for the Speculative Store Bypass vulnerability
 
+<<<<<<< HEAD
+=======
+	no_uaccess_flush
+	                [PPC] Don't flush the L1-D cache after accessing user data.
+
+>>>>>>> origin/android16-base
 	noxsave		[BUGS=X86] Disables x86 extended register state save
 			and restore using xsave. The kernel will fallback to
 			enabling legacy floating-point and sse state.
@@ -3677,6 +3798,15 @@
 			fully seed the kernel's CRNG. Default is controlled
 			by CONFIG_RANDOM_TRUST_CPU.
 
+<<<<<<< HEAD
+=======
+	random.trust_bootloader={on,off}
+			[KNL] Enable or disable trusting the use of a
+			seed passed by the bootloader (if available) to
+			fully seed the kernel's CRNG. Default is controlled
+			by CONFIG_RANDOM_TRUST_BOOTLOADER.
+
+>>>>>>> origin/android16-base
 	ras=option[,option,...]	[KNL] RAS-specific options
 
 		cec_disable	[X86]
@@ -4108,6 +4238,21 @@
 
 	retain_initrd	[RAM] Keep initrd memory after extraction
 
+<<<<<<< HEAD
+=======
+	retbleed=	[X86] Control mitigation of RETBleed (Arbitrary
+			Speculative Code Execution with Return Instructions)
+			vulnerability.
+
+			off         - unconditionally disable
+			auto        - automatically select a migitation
+
+			Selecting 'auto' will choose a mitigation method at run
+			time according to the CPU.
+
+			Not specifying this option is equivalent to retbleed=auto.
+
+>>>>>>> origin/android16-base
 	rfkill.default_state=
 		0	"airplane mode".  All wifi, bluetooth, wimax, gps, fm,
 			etc. communication is blocked by default.
@@ -4347,8 +4492,18 @@
 			Specific mitigations can also be selected manually:
 
 			retpoline	  - replace indirect branches
+<<<<<<< HEAD
 			retpoline,generic - google's original retpoline
 			retpoline,amd     - AMD-specific minimal thunk
+=======
+			retpoline,generic - Retpolines
+			retpoline,lfence  - LFENCE; indirect branch
+			retpoline,amd     - alias for retpoline,lfence
+			eibrs		  - Enhanced/Auto IBRS
+			eibrs,retpoline   - Enhanced/Auto IBRS + Retpolines
+			eibrs,lfence      - Enhanced/Auto IBRS + LFENCE
+			ibrs		  - use IBRS to protect kernel
+>>>>>>> origin/android16-base
 
 			Not specifying this option is equivalent to
 			spectre_v2=auto.
@@ -5028,6 +5183,10 @@
 					device);
 				j = NO_REPORT_LUNS (don't use report luns
 					command, uas only);
+<<<<<<< HEAD
+=======
+				k = NO_SAME (do not use WRITE_SAME, uas only)
+>>>>>>> origin/android16-base
 				l = NOT_LOCKABLE (don't try to lock and
 					unlock ejectable media, not on uas);
 				m = MAX_SECTORS_64 (don't transfer more
@@ -5307,6 +5466,16 @@
 			with /sys/devices/system/xen_memory/xen_memory0/scrub_pages.
 			Default value controlled with CONFIG_XEN_SCRUB_PAGES_DEFAULT.
 
+<<<<<<< HEAD
+=======
+	xen.balloon_boot_timeout= [XEN]
+			The time (in seconds) to wait before giving up to boot
+			in case initial ballooning fails to free enough memory.
+			Applies only when running as HVM or PVH guest and
+			started with less memory configured than allowed at
+			max. Default is 180.
+
+>>>>>>> origin/android16-base
 	xen.event_eoi_delay=	[XEN]
 			How long to delay EOI handling in case of event
 			storms (jiffies). Default is 10.

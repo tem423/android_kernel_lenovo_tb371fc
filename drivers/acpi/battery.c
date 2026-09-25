@@ -78,6 +78,10 @@ static int battery_bix_broken_package;
 static int battery_notification_delay_ms;
 static int battery_ac_is_broken;
 static int battery_check_pmic = 1;
+<<<<<<< HEAD
+=======
+static int battery_quirk_notcharging;
+>>>>>>> origin/android16-base
 static unsigned int cache_time = 1000;
 module_param(cache_time, uint, 0644);
 MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
@@ -89,6 +93,13 @@ extern void *acpi_unlock_battery_dir(struct proc_dir_entry *acpi_battery_dir);
 
 static const struct acpi_device_id battery_device_ids[] = {
 	{"PNP0C0A", 0},
+<<<<<<< HEAD
+=======
+
+	/* Microsoft Surface Go 3 */
+	{"MSHW0146", 0},
+
+>>>>>>> origin/android16-base
 	{"", 0},
 };
 
@@ -198,7 +209,11 @@ static int acpi_battery_is_charged(struct acpi_battery *battery)
 		return 1;
 
 	/* fallback to using design values for broken batteries */
+<<<<<<< HEAD
 	if (battery->design_capacity == battery->capacity_now)
+=======
+	if (battery->design_capacity <= battery->capacity_now)
+>>>>>>> origin/android16-base
 		return 1;
 
 	/* we don't do any sort of metric based on percentages */
@@ -246,6 +261,11 @@ static int acpi_battery_get_property(struct power_supply *psy,
 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
 		else if (acpi_battery_is_charged(battery))
 			val->intval = POWER_SUPPLY_STATUS_FULL;
+<<<<<<< HEAD
+=======
+		else if (battery_quirk_notcharging)
+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+>>>>>>> origin/android16-base
 		else
 			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
 		break;
@@ -471,7 +491,11 @@ static int extract_package(struct acpi_battery *battery,
 			u8 *ptr = (u8 *)battery + offsets[i].offset;
 			if (element->type == ACPI_TYPE_STRING ||
 			    element->type == ACPI_TYPE_BUFFER)
+<<<<<<< HEAD
 				strncpy(ptr, element->string.pointer, 32);
+=======
+				strscpy(ptr, element->string.pointer, 32);
+>>>>>>> origin/android16-base
 			else if (element->type == ACPI_TYPE_INTEGER) {
 				strncpy(ptr, (u8 *)&element->integer.value,
 					sizeof(u64));
@@ -706,13 +730,21 @@ static LIST_HEAD(acpi_battery_list);
 static LIST_HEAD(battery_hook_list);
 static DEFINE_MUTEX(hook_mutex);
 
+<<<<<<< HEAD
 static void __battery_hook_unregister(struct acpi_battery_hook *hook, int lock)
 {
 	struct acpi_battery *battery;
+=======
+static void battery_hook_unregister_unlocked(struct acpi_battery_hook *hook)
+{
+	struct acpi_battery *battery;
+
+>>>>>>> origin/android16-base
 	/*
 	 * In order to remove a hook, we first need to
 	 * de-register all the batteries that are registered.
 	 */
+<<<<<<< HEAD
 	if (lock)
 		mutex_lock(&hook_mutex);
 	list_for_each_entry(battery, &acpi_battery_list, list) {
@@ -721,12 +753,32 @@ static void __battery_hook_unregister(struct acpi_battery_hook *hook, int lock)
 	list_del(&hook->list);
 	if (lock)
 		mutex_unlock(&hook_mutex);
+=======
+	list_for_each_entry(battery, &acpi_battery_list, list) {
+		hook->remove_battery(battery->bat);
+	}
+	list_del_init(&hook->list);
+
+>>>>>>> origin/android16-base
 	pr_info("extension unregistered: %s\n", hook->name);
 }
 
 void battery_hook_unregister(struct acpi_battery_hook *hook)
 {
+<<<<<<< HEAD
 	__battery_hook_unregister(hook, 1);
+=======
+	mutex_lock(&hook_mutex);
+	/*
+	 * Ignore already unregistered battery hooks. This might happen
+	 * if a battery hook was previously unloaded due to an error when
+	 * adding a new battery.
+	 */
+	if (!list_empty(&hook->list))
+		battery_hook_unregister_unlocked(hook);
+
+	mutex_unlock(&hook_mutex);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(battery_hook_unregister);
 
@@ -735,7 +787,10 @@ void battery_hook_register(struct acpi_battery_hook *hook)
 	struct acpi_battery *battery;
 
 	mutex_lock(&hook_mutex);
+<<<<<<< HEAD
 	INIT_LIST_HEAD(&hook->list);
+=======
+>>>>>>> origin/android16-base
 	list_add(&hook->list, &battery_hook_list);
 	/*
 	 * Now that the driver is registered, we need
@@ -752,7 +807,11 @@ void battery_hook_register(struct acpi_battery_hook *hook)
 			 * hooks.
 			 */
 			pr_err("extension failed to load: %s", hook->name);
+<<<<<<< HEAD
 			__battery_hook_unregister(hook, 0);
+=======
+			battery_hook_unregister_unlocked(hook);
+>>>>>>> origin/android16-base
 			goto end;
 		}
 	}
@@ -789,7 +848,11 @@ static void battery_hook_add_battery(struct acpi_battery *battery)
 			 */
 			pr_err("error in extension, unloading: %s",
 					hook_node->name);
+<<<<<<< HEAD
 			__battery_hook_unregister(hook_node, 0);
+=======
+			battery_hook_unregister_unlocked(hook_node);
+>>>>>>> origin/android16-base
 		}
 	}
 	mutex_unlock(&hook_mutex);
@@ -822,7 +885,11 @@ static void __exit battery_hook_exit(void)
 	 * need to remove the hooks.
 	 */
 	list_for_each_entry_safe(hook, ptr, &battery_hook_list, list) {
+<<<<<<< HEAD
 		__battery_hook_unregister(hook, 1);
+=======
+		battery_hook_unregister(hook);
+>>>>>>> origin/android16-base
 	}
 	mutex_destroy(&hook_mutex);
 }
@@ -1350,6 +1417,15 @@ battery_do_not_check_pmic_quirk(const struct dmi_system_id *d)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int __init battery_quirk_not_charging(const struct dmi_system_id *d)
+{
+	battery_quirk_notcharging = 1;
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static const struct dmi_system_id bat_dmi_table[] __initconst = {
 	{
 		/* NEC LZ750/LS */
@@ -1394,6 +1470,30 @@ static const struct dmi_system_id bat_dmi_table[] __initconst = {
 		  DMI_EXACT_MATCH(DMI_PRODUCT_VERSION, "Lenovo MIIX 320-10ICR"),
 		},
 	},
+<<<<<<< HEAD
+=======
+	{
+		/*
+		 * On Lenovo ThinkPads the BIOS specification defines
+		 * a state when the bits for charging and discharging
+		 * are both set to 0. That state is "Not Charging".
+		 */
+		.callback = battery_quirk_not_charging,
+		.ident = "Lenovo ThinkPad",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad"),
+		},
+	},
+	{
+		/* Microsoft Surface Go 3 */
+		.callback = battery_notification_delay_quirk,
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+			DMI_MATCH(DMI_PRODUCT_NAME, "Surface Go 3"),
+		},
+	},
+>>>>>>> origin/android16-base
 	{},
 };
 

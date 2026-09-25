@@ -157,6 +157,10 @@ struct drm_framebuffer *tegra_fb_create(struct drm_device *drm,
 
 		if (gem->size < size) {
 			err = -EINVAL;
+<<<<<<< HEAD
+=======
+			drm_gem_object_put(gem);
+>>>>>>> origin/android16-base
 			goto unreference;
 		}
 

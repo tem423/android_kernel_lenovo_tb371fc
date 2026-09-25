@@ -23,7 +23,11 @@
 #ifndef _UAPI_LINUX_SYSCTL_H
 #define _UAPI_LINUX_SYSCTL_H
 
+<<<<<<< HEAD
 #include <linux/kernel.h>
+=======
+#include <linux/const.h>
+>>>>>>> origin/android16-base
 #include <linux/types.h>
 #include <linux/compiler.h>
 

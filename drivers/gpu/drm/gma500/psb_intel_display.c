@@ -543,6 +543,7 @@ void psb_intel_crtc_init(struct drm_device *dev, int pipe,
 
 struct drm_crtc *psb_intel_get_crtc_from_pipe(struct drm_device *dev, int pipe)
 {
+<<<<<<< HEAD
 	struct drm_crtc *crtc = NULL;
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
@@ -551,6 +552,17 @@ struct drm_crtc *psb_intel_get_crtc_from_pipe(struct drm_device *dev, int pipe)
 			break;
 	}
 	return crtc;
+=======
+	struct drm_crtc *crtc;
+
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct gma_crtc *gma_crtc = to_gma_crtc(crtc);
+
+		if (gma_crtc->pipe == pipe)
+			return crtc;
+	}
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 int gma_connector_clones(struct drm_device *dev, int type_mask)

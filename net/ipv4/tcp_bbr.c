@@ -917,7 +917,11 @@ static void bbr_update_min_rtt(struct sock *sk, const struct rate_sample *rs)
 	filter_expired = after(tcp_jiffies32,
 			       bbr->min_rtt_stamp + bbr_min_rtt_win_sec * HZ);
 	if (rs->rtt_us >= 0 &&
+<<<<<<< HEAD
 	    (rs->rtt_us <= bbr->min_rtt_us ||
+=======
+	    (rs->rtt_us < bbr->min_rtt_us ||
+>>>>>>> origin/android16-base
 	     (filter_expired && !rs->is_ack_delayed))) {
 		bbr->min_rtt_us = rs->rtt_us;
 		bbr->min_rtt_stamp = tcp_jiffies32;
@@ -985,7 +989,11 @@ static void bbr_init(struct sock *sk)
 	bbr->prior_cwnd = 0;
 	tp->snd_ssthresh = TCP_INFINITE_SSTHRESH;
 	bbr->rtt_cnt = 0;
+<<<<<<< HEAD
 	bbr->next_rtt_delivered = 0;
+=======
+	bbr->next_rtt_delivered = tp->delivered;
+>>>>>>> origin/android16-base
 	bbr->prev_ca_state = TCP_CA_Open;
 	bbr->packet_conservation = 0;
 

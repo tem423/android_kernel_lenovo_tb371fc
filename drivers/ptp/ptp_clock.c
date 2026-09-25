@@ -68,15 +68,27 @@ static void enqueue_external_timestamp(struct timestamp_event_queue *queue,
 	dst->t.sec = seconds;
 	dst->t.nsec = remainder;
 
+<<<<<<< HEAD
 	if (!queue_free(queue))
 		queue->head = (queue->head + 1) % PTP_MAX_TIMESTAMPS;
 
 	queue->tail = (queue->tail + 1) % PTP_MAX_TIMESTAMPS;
+=======
+	/* Both WRITE_ONCE() are paired with READ_ONCE() in queue_cnt() */
+	if (!queue_free(queue))
+		WRITE_ONCE(queue->head, (queue->head + 1) % PTP_MAX_TIMESTAMPS);
+
+	WRITE_ONCE(queue->tail, (queue->tail + 1) % PTP_MAX_TIMESTAMPS);
+>>>>>>> origin/android16-base
 
 	spin_unlock_irqrestore(&queue->lock, flags);
 }
 
+<<<<<<< HEAD
 static s32 scaled_ppm_to_ppb(long ppm)
+=======
+long scaled_ppm_to_ppb(long ppm)
+>>>>>>> origin/android16-base
 {
 	/*
 	 * The 'freq' field in the 'struct timex' is in parts per
@@ -93,8 +105,14 @@ static s32 scaled_ppm_to_ppb(long ppm)
 	s64 ppb = 1 + ppm;
 	ppb *= 125;
 	ppb >>= 13;
+<<<<<<< HEAD
 	return (s32) ppb;
 }
+=======
+	return (long) ppb;
+}
+EXPORT_SYMBOL(scaled_ppm_to_ppb);
+>>>>>>> origin/android16-base
 
 /* posix clock implementation */
 
@@ -147,7 +165,11 @@ static int ptp_clock_adjtime(struct posix_clock *pc, struct timex *tx)
 		delta = ktime_to_ns(kt);
 		err = ops->adjtime(ops, delta);
 	} else if (tx->modes & ADJ_FREQUENCY) {
+<<<<<<< HEAD
 		s32 ppb = scaled_ppm_to_ppb(tx->freq);
+=======
+		long ppb = scaled_ppm_to_ppb(tx->freq);
+>>>>>>> origin/android16-base
 		if (ppb > ops->max_adj || ppb < -ops->max_adj)
 			return -ERANGE;
 		if (ops->adjfine)

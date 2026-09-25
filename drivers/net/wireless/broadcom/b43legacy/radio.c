@@ -299,7 +299,11 @@ u8 b43legacy_radio_aci_scan(struct b43legacy_wldev *dev)
 			    & 0x7FFF);
 	b43legacy_set_all_gains(dev, 3, 8, 1);
 
+<<<<<<< HEAD
 	start = (channel - 5 > 0) ? channel - 5 : 1;
+=======
+	start = (channel > 5) ? channel - 5 : 1;
+>>>>>>> origin/android16-base
 	end = (channel + 5 < 14) ? channel + 5 : 13;
 
 	for (i = start; i <= end; i++) {

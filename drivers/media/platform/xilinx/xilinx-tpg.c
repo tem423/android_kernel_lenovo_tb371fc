@@ -725,7 +725,11 @@ static int xtpg_parse_of(struct xtpg_device *xtpg)
 		const struct xvip_video_format *format;
 		struct device_node *endpoint;
 
+<<<<<<< HEAD
 		if (!port->name || of_node_cmp(port->name, "port"))
+=======
+		if (!of_node_name_eq(port, "port"))
+>>>>>>> origin/android16-base
 			continue;
 
 		format = xvip_of_get_format(port);

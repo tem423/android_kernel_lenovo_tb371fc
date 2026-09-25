@@ -161,7 +161,11 @@ void memcpy_flushcache(void *_dst, const void *_src, size_t size)
 
 	/* cache copy and flush to align dest */
 	if (!IS_ALIGNED(dest, 8)) {
+<<<<<<< HEAD
 		unsigned len = min_t(unsigned, size, ALIGN(dest, 8) - dest);
+=======
+		size_t len = min_t(size_t, size, ALIGN(dest, 8) - dest);
+>>>>>>> origin/android16-base
 
 		memcpy((void *) dest, (void *) source, len);
 		clean_cache_range((void *) dest, len);

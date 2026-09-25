@@ -1206,13 +1206,26 @@ int radeon_vm_init(struct radeon_device *rdev, struct radeon_vm *vm)
 	r = radeon_bo_create(rdev, pd_size, align, true,
 			     RADEON_GEM_DOMAIN_VRAM, 0, NULL,
 			     NULL, &vm->page_directory);
+<<<<<<< HEAD
 	if (r)
 		return r;
 
+=======
+	if (r) {
+		kfree(vm->page_tables);
+		vm->page_tables = NULL;
+		return r;
+	}
+>>>>>>> origin/android16-base
 	r = radeon_vm_clear_bo(rdev, vm->page_directory);
 	if (r) {
 		radeon_bo_unref(&vm->page_directory);
 		vm->page_directory = NULL;
+<<<<<<< HEAD
+=======
+		kfree(vm->page_tables);
+		vm->page_tables = NULL;
+>>>>>>> origin/android16-base
 		return r;
 	}
 

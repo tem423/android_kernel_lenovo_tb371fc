@@ -258,7 +258,14 @@ void dwc3_ep0_stall_and_restart(struct dwc3 *dwc)
 		struct dwc3_request	*req;
 
 		req = next_request(&dep->pending_list);
+<<<<<<< HEAD
 		dwc3_gadget_giveback(dep, req, -ECONNRESET);
+=======
+		if (!dwc->connected)
+			dwc3_gadget_giveback(dep, req, -ESHUTDOWN);
+		else
+			dwc3_gadget_giveback(dep, req, -ECONNRESET);
+>>>>>>> origin/android16-base
 	}
 
 	dwc->ep0state = EP0_SETUP_PHASE;
@@ -319,6 +326,12 @@ static struct dwc3_ep *dwc3_wIndex_to_dep(struct dwc3 *dwc, __le16 wIndex_le)
 		epnum |= 1;
 
 	dep = dwc->eps[epnum];
+<<<<<<< HEAD
+=======
+	if (dep == NULL)
+		return NULL;
+
+>>>>>>> origin/android16-base
 	if (dep->flags & DWC3_EP_ENABLED)
 		return dep;
 

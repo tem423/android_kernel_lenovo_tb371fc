@@ -35,7 +35,11 @@
 #include "list.h"
 #include "sysfs_utils.h"
 
+<<<<<<< HEAD
 struct udev *udev_context;
+=======
+extern struct udev *udev_context;
+>>>>>>> origin/android16-base
 
 static int32_t read_attr_usbip_status(struct usbip_usb_device *udev)
 {

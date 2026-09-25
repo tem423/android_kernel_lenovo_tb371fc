@@ -423,7 +423,11 @@ config MMC_OMAP_HS
 
 config MMC_WBSD
 	tristate "Winbond W83L51xD SD/MMC Card Interface support"
+<<<<<<< HEAD
 	depends on ISA_DMA_API
+=======
+	depends on ISA_DMA_API && !M68K
+>>>>>>> origin/android16-base
 	help
 	  This selects the Winbond(R) W83L51xD Secure digital and
           Multimedia card Interface.
@@ -433,11 +437,20 @@ config MMC_WBSD
 	  If unsure, say N.
 
 config MMC_AU1X
+<<<<<<< HEAD
 	tristate "Alchemy AU1XX0 MMC Card Interface support"
 	depends on MIPS_ALCHEMY
 	help
 	  This selects the AMD Alchemy(R) Multimedia card interface.
 	  If you have a Alchemy platform with a MMC slot, say Y or M here.
+=======
+	bool "Alchemy AU1XX0 MMC Card Interface support"
+	depends on MIPS_ALCHEMY
+	depends on MMC=y
+	help
+	  This selects the AMD Alchemy(R) Multimedia card interface.
+	  If you have a Alchemy platform with a MMC slot, say Y here.
+>>>>>>> origin/android16-base
 
 	  If unsure, say N.
 
@@ -466,6 +479,7 @@ config MMC_SDHCI_MSM
 
 	  If unsure, say N.
 
+<<<<<<< HEAD
 # huaqin add for SD card bringup by liufurong at 20190201 start
 config MMC_SDHCI_BH201
 	bool "Bayhub BH201 SD bridge for Qualcomm SDHCI Controller Support"
@@ -477,6 +491,8 @@ config MMC_SDHCI_BH201
 	  Select this if you have BH201 supported for SDHCI on QTI chipset.
 	  If unsure, say N.
 # huaqin add for SD card bringup by liufurong at 20190201 end
+=======
+>>>>>>> origin/android16-base
 config MMC_MXC
 	tristate "Freescale i.MX21/27/31 or MPC512x Multimedia Card support"
 	depends on ARCH_MXC || PPC_MPC512x
@@ -948,13 +964,22 @@ config MMC_SDHCI_XENON
 
 config MMC_SDHCI_OMAP
 	tristate "TI SDHCI Controller Support"
+<<<<<<< HEAD
+=======
+	depends on ARCH_OMAP2PLUS || ARCH_KEYSTONE || COMPILE_TEST
+>>>>>>> origin/android16-base
 	depends on MMC_SDHCI_PLTFM && OF
 	select THERMAL
 	imply TI_SOC_THERMAL
 	help
 	  This selects the Secure Digital Host Controller Interface (SDHCI)
+<<<<<<< HEAD
 	  support present in TI's DRA7 SOCs. The controller supports
 	  SD/MMC/SDIO devices.
+=======
+	  support present in TI's Keystone/OMAP2+/DRA7 SOCs. The controller
+	  supports SD/MMC/SDIO devices.
+>>>>>>> origin/android16-base
 
 	  If you have a controller with this interface, say Y or M here.
 

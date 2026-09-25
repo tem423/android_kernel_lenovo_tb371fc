@@ -569,7 +569,11 @@ static void stb6100_release(struct dvb_frontend *fe)
 	kfree(state);
 }
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(stb6100_attach);
+=======
+EXPORT_SYMBOL_GPL(stb6100_attach);
+>>>>>>> origin/android16-base
 MODULE_PARM_DESC(verbose, "Set Verbosity level");
 
 MODULE_AUTHOR("Manu Abraham");

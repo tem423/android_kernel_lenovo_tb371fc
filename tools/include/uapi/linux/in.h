@@ -280,6 +280,12 @@ struct sockaddr_in {
 /* Address indicating an error return. */
 #define	INADDR_NONE		((unsigned long int) 0xffffffff)
 
+<<<<<<< HEAD
+=======
+/* Dummy address for src of ICMP replies if no real address is set (RFC7600). */
+#define	INADDR_DUMMY		((unsigned long int) 0xc0000008)
+
+>>>>>>> origin/android16-base
 /* Network number for local host loopback. */
 #define	IN_LOOPBACKNET		127
 

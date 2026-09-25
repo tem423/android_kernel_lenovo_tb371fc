@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
+<<<<<<< HEAD
  * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/init.h>
@@ -1531,6 +1535,20 @@ static const struct component_ops wcd_spi_component_ops = {
 	.unbind = wcd_spi_component_unbind,
 };
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_WCD_SPI_DMA_MASKING
+static void arch_setup_spi_archdata(struct spi_device *spi)
+{
+	if (spi->dev.coherent_dma_mask == DMA_MASK_NONE &&
+		spi->dev.dma_mask == NULL) {
+			spi->dev.coherent_dma_mask = DMA_BIT_MASK(sizeof(dma_addr_t) * 8);
+			spi->dev.dma_mask = &spi->dev.coherent_dma_mask;
+	}
+}
+#endif
+
+>>>>>>> origin/android16-base
 static int wcd_spi_probe(struct spi_device *spi)
 {
 	struct wcd_spi_priv *wcd_spi;
@@ -1557,8 +1575,16 @@ static int wcd_spi_probe(struct spi_device *spi)
 	mutex_init(&wcd_spi->xfer_mutex);
 	INIT_DELAYED_WORK(&wcd_spi->clk_dwork, wcd_spi_clk_work);
 	init_completion(&wcd_spi->resume_comp);
+<<<<<<< HEAD
 	arch_setup_dma_ops(&spi->dev, 0, 0, NULL, true);
 
+=======
+#ifdef CONFIG_WCD_SPI_DMA_MASKING
+	arch_setup_spi_archdata(spi);
+#endif
+
+	arch_setup_dma_ops(&spi->dev, 0, 0, NULL, true);
+>>>>>>> origin/android16-base
 	wcd_spi->spi = spi;
 	spi_set_drvdata(spi, wcd_spi);
 

@@ -159,6 +159,16 @@ struct aspeed_i2c_bus {
 
 static int aspeed_i2c_reset(struct aspeed_i2c_bus *bus);
 
+<<<<<<< HEAD
+=======
+/* precondition: bus.lock has been acquired. */
+static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
+{
+	bus->master_state = ASPEED_I2C_MASTER_STOP;
+	writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
+}
+
+>>>>>>> origin/android16-base
 static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
 {
 	unsigned long time_left, flags;
@@ -176,7 +186,11 @@ static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
 			command);
 
 		reinit_completion(&bus->cmd_complete);
+<<<<<<< HEAD
 		writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
+=======
+		aspeed_i2c_do_stop(bus);
+>>>>>>> origin/android16-base
 		spin_unlock_irqrestore(&bus->lock, flags);
 
 		time_left = wait_for_completion_timeout(
@@ -351,6 +365,7 @@ static void aspeed_i2c_do_start(struct aspeed_i2c_bus *bus)
 }
 
 /* precondition: bus.lock has been acquired. */
+<<<<<<< HEAD
 static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
 {
 	bus->master_state = ASPEED_I2C_MASTER_STOP;
@@ -358,6 +373,8 @@ static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
 }
 
 /* precondition: bus.lock has been acquired. */
+=======
+>>>>>>> origin/android16-base
 static void aspeed_i2c_next_msg_or_stop(struct aspeed_i2c_bus *bus)
 {
 	if (bus->msgs_index + 1 < bus->msgs_count) {

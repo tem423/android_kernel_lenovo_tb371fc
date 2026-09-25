@@ -28,7 +28,11 @@ menuconfig VFIO
 
 	  If you don't know what to do here, say N.
 
+<<<<<<< HEAD
 menuconfig VFIO_NOIOMMU
+=======
+config VFIO_NOIOMMU
+>>>>>>> origin/android16-base
 	bool "VFIO No-IOMMU support"
 	depends on VFIO
 	help

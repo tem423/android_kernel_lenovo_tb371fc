@@ -300,12 +300,20 @@ static inline void scc_discard_buffers(struct scc_channel *scc)
 	spin_lock_irqsave(&scc->lock, flags);	
 	if (scc->tx_buff != NULL)
 	{
+<<<<<<< HEAD
 		dev_kfree_skb(scc->tx_buff);
+=======
+		dev_kfree_skb_irq(scc->tx_buff);
+>>>>>>> origin/android16-base
 		scc->tx_buff = NULL;
 	}
 	
 	while (!skb_queue_empty(&scc->tx_queue))
+<<<<<<< HEAD
 		dev_kfree_skb(skb_dequeue(&scc->tx_queue));
+=======
+		dev_kfree_skb_irq(skb_dequeue(&scc->tx_queue));
+>>>>>>> origin/android16-base
 
 	spin_unlock_irqrestore(&scc->lock, flags);
 }
@@ -1667,7 +1675,11 @@ static netdev_tx_t scc_net_tx(struct sk_buff *skb, struct net_device *dev)
 	if (skb_queue_len(&scc->tx_queue) > scc->dev->tx_queue_len) {
 		struct sk_buff *skb_del;
 		skb_del = skb_dequeue(&scc->tx_queue);
+<<<<<<< HEAD
 		dev_kfree_skb(skb_del);
+=======
+		dev_kfree_skb_irq(skb_del);
+>>>>>>> origin/android16-base
 	}
 	skb_queue_tail(&scc->tx_queue, skb);
 	netif_trans_update(dev);

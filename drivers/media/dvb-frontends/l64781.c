@@ -605,4 +605,8 @@ MODULE_DESCRIPTION("LSI L64781 DVB-T Demodulator driver");
 MODULE_AUTHOR("Holger Waechtler, Marko Kohtala");
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(l64781_attach);
+=======
+EXPORT_SYMBOL_GPL(l64781_attach);
+>>>>>>> origin/android16-base

@@ -168,8 +168,13 @@ smb_send_kvec(struct TCP_Server_Info *server, struct msghdr *smb_msg,
 
 	*sent = 0;
 
+<<<<<<< HEAD
 	smb_msg->msg_name = (struct sockaddr *) &server->dstaddr;
 	smb_msg->msg_namelen = sizeof(struct sockaddr);
+=======
+	smb_msg->msg_name = NULL;
+	smb_msg->msg_namelen = 0;
+>>>>>>> origin/android16-base
 	smb_msg->msg_control = NULL;
 	smb_msg->msg_controllen = 0;
 	if (server->noblocksnd)
@@ -891,9 +896,18 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 	/*
 	 * Compounding is never used during session establish.
 	 */
+<<<<<<< HEAD
 	if ((ses->status == CifsNew) || (optype & CIFS_NEG_OP))
 		smb311_update_preauth_hash(ses, rqst[0].rq_iov,
 					   rqst[0].rq_nvec);
+=======
+	if ((ses->status == CifsNew) || (optype & CIFS_NEG_OP)) {
+		mutex_lock(&ses->server->srv_mutex);
+		smb311_update_preauth_hash(ses, rqst[0].rq_iov,
+					   rqst[0].rq_nvec);
+		mutex_unlock(&ses->server->srv_mutex);
+	}
+>>>>>>> origin/android16-base
 
 	if (timeout == CIFS_ASYNC_OP)
 		goto out;
@@ -964,7 +978,13 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 			.iov_base = resp_iov[0].iov_base,
 			.iov_len = resp_iov[0].iov_len
 		};
+<<<<<<< HEAD
 		smb311_update_preauth_hash(ses, &iov, 1);
+=======
+		mutex_lock(&ses->server->srv_mutex);
+		smb311_update_preauth_hash(ses, &iov, 1);
+		mutex_unlock(&ses->server->srv_mutex);
+>>>>>>> origin/android16-base
 	}
 
 out:

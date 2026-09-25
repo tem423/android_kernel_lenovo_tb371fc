@@ -391,6 +391,10 @@ int setup_one_line(struct line *lines, int n, char *init,
 			parse_chan_pair(NULL, line, n, opts, error_out);
 			err = 0;
 		}
+<<<<<<< HEAD
+=======
+		*error_out = "configured as 'none'";
+>>>>>>> origin/android16-base
 	} else {
 		char *new = kstrdup(init, GFP_KERNEL);
 		if (!new) {
@@ -414,6 +418,10 @@ int setup_one_line(struct line *lines, int n, char *init,
 			}
 		}
 		if (err) {
+<<<<<<< HEAD
+=======
+			*error_out = "failed to parse channel pair";
+>>>>>>> origin/android16-base
 			line->init_str = NULL;
 			line->valid = 0;
 			kfree(new);
@@ -683,17 +691,29 @@ void register_winch_irq(int fd, int tty_fd, int pid, struct tty_port *port,
 		goto cleanup;
 	}
 
+<<<<<<< HEAD
 	*winch = ((struct winch) { .list  	= LIST_HEAD_INIT(winch->list),
 				   .fd  	= fd,
+=======
+	*winch = ((struct winch) { .fd  	= fd,
+>>>>>>> origin/android16-base
 				   .tty_fd 	= tty_fd,
 				   .pid  	= pid,
 				   .port 	= port,
 				   .stack	= stack });
 
+<<<<<<< HEAD
+=======
+	spin_lock(&winch_handler_lock);
+	list_add(&winch->list, &winch_handlers);
+	spin_unlock(&winch_handler_lock);
+
+>>>>>>> origin/android16-base
 	if (um_request_irq(WINCH_IRQ, fd, IRQ_READ, winch_interrupt,
 			   IRQF_SHARED, "winch", winch) < 0) {
 		printk(KERN_ERR "register_winch_irq - failed to register "
 		       "IRQ\n");
+<<<<<<< HEAD
 		goto out_free;
 	}
 
@@ -701,6 +721,14 @@ void register_winch_irq(int fd, int tty_fd, int pid, struct tty_port *port,
 	list_add(&winch->list, &winch_handlers);
 	spin_unlock(&winch_handler_lock);
 
+=======
+		spin_lock(&winch_handler_lock);
+		list_del(&winch->list);
+		spin_unlock(&winch_handler_lock);
+		goto out_free;
+	}
+
+>>>>>>> origin/android16-base
 	return;
 
  out_free:

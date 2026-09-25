@@ -78,5 +78,9 @@ TRACE_EVENT(v3d_reset_end,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/gpu/drm/v3d
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #include <trace/define_trace.h>

@@ -58,7 +58,11 @@ static int btrfs_encode_fh(struct inode *inode, u32 *fh, int *max_len,
 }
 
 struct dentry *btrfs_get_dentry(struct super_block *sb, u64 objectid,
+<<<<<<< HEAD
 				u64 root_objectid, u32 generation,
+=======
+				u64 root_objectid, u64 generation,
+>>>>>>> origin/android16-base
 				int check_generation)
 {
 	struct btrfs_fs_info *fs_info = btrfs_sb(sb);
@@ -182,8 +186,20 @@ struct dentry *btrfs_get_parent(struct dentry *child)
 	ret = btrfs_search_slot(NULL, root, &key, path, 0, 0);
 	if (ret < 0)
 		goto fail;
+<<<<<<< HEAD
 
 	BUG_ON(ret == 0); /* Key with offset of -1 found */
+=======
+	if (ret == 0) {
+		/*
+		 * Key with offset of -1 found, there would have to exist an
+		 * inode with such number or a root with such id.
+		 */
+		ret = -EUCLEAN;
+		goto fail;
+	}
+
+>>>>>>> origin/android16-base
 	if (path->slots[0] == 0) {
 		ret = -ENOENT;
 		goto fail;

@@ -135,7 +135,11 @@ Description:
 		Raw capacitance measurement from channel Y. Units after
 		application of scale and offset are nanofarads.
 
+<<<<<<< HEAD
 What:		/sys/.../iio:deviceX/in_capacitanceY-in_capacitanceZ_raw
+=======
+What:		/sys/.../iio:deviceX/in_capacitanceY-capacitanceZ_raw
+>>>>>>> origin/android16-base
 KernelVersion:	3.2
 Contact:	linux-iio@vger.kernel.org
 Description:

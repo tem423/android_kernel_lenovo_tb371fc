@@ -19,6 +19,10 @@
 #define WACOM_NAME_MAX		64
 #define WACOM_MAX_REMOTES	5
 #define WACOM_STATUS_UNKNOWN	255
+<<<<<<< HEAD
+=======
+#define WACOM_REMOTE_BATTERY_TIMEOUT	21000000000ll
+>>>>>>> origin/android16-base
 
 /* packet length for individual models */
 #define WACOM_PKGLEN_BBFUN	 9
@@ -126,7 +130,11 @@
 #define WACOM_HID_WD_TOUCHONOFF         (WACOM_HID_UP_WACOMDIGITIZER | 0x0454)
 #define WACOM_HID_WD_BATTERY_LEVEL      (WACOM_HID_UP_WACOMDIGITIZER | 0x043b)
 #define WACOM_HID_WD_EXPRESSKEY00       (WACOM_HID_UP_WACOMDIGITIZER | 0x0910)
+<<<<<<< HEAD
 #define WACOM_HID_WD_EXPRESSKEYCAP00    (WACOM_HID_UP_WACOMDIGITIZER | 0x0950)
+=======
+#define WACOM_HID_WD_EXPRESSKEYCAP00    (WACOM_HID_UP_WACOMDIGITIZER | 0x0940)
+>>>>>>> origin/android16-base
 #define WACOM_HID_WD_MODE_CHANGE        (WACOM_HID_UP_WACOMDIGITIZER | 0x0980)
 #define WACOM_HID_WD_MUTE_DEVICE        (WACOM_HID_UP_WACOMDIGITIZER | 0x0981)
 #define WACOM_HID_WD_CONTROLPANEL       (WACOM_HID_UP_WACOMDIGITIZER | 0x0982)
@@ -244,6 +252,10 @@ enum {
 	MTTPC,
 	MTTPC_B,
 	HID_GENERIC,
+<<<<<<< HEAD
+=======
+	BOOTLOADER,
+>>>>>>> origin/android16-base
 	MAX_TYPE
 };
 
@@ -302,6 +314,10 @@ struct hid_data {
 	bool tipswitch;
 	bool barrelswitch;
 	bool barrelswitch2;
+<<<<<<< HEAD
+=======
+	bool confidence;
+>>>>>>> origin/android16-base
 	int x;
 	int y;
 	int pressure;
@@ -344,7 +360,11 @@ struct wacom_wac {
 	struct input_dev *pen_input;
 	struct input_dev *touch_input;
 	struct input_dev *pad_input;
+<<<<<<< HEAD
 	struct kfifo_rec_ptr_2 pen_fifo;
+=======
+	struct kfifo_rec_ptr_2 *pen_fifo;
+>>>>>>> origin/android16-base
 	int pid;
 	int num_contacts_left;
 	u8 bt_features;

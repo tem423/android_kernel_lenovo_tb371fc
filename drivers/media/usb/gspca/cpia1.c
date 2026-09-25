@@ -28,6 +28,10 @@
 
 #include <linux/input.h>
 #include <linux/sched/signal.h>
+<<<<<<< HEAD
+=======
+#include <linux/bitops.h>
+>>>>>>> origin/android16-base
 
 #include "gspca.h"
 
@@ -1033,6 +1037,11 @@ static int set_flicker(struct gspca_dev *gspca_dev, int on, int apply)
 			sd->params.exposure.expMode = 2;
 			sd->exposure_status = EXPOSURE_NORMAL;
 		}
+<<<<<<< HEAD
+=======
+		if (sd->params.exposure.gain >= BITS_PER_TYPE(currentexp))
+			return -EINVAL;
+>>>>>>> origin/android16-base
 		currentexp = currentexp << sd->params.exposure.gain;
 		sd->params.exposure.gain = 0;
 		/* round down current exposure to nearest value */

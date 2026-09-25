@@ -165,6 +165,7 @@ __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev)
 	eth = (struct ethhdr *)skb->data;
 	skb_pull_inline(skb, ETH_HLEN);
 
+<<<<<<< HEAD
 	if (unlikely(is_multicast_ether_addr_64bits(eth->h_dest))) {
 		if (ether_addr_equal_64bits(eth->h_dest, dev->broadcast))
 			skb->pkt_type = PACKET_BROADCAST;
@@ -174,6 +175,9 @@ __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev)
 	else if (unlikely(!ether_addr_equal_64bits(eth->h_dest,
 						   dev->dev_addr)))
 		skb->pkt_type = PACKET_OTHERHOST;
+=======
+	eth_skb_pkt_type(skb, dev);
+>>>>>>> origin/android16-base
 
 	/*
 	 * Some variants of DSA tagging don't have an ethertype field

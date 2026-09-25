@@ -53,6 +53,7 @@ __acquires(bitmap->lock)
 {
 	unsigned char *mappage;
 
+<<<<<<< HEAD
 	if (page >= bitmap->pages) {
 		/* This can happen if bitmap_start_sync goes beyond
 		 * End-of-device while looking for a whole page.
@@ -61,6 +62,9 @@ __acquires(bitmap->lock)
 		return -EINVAL;
 	}
 
+=======
+	WARN_ON_ONCE(page >= bitmap->pages);
+>>>>>>> origin/android16-base
 	if (bitmap->bp[page].hijacked) /* it's hijacked, don't try to alloc */
 		return 0;
 
@@ -363,7 +367,11 @@ static int read_page(struct file *file, unsigned long index,
 	int ret = 0;
 	struct inode *inode = file_inode(file);
 	struct buffer_head *bh;
+<<<<<<< HEAD
 	sector_t block;
+=======
+	sector_t block, blk_cur;
+>>>>>>> origin/android16-base
 
 	pr_debug("read bitmap file (%dB @ %llu)\n", (int)PAGE_SIZE,
 		 (unsigned long long)index << PAGE_SHIFT);
@@ -374,6 +382,7 @@ static int read_page(struct file *file, unsigned long index,
 		goto out;
 	}
 	attach_page_buffers(page, bh);
+<<<<<<< HEAD
 	block = index << (PAGE_SHIFT - inode->i_blkbits);
 	while (bh) {
 		if (count == 0)
@@ -385,6 +394,23 @@ static int read_page(struct file *file, unsigned long index,
 				ret = -EINVAL;
 				goto out;
 			}
+=======
+	blk_cur = index << (PAGE_SHIFT - inode->i_blkbits);
+	while (bh) {
+		block = blk_cur;
+
+		if (count == 0)
+			bh->b_blocknr = 0;
+		else {
+			ret = bmap(inode, &block);
+			if (ret || !block) {
+				ret = -EINVAL;
+				bh->b_blocknr = 0;
+				goto out;
+			}
+
+			bh->b_blocknr = block;
+>>>>>>> origin/android16-base
 			bh->b_bdev = inode->i_sb->s_bdev;
 			if (count < (1<<inode->i_blkbits))
 				count = 0;
@@ -398,7 +424,11 @@ static int read_page(struct file *file, unsigned long index,
 			set_buffer_mapped(bh);
 			submit_bh(REQ_OP_READ, 0, bh);
 		}
+<<<<<<< HEAD
 		block++;
+=======
+		blk_cur++;
+>>>>>>> origin/android16-base
 		bh = bh->b_this_page;
 	}
 	page->index = index;
@@ -488,7 +518,11 @@ void md_bitmap_print_sb(struct bitmap *bitmap)
 	sb = kmap_atomic(bitmap->storage.sb_page);
 	pr_debug("%s: bitmap file superblock:\n", bmname(bitmap));
 	pr_debug("         magic: %08x\n", le32_to_cpu(sb->magic));
+<<<<<<< HEAD
 	pr_debug("       version: %d\n", le32_to_cpu(sb->version));
+=======
+	pr_debug("       version: %u\n", le32_to_cpu(sb->version));
+>>>>>>> origin/android16-base
 	pr_debug("          uuid: %08x.%08x.%08x.%08x\n",
 		 le32_to_cpu(*(__u32 *)(sb->uuid+0)),
 		 le32_to_cpu(*(__u32 *)(sb->uuid+4)),
@@ -499,11 +533,19 @@ void md_bitmap_print_sb(struct bitmap *bitmap)
 	pr_debug("events cleared: %llu\n",
 		 (unsigned long long) le64_to_cpu(sb->events_cleared));
 	pr_debug("         state: %08x\n", le32_to_cpu(sb->state));
+<<<<<<< HEAD
 	pr_debug("     chunksize: %d B\n", le32_to_cpu(sb->chunksize));
 	pr_debug("  daemon sleep: %ds\n", le32_to_cpu(sb->daemon_sleep));
 	pr_debug("     sync size: %llu KB\n",
 		 (unsigned long long)le64_to_cpu(sb->sync_size)/2);
 	pr_debug("max write behind: %d\n", le32_to_cpu(sb->write_behind));
+=======
+	pr_debug("     chunksize: %u B\n", le32_to_cpu(sb->chunksize));
+	pr_debug("  daemon sleep: %us\n", le32_to_cpu(sb->daemon_sleep));
+	pr_debug("     sync size: %llu KB\n",
+		 (unsigned long long)le64_to_cpu(sb->sync_size)/2);
+	pr_debug("max write behind: %u\n", le32_to_cpu(sb->write_behind));
+>>>>>>> origin/android16-base
 	kunmap_atomic(sb);
 }
 
@@ -641,6 +683,7 @@ re_read:
 	daemon_sleep = le32_to_cpu(sb->daemon_sleep) * HZ;
 	write_behind = le32_to_cpu(sb->write_behind);
 	sectors_reserved = le32_to_cpu(sb->sectors_reserved);
+<<<<<<< HEAD
 	/* Setup nodes/clustername only if bitmap version is
 	 * cluster-compatible
 	 */
@@ -649,6 +692,8 @@ re_read:
 		strlcpy(bitmap->mddev->bitmap_info.cluster_name,
 				sb->cluster_name, 64);
 	}
+=======
+>>>>>>> origin/android16-base
 
 	/* verify that the bitmap-specific fields are valid */
 	if (sb->magic != cpu_to_le32(BITMAP_MAGIC))
@@ -670,6 +715,19 @@ re_read:
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Setup nodes/clustername only if bitmap version is
+	 * cluster-compatible
+	 */
+	if (sb->version == cpu_to_le32(BITMAP_MAJOR_CLUSTERED)) {
+		nodes = le32_to_cpu(sb->nodes);
+		strlcpy(bitmap->mddev->bitmap_info.cluster_name,
+				sb->cluster_name, 64);
+	}
+
+>>>>>>> origin/android16-base
 	/* keep the array size field of the bitmap superblock up to date */
 	sb->sync_size = cpu_to_le64(bitmap->mddev->resync_max_sectors);
 
@@ -702,9 +760,15 @@ re_read:
 
 out:
 	kunmap_atomic(sb);
+<<<<<<< HEAD
 	/* Assigning chunksize is required for "re_read" */
 	bitmap->mddev->bitmap_info.chunksize = chunksize;
 	if (err == 0 && nodes && (bitmap->cluster_slot < 0)) {
+=======
+	if (err == 0 && nodes && (bitmap->cluster_slot < 0)) {
+		/* Assigning chunksize is required for "re_read" */
+		bitmap->mddev->bitmap_info.chunksize = chunksize;
+>>>>>>> origin/android16-base
 		err = md_setup_cluster(bitmap->mddev, nodes);
 		if (err) {
 			pr_warn("%s: Could not setup cluster service (%d)\n",
@@ -715,6 +779,7 @@ out:
 		goto re_read;
 	}
 
+<<<<<<< HEAD
 
 out_no_sb:
 	if (test_bit(BITMAP_STALE, &bitmap->flags))
@@ -727,6 +792,20 @@ out_no_sb:
 	    bitmap->mddev->bitmap_info.space > sectors_reserved)
 		bitmap->mddev->bitmap_info.space = sectors_reserved;
 	if (err) {
+=======
+out_no_sb:
+	if (err == 0) {
+		if (test_bit(BITMAP_STALE, &bitmap->flags))
+			bitmap->events_cleared = bitmap->mddev->events;
+		bitmap->mddev->bitmap_info.chunksize = chunksize;
+		bitmap->mddev->bitmap_info.daemon_sleep = daemon_sleep;
+		bitmap->mddev->bitmap_info.max_write_behind = write_behind;
+		bitmap->mddev->bitmap_info.nodes = nodes;
+		if (bitmap->mddev->bitmap_info.space == 0 ||
+			bitmap->mddev->bitmap_info.space > sectors_reserved)
+			bitmap->mddev->bitmap_info.space = sectors_reserved;
+	} else {
+>>>>>>> origin/android16-base
 		md_bitmap_print_sb(bitmap);
 		if (bitmap->cluster_slot < 0)
 			md_cluster_stop(bitmap->mddev);
@@ -1363,17 +1442,36 @@ __acquires(bitmap->lock)
 	sector_t chunk = offset >> bitmap->chunkshift;
 	unsigned long page = chunk >> PAGE_COUNTER_SHIFT;
 	unsigned long pageoff = (chunk & PAGE_COUNTER_MASK) << COUNTER_BYTE_SHIFT;
+<<<<<<< HEAD
 	sector_t csize;
 	int err;
 
+=======
+	sector_t csize = ((sector_t)1) << bitmap->chunkshift;
+	int err;
+
+	if (page >= bitmap->pages) {
+		/*
+		 * This can happen if bitmap_start_sync goes beyond
+		 * End-of-device while looking for a whole page or
+		 * user set a huge number to sysfs bitmap_set_bits.
+		 */
+		*blocks = csize - (offset & (csize - 1));
+		return NULL;
+	}
+>>>>>>> origin/android16-base
 	err = md_bitmap_checkpage(bitmap, page, create, 0);
 
 	if (bitmap->bp[page].hijacked ||
 	    bitmap->bp[page].map == NULL)
 		csize = ((sector_t)1) << (bitmap->chunkshift +
 					  PAGE_COUNTER_SHIFT);
+<<<<<<< HEAD
 	else
 		csize = ((sector_t)1) << bitmap->chunkshift;
+=======
+
+>>>>>>> origin/android16-base
 	*blocks = csize - (offset & (csize - 1));
 
 	if (err < 0)
@@ -1725,6 +1823,11 @@ void md_bitmap_flush(struct mddev *mddev)
 	md_bitmap_daemon_work(mddev);
 	bitmap->daemon_lastrun -= sleep;
 	md_bitmap_daemon_work(mddev);
+<<<<<<< HEAD
+=======
+	if (mddev->bitmap_info.external)
+		md_super_wait(mddev);
+>>>>>>> origin/android16-base
 	md_bitmap_update_sb(bitmap);
 }
 
@@ -2097,7 +2200,12 @@ int md_bitmap_resize(struct bitmap *bitmap, sector_t blocks,
 			bytes = DIV_ROUND_UP(chunks, 8);
 			if (!bitmap->mddev->bitmap_info.external)
 				bytes += sizeof(bitmap_super_t);
+<<<<<<< HEAD
 		} while (bytes > (space << 9));
+=======
+		} while (bytes > (space << 9) && (chunkshift + BITMAP_BLOCK_SHIFT) <
+			(BITS_PER_BYTE * sizeof(((bitmap_super_t *)0)->chunksize) - 1));
+>>>>>>> origin/android16-base
 	} else
 		chunkshift = ffz(~chunksize) - BITMAP_BLOCK_SHIFT;
 
@@ -2142,7 +2250,11 @@ int md_bitmap_resize(struct bitmap *bitmap, sector_t blocks,
 	bitmap->counts.missing_pages = pages;
 	bitmap->counts.chunkshift = chunkshift;
 	bitmap->counts.chunks = chunks;
+<<<<<<< HEAD
 	bitmap->mddev->bitmap_info.chunksize = 1 << (chunkshift +
+=======
+	bitmap->mddev->bitmap_info.chunksize = 1UL << (chunkshift +
+>>>>>>> origin/android16-base
 						     BITMAP_BLOCK_SHIFT);
 
 	blocks = min(old_counts.chunks << old_counts.chunkshift,
@@ -2168,8 +2280,13 @@ int md_bitmap_resize(struct bitmap *bitmap, sector_t blocks,
 				bitmap->counts.missing_pages = old_counts.pages;
 				bitmap->counts.chunkshift = old_counts.chunkshift;
 				bitmap->counts.chunks = old_counts.chunks;
+<<<<<<< HEAD
 				bitmap->mddev->bitmap_info.chunksize = 1 << (old_counts.chunkshift +
 									     BITMAP_BLOCK_SHIFT);
+=======
+				bitmap->mddev->bitmap_info.chunksize =
+					1UL << (old_counts.chunkshift + BITMAP_BLOCK_SHIFT);
+>>>>>>> origin/android16-base
 				blocks = old_counts.chunks << old_counts.chunkshift;
 				pr_warn("Could not pre-allocate in-memory bitmap for cluster raid\n");
 				break;
@@ -2187,6 +2304,7 @@ int md_bitmap_resize(struct bitmap *bitmap, sector_t blocks,
 
 		if (set) {
 			bmc_new = md_bitmap_get_counter(&bitmap->counts, block, &new_blocks, 1);
+<<<<<<< HEAD
 			if (*bmc_new == 0) {
 				/* need to set on-disk bits too. */
 				sector_t end = block + new_blocks;
@@ -2201,6 +2319,25 @@ int md_bitmap_resize(struct bitmap *bitmap, sector_t blocks,
 				md_bitmap_set_pending(&bitmap->counts, block);
 			}
 			*bmc_new |= NEEDED_MASK;
+=======
+			if (bmc_new) {
+				if (*bmc_new == 0) {
+					/* need to set on-disk bits too. */
+					sector_t end = block + new_blocks;
+					sector_t start = block >> chunkshift;
+
+					start <<= chunkshift;
+					while (start < end) {
+						md_bitmap_file_set_bit(bitmap, block);
+						start += 1 << chunkshift;
+					}
+					*bmc_new = 2;
+					md_bitmap_count_page(&bitmap->counts, block, 1);
+					md_bitmap_set_pending(&bitmap->counts, block);
+				}
+				*bmc_new |= NEEDED_MASK;
+			}
+>>>>>>> origin/android16-base
 			if (new_blocks < old_blocks)
 				old_blocks = new_blocks;
 		}
@@ -2492,6 +2629,12 @@ chunksize_store(struct mddev *mddev, const char *buf, size_t len)
 	if (csize < 512 ||
 	    !is_power_of_2(csize))
 		return -EINVAL;
+<<<<<<< HEAD
+=======
+	if (BITS_PER_LONG > 32 && csize >= (1ULL << (BITS_PER_BYTE *
+		sizeof(((bitmap_super_t *)0)->chunksize))))
+		return -EOVERFLOW;
+>>>>>>> origin/android16-base
 	mddev->bitmap_info.chunksize = csize;
 	return len;
 }

@@ -8,6 +8,7 @@
 #ifndef IIO_DDS_AD9834_H_
 #define IIO_DDS_AD9834_H_
 
+<<<<<<< HEAD
 /*
  * TODO: struct ad7887_platform_data needs to go into include/linux/iio
  */
@@ -36,4 +37,6 @@ struct ad9834_platform_data {
 	bool			en_signbit_msb_out;
 };
 
+=======
+>>>>>>> origin/android16-base
 #endif /* IIO_DDS_AD9834_H_ */

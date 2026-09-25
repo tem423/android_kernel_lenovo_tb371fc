@@ -184,9 +184,13 @@ success:
 	/*
 	 * vm_flags is protected by the mmap_sem held in write mode.
 	 */
+<<<<<<< HEAD
 	vm_write_begin(vma);
 	WRITE_ONCE(vma->vm_flags, new_flags);
 	vm_write_end(vma);
+=======
+	vma->vm_flags = new_flags;
+>>>>>>> origin/android16-base
 out:
 	return error;
 }
@@ -330,7 +334,11 @@ static int madvise_free_pte_range(pmd_t *pmd, unsigned long addr,
 	if (pmd_trans_unstable(pmd))
 		return 0;
 
+<<<<<<< HEAD
 	tlb_remove_check_page_size_change(tlb, PAGE_SIZE);
+=======
+	tlb_change_page_size(tlb, PAGE_SIZE);
+>>>>>>> origin/android16-base
 	orig_pte = pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
 	flush_tlb_batched_pending(mm);
 	arch_enter_lazy_mmu_mode();
@@ -452,11 +460,17 @@ static void madvise_free_page_range(struct mmu_gather *tlb,
 		.private = tlb,
 	};
 
+<<<<<<< HEAD
 	vm_write_begin(vma);
 	tlb_start_vma(tlb, vma);
 	walk_page_range(addr, end, &free_walk);
 	tlb_end_vma(tlb, vma);
 	vm_write_end(vma);
+=======
+	tlb_start_vma(tlb, vma);
+	walk_page_range(addr, end, &free_walk);
+	tlb_end_vma(tlb, vma);
+>>>>>>> origin/android16-base
 }
 
 static int madvise_free_single_vma(struct vm_area_struct *vma,

@@ -1343,7 +1343,11 @@ static int dev_get_regmap_match(struct device *dev, void *res, void *data)
 
 	/* If the user didn't specify a name match any */
 	if (data)
+<<<<<<< HEAD
 		return !strcmp((*r)->name, data);
+=======
+		return (*r)->name && !strcmp((*r)->name, data);
+>>>>>>> origin/android16-base
 	else
 		return 1;
 }
@@ -1479,7 +1483,11 @@ static int _regmap_raw_write_impl(struct regmap *map, unsigned int reg,
 			if (ret) {
 				dev_err(map->dev,
 					"Error in caching of register: %x ret: %d\n",
+<<<<<<< HEAD
 					reg + i, ret);
+=======
+					reg + regmap_get_offset(map, i), ret);
+>>>>>>> origin/android16-base
 				return ret;
 			}
 		}
@@ -1825,6 +1833,11 @@ int _regmap_raw_write(struct regmap *map, unsigned int reg,
 	size_t val_count = val_len / val_bytes;
 	size_t chunk_count, chunk_bytes;
 	size_t chunk_regs = val_count;
+<<<<<<< HEAD
+=======
+	size_t max_data = map->max_raw_write - map->format.reg_bytes -
+			map->format.pad_bytes;
+>>>>>>> origin/android16-base
 	int ret, i;
 
 	if (!val_count)
@@ -1832,8 +1845,13 @@ int _regmap_raw_write(struct regmap *map, unsigned int reg,
 
 	if (map->use_single_write)
 		chunk_regs = 1;
+<<<<<<< HEAD
 	else if (map->max_raw_write && val_len > map->max_raw_write)
 		chunk_regs = map->max_raw_write / val_bytes;
+=======
+	else if (map->max_raw_write && val_len > max_data)
+		chunk_regs = max_data / val_bytes;
+>>>>>>> origin/android16-base
 
 	chunk_count = val_count / chunk_regs;
 	chunk_bytes = chunk_regs * val_bytes;

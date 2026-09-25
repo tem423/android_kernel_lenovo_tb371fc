@@ -130,6 +130,10 @@ static int sbsa_gwdt_set_timeout(struct watchdog_device *wdd,
 	struct sbsa_gwdt *gwdt = watchdog_get_drvdata(wdd);
 
 	wdd->timeout = timeout;
+<<<<<<< HEAD
+=======
+	timeout = clamp_t(unsigned int, timeout, 1, wdd->max_hw_heartbeat_ms / 1000);
+>>>>>>> origin/android16-base
 
 	if (action)
 		writel(gwdt->clk * timeout,

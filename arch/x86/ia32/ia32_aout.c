@@ -298,6 +298,10 @@ static int load_aout_binary(struct linux_binprm *bprm)
 	set_personality_ia32(false);
 
 	setup_new_exec(bprm);
+<<<<<<< HEAD
+=======
+	install_exec_creds(bprm);
+>>>>>>> origin/android16-base
 
 	regs->cs = __USER32_CS;
 	regs->r8 = regs->r9 = regs->r10 = regs->r11 = regs->r12 =
@@ -314,8 +318,11 @@ static int load_aout_binary(struct linux_binprm *bprm)
 	if (retval < 0)
 		return retval;
 
+<<<<<<< HEAD
 	install_exec_creds(bprm);
 
+=======
+>>>>>>> origin/android16-base
 	if (N_MAGIC(ex) == OMAGIC) {
 		unsigned long text_addr, map_size;
 

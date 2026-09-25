@@ -570,7 +570,11 @@ static void __init map_sa1100_gpio_regs( void )
  */
 static void __init get_assabet_scr(void)
 {
+<<<<<<< HEAD
 	unsigned long uninitialized_var(scr), i;
+=======
+	unsigned long scr, i;
+>>>>>>> origin/android16-base
 
 	GPDR |= 0x3fc;			/* Configure GPIO 9:2 as outputs */
 	GPSR = 0x3fc;			/* Write 0xFF to GPIO 9:2 */

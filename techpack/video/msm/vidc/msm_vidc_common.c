@@ -2752,7 +2752,11 @@ exit:
 	put_inst(inst);
 }
 
+<<<<<<< HEAD
 void handle_cmd_response(u32 cmd, void *data)
+=======
+void handle_cmd_response(enum hal_command_response cmd, void *data)
+>>>>>>> origin/android16-base
 {
 	switch (cmd) {
 	case HAL_SYS_INIT_DONE:

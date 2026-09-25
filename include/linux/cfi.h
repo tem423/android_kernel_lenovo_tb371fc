@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+=======
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Clang Control Flow Integrity (CFI) support.
+ *
+ * Copyright (C) 2019 Google LLC
+ */
+>>>>>>> origin/android16-base
 #ifndef _LINUX_CFI_H
 #define _LINUX_CFI_H
 
@@ -6,13 +15,21 @@
 #ifdef CONFIG_CFI_CLANG
 #ifdef CONFIG_MODULES
 
+<<<<<<< HEAD
 typedef void (*cfi_check_fn)(uint64_t, void *, void *);
+=======
+typedef void (*cfi_check_fn)(uint64_t id, void *ptr, void *diag);
+>>>>>>> origin/android16-base
 
 /* Compiler-generated function in each module, and the kernel */
 #define CFI_CHECK_FN		__cfi_check
 #define CFI_CHECK_FN_NAME	__stringify(CFI_CHECK_FN)
 
+<<<<<<< HEAD
 extern void CFI_CHECK_FN(uint64_t, void *, void *);
+=======
+extern void CFI_CHECK_FN(uint64_t id, void *ptr, void *diag);
+>>>>>>> origin/android16-base
 
 #ifdef CONFIG_CFI_CLANG_SHADOW
 extern void cfi_module_add(struct module *mod, unsigned long min_addr,

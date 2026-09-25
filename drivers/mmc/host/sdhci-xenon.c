@@ -170,7 +170,16 @@ static void xenon_reset_exit(struct sdhci_host *host,
 	/* Disable tuning request and auto-retuning again */
 	xenon_retune_setup(host);
 
+<<<<<<< HEAD
 	xenon_set_acg(host, true);
+=======
+	/*
+	 * The ACG should be turned off at the early init time, in order
+	 * to solve a possible issues with the 1.8V regulator stabilization.
+	 * The feature is enabled in later stage.
+	 */
+	xenon_set_acg(host, false);
+>>>>>>> origin/android16-base
 
 	xenon_set_sdclk_off_idle(host, sdhc_id, false);
 
@@ -238,6 +247,7 @@ static void xenon_voltage_switch(struct sdhci_host *host)
 {
 	/* Wait for 5ms after set 1.8V signal enable bit */
 	usleep_range(5000, 5500);
+<<<<<<< HEAD
 
 	/*
 	 * For some reason the controller's Host Control2 register reports
@@ -248,6 +258,8 @@ static void xenon_voltage_switch(struct sdhci_host *host)
 	 * Control2 register here to circumvent this.
 	 */
 	sdhci_readw(host, SDHCI_HOST_CONTROL2);
+=======
+>>>>>>> origin/android16-base
 }
 
 static const struct sdhci_ops sdhci_xenon_ops = {

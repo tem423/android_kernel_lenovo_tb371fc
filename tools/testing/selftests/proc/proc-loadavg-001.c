@@ -14,7 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 /* Test that /proc/loadavg correctly reports last pid in pid namespace. */
+<<<<<<< HEAD
 #define _GNU_SOURCE
+=======
+>>>>>>> origin/android16-base
 #include <errno.h>
 #include <sched.h>
 #include <sys/types.h>

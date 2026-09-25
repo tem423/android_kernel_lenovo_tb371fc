@@ -137,7 +137,11 @@ static int newque(struct ipc_namespace *ns, struct ipc_params *params)
 	key_t key = params->key;
 	int msgflg = params->flg;
 
+<<<<<<< HEAD
 	msq = kvmalloc(sizeof(*msq), GFP_KERNEL);
+=======
+	msq = kvmalloc(sizeof(*msq), GFP_KERNEL_ACCOUNT);
+>>>>>>> origin/android16-base
 	if (unlikely(!msq))
 		return -ENOMEM;
 

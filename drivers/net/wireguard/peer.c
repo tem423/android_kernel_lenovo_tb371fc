@@ -32,6 +32,7 @@ struct wg_peer *wg_peer_create(struct wg_device *wg,
 	peer = kzalloc(sizeof(*peer), GFP_KERNEL);
 	if (unlikely(!peer))
 		return ERR_PTR(ret);
+<<<<<<< HEAD
 	peer->device = wg;
 
 	wg_noise_handshake_init(&peer->handshake, &wg->static_identity,
@@ -45,14 +46,29 @@ struct wg_peer *wg_peer_create(struct wg_device *wg,
 				 MAX_QUEUED_PACKETS))
 		goto err_3;
 
+=======
+	if (dst_cache_init(&peer->endpoint_cache, GFP_KERNEL))
+		goto err;
+
+	peer->device = wg;
+	wg_noise_handshake_init(&peer->handshake, &wg->static_identity,
+				public_key, preshared_key, peer);
+>>>>>>> origin/android16-base
 	peer->internal_id = atomic64_inc_return(&peer_counter);
 	peer->serial_work_cpu = nr_cpumask_bits;
 	wg_cookie_init(&peer->latest_cookie);
 	wg_timers_init(peer);
 	wg_cookie_checker_precompute_peer_keys(peer);
 	spin_lock_init(&peer->keypairs.keypair_update_lock);
+<<<<<<< HEAD
 	INIT_WORK(&peer->transmit_handshake_work,
 		  wg_packet_handshake_send_worker);
+=======
+	INIT_WORK(&peer->transmit_handshake_work, wg_packet_handshake_send_worker);
+	INIT_WORK(&peer->transmit_packet_work, wg_packet_tx_worker);
+	wg_prev_queue_init(&peer->tx_queue);
+	wg_prev_queue_init(&peer->rx_queue);
+>>>>>>> origin/android16-base
 	rwlock_init(&peer->endpoint_lock);
 	kref_init(&peer->refcount);
 	skb_queue_head_init(&peer->staged_packet_queue);
@@ -68,11 +84,15 @@ struct wg_peer *wg_peer_create(struct wg_device *wg,
 	pr_debug("%s: Peer %llu created\n", wg->dev->name, peer->internal_id);
 	return peer;
 
+<<<<<<< HEAD
 err_3:
 	wg_packet_queue_free(&peer->tx_queue, false);
 err_2:
 	dst_cache_destroy(&peer->endpoint_cache);
 err_1:
+=======
+err:
+>>>>>>> origin/android16-base
 	kfree(peer);
 	return ERR_PTR(ret);
 }
@@ -97,7 +117,11 @@ static void peer_make_dead(struct wg_peer *peer)
 	/* Mark as dead, so that we don't allow jumping contexts after. */
 	WRITE_ONCE(peer->is_dead, true);
 
+<<<<<<< HEAD
 	/* The caller must now synchronize_rcu() for this to take effect. */
+=======
+	/* The caller must now synchronize_net() for this to take effect. */
+>>>>>>> origin/android16-base
 }
 
 static void peer_remove_after_dead(struct wg_peer *peer)
@@ -169,7 +193,11 @@ void wg_peer_remove(struct wg_peer *peer)
 	lockdep_assert_held(&peer->device->device_update_lock);
 
 	peer_make_dead(peer);
+<<<<<<< HEAD
 	synchronize_rcu();
+=======
+	synchronize_net();
+>>>>>>> origin/android16-base
 	peer_remove_after_dead(peer);
 }
 
@@ -187,7 +215,11 @@ void wg_peer_remove_all(struct wg_device *wg)
 		peer_make_dead(peer);
 		list_add_tail(&peer->peer_list, &dead_peers);
 	}
+<<<<<<< HEAD
 	synchronize_rcu();
+=======
+	synchronize_net();
+>>>>>>> origin/android16-base
 	list_for_each_entry_safe(peer, temp, &dead_peers, peer_list)
 		peer_remove_after_dead(peer);
 }
@@ -197,8 +229,12 @@ static void rcu_release(struct rcu_head *rcu)
 	struct wg_peer *peer = container_of(rcu, struct wg_peer, rcu);
 
 	dst_cache_destroy(&peer->endpoint_cache);
+<<<<<<< HEAD
 	wg_packet_queue_free(&peer->rx_queue, false);
 	wg_packet_queue_free(&peer->tx_queue, false);
+=======
+	WARN_ON(wg_prev_queue_peek(&peer->tx_queue) || wg_prev_queue_peek(&peer->rx_queue));
+>>>>>>> origin/android16-base
 
 	/* The final zeroing takes care of clearing any remaining handshake key
 	 * material and other potentially sensitive information.

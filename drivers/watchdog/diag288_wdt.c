@@ -88,7 +88,11 @@ static int __diag288(unsigned int func, unsigned int timeout,
 		"1:\n"
 		EX_TABLE(0b, 1b)
 		: "+d" (err) : "d"(__func), "d"(__timeout),
+<<<<<<< HEAD
 		  "d"(__action), "d"(__len) : "1", "cc");
+=======
+		  "d"(__action), "d"(__len) : "1", "cc", "memory");
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -274,12 +278,29 @@ static int __init diag288_init(void)
 	char ebc_begin[] = {
 		194, 197, 199, 201, 213
 	};
+<<<<<<< HEAD
+=======
+	char *ebc_cmd;
+>>>>>>> origin/android16-base
 
 	watchdog_set_nowayout(&wdt_dev, nowayout_info);
 
 	if (MACHINE_IS_VM) {
+<<<<<<< HEAD
 		if (__diag288_vm(WDT_FUNC_INIT, 15,
 				 ebc_begin, sizeof(ebc_begin)) != 0) {
+=======
+		ebc_cmd = kmalloc(sizeof(ebc_begin), GFP_KERNEL);
+		if (!ebc_cmd) {
+			pr_err("The watchdog cannot be initialized\n");
+			return -ENOMEM;
+		}
+		memcpy(ebc_cmd, ebc_begin, sizeof(ebc_begin));
+		ret = __diag288_vm(WDT_FUNC_INIT, 15,
+				   ebc_cmd, sizeof(ebc_begin));
+		kfree(ebc_cmd);
+		if (ret != 0) {
+>>>>>>> origin/android16-base
 			pr_err("The watchdog cannot be initialized\n");
 			return -EINVAL;
 		}

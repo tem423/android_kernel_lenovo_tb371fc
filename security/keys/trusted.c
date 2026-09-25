@@ -796,7 +796,11 @@ static int getoptions(char *c, struct trusted_key_payload *pay,
 		case Opt_migratable:
 			if (*args[0].from == '0')
 				pay->migratable = 0;
+<<<<<<< HEAD
 			else
+=======
+			else if (*args[0].from != '1')
+>>>>>>> origin/android16-base
 				return -EINVAL;
 			break;
 		case Opt_pcrlock:

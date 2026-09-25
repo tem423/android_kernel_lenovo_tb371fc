@@ -304,9 +304,18 @@ int mma9551_read_config_word(struct i2c_client *client, u8 app_id,
 
 	ret = mma9551_transfer(client, app_id, MMA9551_CMD_READ_CONFIG,
 			       reg, NULL, 0, (u8 *)&v, 2);
+<<<<<<< HEAD
 	*val = be16_to_cpu(v);
 
 	return ret;
+=======
+	if (ret < 0)
+		return ret;
+
+	*val = be16_to_cpu(v);
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(mma9551_read_config_word);
 
@@ -362,9 +371,18 @@ int mma9551_read_status_word(struct i2c_client *client, u8 app_id,
 
 	ret = mma9551_transfer(client, app_id, MMA9551_CMD_READ_STATUS,
 			       reg, NULL, 0, (u8 *)&v, 2);
+<<<<<<< HEAD
 	*val = be16_to_cpu(v);
 
 	return ret;
+=======
+	if (ret < 0)
+		return ret;
+
+	*val = be16_to_cpu(v);
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(mma9551_read_status_word);
 

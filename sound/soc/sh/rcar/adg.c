@@ -318,7 +318,10 @@ static void rsnd_adg_set_ssi_clk(struct rsnd_mod *ssi_mod, u32 val)
 int rsnd_adg_clk_query(struct rsnd_priv *priv, unsigned int rate)
 {
 	struct rsnd_adg *adg = rsnd_priv_to_adg(priv);
+<<<<<<< HEAD
 	struct clk *clk;
+=======
+>>>>>>> origin/android16-base
 	int i;
 	int sel_table[] = {
 		[CLKA] = 0x1,
@@ -331,10 +334,16 @@ int rsnd_adg_clk_query(struct rsnd_priv *priv, unsigned int rate)
 	 * find suitable clock from
 	 * AUDIO_CLKA/AUDIO_CLKB/AUDIO_CLKC/AUDIO_CLKI.
 	 */
+<<<<<<< HEAD
 	for_each_rsnd_clk(clk, adg, i) {
 		if (rate == adg->clk_rate[i])
 			return sel_table[i];
 	}
+=======
+	for (i = 0; i < CLKMAX; i++)
+		if (rate == adg->clk_rate[i])
+			return sel_table[i];
+>>>>>>> origin/android16-base
 
 	/*
 	 * find divided clock from BRGA/BRGB

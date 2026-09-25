@@ -117,8 +117,12 @@ static void ht16k33_fb_queue(struct ht16k33_priv *priv)
 {
 	struct ht16k33_fbdev *fbdev = &priv->fbdev;
 
+<<<<<<< HEAD
 	schedule_delayed_work(&fbdev->work,
 			      msecs_to_jiffies(HZ / fbdev->refresh_rate));
+=======
+	schedule_delayed_work(&fbdev->work, HZ / fbdev->refresh_rate);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -220,6 +224,18 @@ static const struct backlight_ops ht16k33_bl_ops = {
 	.check_fb	= ht16k33_bl_check_fb,
 };
 
+<<<<<<< HEAD
+=======
+/*
+ * Blank events will be passed to the actual device handling the backlight when
+ * we return zero here.
+ */
+static int ht16k33_blank(int blank, struct fb_info *info)
+{
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static int ht16k33_mmap(struct fb_info *info, struct vm_area_struct *vma)
 {
 	struct ht16k33_priv *priv = info->par;
@@ -232,6 +248,10 @@ static struct fb_ops ht16k33_fb_ops = {
 	.owner = THIS_MODULE,
 	.fb_read = fb_sys_read,
 	.fb_write = fb_sys_write,
+<<<<<<< HEAD
+=======
+	.fb_blank = ht16k33_blank,
+>>>>>>> origin/android16-base
 	.fb_fillrect = sys_fillrect,
 	.fb_copyarea = sys_copyarea,
 	.fb_imageblit = sys_imageblit,
@@ -419,6 +439,36 @@ static int ht16k33_probe(struct i2c_client *client,
 	if (err)
 		return err;
 
+<<<<<<< HEAD
+=======
+	/* Backlight */
+	memset(&bl_props, 0, sizeof(struct backlight_properties));
+	bl_props.type = BACKLIGHT_RAW;
+	bl_props.max_brightness = MAX_BRIGHTNESS;
+
+	bl = devm_backlight_device_register(&client->dev, DRIVER_NAME"-bl",
+					    &client->dev, priv,
+					    &ht16k33_bl_ops, &bl_props);
+	if (IS_ERR(bl)) {
+		dev_err(&client->dev, "failed to register backlight\n");
+		return PTR_ERR(bl);
+	}
+
+	err = of_property_read_u32(node, "default-brightness-level",
+				   &dft_brightness);
+	if (err) {
+		dft_brightness = MAX_BRIGHTNESS;
+	} else if (dft_brightness > MAX_BRIGHTNESS) {
+		dev_warn(&client->dev,
+			 "invalid default brightness level: %u, using %u\n",
+			 dft_brightness, MAX_BRIGHTNESS);
+		dft_brightness = MAX_BRIGHTNESS;
+	}
+
+	bl->props.brightness = dft_brightness;
+	ht16k33_bl_update_status(bl);
+
+>>>>>>> origin/android16-base
 	/* Framebuffer (2 bytes per column) */
 	BUILD_BUG_ON(PAGE_SIZE < HT16K33_FB_SIZE);
 	fbdev->buffer = (unsigned char *) get_zeroed_page(GFP_KERNEL);
@@ -451,6 +501,10 @@ static int ht16k33_probe(struct i2c_client *client,
 	fbdev->info->screen_size = HT16K33_FB_SIZE;
 	fbdev->info->fix = ht16k33_fb_fix;
 	fbdev->info->var = ht16k33_fb_var;
+<<<<<<< HEAD
+=======
+	fbdev->info->bl_dev = bl;
+>>>>>>> origin/android16-base
 	fbdev->info->pseudo_palette = NULL;
 	fbdev->info->flags = FBINFO_FLAG_DEFAULT;
 	fbdev->info->par = priv;
@@ -463,6 +517,7 @@ static int ht16k33_probe(struct i2c_client *client,
 	if (err)
 		goto err_fbdev_unregister;
 
+<<<<<<< HEAD
 	/* Backlight */
 	memset(&bl_props, 0, sizeof(struct backlight_properties));
 	bl_props.type = BACKLIGHT_RAW;
@@ -491,6 +546,8 @@ static int ht16k33_probe(struct i2c_client *client,
 	bl->props.brightness = dft_brightness;
 	ht16k33_bl_update_status(bl);
 
+=======
+>>>>>>> origin/android16-base
 	ht16k33_fb_queue(priv);
 	return 0;
 

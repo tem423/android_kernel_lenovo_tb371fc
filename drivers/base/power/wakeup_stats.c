@@ -42,7 +42,11 @@ static ssize_t active_time_ms_show(struct device *dev,
 	ktime_t active_time =
 		ws->active ? ktime_sub(ktime_get(), ws->last_time) : 0;
 
+<<<<<<< HEAD
 	return sprintf(buf, "%lld\n", ktime_to_ms(active_time));
+=======
+	return sysfs_emit(buf, "%lld\n", ktime_to_ms(active_time));
+>>>>>>> origin/android16-base
 }
 static DEVICE_ATTR_RO(active_time_ms);
 
@@ -57,7 +61,11 @@ static ssize_t total_time_ms_show(struct device *dev,
 		active_time = ktime_sub(ktime_get(), ws->last_time);
 		total_time = ktime_add(total_time, active_time);
 	}
+<<<<<<< HEAD
 	return sprintf(buf, "%lld\n", ktime_to_ms(total_time));
+=======
+	return sysfs_emit(buf, "%lld\n", ktime_to_ms(total_time));
+>>>>>>> origin/android16-base
 }
 static DEVICE_ATTR_RO(total_time_ms);
 
@@ -73,7 +81,11 @@ static ssize_t max_time_ms_show(struct device *dev,
 		if (active_time > max_time)
 			max_time = active_time;
 	}
+<<<<<<< HEAD
 	return sprintf(buf, "%lld\n", ktime_to_ms(max_time));
+=======
+	return sysfs_emit(buf, "%lld\n", ktime_to_ms(max_time));
+>>>>>>> origin/android16-base
 }
 static DEVICE_ATTR_RO(max_time_ms);
 
@@ -82,7 +94,11 @@ static ssize_t last_change_ms_show(struct device *dev,
 {
 	struct wakeup_source *ws = dev_get_drvdata(dev);
 
+<<<<<<< HEAD
 	return sprintf(buf, "%lld\n", ktime_to_ms(ws->last_time));
+=======
+	return sysfs_emit(buf, "%lld\n", ktime_to_ms(ws->last_time));
+>>>>>>> origin/android16-base
 }
 static DEVICE_ATTR_RO(last_change_ms);
 
@@ -91,7 +107,11 @@ static ssize_t name_show(struct device *dev, struct device_attribute *attr,
 {
 	struct wakeup_source *ws = dev_get_drvdata(dev);
 
+<<<<<<< HEAD
 	return sprintf(buf, "%s\n", ws->name);
+=======
+	return sysfs_emit(buf, "%s\n", ws->name);
+>>>>>>> origin/android16-base
 }
 static DEVICE_ATTR_RO(name);
 
@@ -106,7 +126,11 @@ static ssize_t prevent_suspend_time_ms_show(struct device *dev,
 		prevent_sleep_time = ktime_add(prevent_sleep_time,
 			ktime_sub(ktime_get(), ws->start_prevent_time));
 	}
+<<<<<<< HEAD
 	return sprintf(buf, "%lld\n", ktime_to_ms(prevent_sleep_time));
+=======
+	return sysfs_emit(buf, "%lld\n", ktime_to_ms(prevent_sleep_time));
+>>>>>>> origin/android16-base
 }
 static DEVICE_ATTR_RO(prevent_suspend_time_ms);
 

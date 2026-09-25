@@ -823,7 +823,11 @@ int ni_init_microcode(struct radeon_device *rdev)
 			err = 0;
 		} else if (rdev->smc_fw->size != smc_req_size) {
 			pr_err("ni_mc: Bogus length %zu in firmware \"%s\"\n",
+<<<<<<< HEAD
 			       rdev->mc_fw->size, fw_name);
+=======
+			       rdev->smc_fw->size, fw_name);
+>>>>>>> origin/android16-base
 			err = -EINVAL;
 		}
 	}

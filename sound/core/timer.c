@@ -75,7 +75,11 @@ struct snd_timer_user {
 	unsigned int filter;
 	struct timespec tstamp;		/* trigger tstamp */
 	wait_queue_head_t qchange_sleep;
+<<<<<<< HEAD
 	struct fasync_struct *fasync;
+=======
+	struct snd_fasync *fasync;
+>>>>>>> origin/android16-base
 	struct mutex ioctl_lock;
 };
 
@@ -500,9 +504,16 @@ static void snd_timer_notify1(struct snd_timer_instance *ti, int event)
 		return;
 	if (timer->hw.flags & SNDRV_TIMER_HW_SLAVE)
 		return;
+<<<<<<< HEAD
 	list_for_each_entry(ts, &ti->slave_active_head, active_list)
 		if (ts->ccallback)
 			ts->ccallback(ts, event + 100, &tstamp, resolution);
+=======
+	event += 10; /* convert to SNDRV_TIMER_EVENT_MXXX */
+	list_for_each_entry(ts, &ti->slave_active_head, active_list)
+		if (ts->ccallback)
+			ts->ccallback(ts, event, &tstamp, resolution);
+>>>>>>> origin/android16-base
 }
 
 /* start/continue a master timer */
@@ -528,6 +539,19 @@ static int snd_timer_start1(struct snd_timer_instance *timeri,
 		goto unlock;
 	}
 
+<<<<<<< HEAD
+=======
+	/* check the actual time for the start tick;
+	 * bail out as error if it's way too low (< 100us)
+	 */
+	if (start && !(timer->hw.flags & SNDRV_TIMER_HW_SLAVE)) {
+		if ((u64)snd_timer_hw_resolution(timer) * ticks < 100000) {
+			result = -EINVAL;
+			goto unlock;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	if (start)
 		timeri->ticks = timeri->cticks = ticks;
 	else if (!timeri->cticks)
@@ -592,13 +616,21 @@ static int snd_timer_stop1(struct snd_timer_instance *timeri, bool stop)
 	if (!timer)
 		return -EINVAL;
 	spin_lock_irqsave(&timer->lock, flags);
+<<<<<<< HEAD
+=======
+	list_del_init(&timeri->ack_list);
+	list_del_init(&timeri->active_list);
+>>>>>>> origin/android16-base
 	if (!(timeri->flags & (SNDRV_TIMER_IFLG_RUNNING |
 			       SNDRV_TIMER_IFLG_START))) {
 		result = -EBUSY;
 		goto unlock;
 	}
+<<<<<<< HEAD
 	list_del_init(&timeri->ack_list);
 	list_del_init(&timeri->active_list);
+=======
+>>>>>>> origin/android16-base
 	if (timer->card && timer->card->shutdown)
 		goto unlock;
 	if (stop) {
@@ -633,23 +665,40 @@ static int snd_timer_stop1(struct snd_timer_instance *timeri, bool stop)
 static int snd_timer_stop_slave(struct snd_timer_instance *timeri, bool stop)
 {
 	unsigned long flags;
+<<<<<<< HEAD
 
 	spin_lock_irqsave(&slave_active_lock, flags);
 	if (!(timeri->flags & SNDRV_TIMER_IFLG_RUNNING)) {
 		spin_unlock_irqrestore(&slave_active_lock, flags);
 		return -EBUSY;
 	}
+=======
+	bool running;
+
+	spin_lock_irqsave(&slave_active_lock, flags);
+	running = timeri->flags & SNDRV_TIMER_IFLG_RUNNING;
+>>>>>>> origin/android16-base
 	timeri->flags &= ~SNDRV_TIMER_IFLG_RUNNING;
 	if (timeri->timer) {
 		spin_lock(&timeri->timer->lock);
 		list_del_init(&timeri->ack_list);
 		list_del_init(&timeri->active_list);
+<<<<<<< HEAD
 		snd_timer_notify1(timeri, stop ? SNDRV_TIMER_EVENT_STOP :
 				  SNDRV_TIMER_EVENT_PAUSE);
 		spin_unlock(&timeri->timer->lock);
 	}
 	spin_unlock_irqrestore(&slave_active_lock, flags);
 	return 0;
+=======
+		if (running)
+			snd_timer_notify1(timeri, stop ? SNDRV_TIMER_EVENT_STOP :
+					  SNDRV_TIMER_EVENT_PAUSE);
+		spin_unlock(&timeri->timer->lock);
+	}
+	spin_unlock_irqrestore(&slave_active_lock, flags);
+	return running ? 0 : -EBUSY;
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -1310,7 +1359,11 @@ static void snd_timer_user_interrupt(struct snd_timer_instance *timeri,
 	}
       __wake:
 	spin_unlock(&tu->qlock);
+<<<<<<< HEAD
 	kill_fasync(&tu->fasync, SIGIO, POLL_IN);
+=======
+	snd_kill_fasync(tu->fasync, SIGIO, POLL_IN);
+>>>>>>> origin/android16-base
 	wake_up(&tu->qchange_sleep);
 }
 
@@ -1347,7 +1400,11 @@ static void snd_timer_user_ccallback(struct snd_timer_instance *timeri,
 	spin_lock_irqsave(&tu->qlock, flags);
 	snd_timer_user_append_to_tqueue(tu, &r1);
 	spin_unlock_irqrestore(&tu->qlock, flags);
+<<<<<<< HEAD
 	kill_fasync(&tu->fasync, SIGIO, POLL_IN);
+=======
+	snd_kill_fasync(tu->fasync, SIGIO, POLL_IN);
+>>>>>>> origin/android16-base
 	wake_up(&tu->qchange_sleep);
 }
 
@@ -1415,7 +1472,11 @@ static void snd_timer_user_tinterrupt(struct snd_timer_instance *timeri,
 	spin_unlock(&tu->qlock);
 	if (append == 0)
 		return;
+<<<<<<< HEAD
 	kill_fasync(&tu->fasync, SIGIO, POLL_IN);
+=======
+	snd_kill_fasync(tu->fasync, SIGIO, POLL_IN);
+>>>>>>> origin/android16-base
 	wake_up(&tu->qchange_sleep);
 }
 
@@ -1481,6 +1542,10 @@ static int snd_timer_user_release(struct inode *inode, struct file *file)
 		if (tu->timeri)
 			snd_timer_close(tu->timeri);
 		mutex_unlock(&tu->ioctl_lock);
+<<<<<<< HEAD
+=======
+		snd_fasync_free(tu->fasync);
+>>>>>>> origin/android16-base
 		kfree(tu->queue);
 		kfree(tu->tqueue);
 		kfree(tu);
@@ -2032,7 +2097,11 @@ static int snd_timer_user_fasync(int fd, struct file * file, int on)
 	struct snd_timer_user *tu;
 
 	tu = file->private_data;
+<<<<<<< HEAD
 	return fasync_helper(fd, file, on, &tu->fasync);
+=======
+	return snd_fasync_helper(fd, file, on, &tu->fasync);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t snd_timer_user_read(struct file *file, char __user *buffer,

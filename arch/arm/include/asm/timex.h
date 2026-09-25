@@ -14,5 +14,9 @@
 
 typedef unsigned long cycles_t;
 #define get_cycles()	({ cycles_t c; read_current_timer(&c) ? 0 : c; })
+<<<<<<< HEAD
+=======
+#define random_get_entropy() (((unsigned long)get_cycles()) ?: random_get_entropy_fallback())
+>>>>>>> origin/android16-base
 
 #endif

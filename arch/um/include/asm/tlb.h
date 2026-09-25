@@ -2,6 +2,7 @@
 #ifndef __UM_TLB_H
 #define __UM_TLB_H
 
+<<<<<<< HEAD
 #include <linux/pagemap.h>
 #include <linux/swap.h>
 #include <asm/percpu.h>
@@ -159,5 +160,10 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
 #define pmd_free_tlb(tlb, pmdp, addr) __pmd_free_tlb(tlb, pmdp, addr)
 
 #define tlb_migrate_finish(mm) do {} while (0)
+=======
+#include <asm/tlbflush.h>
+#include <asm-generic/cacheflush.h>
+#include <asm-generic/tlb.h>
+>>>>>>> origin/android16-base
 
 #endif

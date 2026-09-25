@@ -383,14 +383,22 @@ pti_clone_pgtable(unsigned long start, unsigned long end,
 			 */
 			*target_pmd = *pmd;
 
+<<<<<<< HEAD
 			addr += PMD_SIZE;
+=======
+			addr = round_up(addr + 1, PMD_SIZE);
+>>>>>>> origin/android16-base
 
 		} else if (level == PTI_CLONE_PTE) {
 
 			/* Walk the page-table down to the pte level */
 			pte = pte_offset_kernel(pmd, addr);
 			if (pte_none(*pte)) {
+<<<<<<< HEAD
 				addr += PAGE_SIZE;
+=======
+				addr = round_up(addr + 1, PAGE_SIZE);
+>>>>>>> origin/android16-base
 				continue;
 			}
 
@@ -410,7 +418,11 @@ pti_clone_pgtable(unsigned long start, unsigned long end,
 			/* Clone the PTE */
 			*target_pte = *pte;
 
+<<<<<<< HEAD
 			addr += PAGE_SIZE;
+=======
+			addr = round_up(addr + 1, PAGE_SIZE);
+>>>>>>> origin/android16-base
 
 		} else {
 			BUG();

@@ -732,12 +732,22 @@ static int sr9800_bind(struct usbnet *dev, struct usb_interface *intf)
 	struct sr_data *data = (struct sr_data *)&dev->data;
 	u16 led01_mux, led23_mux;
 	int ret, embd_phy;
+<<<<<<< HEAD
+=======
+	u8 addr[ETH_ALEN];
+>>>>>>> origin/android16-base
 	u32 phyid;
 	u16 rx_ctl;
 
 	data->eeprom_len = SR9800_EEPROM_LEN;
 
+<<<<<<< HEAD
 	usbnet_get_endpoints(dev, intf);
+=======
+	ret = usbnet_get_endpoints(dev, intf);
+	if (ret)
+		goto out;
+>>>>>>> origin/android16-base
 
 	/* LED Setting Rule :
 	 * AABB:CCDD
@@ -755,12 +765,20 @@ static int sr9800_bind(struct usbnet *dev, struct usb_interface *intf)
 	}
 
 	/* Get the MAC address */
+<<<<<<< HEAD
 	ret = sr_read_cmd(dev, SR_CMD_READ_NODE_ID, 0, 0, ETH_ALEN,
 			  dev->net->dev_addr);
+=======
+	ret = sr_read_cmd(dev, SR_CMD_READ_NODE_ID, 0, 0, ETH_ALEN, addr);
+>>>>>>> origin/android16-base
 	if (ret < 0) {
 		netdev_dbg(dev->net, "Failed to read MAC address: %d\n", ret);
 		return ret;
 	}
+<<<<<<< HEAD
+=======
+	eth_hw_addr_set(dev->net, addr);
+>>>>>>> origin/android16-base
 	netdev_dbg(dev->net, "mac addr : %pM\n", dev->net->dev_addr);
 
 	/* Initialize MII structure */

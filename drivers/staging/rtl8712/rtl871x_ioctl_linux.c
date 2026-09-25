@@ -946,7 +946,11 @@ static int r871x_wx_set_priv(struct net_device *dev,
 	struct iw_point *dwrq = (struct iw_point *)awrq;
 
 	len = dwrq->length;
+<<<<<<< HEAD
 	ext = memdup_user(dwrq->pointer, len);
+=======
+	ext = strndup_user(dwrq->pointer, len);
+>>>>>>> origin/android16-base
 	if (IS_ERR(ext))
 		return PTR_ERR(ext);
 

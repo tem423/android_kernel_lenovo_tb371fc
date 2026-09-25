@@ -256,7 +256,11 @@ struct s2255_vc {
 struct s2255_dev {
 	struct s2255_vc         vc[MAX_CHANNELS];
 	struct v4l2_device      v4l2_dev;
+<<<<<<< HEAD
 	atomic_t                num_channels;
+=======
+	refcount_t		num_channels;
+>>>>>>> origin/android16-base
 	int			frames;
 	struct mutex		lock;	/* channels[].vdev.lock */
 	struct mutex		cmdlock; /* protects cmdbuf */
@@ -1574,11 +1578,19 @@ static void s2255_video_device_release(struct video_device *vdev)
 		container_of(vdev, struct s2255_vc, vdev);
 
 	dprintk(dev, 4, "%s, chnls: %d\n", __func__,
+<<<<<<< HEAD
 		atomic_read(&dev->num_channels));
 
 	v4l2_ctrl_handler_free(&vc->hdl);
 
 	if (atomic_dec_and_test(&dev->num_channels))
+=======
+		refcount_read(&dev->num_channels));
+
+	v4l2_ctrl_handler_free(&vc->hdl);
+
+	if (refcount_dec_and_test(&dev->num_channels))
+>>>>>>> origin/android16-base
 		s2255_destroy(dev);
 	return;
 }
@@ -1681,7 +1693,11 @@ static int s2255_probe_v4l(struct s2255_dev *dev)
 				"failed to register video device!\n");
 			break;
 		}
+<<<<<<< HEAD
 		atomic_inc(&dev->num_channels);
+=======
+		refcount_inc(&dev->num_channels);
+>>>>>>> origin/android16-base
 		v4l2_info(&dev->v4l2_dev, "V4L2 device registered as %s\n",
 			  video_device_node_name(&vc->vdev));
 
@@ -1689,11 +1705,19 @@ static int s2255_probe_v4l(struct s2255_dev *dev)
 	pr_info("Sensoray 2255 V4L driver Revision: %s\n",
 		S2255_VERSION);
 	/* if no channels registered, return error and probe will fail*/
+<<<<<<< HEAD
 	if (atomic_read(&dev->num_channels) == 0) {
 		v4l2_device_unregister(&dev->v4l2_dev);
 		return ret;
 	}
 	if (atomic_read(&dev->num_channels) != MAX_CHANNELS)
+=======
+	if (refcount_read(&dev->num_channels) == 0) {
+		v4l2_device_unregister(&dev->v4l2_dev);
+		return ret;
+	}
+	if (refcount_read(&dev->num_channels) != MAX_CHANNELS)
+>>>>>>> origin/android16-base
 		pr_warn("s2255: Not all channels available.\n");
 	return 0;
 }
@@ -1904,7 +1928,11 @@ static long s2255_vendor_req(struct s2255_dev *dev, unsigned char Request,
 				    USB_TYPE_VENDOR | USB_RECIP_DEVICE |
 				    USB_DIR_IN,
 				    Value, Index, buf,
+<<<<<<< HEAD
 				    TransferBufferLength, HZ * 5);
+=======
+				    TransferBufferLength, USB_CTRL_SET_TIMEOUT);
+>>>>>>> origin/android16-base
 
 		if (r >= 0)
 			memcpy(TransferBuffer, buf, TransferBufferLength);
@@ -1913,7 +1941,11 @@ static long s2255_vendor_req(struct s2255_dev *dev, unsigned char Request,
 		r = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
 				    Request, USB_TYPE_VENDOR | USB_RECIP_DEVICE,
 				    Value, Index, buf,
+<<<<<<< HEAD
 				    TransferBufferLength, HZ * 5);
+=======
+				    TransferBufferLength, USB_CTRL_SET_TIMEOUT);
+>>>>>>> origin/android16-base
 	}
 	kfree(buf);
 	return r;
@@ -2242,7 +2274,11 @@ static int s2255_probe(struct usb_interface *interface,
 		goto errorFWDATA1;
 	}
 
+<<<<<<< HEAD
 	atomic_set(&dev->num_channels, 0);
+=======
+	refcount_set(&dev->num_channels, 0);
+>>>>>>> origin/android16-base
 	dev->pid = id->idProduct;
 	dev->fw_data = kzalloc(sizeof(struct s2255_fw), GFP_KERNEL);
 	if (!dev->fw_data)
@@ -2362,12 +2398,20 @@ static void s2255_disconnect(struct usb_interface *interface)
 {
 	struct s2255_dev *dev = to_s2255_dev(usb_get_intfdata(interface));
 	int i;
+<<<<<<< HEAD
 	int channels = atomic_read(&dev->num_channels);
+=======
+	int channels = refcount_read(&dev->num_channels);
+>>>>>>> origin/android16-base
 	mutex_lock(&dev->lock);
 	v4l2_device_disconnect(&dev->v4l2_dev);
 	mutex_unlock(&dev->lock);
 	/*see comments in the uvc_driver.c usb disconnect function */
+<<<<<<< HEAD
 	atomic_inc(&dev->num_channels);
+=======
+	refcount_inc(&dev->num_channels);
+>>>>>>> origin/android16-base
 	/* unregister each video device. */
 	for (i = 0; i < channels; i++)
 		video_unregister_device(&dev->vc[i].vdev);
@@ -2380,7 +2424,11 @@ static void s2255_disconnect(struct usb_interface *interface)
 		dev->vc[i].vidstatus_ready = 1;
 		wake_up(&dev->vc[i].wait_vidstatus);
 	}
+<<<<<<< HEAD
 	if (atomic_dec_and_test(&dev->num_channels))
+=======
+	if (refcount_dec_and_test(&dev->num_channels))
+>>>>>>> origin/android16-base
 		s2255_destroy(dev);
 	dev_info(&interface->dev, "%s\n", __func__);
 }

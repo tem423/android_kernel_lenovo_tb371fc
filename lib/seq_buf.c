@@ -228,8 +228,15 @@ int seq_buf_putmem_hex(struct seq_buf *s, const void *mem,
 
 	WARN_ON(s->size == 0);
 
+<<<<<<< HEAD
 	while (len) {
 		start_len = min(len, HEX_CHARS - 1);
+=======
+	BUILD_BUG_ON(MAX_MEMHEX_BYTES * 2 >= HEX_CHARS);
+
+	while (len) {
+		start_len = min(len, MAX_MEMHEX_BYTES);
+>>>>>>> origin/android16-base
 #ifdef __BIG_ENDIAN
 		for (i = 0, j = 0; i < start_len; i++) {
 #else
@@ -242,12 +249,21 @@ int seq_buf_putmem_hex(struct seq_buf *s, const void *mem,
 			break;
 
 		/* j increments twice per loop */
+<<<<<<< HEAD
 		len -= j / 2;
+=======
+>>>>>>> origin/android16-base
 		hex[j++] = ' ';
 
 		seq_buf_putmem(s, hex, j);
 		if (seq_buf_has_overflowed(s))
 			return -1;
+<<<<<<< HEAD
+=======
+
+		len -= start_len;
+		data += start_len;
+>>>>>>> origin/android16-base
 	}
 	return 0;
 }

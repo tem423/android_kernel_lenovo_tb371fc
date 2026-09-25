@@ -35,7 +35,10 @@ static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
 				bool disable_device)
 {
 	struct pci_dev *pdev = php_slot->pdev;
+<<<<<<< HEAD
 	int irq = php_slot->irq;
+=======
+>>>>>>> origin/android16-base
 	u16 ctrl;
 
 	if (php_slot->irq > 0) {
@@ -54,7 +57,11 @@ static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
 		php_slot->wq = NULL;
 	}
 
+<<<<<<< HEAD
 	if (disable_device || irq > 0) {
+=======
+	if (disable_device) {
+>>>>>>> origin/android16-base
 		if (pdev->msix_enabled)
 			pci_disable_msix(pdev);
 		else if (pdev->msi_enabled)

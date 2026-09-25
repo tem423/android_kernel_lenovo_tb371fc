@@ -99,11 +99,19 @@ static inline void __iomem *gic_dist_base(struct irq_data *d)
 	return NULL;
 }
 
+<<<<<<< HEAD
 static void gic_do_wait_for_rwp(void __iomem *base)
 {
 	u32 count = 1000000;	/* 1s! */
 
 	while (readl_relaxed_no_log(base + GICD_CTLR) & GICD_CTLR_RWP) {
+=======
+static void gic_do_wait_for_rwp(void __iomem *base, u32 bit)
+{
+	u32 count = 1000000;	/* 1s! */
+
+	while (readl_relaxed_no_log(base + GICD_CTLR) & bit) {
+>>>>>>> origin/android16-base
 		count--;
 		if (!count) {
 			pr_err_ratelimited("RWP timeout, gone fishing\n");
@@ -117,13 +125,21 @@ static void gic_do_wait_for_rwp(void __iomem *base)
 /* Wait for completion of a distributor change */
 static void gic_dist_wait_for_rwp(void)
 {
+<<<<<<< HEAD
 	gic_do_wait_for_rwp(gic_data.dist_base);
+=======
+	gic_do_wait_for_rwp(gic_data.dist_base, GICD_CTLR_RWP);
+>>>>>>> origin/android16-base
 }
 
 /* Wait for completion of a redistributor change */
 static void gic_redist_wait_for_rwp(void)
 {
+<<<<<<< HEAD
 	gic_do_wait_for_rwp(gic_data_rdist_rd_base());
+=======
+	gic_do_wait_for_rwp(gic_data_rdist_rd_base(), GICR_CTLR_RWP);
+>>>>>>> origin/android16-base
 }
 
 #ifdef CONFIG_ARM64
@@ -257,6 +273,16 @@ static int gic_irq_set_irqchip_state(struct irq_data *d,
 	}
 
 	gic_poke_irq(d, reg);
+<<<<<<< HEAD
+=======
+
+	/*
+	 * Force read-back to guarantee that the active state has taken
+	 * effect, and won't race with a guest-driven deactivation.
+	 */
+	if (reg == GICD_ISACTIVER)
+		gic_peek_irq(d, reg);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1301,12 +1327,23 @@ static void __init gic_populate_ppi_partitions(struct device_node *gic_node)
 				continue;
 
 			cpu = of_cpu_node_to_id(cpu_node);
+<<<<<<< HEAD
 			if (WARN_ON(cpu < 0))
 				continue;
+=======
+			if (WARN_ON(cpu < 0)) {
+				of_node_put(cpu_node);
+				continue;
+			}
+>>>>>>> origin/android16-base
 
 			pr_cont("%pOF[%d] ", cpu_node, cpu);
 
 			cpumask_set_cpu(cpu, &part->mask);
+<<<<<<< HEAD
+=======
+			of_node_put(cpu_node);
+>>>>>>> origin/android16-base
 		}
 
 		pr_cont("}\n");

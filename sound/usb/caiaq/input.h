@@ -4,6 +4,10 @@
 
 void snd_usb_caiaq_input_dispatch(struct snd_usb_caiaqdev *cdev, char *buf, unsigned int len);
 int snd_usb_caiaq_input_init(struct snd_usb_caiaqdev *cdev);
+<<<<<<< HEAD
+=======
+void snd_usb_caiaq_input_disconnect(struct snd_usb_caiaqdev *cdev);
+>>>>>>> origin/android16-base
 void snd_usb_caiaq_input_free(struct snd_usb_caiaqdev *cdev);
 
 #endif

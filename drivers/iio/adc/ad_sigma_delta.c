@@ -283,10 +283,17 @@ int ad_sigma_delta_single_conversion(struct iio_dev *indio_dev,
 	unsigned int sample, raw_sample;
 	int ret = 0;
 
+<<<<<<< HEAD
 	if (iio_buffer_enabled(indio_dev))
 		return -EBUSY;
 
 	mutex_lock(&indio_dev->mlock);
+=======
+	ret = iio_device_claim_direct_mode(indio_dev);
+	if (ret)
+		return ret;
+
+>>>>>>> origin/android16-base
 	ad_sigma_delta_set_channel(sigma_delta, chan->address);
 
 	spi_bus_lock(sigma_delta->spi->master);
@@ -320,7 +327,11 @@ out:
 	ad_sigma_delta_set_mode(sigma_delta, AD_SD_MODE_IDLE);
 	sigma_delta->bus_locked = false;
 	spi_bus_unlock(sigma_delta->spi->master);
+<<<<<<< HEAD
 	mutex_unlock(&indio_dev->mlock);
+=======
+	iio_device_release_direct_mode(indio_dev);
+>>>>>>> origin/android16-base
 
 	if (ret)
 		return ret;

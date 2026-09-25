@@ -33,14 +33,18 @@
 #include <asm/pgalloc.h>
 #include <asm/tlbflush.h>
 
+<<<<<<< HEAD
 #define MMU_GATHER_BUNDLE	8
 
 #ifdef CONFIG_HAVE_RCU_TABLE_FREE
+=======
+>>>>>>> origin/android16-base
 static inline void __tlb_remove_table(void *_table)
 {
 	free_page_and_swap_cache((struct page *)_table);
 }
 
+<<<<<<< HEAD
 struct mmu_table_batch {
 	struct rcu_head		rcu;
 	unsigned int		nr;
@@ -253,10 +257,25 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte,
 #ifdef CONFIG_ARM_LPAE
 	tlb_add_flush(tlb, addr);
 #else
+=======
+#include <asm-generic/tlb.h>
+
+#ifndef CONFIG_HAVE_RCU_TABLE_FREE
+#define tlb_remove_table(tlb, entry) tlb_remove_page(tlb, entry)
+#endif
+
+static inline void
+__pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte, unsigned long addr)
+{
+	pgtable_page_dtor(pte);
+
+#ifndef CONFIG_ARM_LPAE
+>>>>>>> origin/android16-base
 	/*
 	 * With the classic ARM MMU, a pte page has two corresponding pmd
 	 * entries, each covering 1MB.
 	 */
+<<<<<<< HEAD
 	addr &= PMD_MASK;
 	tlb_add_flush(tlb, addr + SZ_1M - PAGE_SIZE);
 	tlb_add_flush(tlb, addr + SZ_1M);
@@ -298,6 +317,23 @@ static inline void tlb_flush_remove_tables(struct mm_struct *mm)
 
 static inline void tlb_flush_remove_tables_local(void *arg)
 {
+=======
+	addr = (addr & PMD_MASK) + SZ_1M;
+	__tlb_adjust_range(tlb, addr - PAGE_SIZE, 2 * PAGE_SIZE);
+#endif
+
+	tlb_remove_table(tlb, pte);
+}
+
+static inline void
+__pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmdp, unsigned long addr)
+{
+#ifdef CONFIG_ARM_LPAE
+	struct page *page = virt_to_page(pmdp);
+
+	tlb_remove_table(tlb, page);
+#endif
+>>>>>>> origin/android16-base
 }
 
 #endif /* CONFIG_MMU */

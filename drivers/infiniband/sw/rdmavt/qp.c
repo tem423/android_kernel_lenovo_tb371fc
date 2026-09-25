@@ -321,8 +321,11 @@ void rvt_qp_exit(struct rvt_dev_info *rdi)
 	if (qps_inuse)
 		rvt_pr_err(rdi, "QP memory leak! %u still in use\n",
 			   qps_inuse);
+<<<<<<< HEAD
 	if (!rdi->qp_dev)
 		return;
+=======
+>>>>>>> origin/android16-base
 
 	kfree(rdi->qp_dev->qp_table);
 	free_qpn_table(&rdi->qp_dev->qpn_table);

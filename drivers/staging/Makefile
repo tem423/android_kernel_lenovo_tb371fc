@@ -47,9 +47,16 @@ obj-$(CONFIG_SOC_MT7621)	+= mt7621-pci/
 obj-$(CONFIG_SOC_MT7621)	+= mt7621-pinctrl/
 obj-$(CONFIG_SOC_MT7621)	+= mt7621-spi/
 obj-$(CONFIG_SOC_MT7621)	+= mt7621-dma/
+<<<<<<< HEAD
 obj-$(CONFIG_SOC_MT7621)	+= mt7621-mmc/
+=======
+>>>>>>> origin/android16-base
 obj-$(CONFIG_SOC_MT7621)	+= mt7621-eth/
 obj-$(CONFIG_SOC_MT7621)	+= mt7621-dts/
 obj-$(CONFIG_STAGING_GASKET_FRAMEWORK)	+= gasket/
 obj-$(CONFIG_XIL_AXIS_FIFO)	+= axis-fifo/
+<<<<<<< HEAD
 obj-$(CONFIG_EROFS_FS)		+= erofs/
+=======
+obj-$(CONFIG_QCA_CLD_WLAN)	+= qcacld-3.0/
+>>>>>>> origin/android16-base

@@ -306,7 +306,11 @@ TRACE_EVENT(mt76x0_set_shared_key,
 #endif
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/wireless/mediatek/mt76/mt76x0
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace
 

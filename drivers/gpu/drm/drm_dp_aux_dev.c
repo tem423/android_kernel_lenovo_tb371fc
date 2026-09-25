@@ -60,7 +60,11 @@ static struct drm_dp_aux_dev *drm_dp_aux_dev_get_by_minor(unsigned index)
 
 	mutex_lock(&aux_idr_mutex);
 	aux_dev = idr_find(&aux_idr, index);
+<<<<<<< HEAD
 	if (!kref_get_unless_zero(&aux_dev->refcount))
+=======
+	if (aux_dev && !kref_get_unless_zero(&aux_dev->refcount))
+>>>>>>> origin/android16-base
 		aux_dev = NULL;
 	mutex_unlock(&aux_idr_mutex);
 

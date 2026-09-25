@@ -142,6 +142,7 @@ static int __init mod_init(void)
 
 found:
 	err = pci_read_config_dword(pdev, 0x58, &pmbase);
+<<<<<<< HEAD
 	if (err)
 		return err;
 
@@ -152,6 +153,24 @@ found:
 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
+=======
+	if (err) {
+		err = pcibios_err_to_errno(err);
+		goto put_dev;
+	}
+
+	pmbase &= 0x0000FF00;
+	if (pmbase == 0) {
+		err = -EIO;
+		goto put_dev;
+	}
+
+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+	if (!priv) {
+		err = -ENOMEM;
+		goto put_dev;
+	}
+>>>>>>> origin/android16-base
 
 	if (!request_region(pmbase + PMBASE_OFFSET, PMBASE_SIZE, DRV_NAME)) {
 		dev_err(&pdev->dev, DRV_NAME " region 0x%x already in use!\n",
@@ -185,6 +204,11 @@ err_iomap:
 	release_region(pmbase + PMBASE_OFFSET, PMBASE_SIZE);
 out:
 	kfree(priv);
+<<<<<<< HEAD
+=======
+put_dev:
+	pci_dev_put(pdev);
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -200,6 +224,11 @@ static void __exit mod_exit(void)
 
 	release_region(priv->pmbase + PMBASE_OFFSET, PMBASE_SIZE);
 
+<<<<<<< HEAD
+=======
+	pci_dev_put(priv->pcidev);
+
+>>>>>>> origin/android16-base
 	kfree(priv);
 }
 

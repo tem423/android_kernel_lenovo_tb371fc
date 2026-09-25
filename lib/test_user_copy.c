@@ -55,6 +55,7 @@ static bool is_zeroed(void *from, size_t size)
 static int test_check_nonzero_user(char *kmem, char __user *umem, size_t size)
 {
 	int ret = 0;
+<<<<<<< HEAD
 	size_t start, end, i;
 	size_t zero_start = size / 4;
 	size_t zero_end = size - zero_start;
@@ -67,6 +68,37 @@ static int test_check_nonzero_user(char *kmem, char __user *umem, size_t size)
 	 *   [ 00 ff 00 ff ... 00 00 00 00 ... ff 00 ff 00 ]
 	 *
 	 * And we verify that check_nonzero_user() acts identically to memchr_inv().
+=======
+	size_t start, end, i, zero_start, zero_end;
+
+	if (test(size < 2 * PAGE_SIZE, "buffer too small"))
+		return -EINVAL;
+
+	/*
+	 * We want to cross a page boundary to exercise the code more
+	 * effectively. We also don't want to make the size we scan too large,
+	 * otherwise the test can take a long time and cause soft lockups. So
+	 * scan a 1024 byte region across the page boundary.
+	 */
+	size = 1024;
+	start = PAGE_SIZE - (size / 2);
+
+	kmem += start;
+	umem += start;
+
+	zero_start = size / 4;
+	zero_end = size - zero_start;
+
+	/*
+	 * We conduct a series of check_nonzero_user() tests on a block of
+	 * memory with the following byte-pattern (trying every possible
+	 * [start,end] pair):
+	 *
+	 *   [ 00 ff 00 ff ... 00 00 00 00 ... ff 00 ff 00 ]
+	 *
+	 * And we verify that check_nonzero_user() acts identically to
+	 * memchr_inv().
+>>>>>>> origin/android16-base
 	 */
 
 	memset(kmem, 0x0, size);

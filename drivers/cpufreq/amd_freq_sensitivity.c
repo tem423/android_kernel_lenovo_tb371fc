@@ -21,6 +21,10 @@
 
 #include <asm/msr.h>
 #include <asm/cpufeature.h>
+<<<<<<< HEAD
+=======
+#include <asm/cpu_device_id.h>
+>>>>>>> origin/android16-base
 
 #include "cpufreq_ondemand.h"
 
@@ -121,6 +125,11 @@ static int __init amd_freq_sensitivity_init(void)
 	if (!pcidev) {
 		if (!static_cpu_has(X86_FEATURE_PROC_FEEDBACK))
 			return -ENODEV;
+<<<<<<< HEAD
+=======
+	} else {
+		pci_dev_put(pcidev);
+>>>>>>> origin/android16-base
 	}
 
 	if (rdmsrl_safe(MSR_AMD64_FREQ_SENSITIVITY_ACTUAL, &val))

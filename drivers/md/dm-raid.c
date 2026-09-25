@@ -998,12 +998,22 @@ static int validate_region_size(struct raid_set *rs, unsigned long region_size)
 static int validate_raid_redundancy(struct raid_set *rs)
 {
 	unsigned int i, rebuild_cnt = 0;
+<<<<<<< HEAD
 	unsigned int rebuilds_per_group = 0, copies;
 	unsigned int group_size, last_group_start;
 
 	for (i = 0; i < rs->md.raid_disks; i++)
 		if (!test_bit(In_sync, &rs->dev[i].rdev.flags) ||
 		    !rs->dev[i].rdev.sb_page)
+=======
+	unsigned int rebuilds_per_group = 0, copies, raid_disks;
+	unsigned int group_size, last_group_start;
+
+	for (i = 0; i < rs->raid_disks; i++)
+		if (!test_bit(FirstUse, &rs->dev[i].rdev.flags) &&
+		    ((!test_bit(In_sync, &rs->dev[i].rdev.flags) ||
+		      !rs->dev[i].rdev.sb_page)))
+>>>>>>> origin/android16-base
 			rebuild_cnt++;
 
 	switch (rs->md.level) {
@@ -1043,8 +1053,14 @@ static int validate_raid_redundancy(struct raid_set *rs)
 		 *	    A	 A    B	   B	C
 		 *	    C	 D    D	   E	E
 		 */
+<<<<<<< HEAD
 		if (__is_raid10_near(rs->md.new_layout)) {
 			for (i = 0; i < rs->md.raid_disks; i++) {
+=======
+		raid_disks = min(rs->raid_disks, rs->md.raid_disks);
+		if (__is_raid10_near(rs->md.new_layout)) {
+			for (i = 0; i < raid_disks; i++) {
+>>>>>>> origin/android16-base
 				if (!(i % copies))
 					rebuilds_per_group = 0;
 				if ((!rs->dev[i].rdev.sb_page ||
@@ -1067,10 +1083,17 @@ static int validate_raid_redundancy(struct raid_set *rs)
 		 * results in the need to treat the last (potentially larger)
 		 * set differently.
 		 */
+<<<<<<< HEAD
 		group_size = (rs->md.raid_disks / copies);
 		last_group_start = (rs->md.raid_disks / group_size) - 1;
 		last_group_start *= group_size;
 		for (i = 0; i < rs->md.raid_disks; i++) {
+=======
+		group_size = (raid_disks / copies);
+		last_group_start = (raid_disks / group_size) - 1;
+		last_group_start *= group_size;
+		for (i = 0; i < raid_disks; i++) {
+>>>>>>> origin/android16-base
 			if (!(i % copies) && !(i > last_group_start))
 				rebuilds_per_group = 0;
 			if ((!rs->dev[i].rdev.sb_page ||
@@ -1585,7 +1608,11 @@ static sector_t __rdev_sectors(struct raid_set *rs)
 {
 	int i;
 
+<<<<<<< HEAD
 	for (i = 0; i < rs->md.raid_disks; i++) {
+=======
+	for (i = 0; i < rs->raid_disks; i++) {
+>>>>>>> origin/android16-base
 		struct md_rdev *rdev = &rs->dev[i].rdev;
 
 		if (!test_bit(Journal, &rdev->flags) &&
@@ -1892,6 +1919,17 @@ static bool rs_takeover_requested(struct raid_set *rs)
 	return rs->md.new_level != rs->md.level;
 }
 
+<<<<<<< HEAD
+=======
+/* True if layout is set to reshape. */
+static bool rs_is_layout_change(struct raid_set *rs, bool use_mddev)
+{
+	return (use_mddev ? rs->md.delta_disks : rs->delta_disks) ||
+	       rs->md.new_layout != rs->md.layout ||
+	       rs->md.new_chunk_sectors != rs->md.chunk_sectors;
+}
+
+>>>>>>> origin/android16-base
 /* True if @rs is requested to reshape by ctr */
 static bool rs_reshape_requested(struct raid_set *rs)
 {
@@ -1904,9 +1942,13 @@ static bool rs_reshape_requested(struct raid_set *rs)
 	if (rs_is_raid0(rs))
 		return false;
 
+<<<<<<< HEAD
 	change = mddev->new_layout != mddev->layout ||
 		 mddev->new_chunk_sectors != mddev->chunk_sectors ||
 		 rs->delta_disks;
+=======
+	change = rs_is_layout_change(rs, false);
+>>>>>>> origin/android16-base
 
 	/* Historical case to support raid1 reshape without delta disks */
 	if (rs_is_raid1(rs)) {
@@ -2843,7 +2885,11 @@ static sector_t _get_reshape_sectors(struct raid_set *rs)
 }
 
 /*
+<<<<<<< HEAD
  *
+=======
+ * Reshape:
+>>>>>>> origin/android16-base
  * - change raid layout
  * - change chunk size
  * - add disks
@@ -2953,6 +2999,23 @@ static int rs_setup_reshape(struct raid_set *rs)
 }
 
 /*
+<<<<<<< HEAD
+=======
+ * If the md resync thread has updated superblock with max reshape position
+ * at the end of a reshape but not (yet) reset the layout configuration
+ * changes -> reset the latter.
+ */
+static void rs_reset_inconclusive_reshape(struct raid_set *rs)
+{
+	if (!rs_is_reshaping(rs) && rs_is_layout_change(rs, true)) {
+		rs_set_cur(rs);
+		rs->md.delta_disks = 0;
+		rs->md.reshape_backwards = 0;
+	}
+}
+
+/*
+>>>>>>> origin/android16-base
  * Enable/disable discard support on RAID set depending on
  * RAID level and discard properties of underlying RAID members.
  */
@@ -3221,11 +3284,21 @@ static int raid_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	if (r)
 		goto bad;
 
+<<<<<<< HEAD
+=======
+	/* Catch any inconclusive reshape superblock content. */
+	rs_reset_inconclusive_reshape(rs);
+
+>>>>>>> origin/android16-base
 	/* Start raid set read-only and assumed clean to change in raid_resume() */
 	rs->md.ro = 1;
 	rs->md.in_sync = 1;
 
+<<<<<<< HEAD
 	/* Keep array frozen */
+=======
+	/* Keep array frozen until resume. */
+>>>>>>> origin/android16-base
 	set_bit(MD_RECOVERY_FROZEN, &rs->md.recovery);
 
 	/* Has to be held on running the array */
@@ -3239,7 +3312,10 @@ static int raid_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	}
 
 	r = md_start(&rs->md);
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 	if (r) {
 		ti->error = "Failed to start raid array";
 		mddev_unlock(&rs->md);
@@ -3265,15 +3341,29 @@ static int raid_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	/* Try to adjust the raid4/5/6 stripe cache size to the stripe size */
 	if (rs_is_raid456(rs)) {
 		r = rs_set_raid456_stripe_cache(rs);
+<<<<<<< HEAD
 		if (r)
 			goto bad_stripe_cache;
+=======
+		if (r) {
+			mddev_unlock(&rs->md);
+			goto bad_stripe_cache;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	/* Now do an early reshape check */
 	if (test_bit(RT_FLAG_RESHAPE_RS, &rs->runtime_flags)) {
 		r = rs_check_reshape(rs);
+<<<<<<< HEAD
 		if (r)
 			goto bad_check_reshape;
+=======
+		if (r) {
+			mddev_unlock(&rs->md);
+			goto bad_check_reshape;
+		}
+>>>>>>> origin/android16-base
 
 		/* Restore new, ctr requested layout to perform check */
 		rs_config_restore(rs, &rs_layout);
@@ -3282,6 +3372,10 @@ static int raid_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 			r = rs->md.pers->check_reshape(&rs->md);
 			if (r) {
 				ti->error = "Reshape check failed";
+<<<<<<< HEAD
+=======
+				mddev_unlock(&rs->md);
+>>>>>>> origin/android16-base
 				goto bad_check_reshape;
 			}
 		}
@@ -3319,14 +3413,22 @@ static int raid_map(struct dm_target *ti, struct bio *bio)
 	struct mddev *mddev = &rs->md;
 
 	/*
+<<<<<<< HEAD
 	 * If we're reshaping to add disk(s)), ti->len and
+=======
+	 * If we're reshaping to add disk(s), ti->len and
+>>>>>>> origin/android16-base
 	 * mddev->array_sectors will differ during the process
 	 * (ti->len > mddev->array_sectors), so we have to requeue
 	 * bios with addresses > mddev->array_sectors here or
 	 * there will occur accesses past EOD of the component
 	 * data images thus erroring the raid set.
 	 */
+<<<<<<< HEAD
 	if (unlikely(bio_end_sector(bio) > mddev->array_sectors))
+=======
+	if (unlikely(bio_has_data(bio) && bio_end_sector(bio) > mddev->array_sectors))
+>>>>>>> origin/android16-base
 		return DM_MAPIO_REQUEUE;
 
 	md_handle_request(mddev, bio);
@@ -3509,7 +3611,11 @@ static void raid_status(struct dm_target *ti, status_type_t type,
 {
 	struct raid_set *rs = ti->private;
 	struct mddev *mddev = &rs->md;
+<<<<<<< HEAD
 	struct r5conf *conf = mddev->private;
+=======
+	struct r5conf *conf = rs_is_raid456(rs) ? mddev->private : NULL;
+>>>>>>> origin/android16-base
 	int i, max_nr_stripes = conf ? conf->max_nr_stripes : 0;
 	unsigned long recovery;
 	unsigned int raid_param_cnt = 1; /* at least 1 for chunksize */
@@ -3729,6 +3835,7 @@ static int raid_iterate_devices(struct dm_target *ti,
 	unsigned int i;
 	int r = 0;
 
+<<<<<<< HEAD
 	for (i = 0; !r && i < rs->md.raid_disks; i++)
 		if (rs->dev[i].data_dev)
 			r = fn(ti,
@@ -3736,6 +3843,15 @@ static int raid_iterate_devices(struct dm_target *ti,
 				 0, /* No offset on data devs */
 				 rs->md.dev_sectors,
 				 data);
+=======
+	for (i = 0; !r && i < rs->raid_disks; i++) {
+		if (rs->dev[i].data_dev) {
+			r = fn(ti, rs->dev[i].data_dev,
+			       0, /* No offset on data devs */
+			       rs->md.dev_sectors, data);
+		}
+	}
+>>>>>>> origin/android16-base
 
 	return r;
 }
@@ -3780,7 +3896,11 @@ static void attempt_restore_of_faulty_devices(struct raid_set *rs)
 
 	memset(cleared_failed_devices, 0, sizeof(cleared_failed_devices));
 
+<<<<<<< HEAD
 	for (i = 0; i < mddev->raid_disks; i++) {
+=======
+	for (i = 0; i < rs->raid_disks; i++) {
+>>>>>>> origin/android16-base
 		r = &rs->dev[i].rdev;
 		/* HM FIXME: enhance journal device recovery processing */
 		if (test_bit(Journal, &r->flags))
@@ -3994,7 +4114,13 @@ static void raid_resume(struct dm_target *ti)
 		 * Take this opportunity to check whether any failed
 		 * devices are reachable again.
 		 */
+<<<<<<< HEAD
 		attempt_restore_of_faulty_devices(rs);
+=======
+		mddev_lock_nointr(mddev);
+		attempt_restore_of_faulty_devices(rs);
+		mddev_unlock(mddev);
+>>>>>>> origin/android16-base
 	}
 
 	if (test_and_clear_bit(RT_FLAG_RS_SUSPENDED, &rs->runtime_flags)) {

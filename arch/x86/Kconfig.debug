@@ -376,6 +376,10 @@ config UNWINDER_ORC
 
 config UNWINDER_FRAME_POINTER
 	bool "Frame pointer unwinder"
+<<<<<<< HEAD
+=======
+	select ARCH_WANT_FRAME_POINTERS
+>>>>>>> origin/android16-base
 	select FRAME_POINTER
 	---help---
 	  This option enables the frame pointer unwinder for unwinding kernel
@@ -403,7 +407,10 @@ config UNWINDER_GUESS
 	  overhead.
 
 endchoice
+<<<<<<< HEAD
 
 config FRAME_POINTER
 	depends on !UNWINDER_ORC && !UNWINDER_GUESS
 	bool
+=======
+>>>>>>> origin/android16-base

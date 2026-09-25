@@ -413,10 +413,17 @@ static int uio_get_minor(struct uio_device *idev)
 	return retval;
 }
 
+<<<<<<< HEAD
 static void uio_free_minor(struct uio_device *idev)
 {
 	mutex_lock(&minor_lock);
 	idr_remove(&uio_idr, idev->minor);
+=======
+static void uio_free_minor(unsigned long minor)
+{
+	mutex_lock(&minor_lock);
+	idr_remove(&uio_idr, minor);
+>>>>>>> origin/android16-base
 	mutex_unlock(&minor_lock);
 }
 
@@ -464,6 +471,7 @@ static int uio_open(struct inode *inode, struct file *filep)
 
 	mutex_lock(&minor_lock);
 	idev = idr_find(&uio_idr, iminor(inode));
+<<<<<<< HEAD
 	mutex_unlock(&minor_lock);
 	if (!idev) {
 		ret = -ENODEV;
@@ -471,6 +479,15 @@ static int uio_open(struct inode *inode, struct file *filep)
 	}
 
 	get_device(&idev->dev);
+=======
+	if (!idev) {
+		ret = -ENODEV;
+		mutex_unlock(&minor_lock);
+		goto out;
+	}
+	get_device(&idev->dev);
+	mutex_unlock(&minor_lock);
+>>>>>>> origin/android16-base
 
 	if (!try_module_get(idev->owner)) {
 		ret = -ENODEV;
@@ -988,7 +1005,11 @@ err_request_irq:
 err_uio_dev_add_attributes:
 	device_del(&idev->dev);
 err_device_create:
+<<<<<<< HEAD
 	uio_free_minor(idev);
+=======
+	uio_free_minor(idev->minor);
+>>>>>>> origin/android16-base
 	put_device(&idev->dev);
 	return ret;
 }
@@ -1002,11 +1023,19 @@ EXPORT_SYMBOL_GPL(__uio_register_device);
 void uio_unregister_device(struct uio_info *info)
 {
 	struct uio_device *idev;
+<<<<<<< HEAD
+=======
+	unsigned long minor;
+>>>>>>> origin/android16-base
 
 	if (!info || !info->uio_dev)
 		return;
 
 	idev = info->uio_dev;
+<<<<<<< HEAD
+=======
+	minor = idev->minor;
+>>>>>>> origin/android16-base
 
 	mutex_lock(&idev->info_lock);
 	uio_dev_del_attributes(idev);
@@ -1017,10 +1046,16 @@ void uio_unregister_device(struct uio_info *info)
 	idev->info = NULL;
 	mutex_unlock(&idev->info_lock);
 
+<<<<<<< HEAD
 	device_unregister(&idev->dev);
 
 	uio_free_minor(idev);
 
+=======
+	uio_free_minor(minor);
+	device_unregister(&idev->dev);
+
+>>>>>>> origin/android16-base
 	return;
 }
 EXPORT_SYMBOL_GPL(uio_unregister_device);

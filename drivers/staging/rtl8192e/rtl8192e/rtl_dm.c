@@ -193,7 +193,10 @@ static void _rtl92e_dm_init_fsync(struct net_device *dev);
 static void _rtl92e_dm_deinit_fsync(struct net_device *dev);
 
 static	void _rtl92e_dm_check_txrateandretrycount(struct net_device *dev);
+<<<<<<< HEAD
 static  void _rtl92e_dm_check_ac_dc_power(struct net_device *dev);
+=======
+>>>>>>> origin/android16-base
 static void _rtl92e_dm_check_fsync(struct net_device *dev);
 static void _rtl92e_dm_check_rf_ctrl_gpio(void *data);
 static void _rtl92e_dm_fsync_timer_callback(struct timer_list *t);
@@ -246,8 +249,11 @@ void rtl92e_dm_watchdog(struct net_device *dev)
 	if (priv->being_init_adapter)
 		return;
 
+<<<<<<< HEAD
 	_rtl92e_dm_check_ac_dc_power(dev);
 
+=======
+>>>>>>> origin/android16-base
 	_rtl92e_dm_check_txrateandretrycount(dev);
 	_rtl92e_dm_check_edca_turbo(dev);
 
@@ -265,6 +271,7 @@ void rtl92e_dm_watchdog(struct net_device *dev)
 	_rtl92e_dm_cts_to_self(dev);
 }
 
+<<<<<<< HEAD
 static void _rtl92e_dm_check_ac_dc_power(struct net_device *dev)
 {
 	struct r8192_priv *priv = rtllib_priv(dev);
@@ -289,6 +296,8 @@ static void _rtl92e_dm_check_ac_dc_power(struct net_device *dev)
 };
 
 
+=======
+>>>>>>> origin/android16-base
 void rtl92e_init_adaptive_rate(struct net_device *dev)
 {
 
@@ -1809,10 +1818,13 @@ static void _rtl92e_dm_check_rf_ctrl_gpio(void *data)
 	u8 tmp1byte;
 	enum rt_rf_power_state eRfPowerStateToSet;
 	bool bActuallySet = false;
+<<<<<<< HEAD
 	char *argv[3];
 	static char const RadioPowerPath[] = "/etc/acpi/events/RadioPower.sh";
 	static char *envp[] = {"HOME=/", "TERM=linux", "PATH=/usr/bin:/bin",
 			       NULL};
+=======
+>>>>>>> origin/android16-base
 
 	bActuallySet = false;
 
@@ -1844,6 +1856,7 @@ static void _rtl92e_dm_check_rf_ctrl_gpio(void *data)
 		mdelay(1000);
 		priv->bHwRfOffAction = 1;
 		rtl92e_set_rf_state(dev, eRfPowerStateToSet, RF_CHANGE_BY_HW);
+<<<<<<< HEAD
 		if (priv->bHwRadioOff)
 			argv[1] = "RFOFF";
 		else
@@ -1852,6 +1865,8 @@ static void _rtl92e_dm_check_rf_ctrl_gpio(void *data)
 		argv[0] = (char *)RadioPowerPath;
 		argv[2] = NULL;
 		call_usermodehelper(RadioPowerPath, argv, envp, UMH_WAIT_PROC);
+=======
+>>>>>>> origin/android16-base
 	}
 }
 

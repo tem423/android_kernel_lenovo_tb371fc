@@ -15,7 +15,10 @@
 #include <trace/events/dfc.h>
 #include <linux/ip.h>
 #include <linux/ipv6.h>
+<<<<<<< HEAD
 #include <linux/alarmtimer.h>
+=======
+>>>>>>> origin/android16-base
 
 #define NLMSG_FLOW_ACTIVATE 1
 #define NLMSG_FLOW_DEACTIVATE 2
@@ -27,7 +30,10 @@
 #define FLAG_DFC_MASK 0x000F
 #define FLAG_POWERSAVE_MASK 0x0010
 #define FLAG_QMAP_MASK 0x0020
+<<<<<<< HEAD
 #define FLAG_PS_EXT_MASK 0x0040
+=======
+>>>>>>> origin/android16-base
 
 #define FLAG_TO_MODE(f) ((f) & FLAG_DFC_MASK)
 
@@ -36,12 +42,18 @@
 	 (m) == DFC_MODE_SA)
 
 #define FLAG_TO_QMAP(f) ((f) & FLAG_QMAP_MASK)
+<<<<<<< HEAD
 #define FLAG_TO_PS_EXT(f) ((f) & FLAG_PS_EXT_MASK)
 
 int dfc_mode;
 int dfc_qmap;
 int dfc_ps_ext;
 
+=======
+
+int dfc_mode;
+int dfc_qmap;
+>>>>>>> origin/android16-base
 #define IS_ANCILLARY(type) ((type) != AF_INET && (type) != AF_INET6)
 
 unsigned int rmnet_wq_frequency __read_mostly = 1000;
@@ -399,6 +411,10 @@ static void __qmi_rmnet_update_mq(struct net_device *dev,
 				qmi_rmnet_grant_per(DEFAULT_GRANT);
 		}
 		qmi_rmnet_flow_control(dev, itm->mq_idx, 1);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 		if (dfc_mode == DFC_MODE_SA)
 			qmi_rmnet_flow_control(dev, bearer->ack_mq_idx, 1);
 	}
@@ -617,12 +633,18 @@ qmi_rmnet_setup_client(void *port, struct qmi_info *qmi, struct tcmsg *tcm)
 		if (!qmi)
 			return -ENOMEM;
 
+<<<<<<< HEAD
 		qmi->ws = wakeup_source_register(NULL, "RMNET_DFC");
+=======
+>>>>>>> origin/android16-base
 		rmnet_init_qmi_pt(port, qmi);
 	}
 
 	qmi->flag = tcm->tcm_ifindex;
+<<<<<<< HEAD
 	qmi->ps_ext = FLAG_TO_PS_EXT(qmi->flag);
+=======
+>>>>>>> origin/android16-base
 	svc.instance = tcm->tcm_handle;
 	svc.ep_type = tcm->tcm_info;
 	svc.iface_id = tcm->tcm_parent;
@@ -667,7 +689,10 @@ __qmi_rmnet_delete_client(void *port, struct qmi_info *qmi, int idx)
 
 	if (!qmi_rmnet_has_client(qmi) && !qmi_rmnet_has_pending(qmi)) {
 		rmnet_reset_qmi_pt(port);
+<<<<<<< HEAD
 		wakeup_source_unregister(qmi->ws);
+=======
+>>>>>>> origin/android16-base
 		kfree(qmi);
 		return 0;
 	}
@@ -724,7 +749,10 @@ void qmi_rmnet_change_link(struct net_device *dev, void *port, void *tcm_pt)
 	case NLMSG_CLIENT_SETUP:
 		dfc_mode = FLAG_TO_MODE(tcm->tcm_ifindex);
 		dfc_qmap = FLAG_TO_QMAP(tcm->tcm_ifindex);
+<<<<<<< HEAD
 		dfc_ps_ext = FLAG_TO_PS_EXT(tcm->tcm_ifindex);
+=======
+>>>>>>> origin/android16-base
 
 		if (!DFC_SUPPORTED_MODE(dfc_mode) &&
 		    !(tcm->tcm_ifindex & FLAG_POWERSAVE_MASK))
@@ -737,7 +765,10 @@ void qmi_rmnet_change_link(struct net_device *dev, void *port, void *tcm_pt)
 			    !qmi_rmnet_has_client(qmi) &&
 			    !qmi_rmnet_has_pending(qmi)) {
 				rmnet_reset_qmi_pt(port);
+<<<<<<< HEAD
 				wakeup_source_unregister(qmi->ws);
+=======
+>>>>>>> origin/android16-base
 				kfree(qmi);
 			}
 		} else if (tcm->tcm_ifindex & FLAG_POWERSAVE_MASK) {
@@ -861,6 +892,7 @@ bool qmi_rmnet_all_flows_enabled(struct net_device *dev)
 }
 EXPORT_SYMBOL(qmi_rmnet_all_flows_enabled);
 
+<<<<<<< HEAD
 /**
  * rmnet_prepare_ps_bearers - get disabled bearers and
  * reset enabled bearers
@@ -909,6 +941,8 @@ void qmi_rmnet_prepare_ps_bearers(struct net_device *dev, u8 *num_bearers,
 }
 EXPORT_SYMBOL(qmi_rmnet_prepare_ps_bearers);
 
+=======
+>>>>>>> origin/android16-base
 #ifdef CONFIG_QCOM_QMI_DFC
 bool qmi_rmnet_get_flow_state(struct net_device *dev, struct sk_buff *skb,
 			      bool *drop)
@@ -1122,11 +1156,17 @@ static struct rmnet_powersave_work *rmnet_work;
 static bool rmnet_work_quit;
 static bool rmnet_work_inited;
 static LIST_HEAD(ps_list);
+<<<<<<< HEAD
 static u8 ps_bearer_id[32];
 
 struct rmnet_powersave_work {
 	struct delayed_work work;
 	struct alarm atimer;
+=======
+
+struct rmnet_powersave_work {
+	struct delayed_work work;
+>>>>>>> origin/android16-base
 	void *port;
 	u64 old_rx_pkts;
 	u64 old_tx_pkts;
@@ -1211,6 +1251,7 @@ static void qmi_rmnet_work_restart(void *port)
 	rcu_read_unlock();
 }
 
+<<<<<<< HEAD
 static enum alarmtimer_restart qmi_rmnet_work_alarm(struct alarm *atimer,
 						    ktime_t now)
 {
@@ -1237,6 +1278,8 @@ static void dfc_wakelock_release(struct qmi_info *qmi)
 	}
 }
 
+=======
+>>>>>>> origin/android16-base
 static void qmi_rmnet_check_stats(struct work_struct *work)
 {
 	struct rmnet_powersave_work *real_work;
@@ -1244,7 +1287,10 @@ static void qmi_rmnet_check_stats(struct work_struct *work)
 	u64 rxd, txd;
 	u64 rx, tx;
 	bool dl_msg_active;
+<<<<<<< HEAD
 	bool use_alarm_timer = true;
+=======
+>>>>>>> origin/android16-base
 
 	real_work = container_of(to_delayed_work(work),
 				 struct rmnet_powersave_work, work);
@@ -1256,8 +1302,11 @@ static void qmi_rmnet_check_stats(struct work_struct *work)
 	if (unlikely(!qmi))
 		return;
 
+<<<<<<< HEAD
 	dfc_wakelock_release(qmi);
 
+=======
+>>>>>>> origin/android16-base
 	rmnet_get_packets(real_work->port, &rx, &tx);
 	rxd = rx - real_work->old_rx_pkts;
 	txd = tx - real_work->old_tx_pkts;
@@ -1292,10 +1341,15 @@ static void qmi_rmnet_check_stats(struct work_struct *work)
 		 * (likely in RLF), no need to enter powersave
 		 */
 		if (!dl_msg_active &&
+<<<<<<< HEAD
 		    !rmnet_all_flows_enabled(real_work->port)) {
 			use_alarm_timer = false;
 			goto end;
 		}
+=======
+		    !rmnet_all_flows_enabled(real_work->port))
+			goto end;
+>>>>>>> origin/android16-base
 
 		/* Deregister to suppress QMI DFC and DL marker */
 		if (qmi_rmnet_set_powersave_mode(real_work->port, 1) < 0)
@@ -1319,6 +1373,7 @@ static void qmi_rmnet_check_stats(struct work_struct *work)
 	}
 end:
 	rcu_read_lock();
+<<<<<<< HEAD
 	if (!rmnet_work_quit) {
 		if (use_alarm_timer) {
 			/* Suspend will fail and get delayed for 2s if
@@ -1406,6 +1461,11 @@ end:
 	if (!rmnet_work_quit)
 		alarm_start_relative(&real_work->atimer, PS_INTERVAL_KT);
 
+=======
+	if (!rmnet_work_quit)
+		queue_delayed_work(rmnet_ps_wq, &real_work->work,
+				   PS_INTERVAL);
+>>>>>>> origin/android16-base
 	rcu_read_unlock();
 }
 
@@ -1440,6 +1500,7 @@ void qmi_rmnet_work_init(void *port)
 		rmnet_ps_wq = NULL;
 		return;
 	}
+<<<<<<< HEAD
 
 	if (dfc_qmap && dfc_ps_ext)
 		INIT_DEFERRABLE_WORK(&rmnet_work->work,
@@ -1448,12 +1509,20 @@ void qmi_rmnet_work_init(void *port)
 		INIT_DEFERRABLE_WORK(&rmnet_work->work, qmi_rmnet_check_stats);
 
 	alarm_init(&rmnet_work->atimer, ALARM_BOOTTIME, qmi_rmnet_work_alarm);
+=======
+	INIT_DELAYED_WORK(&rmnet_work->work, qmi_rmnet_check_stats);
+>>>>>>> origin/android16-base
 	rmnet_work->port = port;
 	rmnet_get_packets(rmnet_work->port, &rmnet_work->old_rx_pkts,
 			  &rmnet_work->old_tx_pkts);
 
 	rmnet_work_quit = false;
+<<<<<<< HEAD
 	qmi_rmnet_work_set_active(rmnet_work->port, 0);
+=======
+	qmi_rmnet_work_set_active(rmnet_work->port, 1);
+	queue_delayed_work(rmnet_ps_wq, &rmnet_work->work, PS_INTERVAL);
+>>>>>>> origin/android16-base
 	rmnet_work_inited = true;
 }
 EXPORT_SYMBOL(qmi_rmnet_work_init);
@@ -1466,10 +1535,15 @@ void qmi_rmnet_work_maybe_restart(void *port)
 	if (unlikely(!qmi || !rmnet_work_inited))
 		return;
 
+<<<<<<< HEAD
 	if (!test_and_set_bit(PS_WORK_ACTIVE_BIT, &qmi->ps_work_active)) {
 		qmi->ps_ignore_grant = false;
 		qmi_rmnet_work_restart(port);
 	}
+=======
+	if (!test_and_set_bit(PS_WORK_ACTIVE_BIT, &qmi->ps_work_active))
+		qmi_rmnet_work_restart(port);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(qmi_rmnet_work_maybe_restart);
 
@@ -1482,14 +1556,20 @@ void qmi_rmnet_work_exit(void *port)
 	synchronize_rcu();
 
 	rmnet_work_inited = false;
+<<<<<<< HEAD
 	alarm_cancel(&rmnet_work->atimer);
+=======
+>>>>>>> origin/android16-base
 	cancel_delayed_work_sync(&rmnet_work->work);
 	destroy_workqueue(rmnet_ps_wq);
 	qmi_rmnet_work_set_active(port, 0);
 	rmnet_ps_wq = NULL;
 	kfree(rmnet_work);
 	rmnet_work = NULL;
+<<<<<<< HEAD
 	dfc_wakelock_release((struct qmi_info *)rmnet_get_qmi_pt(port));
+=======
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(qmi_rmnet_work_exit);
 

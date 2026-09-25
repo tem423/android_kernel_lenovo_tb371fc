@@ -5,10 +5,16 @@ config IMA
 	select SECURITYFS
 	select CRYPTO
 	select CRYPTO_HMAC
+<<<<<<< HEAD
 	select CRYPTO_MD5
 	select CRYPTO_SHA1
 	select CRYPTO_HASH_INFO
 	select TCG_TPM if HAS_IOMEM && !UML
+=======
+	select CRYPTO_SHA1
+	select CRYPTO_HASH_INFO
+	select TCG_TPM if HAS_IOMEM
+>>>>>>> origin/android16-base
 	select TCG_TIS if TCG_TPM && X86
 	select TCG_CRB if TCG_TPM && ACPI
 	select TCG_IBMVTPM if TCG_TPM && PPC_PSERIES
@@ -69,10 +75,16 @@ choice
 	  hash, defined as 20 bytes, and a null terminated pathname,
 	  limited to 255 characters.  The 'ima-ng' measurement list
 	  template permits both larger hash digests and longer
+<<<<<<< HEAD
 	  pathnames.
 
 	config IMA_TEMPLATE
 		bool "ima"
+=======
+	  pathnames. The configured default template can be replaced
+	  by specifying "ima_template=" on the boot command line.
+
+>>>>>>> origin/android16-base
 	config IMA_NG_TEMPLATE
 		bool "ima-ng (default)"
 	config IMA_SIG_TEMPLATE
@@ -82,7 +94,10 @@ endchoice
 config IMA_DEFAULT_TEMPLATE
 	string
 	depends on IMA
+<<<<<<< HEAD
 	default "ima" if IMA_TEMPLATE
+=======
+>>>>>>> origin/android16-base
 	default "ima-ng" if IMA_NG_TEMPLATE
 	default "ima-sig" if IMA_SIG_TEMPLATE
 
@@ -102,6 +117,7 @@ choice
 
 	config IMA_DEFAULT_HASH_SHA256
 		bool "SHA256"
+<<<<<<< HEAD
 		depends on CRYPTO_SHA256=y && !IMA_TEMPLATE
 
 	config IMA_DEFAULT_HASH_SHA512
@@ -111,6 +127,17 @@ choice
 	config IMA_DEFAULT_HASH_WP512
 		bool "WP512"
 		depends on CRYPTO_WP512=y && !IMA_TEMPLATE
+=======
+		depends on CRYPTO_SHA256=y
+
+	config IMA_DEFAULT_HASH_SHA512
+		bool "SHA512"
+		depends on CRYPTO_SHA512=y
+
+	config IMA_DEFAULT_HASH_WP512
+		bool "WP512"
+		depends on CRYPTO_WP512=y
+>>>>>>> origin/android16-base
 endchoice
 
 config IMA_DEFAULT_HASH

@@ -637,6 +637,10 @@ static const struct of_device_id tda7419_of_match[] = {
 	{ .compatible = "st,tda7419" },
 	{ },
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(of, tda7419_of_match);
+>>>>>>> origin/android16-base
 
 static struct i2c_driver tda7419_driver = {
 	.driver = {

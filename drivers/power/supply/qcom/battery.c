@@ -1277,8 +1277,11 @@ static int usb_icl_vote_callback(struct votable *votable, void *data,
 	union power_supply_propval pval = {0, };
 	bool rerun_aicl = false, dc_present = false;
 
+<<<<<<< HEAD
 	pr_info("battery: ICL vote client=%s icl=%d comm=%s\n",
 		client ? client : "NULL", icl_ua, current->comm);
+=======
+>>>>>>> origin/android16-base
 	if (!chip->main_psy)
 		return 0;
 

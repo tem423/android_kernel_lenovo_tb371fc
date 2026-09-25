@@ -1156,6 +1156,7 @@ static ssize_t wil_write_file_wmi(struct file *file, const char __user *buf,
 	void *cmd;
 	int cmdlen = len - sizeof(struct wmi_cmd_hdr);
 	u16 cmdid;
+<<<<<<< HEAD
 	int rc, rc1;
 
 	if (cmdlen < 0)
@@ -1170,6 +1171,16 @@ static ssize_t wil_write_file_wmi(struct file *file, const char __user *buf,
 		kfree(wmi);
 		return rc;
 	}
+=======
+	int rc1;
+
+	if (cmdlen < 0 || *ppos != 0)
+		return -EINVAL;
+
+	wmi = memdup_user(buf, len);
+	if (IS_ERR(wmi))
+		return PTR_ERR(wmi);
+>>>>>>> origin/android16-base
 
 	cmd = (cmdlen > 0) ? &wmi[1] : NULL;
 	cmdid = le16_to_cpu(wmi->command_id);
@@ -1179,7 +1190,11 @@ static ssize_t wil_write_file_wmi(struct file *file, const char __user *buf,
 
 	wil_info(wil, "0x%04x[%d] -> %d\n", cmdid, cmdlen, rc1);
 
+<<<<<<< HEAD
 	return rc;
+=======
+	return len;
+>>>>>>> origin/android16-base
 }
 
 static const struct file_operations fops_wmi = {

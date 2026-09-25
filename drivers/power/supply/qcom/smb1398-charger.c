@@ -2268,6 +2268,10 @@ static int smb1398_div2_cp_master_probe(struct smb1398_chip *chip)
 				rc);
 		return rc;
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 	dev_dbg(chip->dev, "smb1398 DIV2_CP master is probed successfully\n");
 
 	return 0;
@@ -2497,6 +2501,10 @@ static int smb1398_div2_cp_slave_probe(struct smb1398_chip *chip)
 				rc);
 		return rc;
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 	dev_dbg(chip->dev, "smb1398 DIV2_CP slave probe successfully\n");
 
 	return 0;

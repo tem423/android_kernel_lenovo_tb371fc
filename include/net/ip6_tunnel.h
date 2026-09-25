@@ -57,7 +57,11 @@ struct ip6_tnl {
 
 	/* These fields used only by GRE */
 	__u32 i_seqno;	/* The last seen seqno	*/
+<<<<<<< HEAD
 	__u32 o_seqno;	/* The last output seqno */
+=======
+	atomic_t o_seqno;	/* The last output seqno */
+>>>>>>> origin/android16-base
 	int hlen;       /* tun_hlen + encap_hlen */
 	int tun_hlen;	/* Precalculated header length */
 	int encap_hlen; /* Encap header length (FOU,GUE) */

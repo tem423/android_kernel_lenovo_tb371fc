@@ -96,6 +96,11 @@ EXPORT_SYMBOL(jbd2_journal_inode_add_write);
 EXPORT_SYMBOL(jbd2_journal_inode_add_wait);
 EXPORT_SYMBOL(jbd2_journal_inode_ranged_write);
 EXPORT_SYMBOL(jbd2_journal_inode_ranged_wait);
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(jbd2_journal_submit_inode_data_buffers);
+EXPORT_SYMBOL(jbd2_journal_finish_inode_data_buffers);
+>>>>>>> origin/android16-base
 EXPORT_SYMBOL(jbd2_journal_init_jbd_inode);
 EXPORT_SYMBOL(jbd2_journal_release_jbd_inode);
 EXPORT_SYMBOL(jbd2_journal_begin_ordered_truncate);
@@ -430,6 +435,10 @@ repeat:
 		tmp = jbd2_alloc(bh_in->b_size, GFP_NOFS);
 		if (!tmp) {
 			brelse(new_bh);
+<<<<<<< HEAD
+=======
+			free_buffer_head(new_bh);
+>>>>>>> origin/android16-base
 			return -ENOMEM;
 		}
 		jbd_lock_bh_state(bh_in);
@@ -816,18 +825,36 @@ int jbd2_journal_bmap(journal_t *journal, unsigned long blocknr,
 {
 	int err = 0;
 	unsigned long long ret;
+<<<<<<< HEAD
 
 	if (journal->j_inode) {
 		ret = bmap(journal->j_inode, blocknr);
 		if (ret)
 			*retp = ret;
 		else {
+=======
+	sector_t block = 0;
+
+	if (journal->j_inode) {
+		block = blocknr;
+		ret = bmap(journal->j_inode, &block);
+
+		if (ret || !block) {
+>>>>>>> origin/android16-base
 			printk(KERN_ALERT "%s: journal block not found "
 					"at offset %lu on %s\n",
 			       __func__, blocknr, journal->j_devname);
 			err = -EIO;
 			__journal_abort_soft(journal, err);
+<<<<<<< HEAD
 		}
+=======
+
+		} else {
+			*retp = block;
+		}
+
+>>>>>>> origin/android16-base
 	} else {
 		*retp = blocknr; /* +journal->j_blk_offset */
 	}
@@ -1254,11 +1281,22 @@ journal_t *jbd2_journal_init_dev(struct block_device *bdev,
 journal_t *jbd2_journal_init_inode(struct inode *inode)
 {
 	journal_t *journal;
+<<<<<<< HEAD
 	char *p;
 	unsigned long long blocknr;
 
 	blocknr = bmap(inode, 0);
 	if (!blocknr) {
+=======
+	sector_t blocknr;
+	char *p;
+	int err = 0;
+
+	blocknr = 0;
+	err = bmap(inode, &blocknr);
+
+	if (err || !blocknr) {
+>>>>>>> origin/android16-base
 		pr_err("%s: Cannot locate journal superblock\n",
 			__func__);
 		return NULL;
@@ -1375,9 +1413,17 @@ static int jbd2_write_superblock(journal_t *journal, int write_flags)
 		return -EIO;
 	}
 
+<<<<<<< HEAD
 	trace_jbd2_write_superblock(journal, write_flags);
 	if (!(journal->j_flags & JBD2_BARRIER))
 		write_flags &= ~(REQ_FUA | REQ_PREFLUSH);
+=======
+	if (!(journal->j_flags & JBD2_BARRIER))
+		write_flags &= ~(REQ_FUA | REQ_PREFLUSH);
+
+	trace_jbd2_write_superblock(journal, write_flags);
+
+>>>>>>> origin/android16-base
 	if (buffer_write_io_error(bh)) {
 		/*
 		 * Oh, dear.  A previous attempt to write the journal

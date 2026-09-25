@@ -30,7 +30,14 @@ int qla_nvme_register_remote(struct scsi_qla_host *vha, struct fc_port *fcport)
 		return 0;
 	}
 
+<<<<<<< HEAD
 	if (!vha->nvme_local_port && qla_nvme_register_hba(vha))
+=======
+	if (qla_nvme_register_hba(vha))
+		return 0;
+
+	if (!vha->nvme_local_port)
+>>>>>>> origin/android16-base
 		return 0;
 
 	if (!(fcport->nvme_prli_service_param &
@@ -88,8 +95,14 @@ static int qla_nvme_alloc_queue(struct nvme_fc_local_port *lport,
 	struct qla_hw_data *ha;
 	struct qla_qpair *qpair;
 
+<<<<<<< HEAD
 	if (!qidx)
 		qidx++;
+=======
+	/* Map admin queue and 1st IO queue to index 0 */
+	if (qidx)
+		qidx--;
+>>>>>>> origin/android16-base
 
 	vha = (struct scsi_qla_host *)lport->private;
 	ha = vha->hw;
@@ -517,7 +530,11 @@ static int qla_nvme_post_cmd(struct nvme_fc_local_port *lport,
 
 	rval = qla2x00_start_nvme_mq(sp);
 	if (rval != QLA_SUCCESS) {
+<<<<<<< HEAD
 		ql_log(ql_log_warn, vha, 0x212d,
+=======
+		ql_dbg(ql_dbg_io + ql_dbg_verbose, vha, 0x212d,
+>>>>>>> origin/android16-base
 		    "qla2x00_start_nvme_mq failed = %d\n", rval);
 		atomic_dec(&sp->ref_count);
 		wake_up(&sp->nvme_ls_waitq);

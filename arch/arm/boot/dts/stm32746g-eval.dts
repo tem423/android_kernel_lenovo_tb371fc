@@ -73,12 +73,19 @@
 		};
 	};
 
+<<<<<<< HEAD
 	gpio_keys {
 		compatible = "gpio-keys";
 		#address-cells = <1>;
 		#size-cells = <0>;
 		autorepeat;
 		button@0 {
+=======
+	gpio-keys {
+		compatible = "gpio-keys";
+		autorepeat;
+		button-0 {
+>>>>>>> origin/android16-base
 			label = "Wake up";
 			linux,code = <KEY_WAKEUP>;
 			gpios = <&gpioc 13 0>;

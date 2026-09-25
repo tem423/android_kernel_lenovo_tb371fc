@@ -1163,7 +1163,11 @@ static int apds990x_probe(struct i2c_client *client,
 		err = chip->pdata->setup_resources();
 		if (err) {
 			err = -EINVAL;
+<<<<<<< HEAD
 			goto fail3;
+=======
+			goto fail4;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -1171,7 +1175,11 @@ static int apds990x_probe(struct i2c_client *client,
 				apds990x_attribute_group);
 	if (err < 0) {
 		dev_err(&chip->client->dev, "Sysfs registration failed\n");
+<<<<<<< HEAD
 		goto fail4;
+=======
+		goto fail5;
+>>>>>>> origin/android16-base
 	}
 
 	err = request_threaded_irq(client->irq, NULL,
@@ -1182,6 +1190,7 @@ static int apds990x_probe(struct i2c_client *client,
 	if (err) {
 		dev_err(&client->dev, "could not get IRQ %d\n",
 			client->irq);
+<<<<<<< HEAD
 		goto fail5;
 	}
 	return err;
@@ -1191,6 +1200,19 @@ fail5:
 fail4:
 	if (chip->pdata && chip->pdata->release_resources)
 		chip->pdata->release_resources();
+=======
+		goto fail6;
+	}
+	return err;
+fail6:
+	sysfs_remove_group(&chip->client->dev.kobj,
+			&apds990x_attribute_group[0]);
+fail5:
+	if (chip->pdata && chip->pdata->release_resources)
+		chip->pdata->release_resources();
+fail4:
+	pm_runtime_disable(&client->dev);
+>>>>>>> origin/android16-base
 fail3:
 	regulator_bulk_disable(ARRAY_SIZE(chip->regs), chip->regs);
 fail2:

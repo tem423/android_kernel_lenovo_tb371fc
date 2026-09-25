@@ -88,7 +88,11 @@ static inline int drm_fixp2int(s64 a)
 
 static inline int drm_fixp2int_ceil(s64 a)
 {
+<<<<<<< HEAD
 	if (a > 0)
+=======
+	if (a >= 0)
+>>>>>>> origin/android16-base
 		return drm_fixp2int(a + DRM_FIXED_ALMOST_ONE);
 	else
 		return drm_fixp2int(a - DRM_FIXED_ALMOST_ONE);

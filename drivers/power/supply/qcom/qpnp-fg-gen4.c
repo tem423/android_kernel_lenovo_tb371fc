@@ -1192,7 +1192,11 @@ static int fg_gen4_set_calibrate_level(struct fg_gen4_chip *chip, int val)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	if ((is_parallel_charger_available(fg))||(is_smb1398_charger_available(fg))) {
+=======
+	if (is_parallel_charger_available(fg)) {
+>>>>>>> origin/android16-base
 		cancel_work_sync(&chip->pl_current_en_work);
 		schedule_work(&chip->pl_current_en_work);
 	}
@@ -4255,7 +4259,11 @@ static void status_change_work(struct work_struct *work)
 	if (rc < 0)
 		pr_err("Error in adjusting FCC for ESR, rc=%d\n", rc);
 
+<<<<<<< HEAD
 	if ((is_parallel_charger_available(fg))||(is_smb1398_charger_available(fg))) {
+=======
+	if (is_parallel_charger_available(fg)) {
+>>>>>>> origin/android16-base
 		cancel_work_sync(&chip->pl_current_en_work);
 		schedule_work(&chip->pl_current_en_work);
 	}

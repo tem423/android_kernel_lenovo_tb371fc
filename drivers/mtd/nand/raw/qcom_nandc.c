@@ -10,7 +10,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 #include <linux/clk.h>
 #include <linux/slab.h>
 #include <linux/bitops.h>
@@ -1578,6 +1581,11 @@ static int check_flash_errors(struct qcom_nand_host *host, int cw_cnt)
 	struct qcom_nand_controller *nandc = get_qcom_nand_controller(chip);
 	int i;
 
+<<<<<<< HEAD
+=======
+	nandc_read_buffer_sync(nandc, true);
+
+>>>>>>> origin/android16-base
 	for (i = 0; i < cw_cnt; i++) {
 		u32 flash = le32_to_cpu(nandc->reg_read_buf[i]);
 
@@ -2863,7 +2871,11 @@ static int qcom_probe_nand_devices(struct qcom_nand_controller *nandc)
 	struct device *dev = nandc->dev;
 	struct device_node *dn = dev->of_node, *child;
 	struct qcom_nand_host *host;
+<<<<<<< HEAD
 	int ret;
+=======
+	int ret = -ENODEV;
+>>>>>>> origin/android16-base
 
 	for_each_available_child_of_node(dn, child) {
 		host = devm_kzalloc(dev, sizeof(*host), GFP_KERNEL);
@@ -2881,10 +2893,14 @@ static int qcom_probe_nand_devices(struct qcom_nand_controller *nandc)
 		list_add_tail(&host->node, &nandc->host_list);
 	}
 
+<<<<<<< HEAD
 	if (list_empty(&nandc->host_list))
 		return -ENODEV;
 
 	return 0;
+=======
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 /* parse custom DT properties here */
@@ -2960,10 +2976,13 @@ static int qcom_nandc_probe(struct platform_device *pdev)
 	if (!nandc->base_dma)
 		return -ENXIO;
 
+<<<<<<< HEAD
 	ret = qcom_nandc_alloc(nandc);
 	if (ret)
 		goto err_nandc_alloc;
 
+=======
+>>>>>>> origin/android16-base
 	ret = clk_prepare_enable(nandc->core_clk);
 	if (ret)
 		goto err_core_clk;
@@ -2972,6 +2991,13 @@ static int qcom_nandc_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_aon_clk;
 
+<<<<<<< HEAD
+=======
+	ret = qcom_nandc_alloc(nandc);
+	if (ret)
+		goto err_nandc_alloc;
+
+>>>>>>> origin/android16-base
 	ret = qcom_nandc_setup(nandc);
 	if (ret)
 		goto err_setup;
@@ -2983,15 +3009,25 @@ static int qcom_nandc_probe(struct platform_device *pdev)
 	return 0;
 
 err_setup:
+<<<<<<< HEAD
+=======
+	qcom_nandc_unalloc(nandc);
+err_nandc_alloc:
+>>>>>>> origin/android16-base
 	clk_disable_unprepare(nandc->aon_clk);
 err_aon_clk:
 	clk_disable_unprepare(nandc->core_clk);
 err_core_clk:
+<<<<<<< HEAD
 	qcom_nandc_unalloc(nandc);
 err_nandc_alloc:
 	dma_unmap_resource(dev, res->start, resource_size(res),
 			   DMA_BIDIRECTIONAL, 0);
 
+=======
+	dma_unmap_resource(dev, nandc->base_dma, resource_size(res),
+			   DMA_BIDIRECTIONAL, 0);
+>>>>>>> origin/android16-base
 	return ret;
 }
 

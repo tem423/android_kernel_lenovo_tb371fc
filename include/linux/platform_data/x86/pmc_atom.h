@@ -16,6 +16,11 @@
 #ifndef PMC_ATOM_H
 #define PMC_ATOM_H
 
+<<<<<<< HEAD
+=======
+#include <linux/bits.h>
+
+>>>>>>> origin/android16-base
 /* ValleyView Power Control Unit PCI Device ID */
 #define	PCI_DEVICE_ID_VLV_PMC	0x0F1C
 /* CherryTrail Power Control Unit PCI Device ID */
@@ -148,9 +153,15 @@
 #define	ACPI_MMIO_REG_LEN	0x100
 
 #define	PM1_CNT			0x4
+<<<<<<< HEAD
 #define	SLEEP_TYPE_MASK		0xFFFFECFF
 #define	SLEEP_TYPE_S5		0x1C00
 #define	SLEEP_ENABLE		0x2000
+=======
+#define	SLEEP_TYPE_MASK		GENMASK(12, 10)
+#define	SLEEP_TYPE_S5		0x1C00
+#define	SLEEP_ENABLE		BIT(13)
+>>>>>>> origin/android16-base
 
 extern int pmc_atom_read(int offset, u32 *value);
 extern int pmc_atom_write(int offset, u32 value);

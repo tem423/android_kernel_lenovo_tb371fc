@@ -972,7 +972,11 @@ TRACE_EVENT(nfs_commit_done,
 #endif /* _TRACE_NFS_H */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../.
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE nfstrace
 /* This part must be outside protection */
 #include <trace/define_trace.h>

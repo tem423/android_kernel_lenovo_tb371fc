@@ -521,7 +521,11 @@ static void blktrans_notify_add(struct mtd_info *mtd)
 {
 	struct mtd_blktrans_ops *tr;
 
+<<<<<<< HEAD
 	if (mtd->type == MTD_ABSENT)
+=======
+	if (mtd->type == MTD_ABSENT || mtd->type == MTD_UBIVOLUME)
+>>>>>>> origin/android16-base
 		return;
 
 	list_for_each_entry(tr, &blktrans_majors, list)
@@ -564,7 +568,11 @@ int register_mtd_blktrans(struct mtd_blktrans_ops *tr)
 	list_add(&tr->list, &blktrans_majors);
 
 	mtd_for_each_device(mtd)
+<<<<<<< HEAD
 		if (mtd->type != MTD_ABSENT)
+=======
+		if (mtd->type != MTD_ABSENT && mtd->type != MTD_UBIVOLUME)
+>>>>>>> origin/android16-base
 			tr->add_mtd(tr, mtd);
 
 	mutex_unlock(&mtd_table_mutex);

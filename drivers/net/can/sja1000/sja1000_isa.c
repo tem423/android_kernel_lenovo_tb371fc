@@ -213,22 +213,39 @@ static int sja1000_isa_probe(struct platform_device *pdev)
 	if (err) {
 		dev_err(&pdev->dev, "registering %s failed (err=%d)\n",
 			DRV_NAME, err);
+<<<<<<< HEAD
 		goto exit_unmap;
+=======
+		goto exit_free;
+>>>>>>> origin/android16-base
 	}
 
 	dev_info(&pdev->dev, "%s device registered (reg_base=0x%p, irq=%d)\n",
 		 DRV_NAME, priv->reg_base, dev->irq);
 	return 0;
 
+<<<<<<< HEAD
  exit_unmap:
 	if (mem[idx])
 		iounmap(base);
  exit_release:
+=======
+exit_free:
+	free_sja1000dev(dev);
+exit_unmap:
+	if (mem[idx])
+		iounmap(base);
+exit_release:
+>>>>>>> origin/android16-base
 	if (mem[idx])
 		release_mem_region(mem[idx], iosize);
 	else
 		release_region(port[idx], iosize);
+<<<<<<< HEAD
  exit:
+=======
+exit:
+>>>>>>> origin/android16-base
 	return err;
 }
 

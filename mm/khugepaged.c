@@ -23,6 +23,22 @@
 #include <asm/pgalloc.h>
 #include "internal.h"
 
+<<<<<<< HEAD
+=======
+/* gross hack for <=4.19 stable */
+#if defined(CONFIG_S390) || defined(CONFIG_ARM)
+static void tlb_remove_table_smp_sync(void *arg)
+{
+        /* Simply deliver the interrupt */
+}
+
+static void tlb_remove_table_sync_one(void)
+{
+        smp_call_function(tlb_remove_table_smp_sync, NULL, 1);
+}
+#endif
+
+>>>>>>> origin/android16-base
 enum scan_result {
 	SCAN_FAIL,
 	SCAN_SUCCEED,
@@ -616,6 +632,7 @@ static int __collapse_huge_page_isolate(struct vm_area_struct *vma,
 		    mmu_notifier_test_young(vma->vm_mm, address))
 			referenced++;
 	}
+<<<<<<< HEAD
 	if (likely(writable)) {
 		if (likely(referenced)) {
 			result = SCAN_SUCCEED;
@@ -627,6 +644,19 @@ static int __collapse_huge_page_isolate(struct vm_area_struct *vma,
 		result = SCAN_PAGE_RO;
 	}
 
+=======
+
+	if (unlikely(!writable)) {
+		result = SCAN_PAGE_RO;
+	} else if (unlikely(!referenced)) {
+		result = SCAN_LACK_REFERENCED_PAGE;
+	} else {
+		result = SCAN_SUCCEED;
+		trace_mm_collapse_huge_page_isolate(page, none_or_zero,
+						    referenced, writable, result);
+		return 1;
+	}
+>>>>>>> origin/android16-base
 out:
 	release_pte_pages(pte, _pte);
 	trace_mm_collapse_huge_page_isolate(page, none_or_zero,
@@ -903,8 +933,11 @@ static bool __collapse_huge_page_swapin(struct mm_struct *mm,
 		.flags = FAULT_FLAG_ALLOW_RETRY,
 		.pmd = pmd,
 		.pgoff = linear_page_index(vma, address),
+<<<<<<< HEAD
 		.vma_flags = vma->vm_flags,
 		.vma_page_prot = vma->vm_page_prot,
+=======
+>>>>>>> origin/android16-base
 	};
 
 	/* we only decide to swapin, if there is enough young ptes */
@@ -1029,7 +1062,10 @@ static void collapse_huge_page(struct mm_struct *mm,
 	if (mm_find_pmd(mm, address) != pmd)
 		goto out;
 
+<<<<<<< HEAD
 	vm_write_begin(vma);
+=======
+>>>>>>> origin/android16-base
 	anon_vma_lock_write(vma->anon_vma);
 
 	pte = pte_offset_map(pmd, address);
@@ -1048,6 +1084,10 @@ static void collapse_huge_page(struct mm_struct *mm,
 	_pmd = pmdp_collapse_flush(vma, address, pmd);
 	spin_unlock(pmd_ptl);
 	mmu_notifier_invalidate_range_end(mm, mmun_start, mmun_end);
+<<<<<<< HEAD
+=======
+	tlb_remove_table_sync_one();
+>>>>>>> origin/android16-base
 
 	spin_lock(pte_ptl);
 	isolated = __collapse_huge_page_isolate(vma, address, pte);
@@ -1065,7 +1105,10 @@ static void collapse_huge_page(struct mm_struct *mm,
 		pmd_populate(mm, pmd, pmd_pgtable(_pmd));
 		spin_unlock(pmd_ptl);
 		anon_vma_unlock_write(vma->anon_vma);
+<<<<<<< HEAD
 		vm_write_end(vma);
+=======
+>>>>>>> origin/android16-base
 		result = SCAN_FAIL;
 		goto out;
 	}
@@ -1100,7 +1143,10 @@ static void collapse_huge_page(struct mm_struct *mm,
 	set_pmd_at(mm, address, pmd, _pmd);
 	update_mmu_cache_pmd(vma, address, pmd);
 	spin_unlock(pmd_ptl);
+<<<<<<< HEAD
 	vm_write_end(vma);
+=======
+>>>>>>> origin/android16-base
 
 	*hpage = NULL;
 
@@ -1294,6 +1340,7 @@ static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
 		 */
 		if (down_write_trylock(&mm->mmap_sem)) {
 			if (!khugepaged_test_exit(mm)) {
+<<<<<<< HEAD
 				vm_write_begin(vma);
 				spinlock_t *ptl = pmd_lock(mm, pmd);
 				/* assume page table is clear */
@@ -1302,6 +1349,22 @@ static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
 				vm_write_end(vma);
 				mm_dec_nr_ptes(mm);
 				pte_free(mm, pmd_pgtable(_pmd));
+=======
+				spinlock_t *ptl;
+				unsigned long end = addr + HPAGE_PMD_SIZE;
+
+				mmu_notifier_invalidate_range_start(mm, addr,
+								    end);
+				ptl = pmd_lock(mm, pmd);
+				/* assume page table is clear */
+				_pmd = pmdp_collapse_flush(vma, addr, pmd);
+				spin_unlock(ptl);
+				mm_dec_nr_ptes(mm);
+				tlb_remove_table_sync_one();
+				pte_free(mm, pmd_pgtable(_pmd));
+				mmu_notifier_invalidate_range_end(mm, addr,
+								  end);
+>>>>>>> origin/android16-base
 			}
 			up_write(&mm->mmap_sem);
 		}

@@ -258,8 +258,15 @@ int __init btext_find_display(int allow_nonstdout)
 			rc = btext_initialize(np);
 			printk("result: %d\n", rc);
 		}
+<<<<<<< HEAD
 		if (rc == 0)
 			break;
+=======
+		if (rc == 0) {
+			of_node_put(np);
+			break;
+		}
+>>>>>>> origin/android16-base
 	}
 	return rc;
 }

@@ -6694,7 +6694,11 @@ static int drxk_read_snr(struct dvb_frontend *fe, u16 *snr)
 static int drxk_read_ucblocks(struct dvb_frontend *fe, u32 *ucblocks)
 {
 	struct drxk_state *state = fe->demodulator_priv;
+<<<<<<< HEAD
 	u16 err;
+=======
+	u16 err = 0;
+>>>>>>> origin/android16-base
 
 	dprintk(1, "\n");
 
@@ -6867,7 +6871,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(drxk_attach);
+=======
+EXPORT_SYMBOL_GPL(drxk_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("DRX-K driver");
 MODULE_AUTHOR("Ralph Metzler");

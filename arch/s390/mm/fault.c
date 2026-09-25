@@ -455,7 +455,13 @@ static inline vm_fault_t do_exception(struct pt_regs *regs, int access)
 	flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
 	if (user_mode(regs))
 		flags |= FAULT_FLAG_USER;
+<<<<<<< HEAD
 	if (access == VM_WRITE || (trans_exc_code & store_indication) == 0x400)
+=======
+	if ((trans_exc_code & store_indication) == 0x400)
+		access = VM_WRITE;
+	if (access == VM_WRITE)
+>>>>>>> origin/android16-base
 		flags |= FAULT_FLAG_WRITE;
 	down_read(&mm->mmap_sem);
 
@@ -503,8 +509,12 @@ retry:
 	 * the fault.
 	 */
 	fault = handle_mm_fault(vma, address, flags);
+<<<<<<< HEAD
 	/* No reason to continue if interrupted by SIGKILL. */
 	if ((fault & VM_FAULT_RETRY) && fatal_signal_pending(current)) {
+=======
+	if (fault_signal_pending(fault, regs)) {
+>>>>>>> origin/android16-base
 		fault = VM_FAULT_SIGNAL;
 		if (flags & FAULT_FLAG_RETRY_NOWAIT)
 			goto out_up;

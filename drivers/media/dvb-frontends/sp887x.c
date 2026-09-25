@@ -625,4 +625,8 @@ MODULE_PARM_DESC(debug, "Turn on/off frontend debugging (default:off).");
 MODULE_DESCRIPTION("Spase sp887x DVB-T demodulator driver");
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(sp887x_attach);
+=======
+EXPORT_SYMBOL_GPL(sp887x_attach);
+>>>>>>> origin/android16-base

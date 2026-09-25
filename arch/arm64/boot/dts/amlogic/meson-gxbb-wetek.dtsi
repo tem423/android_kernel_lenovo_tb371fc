@@ -6,6 +6,10 @@
  */
 
 #include "meson-gxbb.dtsi"
+<<<<<<< HEAD
+=======
+#include <dt-bindings/gpio/gpio.h>
+>>>>>>> origin/android16-base
 
 / {
 	aliases {

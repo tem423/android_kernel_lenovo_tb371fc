@@ -91,6 +91,10 @@ static size_t syscall_arg__scnprintf_mremap_flags(char *bf, size_t size,
 
 	P_MREMAP_FLAG(MAYMOVE);
 	P_MREMAP_FLAG(FIXED);
+<<<<<<< HEAD
+=======
+	P_MREMAP_FLAG(DONTUNMAP);
+>>>>>>> origin/android16-base
 #undef P_MREMAP_FLAG
 
 	if (flags)

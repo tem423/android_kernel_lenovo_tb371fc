@@ -431,8 +431,16 @@ static int camss_of_parse_endpoint_node(struct device *dev,
 	struct v4l2_fwnode_bus_mipi_csi2 *mipi_csi2;
 	struct v4l2_fwnode_endpoint vep = { { 0 } };
 	unsigned int i;
+<<<<<<< HEAD
 
 	v4l2_fwnode_endpoint_parse(of_fwnode_handle(node), &vep);
+=======
+	int ret;
+
+	ret = v4l2_fwnode_endpoint_parse(of_fwnode_handle(node), &vep);
+	if (ret)
+		return ret;
+>>>>>>> origin/android16-base
 
 	csd->interface.csiphy_id = vep.base.port;
 

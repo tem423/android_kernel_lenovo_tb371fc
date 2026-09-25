@@ -419,6 +419,13 @@ static void __lb_other_process(struct hns_nic_ring_data *ring_data,
 	/* for mutl buffer*/
 	new_skb = skb_copy(skb, GFP_ATOMIC);
 	dev_kfree_skb_any(skb);
+<<<<<<< HEAD
+=======
+	if (!new_skb) {
+		netdev_err(ndev, "skb alloc failed\n");
+		return;
+	}
+>>>>>>> origin/android16-base
 	skb = new_skb;
 
 	check_ok = 0;

@@ -179,7 +179,11 @@ static int max31790_read_fan(struct device *dev, u32 attr, int channel,
 
 	switch (attr) {
 	case hwmon_fan_input:
+<<<<<<< HEAD
 		sr = get_tach_period(data->fan_dynamics[channel]);
+=======
+		sr = get_tach_period(data->fan_dynamics[channel % NR_CHANNEL]);
+>>>>>>> origin/android16-base
 		rpm = RPM_FROM_REG(data->tach[channel], sr);
 		*val = rpm;
 		return 0;

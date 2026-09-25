@@ -220,7 +220,11 @@ static int omfs_get_block(struct inode *inode, sector_t block,
 	struct buffer_head *bh;
 	sector_t next, offset;
 	int ret;
+<<<<<<< HEAD
 	u64 uninitialized_var(new_block);
+=======
+	u64 new_block;
+>>>>>>> origin/android16-base
 	u32 max_extents;
 	int extent_count;
 	struct omfs_extent *oe;

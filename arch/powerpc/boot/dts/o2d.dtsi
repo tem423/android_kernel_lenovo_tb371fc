@@ -23,7 +23,11 @@
 	model = "ifm,o2d";
 	compatible = "ifm,o2d";
 
+<<<<<<< HEAD
 	memory {
+=======
+	memory@0 {
+>>>>>>> origin/android16-base
 		reg = <0x00000000 0x04000000>;	// 64MB
 	};
 

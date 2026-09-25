@@ -947,6 +947,11 @@ static int vdc_port_probe(struct vio_dev *vdev, const struct vio_device_id *id)
 	print_version();
 
 	hp = mdesc_grab();
+<<<<<<< HEAD
+=======
+	if (!hp)
+		return -ENODEV;
+>>>>>>> origin/android16-base
 
 	err = -ENODEV;
 	if ((vdev->dev_no << PARTITION_SHIFT) & ~(u64)MINORMASK) {

@@ -11,6 +11,10 @@
 
 #include <linux/dma-mapping.h>
 #include <linux/mailbox_client.h>
+<<<<<<< HEAD
+=======
+#include <linux/mailbox_controller.h>
+>>>>>>> origin/android16-base
 #include <linux/module.h>
 #include <linux/of_platform.h>
 #include <linux/platform_device.h>
@@ -91,8 +95,13 @@ int rpi_firmware_property_list(struct rpi_firmware *fw,
 	if (size & 3)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	buf = dma_alloc_coherent(fw->cl.dev, PAGE_ALIGN(size), &bus_addr,
 				 GFP_ATOMIC);
+=======
+	buf = dma_alloc_coherent(fw->chan->mbox->dev, PAGE_ALIGN(size),
+				 &bus_addr, GFP_ATOMIC);
+>>>>>>> origin/android16-base
 	if (!buf)
 		return -ENOMEM;
 
@@ -120,7 +129,11 @@ int rpi_firmware_property_list(struct rpi_firmware *fw,
 		ret = -EINVAL;
 	}
 
+<<<<<<< HEAD
 	dma_free_coherent(fw->cl.dev, PAGE_ALIGN(size), buf, bus_addr);
+=======
+	dma_free_coherent(fw->chan->mbox->dev, PAGE_ALIGN(size), buf, bus_addr);
+>>>>>>> origin/android16-base
 
 	return ret;
 }

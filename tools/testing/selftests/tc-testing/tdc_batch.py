@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/usr/bin/python3
+=======
+#!/usr/bin/env python3
+>>>>>>> origin/android16-base
 
 """
 tdc_batch.py - a script to generate TC batch file

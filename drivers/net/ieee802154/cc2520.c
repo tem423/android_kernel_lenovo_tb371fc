@@ -512,6 +512,10 @@ cc2520_tx(struct ieee802154_hw *hw, struct sk_buff *skb)
 		goto err_tx;
 
 	if (status & CC2520_STATUS_TX_UNDERFLOW) {
+<<<<<<< HEAD
+=======
+		rc = -EINVAL;
+>>>>>>> origin/android16-base
 		dev_err(&priv->spi->dev, "cc2520 tx underflow exception\n");
 		goto err_tx;
 	}
@@ -977,7 +981,11 @@ static int cc2520_hw_init(struct cc2520_private *priv)
 
 		if (timeout-- <= 0) {
 			dev_err(&priv->spi->dev, "oscillator start failed!\n");
+<<<<<<< HEAD
 			return ret;
+=======
+			return -ETIMEDOUT;
+>>>>>>> origin/android16-base
 		}
 		udelay(1);
 	} while (!(status & CC2520_STATUS_XOSC32M_STABLE));

@@ -239,7 +239,11 @@ static ssize_t amdgpu_debugfs_regs_pcie_read(struct file *f, char __user *buf,
 	while (size) {
 		uint32_t value;
 
+<<<<<<< HEAD
 		value = RREG32_PCIE(*pos >> 2);
+=======
+		value = RREG32_PCIE(*pos);
+>>>>>>> origin/android16-base
 		r = put_user(value, (uint32_t *)buf);
 		if (r)
 			return r;
@@ -282,7 +286,11 @@ static ssize_t amdgpu_debugfs_regs_pcie_write(struct file *f, const char __user 
 		if (r)
 			return r;
 
+<<<<<<< HEAD
 		WREG32_PCIE(*pos >> 2, value);
+=======
+		WREG32_PCIE(*pos, value);
+>>>>>>> origin/android16-base
 
 		result += 4;
 		buf += 4;
@@ -391,7 +399,14 @@ static ssize_t amdgpu_debugfs_regs_smc_read(struct file *f, char __user *buf,
 	ssize_t result = 0;
 	int r;
 
+<<<<<<< HEAD
 	if (size & 0x3 || *pos & 0x3)
+=======
+	if (!adev->smc_rreg)
+		return -EOPNOTSUPP;
+
+	if (size > 4096 || size & 0x3 || *pos & 0x3)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	while (size) {
@@ -430,6 +445,12 @@ static ssize_t amdgpu_debugfs_regs_smc_write(struct file *f, const char __user *
 	ssize_t result = 0;
 	int r;
 
+<<<<<<< HEAD
+=======
+	if (!adev->smc_wreg)
+		return -EOPNOTSUPP;
+
+>>>>>>> origin/android16-base
 	if (size & 0x3 || *pos & 0x3)
 		return -EINVAL;
 

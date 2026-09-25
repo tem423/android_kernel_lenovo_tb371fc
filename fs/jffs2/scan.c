@@ -136,7 +136,11 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		if (!s) {
 			JFFS2_WARNING("Can't allocate memory for summary\n");
 			ret = -ENOMEM;
+<<<<<<< HEAD
 			goto out;
+=======
+			goto out_buf;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -274,13 +278,22 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 	}
 	ret = 0;
  out:
+<<<<<<< HEAD
+=======
+	jffs2_sum_reset_collected(s);
+	kfree(s);
+ out_buf:
+>>>>>>> origin/android16-base
 	if (buf_size)
 		kfree(flashbuf);
 #ifndef __ECOS
 	else
 		mtd_unpoint(c->mtd, 0, c->mtd->size);
 #endif
+<<<<<<< HEAD
 	kfree(s);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -1075,7 +1088,11 @@ static int jffs2_scan_dirent_node(struct jffs2_sb_info *c, struct jffs2_eraseblo
 	memcpy(&fd->name, rd->name, checkedlen);
 	fd->name[checkedlen] = 0;
 
+<<<<<<< HEAD
 	crc = crc32(0, fd->name, rd->nsize);
+=======
+	crc = crc32(0, fd->name, checkedlen);
+>>>>>>> origin/android16-base
 	if (crc != je32_to_cpu(rd->name_crc)) {
 		pr_notice("%s(): Name CRC failed on node at 0x%08x: Read 0x%08x, calculated 0x%08x\n",
 			  __func__, ofs, je32_to_cpu(rd->name_crc), crc);

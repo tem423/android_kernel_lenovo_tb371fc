@@ -93,6 +93,10 @@ static int imx_es8328_probe(struct platform_device *pdev)
 	if (int_port > MUX_PORT_MAX || int_port == 0) {
 		dev_err(dev, "mux-int-port: hardware only has %d mux ports\n",
 			MUX_PORT_MAX);
+<<<<<<< HEAD
+=======
+		ret = -EINVAL;
+>>>>>>> origin/android16-base
 		goto fail;
 	}
 

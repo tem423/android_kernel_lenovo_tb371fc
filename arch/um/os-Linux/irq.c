@@ -48,7 +48,11 @@ int os_epoll_triggered(int index, int events)
 int os_event_mask(int irq_type)
 {
 	if (irq_type == IRQ_READ)
+<<<<<<< HEAD
 		return EPOLLIN | EPOLLPRI;
+=======
+		return EPOLLIN | EPOLLPRI | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
+>>>>>>> origin/android16-base
 	if (irq_type == IRQ_WRITE)
 		return EPOLLOUT;
 	return 0;

@@ -429,6 +429,10 @@ static int rds_still_queued(struct rds_sock *rs, struct rds_incoming *inc,
 	struct sock *sk = rds_rs_to_sk(rs);
 	int ret = 0;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	struct rds_incoming *to_drop = NULL;
+>>>>>>> origin/android16-base
 
 	write_lock_irqsave(&rs->rs_recv_lock, flags);
 	if (!list_empty(&inc->i_item)) {
@@ -439,11 +443,21 @@ static int rds_still_queued(struct rds_sock *rs, struct rds_incoming *inc,
 					      -be32_to_cpu(inc->i_hdr.h_len),
 					      inc->i_hdr.h_dport);
 			list_del_init(&inc->i_item);
+<<<<<<< HEAD
 			rds_inc_put(inc);
+=======
+			to_drop = inc;
+>>>>>>> origin/android16-base
 		}
 	}
 	write_unlock_irqrestore(&rs->rs_recv_lock, flags);
 
+<<<<<<< HEAD
+=======
+	if (to_drop)
+		rds_inc_put(to_drop);
+
+>>>>>>> origin/android16-base
 	rdsdebug("inc %p rs %p still %d dropped %d\n", inc, rs, ret, drop);
 	return ret;
 }
@@ -705,7 +719,11 @@ int rds_recvmsg(struct socket *sock, struct msghdr *msg, size_t size,
 
 		if (rds_cmsg_recv(inc, msg, rs)) {
 			ret = -EFAULT;
+<<<<<<< HEAD
 			goto out;
+=======
+			break;
+>>>>>>> origin/android16-base
 		}
 		rds_recvmsg_zcookie(rs, msg);
 
@@ -752,16 +770,31 @@ void rds_clear_recv_queue(struct rds_sock *rs)
 	struct sock *sk = rds_rs_to_sk(rs);
 	struct rds_incoming *inc, *tmp;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	LIST_HEAD(to_drop);
+>>>>>>> origin/android16-base
 
 	write_lock_irqsave(&rs->rs_recv_lock, flags);
 	list_for_each_entry_safe(inc, tmp, &rs->rs_recv_queue, i_item) {
 		rds_recv_rcvbuf_delta(rs, sk, inc->i_conn->c_lcong,
 				      -be32_to_cpu(inc->i_hdr.h_len),
 				      inc->i_hdr.h_dport);
+<<<<<<< HEAD
 		list_del_init(&inc->i_item);
 		rds_inc_put(inc);
 	}
 	write_unlock_irqrestore(&rs->rs_recv_lock, flags);
+=======
+		list_move(&inc->i_item, &to_drop);
+	}
+	write_unlock_irqrestore(&rs->rs_recv_lock, flags);
+
+	list_for_each_entry_safe(inc, tmp, &to_drop, i_item) {
+		list_del_init(&inc->i_item);
+		rds_inc_put(inc);
+	}
+>>>>>>> origin/android16-base
 }
 
 /*

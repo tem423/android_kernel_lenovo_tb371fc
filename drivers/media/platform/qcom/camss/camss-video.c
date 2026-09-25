@@ -438,7 +438,11 @@ static int video_start_streaming(struct vb2_queue *q, unsigned int count)
 
 	ret = media_pipeline_start(&vdev->entity, &video->pipe);
 	if (ret < 0)
+<<<<<<< HEAD
 		return ret;
+=======
+		goto flush_buffers;
+>>>>>>> origin/android16-base
 
 	ret = video_check_format(video);
 	if (ret < 0)
@@ -467,6 +471,10 @@ static int video_start_streaming(struct vb2_queue *q, unsigned int count)
 error:
 	media_pipeline_stop(&vdev->entity);
 
+<<<<<<< HEAD
+=======
+flush_buffers:
+>>>>>>> origin/android16-base
 	video->ops->flush_buffers(video, VB2_BUF_STATE_QUEUED);
 
 	return ret;
@@ -901,6 +909,10 @@ int msm_video_register(struct camss_video *video, struct v4l2_device *v4l2_dev,
 			video->nformats = ARRAY_SIZE(formats_rdi_8x96);
 		}
 	} else {
+<<<<<<< HEAD
+=======
+		ret = -EINVAL;
+>>>>>>> origin/android16-base
 		goto error_video_register;
 	}
 

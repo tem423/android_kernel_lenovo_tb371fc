@@ -8,7 +8,11 @@
 
 static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma)
 {
+<<<<<<< HEAD
 	return !!(READ_ONCE(vma->vm_flags) & VM_HUGETLB);
+=======
+	return !!(vma->vm_flags & VM_HUGETLB);
+>>>>>>> origin/android16-base
 }
 
 #else

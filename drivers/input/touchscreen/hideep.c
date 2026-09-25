@@ -364,6 +364,7 @@ static int hideep_enter_pgm(struct hideep_ts *ts)
 	return -EIO;
 }
 
+<<<<<<< HEAD
 static void hideep_nvm_unlock(struct hideep_ts *ts)
 {
 	u32 unmask_code;
@@ -371,6 +372,18 @@ static void hideep_nvm_unlock(struct hideep_ts *ts)
 	hideep_pgm_w_reg(ts, HIDEEP_FLASH_CFG, HIDEEP_NVM_SFR_RPAGE);
 	hideep_pgm_r_reg(ts, 0x0000000C, &unmask_code);
 	hideep_pgm_w_reg(ts, HIDEEP_FLASH_CFG, HIDEEP_NVM_DEFAULT_PAGE);
+=======
+static int hideep_nvm_unlock(struct hideep_ts *ts)
+{
+	u32 unmask_code;
+	int error;
+
+	hideep_pgm_w_reg(ts, HIDEEP_FLASH_CFG, HIDEEP_NVM_SFR_RPAGE);
+	error = hideep_pgm_r_reg(ts, 0x0000000C, &unmask_code);
+	hideep_pgm_w_reg(ts, HIDEEP_FLASH_CFG, HIDEEP_NVM_DEFAULT_PAGE);
+	if (error)
+		return error;
+>>>>>>> origin/android16-base
 
 	/* make it unprotected code */
 	unmask_code &= ~HIDEEP_PROT_MODE;
@@ -387,6 +400,11 @@ static void hideep_nvm_unlock(struct hideep_ts *ts)
 	NVM_W_SFR(HIDEEP_NVM_MASK_OFS, ts->nvm_mask);
 	SET_FLASH_HWCONTROL();
 	hideep_pgm_w_reg(ts, HIDEEP_FLASH_CFG, HIDEEP_NVM_DEFAULT_PAGE);
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static int hideep_check_status(struct hideep_ts *ts)
@@ -465,7 +483,13 @@ static int hideep_program_nvm(struct hideep_ts *ts,
 	u32 addr = 0;
 	int error;
 
+<<<<<<< HEAD
 	hideep_nvm_unlock(ts);
+=======
+       error = hideep_nvm_unlock(ts);
+       if (error)
+               return error;
+>>>>>>> origin/android16-base
 
 	while (ucode_len > 0) {
 		xfer_len = min_t(size_t, ucode_len, HIDEEP_NVM_PAGE_SIZE);

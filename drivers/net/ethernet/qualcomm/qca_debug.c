@@ -30,6 +30,11 @@
 
 #define QCASPI_MAX_REGS 0x20
 
+<<<<<<< HEAD
+=======
+#define QCASPI_RX_MAX_FRAMES 4
+
+>>>>>>> origin/android16-base
 static const u16 qcaspi_spi_regs[] = {
 	SPI_REG_BFR_SIZE,
 	SPI_REG_WRBUF_SPC_AVA,
@@ -266,31 +271,53 @@ qcaspi_get_ringparam(struct net_device *dev, struct ethtool_ringparam *ring)
 {
 	struct qcaspi *qca = netdev_priv(dev);
 
+<<<<<<< HEAD
 	ring->rx_max_pending = 4;
 	ring->tx_max_pending = TX_RING_MAX_LEN;
 	ring->rx_pending = 4;
+=======
+	ring->rx_max_pending = QCASPI_RX_MAX_FRAMES;
+	ring->tx_max_pending = TX_RING_MAX_LEN;
+	ring->rx_pending = QCASPI_RX_MAX_FRAMES;
+>>>>>>> origin/android16-base
 	ring->tx_pending = qca->txr.count;
 }
 
 static int
 qcaspi_set_ringparam(struct net_device *dev, struct ethtool_ringparam *ring)
 {
+<<<<<<< HEAD
 	const struct net_device_ops *ops = dev->netdev_ops;
 	struct qcaspi *qca = netdev_priv(dev);
 
 	if ((ring->rx_pending) ||
+=======
+	struct qcaspi *qca = netdev_priv(dev);
+
+	if (ring->rx_pending != QCASPI_RX_MAX_FRAMES ||
+>>>>>>> origin/android16-base
 	    (ring->rx_mini_pending) ||
 	    (ring->rx_jumbo_pending))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (netif_running(dev))
 		ops->ndo_stop(dev);
+=======
+	if (qca->spi_thread)
+		kthread_park(qca->spi_thread);
+>>>>>>> origin/android16-base
 
 	qca->txr.count = max_t(u32, ring->tx_pending, TX_RING_MIN_LEN);
 	qca->txr.count = min_t(u16, qca->txr.count, TX_RING_MAX_LEN);
 
+<<<<<<< HEAD
 	if (netif_running(dev))
 		ops->ndo_open(dev);
+=======
+	if (qca->spi_thread)
+		kthread_unpark(qca->spi_thread);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

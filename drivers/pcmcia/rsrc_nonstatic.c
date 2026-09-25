@@ -693,6 +693,12 @@ static struct resource *__nonstatic_find_io_region(struct pcmcia_socket *s,
 	unsigned long min = base;
 	int ret;
 
+<<<<<<< HEAD
+=======
+	if (!res)
+		return NULL;
+
+>>>>>>> origin/android16-base
 	data.mask = align - 1;
 	data.offset = base & data.mask;
 	data.map = &s_data->io_db;
@@ -812,6 +818,12 @@ static struct resource *nonstatic_find_mem_region(u_long base, u_long num,
 	unsigned long min, max;
 	int ret, i, j;
 
+<<<<<<< HEAD
+=======
+	if (!res)
+		return NULL;
+
+>>>>>>> origin/android16-base
 	low = low || !(s->features & SS_CAP_PAGE_REGS);
 
 	data.mask = align - 1;
@@ -1050,6 +1062,11 @@ static void nonstatic_release_resource_db(struct pcmcia_socket *s)
 		q = p->next;
 		kfree(p);
 	}
+<<<<<<< HEAD
+=======
+
+	kfree(data);
+>>>>>>> origin/android16-base
 }
 
 

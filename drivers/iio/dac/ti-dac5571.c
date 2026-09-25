@@ -355,6 +355,10 @@ static int dac5571_probe(struct i2c_client *client,
 		data->dac5571_pwrdwn = dac5571_pwrdwn_quad;
 		break;
 	default:
+<<<<<<< HEAD
+=======
+		ret = -EINVAL;
+>>>>>>> origin/android16-base
 		goto err;
 	}
 

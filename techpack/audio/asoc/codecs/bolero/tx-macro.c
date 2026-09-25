@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
+<<<<<<< HEAD
 /* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2018-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/module.h>
@@ -175,7 +180,11 @@ struct tx_macro_priv {
 	int dec_mode[NUM_DECIMATORS];
 	bool bcs_clk_en;
 	bool hs_slow_insert_complete;
+<<<<<<< HEAD
 	int amic_sample_rate;
+=======
+	int pcm_rate[NUM_DECIMATORS];
+>>>>>>> origin/android16-base
 };
 
 static bool tx_macro_get_data(struct snd_soc_component *component,
@@ -374,7 +383,10 @@ static int tx_macro_event_handler(struct snd_soc_component *component,
 
 	switch (event) {
 	case BOLERO_MACRO_EVT_SSR_DOWN:
+<<<<<<< HEAD
 		trace_printk("%s, enter SSR down\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		if (tx_priv->swr_ctrl_data) {
 			swrm_wcd_notify(
 				tx_priv->swr_ctrl_data[0].tx_swr_pdev,
@@ -391,7 +403,10 @@ static int tx_macro_event_handler(struct snd_soc_component *component,
 		}
 		break;
 	case BOLERO_MACRO_EVT_SSR_UP:
+<<<<<<< HEAD
 		trace_printk("%s, enter SSR up\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		/* reset swr after ssr/pdr */
 		tx_priv->reset_swr = true;
 		if (tx_priv->swr_ctrl_data)
@@ -501,6 +516,7 @@ static void tx_macro_tx_hpf_corner_freq_callback(struct work_struct *work)
 		snd_soc_component_update_bits(component, hpf_gate_reg,
 						0x03, 0x02);
 		/* Add delay between toggle hpf gate based on sample rate */
+<<<<<<< HEAD
 		switch(tx_priv->amic_sample_rate) {
 		case 8000:
 			usleep_range(125, 130);
@@ -518,6 +534,25 @@ static void tx_macro_tx_hpf_corner_freq_callback(struct work_struct *work)
 			usleep_range(10, 11);
 			break;
 		case 192000:
+=======
+		switch (tx_priv->pcm_rate[hpf_work->decimator]) {
+		case 0:
+			usleep_range(125, 130);
+			break;
+		case 1:
+			usleep_range(62, 65);
+			break;
+		case 3:
+			usleep_range(31, 32);
+			break;
+		case 4:
+			usleep_range(20, 21);
+			break;
+		case 5:
+			usleep_range(10, 11);
+			break;
+		case 6:
+>>>>>>> origin/android16-base
 			usleep_range(5, 6);
 			break;
 		default:
@@ -953,7 +988,11 @@ static int tx_macro_enable_dec(struct snd_soc_dapm_widget *w,
 	tx_fs_reg = BOLERO_CDC_TX0_TX_PATH_CTL +
 				TX_MACRO_TX_PATH_OFFSET * decimator;
 
+<<<<<<< HEAD
 	tx_priv->amic_sample_rate = (snd_soc_component_read32(component,
+=======
+	tx_priv->pcm_rate[decimator] = (snd_soc_component_read32(component,
+>>>>>>> origin/android16-base
 				     tx_fs_reg) & 0x0F);
 
 	switch (event) {
@@ -2461,9 +2500,12 @@ static int tx_macro_tx_va_mclk_enable(struct tx_macro_priv *tx_priv,
 {
 	int ret = 0, clk_tx_ret = 0;
 
+<<<<<<< HEAD
 	trace_printk("%s: clock type %s, enable: %s tx_mclk_users: %d\n",
 		__func__, (clk_type ? "VA_MCLK" : "TX_MCLK"),
 		(enable ? "enable" : "disable"), tx_priv->tx_mclk_users);
+=======
+>>>>>>> origin/android16-base
 	dev_dbg(tx_priv->dev,
 		"%s: clock type %s, enable: %s tx_mclk_users: %d\n",
 		__func__, (clk_type ? "VA_MCLK" : "TX_MCLK"),
@@ -2471,7 +2513,10 @@ static int tx_macro_tx_va_mclk_enable(struct tx_macro_priv *tx_priv,
 
 	if (enable) {
 		if (tx_priv->swr_clk_users == 0) {
+<<<<<<< HEAD
 			trace_printk("%s: tx swr clk users 0\n", __func__);
+=======
+>>>>>>> origin/android16-base
 			ret = msm_cdc_pinctrl_select_active_state(
 						tx_priv->tx_swr_gpio_p);
 			if (ret < 0) {
@@ -2489,7 +2534,10 @@ static int tx_macro_tx_va_mclk_enable(struct tx_macro_priv *tx_priv,
 						   TX_CORE_CLK,
 						   true);
 		if (clk_type == TX_MCLK) {
+<<<<<<< HEAD
 			trace_printk("%s: requesting TX_MCLK\n", __func__);
+=======
+>>>>>>> origin/android16-base
 			ret = tx_macro_mclk_enable(tx_priv, 1);
 			if (ret < 0) {
 				if (tx_priv->swr_clk_users == 0)
@@ -2502,7 +2550,10 @@ static int tx_macro_tx_va_mclk_enable(struct tx_macro_priv *tx_priv,
 			}
 		}
 		if (clk_type == VA_MCLK) {
+<<<<<<< HEAD
 			trace_printk("%s: requesting VA_MCLK\n", __func__);
+=======
+>>>>>>> origin/android16-base
 			ret = bolero_clk_rsc_request_clock(tx_priv->dev,
 							   TX_CORE_CLK,
 							   VA_CORE_CLK,
@@ -2534,8 +2585,11 @@ static int tx_macro_tx_va_mclk_enable(struct tx_macro_priv *tx_priv,
 		if (tx_priv->swr_clk_users == 0) {
 			dev_dbg(tx_priv->dev, "%s: reset_swr: %d\n",
 				__func__, tx_priv->reset_swr);
+<<<<<<< HEAD
 			trace_printk("%s: reset_swr: %d\n",
 				__func__, tx_priv->reset_swr);
+=======
+>>>>>>> origin/android16-base
 			if (tx_priv->reset_swr)
 				regmap_update_bits(regmap,
 					BOLERO_CDC_TX_CLK_RST_CTRL_SWR_CONTROL,
@@ -2631,7 +2685,10 @@ done:
 				TX_CORE_CLK,
 				false);
 exit:
+<<<<<<< HEAD
 	trace_printk("%s: exit\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -2711,10 +2768,13 @@ static int tx_macro_swrm_clock(void *handle, bool enable)
 	}
 
 	mutex_lock(&tx_priv->swr_clk_lock);
+<<<<<<< HEAD
 	trace_printk("%s: swrm clock %s tx_swr_clk_cnt: %d va_swr_clk_cnt: %d\n",
 		__func__,
 		(enable ? "enable" : "disable"),
 		tx_priv->tx_swr_clk_cnt, tx_priv->va_swr_clk_cnt);
+=======
+>>>>>>> origin/android16-base
 	dev_dbg(tx_priv->dev,
 		"%s: swrm clock %s tx_swr_clk_cnt: %d va_swr_clk_cnt: %d\n",
 		__func__, (enable ? "enable" : "disable"),
@@ -2777,9 +2837,12 @@ static int tx_macro_swrm_clock(void *handle, bool enable)
 		}
 	}
 
+<<<<<<< HEAD
 	trace_printk("%s: swrm clock users %d tx_clk_sts_cnt: %d va_clk_sts_cnt: %d\n",
 		__func__, tx_priv->swr_clk_users, tx_priv->tx_clk_status,
                 tx_priv->va_clk_status);
+=======
+>>>>>>> origin/android16-base
 	dev_dbg(tx_priv->dev,
 		"%s: swrm clock users %d tx_clk_sts_cnt: %d va_clk_sts_cnt: %d\n",
 		__func__, tx_priv->swr_clk_users, tx_priv->tx_clk_status,

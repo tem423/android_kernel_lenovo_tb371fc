@@ -817,6 +817,10 @@ int snd_usb_caiaq_input_init(struct snd_usb_caiaqdev *cdev)
 
 	default:
 		/* no input methods supported on this device */
+<<<<<<< HEAD
+=======
+		ret = -EINVAL;
+>>>>>>> origin/android16-base
 		goto exit_free_idev;
 	}
 
@@ -841,15 +845,32 @@ exit_free_idev:
 	return ret;
 }
 
+<<<<<<< HEAD
 void snd_usb_caiaq_input_free(struct snd_usb_caiaqdev *cdev)
+=======
+void snd_usb_caiaq_input_disconnect(struct snd_usb_caiaqdev *cdev)
+>>>>>>> origin/android16-base
 {
 	if (!cdev || !cdev->input_dev)
 		return;
 
 	usb_kill_urb(cdev->ep4_in_urb);
+<<<<<<< HEAD
 	usb_free_urb(cdev->ep4_in_urb);
 	cdev->ep4_in_urb = NULL;
 
 	input_unregister_device(cdev->input_dev);
+=======
+	input_unregister_device(cdev->input_dev);
+}
+
+void snd_usb_caiaq_input_free(struct snd_usb_caiaqdev *cdev)
+{
+	if (!cdev || !cdev->input_dev)
+		return;
+
+	usb_free_urb(cdev->ep4_in_urb);
+	cdev->ep4_in_urb = NULL;
+>>>>>>> origin/android16-base
 	cdev->input_dev = NULL;
 }

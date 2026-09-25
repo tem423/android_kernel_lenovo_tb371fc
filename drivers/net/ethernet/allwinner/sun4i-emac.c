@@ -847,13 +847,21 @@ static int emac_probe(struct platform_device *pdev)
 	db->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(db->clk)) {
 		ret = PTR_ERR(db->clk);
+<<<<<<< HEAD
 		goto out_iounmap;
+=======
+		goto out_dispose_mapping;
+>>>>>>> origin/android16-base
 	}
 
 	ret = clk_prepare_enable(db->clk);
 	if (ret) {
 		dev_err(&pdev->dev, "Error couldn't enable clock (%d)\n", ret);
+<<<<<<< HEAD
 		goto out_iounmap;
+=======
+		goto out_dispose_mapping;
+>>>>>>> origin/android16-base
 	}
 
 	ret = sunxi_sram_claim(&pdev->dev);
@@ -910,6 +918,11 @@ out_release_sram:
 	sunxi_sram_release(&pdev->dev);
 out_clk_disable_unprepare:
 	clk_disable_unprepare(db->clk);
+<<<<<<< HEAD
+=======
+out_dispose_mapping:
+	irq_dispose_mapping(ndev->irq);
+>>>>>>> origin/android16-base
 out_iounmap:
 	iounmap(db->membase);
 out:
@@ -928,6 +941,10 @@ static int emac_remove(struct platform_device *pdev)
 	unregister_netdev(ndev);
 	sunxi_sram_release(&pdev->dev);
 	clk_disable_unprepare(db->clk);
+<<<<<<< HEAD
+=======
+	irq_dispose_mapping(ndev->irq);
+>>>>>>> origin/android16-base
 	iounmap(db->membase);
 	free_netdev(ndev);
 

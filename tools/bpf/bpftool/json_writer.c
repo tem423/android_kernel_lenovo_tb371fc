@@ -84,9 +84,12 @@ static void jsonw_puts(json_writer_t *self, const char *str)
 		case '"':
 			fputs("\\\"", self->out);
 			break;
+<<<<<<< HEAD
 		case '\'':
 			fputs("\\\'", self->out);
 			break;
+=======
+>>>>>>> origin/android16-base
 		default:
 			putc(*str, self->out);
 		}

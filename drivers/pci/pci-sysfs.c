@@ -182,6 +182,12 @@ static ssize_t current_link_speed_show(struct device *dev,
 		return -EINVAL;
 
 	switch (linkstat & PCI_EXP_LNKSTA_CLS) {
+<<<<<<< HEAD
+=======
+	case PCI_EXP_LNKSTA_CLS_32_0GB:
+		speed = "32 GT/s";
+		break;
+>>>>>>> origin/android16-base
 	case PCI_EXP_LNKSTA_CLS_16_0GB:
 		speed = "16 GT/s";
 		break;
@@ -516,10 +522,14 @@ static ssize_t d3cold_allowed_store(struct device *dev,
 		return -EINVAL;
 
 	pdev->d3cold_allowed = !!val;
+<<<<<<< HEAD
 	if (pdev->d3cold_allowed)
 		pci_d3cold_enable(pdev);
 	else
 		pci_d3cold_disable(pdev);
+=======
+	pci_bridge_d3_update(pdev);
+>>>>>>> origin/android16-base
 
 	pm_runtime_resume(dev);
 
@@ -1289,11 +1299,17 @@ static int pci_create_attr(struct pci_dev *pdev, int num, int write_combine)
 
 	sysfs_bin_attr_init(res_attr);
 	if (write_combine) {
+<<<<<<< HEAD
 		pdev->res_attr_wc[num] = res_attr;
 		sprintf(res_attr_name, "resource%d_wc", num);
 		res_attr->mmap = pci_mmap_resource_wc;
 	} else {
 		pdev->res_attr[num] = res_attr;
+=======
+		sprintf(res_attr_name, "resource%d_wc", num);
+		res_attr->mmap = pci_mmap_resource_wc;
+	} else {
+>>>>>>> origin/android16-base
 		sprintf(res_attr_name, "resource%d", num);
 		if (pci_resource_flags(pdev, num) & IORESOURCE_IO) {
 			res_attr->read = pci_read_resource_io;
@@ -1309,10 +1325,24 @@ static int pci_create_attr(struct pci_dev *pdev, int num, int write_combine)
 	res_attr->size = pci_resource_len(pdev, num);
 	res_attr->private = (void *)(unsigned long)num;
 	retval = sysfs_create_bin_file(&pdev->dev.kobj, res_attr);
+<<<<<<< HEAD
 	if (retval)
 		kfree(res_attr);
 
 	return retval;
+=======
+	if (retval) {
+		kfree(res_attr);
+		return retval;
+	}
+
+	if (write_combine)
+		pdev->res_attr_wc[num] = res_attr;
+	else
+		pdev->res_attr[num] = res_attr;
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 /**

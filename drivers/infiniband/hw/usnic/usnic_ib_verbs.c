@@ -212,6 +212,10 @@ find_free_vf_and_create_qp_grp(struct usnic_ib_dev *us_ibdev,
 
 		}
 		usnic_uiom_free_dev_list(dev_list);
+<<<<<<< HEAD
+=======
+		dev_list = NULL;
+>>>>>>> origin/android16-base
 	}
 
 	/* Try to find resources on an unused vf */
@@ -236,6 +240,11 @@ find_free_vf_and_create_qp_grp(struct usnic_ib_dev *us_ibdev,
 qp_grp_check:
 	if (IS_ERR_OR_NULL(qp_grp)) {
 		usnic_err("Failed to allocate qp_grp\n");
+<<<<<<< HEAD
+=======
+		if (usnic_ib_share_vf)
+			usnic_uiom_free_dev_list(dev_list);
+>>>>>>> origin/android16-base
 		return ERR_PTR(qp_grp ? PTR_ERR(qp_grp) : -ENOMEM);
 	}
 	return qp_grp;

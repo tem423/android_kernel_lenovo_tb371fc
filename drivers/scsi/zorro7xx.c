@@ -158,6 +158,11 @@ static void zorro7xx_remove_one(struct zorro_dev *z)
 	scsi_remove_host(host);
 
 	NCR_700_release(host);
+<<<<<<< HEAD
+=======
+	if (host->base > 0x01000000)
+		iounmap(hostdata->base);
+>>>>>>> origin/android16-base
 	kfree(hostdata);
 	free_irq(host->irq, host);
 	zorro_release_device(z);

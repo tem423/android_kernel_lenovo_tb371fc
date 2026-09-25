@@ -1244,8 +1244,12 @@ qed_rdma_create_qp(void *rdma_cxt,
 
 	if (!rdma_cxt || !in_params || !out_params ||
 	    !p_hwfn->p_rdma_info->active) {
+<<<<<<< HEAD
 		DP_ERR(p_hwfn->cdev,
 		       "qed roce create qp failed due to NULL entry (rdma_cxt=%p, in=%p, out=%p, roce_info=?\n",
+=======
+		pr_err("qed roce create qp failed due to NULL entry (rdma_cxt=%p, in=%p, out=%p, roce_info=?\n",
+>>>>>>> origin/android16-base
 		       rdma_cxt, in_params, out_params);
 		return NULL;
 	}

@@ -16,12 +16,18 @@ ccflags-vdso := \
 	$(filter -march=%,$(KBUILD_CFLAGS)) \
 	$(filter -m%-float,$(KBUILD_CFLAGS)) \
 	$(filter -mno-loongson-%,$(KBUILD_CFLAGS)) \
+<<<<<<< HEAD
 	-D__VDSO__
 
 ifeq ($(cc-name),clang)
 ccflags-vdso += $(filter --target=%,$(KBUILD_CFLAGS))
 endif
 
+=======
+	$(CLANG_FLAGS) \
+	-D__VDSO__
+
+>>>>>>> origin/android16-base
 #
 # The -fno-jump-tables flag only prevents the compiler from generating
 # jump tables but does not prevent the compiler from emitting absolute
@@ -60,7 +66,11 @@ CFLAGS_REMOVE_vgettimeofday.o = -pg
 ifndef CONFIG_CPU_MIPSR6
   ifeq ($(call ld-ifversion, -lt, 225000000, y),y)
     $(warning MIPS VDSO requires binutils >= 2.25)
+<<<<<<< HEAD
     obj-vdso-y := $(filter-out gettimeofday.o, $(obj-vdso-y))
+=======
+    obj-vdso-y := $(filter-out vgettimeofday.o, $(obj-vdso-y))
+>>>>>>> origin/android16-base
     ccflags-vdso += -DDISABLE_MIPS_VDSO
   endif
 endif

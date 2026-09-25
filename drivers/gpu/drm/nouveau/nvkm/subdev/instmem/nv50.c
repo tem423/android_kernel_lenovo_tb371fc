@@ -221,8 +221,16 @@ nv50_instobj_acquire(struct nvkm_memory *memory)
 	void __iomem *map = NULL;
 
 	/* Already mapped? */
+<<<<<<< HEAD
 	if (refcount_inc_not_zero(&iobj->maps))
 		return iobj->map;
+=======
+	if (refcount_inc_not_zero(&iobj->maps)) {
+		/* read barrier match the wmb on refcount set */
+		smp_rmb();
+		return iobj->map;
+	}
+>>>>>>> origin/android16-base
 
 	/* Take the lock, and re-check that another thread hasn't
 	 * already mapped the object in the meantime.
@@ -249,6 +257,11 @@ nv50_instobj_acquire(struct nvkm_memory *memory)
 			iobj->base.memory.ptrs = &nv50_instobj_fast;
 		else
 			iobj->base.memory.ptrs = &nv50_instobj_slow;
+<<<<<<< HEAD
+=======
+		/* barrier to ensure the ptrs are written before refcount is set */
+		smp_wmb();
+>>>>>>> origin/android16-base
 		refcount_set(&iobj->maps, 1);
 	}
 

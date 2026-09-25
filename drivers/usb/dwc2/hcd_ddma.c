@@ -589,7 +589,11 @@ static void dwc2_init_isoc_dma_desc(struct dwc2_hsotg *hsotg,
 	idx = qh->td_last;
 	inc = qh->host_interval;
 	hsotg->frame_number = dwc2_hcd_get_frame_number(hsotg);
+<<<<<<< HEAD
 	cur_idx = dwc2_frame_list_idx(hsotg->frame_number);
+=======
+	cur_idx = idx;
+>>>>>>> origin/android16-base
 	next_idx = dwc2_desclist_idx_inc(qh->td_last, inc, qh->dev_speed);
 
 	/*
@@ -896,20 +900,38 @@ static int dwc2_cmpl_host_isoc_dma_desc(struct dwc2_hsotg *hsotg,
 {
 	struct dwc2_dma_desc *dma_desc;
 	struct dwc2_hcd_iso_packet_desc *frame_desc;
+<<<<<<< HEAD
+=======
+	u16 frame_desc_idx;
+	struct urb *usb_urb;
+>>>>>>> origin/android16-base
 	u16 remain = 0;
 	int rc = 0;
 
 	if (!qtd->urb)
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	usb_urb = qtd->urb->priv;
+
+>>>>>>> origin/android16-base
 	dma_sync_single_for_cpu(hsotg->dev, qh->desc_list_dma + (idx *
 				sizeof(struct dwc2_dma_desc)),
 				sizeof(struct dwc2_dma_desc),
 				DMA_FROM_DEVICE);
 
 	dma_desc = &qh->desc_list[idx];
+<<<<<<< HEAD
 
 	frame_desc = &qtd->urb->iso_descs[qtd->isoc_frame_index_last];
+=======
+	frame_desc_idx = (idx - qtd->isoc_td_first) & (usb_urb->number_of_packets - 1);
+
+	frame_desc = &qtd->urb->iso_descs[frame_desc_idx];
+	if (idx == qtd->isoc_td_first)
+		usb_urb->start_frame = dwc2_hcd_get_frame_number(hsotg);
+>>>>>>> origin/android16-base
 	dma_desc->buf = (u32)(qtd->urb->dma + frame_desc->offset);
 	if (chan->ep_is_in)
 		remain = (dma_desc->status & HOST_DMA_ISOC_NBYTES_MASK) >>
@@ -930,7 +952,11 @@ static int dwc2_cmpl_host_isoc_dma_desc(struct dwc2_hsotg *hsotg,
 		frame_desc->status = 0;
 	}
 
+<<<<<<< HEAD
 	if (++qtd->isoc_frame_index == qtd->urb->packet_count) {
+=======
+	if (++qtd->isoc_frame_index == usb_urb->number_of_packets) {
+>>>>>>> origin/android16-base
 		/*
 		 * urb->status is not used for isoc transfers here. The
 		 * individual frame_desc status are used instead.
@@ -1035,11 +1061,19 @@ static void dwc2_complete_isoc_xfer_ddma(struct dwc2_hsotg *hsotg,
 				return;
 			idx = dwc2_desclist_idx_inc(idx, qh->host_interval,
 						    chan->speed);
+<<<<<<< HEAD
 			if (!rc)
 				continue;
 
 			if (rc == DWC2_CMPL_DONE)
 				break;
+=======
+			if (rc == 0)
+				continue;
+
+			if (rc == DWC2_CMPL_DONE || rc == DWC2_CMPL_STOP)
+				goto stop_scan;
+>>>>>>> origin/android16-base
 
 			/* rc == DWC2_CMPL_STOP */
 

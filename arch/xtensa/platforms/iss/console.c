@@ -168,9 +168,19 @@ static const struct tty_operations serial_ops = {
 
 int __init rs_init(void)
 {
+<<<<<<< HEAD
 	tty_port_init(&serial_port);
 
 	serial_driver = alloc_tty_driver(SERIAL_MAX_NUM_LINES);
+=======
+	int ret;
+
+	serial_driver = alloc_tty_driver(SERIAL_MAX_NUM_LINES);
+	if (!serial_driver)
+		return -ENOMEM;
+
+	tty_port_init(&serial_port);
+>>>>>>> origin/android16-base
 
 	pr_info("%s %s\n", serial_name, serial_version);
 
@@ -190,8 +200,20 @@ int __init rs_init(void)
 	tty_set_operations(serial_driver, &serial_ops);
 	tty_port_link_device(&serial_port, serial_driver, 0);
 
+<<<<<<< HEAD
 	if (tty_register_driver(serial_driver))
 		panic("Couldn't register serial driver\n");
+=======
+	ret = tty_register_driver(serial_driver);
+	if (ret) {
+		pr_err("Couldn't register serial driver\n");
+		tty_driver_kref_put(serial_driver);
+		tty_port_destroy(&serial_port);
+
+		return ret;
+	}
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 

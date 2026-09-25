@@ -1322,7 +1322,11 @@ static int __maybe_unused gsc_runtime_resume(struct device *dev)
 	for (i = 0; i < ctx->num_clocks; i++) {
 		ret = clk_prepare_enable(ctx->clocks[i]);
 		if (ret) {
+<<<<<<< HEAD
 			while (--i > 0)
+=======
+			while (--i >= 0)
+>>>>>>> origin/android16-base
 				clk_disable_unprepare(ctx->clocks[i]);
 			return ret;
 		}

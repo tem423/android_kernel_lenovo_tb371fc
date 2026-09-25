@@ -721,7 +721,11 @@ static int sdhci_acpi_probe(struct platform_device *pdev)
 	host->ops	= &sdhci_acpi_ops_dflt;
 	host->irq	= platform_get_irq(pdev, 0);
 	if (host->irq < 0) {
+<<<<<<< HEAD
 		err = -EINVAL;
+=======
+		err = host->irq;
+>>>>>>> origin/android16-base
 		goto err_free;
 	}
 

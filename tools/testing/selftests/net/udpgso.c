@@ -157,6 +157,7 @@ struct testcase testcases_v4[] = {
 	},
 	{
 		/* send max number of min sized segments */
+<<<<<<< HEAD
 		.tlen = UDP_MAX_SEGMENTS - CONST_HDRLEN_V4,
 		.gso_len = 1,
 		.r_num_mss = UDP_MAX_SEGMENTS - CONST_HDRLEN_V4,
@@ -164,6 +165,15 @@ struct testcase testcases_v4[] = {
 	{
 		/* send max number + 1 of min sized segments: fail */
 		.tlen = UDP_MAX_SEGMENTS - CONST_HDRLEN_V4 + 1,
+=======
+		.tlen = UDP_MAX_SEGMENTS,
+		.gso_len = 1,
+		.r_num_mss = UDP_MAX_SEGMENTS,
+	},
+	{
+		/* send max number + 1 of min sized segments: fail */
+		.tlen = UDP_MAX_SEGMENTS + 1,
+>>>>>>> origin/android16-base
 		.gso_len = 1,
 		.tfail = true,
 	},
@@ -260,6 +270,7 @@ struct testcase testcases_v6[] = {
 	},
 	{
 		/* send max number of min sized segments */
+<<<<<<< HEAD
 		.tlen = UDP_MAX_SEGMENTS - CONST_HDRLEN_V6,
 		.gso_len = 1,
 		.r_num_mss = UDP_MAX_SEGMENTS - CONST_HDRLEN_V6,
@@ -267,6 +278,15 @@ struct testcase testcases_v6[] = {
 	{
 		/* send max number + 1 of min sized segments: fail */
 		.tlen = UDP_MAX_SEGMENTS - CONST_HDRLEN_V6 + 1,
+=======
+		.tlen = UDP_MAX_SEGMENTS,
+		.gso_len = 1,
+		.r_num_mss = UDP_MAX_SEGMENTS,
+	},
+	{
+		/* send max number + 1 of min sized segments: fail */
+		.tlen = UDP_MAX_SEGMENTS + 1,
+>>>>>>> origin/android16-base
 		.gso_len = 1,
 		.tfail = true,
 	},

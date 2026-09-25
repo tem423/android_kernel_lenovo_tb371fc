@@ -102,9 +102,15 @@
 static unsigned int ad7280a_devaddr(unsigned int addr)
 {
 	return ((addr & 0x1) << 4) |
+<<<<<<< HEAD
 	       ((addr & 0x2) << 3) |
 	       (addr & 0x4) |
 	       ((addr & 0x8) >> 3) |
+=======
+	       ((addr & 0x2) << 2) |
+	       (addr & 0x4) |
+	       ((addr & 0x8) >> 2) |
+>>>>>>> origin/android16-base
 	       ((addr & 0x10) >> 4);
 }
 

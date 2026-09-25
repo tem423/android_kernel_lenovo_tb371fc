@@ -755,14 +755,22 @@
 			status = "disabled";
 		};
 
+<<<<<<< HEAD
 		vica: intc@10140000 {
+=======
+		vica: interrupt-controller@10140000 {
+>>>>>>> origin/android16-base
 			compatible = "arm,versatile-vic";
 			interrupt-controller;
 			#interrupt-cells = <1>;
 			reg = <0x10140000 0x20>;
 		};
 
+<<<<<<< HEAD
 		vicb: intc@10140020 {
+=======
+		vicb: interrupt-controller@10140020 {
+>>>>>>> origin/android16-base
 			compatible = "arm,versatile-vic";
 			interrupt-controller;
 			#interrupt-cells = <1>;

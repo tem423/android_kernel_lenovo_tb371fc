@@ -179,7 +179,11 @@
 			status = "disabled";
 		};
 
+<<<<<<< HEAD
 		nand: nand@26000 {
+=======
+		nand_controller: nand-controller@26000 {
+>>>>>>> origin/android16-base
 			compatible = "brcm,nand-iproc", "brcm,brcmnand-v6.1";
 			reg = <0x26000 0x600>,
 			      <0x11b408 0x600>,

@@ -14,17 +14,23 @@
 #include <linux/pmic-voter.h>
 #include <linux/of_batterydata.h>
 #include <linux/ktime.h>
+<<<<<<< HEAD
 #include <linux/gpio.h>
 #include <linux/get_otg_id.h>
+=======
+>>>>>>> origin/android16-base
 #include "smb5-lib.h"
 #include "smb5-reg.h"
 #include "schgm-flash.h"
 #include "step-chg-jeita.h"
 #include "storm-watch.h"
 #include "schgm-flash.h"
+<<<<<<< HEAD
 #include "lenovo-jeita.h"
 
 extern int boost_en;
+=======
+>>>>>>> origin/android16-base
 
 #define smblib_err(chg, fmt, ...)		\
 	pr_err("%s: %s: " fmt, chg->name,	\
@@ -47,6 +53,7 @@ extern int boost_en;
 
 static void update_sw_icl_max(struct smb_charger *chg, int pst);
 static int smblib_get_prop_typec_mode(struct smb_charger *chg);
+<<<<<<< HEAD
 extern int usb_is_plugin(bool enabled);
 bool usb_in;
 int usb_status = 0;
@@ -58,6 +65,8 @@ int smblib_read_usb_status(void)
 	return usb_status;
 }
 EXPORT_SYMBOL(smblib_read_usb_status);
+=======
+>>>>>>> origin/android16-base
 
 int smblib_read(struct smb_charger *chg, u16 addr, u8 *val)
 {
@@ -290,6 +299,7 @@ static int smblib_select_sec_charger_locked(struct smb_charger *chg,
 	return rc;
 }
 
+<<<<<<< HEAD
 int smblib_set_smb_en(struct smb_charger *chg, int enable){
        int rc = 0;
        rc = smblib_masked_write(chg, MISC_SMB_EN_CMD_REG,
@@ -309,6 +319,8 @@ int smblib_set_smb_en(struct smb_charger *chg, int enable){
        return rc;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int smblib_select_sec_charger(struct smb_charger *chg, int sec_chg,
 					int reason, bool toggle)
 {
@@ -982,6 +994,7 @@ int smblib_get_prop_from_bms(struct smb_charger *chg,
 {
 	int rc;
 
+<<<<<<< HEAD
 	if (!chg->bms_psy) {
 		/* V27N: fg-gen4 not probed on public tree. Fake sane battery values
 		 * so ZUI battery-safety (temp/level) does not power the device off. */
@@ -1002,11 +1015,16 @@ int smblib_get_prop_from_bms(struct smb_charger *chg,
 			return -EINVAL;
 		}
 	}
+=======
+	if (!chg->bms_psy)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	rc = power_supply_get_property(chg->bms_psy, psp, val);
 
 	return rc;
 }
+<<<<<<< HEAD
 int smblib_get_prop_from_exfg(struct smb_charger *chg,
 				enum power_supply_property psp,
 				union power_supply_propval *val)
@@ -1038,6 +1056,9 @@ int smblib_get_prop_from_exfg(struct smb_charger *chg,
 
 	return rc;
 }
+=======
+
+>>>>>>> origin/android16-base
 void smblib_apsd_enable(struct smb_charger *chg, bool enable)
 {
 	int rc;
@@ -1301,6 +1322,10 @@ static void smblib_uusb_removal(struct smb_charger *chg)
 			is_flash_active(chg) ? SDP_CURRENT_UA : SDP_100_MA);
 	vote(chg->usb_icl_votable, SW_QC3_VOTER, false, 0);
 	vote(chg->usb_icl_votable, HVDCP2_ICL_VOTER, false, 0);
+<<<<<<< HEAD
+=======
+	vote(chg->usb_icl_votable, HVDCP2_12V_ICL_VOTER, false, 0);
+>>>>>>> origin/android16-base
 	vote(chg->usb_icl_votable, CHG_TERMINATION_VOTER, false, 0);
 	vote(chg->usb_icl_votable, THERMAL_THROTTLE_VOTER, false, 0);
 	vote(chg->limited_irq_disable_votable, CHARGER_TYPE_VOTER,
@@ -1505,9 +1530,15 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 					TORCH_BUCK_MODE);
 
 	/* Do not configure ICL from SW for DAM cables */
+<<<<<<< HEAD
 //	if (smblib_get_prop_typec_mode(chg) ==
 //			    POWER_SUPPLY_TYPEC_SINK_DEBUG_ACCESSORY)
 //		return 0;
+=======
+	if (smblib_get_prop_typec_mode(chg) ==
+			    POWER_SUPPLY_TYPEC_SINK_DEBUG_ACCESSORY)
+		return 0;
+>>>>>>> origin/android16-base
 
 	if (suspend)
 		return smblib_set_usb_suspend(chg, true);
@@ -1780,8 +1811,11 @@ static int smblib_chg_disable_vote_callback(struct votable *votable, void *data,
 		return rc;
 	}
 
+<<<<<<< HEAD
 	smblib_dbg(chg, PR_REGISTER, "***** %s *****\n", chg_disable ? "Disable" : "Enable");
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1949,8 +1983,12 @@ int smblib_vbus_regulator_enable(struct regulator_dev *rdev)
 
 	smblib_dbg(chg, PR_OTG, "enabling OTG\n");
 
+<<<<<<< HEAD
 	rc = gpio_direction_output(chg->gpio_boost_en, 1);
 	//rc = smblib_masked_write(chg, DCDC_CMD_OTG_REG, OTG_EN_BIT, OTG_EN_BIT);
+=======
+	rc = smblib_masked_write(chg, DCDC_CMD_OTG_REG, OTG_EN_BIT, OTG_EN_BIT);
+>>>>>>> origin/android16-base
 	if (rc < 0) {
 		smblib_err(chg, "Couldn't enable OTG rc=%d\n", rc);
 		return rc;
@@ -1966,8 +2004,12 @@ int smblib_vbus_regulator_disable(struct regulator_dev *rdev)
 
 	smblib_dbg(chg, PR_OTG, "disabling OTG\n");
 
+<<<<<<< HEAD
 	rc = gpio_direction_output(chg->gpio_boost_en, 0);
 	//rc = smblib_masked_write(chg, DCDC_CMD_OTG_REG, OTG_EN_BIT, 0);
+=======
+	rc = smblib_masked_write(chg, DCDC_CMD_OTG_REG, OTG_EN_BIT, 0);
+>>>>>>> origin/android16-base
 	if (rc < 0) {
 		smblib_err(chg, "Couldn't disable OTG regulator rc=%d\n", rc);
 		return rc;
@@ -2026,13 +2068,17 @@ int smblib_get_prop_batt_capacity(struct smb_charger *chg,
 				  union power_supply_propval *val)
 {
 	int rc = -EINVAL;
+<<<<<<< HEAD
 	u8 stat;
+=======
+>>>>>>> origin/android16-base
 
 	if (chg->fake_capacity >= 0) {
 		val->intval = chg->fake_capacity;
 		return 0;
 	}
 
+<<<<<<< HEAD
 	rc = smblib_get_prop_from_exfg(chg, POWER_SUPPLY_PROP_CAPACITY, val);
 
 	if (val->intval >= 100) {
@@ -2050,6 +2096,9 @@ int smblib_get_prop_batt_capacity(struct smb_charger *chg,
 		}
 		smblib_dbg(chg, PR_REGISTER, "CHGR_CFG2_REG: stat = 0x%2x.\n", stat);
 	}
+=======
+	rc = smblib_get_prop_from_bms(chg, POWER_SUPPLY_PROP_CAPACITY, val);
+>>>>>>> origin/android16-base
 
 	return rc;
 }
@@ -2110,13 +2159,20 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 	 * the battery status as DISCHARGING.
 	 */
 	smblib_is_input_present(chg, &input_present);
+<<<<<<< HEAD
 	rc = smblib_get_prop_from_exfg(chg, POWER_SUPPLY_PROP_CAPACITY, &pval);
+=======
+	rc = smblib_get_prop_from_bms(chg, POWER_SUPPLY_PROP_CAPACITY, &pval);
+>>>>>>> origin/android16-base
 	if (!rc && pval.intval == 0 && input_present) {
 		rc = smblib_get_prop_from_bms(chg,
 				POWER_SUPPLY_PROP_CURRENT_NOW, &pval);
 		if (!rc && pval.intval > 0) {
 			if (chg->cutoff_count > CUTOFF_COUNT) {
+<<<<<<< HEAD
 				smblib_err(chg, "%s: bms(SOC=0): POWER_SUPPLY_STATUS_DISCHARGING\n", __FUNCTION__);
+=======
+>>>>>>> origin/android16-base
 				val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
 				return 0;
 			}
@@ -2319,6 +2375,7 @@ int smblib_get_prop_batt_health(struct smb_charger *chg,
 
 	rc = smblib_read(chg, BATTERY_CHARGER_STATUS_7_REG, &stat);
 	if (rc < 0) {
+<<<<<<< HEAD
 		smblib_err(chg, "Couldn't read BATTERY_CHARGER_STATUS_7 rc=%d\n",
 			rc);
 		return rc;
@@ -2326,6 +2383,12 @@ int smblib_get_prop_batt_health(struct smb_charger *chg,
 	smblib_dbg(chg, PR_REGISTER, "BATTERY_CHARGER_STATUS_7 = 0x%02x\n",
 		   stat);
 
+=======
+		smblib_err(chg, "Couldn't read BATTERY_CHARGER_STATUS_2 rc=%d\n",
+			rc);
+		return rc;
+	}
+>>>>>>> origin/android16-base
 	if (stat & BAT_TEMP_STATUS_TOO_COLD_BIT)
 		val->intval = POWER_SUPPLY_HEALTH_COLD;
 	else if (stat & BAT_TEMP_STATUS_TOO_HOT_BIT)
@@ -2421,6 +2484,7 @@ int smblib_get_prop_batt_iterm(struct smb_charger *chg,
 	return rc;
 }
 
+<<<<<<< HEAD
 #define RAW_ITERM(iterm_ma, max_range)				\
 		div_s64((int64_t)iterm_ma * ADC_CHG_ITERM_MASK, max_range)
 
@@ -2460,6 +2524,8 @@ int smblib_set_prop_batt_iterm(struct smb_charger *chg,
 	return rc;
 }
 
+=======
+>>>>>>> origin/android16-base
 int smblib_get_prop_batt_charge_done(struct smb_charger *chg,
 					union power_supply_propval *val)
 {
@@ -2482,12 +2548,20 @@ int smblib_get_batt_current_now(struct smb_charger *chg,
 					union power_supply_propval *val)
 {
 	int rc;
+<<<<<<< HEAD
 	rc = smblib_get_prop_from_exfg(chg,
 		POWER_SUPPLY_PROP_CURRENT_NOW, val);
 
 	if (!chg->exfg_psy){
 		val->intval *= (-1);
 	}
+=======
+
+	rc = smblib_get_prop_from_bms(chg,
+			POWER_SUPPLY_PROP_CURRENT_NOW, val);
+	if (!rc)
+		val->intval *= (-1);
+>>>>>>> origin/android16-base
 
 	return rc;
 }
@@ -2814,6 +2888,11 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 		rc = smblib_force_vbus_voltage(chg, FORCE_5V_BIT);
 		if (rc < 0)
 			pr_err("Failed to force 5V\n");
+<<<<<<< HEAD
+=======
+
+		vote(chg->usb_icl_votable, HVDCP2_12V_ICL_VOTER, false, 0);
+>>>>>>> origin/android16-base
 		break;
 	case POWER_SUPPLY_DP_DM_FORCE_9V:
 		if (chg->qc2_unsupported_voltage == QC2_NON_COMPLIANT_9V) {
@@ -2839,6 +2918,11 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 		rc = smblib_force_vbus_voltage(chg, FORCE_9V_BIT);
 		if (rc < 0)
 			pr_err("Failed to force 9V\n");
+<<<<<<< HEAD
+=======
+
+		vote(chg->usb_icl_votable, HVDCP2_12V_ICL_VOTER, false, 0);
+>>>>>>> origin/android16-base
 		break;
 	case POWER_SUPPLY_DP_DM_FORCE_12V:
 		if (chg->qc2_unsupported_voltage == QC2_NON_COMPLIANT_12V) {
@@ -2855,6 +2939,11 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 		}
 
 		if ((stat & QC_9V_BIT) || (stat & QC_5V_BIT)) {
+<<<<<<< HEAD
+=======
+			vote(chg->usb_icl_votable, HVDCP2_12V_ICL_VOTER, true,
+					chg->chg_param.hvdcp2_12v_max_icl_ua);
+>>>>>>> origin/android16-base
 			/* Force 1A ICL before requesting higher voltage */
 			vote(chg->usb_icl_votable, HVDCP2_ICL_VOTER,
 					true, 1000000);
@@ -3419,12 +3508,38 @@ int smblib_get_prop_usb_online(struct smb_charger *chg,
 	int rc = 0;
 	u8 stat;
 
+<<<<<<< HEAD
 	/* p124: report VBUS presence for ONLINE. Tying ONLINE to the
 	 * input-suspend vote made the Lenovo battery HAL see "charger
 	 * gone" during a suspend hold, cancel the suspend, see the
 	 * charger again, re-suspend ... in a ~30ms feedback loop
 	 * (ICL vote storm + load ~22 + status/saver flapping). */
 	return smblib_get_prop_usb_present(chg, val);
+=======
+	if (get_client_vote_locked(chg->usb_icl_votable, USER_VOTER) == 0) {
+		val->intval = false;
+		return rc;
+	}
+
+	if (is_client_vote_enabled_locked(chg->usb_icl_votable,
+					CHG_TERMINATION_VOTER)) {
+		rc = smblib_get_prop_usb_present(chg, val);
+		return rc;
+	}
+
+	rc = smblib_read(chg, POWER_PATH_STATUS_REG, &stat);
+	if (rc < 0) {
+		smblib_err(chg, "Couldn't read POWER_PATH_STATUS rc=%d\n",
+			rc);
+		return rc;
+	}
+	smblib_dbg(chg, PR_REGISTER, "POWER_PATH_STATUS = 0x%02x\n",
+		   stat);
+
+	val->intval = (stat & USE_USBIN_BIT) &&
+		      (stat & VALID_INPUT_POWER_SOURCE_STS_BIT);
+	return rc;
+>>>>>>> origin/android16-base
 }
 
 int smblib_get_usb_online(struct smb_charger *chg,
@@ -3460,7 +3575,11 @@ int smblib_get_prop_usb_voltage_max_design(struct smb_charger *chg,
 			break;
 		} else if (chg->qc2_unsupported_voltage ==
 				QC2_NON_COMPLIANT_12V) {
+<<<<<<< HEAD
 			val->intval = MICRO_5V;
+=======
+			val->intval = MICRO_9V;
+>>>>>>> origin/android16-base
 			break;
 		}
 		/* else, fallthrough */
@@ -4584,7 +4703,16 @@ int smblib_set_prop_typec_power_role(struct smb_charger *chg,
 	smblib_dbg(chg, PR_MISC, "power role change: %d --> %d!",
 			chg->power_role, val->intval);
 
+<<<<<<< HEAD
 	if (chg->power_role == val->intval) {
+=======
+	/*
+	 * Force the power-role if the initial value is NONE, for the
+	 * legacy cable detection WA.
+	 */
+	if (chg->power_role == val->intval &&
+			chg->power_role != POWER_SUPPLY_TYPEC_PR_NONE) {
+>>>>>>> origin/android16-base
 		smblib_dbg(chg, PR_MISC, "power role already in %d, ignore!",
 				chg->power_role);
 		goto unlock;
@@ -4911,8 +5039,11 @@ static int smblib_soft_jeita_arb_wa(struct smb_charger *chg)
 	int rc = 0;
 	bool soft_jeita;
 
+<<<<<<< HEAD
 	if(chg->lenovo_jeita)
 		return 0;
+=======
+>>>>>>> origin/android16-base
 	rc = smblib_get_prop_batt_health(chg, &pval);
 	if (rc < 0) {
 		smblib_err(chg, "Couldn't get battery health rc=%d\n", rc);
@@ -5030,10 +5161,13 @@ int smblib_get_charge_current(struct smb_charger *chg,
 	int rc = 0, typec_source_rd, current_ua;
 	bool non_compliant;
 	u8 stat;
+<<<<<<< HEAD
 	if(smblib_get_prop_typec_mode(chg)== POWER_SUPPLY_TYPEC_NONE){
 		*total_current_ua = SDP_FLOAT_UA;
 		return 0;
 	}
+=======
+>>>>>>> origin/android16-base
 
 	if (chg->pd_active) {
 		*total_current_ua =
@@ -5104,9 +5238,12 @@ int smblib_get_charge_current(struct smb_charger *chg,
 	case POWER_SUPPLY_TYPEC_SOURCE_HIGH:
 		current_ua = TYPEC_HIGH_CURRENT_UA;
 		break;
+<<<<<<< HEAD
 	case POWER_SUPPLY_TYPEC_SINK_DEBUG_ACCESSORY:
 		current_ua = DCP_CURRENT_UA;
 		break;
+=======
+>>>>>>> origin/android16-base
 	case POWER_SUPPLY_TYPEC_NON_COMPLIANT:
 	case POWER_SUPPLY_TYPEC_NONE:
 	default:
@@ -5265,6 +5402,7 @@ irqreturn_t chg_state_change_irq_handler(int irq, void *data)
 		return IRQ_HANDLED;
 	}
 
+<<<<<<< HEAD
 	smblib_dbg(chg, PR_INTERRUPT, "BATTERY_CHARGER_STATUS_1_REG = 0x%02x\n", stat);
 
 	stat = stat & BATTERY_CHARGER_STATUS_MASK;
@@ -5277,6 +5415,10 @@ irqreturn_t chg_state_change_irq_handler(int irq, void *data)
 		}
 		mutex_unlock(&chg->pd_ws_lock);
 	}
+=======
+	stat = stat & BATTERY_CHARGER_STATUS_MASK;
+
+>>>>>>> origin/android16-base
 	if (chg->wa_flags & CHG_TERMINATION_WA)
 		smblib_eval_chg_termination(chg, stat);
 
@@ -5679,9 +5821,13 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 	smblib_set_opt_switcher_freq(chg, vbus_rising ? chg->chg_freq.freq_5V :
 						chg->chg_freq.freq_removal);
 
+<<<<<<< HEAD
 	usb_in = vbus_rising;
 	if (vbus_rising) {
 		smblib_err(chg, "usb plugin \n");
+=======
+	if (vbus_rising) {
+>>>>>>> origin/android16-base
 		cancel_delayed_work_sync(&chg->pr_swap_detach_work);
 		vote(chg->awake_votable, DETACH_DETECT_VOTER, false, 0);
 		rc = smblib_request_dpdm(chg, true);
@@ -5702,6 +5848,7 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 		vote(chg->awake_votable, PL_DELAY_VOTER, true, 0);
 		schedule_delayed_work(&chg->pl_enable_work,
 					msecs_to_jiffies(PL_DELAY_MS));
+<<<<<<< HEAD
 		usb_status = 1;
 		schedule_delayed_work(&chg->usb_plugin_work,
 					msecs_to_jiffies(0));
@@ -5714,6 +5861,9 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 		schedule_delayed_work(&chg->usb_plugin_work,
 					msecs_to_jiffies(0));
 
+=======
+	} else {
+>>>>>>> origin/android16-base
 		/* Disable SW Thermal Regulation */
 		rc = smblib_set_sw_thermal_regulation(chg, false);
 		if (rc < 0)
@@ -5907,10 +6057,14 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 		vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true, 500000);
 		return;
 	}
+<<<<<<< HEAD
 	if (chg->typec_mode == POWER_SUPPLY_TYPEC_NONE) {
 		vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true, SDP_FLOAT_UA);
 		return;
 	}
+=======
+
+>>>>>>> origin/android16-base
 	/*
 	 * HVDCP 2/3, handled separately
 	 */
@@ -5995,6 +6149,7 @@ static void smblib_handle_apsd_done(struct smb_charger *chg, bool rising)
 		   apsd_result->name);
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_QPNP_FLOAT_CHG_RECHECK
 #define FLOAT_CHG_RECHECK_DELAY_SECS	15
 static void smblib_float_chg_work(struct work_struct *work)
@@ -6034,15 +6189,20 @@ static void smblib_float_chg_work(struct work_struct *work)
 }
 #endif /* CONFIG_QPNP_FLOAT_CHG_RECHECK */
 
+=======
+>>>>>>> origin/android16-base
 irqreturn_t usb_source_change_irq_handler(int irq, void *data)
 {
 	struct smb_irq_data *irq_data = data;
 	struct smb_charger *chg = irq_data->parent_data;
 	int rc = 0;
 	u8 stat;
+<<<<<<< HEAD
 #ifdef CONFIG_QPNP_FLOAT_CHG_RECHECK
 	u8 result_stat = 0;
 #endif /* CONFIG_QPNP_FLOAT_CHG_RECHECK */
+=======
+>>>>>>> origin/android16-base
 
 	/* PD session is ongoing, ignore BC1.2 and QC detection */
 	if (chg->pd_active)
@@ -6055,6 +6215,7 @@ irqreturn_t usb_source_change_irq_handler(int irq, void *data)
 	}
 	smblib_dbg(chg, PR_INTERRUPT, "APSD_STATUS = 0x%02x\n", stat);
 
+<<<<<<< HEAD
 #ifdef CONFIG_QPNP_FLOAT_CHG_RECHECK
 	rc = smblib_read(chg, APSD_RESULT_STATUS_REG, &result_stat);
 	if(rc < 0){
@@ -6063,6 +6224,8 @@ irqreturn_t usb_source_change_irq_handler(int irq, void *data)
 	smblib_dbg(chg, PR_INTERRUPT, "APSD_RESULT_STATUS = 0x%02x\n", result_stat);
 #endif /* CONFIG_QPNP_FLOAT_CHG_RECHECK */
 
+=======
+>>>>>>> origin/android16-base
 	if ((chg->connector_type == POWER_SUPPLY_CONNECTOR_MICRO_USB)
 		&& (stat & APSD_DTC_STATUS_DONE_BIT)
 		&& !chg->uusb_apsd_rerun_done) {
@@ -6075,6 +6238,7 @@ irqreturn_t usb_source_change_irq_handler(int irq, void *data)
 		return IRQ_HANDLED;
 	}
 
+<<<<<<< HEAD
 #ifdef CONFIG_QPNP_FLOAT_CHG_RECHECK
 	if(((result_stat & FLOAT_CHARGER_BIT) || (result_stat & DCP_CHARGER_BIT))
 		&& (stat & APSD_DTC_STATUS_DONE_BIT)
@@ -6090,6 +6254,8 @@ irqreturn_t usb_source_change_irq_handler(int irq, void *data)
 	}
 #endif /* CONFIG_QPNP_FLOAT_CHG_RECHECK */
 
+=======
+>>>>>>> origin/android16-base
 	smblib_handle_apsd_done(chg,
 		(bool)(stat & APSD_DTC_STATUS_DONE_BIT));
 
@@ -6257,17 +6423,24 @@ static void typec_src_insertion(struct smb_charger *chg)
 			rc);
 		return;
 	}
+<<<<<<< HEAD
 	mutex_lock(&chg->pd_ws_lock);
 	__pm_stay_awake(chg->pd_ws);
 	chg->pd_ws_actived = 1;
 	mutex_unlock(&chg->pd_ws_lock);
 	chg->typec_legacy = stat & TYPEC_LEGACY_CABLE_STATUS_BIT;
 	chg->ok_to_pd = (!(/*chg->typec_legacy || */chg->pd_disabled)
+=======
+
+	chg->typec_legacy = stat & TYPEC_LEGACY_CABLE_STATUS_BIT;
+	chg->ok_to_pd = (!(chg->typec_legacy || chg->pd_disabled)
+>>>>>>> origin/android16-base
 			|| chg->early_usb_attach) && !chg->pd_not_supported;
 
 	/* allow apsd proceed to detect QC2/3 */
 	if (!chg->ok_to_pd)
 		smblib_hvdcp_detect_try_enable(chg, true);
+<<<<<<< HEAD
 	if (smblib_get_prop_typec_mode(chg) == POWER_SUPPLY_TYPEC_SINK_DEBUG_ACCESSORY)
 		smblib_hvdcp_detect_enable(chg, false);
 
@@ -6287,6 +6460,8 @@ static void typec_src_insertion(struct smb_charger *chg)
 						FLOAT_CHG_RECHECK_DELAY_SECS * HZ);
 	}
 #endif /* CONFIG_QPNP_FLOAT_CHG_RECHECK */
+=======
+>>>>>>> origin/android16-base
 }
 
 static void typec_ra_ra_insertion(struct smb_charger *chg)
@@ -6460,6 +6635,7 @@ static void typec_src_removal(struct smb_charger *chg)
 	int sec_charger;
 	u8 val[2] = {0};
 
+<<<<<<< HEAD
 #ifdef CONFIG_QPNP_FLOAT_CHG_RECHECK
 	pr_debug("%s: usb remove and cancel float work.\n",__FUNCTION__);
 	cancel_delayed_work_sync(&chg->float_chg_work);
@@ -6471,6 +6647,8 @@ static void typec_src_removal(struct smb_charger *chg)
 		chg->pd_ws_actived = 0;
 	}
 	mutex_unlock(&chg->pd_ws_lock);
+=======
+>>>>>>> origin/android16-base
 	sec_charger = chg->sec_pl_present ? POWER_SUPPLY_CHARGER_SEC_PL :
 				POWER_SUPPLY_CHARGER_SEC_NONE;
 
@@ -6507,6 +6685,10 @@ static void typec_src_removal(struct smb_charger *chg)
 	vote(chg->usb_icl_votable, SW_QC3_VOTER, false, 0);
 	vote(chg->usb_icl_votable, CTM_VOTER, false, 0);
 	vote(chg->usb_icl_votable, HVDCP2_ICL_VOTER, false, 0);
+<<<<<<< HEAD
+=======
+	vote(chg->usb_icl_votable, HVDCP2_12V_ICL_VOTER, false, 0);
+>>>>>>> origin/android16-base
 	vote(chg->usb_icl_votable, CHG_TERMINATION_VOTER, false, 0);
 	vote(chg->usb_icl_votable, THERMAL_THROTTLE_VOTER, false, 0);
 	vote(chg->usb_icl_votable, LPD_VOTER, false, 0);
@@ -6774,7 +6956,10 @@ irqreturn_t typec_attach_detach_irq_handler(int irq, void *data)
 	}
 
 	attached = !!(stat & TYPEC_ATTACH_DETACH_STATE_BIT);
+<<<<<<< HEAD
     typec_attached = attached;
+=======
+>>>>>>> origin/android16-base
 
 	if (attached) {
 		smblib_lpd_clear_ra_open_work(chg);
@@ -6785,7 +6970,10 @@ irqreturn_t typec_attach_detach_irq_handler(int irq, void *data)
 				rc);
 			return IRQ_HANDLED;
 		}
+<<<<<<< HEAD
         typec_stat = stat & SNK_SRC_MODE_BIT;
+=======
+>>>>>>> origin/android16-base
 
 		if (smblib_get_prop_dfp_mode(chg) ==
 				POWER_SUPPLY_TYPEC_SINK_AUDIO_ADAPTER) {
@@ -6878,8 +7066,11 @@ static void dcin_aicl(struct smb_charger *chg)
 	int rc, icl, icl_save;
 	int input_present;
 	bool aicl_done = true;
+<<<<<<< HEAD
 	bool is_cradle;
 	int temp_wls_icl_ua;
+=======
+>>>>>>> origin/android16-base
 
 	/*
 	 * Hold awake votable to prevent pm_relax being called prior to
@@ -6889,6 +7080,7 @@ static void dcin_aicl(struct smb_charger *chg)
 
 increment:
 	mutex_lock(&chg->dcin_aicl_lock);
+<<<<<<< HEAD
 	is_cradle = !gpio_get_value(chg->gpio_cradle);
 	smblib_err(chg, "is_cradle:%d\n", is_cradle);
 	if (!is_cradle) {
@@ -6896,6 +7088,9 @@ increment:
 	} else {
 		temp_wls_icl_ua = chg->wls_icl_ua;
 	}
+=======
+
+>>>>>>> origin/android16-base
 	rc = smblib_get_charge_param(chg, &chg->param.dc_icl, &icl);
 	if (rc < 0)
 		goto err;
@@ -6911,7 +7106,11 @@ increment:
 		goto unlock;
 	}
 
+<<<<<<< HEAD
 	icl = min(temp_wls_icl_ua, icl + DCIN_ICL_STEP_UA);
+=======
+	icl = min(chg->wls_icl_ua, icl + DCIN_ICL_STEP_UA);
+>>>>>>> origin/android16-base
 	icl_save = icl;
 
 	rc = smblib_set_charge_param(chg, &chg->param.dc_icl, icl);
@@ -7084,6 +7283,7 @@ irqreturn_t dc_plugin_irq_handler(int irq, void *data)
 		 * Remove USB's CP ILIM vote - inapplicable for wireless
 		 * parallel charging.
 		 */
+<<<<<<< HEAD
 		if(!chg->pogo_5v){
 			if (chg->cp_ilim_votable)
 				vote(chg->cp_ilim_votable, ICL_CHANGE_VOTER, false, 0);
@@ -7129,6 +7329,52 @@ irqreturn_t dc_plugin_irq_handler(int irq, void *data)
 						rc);
 			}
 		}
+=======
+		if (chg->cp_ilim_votable)
+			vote(chg->cp_ilim_votable, ICL_CHANGE_VOTER, false, 0);
+
+		if (chg->sec_cp_present) {
+			/*
+			 * If CP output topology is VBATT, limit main charger's
+			 * FCC share and let the CPs handle the rest.
+			 */
+			if (is_cp_topo_vbatt(chg))
+				vote(chg->fcc_main_votable,
+					WLS_PL_CHARGING_VOTER, true, 800000);
+
+			rc = smblib_get_prop_batt_status(chg, &pval);
+			if (rc < 0)
+				smblib_err(chg, "Couldn't read batt status rc=%d\n",
+						rc);
+
+			wls_set = (pval.intval == POWER_SUPPLY_STATUS_FULL) ?
+				MICRO_5V : wireless_vout;
+
+			pval.intval = wls_set;
+			rc = smblib_set_prop_voltage_wls_output(chg, &pval);
+			if (rc < 0)
+				dev_err(chg->dev, "Couldn't set dc voltage to 2*vph  rc=%d\n",
+					rc);
+
+			rc = smblib_select_sec_charger(chg,
+					POWER_SUPPLY_CHARGER_SEC_CP,
+					POWER_SUPPLY_CP_WIRELESS, false);
+			if (rc < 0)
+				dev_err(chg->dev, "Couldn't enable secondary chargers  rc=%d\n",
+					rc);
+		} else {
+			/*
+			 * If no secondary charger is present, commence
+			 * wireless charging at 5 V by default.
+			 */
+			pval.intval = 5000000;
+			rc = smblib_set_prop_voltage_wls_output(chg, &pval);
+			if (rc < 0)
+				dev_err(chg->dev, "Couldn't set dc voltage to 5 V rc=%d\n",
+					rc);
+		}
+
+>>>>>>> origin/android16-base
 		schedule_work(&chg->dcin_aicl_work);
 	} else {
 		if (chg->cp_reason == POWER_SUPPLY_CP_WIRELESS) {
@@ -7631,6 +7877,7 @@ static void smblib_pl_enable_work(struct work_struct *work)
 	vote(chg->awake_votable, PL_DELAY_VOTER, false, 0);
 }
 
+<<<<<<< HEAD
 static void smblib_usb_plugin_work(struct work_struct *work)
 {
 	struct smb_charger *chg = container_of(work, struct smb_charger,
@@ -7646,6 +7893,8 @@ static void smblib_usb_plugin_work(struct work_struct *work)
 	}
 }
 
+=======
+>>>>>>> origin/android16-base
 static void smblib_thermal_regulation_work(struct work_struct *work)
 {
 	struct smb_charger *chg = container_of(work, struct smb_charger,
@@ -8381,6 +8630,7 @@ static void smblib_iio_deinit(struct smb_charger *chg)
 		iio_channel_release(chg->iio.smb_temp_chan);
 }
 
+<<<<<<< HEAD
 
 /* Lenovo TB371FC vendor battery HAL ABI shim.
  * vendor.lenovo.hardware.battery@2.0-service expects
@@ -8520,6 +8770,8 @@ static void lenovo_battery_abi_attach(struct work_struct *work)
 				msecs_to_jiffies(1000));
 }
 
+=======
+>>>>>>> origin/android16-base
 int smblib_init(struct smb_charger *chg)
 {
 	union power_supply_propval prop_val;
@@ -8529,7 +8781,10 @@ int smblib_init(struct smb_charger *chg)
 	mutex_init(&chg->irq_status_lock);
 	mutex_init(&chg->dcin_aicl_lock);
 	mutex_init(&chg->dpdm_lock);
+<<<<<<< HEAD
 	mutex_init(&chg->pd_ws_lock);
+=======
+>>>>>>> origin/android16-base
 	spin_lock_init(&chg->typec_pr_lock);
 	INIT_WORK(&chg->bms_update_work, bms_update_work);
 	INIT_WORK(&chg->pl_update_work, pl_update_work);
@@ -8554,11 +8809,14 @@ int smblib_init(struct smb_charger *chg)
 
 	INIT_DELAYED_WORK(&chg->role_reversal_check,
 					smblib_typec_role_check_work);
+<<<<<<< HEAD
 	INIT_DELAYED_WORK(&chg->usb_plugin_work,
 					smblib_usb_plugin_work);
 #ifdef CONFIG_QPNP_FLOAT_CHG_RECHECK
 	INIT_DELAYED_WORK(&chg->float_chg_work, smblib_float_chg_work);
 #endif /* CONFIG_QPNP_FLOAT_CHG_RECHECK */
+=======
+>>>>>>> origin/android16-base
 
 	if (chg->wa_flags & CHG_TERMINATION_WA) {
 		INIT_WORK(&chg->chg_termination_work,
@@ -8622,12 +8880,15 @@ int smblib_init(struct smb_charger *chg)
 				rc);
 			return rc;
 		}
+<<<<<<< HEAD
 		rc = lenovo_jeita_init(chg->dev, chg->lenovo_jeita);
 		if (rc < 0) {
 			smblib_err(chg, "Couldn't init lenovo_jeita_init rc=%d\n",
 				rc);
 			return rc;
 		}
+=======
+>>>>>>> origin/android16-base
 
 		rc = smblib_create_votables(chg);
 		if (rc < 0) {
@@ -8637,7 +8898,11 @@ int smblib_init(struct smb_charger *chg)
 		}
 
 		chg->bms_psy = power_supply_get_by_name("bms");
+<<<<<<< HEAD
 		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
+=======
+
+>>>>>>> origin/android16-base
 		if (chg->sec_pl_present) {
 			chg->pl.psy = power_supply_get_by_name("parallel");
 			if (chg->pl.psy) {
@@ -8687,6 +8952,7 @@ int smblib_init(struct smb_charger *chg)
 		smblib_err(chg, "Unsupported mode %d\n", chg->mode);
 		return -EINVAL;
 	}
+<<<<<<< HEAD
 	chg->pd_ws = wakeup_source_register(NULL, "qcom-charger");
 	if (!chg->pd_ws)
 		return -ENOMEM;
@@ -8696,6 +8962,8 @@ int smblib_init(struct smb_charger *chg)
 		schedule_delayed_work(&lenovo_battery_abi_work,
 				msecs_to_jiffies(1000));
 	}
+=======
+>>>>>>> origin/android16-base
 
 	return rc;
 }
@@ -8729,6 +8997,7 @@ int smblib_deinit(struct smb_charger *chg)
 		cancel_delayed_work_sync(&chg->usbov_dbc_work);
 		cancel_delayed_work_sync(&chg->role_reversal_check);
 		cancel_delayed_work_sync(&chg->pr_swap_detach_work);
+<<<<<<< HEAD
 		cancel_delayed_work_sync(&chg->usb_plugin_work);
 #ifdef CONFIG_QPNP_FLOAT_CHG_RECHECK
 		cancel_delayed_work_sync(&chg->float_chg_work);
@@ -8737,6 +9006,11 @@ int smblib_deinit(struct smb_charger *chg)
 		smblib_destroy_votables(chg);
 		qcom_step_chg_deinit();
 		lenovo_jeita_deinit();
+=======
+		power_supply_unreg_notifier(&chg->nb);
+		smblib_destroy_votables(chg);
+		qcom_step_chg_deinit();
+>>>>>>> origin/android16-base
 		qcom_batt_deinit();
 		break;
 	case PARALLEL_SLAVE:
@@ -8747,6 +9021,10 @@ int smblib_deinit(struct smb_charger *chg)
 	}
 
 	smblib_iio_deinit(chg);
+<<<<<<< HEAD
 	wakeup_source_unregister(chg->pd_ws);
+=======
+
+>>>>>>> origin/android16-base
 	return 0;
 }

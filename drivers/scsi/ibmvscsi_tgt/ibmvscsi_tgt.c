@@ -44,7 +44,11 @@
 
 #define IBMVSCSIS_VERSION	"v0.2"
 
+<<<<<<< HEAD
 #define	INITIAL_SRP_LIMIT	800
+=======
+#define	INITIAL_SRP_LIMIT	1024
+>>>>>>> origin/android16-base
 #define	DEFAULT_MAX_SECTORS	256
 #define MAX_TXU			1024 * 1024
 

@@ -2264,7 +2264,11 @@ store_temp_offset(struct device *dev, struct device_attribute *attr,
 	if (err < 0)
 		return err;
 
+<<<<<<< HEAD
 	val = clamp_val(DIV_ROUND_CLOSEST(val, 1000), -128, 127);
+=======
+	val = DIV_ROUND_CLOSEST(clamp_val(val, -128000, 127000), 1000);
+>>>>>>> origin/android16-base
 
 	mutex_lock(&data->update_lock);
 	data->temp_offset[nr] = val;

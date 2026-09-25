@@ -105,7 +105,11 @@ static int get_process_id(int value, const u32 *speedos, unsigned int num)
 	unsigned int i;
 
 	for (i = 0; i < num; i++)
+<<<<<<< HEAD
 		if (value < speedos[num])
+=======
+		if (value < speedos[i])
+>>>>>>> origin/android16-base
 			return i;
 
 	return -EINVAL;

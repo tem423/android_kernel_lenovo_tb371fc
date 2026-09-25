@@ -1163,7 +1163,11 @@ static int omap_aes_probe(struct platform_device *pdev)
 	if (err < 0) {
 		dev_err(dev, "%s: failed to get_sync(%d)\n",
 			__func__, err);
+<<<<<<< HEAD
 		goto err_res;
+=======
+		goto err_pm_disable;
+>>>>>>> origin/android16-base
 	}
 
 	omap_aes_dma_stop(dd);
@@ -1276,6 +1280,10 @@ err_engine:
 	omap_aes_dma_cleanup(dd);
 err_irq:
 	tasklet_kill(&dd->done_task);
+<<<<<<< HEAD
+=======
+err_pm_disable:
+>>>>>>> origin/android16-base
 	pm_runtime_disable(dev);
 err_res:
 	dd = NULL;

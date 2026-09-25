@@ -18,6 +18,26 @@
 
 /**
  * kvm_s390_real_to_abs - convert guest real address to guest absolute address
+<<<<<<< HEAD
+=======
+ * @prefix - guest prefix
+ * @gra - guest real address
+ *
+ * Returns the guest absolute address that corresponds to the passed guest real
+ * address @gra of by applying the given prefix.
+ */
+static inline unsigned long _kvm_s390_real_to_abs(u32 prefix, unsigned long gra)
+{
+	if (gra < 2 * PAGE_SIZE)
+		gra += prefix;
+	else if (gra >= prefix && gra < prefix + 2 * PAGE_SIZE)
+		gra -= prefix;
+	return gra;
+}
+
+/**
+ * kvm_s390_real_to_abs - convert guest real address to guest absolute address
+>>>>>>> origin/android16-base
  * @vcpu - guest virtual cpu
  * @gra - guest real address
  *
@@ -27,6 +47,7 @@
 static inline unsigned long kvm_s390_real_to_abs(struct kvm_vcpu *vcpu,
 						 unsigned long gra)
 {
+<<<<<<< HEAD
 	unsigned long prefix  = kvm_s390_get_prefix(vcpu);
 
 	if (gra < 2 * PAGE_SIZE)
@@ -34,6 +55,32 @@ static inline unsigned long kvm_s390_real_to_abs(struct kvm_vcpu *vcpu,
 	else if (gra >= prefix && gra < prefix + 2 * PAGE_SIZE)
 		gra -= prefix;
 	return gra;
+=======
+	return _kvm_s390_real_to_abs(kvm_s390_get_prefix(vcpu), gra);
+}
+
+/**
+ * _kvm_s390_logical_to_effective - convert guest logical to effective address
+ * @psw: psw of the guest
+ * @ga: guest logical address
+ *
+ * Convert a guest logical address to an effective address by applying the
+ * rules of the addressing mode defined by bits 31 and 32 of the given PSW
+ * (extendended/basic addressing mode).
+ *
+ * Depending on the addressing mode, the upper 40 bits (24 bit addressing
+ * mode), 33 bits (31 bit addressing mode) or no bits (64 bit addressing
+ * mode) of @ga will be zeroed and the remaining bits will be returned.
+ */
+static inline unsigned long _kvm_s390_logical_to_effective(psw_t *psw,
+							   unsigned long ga)
+{
+	if (psw_bits(*psw).eaba == PSW_BITS_AMODE_64BIT)
+		return ga;
+	if (psw_bits(*psw).eaba == PSW_BITS_AMODE_31BIT)
+		return ga & ((1UL << 31) - 1);
+	return ga & ((1UL << 24) - 1);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -52,6 +99,7 @@ static inline unsigned long kvm_s390_real_to_abs(struct kvm_vcpu *vcpu,
 static inline unsigned long kvm_s390_logical_to_effective(struct kvm_vcpu *vcpu,
 							  unsigned long ga)
 {
+<<<<<<< HEAD
 	psw_t *psw = &vcpu->arch.sie_block->gpsw;
 
 	if (psw_bits(*psw).eaba == PSW_BITS_AMODE_64BIT)
@@ -59,6 +107,9 @@ static inline unsigned long kvm_s390_logical_to_effective(struct kvm_vcpu *vcpu,
 	if (psw_bits(*psw).eaba == PSW_BITS_AMODE_31BIT)
 		return ga & ((1UL << 31) - 1);
 	return ga & ((1UL << 24) - 1);
+=======
+	return _kvm_s390_logical_to_effective(&vcpu->arch.sie_block->gpsw, ga);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -316,11 +367,20 @@ int read_guest_abs(struct kvm_vcpu *vcpu, unsigned long gpa, void *data,
  * @len: number of bytes to copy
  *
  * Copy @len bytes from @data (kernel space) to @gra (guest real address).
+<<<<<<< HEAD
  * It is up to the caller to ensure that the entire guest memory range is
  * valid memory before calling this function.
  * Guest low address and key protection are not checked.
  *
  * Returns zero on success or -EFAULT on error.
+=======
+ * Guest low address and key protection are not checked.
+ *
+ * Returns zero on success, -EFAULT when copying from @data failed, or
+ * PGM_ADRESSING in case @gra is outside a memslot. In this case, pgm check info
+ * is also stored to allow injecting into the guest (if applicable) using
+ * kvm_s390_inject_prog_cond().
+>>>>>>> origin/android16-base
  *
  * If an error occurs data may have been copied partially to guest memory.
  */
@@ -339,11 +399,20 @@ int write_guest_real(struct kvm_vcpu *vcpu, unsigned long gra, void *data,
  * @len: number of bytes to copy
  *
  * Copy @len bytes from @gra (guest real address) to @data (kernel space).
+<<<<<<< HEAD
  * It is up to the caller to ensure that the entire guest memory range is
  * valid memory before calling this function.
  * Guest key protection is not checked.
  *
  * Returns zero on success or -EFAULT on error.
+=======
+ * Guest key protection is not checked.
+ *
+ * Returns zero on success, -EFAULT when copying to @data failed, or
+ * PGM_ADRESSING in case @gra is outside a memslot. In this case, pgm check info
+ * is also stored to allow injecting into the guest (if applicable) using
+ * kvm_s390_inject_prog_cond().
+>>>>>>> origin/android16-base
  *
  * If an error occurs data may have been copied partially to kernel space.
  */

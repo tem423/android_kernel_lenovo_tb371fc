@@ -956,7 +956,11 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
 	this_leaf->priv = base->nb;
 }
 
+<<<<<<< HEAD
 static int __init_cache_level(unsigned int cpu)
+=======
+int init_cache_level(unsigned int cpu)
+>>>>>>> origin/android16-base
 {
 	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
 
@@ -985,7 +989,11 @@ static void get_cache_id(int cpu, struct _cpuid4_info_regs *id4_regs)
 	id4_regs->id = c->apicid >> index_msb;
 }
 
+<<<<<<< HEAD
 static int __populate_cache_leaves(unsigned int cpu)
+=======
+int populate_cache_leaves(unsigned int cpu)
+>>>>>>> origin/android16-base
 {
 	unsigned int idx, ret;
 	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
@@ -1004,6 +1012,9 @@ static int __populate_cache_leaves(unsigned int cpu)
 
 	return 0;
 }
+<<<<<<< HEAD
 
 DEFINE_SMP_CALL_CACHE_FUNCTION(init_cache_level)
 DEFINE_SMP_CALL_CACHE_FUNCTION(populate_cache_leaves)
+=======
+>>>>>>> origin/android16-base

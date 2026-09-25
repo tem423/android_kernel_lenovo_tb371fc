@@ -760,6 +760,12 @@ static void rxstate(struct musb *musb, struct musb_request *req)
 			musb_writew(epio, MUSB_RXCSR, csr);
 
 buffer_aint_mapped:
+<<<<<<< HEAD
+=======
+			fifo_count = min_t(unsigned int,
+					request->length - request->actual,
+					(unsigned int)fifo_count);
+>>>>>>> origin/android16-base
 			musb_read_fifo(musb_ep->hw_ep, fifo_count, (u8 *)
 					(request->buf + request->actual));
 			request->actual += fifo_count;
@@ -1248,9 +1254,17 @@ static int musb_gadget_queue(struct usb_ep *ep, struct usb_request *req,
 		status = musb_queue_resume_work(musb,
 						musb_ep_restart_resume_work,
 						request);
+<<<<<<< HEAD
 		if (status < 0)
 			dev_err(musb->controller, "%s resume work: %i\n",
 				__func__, status);
+=======
+		if (status < 0) {
+			dev_err(musb->controller, "%s resume work: %i\n",
+				__func__, status);
+			list_del(&request->list);
+		}
+>>>>>>> origin/android16-base
 	}
 
 unlock:
@@ -1624,8 +1638,11 @@ static int musb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
 {
 	struct musb	*musb = gadget_to_musb(gadget);
 
+<<<<<<< HEAD
 	if (!musb->xceiv->set_power)
 		return -EOPNOTSUPP;
+=======
+>>>>>>> origin/android16-base
 	return usb_phy_set_power(musb->xceiv, mA);
 }
 

@@ -87,7 +87,11 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
 
 				/* Also skip shared copy-on-write pages */
 				if (is_cow_mapping(vma->vm_flags) &&
+<<<<<<< HEAD
 				    page_mapcount(page) != 1)
+=======
+				    page_count(page) != 1)
+>>>>>>> origin/android16-base
 					continue;
 
 				/*
@@ -458,14 +462,21 @@ success:
 	 * vm_flags and vm_page_prot are protected by the mmap_sem
 	 * held in write mode.
 	 */
+<<<<<<< HEAD
 	vm_write_begin(vma);
 	WRITE_ONCE(vma->vm_flags, newflags);
+=======
+	vma->vm_flags = newflags;
+>>>>>>> origin/android16-base
 	dirty_accountable = vma_wants_writenotify(vma, vma->vm_page_prot);
 	vma_set_page_prot(vma);
 
 	change_protection(vma, start, end, vma->vm_page_prot,
 			  dirty_accountable, 0);
+<<<<<<< HEAD
 	vm_write_end(vma);
+=======
+>>>>>>> origin/android16-base
 
 	/*
 	 * Private VM_LOCKED VMA becoming writable: trigger COW to avoid major

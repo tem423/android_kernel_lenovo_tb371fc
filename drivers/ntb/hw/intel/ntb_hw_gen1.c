@@ -777,7 +777,11 @@ static void ndev_init_debugfs(struct intel_ntb_dev *ndev)
 		ndev->debugfs_dir =
 			debugfs_create_dir(pci_name(ndev->ntb.pdev),
 					   debugfs_dir);
+<<<<<<< HEAD
 		if (!ndev->debugfs_dir)
+=======
+		if (IS_ERR(ndev->debugfs_dir))
+>>>>>>> origin/android16-base
 			ndev->debugfs_info = NULL;
 		else
 			ndev->debugfs_info =
@@ -2052,12 +2056,24 @@ static struct pci_driver intel_ntb_pci_driver = {
 
 static int __init intel_ntb_pci_driver_init(void)
 {
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 	pr_info("%s %s\n", NTB_DESC, NTB_VER);
 
 	if (debugfs_initialized())
 		debugfs_dir = debugfs_create_dir(KBUILD_MODNAME, NULL);
 
+<<<<<<< HEAD
 	return pci_register_driver(&intel_ntb_pci_driver);
+=======
+	ret = pci_register_driver(&intel_ntb_pci_driver);
+	if (ret)
+		debugfs_remove_recursive(debugfs_dir);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 module_init(intel_ntb_pci_driver_init);
 

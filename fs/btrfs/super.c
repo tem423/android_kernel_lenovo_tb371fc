@@ -1845,6 +1845,17 @@ static int btrfs_remount(struct super_block *sb, int *flags, char *data)
 		btrfs_scrub_cancel(fs_info);
 		btrfs_pause_balance(fs_info);
 
+<<<<<<< HEAD
+=======
+		/*
+		 * Pause the qgroup rescan worker if it is running. We don't want
+		 * it to be still running after we are in RO mode, as after that,
+		 * by the time we unmount, it might have left a transaction open,
+		 * so we would leak the transaction and/or crash.
+		 */
+		btrfs_qgroup_wait_for_completion(fs_info, false);
+
+>>>>>>> origin/android16-base
 		ret = btrfs_commit_super(fs_info);
 		if (ret)
 			goto restore;
@@ -2188,7 +2199,11 @@ static int btrfs_statfs(struct dentry *dentry, struct kstatfs *buf)
 	 * calculated f_bavail.
 	 */
 	if (!mixed && block_rsv->space_info->full &&
+<<<<<<< HEAD
 	    total_free_meta - thresh < block_rsv->size)
+=======
+	    (total_free_meta < thresh || total_free_meta - thresh < block_rsv->size))
+>>>>>>> origin/android16-base
 		buf->f_bavail = 0;
 
 	buf->f_type = BTRFS_SUPER_MAGIC;

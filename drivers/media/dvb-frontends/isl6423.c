@@ -301,7 +301,11 @@ exit:
 	fe->sec_priv = NULL;
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(isl6423_attach);
+=======
+EXPORT_SYMBOL_GPL(isl6423_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("ISL6423 SEC");
 MODULE_AUTHOR("Manu Abraham");

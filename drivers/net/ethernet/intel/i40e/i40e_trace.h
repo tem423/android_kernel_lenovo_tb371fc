@@ -203,7 +203,11 @@ DEFINE_EVENT(
  * module.
  */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/ethernet/intel/i40e
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE i40e_trace
 #include <trace/define_trace.h>

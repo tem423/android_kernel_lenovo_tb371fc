@@ -24,7 +24,11 @@
 #endif
 
 /* control register numbers */
+<<<<<<< HEAD
 #define CTL_STATUS	0
+=======
+#define CTL_FSTATUS	0
+>>>>>>> origin/android16-base
 #define CTL_ESTATUS	1
 #define CTL_BSTATUS	2
 #define CTL_IENABLE	3

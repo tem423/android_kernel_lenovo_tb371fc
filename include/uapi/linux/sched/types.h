@@ -4,10 +4,13 @@
 
 #include <linux/types.h>
 
+<<<<<<< HEAD
 struct sched_param {
 	int sched_priority;
 };
 
+=======
+>>>>>>> origin/android16-base
 #define SCHED_ATTR_SIZE_VER0	48	/* sizeof first published struct */
 #define SCHED_ATTR_SIZE_VER1	56	/* add: util_{min,max} */
 

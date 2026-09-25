@@ -473,6 +473,11 @@ static int do_fp_load(struct instruction_op *op, unsigned long ea,
 	} u;
 
 	nb = GETSIZE(op->type);
+<<<<<<< HEAD
+=======
+	if (nb > sizeof(u))
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	if (!address_ok(regs, ea, nb))
 		return -EFAULT;
 	rn = op->reg;
@@ -523,6 +528,11 @@ static int do_fp_store(struct instruction_op *op, unsigned long ea,
 	} u;
 
 	nb = GETSIZE(op->type);
+<<<<<<< HEAD
+=======
+	if (nb > sizeof(u))
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	if (!address_ok(regs, ea, nb))
 		return -EFAULT;
 	rn = op->reg;
@@ -567,6 +577,12 @@ static nokprobe_inline int do_vec_load(int rn, unsigned long ea,
 		u8 b[sizeof(__vector128)];
 	} u = {};
 
+<<<<<<< HEAD
+=======
+	if (size > sizeof(u))
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	if (!address_ok(regs, ea & ~0xfUL, 16))
 		return -EFAULT;
 	/* align to multiple of size */
@@ -594,6 +610,12 @@ static nokprobe_inline int do_vec_store(int rn, unsigned long ea,
 		u8 b[sizeof(__vector128)];
 	} u;
 
+<<<<<<< HEAD
+=======
+	if (size > sizeof(u))
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	if (!address_ok(regs, ea & ~0xfUL, 16))
 		return -EFAULT;
 	/* align to multiple of size */
@@ -657,8 +679,13 @@ static nokprobe_inline int emulate_stq(struct pt_regs *regs, unsigned long ea,
 #endif /* __powerpc64 */
 
 #ifdef CONFIG_VSX
+<<<<<<< HEAD
 void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
 		      const void *mem, bool rev)
+=======
+static nokprobe_inline void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+					     const void *mem, bool rev)
+>>>>>>> origin/android16-base
 {
 	int size, read_size;
 	int i, j;
@@ -738,11 +765,17 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
 		break;
 	}
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(emulate_vsx_load);
 NOKPROBE_SYMBOL(emulate_vsx_load);
 
 void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
 		       void *mem, bool rev)
+=======
+
+static nokprobe_inline void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+					      void *mem, bool rev)
+>>>>>>> origin/android16-base
 {
 	int size, write_size;
 	int i, j;
@@ -814,8 +847,11 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
 		break;
 	}
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(emulate_vsx_store);
 NOKPROBE_SYMBOL(emulate_vsx_store);
+=======
+>>>>>>> origin/android16-base
 
 static nokprobe_inline int do_vsx_load(struct instruction_op *op,
 				       unsigned long ea, struct pt_regs *regs,
@@ -910,7 +946,14 @@ NOKPROBE_SYMBOL(emulate_dcbz);
 
 #define __put_user_asmx(x, addr, err, op, cr)		\
 	__asm__ __volatile__(				\
+<<<<<<< HEAD
 		"1:	" op " %2,0,%3\n"		\
+=======
+		".machine push\n"			\
+		".machine power8\n"			\
+		"1:	" op " %2,0,%3\n"		\
+		".machine pop\n"			\
+>>>>>>> origin/android16-base
 		"	mfcr	%1\n"			\
 		"2:\n"					\
 		".section .fixup,\"ax\"\n"		\
@@ -923,7 +966,14 @@ NOKPROBE_SYMBOL(emulate_dcbz);
 
 #define __get_user_asmx(x, addr, err, op)		\
 	__asm__ __volatile__(				\
+<<<<<<< HEAD
 		"1:	"op" %1,0,%2\n"			\
+=======
+		".machine push\n"			\
+		".machine power8\n"			\
+		"1:	"op" %1,0,%2\n"			\
+		".machine pop\n"			\
+>>>>>>> origin/android16-base
 		"2:\n"					\
 		".section .fixup,\"ax\"\n"		\
 		"3:	li	%0,%3\n"		\
@@ -2681,12 +2731,20 @@ void emulate_update_regs(struct pt_regs *regs, struct instruction_op *op)
 		case BARRIER_EIEIO:
 			eieio();
 			break;
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_PPC64
+>>>>>>> origin/android16-base
 		case BARRIER_LWSYNC:
 			asm volatile("lwsync" : : : "memory");
 			break;
 		case BARRIER_PTESYNC:
 			asm volatile("ptesync" : : : "memory");
 			break;
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> origin/android16-base
 		}
 		break;
 
@@ -2804,7 +2862,11 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
 			__put_user_asmx(op->val, ea, err, "stbcx.", cr);
 			break;
 		case 2:
+<<<<<<< HEAD
 			__put_user_asmx(op->val, ea, err, "stbcx.", cr);
+=======
+			__put_user_asmx(op->val, ea, err, "sthcx.", cr);
+>>>>>>> origin/android16-base
 			break;
 #endif
 		case 4:

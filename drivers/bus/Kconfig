@@ -126,12 +126,21 @@ config SUNXI_RSB
 
 config TEGRA_ACONNECT
 	tristate "Tegra ACONNECT Bus Driver"
+<<<<<<< HEAD
 	depends on ARCH_TEGRA_210_SOC
+=======
+	depends on ARCH_TEGRA
+>>>>>>> origin/android16-base
 	depends on OF && PM
 	select PM_CLK
 	help
 	  Driver for the Tegra ACONNECT bus which is used to interface with
+<<<<<<< HEAD
 	  the devices inside the Audio Processing Engine (APE) for Tegra210.
+=======
+	  the devices inside the Audio Processing Engine (APE) for
+	  Tegra210 and later.
+>>>>>>> origin/android16-base
 
 config TEGRA_GMI
 	tristate "Tegra Generic Memory Interface bus driver"

@@ -1107,7 +1107,12 @@ qla82xx_write_flash_dword(struct qla_hw_data *ha, uint32_t flashaddr,
 		return ret;
 	}
 
+<<<<<<< HEAD
 	if (qla82xx_flash_set_write_enable(ha))
+=======
+	ret = qla82xx_flash_set_write_enable(ha);
+	if (ret < 0)
+>>>>>>> origin/android16-base
 		goto done_write;
 
 	qla82xx_wr_32(ha, QLA82XX_ROMUSB_ROM_WDATA, data);

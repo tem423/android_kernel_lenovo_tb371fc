@@ -919,7 +919,11 @@ struct mem_cgroup *mem_cgroup_iter(struct mem_cgroup *root,
 				   struct mem_cgroup *prev,
 				   struct mem_cgroup_reclaim_cookie *reclaim)
 {
+<<<<<<< HEAD
 	struct mem_cgroup_reclaim_iter *uninitialized_var(iter);
+=======
+	struct mem_cgroup_reclaim_iter *iter;
+>>>>>>> origin/android16-base
 	struct cgroup_subsys_state *css = NULL;
 	struct mem_cgroup *memcg = NULL;
 	struct mem_cgroup *pos = NULL;
@@ -2015,6 +2019,12 @@ static void drain_stock(struct memcg_stock_pcp *stock)
 {
 	struct mem_cgroup *old = stock->cached;
 
+<<<<<<< HEAD
+=======
+	if (!old)
+		return;
+
+>>>>>>> origin/android16-base
 	if (stock->nr_pages) {
 		page_counter_uncharge(&old->memory, stock->nr_pages);
 		if (do_memsw_account())
@@ -2022,6 +2032,11 @@ static void drain_stock(struct memcg_stock_pcp *stock)
 		css_put_many(&old->css, stock->nr_pages);
 		stock->nr_pages = 0;
 	}
+<<<<<<< HEAD
+=======
+
+	css_put(&old->css);
+>>>>>>> origin/android16-base
 	stock->cached = NULL;
 }
 
@@ -2057,6 +2072,10 @@ static void refill_stock(struct mem_cgroup *memcg, unsigned int nr_pages)
 	stock = this_cpu_ptr(&memcg_stock);
 	if (stock->cached != memcg) { /* reset if necessary */
 		drain_stock(stock);
+<<<<<<< HEAD
+=======
+		css_get(&memcg->css);
+>>>>>>> origin/android16-base
 		stock->cached = memcg;
 	}
 	stock->nr_pages += nr_pages;
@@ -2088,6 +2107,7 @@ static void drain_all_stock(struct mem_cgroup *root_memcg)
 	for_each_online_cpu(cpu) {
 		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
 		struct mem_cgroup *memcg;
+<<<<<<< HEAD
 
 		memcg = stock->cached;
 		if (!memcg || !stock->nr_pages || !css_tryget(&memcg->css))
@@ -2097,12 +2117,28 @@ static void drain_all_stock(struct mem_cgroup *root_memcg)
 			continue;
 		}
 		if (!test_and_set_bit(FLUSHING_CACHED_CHARGE, &stock->flags)) {
+=======
+		bool flush = false;
+
+		rcu_read_lock();
+		memcg = stock->cached;
+		if (memcg && stock->nr_pages &&
+		    mem_cgroup_is_descendant(memcg, root_memcg))
+			flush = true;
+		rcu_read_unlock();
+
+		if (flush &&
+		    !test_and_set_bit(FLUSHING_CACHED_CHARGE, &stock->flags)) {
+>>>>>>> origin/android16-base
 			if (cpu == curcpu)
 				drain_local_stock(&stock->work);
 			else
 				schedule_work_on(cpu, &stock->work);
 		}
+<<<<<<< HEAD
 		css_put(&memcg->css);
+=======
+>>>>>>> origin/android16-base
 	}
 	put_cpu();
 	mutex_unlock(&percpu_charge_mutex);
@@ -4120,6 +4156,10 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 	unsigned int efd, cfd;
 	struct fd efile;
 	struct fd cfile;
+<<<<<<< HEAD
+=======
+	struct dentry *cdentry;
+>>>>>>> origin/android16-base
 	const char *name;
 	char *endp;
 	int ret;
@@ -4132,9 +4172,18 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 	buf = endp + 1;
 
 	cfd = simple_strtoul(buf, &endp, 10);
+<<<<<<< HEAD
 	if ((*endp != ' ') && (*endp != '\0'))
 		return -EINVAL;
 	buf = endp + 1;
+=======
+	if (*endp == '\0')
+		buf = endp;
+	else if (*endp == ' ')
+		buf = endp + 1;
+	else
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	event = kzalloc(sizeof(*event), GFP_KERNEL);
 	if (!event)
@@ -4171,6 +4220,19 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 		goto out_put_cfile;
 
 	/*
+<<<<<<< HEAD
+=======
+	 * The control file must be a regular cgroup1 file. As a regular cgroup
+	 * file can't be renamed, it's safe to access its name afterwards.
+	 */
+	cdentry = cfile.file->f_path.dentry;
+	if (cdentry->d_sb->s_type != &cgroup_fs_type || !d_is_reg(cdentry)) {
+		ret = -EINVAL;
+		goto out_put_cfile;
+	}
+
+	/*
+>>>>>>> origin/android16-base
 	 * Determine the event callbacks and set them in @event.  This used
 	 * to be done via struct cftype but cgroup core no longer knows
 	 * about these events.  The following is crude but the whole thing
@@ -4178,7 +4240,11 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 	 *
 	 * DO NOT ADD NEW FILES.
 	 */
+<<<<<<< HEAD
 	name = cfile.file->f_path.dentry->d_name.name;
+=======
+	name = cdentry->d_name.name;
+>>>>>>> origin/android16-base
 
 	if (!strcmp(name, "memory.usage_in_bytes")) {
 		event->register_event = mem_cgroup_usage_register_event;
@@ -4202,7 +4268,11 @@ static ssize_t memcg_write_event_control(struct kernfs_open_file *of,
 	 * automatically removed on cgroup destruction but the removal is
 	 * asynchronous, so take an extra ref on @css.
 	 */
+<<<<<<< HEAD
 	cfile_css = css_tryget_online_from_dir(cfile.file->f_path.dentry->d_parent,
+=======
+	cfile_css = css_tryget_online_from_dir(cdentry->d_parent,
+>>>>>>> origin/android16-base
 					       &memory_cgrp_subsys);
 	ret = -EINVAL;
 	if (IS_ERR(cfile_css))
@@ -6404,7 +6474,11 @@ static int __init cgroup_memory(char *s)
 		if (!strcmp(token, "nokmem"))
 			cgroup_memory_nokmem = true;
 	}
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 __setup("cgroup.memory=", cgroup_memory);
 

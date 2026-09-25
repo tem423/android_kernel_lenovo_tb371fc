@@ -1527,10 +1527,17 @@ static int xc4000_get_frequency(struct dvb_frontend *fe, u32 *freq)
 {
 	struct xc4000_priv *priv = fe->tuner_priv;
 
+<<<<<<< HEAD
 	*freq = priv->freq_hz + priv->freq_offset;
 
 	if (debug) {
 		mutex_lock(&priv->lock);
+=======
+	mutex_lock(&priv->lock);
+	*freq = priv->freq_hz + priv->freq_offset;
+
+	if (debug) {
+>>>>>>> origin/android16-base
 		if ((priv->cur_fw.type
 		     & (BASE | FM | DTV6 | DTV7 | DTV78 | DTV8)) == BASE) {
 			u16	snr = 0;
@@ -1541,8 +1548,13 @@ static int xc4000_get_frequency(struct dvb_frontend *fe, u32 *freq)
 				return 0;
 			}
 		}
+<<<<<<< HEAD
 		mutex_unlock(&priv->lock);
 	}
+=======
+	}
+	mutex_unlock(&priv->lock);
+>>>>>>> origin/android16-base
 
 	dprintk(1, "%s()\n", __func__);
 
@@ -1754,7 +1766,11 @@ fail2:
 	xc4000_release(fe);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(xc4000_attach);
+=======
+EXPORT_SYMBOL_GPL(xc4000_attach);
+>>>>>>> origin/android16-base
 
 MODULE_AUTHOR("Steven Toth, Davide Ferri");
 MODULE_DESCRIPTION("Xceive xc4000 silicon tuner driver");

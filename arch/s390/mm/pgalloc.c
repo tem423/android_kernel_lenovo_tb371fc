@@ -143,6 +143,10 @@ void crst_table_downgrade(struct mm_struct *mm)
 	}
 
 	pgd = mm->pgd;
+<<<<<<< HEAD
+=======
+	mm_dec_nr_pmds(mm);
+>>>>>>> origin/android16-base
 	mm->pgd = (pgd_t *) (pgd_val(*pgd) & _REGION_ENTRY_ORIGIN);
 	mm->context.asce_limit = _REGION3_SIZE;
 	mm->context.asce = __pa(mm->pgd) | _ASCE_TABLE_LENGTH |
@@ -256,13 +260,22 @@ void page_table_free(struct mm_struct *mm, unsigned long *table)
 		/* Free 2K page table fragment of a 4K page */
 		bit = (__pa(table) & ~PAGE_MASK)/(PTRS_PER_PTE*sizeof(pte_t));
 		spin_lock_bh(&mm->context.lock);
+<<<<<<< HEAD
 		mask = atomic_xor_bits(&page->_refcount, 1U << (bit + 24));
+=======
+		mask = atomic_xor_bits(&page->_refcount, 0x11U << (bit + 24));
+>>>>>>> origin/android16-base
 		mask >>= 24;
 		if (mask & 3)
 			list_add(&page->lru, &mm->context.pgtable_list);
 		else
 			list_del(&page->lru);
 		spin_unlock_bh(&mm->context.lock);
+<<<<<<< HEAD
+=======
+		mask = atomic_xor_bits(&page->_refcount, 0x10U << (bit + 24));
+		mask >>= 24;
+>>>>>>> origin/android16-base
 		if (mask != 0)
 			return;
 	} else {
@@ -301,7 +314,11 @@ void page_table_free_rcu(struct mmu_gather *tlb, unsigned long *table,
 	tlb_remove_table(tlb, table);
 }
 
+<<<<<<< HEAD
 static void __tlb_remove_table(void *_table)
+=======
+void __tlb_remove_table(void *_table)
+>>>>>>> origin/android16-base
 {
 	unsigned int mask = (unsigned long) _table & 3;
 	void *table = (void *)((unsigned long) _table ^ mask);
@@ -327,6 +344,7 @@ static void __tlb_remove_table(void *_table)
 	}
 }
 
+<<<<<<< HEAD
 static void tlb_remove_table_smp_sync(void *arg)
 {
 	/* Simply deliver the interrupt */
@@ -388,6 +406,8 @@ void tlb_remove_table(struct mmu_gather *tlb, void *table)
 		tlb_flush_mmu(tlb);
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Base infrastructure required to generate basic asces, region, segment,
  * and page tables that do not make use of enhanced features like EDAT1.

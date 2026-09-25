@@ -319,8 +319,13 @@ static ssize_t rtl_debugfs_set_write_reg(struct file *filp,
 
 	tmp_len = (count > sizeof(tmp) - 1 ? sizeof(tmp) - 1 : count);
 
+<<<<<<< HEAD
 	if (!buffer || copy_from_user(tmp, buffer, tmp_len))
 		return count;
+=======
+	if (copy_from_user(tmp, buffer, tmp_len))
+		return -EFAULT;
+>>>>>>> origin/android16-base
 
 	tmp[tmp_len] = '\0';
 
@@ -328,7 +333,11 @@ static ssize_t rtl_debugfs_set_write_reg(struct file *filp,
 	num = sscanf(tmp, "%x %x %x", &addr, &val, &len);
 
 	if (num !=  3)
+<<<<<<< HEAD
 		return count;
+=======
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	switch (len) {
 	case 1:
@@ -370,8 +379,13 @@ static ssize_t rtl_debugfs_set_write_h2c(struct file *filp,
 
 	tmp_len = (count > sizeof(tmp) - 1 ? sizeof(tmp) - 1 : count);
 
+<<<<<<< HEAD
 	if (!buffer || copy_from_user(tmp, buffer, tmp_len))
 		return count;
+=======
+	if (copy_from_user(tmp, buffer, tmp_len))
+		return -EFAULT;
+>>>>>>> origin/android16-base
 
 	tmp[tmp_len] = '\0';
 
@@ -381,8 +395,13 @@ static ssize_t rtl_debugfs_set_write_h2c(struct file *filp,
 			 &h2c_data[4], &h2c_data[5],
 			 &h2c_data[6], &h2c_data[7]);
 
+<<<<<<< HEAD
 	if (h2c_len <= 0)
 		return count;
+=======
+	if (h2c_len == 0)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < h2c_len; i++)
 		h2c_data_packed[i] = (u8)h2c_data[i];
@@ -416,8 +435,13 @@ static ssize_t rtl_debugfs_set_write_rfreg(struct file *filp,
 
 	tmp_len = (count > sizeof(tmp) - 1 ? sizeof(tmp) - 1 : count);
 
+<<<<<<< HEAD
 	if (!buffer || copy_from_user(tmp, buffer, tmp_len))
 		return count;
+=======
+	if (copy_from_user(tmp, buffer, tmp_len))
+		return -EFAULT;
+>>>>>>> origin/android16-base
 
 	tmp[tmp_len] = '\0';
 
@@ -425,9 +449,15 @@ static ssize_t rtl_debugfs_set_write_rfreg(struct file *filp,
 		     &path, &addr, &bitmask, &data);
 
 	if (num != 4) {
+<<<<<<< HEAD
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
 			 "Format is <path> <addr> <mask> <data>\n");
 		return count;
+=======
+		rtl_dbg(rtlpriv, COMP_ERR, DBG_DMESG,
+			"Format is <path> <addr> <mask> <data>\n");
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	}
 
 	rtl_set_rfreg(hw, path, addr, bitmask, data);

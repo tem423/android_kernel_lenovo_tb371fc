@@ -680,7 +680,11 @@ static void kvm_use_magic_page(void)
 	on_each_cpu(kvm_map_magic_page, &features, 1);
 
 	/* Quick self-test to see if the mapping works */
+<<<<<<< HEAD
 	if (!fault_in_pages_readable((const char *)KVM_MAGIC_PAGE, sizeof(u32))) {
+=======
+	if (fault_in_pages_readable((const char *)KVM_MAGIC_PAGE, sizeof(u32))) {
+>>>>>>> origin/android16-base
 		kvm_patching_worked = false;
 		return;
 	}

@@ -98,7 +98,11 @@ static struct stm32_crc *stm32_crc_get_next_crc(void)
 	struct stm32_crc *crc;
 
 	spin_lock_bh(&crc_list.lock);
+<<<<<<< HEAD
 	crc = list_first_entry(&crc_list.dev_list, struct stm32_crc, list);
+=======
+	crc = list_first_entry_or_null(&crc_list.dev_list, struct stm32_crc, list);
+>>>>>>> origin/android16-base
 	if (crc)
 		list_move_tail(&crc->list, &crc_list.dev_list);
 	spin_unlock_bh(&crc_list.lock);
@@ -230,7 +234,11 @@ static struct shash_alg algs[] = {
 		.digestsize     = CHKSUM_DIGEST_SIZE,
 		.base           = {
 			.cra_name               = "crc32",
+<<<<<<< HEAD
 			.cra_driver_name        = DRIVER_NAME,
+=======
+			.cra_driver_name        = "stm32-crc32-crc32",
+>>>>>>> origin/android16-base
 			.cra_priority           = 200,
 			.cra_flags		= CRYPTO_ALG_OPTIONAL_KEY,
 			.cra_blocksize          = CHKSUM_BLOCK_SIZE,
@@ -252,7 +260,11 @@ static struct shash_alg algs[] = {
 		.digestsize     = CHKSUM_DIGEST_SIZE,
 		.base           = {
 			.cra_name               = "crc32c",
+<<<<<<< HEAD
 			.cra_driver_name        = DRIVER_NAME,
+=======
+			.cra_driver_name        = "stm32-crc32-crc32c",
+>>>>>>> origin/android16-base
 			.cra_priority           = 200,
 			.cra_flags		= CRYPTO_ALG_OPTIONAL_KEY,
 			.cra_blocksize          = CHKSUM_BLOCK_SIZE,
@@ -334,8 +346,15 @@ static int stm32_crc_remove(struct platform_device *pdev)
 	struct stm32_crc *crc = platform_get_drvdata(pdev);
 	int ret = pm_runtime_get_sync(crc->dev);
 
+<<<<<<< HEAD
 	if (ret < 0)
 		return ret;
+=======
+	if (ret < 0) {
+		pm_runtime_put_noidle(crc->dev);
+		return ret;
+	}
+>>>>>>> origin/android16-base
 
 	spin_lock(&crc_list.lock);
 	list_del(&crc->list);

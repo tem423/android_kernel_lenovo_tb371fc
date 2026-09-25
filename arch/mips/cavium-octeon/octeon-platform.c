@@ -86,11 +86,19 @@ static void octeon2_usb_clocks_start(struct device *dev)
 					 "refclk-frequency", &clock_rate);
 		if (i) {
 			dev_err(dev, "No UCTL \"refclk-frequency\"\n");
+<<<<<<< HEAD
+=======
+			of_node_put(uctl_node);
+>>>>>>> origin/android16-base
 			goto exit;
 		}
 		i = of_property_read_string(uctl_node,
 					    "refclk-type", &clock_type);
+<<<<<<< HEAD
 
+=======
+		of_node_put(uctl_node);
+>>>>>>> origin/android16-base
 		if (!i && strcmp("crystal", clock_type) == 0)
 			is_crystal_clock = true;
 	}
@@ -328,6 +336,10 @@ static int __init octeon_ehci_device_init(void)
 
 	pd->dev.platform_data = &octeon_ehci_pdata;
 	octeon_ehci_hw_start(&pd->dev);
+<<<<<<< HEAD
+=======
+	put_device(&pd->dev);
+>>>>>>> origin/android16-base
 
 	return ret;
 }
@@ -391,6 +403,10 @@ static int __init octeon_ohci_device_init(void)
 
 	pd->dev.platform_data = &octeon_ohci_pdata;
 	octeon_ohci_hw_start(&pd->dev);
+<<<<<<< HEAD
+=======
+	put_device(&pd->dev);
+>>>>>>> origin/android16-base
 
 	return ret;
 }

@@ -182,7 +182,11 @@ void xmon_printf(const char *format, ...)
 
 	if (n && rc == 0) {
 		/* No udbg hooks, fallback to printk() - dangerous */
+<<<<<<< HEAD
 		printk("%s", xmon_outbuf);
+=======
+		pr_cont("%s", xmon_outbuf);
+>>>>>>> origin/android16-base
 	}
 }
 

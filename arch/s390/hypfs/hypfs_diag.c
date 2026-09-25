@@ -437,7 +437,11 @@ __init int hypfs_diag_init(void)
 	int rc;
 
 	if (diag204_probe()) {
+<<<<<<< HEAD
 		pr_err("The hardware system does not support hypfs\n");
+=======
+		pr_info("The hardware system does not support hypfs\n");
+>>>>>>> origin/android16-base
 		return -ENODATA;
 	}
 	if (diag204_info_type == DIAG204_INFO_EXT) {

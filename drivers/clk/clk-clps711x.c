@@ -32,11 +32,19 @@ static const struct clk_div_table spi_div_table[] = {
 	{ .val = 1, .div = 8, },
 	{ .val = 2, .div = 2, },
 	{ .val = 3, .div = 1, },
+<<<<<<< HEAD
+=======
+	{ /* sentinel */ }
+>>>>>>> origin/android16-base
 };
 
 static const struct clk_div_table timer_div_table[] = {
 	{ .val = 0, .div = 256, },
 	{ .val = 1, .div = 1, },
+<<<<<<< HEAD
+=======
+	{ /* sentinel */ }
+>>>>>>> origin/android16-base
 };
 
 struct clps711x_clk {

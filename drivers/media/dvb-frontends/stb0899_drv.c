@@ -1650,7 +1650,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(stb0899_attach);
+=======
+EXPORT_SYMBOL_GPL(stb0899_attach);
+>>>>>>> origin/android16-base
 MODULE_PARM_DESC(verbose, "Set Verbosity level");
 MODULE_AUTHOR("Manu Abraham");
 MODULE_DESCRIPTION("STB0899 Multi-Std frontend");

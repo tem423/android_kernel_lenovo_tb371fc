@@ -559,7 +559,11 @@ static int write_packet(struct usb_device *udev,
 			       0,	/* index */
 			       buf,	/* buffer */
 			       size,
+<<<<<<< HEAD
 			       HZ);
+=======
+			       1000);
+>>>>>>> origin/android16-base
 
 	kfree(buf);
 	return ret;
@@ -591,7 +595,11 @@ static int read_packet(struct usb_device *udev,
 			       0,	/* index */
 			       buf,	/* buffer */
 			       size,
+<<<<<<< HEAD
 			       HZ);
+=======
+			       1000);
+>>>>>>> origin/android16-base
 
 	if (ret >= 0)
 		memcpy(registers, buf, size);
@@ -853,15 +861,23 @@ static int cpia2_usb_probe(struct usb_interface *intf,
 	ret = set_alternate(cam, USBIF_CMDONLY);
 	if (ret < 0) {
 		ERR("%s: usb_set_interface error (ret = %d)\n", __func__, ret);
+<<<<<<< HEAD
 		kfree(cam);
 		return ret;
+=======
+		goto alt_err;
+>>>>>>> origin/android16-base
 	}
 
 
 	if((ret = cpia2_init_camera(cam)) < 0) {
 		ERR("%s: failed to initialize cpia2 camera (ret = %d)\n", __func__, ret);
+<<<<<<< HEAD
 		kfree(cam);
 		return ret;
+=======
+		goto alt_err;
+>>>>>>> origin/android16-base
 	}
 	LOG("  CPiA Version: %d.%02d (%d.%d)\n",
 	       cam->params.version.firmware_revision_hi,
@@ -881,11 +897,22 @@ static int cpia2_usb_probe(struct usb_interface *intf,
 	ret = cpia2_register_camera(cam);
 	if (ret < 0) {
 		ERR("%s: Failed to register cpia2 camera (ret = %d)\n", __func__, ret);
+<<<<<<< HEAD
 		kfree(cam);
 		return ret;
 	}
 
 	return 0;
+=======
+		goto alt_err;
+	}
+
+	return 0;
+
+alt_err:
+	cpia2_deinit_camera_struct(cam, intf);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 /******************************************************************************

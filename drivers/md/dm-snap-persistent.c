@@ -613,7 +613,11 @@ static int persistent_read_metadata(struct dm_exception_store *store,
 						    chunk_t old, chunk_t new),
 				    void *callback_context)
 {
+<<<<<<< HEAD
 	int r, uninitialized_var(new_snapshot);
+=======
+	int r, new_snapshot;
+>>>>>>> origin/android16-base
 	struct pstore *ps = get_info(store);
 
 	/*

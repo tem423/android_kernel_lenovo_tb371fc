@@ -2,6 +2,14 @@
 #ifndef _ASM_X86_VGTOD_H
 #define _ASM_X86_VGTOD_H
 
+<<<<<<< HEAD
+=======
+/*
+ * This check is required to prevent ARCH=um to include
+ * unwanted headers.
+ */
+#ifdef CONFIG_GENERIC_GETTIMEOFDAY
+>>>>>>> origin/android16-base
 #include <linux/compiler.h>
 #include <asm/clocksource.h>
 #include <vdso/datapage.h>
@@ -12,6 +20,10 @@ typedef u64 gtod_long_t;
 #else
 typedef unsigned long gtod_long_t;
 #endif
+<<<<<<< HEAD
+=======
+#endif /* CONFIG_GENERIC_GETTIMEOFDAY */
+>>>>>>> origin/android16-base
 
 extern int vclocks_used;
 static inline bool vclock_was_used(int vclock)

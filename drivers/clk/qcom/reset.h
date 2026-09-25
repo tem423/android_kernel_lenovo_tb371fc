@@ -19,6 +19,11 @@
 struct qcom_reset_map {
 	unsigned int reg;
 	u8 bit;
+<<<<<<< HEAD
+=======
+	u8 udelay;
+	u32 bitmask;
+>>>>>>> origin/android16-base
 };
 
 struct regmap;

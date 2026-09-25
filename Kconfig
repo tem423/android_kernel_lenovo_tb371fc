@@ -5,8 +5,11 @@
 #
 mainmenu "Linux/$(ARCH) $(KERNELVERSION) Kernel Configuration"
 
+<<<<<<< HEAD
 comment "Compiler: $(CC_VERSION_TEXT)"
 
+=======
+>>>>>>> origin/android16-base
 source "scripts/Kconfig.include"
 
 source "init/Kconfig"
@@ -30,3 +33,8 @@ source "crypto/Kconfig"
 source "lib/Kconfig"
 
 source "lib/Kconfig.debug"
+<<<<<<< HEAD
+=======
+
+source "techpack/Kconfig"
+>>>>>>> origin/android16-base

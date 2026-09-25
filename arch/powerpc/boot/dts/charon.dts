@@ -39,7 +39,11 @@
 		};
 	};
 
+<<<<<<< HEAD
 	memory {
+=======
+	memory@0 {
+>>>>>>> origin/android16-base
 		device_type = "memory";
 		reg = <0x00000000 0x08000000>;	// 128MB
 	};

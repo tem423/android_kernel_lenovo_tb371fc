@@ -94,6 +94,23 @@ static int cs_etm__update_queues(struct cs_etm_auxtrace *etm);
 static int cs_etm__process_timeless_queues(struct cs_etm_auxtrace *etm,
 					   pid_t tid, u64 time_);
 
+<<<<<<< HEAD
+=======
+int cs_etm__get_cpu(u8 trace_chan_id, int *cpu)
+{
+	struct int_node *inode;
+	u64 *metadata;
+
+	inode = intlist__find(traceid_list, trace_chan_id);
+	if (!inode)
+		return -EINVAL;
+
+	metadata = inode->priv;
+	*cpu = (int)metadata[CS_ETM_CPU];
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static void cs_etm__packet_dump(const char *pkt_string)
 {
 	const char *color = PERF_COLOR_BLUE;
@@ -233,7 +250,11 @@ static void cs_etm__free(struct perf_session *session)
 	cs_etm__free_events(session);
 	session->auxtrace = NULL;
 
+<<<<<<< HEAD
 	/* First remove all traceID/CPU# nodes for the RB tree */
+=======
+	/* First remove all traceID/metadata nodes for the RB tree */
+>>>>>>> origin/android16-base
 	intlist__for_each_entry_safe(inode, tmp, traceid_list)
 		intlist__remove(traceid_list, inode);
 	/* Then the RB tree itself */
@@ -1319,9 +1340,15 @@ int cs_etm__process_auxtrace_info(union perf_event *event,
 				    0xffffffff);
 
 	/*
+<<<<<<< HEAD
 	 * Create an RB tree for traceID-CPU# tuple. Since the conversion has
 	 * to be made for each packet that gets decoded, optimizing access in
 	 * anything other than a sequential array is worth doing.
+=======
+	 * Create an RB tree for traceID-metadata tuple.  Since the conversion
+	 * has to be made for each packet that gets decoded, optimizing access
+	 * in anything other than a sequential array is worth doing.
+>>>>>>> origin/android16-base
 	 */
 	traceid_list = intlist__new(NULL);
 	if (!traceid_list) {
@@ -1387,8 +1414,13 @@ int cs_etm__process_auxtrace_info(union perf_event *event,
 			err = -EINVAL;
 			goto err_free_metadata;
 		}
+<<<<<<< HEAD
 		/* All good, associate the traceID with the CPU# */
 		inode->priv = &metadata[j][CS_ETM_CPU];
+=======
+		/* All good, associate the traceID with the metadata pointer */
+		inode->priv = metadata[j];
+>>>>>>> origin/android16-base
 	}
 
 	/*

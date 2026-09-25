@@ -892,23 +892,41 @@ static int dsps_probe(struct platform_device *pdev)
 	if (!glue->usbss_base)
 		return -ENXIO;
 
+<<<<<<< HEAD
 	if (usb_get_dr_mode(&pdev->dev) == USB_DR_MODE_PERIPHERAL) {
 		ret = dsps_setup_optional_vbus_irq(pdev, glue);
 		if (ret)
 			goto err_iounmap;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	platform_set_drvdata(pdev, glue);
 	pm_runtime_enable(&pdev->dev);
 	ret = dsps_create_musb_pdev(glue, pdev);
 	if (ret)
 		goto err;
 
+<<<<<<< HEAD
 	return 0;
 
 err:
 	pm_runtime_disable(&pdev->dev);
 err_iounmap:
+=======
+	if (usb_get_dr_mode(&pdev->dev) == USB_DR_MODE_PERIPHERAL) {
+		ret = dsps_setup_optional_vbus_irq(pdev, glue);
+		if (ret)
+			goto unregister_pdev;
+	}
+
+	return 0;
+
+unregister_pdev:
+	platform_device_unregister(glue->musb);
+err:
+	pm_runtime_disable(&pdev->dev);
+>>>>>>> origin/android16-base
 	iounmap(glue->usbss_base);
 	return ret;
 }

@@ -91,6 +91,11 @@ static int gpio_ir_recv_probe(struct platform_device *pdev)
 		rcdev->map_name = RC_MAP_EMPTY;
 
 	gpio_dev->rcdev = rcdev;
+<<<<<<< HEAD
+=======
+	if (of_property_read_bool(np, "wakeup-source"))
+		device_init_wakeup(dev, true);
+>>>>>>> origin/android16-base
 
 	rc = devm_rc_register_device(dev, rcdev);
 	if (rc < 0) {

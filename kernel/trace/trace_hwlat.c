@@ -355,7 +355,11 @@ static int start_kthread(struct trace_array *tr)
 	struct task_struct *kthread;
 	int next_cpu;
 
+<<<<<<< HEAD
 	if (WARN_ON(hwlat_kthread))
+=======
+	if (hwlat_kthread)
+>>>>>>> origin/android16-base
 		return 0;
 
 	/* Just pick the first CPU on first iteration */

@@ -97,12 +97,24 @@ static struct firmware_cache fw_cache;
 extern struct builtin_fw __start_builtin_fw[];
 extern struct builtin_fw __end_builtin_fw[];
 
+<<<<<<< HEAD
 static void fw_copy_to_prealloc_buf(struct firmware *fw,
 				    void *buf, size_t size)
 {
 	if (!buf || size < fw->size)
 		return;
 	memcpy(buf, fw->data, fw->size);
+=======
+static bool fw_copy_to_prealloc_buf(struct firmware *fw,
+				    void *buf, size_t size)
+{
+	if (!buf)
+		return true;
+	if (size < fw->size)
+		return false;
+	memcpy(buf, fw->data, fw->size);
+	return true;
+>>>>>>> origin/android16-base
 }
 
 static bool fw_get_builtin_firmware(struct firmware *fw, const char *name,
@@ -114,9 +126,13 @@ static bool fw_get_builtin_firmware(struct firmware *fw, const char *name,
 		if (strcmp(name, b_fw->name) == 0) {
 			fw->size = b_fw->size;
 			fw->data = b_fw->data;
+<<<<<<< HEAD
 			fw_copy_to_prealloc_buf(fw, buf, size);
 
 			return true;
+=======
+			return fw_copy_to_prealloc_buf(fw, buf, size);
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -563,8 +579,35 @@ static void fw_abort_batch_reqs(struct firmware *fw)
 		return;
 
 	fw_priv = fw->priv;
+<<<<<<< HEAD
 	if (!fw_state_is_aborted(fw_priv))
 		fw_state_aborted(fw_priv);
+=======
+	mutex_lock(&fw_lock);
+	if (!fw_state_is_aborted(fw_priv))
+		fw_state_aborted(fw_priv);
+	mutex_unlock(&fw_lock);
+}
+
+/*
+ * Reject firmware file names with ".." path components.
+ * There are drivers that construct firmware file names from device-supplied
+ * strings, and we don't want some device to be able to tell us "I would like to
+ * be sent my firmware from ../../../etc/shadow, please".
+ *
+ * Search for ".." surrounded by either '/' or start/end of string.
+ *
+ * This intentionally only looks at the firmware name, not at the firmware base
+ * directory or at symlink contents.
+ */
+static bool name_contains_dotdot(const char *name)
+{
+	size_t name_len = strlen(name);
+
+	return strcmp(name, "..") == 0 || strncmp(name, "../", 3) == 0 ||
+	       strstr(name, "/../") != NULL ||
+	       (name_len >= 3 && strcmp(name+name_len-3, "/..") == 0);
+>>>>>>> origin/android16-base
 }
 
 /* called from request_firmware() and request_firmware_work_func() */
@@ -584,6 +627,17 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	if (name_contains_dotdot(name)) {
+		dev_warn(device,
+			 "Firmware load for '%s' refused, path contains '..' component\n",
+			 name);
+		ret = -EINVAL;
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	ret = _request_firmware_prepare(&fw, name, device, buf, size,
 					opt_flags);
 	if (ret <= 0) /* error or already assigned */
@@ -624,6 +678,11 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
  *      @name will be used as $FIRMWARE in the uevent environment and
  *      should be distinctive enough not to be confused with any other
  *      firmware image for this or any other device.
+<<<<<<< HEAD
+=======
+ *	It must not contain any ".." path components - "foo/bar..bin" is
+ *	allowed, but "foo/../bar.bin" is not.
+>>>>>>> origin/android16-base
  *
  *	Caller must hold the reference count of @device.
  *

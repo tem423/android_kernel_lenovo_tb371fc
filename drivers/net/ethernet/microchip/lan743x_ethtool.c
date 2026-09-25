@@ -659,7 +659,13 @@ static void lan743x_ethtool_get_wol(struct net_device *netdev,
 
 	wol->supported = 0;
 	wol->wolopts = 0;
+<<<<<<< HEAD
 	phy_ethtool_get_wol(netdev->phydev, wol);
+=======
+
+	if (netdev->phydev)
+		phy_ethtool_get_wol(netdev->phydev, wol);
+>>>>>>> origin/android16-base
 
 	wol->supported |= WAKE_BCAST | WAKE_UCAST | WAKE_MCAST |
 		WAKE_MAGIC | WAKE_PHY | WAKE_ARP;
@@ -688,9 +694,14 @@ static int lan743x_ethtool_set_wol(struct net_device *netdev,
 
 	device_set_wakeup_enable(&adapter->pdev->dev, (bool)wol->wolopts);
 
+<<<<<<< HEAD
 	phy_ethtool_set_wol(netdev->phydev, wol);
 
 	return 0;
+=======
+	return netdev->phydev ? phy_ethtool_set_wol(netdev->phydev, wol)
+			: -ENETDOWN;
+>>>>>>> origin/android16-base
 }
 #endif /* CONFIG_PM */
 

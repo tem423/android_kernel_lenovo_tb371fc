@@ -316,6 +316,11 @@ venc_try_fmt_common(struct venus_inst *inst, struct v4l2_format *f)
 		else
 			return NULL;
 		fmt = find_format(inst, pixmp->pixelformat, f->type);
+<<<<<<< HEAD
+=======
+		if (!fmt)
+			return NULL;
+>>>>>>> origin/android16-base
 	}
 
 	pixmp->width = clamp(pixmp->width, frame_width_min(inst),

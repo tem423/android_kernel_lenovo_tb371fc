@@ -129,6 +129,7 @@ static void r871x_internal_cmd_hdl(struct _adapter *padapter, u8 *pbuf)
 	kfree(pdrvcmd->pbuf);
 }
 
+<<<<<<< HEAD
 static u8 read_macreg_hdl(struct _adapter *padapter, u8 *pbuf)
 {
 	void (*pcmd_callback)(struct _adapter *dev, struct cmd_obj	*pcmd);
@@ -157,6 +158,8 @@ static u8 write_macreg_hdl(struct _adapter *padapter, u8 *pbuf)
 	return H2C_SUCCESS;
 }
 
+=======
+>>>>>>> origin/android16-base
 static u8 read_bbreg_hdl(struct _adapter *padapter, u8 *pbuf)
 {
 	struct cmd_obj *pcmd  = (struct cmd_obj *)pbuf;
@@ -225,6 +228,7 @@ static struct cmd_obj *cmd_hdl_filter(struct _adapter *padapter,
 	pcmd_r = NULL;
 
 	switch (pcmd->cmdcode) {
+<<<<<<< HEAD
 	case GEN_CMD_CODE(_Read_MACREG):
 		read_macreg_hdl(padapter, (u8 *)pcmd);
 		pcmd_r = pcmd;
@@ -233,6 +237,8 @@ static struct cmd_obj *cmd_hdl_filter(struct _adapter *padapter,
 		write_macreg_hdl(padapter, (u8 *)pcmd);
 		pcmd_r = pcmd;
 		break;
+=======
+>>>>>>> origin/android16-base
 	case GEN_CMD_CODE(_Read_BBREG):
 		read_bbreg_hdl(padapter, (u8 *)pcmd);
 		break;

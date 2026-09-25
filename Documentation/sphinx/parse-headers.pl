@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/usr/bin/perl
+=======
+#!/usr/bin/env perl
+>>>>>>> origin/android16-base
 use strict;
 use Text::Tabs;
 use Getopt::Long;

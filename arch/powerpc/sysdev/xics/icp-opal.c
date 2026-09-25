@@ -199,6 +199,10 @@ int icp_opal_init(void)
 
 	printk("XICS: Using OPAL ICP fallbacks\n");
 
+<<<<<<< HEAD
+=======
+	of_node_put(np);
+>>>>>>> origin/android16-base
 	return 0;
 }
 

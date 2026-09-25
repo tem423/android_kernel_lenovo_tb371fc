@@ -285,9 +285,16 @@ static void qeth_l3_clear_ip_htable(struct qeth_card *card, int recover)
 		if (!recover) {
 			hash_del(&addr->hnode);
 			kfree(addr);
+<<<<<<< HEAD
 			continue;
 		}
 		addr->disp_flag = QETH_DISP_ADDR_ADD;
+=======
+		} else {
+			/* prepare for recovery */
+			addr->disp_flag = QETH_DISP_ADDR_ADD;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	spin_unlock_bh(&card->ip_lock);
@@ -325,11 +332,20 @@ static void qeth_l3_recover_ip(struct qeth_card *card)
 			} else
 				rc = qeth_l3_register_addr_entry(card, addr);
 
+<<<<<<< HEAD
 			if (!rc) {
+=======
+			if (!rc || rc == -EADDRINUSE || rc == -ENETDOWN) {
+				/* keep it in the records */
+>>>>>>> origin/android16-base
 				addr->disp_flag = QETH_DISP_ADDR_DO_NOTHING;
 				if (addr->ref_counter < 1)
 					qeth_l3_delete_ip(card, addr);
 			} else {
+<<<<<<< HEAD
+=======
+				/* bad address */
+>>>>>>> origin/android16-base
 				hash_del(&addr->hnode);
 				kfree(addr);
 			}

@@ -463,11 +463,20 @@ static int tm6000_alloc_urb_buffers(struct tm6000_core *dev)
 	if (dev->urb_buffer)
 		return 0;
 
+<<<<<<< HEAD
 	dev->urb_buffer = kmalloc_array(num_bufs, sizeof(void *), GFP_KERNEL);
 	if (!dev->urb_buffer)
 		return -ENOMEM;
 
 	dev->urb_dma = kmalloc_array(num_bufs, sizeof(dma_addr_t *),
+=======
+	dev->urb_buffer = kmalloc_array(num_bufs, sizeof(*dev->urb_buffer),
+					GFP_KERNEL);
+	if (!dev->urb_buffer)
+		return -ENOMEM;
+
+	dev->urb_dma = kmalloc_array(num_bufs, sizeof(*dev->urb_dma),
+>>>>>>> origin/android16-base
 				     GFP_KERNEL);
 	if (!dev->urb_dma)
 		return -ENOMEM;

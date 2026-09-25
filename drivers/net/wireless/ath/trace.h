@@ -63,7 +63,11 @@ TRACE_EVENT(ath_log,
 #endif /* _TRACE_H || TRACE_HEADER_MULTI_READ */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/wireless/ath
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace
 

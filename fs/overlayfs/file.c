@@ -14,6 +14,11 @@
 #include <linux/uaccess.h>
 #include "overlayfs.h"
 
+<<<<<<< HEAD
+=======
+#define OVL_IOCB_MASK (IOCB_DSYNC | IOCB_HIPRI | IOCB_NOWAIT | IOCB_SYNC)
+
+>>>>>>> origin/android16-base
 static char ovl_whatisit(struct inode *inode, struct inode *realinode)
 {
 	if (realinode != ovl_inode_upper(inode))
@@ -213,6 +218,7 @@ static void ovl_file_accessed(struct file *file)
 	touch_atime(&file->f_path);
 }
 
+<<<<<<< HEAD
 static rwf_t ovl_iocb_to_rwf(struct kiocb *iocb)
 {
 	int ifl = iocb->ki_flags;
@@ -230,6 +236,8 @@ static rwf_t ovl_iocb_to_rwf(struct kiocb *iocb)
 	return flags;
 }
 
+=======
+>>>>>>> origin/android16-base
 static ssize_t ovl_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 {
 	struct file *file = iocb->ki_filp;
@@ -246,7 +254,11 @@ static ssize_t ovl_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 	old_cred = ovl_override_creds(file_inode(file)->i_sb);
 	ret = vfs_iter_read(real.file, iter, &iocb->ki_pos,
+<<<<<<< HEAD
 			    ovl_iocb_to_rwf(iocb));
+=======
+			    iocb_to_rw_flags(iocb->ki_flags, OVL_IOCB_MASK));
+>>>>>>> origin/android16-base
 	ovl_revert_creds(old_cred);
 
 	ovl_file_accessed(file);
@@ -281,7 +293,11 @@ static ssize_t ovl_write_iter(struct kiocb *iocb, struct iov_iter *iter)
 	old_cred = ovl_override_creds(file_inode(file)->i_sb);
 	file_start_write(real.file);
 	ret = vfs_iter_write(real.file, iter, &iocb->ki_pos,
+<<<<<<< HEAD
 			     ovl_iocb_to_rwf(iocb));
+=======
+			     iocb_to_rw_flags(iocb->ki_flags, OVL_IOCB_MASK));
+>>>>>>> origin/android16-base
 	file_end_write(real.file);
 	ovl_revert_creds(old_cred);
 

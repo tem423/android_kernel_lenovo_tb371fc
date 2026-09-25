@@ -270,6 +270,16 @@ static void run_ordered_work(struct __btrfs_workqueue *wq,
 				  ordered_list);
 		if (!test_bit(WORK_DONE_BIT, &work->flags))
 			break;
+<<<<<<< HEAD
+=======
+		/*
+		 * Orders all subsequent loads after reading WORK_DONE_BIT,
+		 * paired with the smp_mb__before_atomic in btrfs_work_helper
+		 * this guarantees that the ordered function will see all
+		 * updates from ordinary work function.
+		 */
+		smp_rmb();
+>>>>>>> origin/android16-base
 
 		/*
 		 * we are going to call the ordered done function, but
@@ -355,6 +365,16 @@ static void normal_work_helper(struct btrfs_work *work)
 	thresh_exec_hook(wq);
 	work->func(work);
 	if (need_order) {
+<<<<<<< HEAD
+=======
+		/*
+		 * Ensures all memory accesses done in the work function are
+		 * ordered before setting the WORK_DONE_BIT. Ensuring the thread
+		 * which is going to executed the ordered work sees them.
+		 * Pairs with the smp_rmb in run_ordered_work.
+		 */
+		smp_mb__before_atomic();
+>>>>>>> origin/android16-base
 		set_bit(WORK_DONE_BIT, &work->flags);
 		run_ordered_work(wq, work);
 	}

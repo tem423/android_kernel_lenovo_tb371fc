@@ -412,11 +412,16 @@ err_noirq:
 
 static int t7l66xb_remove(struct platform_device *dev)
 {
+<<<<<<< HEAD
 	struct t7l66xb_platform_data *pdata = dev_get_platdata(&dev->dev);
 	struct t7l66xb *t7l66xb = platform_get_drvdata(dev);
 	int ret;
 
 	ret = pdata->disable(dev);
+=======
+	struct t7l66xb *t7l66xb = platform_get_drvdata(dev);
+
+>>>>>>> origin/android16-base
 	clk_disable_unprepare(t7l66xb->clk48m);
 	clk_put(t7l66xb->clk48m);
 	clk_disable_unprepare(t7l66xb->clk32k);
@@ -427,8 +432,12 @@ static int t7l66xb_remove(struct platform_device *dev)
 	mfd_remove_devices(&dev->dev);
 	kfree(t7l66xb);
 
+<<<<<<< HEAD
 	return ret;
 
+=======
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static struct platform_driver t7l66xb_platform_driver = {

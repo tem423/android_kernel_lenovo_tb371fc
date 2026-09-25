@@ -3007,8 +3007,18 @@ long arch_ptrace(struct task_struct *child, long request,
 
 			flush_fp_to_thread(child);
 			if (fpidx < (PT_FPSCR - PT_FPR0))
+<<<<<<< HEAD
 				memcpy(&tmp, &child->thread.TS_FPR(fpidx),
 				       sizeof(long));
+=======
+				if (IS_ENABLED(CONFIG_PPC32)) {
+					// On 32-bit the index we are passed refers to 32-bit words
+					tmp = ((u32 *)child->thread.fp_state.fpr)[fpidx];
+				} else {
+					memcpy(&tmp, &child->thread.TS_FPR(fpidx),
+					       sizeof(long));
+				}
+>>>>>>> origin/android16-base
 			else
 				tmp = child->thread.fp_state.fpscr;
 		}
@@ -3040,8 +3050,18 @@ long arch_ptrace(struct task_struct *child, long request,
 
 			flush_fp_to_thread(child);
 			if (fpidx < (PT_FPSCR - PT_FPR0))
+<<<<<<< HEAD
 				memcpy(&child->thread.TS_FPR(fpidx), &data,
 				       sizeof(long));
+=======
+				if (IS_ENABLED(CONFIG_PPC32)) {
+					// On 32-bit the index we are passed refers to 32-bit words
+					((u32 *)child->thread.fp_state.fpr)[fpidx] = data;
+				} else {
+					memcpy(&child->thread.TS_FPR(fpidx), &data,
+					       sizeof(long));
+				}
+>>>>>>> origin/android16-base
 			else
 				child->thread.fp_state.fpscr = data;
 			ret = 0;

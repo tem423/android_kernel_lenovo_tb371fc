@@ -835,7 +835,11 @@ static u32 clkfactor_f6_resolve(u32 v)
 	case SSB_CHIPCO_CLK_F6_7:
 		return 7;
 	}
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 /* Calculate the speed the backplane would run at a given set of clockcontrol values */

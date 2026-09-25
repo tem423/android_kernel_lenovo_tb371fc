@@ -37,6 +37,11 @@ static ssize_t cm_write(struct file *file, const char __user * user_buf,
 				   sizeof(struct acpi_table_header)))
 			return -EFAULT;
 		uncopied_bytes = max_size = table.length;
+<<<<<<< HEAD
+=======
+		/* make sure the buf is not allocated */
+		kfree(buf);
+>>>>>>> origin/android16-base
 		buf = kzalloc(max_size, GFP_KERNEL);
 		if (!buf)
 			return -ENOMEM;
@@ -50,6 +55,10 @@ static ssize_t cm_write(struct file *file, const char __user * user_buf,
 	    (*ppos + count < count) ||
 	    (count > uncopied_bytes)) {
 		kfree(buf);
+<<<<<<< HEAD
+=======
+		buf = NULL;
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 
@@ -71,7 +80,10 @@ static ssize_t cm_write(struct file *file, const char __user * user_buf,
 		add_taint(TAINT_OVERRIDDEN_ACPI_TABLE, LOCKDEP_NOW_UNRELIABLE);
 	}
 
+<<<<<<< HEAD
 	kfree(buf);
+=======
+>>>>>>> origin/android16-base
 	return count;
 }
 

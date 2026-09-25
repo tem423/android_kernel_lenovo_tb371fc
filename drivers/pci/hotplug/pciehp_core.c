@@ -215,7 +215,11 @@ static void pciehp_check_presence(struct controller *ctrl)
 	struct slot *slot = ctrl->slot;
 	u8 occupied;
 
+<<<<<<< HEAD
 	down_read(&ctrl->reset_lock);
+=======
+	down_read_nested(&ctrl->reset_lock, ctrl->depth);
+>>>>>>> origin/android16-base
 	mutex_lock(&slot->lock);
 
 	pciehp_get_adapter_status(slot, &occupied);

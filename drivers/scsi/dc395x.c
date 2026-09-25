@@ -3771,10 +3771,26 @@ static struct DeviceCtlBlk *device_alloc(struct AdapterCtlBlk *acb,
 #endif
 	if (dcb->target_lun != 0) {
 		/* Copy settings */
+<<<<<<< HEAD
 		struct DeviceCtlBlk *p;
 		list_for_each_entry(p, &acb->dcb_list, list)
 			if (p->target_id == dcb->target_id)
 				break;
+=======
+		struct DeviceCtlBlk *p = NULL, *iter;
+
+		list_for_each_entry(iter, &acb->dcb_list, list)
+			if (iter->target_id == dcb->target_id) {
+				p = iter;
+				break;
+			}
+
+		if (!p) {
+			kfree(dcb);
+			return NULL;
+		}
+
+>>>>>>> origin/android16-base
 		dprintkdbg(DBG_1, 
 		       "device_alloc: <%02i-%i> copy from <%02i-%i>\n",
 		       dcb->target_id, dcb->target_lun,
@@ -4266,7 +4282,11 @@ static int adapter_sg_tables_alloc(struct AdapterCtlBlk *acb)
 	const unsigned srbs_per_page = PAGE_SIZE/SEGMENTX_LEN;
 	int srb_idx = 0;
 	unsigned i = 0;
+<<<<<<< HEAD
 	struct SGentry *uninitialized_var(ptr);
+=======
+	struct SGentry *ptr;
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < DC395x_MAX_SRB_CNT; i++)
 		acb->srb_array[i].segment_x = NULL;
@@ -4805,6 +4825,10 @@ static int dc395x_init_one(struct pci_dev *dev, const struct pci_device_id *id)
 	/* initialise the adapter and everything we need */
  	if (adapter_init(acb, io_port_base, io_port_len, irq)) {
 		dprintkl(KERN_INFO, "adapter init failed\n");
+<<<<<<< HEAD
+=======
+		acb = NULL;
+>>>>>>> origin/android16-base
 		goto fail;
 	}
 

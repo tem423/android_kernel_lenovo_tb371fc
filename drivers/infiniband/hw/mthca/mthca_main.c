@@ -382,7 +382,11 @@ static int mthca_init_icm(struct mthca_dev *mdev,
 			  struct mthca_init_hca_param *init_hca,
 			  u64 icm_size)
 {
+<<<<<<< HEAD
 	u64 aux_pages;
+=======
+	u64 aux_pages = 0;
+>>>>>>> origin/android16-base
 	int err;
 
 	err = mthca_SET_ICM_SIZE(mdev, icm_size, &aux_pages);

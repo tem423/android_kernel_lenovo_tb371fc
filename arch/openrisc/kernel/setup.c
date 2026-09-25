@@ -281,10 +281,21 @@ void calibrate_delay(void)
 	pr_cont("%lu.%02lu BogoMIPS (lpj=%lu)\n",
 		loops_per_jiffy / (500000 / HZ),
 		(loops_per_jiffy / (5000 / HZ)) % 100, loops_per_jiffy);
+<<<<<<< HEAD
+=======
+
+	of_node_put(cpu);
+>>>>>>> origin/android16-base
 }
 
 void __init setup_arch(char **cmdline_p)
 {
+<<<<<<< HEAD
+=======
+	/* setup memblock allocator */
+	setup_memory();
+
+>>>>>>> origin/android16-base
 	unflatten_and_copy_device_tree();
 
 	setup_cpuinfo();
@@ -309,9 +320,12 @@ void __init setup_arch(char **cmdline_p)
 	initrd_below_start_ok = 1;
 #endif
 
+<<<<<<< HEAD
 	/* setup memblock allocator */
 	setup_memory();
 
+=======
+>>>>>>> origin/android16-base
 	/* paging_init() sets up the MMU and marks all pages as reserved */
 	paging_init();
 

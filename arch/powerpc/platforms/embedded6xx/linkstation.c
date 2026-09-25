@@ -97,9 +97,12 @@ static void __init linkstation_init_IRQ(void)
 	mpic_init(mpic);
 }
 
+<<<<<<< HEAD
 extern void avr_uart_configure(void);
 extern void avr_uart_send(const char);
 
+=======
+>>>>>>> origin/android16-base
 static void __noreturn linkstation_restart(char *cmd)
 {
 	local_irq_disable();

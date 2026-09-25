@@ -3,9 +3,15 @@
 #include <linux/module.h>
 #include <linux/random.h>
 
+<<<<<<< HEAD
 int __next_node_in(int node, const nodemask_t *srcp)
 {
 	int ret = __next_node(node, srcp);
+=======
+unsigned int __next_node_in(int node, const nodemask_t *srcp)
+{
+	unsigned int ret = __next_node(node, srcp);
+>>>>>>> origin/android16-base
 
 	if (ret == MAX_NUMNODES)
 		ret = __first_node(srcp);

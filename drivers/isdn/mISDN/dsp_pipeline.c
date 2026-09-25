@@ -97,6 +97,10 @@ int mISDN_dsp_element_register(struct mISDN_dsp_element *elem)
 	if (!entry)
 		return -ENOMEM;
 
+<<<<<<< HEAD
+=======
+	INIT_LIST_HEAD(&entry->list);
+>>>>>>> origin/android16-base
 	entry->elem = elem;
 
 	entry->dev.class = elements_class;
@@ -131,7 +135,11 @@ err2:
 	device_unregister(&entry->dev);
 	return ret;
 err1:
+<<<<<<< HEAD
 	kfree(entry);
+=======
+	put_device(&entry->dev);
+>>>>>>> origin/android16-base
 	return ret;
 }
 EXPORT_SYMBOL(mISDN_dsp_element_register);

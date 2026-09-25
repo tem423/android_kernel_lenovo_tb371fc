@@ -707,6 +707,15 @@ static int xgene_enet_rx_frame(struct xgene_enet_desc_ring *rx_ring,
 	buf_pool->rx_skb[skb_index] = NULL;
 
 	datalen = xgene_enet_get_data_len(le64_to_cpu(raw_desc->m1));
+<<<<<<< HEAD
+=======
+
+	/* strip off CRC as HW isn't doing this */
+	nv = GET_VAL(NV, le64_to_cpu(raw_desc->m0));
+	if (!nv)
+		datalen -= 4;
+
+>>>>>>> origin/android16-base
 	skb_put(skb, datalen);
 	prefetch(skb->data - NET_IP_ALIGN);
 	skb->protocol = eth_type_trans(skb, ndev);
@@ -728,12 +737,17 @@ static int xgene_enet_rx_frame(struct xgene_enet_desc_ring *rx_ring,
 		}
 	}
 
+<<<<<<< HEAD
 	nv = GET_VAL(NV, le64_to_cpu(raw_desc->m0));
 	if (!nv) {
 		/* strip off CRC as HW isn't doing this */
 		datalen -= 4;
 		goto skip_jumbo;
 	}
+=======
+	if (!nv)
+		goto skip_jumbo;
+>>>>>>> origin/android16-base
 
 	slots = page_pool->slots - 1;
 	head = page_pool->head;
@@ -1013,8 +1027,15 @@ static int xgene_enet_open(struct net_device *ndev)
 
 	xgene_enet_napi_enable(pdata);
 	ret = xgene_enet_register_irq(ndev);
+<<<<<<< HEAD
 	if (ret)
 		return ret;
+=======
+	if (ret) {
+		xgene_enet_napi_disable(pdata);
+		return ret;
+	}
+>>>>>>> origin/android16-base
 
 	if (ndev->phydev) {
 		phy_start(ndev->phydev);

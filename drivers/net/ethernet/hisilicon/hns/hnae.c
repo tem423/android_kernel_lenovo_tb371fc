@@ -423,8 +423,15 @@ int hnae_ae_register(struct hnae_ae_dev *hdev, struct module *owner)
 	hdev->cls_dev.release = hnae_release;
 	(void)dev_set_name(&hdev->cls_dev, "hnae%d", hdev->id);
 	ret = device_register(&hdev->cls_dev);
+<<<<<<< HEAD
 	if (ret)
 		return ret;
+=======
+	if (ret) {
+		put_device(&hdev->cls_dev);
+		return ret;
+	}
+>>>>>>> origin/android16-base
 
 	__module_get(THIS_MODULE);
 

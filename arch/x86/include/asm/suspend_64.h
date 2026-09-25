@@ -14,9 +14,19 @@
  * Image of the saved processor state, used by the low level ACPI suspend to
  * RAM code and by the low level hibernation code.
  *
+<<<<<<< HEAD
  * If you modify it, fix arch/x86/kernel/acpi/wakeup_64.S and make sure that
  * __save/__restore_processor_state(), defined in arch/x86/kernel/suspend_64.c,
  * still work as required.
+=======
+ * If you modify it, check how it is used in arch/x86/kernel/acpi/wakeup_64.S
+ * and make sure that __save/__restore_processor_state(), defined in
+ * arch/x86/power/cpu.c, still work as required.
+ *
+ * Because the structure is packed, make sure to avoid unaligned members. For
+ * optimisation purposes but also because tools like kmemleak only search for
+ * pointers that are aligned.
+>>>>>>> origin/android16-base
  */
 struct saved_context {
 	struct pt_regs regs;
@@ -36,7 +46,10 @@ struct saved_context {
 
 	unsigned long cr0, cr2, cr3, cr4, cr8;
 	u64 misc_enable;
+<<<<<<< HEAD
 	bool misc_enable_saved;
+=======
+>>>>>>> origin/android16-base
 	struct saved_msrs saved_msrs;
 	unsigned long efer;
 	u16 gdt_pad; /* Unused */
@@ -48,6 +61,10 @@ struct saved_context {
 	unsigned long tr;
 	unsigned long safety;
 	unsigned long return_address;
+<<<<<<< HEAD
+=======
+	bool misc_enable_saved;
+>>>>>>> origin/android16-base
 } __attribute__((packed));
 
 #define loaddebug(thread,register) \

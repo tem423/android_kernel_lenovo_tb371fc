@@ -42,7 +42,11 @@ extern int  dump_fpu(struct pt_regs *ptregs, struct user_i387_struct *fpstate);
 extern void fpu__init_cpu(void);
 extern void fpu__init_system_xstate(void);
 extern void fpu__init_cpu_xstate(void);
+<<<<<<< HEAD
 extern void fpu__init_system(struct cpuinfo_x86 *c);
+=======
+extern void fpu__init_system(void);
+>>>>>>> origin/android16-base
 extern void fpu__init_check_bugs(void);
 extern void fpu__resume_cpu(void);
 extern u64 fpu__get_supported_xfeatures_mask(void);
@@ -103,6 +107,10 @@ static inline void fpstate_init_fxstate(struct fxregs_state *fx)
 }
 extern void fpstate_sanitize_xstate(struct fpu *fpu);
 
+<<<<<<< HEAD
+=======
+/* Returns 0 or the negated trap number, which results in -EFAULT for #PF */
+>>>>>>> origin/android16-base
 #define user_insn(insn, output, input...)				\
 ({									\
 	int err;							\
@@ -110,6 +118,7 @@ extern void fpstate_sanitize_xstate(struct fpu *fpu);
 	might_fault();							\
 									\
 	asm volatile(ASM_STAC "\n"					\
+<<<<<<< HEAD
 		     "1:" #insn "\n\t"					\
 		     "2: " ASM_CLAC "\n"				\
 		     ".section .fixup,\"ax\"\n"				\
@@ -118,6 +127,16 @@ extern void fpstate_sanitize_xstate(struct fpu *fpu);
 		     ".previous\n"					\
 		     _ASM_EXTABLE(1b, 3b)				\
 		     : [err] "=r" (err), output				\
+=======
+		     "1: " #insn "\n"					\
+		     "2: " ASM_CLAC "\n"				\
+		     ".section .fixup,\"ax\"\n"				\
+		     "3:  negl %%eax\n"					\
+		     "    jmp  2b\n"					\
+		     ".previous\n"					\
+		     _ASM_EXTABLE_FAULT(1b, 3b)				\
+		     : [err] "=a" (err), output				\
+>>>>>>> origin/android16-base
 		     : "0"(0), input);					\
 	err;								\
 })
@@ -214,6 +233,17 @@ static inline void copy_fxregs_to_kernel(struct fpu *fpu)
 	}
 }
 
+<<<<<<< HEAD
+=======
+static inline void fxsave(struct fxregs_state *fx)
+{
+	if (IS_ENABLED(CONFIG_X86_32))
+		asm volatile( "fxsave %[fx]" : [fx] "=m" (*fx));
+	else
+		asm volatile("fxsaveq %[fx]" : [fx] "=m" (*fx));
+}
+
+>>>>>>> origin/android16-base
 /* These macros all use (%edi)/(%rdi) as the single memory argument. */
 #define XSAVE		".byte " REX_PREFIX "0x0f,0xae,0x27"
 #define XSAVEOPT	".byte " REX_PREFIX "0x0f,0xae,0x37"
@@ -221,16 +251,31 @@ static inline void copy_fxregs_to_kernel(struct fpu *fpu)
 #define XRSTOR		".byte " REX_PREFIX "0x0f,0xae,0x2f"
 #define XRSTORS		".byte " REX_PREFIX "0x0f,0xc7,0x1f"
 
+<<<<<<< HEAD
+=======
+/*
+ * After this @err contains 0 on success or the negated trap number when
+ * the operation raises an exception. For faults this results in -EFAULT.
+ */
+>>>>>>> origin/android16-base
 #define XSTATE_OP(op, st, lmask, hmask, err)				\
 	asm volatile("1:" op "\n\t"					\
 		     "xor %[err], %[err]\n"				\
 		     "2:\n\t"						\
 		     ".pushsection .fixup,\"ax\"\n\t"			\
+<<<<<<< HEAD
 		     "3: movl $-2,%[err]\n\t"				\
 		     "jmp 2b\n\t"					\
 		     ".popsection\n\t"					\
 		     _ASM_EXTABLE(1b, 3b)				\
 		     : [err] "=r" (err)					\
+=======
+		     "3: negl %%eax\n\t"				\
+		     "jmp 2b\n\t"					\
+		     ".popsection\n\t"					\
+		     _ASM_EXTABLE_FAULT(1b, 3b)				\
+		     : [err] "=a" (err)					\
+>>>>>>> origin/android16-base
 		     : "D" (st), "m" (*st), "a" (lmask), "d" (hmask)	\
 		     : "memory")
 
@@ -282,6 +327,7 @@ static inline void copy_fxregs_to_kernel(struct fpu *fpu)
  * This function is called only during boot time when x86 caps are not set
  * up and alternative can not be used yet.
  */
+<<<<<<< HEAD
 static inline void copy_xregs_to_kernel_booting(struct xregs_state *xstate)
 {
 	u64 mask = -1;
@@ -304,6 +350,8 @@ static inline void copy_xregs_to_kernel_booting(struct xregs_state *xstate)
  * This function is called only during boot time when x86 caps are not set
  * up and alternative can not be used yet.
  */
+=======
+>>>>>>> origin/android16-base
 static inline void copy_kernel_to_xregs_booting(struct xregs_state *xstate)
 {
 	u64 mask = -1;

@@ -79,6 +79,7 @@
 #define USB_ATI_MEMO_PRO_2HS_V2_PRODUCT_ID	269
 #define USB_HYBRID_PRO_CANLIN_PRODUCT_ID	270
 
+<<<<<<< HEAD
 static inline bool kvaser_is_leaf(const struct usb_device_id *id)
 {
 	return (id->idProduct >= USB_LEAF_DEVEL_PRODUCT_ID &&
@@ -177,6 +178,137 @@ static const struct usb_device_id kvaser_usb_table[] = {
 	{ USB_DEVICE(KVASER_VENDOR_ID, USB_ATI_USBCAN_PRO_2HS_V2_PRODUCT_ID) },
 	{ USB_DEVICE(KVASER_VENDOR_ID, USB_ATI_MEMO_PRO_2HS_V2_PRODUCT_ID) },
 	{ USB_DEVICE(KVASER_VENDOR_ID, USB_HYBRID_PRO_CANLIN_PRODUCT_ID) },
+=======
+static const struct kvaser_usb_driver_info kvaser_usb_driver_info_hydra = {
+	.quirks = 0,
+	.ops = &kvaser_usb_hydra_dev_ops,
+};
+
+static const struct kvaser_usb_driver_info kvaser_usb_driver_info_usbcan = {
+	.quirks = KVASER_USB_QUIRK_HAS_TXRX_ERRORS |
+		  KVASER_USB_QUIRK_HAS_SILENT_MODE,
+	.family = KVASER_USBCAN,
+	.ops = &kvaser_usb_leaf_dev_ops,
+};
+
+static const struct kvaser_usb_driver_info kvaser_usb_driver_info_leaf = {
+	.quirks = KVASER_USB_QUIRK_IGNORE_CLK_FREQ,
+	.family = KVASER_LEAF,
+	.ops = &kvaser_usb_leaf_dev_ops,
+};
+
+static const struct kvaser_usb_driver_info kvaser_usb_driver_info_leaf_err = {
+	.quirks = KVASER_USB_QUIRK_HAS_TXRX_ERRORS |
+		  KVASER_USB_QUIRK_IGNORE_CLK_FREQ,
+	.family = KVASER_LEAF,
+	.ops = &kvaser_usb_leaf_dev_ops,
+};
+
+static const struct kvaser_usb_driver_info kvaser_usb_driver_info_leaf_err_listen = {
+	.quirks = KVASER_USB_QUIRK_HAS_TXRX_ERRORS |
+		  KVASER_USB_QUIRK_HAS_SILENT_MODE |
+		  KVASER_USB_QUIRK_IGNORE_CLK_FREQ,
+	.family = KVASER_LEAF,
+	.ops = &kvaser_usb_leaf_dev_ops,
+};
+
+static const struct kvaser_usb_driver_info kvaser_usb_driver_info_leafimx = {
+	.quirks = 0,
+	.family = KVASER_LEAF,
+	.ops = &kvaser_usb_leaf_dev_ops,
+};
+
+static const struct usb_device_id kvaser_usb_table[] = {
+	/* Leaf M32C USB product IDs */
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_DEVEL_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_LITE_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_PRO_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_SPRO_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_PRO_LS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_PRO_SWC_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_PRO_LIN_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_SPRO_LS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_SPRO_SWC_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MEMO2_DEVEL_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MEMO2_HSHS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_UPRO_HSHS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_LITE_GI_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_PRO_OBDII_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err_listen },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MEMO2_HSLS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_LITE_CH_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_BLACKBIRD_SPRO_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_OEM_MERCURY_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_OEM_LEAF_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_CAN_R_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leaf_err },
+
+	/* Leaf i.MX28 USB product IDs */
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_LITE_V2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leafimx },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MINI_PCIE_HS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leafimx },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_LIGHT_HS_V2_OEM_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leafimx },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_USBCAN_LIGHT_2HS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leafimx },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MINI_PCIE_2HS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_leafimx },
+
+	/* USBCANII USB product IDs */
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_USBCAN2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_usbcan },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_USBCAN_REVB_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_usbcan },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MEMORATOR_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_usbcan },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_VCI2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_usbcan },
+
+	/* Minihydra USB product IDs */
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_BLACKBIRD_V2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MEMO_PRO_5HS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_USBCAN_PRO_5HS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_USBCAN_LIGHT_4HS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_LEAF_PRO_HS_V2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_USBCAN_PRO_2HS_V2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MEMO_2HS_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_MEMO_PRO_2HS_V2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_HYBRID_CANLIN_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_ATI_USBCAN_PRO_2HS_V2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_ATI_MEMO_PRO_2HS_V2_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+	{ USB_DEVICE(KVASER_VENDOR_ID, USB_HYBRID_PRO_CANLIN_PRODUCT_ID),
+		.driver_info = (kernel_ulong_t)&kvaser_usb_driver_info_hydra },
+>>>>>>> origin/android16-base
 	{ }
 };
 MODULE_DEVICE_TABLE(usb, kvaser_usb_table);
@@ -235,7 +367,11 @@ int kvaser_usb_send_cmd_async(struct kvaser_usb_net_priv *priv, void *cmd,
 	}
 	usb_free_urb(urb);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return err;
+>>>>>>> origin/android16-base
 }
 
 int kvaser_usb_can_rx_over_error(struct net_device *netdev)
@@ -267,6 +403,10 @@ int kvaser_usb_can_rx_over_error(struct net_device *netdev)
 static void kvaser_usb_read_bulk_callback(struct urb *urb)
 {
 	struct kvaser_usb *dev = urb->context;
+<<<<<<< HEAD
+=======
+	const struct kvaser_usb_dev_ops *ops = dev->driver_info->ops;
+>>>>>>> origin/android16-base
 	int err;
 	unsigned int i;
 
@@ -283,8 +423,13 @@ static void kvaser_usb_read_bulk_callback(struct urb *urb)
 		goto resubmit_urb;
 	}
 
+<<<<<<< HEAD
 	dev->ops->dev_read_bulk_callback(dev, urb->transfer_buffer,
 					 urb->actual_length);
+=======
+	ops->dev_read_bulk_callback(dev, urb->transfer_buffer,
+				    urb->actual_length);
+>>>>>>> origin/android16-base
 
 resubmit_urb:
 	usb_fill_bulk_urb(urb, dev->udev,
@@ -378,12 +523,17 @@ static int kvaser_usb_open(struct net_device *netdev)
 {
 	struct kvaser_usb_net_priv *priv = netdev_priv(netdev);
 	struct kvaser_usb *dev = priv->dev;
+<<<<<<< HEAD
+=======
+	const struct kvaser_usb_dev_ops *ops = dev->driver_info->ops;
+>>>>>>> origin/android16-base
 	int err;
 
 	err = open_candev(netdev);
 	if (err)
 		return err;
 
+<<<<<<< HEAD
 	err = kvaser_usb_setup_rx_urbs(dev);
 	if (err)
 		goto error;
@@ -393,6 +543,13 @@ static int kvaser_usb_open(struct net_device *netdev)
 		goto error;
 
 	err = dev->ops->dev_start_chip(priv);
+=======
+	err = ops->dev_set_opt_mode(priv);
+	if (err)
+		goto error;
+
+	err = ops->dev_start_chip(priv);
+>>>>>>> origin/android16-base
 	if (err) {
 		netdev_warn(netdev, "Cannot start device, error %d\n", err);
 		goto error;
@@ -421,7 +578,11 @@ static void kvaser_usb_reset_tx_urb_contexts(struct kvaser_usb_net_priv *priv)
 /* This method might sleep. Do not call it in the atomic context
  * of URB completions.
  */
+<<<<<<< HEAD
 static void kvaser_usb_unlink_tx_urbs(struct kvaser_usb_net_priv *priv)
+=======
+void kvaser_usb_unlink_tx_urbs(struct kvaser_usb_net_priv *priv)
+>>>>>>> origin/android16-base
 {
 	usb_kill_anchored_urbs(&priv->tx_submitted);
 	kvaser_usb_reset_tx_urb_contexts(priv);
@@ -449,22 +610,39 @@ static int kvaser_usb_close(struct net_device *netdev)
 {
 	struct kvaser_usb_net_priv *priv = netdev_priv(netdev);
 	struct kvaser_usb *dev = priv->dev;
+<<<<<<< HEAD
+=======
+	const struct kvaser_usb_dev_ops *ops = dev->driver_info->ops;
+>>>>>>> origin/android16-base
 	int err;
 
 	netif_stop_queue(netdev);
 
+<<<<<<< HEAD
 	err = dev->ops->dev_flush_queue(priv);
 	if (err)
 		netdev_warn(netdev, "Cannot flush queue, error %d\n", err);
 
 	if (dev->ops->dev_reset_chip) {
 		err = dev->ops->dev_reset_chip(dev, priv->channel);
+=======
+	err = ops->dev_flush_queue(priv);
+	if (err)
+		netdev_warn(netdev, "Cannot flush queue, error %d\n", err);
+
+	if (ops->dev_reset_chip) {
+		err = ops->dev_reset_chip(dev, priv->channel);
+>>>>>>> origin/android16-base
 		if (err)
 			netdev_warn(netdev, "Cannot reset card, error %d\n",
 				    err);
 	}
 
+<<<<<<< HEAD
 	err = dev->ops->dev_stop_chip(priv);
+=======
+	err = ops->dev_stop_chip(priv);
+>>>>>>> origin/android16-base
 	if (err)
 		netdev_warn(netdev, "Cannot stop device, error %d\n", err);
 
@@ -477,6 +655,96 @@ static int kvaser_usb_close(struct net_device *netdev)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int kvaser_usb_set_bittiming(struct net_device *netdev)
+{
+	struct kvaser_usb_net_priv *priv = netdev_priv(netdev);
+	struct kvaser_usb *dev = priv->dev;
+	const struct kvaser_usb_dev_ops *ops = dev->driver_info->ops;
+	struct can_bittiming *bt = &priv->can.bittiming;
+
+	struct kvaser_usb_busparams busparams;
+	int tseg1 = bt->prop_seg + bt->phase_seg1;
+	int tseg2 = bt->phase_seg2;
+	int sjw = bt->sjw;
+	int err = -EOPNOTSUPP;
+
+	busparams.bitrate = cpu_to_le32(bt->bitrate);
+	busparams.sjw = (u8)sjw;
+	busparams.tseg1 = (u8)tseg1;
+	busparams.tseg2 = (u8)tseg2;
+	if (priv->can.ctrlmode & CAN_CTRLMODE_3_SAMPLES)
+		busparams.nsamples = 3;
+	else
+		busparams.nsamples = 1;
+
+	err = ops->dev_set_bittiming(netdev, &busparams);
+	if (err)
+		return err;
+
+	err = kvaser_usb_setup_rx_urbs(priv->dev);
+	if (err)
+		return err;
+
+	err = ops->dev_get_busparams(priv);
+	if (err) {
+		/* Treat EOPNOTSUPP as success */
+		if (err == -EOPNOTSUPP)
+			err = 0;
+		return err;
+	}
+
+	if (memcmp(&busparams, &priv->busparams_nominal,
+		   sizeof(priv->busparams_nominal)) != 0)
+		err = -EINVAL;
+
+	return err;
+}
+
+static int kvaser_usb_set_data_bittiming(struct net_device *netdev)
+{
+	struct kvaser_usb_net_priv *priv = netdev_priv(netdev);
+	struct kvaser_usb *dev = priv->dev;
+	const struct kvaser_usb_dev_ops *ops = dev->driver_info->ops;
+	struct can_bittiming *dbt = &priv->can.data_bittiming;
+
+	struct kvaser_usb_busparams busparams;
+	int tseg1 = dbt->prop_seg + dbt->phase_seg1;
+	int tseg2 = dbt->phase_seg2;
+	int sjw = dbt->sjw;
+	int err;
+
+	if (!ops->dev_set_data_bittiming ||
+	    !ops->dev_get_data_busparams)
+		return -EOPNOTSUPP;
+
+	busparams.bitrate = cpu_to_le32(dbt->bitrate);
+	busparams.sjw = (u8)sjw;
+	busparams.tseg1 = (u8)tseg1;
+	busparams.tseg2 = (u8)tseg2;
+	busparams.nsamples = 1;
+
+	err = ops->dev_set_data_bittiming(netdev, &busparams);
+	if (err)
+		return err;
+
+	err = kvaser_usb_setup_rx_urbs(priv->dev);
+	if (err)
+		return err;
+
+	err = ops->dev_get_data_busparams(priv);
+	if (err)
+		return err;
+
+	if (memcmp(&busparams, &priv->busparams_data,
+		   sizeof(priv->busparams_data)) != 0)
+		err = -EINVAL;
+
+	return err;
+}
+
+>>>>>>> origin/android16-base
 static void kvaser_usb_write_bulk_callback(struct urb *urb)
 {
 	struct kvaser_usb_tx_urb_context *context = urb->context;
@@ -503,6 +771,10 @@ static netdev_tx_t kvaser_usb_start_xmit(struct sk_buff *skb,
 {
 	struct kvaser_usb_net_priv *priv = netdev_priv(netdev);
 	struct kvaser_usb *dev = priv->dev;
+<<<<<<< HEAD
+=======
+	const struct kvaser_usb_dev_ops *ops = dev->driver_info->ops;
+>>>>>>> origin/android16-base
 	struct net_device_stats *stats = &netdev->stats;
 	struct kvaser_usb_tx_urb_context *context = NULL;
 	struct urb *urb;
@@ -545,8 +817,13 @@ static netdev_tx_t kvaser_usb_start_xmit(struct sk_buff *skb,
 		goto freeurb;
 	}
 
+<<<<<<< HEAD
 	buf = dev->ops->dev_frame_to_cmd(priv, skb, &context->dlc, &cmd_len,
 					 context->echo_index);
+=======
+	buf = ops->dev_frame_to_cmd(priv, skb, &context->dlc, &cmd_len,
+				    context->echo_index);
+>>>>>>> origin/android16-base
 	if (!buf) {
 		stats->tx_dropped++;
 		dev_kfree_skb(skb);
@@ -611,6 +888,10 @@ static const struct net_device_ops kvaser_usb_netdev_ops = {
 
 static void kvaser_usb_remove_interfaces(struct kvaser_usb *dev)
 {
+<<<<<<< HEAD
+=======
+	const struct kvaser_usb_dev_ops *ops = dev->driver_info->ops;
+>>>>>>> origin/android16-base
 	int i;
 
 	for (i = 0; i < dev->nchannels; i++) {
@@ -626,10 +907,17 @@ static void kvaser_usb_remove_interfaces(struct kvaser_usb *dev)
 		if (!dev->nets[i])
 			continue;
 
+<<<<<<< HEAD
+=======
+		if (ops->dev_remove_channel)
+			ops->dev_remove_channel(dev->nets[i]);
+
+>>>>>>> origin/android16-base
 		free_candev(dev->nets[i]->netdev);
 	}
 }
 
+<<<<<<< HEAD
 static int kvaser_usb_init_one(struct kvaser_usb *dev,
 			       const struct usb_device_id *id, int channel)
 {
@@ -639,6 +927,18 @@ static int kvaser_usb_init_one(struct kvaser_usb *dev,
 
 	if (dev->ops->dev_reset_chip) {
 		err = dev->ops->dev_reset_chip(dev, channel);
+=======
+static int kvaser_usb_init_one(struct kvaser_usb *dev, int channel)
+{
+	struct net_device *netdev;
+	struct kvaser_usb_net_priv *priv;
+	const struct kvaser_usb_driver_info *driver_info = dev->driver_info;
+	const struct kvaser_usb_dev_ops *ops = driver_info->ops;
+	int err;
+
+	if (ops->dev_reset_chip) {
+		err = ops->dev_reset_chip(dev, channel);
+>>>>>>> origin/android16-base
 		if (err)
 			return err;
 	}
@@ -656,6 +956,11 @@ static int kvaser_usb_init_one(struct kvaser_usb *dev,
 	init_usb_anchor(&priv->tx_submitted);
 	init_completion(&priv->start_comp);
 	init_completion(&priv->stop_comp);
+<<<<<<< HEAD
+=======
+	init_completion(&priv->flush_comp);
+	init_completion(&priv->get_busparams_comp);
+>>>>>>> origin/android16-base
 	priv->can.ctrlmode_supported = 0;
 
 	priv->dev = dev;
@@ -668,20 +973,33 @@ static int kvaser_usb_init_one(struct kvaser_usb *dev,
 	priv->can.state = CAN_STATE_STOPPED;
 	priv->can.clock.freq = dev->cfg->clock.freq;
 	priv->can.bittiming_const = dev->cfg->bittiming_const;
+<<<<<<< HEAD
 	priv->can.do_set_bittiming = dev->ops->dev_set_bittiming;
 	priv->can.do_set_mode = dev->ops->dev_set_mode;
 	if ((id->driver_info & KVASER_USB_HAS_TXRX_ERRORS) ||
 	    (priv->dev->card_data.capabilities & KVASER_USB_CAP_BERR_CAP))
 		priv->can.do_get_berr_counter = dev->ops->dev_get_berr_counter;
 	if (id->driver_info & KVASER_USB_HAS_SILENT_MODE)
+=======
+	priv->can.do_set_bittiming = kvaser_usb_set_bittiming;
+	priv->can.do_set_mode = ops->dev_set_mode;
+	if ((driver_info->quirks & KVASER_USB_QUIRK_HAS_TXRX_ERRORS) ||
+	    (priv->dev->card_data.capabilities & KVASER_USB_CAP_BERR_CAP))
+		priv->can.do_get_berr_counter = ops->dev_get_berr_counter;
+	if (driver_info->quirks & KVASER_USB_QUIRK_HAS_SILENT_MODE)
+>>>>>>> origin/android16-base
 		priv->can.ctrlmode_supported |= CAN_CTRLMODE_LISTENONLY;
 
 	priv->can.ctrlmode_supported |= dev->card_data.ctrlmode_supported;
 
 	if (priv->can.ctrlmode_supported & CAN_CTRLMODE_FD) {
 		priv->can.data_bittiming_const = dev->cfg->data_bittiming_const;
+<<<<<<< HEAD
 		priv->can.do_set_data_bittiming =
 					dev->ops->dev_set_data_bittiming;
+=======
+		priv->can.do_set_data_bittiming = kvaser_usb_set_data_bittiming;
+>>>>>>> origin/android16-base
 	}
 
 	netdev->flags |= IFF_ECHO;
@@ -693,17 +1011,38 @@ static int kvaser_usb_init_one(struct kvaser_usb *dev,
 
 	dev->nets[channel] = priv;
 
+<<<<<<< HEAD
 	err = register_candev(netdev);
 	if (err) {
 		dev_err(&dev->intf->dev, "Failed to register CAN device\n");
 		free_candev(netdev);
 		dev->nets[channel] = NULL;
 		return err;
+=======
+	if (ops->dev_init_channel) {
+		err = ops->dev_init_channel(priv);
+		if (err)
+			goto err;
+	}
+
+	err = register_candev(netdev);
+	if (err) {
+		dev_err(&dev->intf->dev, "Failed to register CAN device\n");
+		goto err;
+>>>>>>> origin/android16-base
 	}
 
 	netdev_dbg(netdev, "device registered\n");
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+err:
+	free_candev(netdev);
+	dev->nets[channel] = NULL;
+	return err;
+>>>>>>> origin/android16-base
 }
 
 static int kvaser_usb_probe(struct usb_interface *intf,
@@ -712,11 +1051,21 @@ static int kvaser_usb_probe(struct usb_interface *intf,
 	struct kvaser_usb *dev;
 	int err;
 	int i;
+<<<<<<< HEAD
+=======
+	const struct kvaser_usb_driver_info *driver_info;
+	const struct kvaser_usb_dev_ops *ops;
+
+	driver_info = (const struct kvaser_usb_driver_info *)id->driver_info;
+	if (!driver_info)
+		return -ENODEV;
+>>>>>>> origin/android16-base
 
 	dev = devm_kzalloc(&intf->dev, sizeof(*dev), GFP_KERNEL);
 	if (!dev)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	if (kvaser_is_leaf(id)) {
 		dev->card_data.leaf.family = KVASER_LEAF;
 		dev->ops = &kvaser_usb_leaf_dev_ops;
@@ -735,6 +1084,13 @@ static int kvaser_usb_probe(struct usb_interface *intf,
 	dev->intf = intf;
 
 	err = dev->ops->dev_setup_endpoints(dev);
+=======
+	dev->intf = intf;
+	dev->driver_info = driver_info;
+	ops = driver_info->ops;
+
+	err = ops->dev_setup_endpoints(dev);
+>>>>>>> origin/android16-base
 	if (err) {
 		dev_err(&intf->dev, "Cannot get usb endpoint(s)");
 		return err;
@@ -748,22 +1104,35 @@ static int kvaser_usb_probe(struct usb_interface *intf,
 
 	dev->card_data.ctrlmode_supported = 0;
 	dev->card_data.capabilities = 0;
+<<<<<<< HEAD
 	err = dev->ops->dev_init_card(dev);
+=======
+	err = ops->dev_init_card(dev);
+>>>>>>> origin/android16-base
 	if (err) {
 		dev_err(&intf->dev,
 			"Failed to initialize card, error %d\n", err);
 		return err;
 	}
 
+<<<<<<< HEAD
 	err = dev->ops->dev_get_software_info(dev);
+=======
+	err = ops->dev_get_software_info(dev);
+>>>>>>> origin/android16-base
 	if (err) {
 		dev_err(&intf->dev,
 			"Cannot get software info, error %d\n", err);
 		return err;
 	}
 
+<<<<<<< HEAD
 	if (dev->ops->dev_get_software_details) {
 		err = dev->ops->dev_get_software_details(dev);
+=======
+	if (ops->dev_get_software_details) {
+		err = ops->dev_get_software_details(dev);
+>>>>>>> origin/android16-base
 		if (err) {
 			dev_err(&intf->dev,
 				"Cannot get software details, error %d\n", err);
@@ -781,14 +1150,23 @@ static int kvaser_usb_probe(struct usb_interface *intf,
 
 	dev_dbg(&intf->dev, "Max outstanding tx = %d URBs\n", dev->max_tx_urbs);
 
+<<<<<<< HEAD
 	err = dev->ops->dev_get_card_info(dev);
+=======
+	err = ops->dev_get_card_info(dev);
+>>>>>>> origin/android16-base
 	if (err) {
 		dev_err(&intf->dev, "Cannot get card info, error %d\n", err);
 		return err;
 	}
 
+<<<<<<< HEAD
 	if (dev->ops->dev_get_capabilities) {
 		err = dev->ops->dev_get_capabilities(dev);
+=======
+	if (ops->dev_get_capabilities) {
+		err = ops->dev_get_capabilities(dev);
+>>>>>>> origin/android16-base
 		if (err) {
 			dev_err(&intf->dev,
 				"Cannot get capabilities, error %d\n", err);
@@ -798,7 +1176,11 @@ static int kvaser_usb_probe(struct usb_interface *intf,
 	}
 
 	for (i = 0; i < dev->nchannels; i++) {
+<<<<<<< HEAD
 		err = kvaser_usb_init_one(dev, id, i);
+=======
+		err = kvaser_usb_init_one(dev, i);
+>>>>>>> origin/android16-base
 		if (err) {
 			kvaser_usb_remove_interfaces(dev);
 			return err;

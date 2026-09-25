@@ -302,7 +302,15 @@ static ssize_t ir_lirc_transmit_ir(struct file *file, const char __user *buf,
 		if (ret < 0)
 			goto out_kfree_raw;
 
+<<<<<<< HEAD
 		count = ret;
+=======
+		/* drop trailing space */
+		if (!(ret % 2))
+			count = ret - 1;
+		else
+			count = ret;
+>>>>>>> origin/android16-base
 
 		txbuf = kmalloc_array(count, sizeof(unsigned int), GFP_KERNEL);
 		if (!txbuf) {

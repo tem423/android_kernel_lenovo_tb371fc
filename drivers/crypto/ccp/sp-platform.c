@@ -33,30 +33,68 @@ struct sp_platform {
 	unsigned int irq_count;
 };
 
+<<<<<<< HEAD
 static const struct acpi_device_id sp_acpi_match[];
 static const struct of_device_id sp_of_match[];
 
 static struct sp_dev_vdata *sp_get_of_version(struct platform_device *pdev)
 {
 #ifdef CONFIG_OF
+=======
+static const struct sp_dev_vdata dev_vdata[] = {
+	{
+		.bar = 0,
+#ifdef CONFIG_CRYPTO_DEV_SP_CCP
+		.ccp_vdata = &ccpv3_platform,
+#endif
+	},
+};
+
+static const struct acpi_device_id sp_acpi_match[] = {
+	{ "AMDI0C00", (kernel_ulong_t)&dev_vdata[0] },
+	{ },
+};
+MODULE_DEVICE_TABLE(acpi, sp_acpi_match);
+
+static const struct of_device_id sp_of_match[] = {
+	{ .compatible = "amd,ccp-seattle-v1a",
+	  .data = (const void *)&dev_vdata[0] },
+	{ },
+};
+MODULE_DEVICE_TABLE(of, sp_of_match);
+
+static struct sp_dev_vdata *sp_get_of_version(struct platform_device *pdev)
+{
+>>>>>>> origin/android16-base
 	const struct of_device_id *match;
 
 	match = of_match_node(sp_of_match, pdev->dev.of_node);
 	if (match && match->data)
 		return (struct sp_dev_vdata *)match->data;
+<<<<<<< HEAD
 #endif
+=======
+
+>>>>>>> origin/android16-base
 	return NULL;
 }
 
 static struct sp_dev_vdata *sp_get_acpi_version(struct platform_device *pdev)
 {
+<<<<<<< HEAD
 #ifdef CONFIG_ACPI
+=======
+>>>>>>> origin/android16-base
 	const struct acpi_device_id *match;
 
 	match = acpi_match_device(sp_acpi_match, &pdev->dev);
 	if (match && match->driver_data)
 		return (struct sp_dev_vdata *)match->driver_data;
+<<<<<<< HEAD
 #endif
+=======
+
+>>>>>>> origin/android16-base
 	return NULL;
 }
 
@@ -201,6 +239,7 @@ static int sp_platform_resume(struct platform_device *pdev)
 }
 #endif
 
+<<<<<<< HEAD
 static const struct sp_dev_vdata dev_vdata[] = {
 	{
 		.bar = 0,
@@ -236,6 +275,13 @@ static struct platform_driver sp_platform_driver = {
 #ifdef CONFIG_OF
 		.of_match_table = sp_of_match,
 #endif
+=======
+static struct platform_driver sp_platform_driver = {
+	.driver = {
+		.name = "ccp",
+		.acpi_match_table = sp_acpi_match,
+		.of_match_table = sp_of_match,
+>>>>>>> origin/android16-base
 	},
 	.probe = sp_platform_probe,
 	.remove = sp_platform_remove,

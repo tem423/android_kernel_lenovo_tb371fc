@@ -410,11 +410,14 @@ void mmc_remove_card(struct mmc_card *card)
 	mmc_remove_card_debugfs(card);
 #endif
 
+<<<<<<< HEAD
 	if (host->cqe_enabled) {
 		host->cqe_ops->cqe_disable(host);
 		host->cqe_enabled = false;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (mmc_card_present(card)) {
 		if (mmc_host_is_spi(card->host)) {
 			pr_info("%s: SPI card removed\n",
@@ -429,6 +432,16 @@ void mmc_remove_card(struct mmc_card *card)
 	if (host->ops->exit_dbg_mode)
 		host->ops->exit_dbg_mode(host);
 
+<<<<<<< HEAD
 	put_device(&card->dev);
 }
 
+=======
+	if (host->cqe_enabled) {
+		host->cqe_ops->cqe_disable(host);
+		host->cqe_enabled = false;
+	}
+
+	put_device(&card->dev);
+}
+>>>>>>> origin/android16-base

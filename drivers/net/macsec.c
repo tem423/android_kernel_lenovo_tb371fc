@@ -566,18 +566,42 @@ static void macsec_encrypt_finish(struct sk_buff *skb, struct net_device *dev)
 	skb->protocol = eth_hdr(skb)->h_proto;
 }
 
+<<<<<<< HEAD
 static void macsec_count_tx(struct sk_buff *skb, struct macsec_tx_sc *tx_sc,
 			    struct macsec_tx_sa *tx_sa)
 {
+=======
+static unsigned int macsec_msdu_len(struct sk_buff *skb)
+{
+	struct macsec_dev *macsec = macsec_priv(skb->dev);
+	struct macsec_secy *secy = &macsec->secy;
+	bool sci_present = macsec_skb_cb(skb)->has_sci;
+
+	return skb->len - macsec_hdr_len(sci_present) - secy->icv_len;
+}
+
+static void macsec_count_tx(struct sk_buff *skb, struct macsec_tx_sc *tx_sc,
+			    struct macsec_tx_sa *tx_sa)
+{
+	unsigned int msdu_len = macsec_msdu_len(skb);
+>>>>>>> origin/android16-base
 	struct pcpu_tx_sc_stats *txsc_stats = this_cpu_ptr(tx_sc->stats);
 
 	u64_stats_update_begin(&txsc_stats->syncp);
 	if (tx_sc->encrypt) {
+<<<<<<< HEAD
 		txsc_stats->stats.OutOctetsEncrypted += skb->len;
 		txsc_stats->stats.OutPktsEncrypted++;
 		this_cpu_inc(tx_sa->stats->OutPktsEncrypted);
 	} else {
 		txsc_stats->stats.OutOctetsProtected += skb->len;
+=======
+		txsc_stats->stats.OutOctetsEncrypted += msdu_len;
+		txsc_stats->stats.OutPktsEncrypted++;
+		this_cpu_inc(tx_sa->stats->OutPktsEncrypted);
+	} else {
+		txsc_stats->stats.OutOctetsProtected += msdu_len;
+>>>>>>> origin/android16-base
 		txsc_stats->stats.OutPktsProtected++;
 		this_cpu_inc(tx_sa->stats->OutPktsProtected);
 	}
@@ -607,9 +631,16 @@ static void macsec_encrypt_done(struct crypto_async_request *base, int err)
 	aead_request_free(macsec_skb_cb(skb)->req);
 
 	rcu_read_lock_bh();
+<<<<<<< HEAD
 	macsec_encrypt_finish(skb, dev);
 	macsec_count_tx(skb, &macsec->secy.tx_sc, macsec_skb_cb(skb)->tx_sa);
 	len = skb->len;
+=======
+	macsec_count_tx(skb, &macsec->secy.tx_sc, macsec_skb_cb(skb)->tx_sa);
+	/* packet is encrypted/protected so tx_bytes must be calculated */
+	len = macsec_msdu_len(skb) + 2 * ETH_ALEN;
+	macsec_encrypt_finish(skb, dev);
+>>>>>>> origin/android16-base
 	ret = dev_queue_xmit(skb);
 	count_tx(dev, ret, len);
 	rcu_read_unlock_bh();
@@ -765,6 +796,10 @@ static struct sk_buff *macsec_encrypt(struct sk_buff *skb,
 
 	macsec_skb_cb(skb)->req = req;
 	macsec_skb_cb(skb)->tx_sa = tx_sa;
+<<<<<<< HEAD
+=======
+	macsec_skb_cb(skb)->has_sci = sci_present;
+>>>>>>> origin/android16-base
 	aead_request_set_callback(req, 0, macsec_encrypt_done, skb);
 
 	dev_hold(skb->dev);
@@ -805,15 +840,28 @@ static bool macsec_post_decrypt(struct sk_buff *skb, struct macsec_secy *secy, u
 		u64_stats_update_begin(&rxsc_stats->syncp);
 		rxsc_stats->stats.InPktsLate++;
 		u64_stats_update_end(&rxsc_stats->syncp);
+<<<<<<< HEAD
+=======
+		secy->netdev->stats.rx_dropped++;
+>>>>>>> origin/android16-base
 		return false;
 	}
 
 	if (secy->validate_frames != MACSEC_VALIDATE_DISABLED) {
+<<<<<<< HEAD
 		u64_stats_update_begin(&rxsc_stats->syncp);
 		if (hdr->tci_an & MACSEC_TCI_E)
 			rxsc_stats->stats.InOctetsDecrypted += skb->len;
 		else
 			rxsc_stats->stats.InOctetsValidated += skb->len;
+=======
+		unsigned int msdu_len = macsec_msdu_len(skb);
+		u64_stats_update_begin(&rxsc_stats->syncp);
+		if (hdr->tci_an & MACSEC_TCI_E)
+			rxsc_stats->stats.InOctetsDecrypted += msdu_len;
+		else
+			rxsc_stats->stats.InOctetsValidated += msdu_len;
+>>>>>>> origin/android16-base
 		u64_stats_update_end(&rxsc_stats->syncp);
 	}
 
@@ -826,6 +874,11 @@ static bool macsec_post_decrypt(struct sk_buff *skb, struct macsec_secy *secy, u
 			u64_stats_update_begin(&rxsc_stats->syncp);
 			rxsc_stats->stats.InPktsNotValid++;
 			u64_stats_update_end(&rxsc_stats->syncp);
+<<<<<<< HEAD
+=======
+			this_cpu_inc(rx_sa->stats->InPktsNotValid);
+			secy->netdev->stats.rx_errors++;
+>>>>>>> origin/android16-base
 			return false;
 		}
 
@@ -911,9 +964,15 @@ static void macsec_decrypt_done(struct crypto_async_request *base, int err)
 
 	macsec_finalize_skb(skb, macsec->secy.icv_len,
 			    macsec_extra_len(macsec_skb_cb(skb)->has_sci));
+<<<<<<< HEAD
 	macsec_reset_skb(skb, macsec->secy.netdev);
 
 	len = skb->len;
+=======
+	len = skb->len;
+	macsec_reset_skb(skb, macsec->secy.netdev);
+
+>>>>>>> origin/android16-base
 	if (gro_cells_receive(&macsec->gro_cells, skb) == NET_RX_SUCCESS)
 		count_rx(dev, len);
 
@@ -1055,6 +1114,10 @@ static void handle_not_macsec(struct sk_buff *skb)
 			u64_stats_update_begin(&secy_stats->syncp);
 			secy_stats->stats.InPktsNoTag++;
 			u64_stats_update_end(&secy_stats->syncp);
+<<<<<<< HEAD
+=======
+			macsec->secy.netdev->stats.rx_dropped++;
+>>>>>>> origin/android16-base
 			continue;
 		}
 
@@ -1165,6 +1228,10 @@ static rx_handler_result_t macsec_handle_frame(struct sk_buff **pskb)
 		u64_stats_update_begin(&secy_stats->syncp);
 		secy_stats->stats.InPktsBadTag++;
 		u64_stats_update_end(&secy_stats->syncp);
+<<<<<<< HEAD
+=======
+		secy->netdev->stats.rx_errors++;
+>>>>>>> origin/android16-base
 		goto drop_nosa;
 	}
 
@@ -1180,6 +1247,10 @@ static rx_handler_result_t macsec_handle_frame(struct sk_buff **pskb)
 			u64_stats_update_begin(&rxsc_stats->syncp);
 			rxsc_stats->stats.InPktsNotUsingSA++;
 			u64_stats_update_end(&rxsc_stats->syncp);
+<<<<<<< HEAD
+=======
+			secy->netdev->stats.rx_errors++;
+>>>>>>> origin/android16-base
 			goto drop_nosa;
 		}
 
@@ -1206,6 +1277,10 @@ static rx_handler_result_t macsec_handle_frame(struct sk_buff **pskb)
 			u64_stats_update_begin(&rxsc_stats->syncp);
 			rxsc_stats->stats.InPktsLate++;
 			u64_stats_update_end(&rxsc_stats->syncp);
+<<<<<<< HEAD
+=======
+			macsec->secy.netdev->stats.rx_dropped++;
+>>>>>>> origin/android16-base
 			goto drop;
 		}
 	}
@@ -1234,6 +1309,10 @@ static rx_handler_result_t macsec_handle_frame(struct sk_buff **pskb)
 deliver:
 	macsec_finalize_skb(skb, secy->icv_len,
 			    macsec_extra_len(macsec_skb_cb(skb)->has_sci));
+<<<<<<< HEAD
+=======
+	len = skb->len;
+>>>>>>> origin/android16-base
 	macsec_reset_skb(skb, secy->netdev);
 
 	if (rx_sa)
@@ -1241,7 +1320,10 @@ deliver:
 	macsec_rxsc_put(rx_sc);
 
 	skb_orphan(skb);
+<<<<<<< HEAD
 	len = skb->len;
+=======
+>>>>>>> origin/android16-base
 	ret = gro_cells_receive(&macsec->gro_cells, skb);
 	if (ret == NET_RX_SUCCESS)
 		count_rx(dev, len);
@@ -1283,6 +1365,10 @@ nosci:
 			u64_stats_update_begin(&secy_stats->syncp);
 			secy_stats->stats.InPktsNoSCI++;
 			u64_stats_update_end(&secy_stats->syncp);
+<<<<<<< HEAD
+=======
+			macsec->secy.netdev->stats.rx_errors++;
+>>>>>>> origin/android16-base
 			continue;
 		}
 
@@ -1315,8 +1401,12 @@ static struct crypto_aead *macsec_alloc_tfm(char *key, int key_len, int icv_len)
 	struct crypto_aead *tfm;
 	int ret;
 
+<<<<<<< HEAD
 	/* Pick a sync gcm(aes) cipher to ensure order is preserved. */
 	tfm = crypto_alloc_aead("gcm(aes)", 0, CRYPTO_ALG_ASYNC);
+=======
+	tfm = crypto_alloc_aead("gcm(aes)", 0, 0);
+>>>>>>> origin/android16-base
 
 	if (IS_ERR(tfm))
 		return tfm;
@@ -2738,6 +2828,10 @@ static netdev_tx_t macsec_start_xmit(struct sk_buff *skb,
 		return NETDEV_TX_OK;
 	}
 
+<<<<<<< HEAD
+=======
+	len = skb->len;
+>>>>>>> origin/android16-base
 	skb = macsec_encrypt(skb, dev);
 	if (IS_ERR(skb)) {
 		if (PTR_ERR(skb) != -EINPROGRESS)
@@ -2748,7 +2842,10 @@ static netdev_tx_t macsec_start_xmit(struct sk_buff *skb,
 	macsec_count_tx(skb, &macsec->secy.tx_sc, macsec_skb_cb(skb)->tx_sa);
 
 	macsec_encrypt_finish(skb, dev);
+<<<<<<< HEAD
 	len = skb->len;
+=======
+>>>>>>> origin/android16-base
 	ret = dev_queue_xmit(skb);
 	count_tx(dev, ret, len);
 	return ret;
@@ -2963,6 +3060,10 @@ static void macsec_get_stats64(struct net_device *dev,
 
 	s->rx_dropped = dev->stats.rx_dropped;
 	s->tx_dropped = dev->stats.tx_dropped;
+<<<<<<< HEAD
+=======
+	s->rx_errors = dev->stats.rx_errors;
+>>>>>>> origin/android16-base
 }
 
 static int macsec_get_iflink(const struct net_device *dev)
@@ -3259,6 +3360,18 @@ static int macsec_newlink(struct net *net, struct net_device *dev,
 
 	macsec->real_dev = real_dev;
 
+<<<<<<< HEAD
+=======
+	/* send_sci must be set to true when transmit sci explicitly is set */
+	if ((data && data[IFLA_MACSEC_SCI]) &&
+	    (data && data[IFLA_MACSEC_INC_SCI])) {
+		u8 send_sci = !!nla_get_u8(data[IFLA_MACSEC_INC_SCI]);
+
+		if (!send_sci)
+			return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	if (data && data[IFLA_MACSEC_ICV_LEN])
 		icv_len = nla_get_u8(data[IFLA_MACSEC_ICV_LEN]);
 	mtu = real_dev->mtu - icv_len - macsec_extra_len(true);

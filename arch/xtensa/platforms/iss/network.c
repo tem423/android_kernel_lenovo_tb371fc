@@ -236,7 +236,11 @@ static int tuntap_probe(struct iss_net_private *lp, int index, char *init)
 
 	init += sizeof(TRANSPORT_TUNTAP_NAME) - 1;
 	if (*init == ',') {
+<<<<<<< HEAD
 		rem = split_if_spec(init + 1, &mac_str, &dev_name);
+=======
+		rem = split_if_spec(init + 1, &mac_str, &dev_name, NULL);
+>>>>>>> origin/android16-base
 		if (rem != NULL) {
 			pr_err("%s: extra garbage on specification : '%s'\n",
 			       dev->name, rem);

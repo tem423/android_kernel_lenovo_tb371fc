@@ -99,12 +99,19 @@ int usb_ep_enable(struct usb_ep *ep)
 		goto out;
 
 	/* UDC drivers can't handle endpoints with maxpacket size 0 */
+<<<<<<< HEAD
 	if (usb_endpoint_maxp(ep->desc) == 0) {
 		/*
 		 * We should log an error message here, but we can't call
 		 * dev_err() because there's no way to find the gadget
 		 * given only ep.
 		 */
+=======
+	if (!ep->desc || usb_endpoint_maxp(ep->desc) == 0) {
+		WARN_ONCE(1, "%s: ep%d (%s) has %s\n", __func__, ep->address, ep->name,
+			  (!ep->desc) ? "NULL descriptor" : "maxpacket 0");
+
+>>>>>>> origin/android16-base
 		ret = -EINVAL;
 		goto out;
 	}
@@ -273,7 +280,13 @@ int usb_ep_queue(struct usb_ep *ep,
 {
 	int ret = 0;
 
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(!ep->enabled && ep->address)) {
+=======
+	if (!ep->enabled && ep->address) {
+		pr_debug("USB gadget: queue request to disabled ep 0x%x (%s)\n",
+				 ep->address, ep->name);
+>>>>>>> origin/android16-base
 		ret = -ESHUTDOWN;
 		goto out;
 	}
@@ -515,12 +528,20 @@ EXPORT_SYMBOL_GPL(usb_gadget_wakeup);
 int usb_gsi_ep_op(struct usb_ep *ep,
 		struct usb_gsi_request *req, enum gsi_ep_op op)
 {
+<<<<<<< HEAD
 	if (ep->ops->gsi_ep_op)
+=======
+	if (ep && ep->ops && ep->ops->gsi_ep_op)
+>>>>>>> origin/android16-base
 		return ep->ops->gsi_ep_op(ep, req, op);
 
 	return -EOPNOTSUPP;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(usb_gsi_ep_op);
+=======
+EXPORT_SYMBOL_GPL(usb_gsi_ep_op);
+>>>>>>> origin/android16-base
 
 /**
  * usb_gadget_func_wakeup - send a function remote wakeup up notification
@@ -533,15 +554,26 @@ EXPORT_SYMBOL(usb_gsi_ep_op);
 int usb_gadget_func_wakeup(struct usb_gadget *gadget,
 	int interface_id)
 {
+<<<<<<< HEAD
 	if (gadget->speed != USB_SPEED_SUPER)
 		return -EOPNOTSUPP;
 
 	if (!gadget->ops->func_wakeup)
+=======
+	if (!gadget || (gadget->speed != USB_SPEED_SUPER))
+		return -EOPNOTSUPP;
+
+	if (!gadget->ops || !gadget->ops->func_wakeup)
+>>>>>>> origin/android16-base
 		return -EOPNOTSUPP;
 
 	return gadget->ops->func_wakeup(gadget, interface_id);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(usb_gadget_func_wakeup);
+=======
+EXPORT_SYMBOL_GPL(usb_gadget_func_wakeup);
+>>>>>>> origin/android16-base
 
 /**
  * usb_gadget_set_selfpowered - sets the device selfpowered feature.
@@ -1338,7 +1370,10 @@ static void usb_gadget_remove_driver(struct usb_udc *udc)
 	usb_gadget_udc_stop(udc);
 
 	udc->driver = NULL;
+<<<<<<< HEAD
 	udc->dev.driver = NULL;
+=======
+>>>>>>> origin/android16-base
 	udc->gadget->dev.driver = NULL;
 }
 
@@ -1387,7 +1422,10 @@ static int udc_bind_to_driver(struct usb_udc *udc, struct usb_gadget_driver *dri
 			driver->function);
 
 	udc->driver = driver;
+<<<<<<< HEAD
 	udc->dev.driver = &driver->driver;
+=======
+>>>>>>> origin/android16-base
 	udc->gadget->dev.driver = &driver->driver;
 
 	usb_gadget_udc_set_speed(udc, driver->max_speed);
@@ -1409,7 +1447,10 @@ err1:
 		dev_err(&udc->dev, "failed to start %s: %d\n",
 			udc->driver->function, ret);
 	udc->driver = NULL;
+<<<<<<< HEAD
 	udc->dev.driver = NULL;
+=======
+>>>>>>> origin/android16-base
 	udc->gadget->dev.driver = NULL;
 	return ret;
 }
@@ -1512,10 +1553,20 @@ static ssize_t soft_connect_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t n)
 {
 	struct usb_udc		*udc = container_of(dev, struct usb_udc, dev);
+<<<<<<< HEAD
 
 	if (!udc->driver) {
 		dev_err(dev, "soft-connect without a gadget driver\n");
 		return -EOPNOTSUPP;
+=======
+	ssize_t			ret;
+
+	mutex_lock(&udc_lock);
+	if (!udc->driver) {
+		dev_err(dev, "soft-connect without a gadget driver\n");
+		ret = -EOPNOTSUPP;
+		goto out;
+>>>>>>> origin/android16-base
 	}
 
 	if (sysfs_streq(buf, "connect")) {
@@ -1527,10 +1578,21 @@ static ssize_t soft_connect_store(struct device *dev,
 		usb_gadget_udc_stop(udc);
 	} else {
 		dev_err(dev, "unsupported command '%s'\n", buf);
+<<<<<<< HEAD
 		return -EINVAL;
 	}
 
 	return n;
+=======
+		ret = -EINVAL;
+		goto out;
+	}
+
+	ret = n;
+out:
+	mutex_unlock(&udc_lock);
+	return ret;
+>>>>>>> origin/android16-base
 }
 static DEVICE_ATTR_WO(soft_connect);
 

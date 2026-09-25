@@ -21,6 +21,10 @@
 #define AMD_GPIO_PINS_BANK3     32
 
 #define WAKE_INT_MASTER_REG 0xfc
+<<<<<<< HEAD
+=======
+#define INTERNAL_GPIO0_DEBOUNCE (1 << 15)
+>>>>>>> origin/android16-base
 #define EOI_MASK (1 << 29)
 
 #define WAKE_INT_STATUS_REG0 0x2f8

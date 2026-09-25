@@ -89,6 +89,10 @@ static const char *const hwcap_str[] = {
 	"ilrcpc",
 	"flagm",
 	"ssbs",
+<<<<<<< HEAD
+=======
+	"sb",
+>>>>>>> origin/android16-base
 	NULL
 };
 

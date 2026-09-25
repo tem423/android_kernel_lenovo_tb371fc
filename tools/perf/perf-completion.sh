@@ -165,7 +165,16 @@ __perf_main ()
 
 		local cur1=${COMP_WORDS[COMP_CWORD]}
 		local raw_evts=$($cmd list --raw-dump)
+<<<<<<< HEAD
 		local arr s tmp result
+=======
+		local arr s tmp result cpu_evts
+
+		# aarch64 doesn't have /sys/bus/event_source/devices/cpu/events
+		if [[ `uname -m` != aarch64 ]]; then
+			cpu_evts=$(ls /sys/bus/event_source/devices/cpu/events)
+		fi
+>>>>>>> origin/android16-base
 
 		if [[ "$cur1" == */* && ${cur1#*/} =~ ^[A-Z] ]]; then
 			OLD_IFS="$IFS"
@@ -183,9 +192,15 @@ __perf_main ()
 				fi
 			done
 
+<<<<<<< HEAD
 			evts=${result}" "$(ls /sys/bus/event_source/devices/cpu/events)
 		else
 			evts=${raw_evts}" "$(ls /sys/bus/event_source/devices/cpu/events)
+=======
+			evts=${result}" "${cpu_evts}
+		else
+			evts=${raw_evts}" "${cpu_evts}
+>>>>>>> origin/android16-base
 		fi
 
 		if [[ "$cur1" == , ]]; then

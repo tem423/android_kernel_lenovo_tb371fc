@@ -210,6 +210,7 @@ raid_attr_ro_state(level);
 raid_attr_ro_fn(resync);
 raid_attr_ro_state_fn(state);
 
+<<<<<<< HEAD
 static void raid_component_release(struct device *dev)
 {
 	struct raid_component *rc =
@@ -257,6 +258,8 @@ err_out:
 }
 EXPORT_SYMBOL(raid_component_add);
 
+=======
+>>>>>>> origin/android16-base
 struct raid_template *
 raid_class_attach(struct raid_function_template *ft)
 {

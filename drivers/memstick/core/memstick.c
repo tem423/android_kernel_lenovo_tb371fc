@@ -416,6 +416,10 @@ static struct memstick_dev *memstick_alloc_card(struct memstick_host *host)
 	return card;
 err_out:
 	host->card = old_card;
+<<<<<<< HEAD
+=======
+	kfree_const(card->dev.kobj.name);
+>>>>>>> origin/android16-base
 	kfree(card);
 	return NULL;
 }
@@ -469,11 +473,20 @@ static void memstick_check(struct work_struct *work)
 			host->card = card;
 			if (device_register(&card->dev)) {
 				put_device(&card->dev);
+<<<<<<< HEAD
 				kfree(host->card);
 				host->card = NULL;
 			}
 		} else
 			kfree(card);
+=======
+				host->card = NULL;
+			}
+		} else {
+			kfree_const(card->dev.kobj.name);
+			kfree(card);
+		}
+>>>>>>> origin/android16-base
 	}
 
 out_power_off:

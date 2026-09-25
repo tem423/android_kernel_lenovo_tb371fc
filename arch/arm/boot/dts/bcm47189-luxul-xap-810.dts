@@ -85,3 +85,19 @@
 		};
 	};
 };
+<<<<<<< HEAD
+=======
+
+&gmac0 {
+	phy-mode = "rgmii";
+	phy-handle = <&bcm54210e>;
+
+	mdio {
+		/delete-node/ switch@1e;
+
+		bcm54210e: ethernet-phy@0 {
+			reg = <0>;
+		};
+	};
+};
+>>>>>>> origin/android16-base

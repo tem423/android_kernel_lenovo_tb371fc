@@ -55,7 +55,11 @@ static void iser_event_handler(struct ib_event_handler *handler,
 {
 	iser_err("async event %s (%d) on device %s port %d\n",
 		 ib_event_msg(event->event), event->event,
+<<<<<<< HEAD
 		 event->device->name, event->element.port_num);
+=======
+		dev_name(&event->device->dev), event->element.port_num);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -85,7 +89,11 @@ static int iser_create_device_ib_res(struct iser_device *device)
 	max_cqe = min(ISER_MAX_CQ_LEN, ib_dev->attrs.max_cqe);
 
 	iser_info("using %d CQs, device %s supports %d vectors max_cqe %d\n",
+<<<<<<< HEAD
 		  device->comps_used, ib_dev->name,
+=======
+		  device->comps_used, dev_name(&ib_dev->dev),
+>>>>>>> origin/android16-base
 		  ib_dev->num_comp_vectors, max_cqe);
 
 	device->pd = ib_alloc_pd(ib_dev,
@@ -468,7 +476,12 @@ static int iser_create_ib_conn_res(struct ib_conn *ib_conn)
 			iser_conn->max_cmds =
 				ISER_GET_MAX_XMIT_CMDS(ib_dev->attrs.max_qp_wr);
 			iser_dbg("device %s supports max_send_wr %d\n",
+<<<<<<< HEAD
 				 device->ib_device->name, ib_dev->attrs.max_qp_wr);
+=======
+				 dev_name(&device->ib_device->dev),
+				 ib_dev->attrs.max_qp_wr);
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -764,7 +777,11 @@ static void iser_addr_handler(struct rdma_cm_id *cma_id)
 		      IB_DEVICE_SIGNATURE_HANDOVER)) {
 			iser_warn("T10-PI requested but not supported on %s, "
 				  "continue without T10-PI\n",
+<<<<<<< HEAD
 				  ib_conn->device->ib_device->name);
+=======
+				  dev_name(&ib_conn->device->ib_device->dev));
+>>>>>>> origin/android16-base
 			ib_conn->pi_support = false;
 		} else {
 			ib_conn->pi_support = true;

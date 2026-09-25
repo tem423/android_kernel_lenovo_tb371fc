@@ -27,6 +27,11 @@ static DEFINE_MUTEX(io_range_mutex);
  * @new_range: pointer to the IO range to be registered.
  *
  * Returns 0 on success, the error code in case of failure.
+<<<<<<< HEAD
+=======
+ * If the range already exists, -EEXIST will be returned, which should be
+ * considered a success.
+>>>>>>> origin/android16-base
  *
  * Register a new IO range node in the IO range list.
  */
@@ -49,6 +54,10 @@ int logic_pio_register_range(struct logic_pio_hwaddr *new_range)
 	list_for_each_entry(range, &io_range_list, list) {
 		if (range->fwnode == new_range->fwnode) {
 			/* range already there */
+<<<<<<< HEAD
+=======
+			ret = -EEXIST;
+>>>>>>> origin/android16-base
 			goto end_register;
 		}
 		if (range->flags == LOGIC_PIO_CPU_MMIO &&

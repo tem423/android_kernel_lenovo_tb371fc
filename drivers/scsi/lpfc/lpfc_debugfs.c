@@ -1843,7 +1843,11 @@ lpfc_debugfs_dif_err_write(struct file *file, const char __user *buf,
 	memset(dstbuf, 0, 33);
 	size = (nbytes < 32) ? nbytes : 32;
 	if (copy_from_user(dstbuf, buf, size))
+<<<<<<< HEAD
 		return 0;
+=======
+		return -EFAULT;
+>>>>>>> origin/android16-base
 
 	if (dent == phba->debug_InjErrLBA) {
 		if ((buf[0] == 'o') && (buf[1] == 'f') && (buf[2] == 'f'))
@@ -1851,7 +1855,11 @@ lpfc_debugfs_dif_err_write(struct file *file, const char __user *buf,
 	}
 
 	if ((tmp == 0) && (kstrtoull(dstbuf, 0, &tmp)))
+<<<<<<< HEAD
 		return 0;
+=======
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	if (dent == phba->debug_writeGuard)
 		phba->lpfc_injerr_wgrd_cnt = (uint32_t)tmp;
@@ -2267,8 +2275,13 @@ lpfc_debugfs_nvmeio_trc_write(struct file *file, const char __user *buf,
 	char mybuf[64];
 	char *pbuf;
 
+<<<<<<< HEAD
 	if (nbytes > 64)
 		nbytes = 64;
+=======
+	if (nbytes > 63)
+		nbytes = 63;
+>>>>>>> origin/android16-base
 
 	memset(mybuf, 0, sizeof(mybuf));
 

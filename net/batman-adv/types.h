@@ -1515,6 +1515,15 @@ struct batadv_priv {
 	struct net_device *soft_iface;
 
 	/**
+<<<<<<< HEAD
+=======
+	 * @mtu_set_by_user: MTU was set once by user
+	 * protected by rtnl_lock
+	 */
+	int mtu_set_by_user;
+
+	/**
+>>>>>>> origin/android16-base
 	 * @bat_counters: mesh internal traffic statistic counters (see
 	 *  batadv_counters)
 	 */

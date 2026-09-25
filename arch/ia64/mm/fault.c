@@ -163,7 +163,11 @@ retry:
 	 */
 	fault = handle_mm_fault(vma, address, flags);
 
+<<<<<<< HEAD
 	if ((fault & VM_FAULT_RETRY) && fatal_signal_pending(current))
+=======
+	if (fault_signal_pending(fault, regs))
+>>>>>>> origin/android16-base
 		return;
 
 	if (unlikely(fault & VM_FAULT_ERROR)) {
@@ -302,7 +306,11 @@ retry:
 		regs = NULL;
 	bust_spinlocks(0);
 	if (regs)
+<<<<<<< HEAD
 		do_exit(SIGKILL);
+=======
+		make_task_dead(SIGKILL);
+>>>>>>> origin/android16-base
 	return;
 
   out_of_memory:

@@ -396,6 +396,7 @@ static struct expr *expr_eliminate_yn(struct expr *e)
 }
 
 /*
+<<<<<<< HEAD
  * bool FOO!=n => FOO
  */
 struct expr *expr_trans_bool(struct expr *e)
@@ -425,6 +426,8 @@ struct expr *expr_trans_bool(struct expr *e)
 }
 
 /*
+=======
+>>>>>>> origin/android16-base
  * e1 || e2 -> ?
  */
 static struct expr *expr_join_or(struct expr *e1, struct expr *e2)

@@ -355,7 +355,11 @@ DEFINE_EVENT(musb_cppi41, musb_cppi41_free,
 /* this part has to be here */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/usb/musb
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE musb_trace

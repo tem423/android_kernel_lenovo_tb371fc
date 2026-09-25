@@ -115,7 +115,14 @@ extern unsigned long min_low_pfn;
 
 #endif /* __ASSEMBLY__ */
 
+<<<<<<< HEAD
 #define virt_addr_valid(vaddr)	(pfn_valid(virt_to_pfn(vaddr)))
+=======
+#define virt_addr_valid(vaddr)	({						\
+	unsigned long _addr = (unsigned long)vaddr;				\
+	(unsigned long)(_addr) >= PAGE_OFFSET && pfn_valid(virt_to_pfn(_addr));	\
+})
+>>>>>>> origin/android16-base
 
 #define VM_DATA_DEFAULT_FLAGS	(VM_READ | VM_WRITE | \
 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)

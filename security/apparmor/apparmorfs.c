@@ -403,7 +403,11 @@ static struct aa_loaddata *aa_simple_write_to_buffer(const char __user *userbuf,
 
 	data->size = copy_size;
 	if (copy_from_user(data->data, userbuf, copy_size)) {
+<<<<<<< HEAD
 		kvfree(data);
+=======
+		aa_put_loaddata(data);
+>>>>>>> origin/android16-base
 		return ERR_PTR(-EFAULT);
 	}
 
@@ -869,8 +873,15 @@ static struct multi_transaction *multi_transaction_new(struct file *file,
 	if (!t)
 		return ERR_PTR(-ENOMEM);
 	kref_init(&t->count);
+<<<<<<< HEAD
 	if (copy_from_user(t->data, buf, size))
 		return ERR_PTR(-EFAULT);
+=======
+	if (copy_from_user(t->data, buf, size)) {
+		put_multi_transaction(t);
+		return ERR_PTR(-EFAULT);
+	}
+>>>>>>> origin/android16-base
 
 	return t;
 }
@@ -1591,6 +1602,13 @@ int __aafs_profile_mkdir(struct aa_profile *profile, struct dentry *parent)
 		struct aa_profile *p;
 		p = aa_deref_parent(profile);
 		dent = prof_dir(p);
+<<<<<<< HEAD
+=======
+		if (!dent) {
+			error = -ENOENT;
+			goto fail2;
+		}
+>>>>>>> origin/android16-base
 		/* adding to parent that previously didn't have children */
 		dent = aafs_create_dir("profiles", dent);
 		if (IS_ERR(dent))
@@ -1960,9 +1978,12 @@ fail2:
 	return error;
 }
 
+<<<<<<< HEAD
 
 #define list_entry_is_head(pos, head, member) (&pos->member == (head))
 
+=======
+>>>>>>> origin/android16-base
 /**
  * __next_ns - find the next namespace to list
  * @root: root namespace to stop search at (NOT NULL)

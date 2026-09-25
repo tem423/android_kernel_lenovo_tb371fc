@@ -164,7 +164,11 @@ static int btf_dumper_int(const struct btf_type *t, __u8 bit_offset,
 					     *(char *)data);
 		break;
 	case BTF_INT_BOOL:
+<<<<<<< HEAD
 		jsonw_bool(jw, *(int *)data);
+=======
+		jsonw_bool(jw, *(bool *)data);
+>>>>>>> origin/android16-base
 		break;
 	default:
 		/* shouldn't happen */

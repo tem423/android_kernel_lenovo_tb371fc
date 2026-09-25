@@ -223,18 +223,45 @@ static void put_quota_format(struct quota_format_type *fmt)
 
 /*
  * Dquot List Management:
+<<<<<<< HEAD
  * The quota code uses three lists for dquot management: the inuse_list,
  * free_dquots, and dquot_hash[] array. A single dquot structure may be
  * on all three lists, depending on its current state.
+=======
+ * The quota code uses five lists for dquot management: the inuse_list,
+ * releasing_dquots, free_dquots, dqi_dirty_list, and dquot_hash[] array.
+ * A single dquot structure may be on some of those lists, depending on
+ * its current state.
+>>>>>>> origin/android16-base
  *
  * All dquots are placed to the end of inuse_list when first created, and this
  * list is used for invalidate operation, which must look at every dquot.
  *
+<<<<<<< HEAD
  * Unused dquots (dq_count == 0) are added to the free_dquots list when freed,
  * and this list is searched whenever we need an available dquot.  Dquots are
  * removed from the list as soon as they are used again, and
  * dqstats.free_dquots gives the number of dquots on the list. When
  * dquot is invalidated it's completely released from memory.
+=======
+ * When the last reference of a dquot is dropped, the dquot is added to
+ * releasing_dquots. We'll then queue work item which will call
+ * synchronize_srcu() and after that perform the final cleanup of all the
+ * dquots on the list. Each cleaned up dquot is moved to free_dquots list.
+ * Both releasing_dquots and free_dquots use the dq_free list_head in the dquot
+ * struct.
+ *
+ * Unused and cleaned up dquots are in the free_dquots list and this list is
+ * searched whenever we need an available dquot. Dquots are removed from the
+ * list as soon as they are used again and dqstats.free_dquots gives the number
+ * of dquots on the list. When dquot is invalidated it's completely released
+ * from memory.
+ *
+ * Dirty dquots are added to the dqi_dirty_list of quota_info when mark
+ * dirtied, and this list is searched when writing dirty dquots back to
+ * quota file. Note that some filesystems do dirty dquot tracking on their
+ * own (e.g. in a journal) and thus don't use dqi_dirty_list.
+>>>>>>> origin/android16-base
  *
  * Dquots with a specific identity (device, type and id) are placed on
  * one of the dquot_hash[] hash chains. The provides an efficient search
@@ -243,6 +270,10 @@ static void put_quota_format(struct quota_format_type *fmt)
 
 static LIST_HEAD(inuse_list);
 static LIST_HEAD(free_dquots);
+<<<<<<< HEAD
+=======
+static LIST_HEAD(releasing_dquots);
+>>>>>>> origin/android16-base
 static unsigned int dq_hash_bits, dq_hash_mask;
 static struct hlist_head *dquot_hash;
 
@@ -253,6 +284,12 @@ static qsize_t inode_get_rsv_space(struct inode *inode);
 static qsize_t __inode_get_rsv_space(struct inode *inode);
 static int __dquot_initialize(struct inode *inode, int type);
 
+<<<<<<< HEAD
+=======
+static void quota_release_workfn(struct work_struct *work);
+static DECLARE_DELAYED_WORK(quota_release_work, quota_release_workfn);
+
+>>>>>>> origin/android16-base
 static inline unsigned int
 hashfn(const struct super_block *sb, struct kqid qid)
 {
@@ -300,12 +337,28 @@ static inline void put_dquot_last(struct dquot *dquot)
 	dqstats_inc(DQST_FREE_DQUOTS);
 }
 
+<<<<<<< HEAD
+=======
+static inline void put_releasing_dquots(struct dquot *dquot)
+{
+	list_add_tail(&dquot->dq_free, &releasing_dquots);
+	set_bit(DQ_RELEASING_B, &dquot->dq_flags);
+}
+
+>>>>>>> origin/android16-base
 static inline void remove_free_dquot(struct dquot *dquot)
 {
 	if (list_empty(&dquot->dq_free))
 		return;
 	list_del_init(&dquot->dq_free);
+<<<<<<< HEAD
 	dqstats_dec(DQST_FREE_DQUOTS);
+=======
+	if (!test_bit(DQ_RELEASING_B, &dquot->dq_flags))
+		dqstats_dec(DQST_FREE_DQUOTS);
+	else
+		clear_bit(DQ_RELEASING_B, &dquot->dq_flags);
+>>>>>>> origin/android16-base
 }
 
 static inline void put_inuse(struct dquot *dquot)
@@ -331,6 +384,14 @@ static void wait_on_dquot(struct dquot *dquot)
 	mutex_unlock(&dquot->dq_lock);
 }
 
+<<<<<<< HEAD
+=======
+static inline int dquot_active(struct dquot *dquot)
+{
+	return test_bit(DQ_ACTIVE_B, &dquot->dq_flags);
+}
+
+>>>>>>> origin/android16-base
 static inline int dquot_dirty(struct dquot *dquot)
 {
 	return test_bit(DQ_MOD_B, &dquot->dq_flags);
@@ -346,14 +407,22 @@ int dquot_mark_dquot_dirty(struct dquot *dquot)
 {
 	int ret = 1;
 
+<<<<<<< HEAD
 	if (!test_bit(DQ_ACTIVE_B, &dquot->dq_flags))
+=======
+	if (!dquot_active(dquot))
+>>>>>>> origin/android16-base
 		return 0;
 
 	if (sb_dqopt(dquot->dq_sb)->flags & DQUOT_NOLIST_DIRTY)
 		return test_and_set_bit(DQ_MOD_B, &dquot->dq_flags);
 
 	/* If quota is dirty already, we don't have to acquire dq_list_lock */
+<<<<<<< HEAD
 	if (test_bit(DQ_MOD_B, &dquot->dq_flags))
+=======
+	if (dquot_dirty(dquot))
+>>>>>>> origin/android16-base
 		return 1;
 
 	spin_lock(&dq_list_lock);
@@ -368,6 +437,7 @@ int dquot_mark_dquot_dirty(struct dquot *dquot)
 EXPORT_SYMBOL(dquot_mark_dquot_dirty);
 
 /* Dirtify all the dquots - this can block when journalling */
+<<<<<<< HEAD
 static inline int mark_all_dquot_dirty(struct dquot * const *dquot)
 {
 	int ret, err, cnt;
@@ -377,6 +447,19 @@ static inline int mark_all_dquot_dirty(struct dquot * const *dquot)
 		if (dquot[cnt])
 			/* Even in case of error we have to continue */
 			ret = mark_dquot_dirty(dquot[cnt]);
+=======
+static inline int mark_all_dquot_dirty(struct dquot __rcu * const *dquots)
+{
+	int ret, err, cnt;
+	struct dquot *dquot;
+
+	ret = err = 0;
+	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
+		dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+		if (dquot)
+			/* Even in case of error we have to continue */
+			ret = mark_dquot_dirty(dquot);
+>>>>>>> origin/android16-base
 		if (!err)
 			err = ret;
 	}
@@ -432,7 +515,11 @@ int dquot_acquire(struct dquot *dquot)
 	smp_mb__before_atomic();
 	set_bit(DQ_READ_B, &dquot->dq_flags);
 	/* Instantiate dquot if needed */
+<<<<<<< HEAD
 	if (!test_bit(DQ_ACTIVE_B, &dquot->dq_flags) && !dquot->dq_off) {
+=======
+	if (!dquot_active(dquot) && !dquot->dq_off) {
+>>>>>>> origin/android16-base
 		ret = dqopt->ops[dquot->dq_id.type]->commit_dqblk(dquot);
 		/* Write the info if needed */
 		if (info_dirty(&dqopt->info[dquot->dq_id.type])) {
@@ -471,7 +558,11 @@ int dquot_commit(struct dquot *dquot)
 		goto out_lock;
 	/* Inactive dquot can be only if there was error during read/init
 	 * => we have better not writing it */
+<<<<<<< HEAD
 	if (test_bit(DQ_ACTIVE_B, &dquot->dq_flags))
+=======
+	if (dquot_active(dquot))
+>>>>>>> origin/android16-base
 		ret = dqopt->ops[dquot->dq_id.type]->commit_dqblk(dquot);
 	else
 		ret = -EIO;
@@ -532,6 +623,11 @@ static void invalidate_dquots(struct super_block *sb, int type)
 	struct dquot *dquot, *tmp;
 
 restart:
+<<<<<<< HEAD
+=======
+	flush_delayed_work(&quota_release_work);
+
+>>>>>>> origin/android16-base
 	spin_lock(&dq_list_lock);
 	list_for_each_entry_safe(dquot, tmp, &inuse_list, dq_inuse) {
 		if (dquot->dq_sb != sb)
@@ -540,7 +636,11 @@ restart:
 			continue;
 		/* Wait for dquot users */
 		if (atomic_read(&dquot->dq_count)) {
+<<<<<<< HEAD
 			dqgrab(dquot);
+=======
+			atomic_inc(&dquot->dq_count);
+>>>>>>> origin/android16-base
 			spin_unlock(&dq_list_lock);
 			/*
 			 * Once dqput() wakes us up, we know it's time to free
@@ -559,6 +659,18 @@ restart:
 			goto restart;
 		}
 		/*
+<<<<<<< HEAD
+=======
+		 * The last user already dropped its reference but dquot didn't
+		 * get fully cleaned up yet. Restart the scan which flushes the
+		 * work cleaning up released dquots.
+		 */
+		if (test_bit(DQ_RELEASING_B, &dquot->dq_flags)) {
+			spin_unlock(&dq_list_lock);
+			goto restart;
+		}
+		/*
+>>>>>>> origin/android16-base
 		 * Quota now has no users and it has been written on last
 		 * dqput()
 		 */
@@ -582,14 +694,21 @@ int dquot_scan_active(struct super_block *sb,
 
 	spin_lock(&dq_list_lock);
 	list_for_each_entry(dquot, &inuse_list, dq_inuse) {
+<<<<<<< HEAD
 		if (!test_bit(DQ_ACTIVE_B, &dquot->dq_flags))
+=======
+		if (!dquot_active(dquot))
+>>>>>>> origin/android16-base
 			continue;
 		if (dquot->dq_sb != sb)
 			continue;
 		/* Now we have active dquot so we can just increase use count */
 		atomic_inc(&dquot->dq_count);
 		spin_unlock(&dq_list_lock);
+<<<<<<< HEAD
 		dqstats_inc(DQST_LOOKUPS);
+=======
+>>>>>>> origin/android16-base
 		dqput(old_dquot);
 		old_dquot = dquot;
 		/*
@@ -598,7 +717,11 @@ int dquot_scan_active(struct super_block *sb,
 		 * outstanding call and recheck the DQ_ACTIVE_B after that.
 		 */
 		wait_on_dquot(dquot);
+<<<<<<< HEAD
 		if (test_bit(DQ_ACTIVE_B, &dquot->dq_flags)) {
+=======
+		if (dquot_active(dquot)) {
+>>>>>>> origin/android16-base
 			ret = fn(dquot, priv);
 			if (ret < 0)
 				goto out;
@@ -614,6 +737,21 @@ out:
 }
 EXPORT_SYMBOL(dquot_scan_active);
 
+<<<<<<< HEAD
+=======
+static inline int dquot_write_dquot(struct dquot *dquot)
+{
+	int ret = dquot->dq_sb->dq_op->write_dquot(dquot);
+	if (ret < 0) {
+		quota_error(dquot->dq_sb, "Can't write quota structure "
+			    "(error %d). Quota may get out of sync!", ret);
+		/* Clear dirty bit anyway to avoid infinite loop. */
+		clear_dquot_dirty(dquot);
+	}
+	return ret;
+}
+
+>>>>>>> origin/android16-base
 /* Write all dquot structures to quota files */
 int dquot_writeback_dquots(struct super_block *sb, int type)
 {
@@ -637,13 +775,25 @@ int dquot_writeback_dquots(struct super_block *sb, int type)
 			dquot = list_first_entry(&dirty, struct dquot,
 						 dq_dirty);
 
+<<<<<<< HEAD
 			WARN_ON(!test_bit(DQ_ACTIVE_B, &dquot->dq_flags));
+=======
+			WARN_ON(!dquot_active(dquot));
+			/* If the dquot is releasing we should not touch it */
+			if (test_bit(DQ_RELEASING_B, &dquot->dq_flags)) {
+				spin_unlock(&dq_list_lock);
+				flush_delayed_work(&quota_release_work);
+				spin_lock(&dq_list_lock);
+				continue;
+			}
+>>>>>>> origin/android16-base
 
 			/* Now we have active dquot from which someone is
  			 * holding reference so we can safely just increase
 			 * use count */
 			dqgrab(dquot);
 			spin_unlock(&dq_list_lock);
+<<<<<<< HEAD
 			dqstats_inc(DQST_LOOKUPS);
 			err = sb->dq_op->write_dquot(dquot);
 			if (err) {
@@ -655,6 +805,11 @@ int dquot_writeback_dquots(struct super_block *sb, int type)
 				if (!ret)
 					ret = err;
 			}
+=======
+			err = dquot_write_dquot(dquot);
+			if (err && !ret)
+				ret = err;
+>>>>>>> origin/android16-base
 			dqput(dquot);
 			spin_lock(&dq_list_lock);
 		}
@@ -687,9 +842,20 @@ int dquot_quota_sync(struct super_block *sb, int type)
 	/* This is not very clever (and fast) but currently I don't know about
 	 * any other simple way of getting quota data to disk and we must get
 	 * them there for userspace to be visible... */
+<<<<<<< HEAD
 	if (sb->s_op->sync_fs)
 		sb->s_op->sync_fs(sb, 1);
 	sync_blockdev(sb->s_bdev);
+=======
+	if (sb->s_op->sync_fs) {
+		ret = sb->s_op->sync_fs(sb, 1);
+		if (ret)
+			return ret;
+	}
+	ret = sync_blockdev(sb->s_bdev);
+	if (ret)
+		return ret;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Now when everything is written we can discard the pagecache so
@@ -743,12 +909,60 @@ static struct shrinker dqcache_shrinker = {
 };
 
 /*
+<<<<<<< HEAD
+=======
+ * Safely release dquot and put reference to dquot.
+ */
+static void quota_release_workfn(struct work_struct *work)
+{
+	struct dquot *dquot;
+	struct list_head rls_head;
+
+	spin_lock(&dq_list_lock);
+	/* Exchange the list head to avoid livelock. */
+	list_replace_init(&releasing_dquots, &rls_head);
+	spin_unlock(&dq_list_lock);
+	synchronize_srcu(&dquot_srcu);
+
+restart:
+	spin_lock(&dq_list_lock);
+	while (!list_empty(&rls_head)) {
+		dquot = list_first_entry(&rls_head, struct dquot, dq_free);
+		WARN_ON_ONCE(atomic_read(&dquot->dq_count));
+		/*
+		 * Note that DQ_RELEASING_B protects us from racing with
+		 * invalidate_dquots() calls so we are safe to work with the
+		 * dquot even after we drop dq_list_lock.
+		 */
+		if (dquot_dirty(dquot)) {
+			spin_unlock(&dq_list_lock);
+			/* Commit dquot before releasing */
+			dquot_write_dquot(dquot);
+			goto restart;
+		}
+		if (dquot_active(dquot)) {
+			spin_unlock(&dq_list_lock);
+			dquot->dq_sb->dq_op->release_dquot(dquot);
+			goto restart;
+		}
+		/* Dquot is inactive and clean, now move it to free list */
+		remove_free_dquot(dquot);
+		put_dquot_last(dquot);
+	}
+	spin_unlock(&dq_list_lock);
+}
+
+/*
+>>>>>>> origin/android16-base
  * Put reference to dquot
  */
 void dqput(struct dquot *dquot)
 {
+<<<<<<< HEAD
 	int ret;
 
+=======
+>>>>>>> origin/android16-base
 	if (!dquot)
 		return;
 #ifdef CONFIG_QUOTA_DEBUG
@@ -760,7 +974,11 @@ void dqput(struct dquot *dquot)
 	}
 #endif
 	dqstats_inc(DQST_DROPS);
+<<<<<<< HEAD
 we_slept:
+=======
+
+>>>>>>> origin/android16-base
 	spin_lock(&dq_list_lock);
 	if (atomic_read(&dquot->dq_count) > 1) {
 		/* We have more than one user... nothing to do */
@@ -772,6 +990,7 @@ we_slept:
 		spin_unlock(&dq_list_lock);
 		return;
 	}
+<<<<<<< HEAD
 	/* Need to release dquot? */
 	if (dquot_dirty(dquot)) {
 		spin_unlock(&dq_list_lock);
@@ -795,12 +1014,23 @@ we_slept:
 		goto we_slept;
 	}
 	atomic_dec(&dquot->dq_count);
+=======
+
+	/* Need to release dquot? */
+>>>>>>> origin/android16-base
 #ifdef CONFIG_QUOTA_DEBUG
 	/* sanity check */
 	BUG_ON(!list_empty(&dquot->dq_free));
 #endif
+<<<<<<< HEAD
 	put_dquot_last(dquot);
 	spin_unlock(&dq_list_lock);
+=======
+	put_releasing_dquots(dquot);
+	atomic_dec(&dquot->dq_count);
+	spin_unlock(&dq_list_lock);
+	queue_delayed_work(system_unbound_wq, &quota_release_work, 1);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(dqput);
 
@@ -887,10 +1117,17 @@ we_slept:
 		dqstats_inc(DQST_LOOKUPS);
 	}
 	/* Wait for dq_lock - after this we know that either dquot_release() is
+<<<<<<< HEAD
 	 * already finished or it will be canceled due to dq_count > 1 test */
 	wait_on_dquot(dquot);
 	/* Read the dquot / allocate space in quota file */
 	if (!test_bit(DQ_ACTIVE_B, &dquot->dq_flags)) {
+=======
+	 * already finished or it will be canceled due to dq_count > 0 test */
+	wait_on_dquot(dquot);
+	/* Read the dquot / allocate space in quota file */
+	if (!dquot_active(dquot)) {
+>>>>>>> origin/android16-base
 		int err;
 
 		err = sb->dq_op->acquire_dquot(dquot);
@@ -905,9 +1142,14 @@ we_slept:
 	 * smp_mb__before_atomic() in dquot_acquire().
 	 */
 	smp_rmb();
+<<<<<<< HEAD
 #ifdef CONFIG_QUOTA_DEBUG
 	BUG_ON(!dquot->dq_sb);	/* Has somebody invalidated entry under us? */
 #endif
+=======
+	/* Has somebody invalidated entry under us? */
+	WARN_ON_ONCE(hlist_unhashed(&dquot->dq_hash));
+>>>>>>> origin/android16-base
 out:
 	if (empty)
 		do_destroy_dquot(empty);
@@ -916,14 +1158,25 @@ out:
 }
 EXPORT_SYMBOL(dqget);
 
+<<<<<<< HEAD
 static inline struct dquot **i_dquot(struct inode *inode)
 {
 	return inode->i_sb->s_op->get_dquots(inode);
+=======
+static inline struct dquot __rcu **i_dquot(struct inode *inode)
+{
+	/* Force __rcu for now until filesystems are fixed */
+	return (struct dquot __rcu **)inode->i_sb->s_op->get_dquots(inode);
+>>>>>>> origin/android16-base
 }
 
 static int dqinit_needed(struct inode *inode, int type)
 {
+<<<<<<< HEAD
 	struct dquot * const *dquots;
+=======
+	struct dquot __rcu * const *dquots;
+>>>>>>> origin/android16-base
 	int cnt;
 
 	if (IS_NOQUOTA(inode))
@@ -996,6 +1249,7 @@ out:
 	return err;
 }
 
+<<<<<<< HEAD
 /*
  * Remove references to dquots from inode and add dquot to list for freeing
  * if we have the last reference to dquot
@@ -1052,6 +1306,14 @@ static void remove_dquot_ref(struct super_block *sb, int type,
 {
 	struct inode *inode;
 	int reserved = 0;
+=======
+static void remove_dquot_ref(struct super_block *sb, int type)
+{
+	struct inode *inode;
+#ifdef CONFIG_QUOTA_DEBUG
+	int reserved = 0;
+#endif
+>>>>>>> origin/android16-base
 
 	spin_lock(&sb->s_inode_list_lock);
 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
@@ -1063,9 +1325,24 @@ static void remove_dquot_ref(struct super_block *sb, int type,
 		 */
 		spin_lock(&dq_data_lock);
 		if (!IS_NOQUOTA(inode)) {
+<<<<<<< HEAD
 			if (unlikely(inode_get_rsv_space(inode) > 0))
 				reserved = 1;
 			remove_inode_dquot_ref(inode, type, tofree_head);
+=======
+			struct dquot __rcu **dquots = i_dquot(inode);
+			struct dquot *dquot = srcu_dereference_check(
+				dquots[type], &dquot_srcu,
+				lockdep_is_held(&dq_data_lock));
+
+#ifdef CONFIG_QUOTA_DEBUG
+			if (unlikely(inode_get_rsv_space(inode) > 0))
+				reserved = 1;
+#endif
+			rcu_assign_pointer(dquots[type], NULL);
+			if (dquot)
+				dqput(dquot);
+>>>>>>> origin/android16-base
 		}
 		spin_unlock(&dq_data_lock);
 	}
@@ -1082,6 +1359,7 @@ static void remove_dquot_ref(struct super_block *sb, int type,
 /* Gather all references from inodes and drop them */
 static void drop_dquot_ref(struct super_block *sb, int type)
 {
+<<<<<<< HEAD
 	LIST_HEAD(tofree_head);
 
 	if (sb->dq_op) {
@@ -1089,6 +1367,10 @@ static void drop_dquot_ref(struct super_block *sb, int type)
 		synchronize_srcu(&dquot_srcu);
 		put_dquot_list(&tofree_head);
 	}
+=======
+	if (sb->dq_op)
+		remove_dquot_ref(sb, type);
+>>>>>>> origin/android16-base
 }
 
 static inline
@@ -1403,7 +1685,11 @@ static int info_bdq_free(struct dquot *dquot, qsize_t space)
 	return QUOTA_NL_NOWARN;
 }
 
+<<<<<<< HEAD
 static int dquot_active(const struct inode *inode)
+=======
+static int inode_quota_active(const struct inode *inode)
+>>>>>>> origin/android16-base
 {
 	struct super_block *sb = inode->i_sb;
 
@@ -1421,12 +1707,21 @@ static int dquot_active(const struct inode *inode)
 static int __dquot_initialize(struct inode *inode, int type)
 {
 	int cnt, init_needed = 0;
+<<<<<<< HEAD
 	struct dquot **dquots, *got[MAXQUOTAS] = {};
+=======
+	struct dquot __rcu **dquots;
+	struct dquot *got[MAXQUOTAS] = {};
+>>>>>>> origin/android16-base
 	struct super_block *sb = inode->i_sb;
 	qsize_t rsv;
 	int ret = 0;
 
+<<<<<<< HEAD
 	if (!dquot_active(inode))
+=======
+	if (!inode_quota_active(inode))
+>>>>>>> origin/android16-base
 		return 0;
 
 	dquots = i_dquot(inode);
@@ -1496,7 +1791,11 @@ static int __dquot_initialize(struct inode *inode, int type)
 		if (!got[cnt])
 			continue;
 		if (!dquots[cnt]) {
+<<<<<<< HEAD
 			dquots[cnt] = got[cnt];
+=======
+			rcu_assign_pointer(dquots[cnt], got[cnt]);
+>>>>>>> origin/android16-base
 			got[cnt] = NULL;
 			/*
 			 * Make quota reservation system happy if someone
@@ -1504,12 +1803,25 @@ static int __dquot_initialize(struct inode *inode, int type)
 			 */
 			rsv = inode_get_rsv_space(inode);
 			if (unlikely(rsv)) {
+<<<<<<< HEAD
 				spin_lock(&inode->i_lock);
 				/* Get reservation again under proper lock */
 				rsv = __inode_get_rsv_space(inode);
 				spin_lock(&dquots[cnt]->dq_dqb_lock);
 				dquots[cnt]->dq_dqb.dqb_rsvspace += rsv;
 				spin_unlock(&dquots[cnt]->dq_dqb_lock);
+=======
+				struct dquot *dquot = srcu_dereference_check(
+					dquots[cnt], &dquot_srcu,
+					lockdep_is_held(&dq_data_lock));
+
+				spin_lock(&inode->i_lock);
+				/* Get reservation again under proper lock */
+				rsv = __inode_get_rsv_space(inode);
+				spin_lock(&dquot->dq_dqb_lock);
+				dquot->dq_dqb.dqb_rsvspace += rsv;
+				spin_unlock(&dquot->dq_dqb_lock);
+>>>>>>> origin/android16-base
 				spin_unlock(&inode->i_lock);
 			}
 		}
@@ -1531,10 +1843,17 @@ EXPORT_SYMBOL(dquot_initialize);
 
 bool dquot_initialize_needed(struct inode *inode)
 {
+<<<<<<< HEAD
 	struct dquot **dquots;
 	int i;
 
 	if (!dquot_active(inode))
+=======
+	struct dquot __rcu **dquots;
+	int i;
+
+	if (!inode_quota_active(inode))
+>>>>>>> origin/android16-base
 		return false;
 
 	dquots = i_dquot(inode);
@@ -1556,13 +1875,23 @@ EXPORT_SYMBOL(dquot_initialize_needed);
 static void __dquot_drop(struct inode *inode)
 {
 	int cnt;
+<<<<<<< HEAD
 	struct dquot **dquots = i_dquot(inode);
+=======
+	struct dquot __rcu **dquots = i_dquot(inode);
+>>>>>>> origin/android16-base
 	struct dquot *put[MAXQUOTAS];
 
 	spin_lock(&dq_data_lock);
 	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
+<<<<<<< HEAD
 		put[cnt] = dquots[cnt];
 		dquots[cnt] = NULL;
+=======
+		put[cnt] = srcu_dereference_check(dquots[cnt], &dquot_srcu,
+					lockdep_is_held(&dq_data_lock));
+		rcu_assign_pointer(dquots[cnt], NULL);
+>>>>>>> origin/android16-base
 	}
 	spin_unlock(&dq_data_lock);
 	dqput_all(put);
@@ -1570,7 +1899,11 @@ static void __dquot_drop(struct inode *inode)
 
 void dquot_drop(struct inode *inode)
 {
+<<<<<<< HEAD
 	struct dquot * const *dquots;
+=======
+	struct dquot __rcu * const *dquots;
+>>>>>>> origin/android16-base
 	int cnt;
 
 	if (IS_NOQUOTA(inode))
@@ -1643,9 +1976,16 @@ int __dquot_alloc_space(struct inode *inode, qsize_t number, int flags)
 	int cnt, ret = 0, index;
 	struct dquot_warn warn[MAXQUOTAS];
 	int reserve = flags & DQUOT_SPACE_RESERVE;
+<<<<<<< HEAD
 	struct dquot **dquots;
 
 	if (!dquot_active(inode)) {
+=======
+	struct dquot __rcu **dquots;
+	struct dquot *dquot;
+
+	if (!inode_quota_active(inode)) {
+>>>>>>> origin/android16-base
 		if (reserve) {
 			spin_lock(&inode->i_lock);
 			*inode_reserved_space(inode) += number;
@@ -1663,6 +2003,7 @@ int __dquot_alloc_space(struct inode *inode, qsize_t number, int flags)
 	index = srcu_read_lock(&dquot_srcu);
 	spin_lock(&inode->i_lock);
 	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
+<<<<<<< HEAD
 		if (!dquots[cnt])
 			continue;
 		if (flags & DQUOT_SPACE_RESERVE) {
@@ -1671,10 +2012,20 @@ int __dquot_alloc_space(struct inode *inode, qsize_t number, int flags)
 		} else {
 			ret = dquot_add_space(dquots[cnt], number, 0, flags,
 					      &warn[cnt]);
+=======
+		dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+		if (!dquot)
+			continue;
+		if (reserve) {
+			ret = dquot_add_space(dquot, 0, number, flags, &warn[cnt]);
+		} else {
+			ret = dquot_add_space(dquot, number, 0, flags, &warn[cnt]);
+>>>>>>> origin/android16-base
 		}
 		if (ret) {
 			/* Back out changes we already did */
 			for (cnt--; cnt >= 0; cnt--) {
+<<<<<<< HEAD
 				if (!dquots[cnt])
 					continue;
 				spin_lock(&dquots[cnt]->dq_dqb_lock);
@@ -1686,6 +2037,17 @@ int __dquot_alloc_space(struct inode *inode, qsize_t number, int flags)
 									number;
 				}
 				spin_unlock(&dquots[cnt]->dq_dqb_lock);
+=======
+				dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+				if (!dquot)
+					continue;
+				spin_lock(&dquot->dq_dqb_lock);
+				if (reserve)
+					dquot_free_reserved_space(dquot, number);
+				else
+					dquot_decr_space(dquot, number);
+				spin_unlock(&dquot->dq_dqb_lock);
+>>>>>>> origin/android16-base
 			}
 			spin_unlock(&inode->i_lock);
 			goto out_flush_warn;
@@ -1715,9 +2077,16 @@ int dquot_alloc_inode(struct inode *inode)
 {
 	int cnt, ret = 0, index;
 	struct dquot_warn warn[MAXQUOTAS];
+<<<<<<< HEAD
 	struct dquot * const *dquots;
 
 	if (!dquot_active(inode))
+=======
+	struct dquot __rcu * const *dquots;
+	struct dquot *dquot;
+
+	if (!inode_quota_active(inode))
+>>>>>>> origin/android16-base
 		return 0;
 	for (cnt = 0; cnt < MAXQUOTAS; cnt++)
 		warn[cnt].w_type = QUOTA_NL_NOWARN;
@@ -1726,6 +2095,7 @@ int dquot_alloc_inode(struct inode *inode)
 	index = srcu_read_lock(&dquot_srcu);
 	spin_lock(&inode->i_lock);
 	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
+<<<<<<< HEAD
 		if (!dquots[cnt])
 			continue;
 		ret = dquot_add_inodes(dquots[cnt], 1, &warn[cnt]);
@@ -1737,6 +2107,21 @@ int dquot_alloc_inode(struct inode *inode)
 				spin_lock(&dquots[cnt]->dq_dqb_lock);
 				dquots[cnt]->dq_dqb.dqb_curinodes--;
 				spin_unlock(&dquots[cnt]->dq_dqb_lock);
+=======
+		dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+		if (!dquot)
+			continue;
+		ret = dquot_add_inodes(dquot, 1, &warn[cnt]);
+		if (ret) {
+			for (cnt--; cnt >= 0; cnt--) {
+				dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+				if (!dquot)
+					continue;
+				/* Back out changes we already did */
+				spin_lock(&dquot->dq_dqb_lock);
+				dquot_decr_inodes(dquot, 1);
+				spin_unlock(&dquot->dq_dqb_lock);
+>>>>>>> origin/android16-base
 			}
 			goto warn_put_all;
 		}
@@ -1757,10 +2142,18 @@ EXPORT_SYMBOL(dquot_alloc_inode);
  */
 int dquot_claim_space_nodirty(struct inode *inode, qsize_t number)
 {
+<<<<<<< HEAD
 	struct dquot **dquots;
 	int cnt, index;
 
 	if (!dquot_active(inode)) {
+=======
+	struct dquot __rcu **dquots;
+	struct dquot *dquot;
+	int cnt, index;
+
+	if (!inode_quota_active(inode)) {
+>>>>>>> origin/android16-base
 		spin_lock(&inode->i_lock);
 		*inode_reserved_space(inode) -= number;
 		__inode_add_bytes(inode, number);
@@ -1773,9 +2166,14 @@ int dquot_claim_space_nodirty(struct inode *inode, qsize_t number)
 	spin_lock(&inode->i_lock);
 	/* Claim reserved quotas to allocated quotas */
 	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
+<<<<<<< HEAD
 		if (dquots[cnt]) {
 			struct dquot *dquot = dquots[cnt];
 
+=======
+		dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+		if (dquot) {
+>>>>>>> origin/android16-base
 			spin_lock(&dquot->dq_dqb_lock);
 			if (WARN_ON_ONCE(dquot->dq_dqb.dqb_rsvspace < number))
 				number = dquot->dq_dqb.dqb_rsvspace;
@@ -1799,10 +2197,18 @@ EXPORT_SYMBOL(dquot_claim_space_nodirty);
  */
 void dquot_reclaim_space_nodirty(struct inode *inode, qsize_t number)
 {
+<<<<<<< HEAD
 	struct dquot **dquots;
 	int cnt, index;
 
 	if (!dquot_active(inode)) {
+=======
+	struct dquot __rcu **dquots;
+	struct dquot *dquot;
+	int cnt, index;
+
+	if (!inode_quota_active(inode)) {
+>>>>>>> origin/android16-base
 		spin_lock(&inode->i_lock);
 		*inode_reserved_space(inode) += number;
 		__inode_sub_bytes(inode, number);
@@ -1815,9 +2221,14 @@ void dquot_reclaim_space_nodirty(struct inode *inode, qsize_t number)
 	spin_lock(&inode->i_lock);
 	/* Claim reserved quotas to allocated quotas */
 	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
+<<<<<<< HEAD
 		if (dquots[cnt]) {
 			struct dquot *dquot = dquots[cnt];
 
+=======
+		dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+		if (dquot) {
+>>>>>>> origin/android16-base
 			spin_lock(&dquot->dq_dqb_lock);
 			if (WARN_ON_ONCE(dquot->dq_dqb.dqb_curspace < number))
 				number = dquot->dq_dqb.dqb_curspace;
@@ -1843,10 +2254,18 @@ void __dquot_free_space(struct inode *inode, qsize_t number, int flags)
 {
 	unsigned int cnt;
 	struct dquot_warn warn[MAXQUOTAS];
+<<<<<<< HEAD
 	struct dquot **dquots;
 	int reserve = flags & DQUOT_SPACE_RESERVE, index;
 
 	if (!dquot_active(inode)) {
+=======
+	struct dquot __rcu **dquots;
+	struct dquot *dquot;
+	int reserve = flags & DQUOT_SPACE_RESERVE, index;
+
+	if (!inode_quota_active(inode)) {
+>>>>>>> origin/android16-base
 		if (reserve) {
 			spin_lock(&inode->i_lock);
 			*inode_reserved_space(inode) -= number;
@@ -1864,6 +2283,7 @@ void __dquot_free_space(struct inode *inode, qsize_t number, int flags)
 		int wtype;
 
 		warn[cnt].w_type = QUOTA_NL_NOWARN;
+<<<<<<< HEAD
 		if (!dquots[cnt])
 			continue;
 		spin_lock(&dquots[cnt]->dq_dqb_lock);
@@ -1875,6 +2295,20 @@ void __dquot_free_space(struct inode *inode, qsize_t number, int flags)
 		else
 			dquot_decr_space(dquots[cnt], number);
 		spin_unlock(&dquots[cnt]->dq_dqb_lock);
+=======
+		dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+		if (!dquot)
+			continue;
+		spin_lock(&dquot->dq_dqb_lock);
+		wtype = info_bdq_free(dquot, number);
+		if (wtype != QUOTA_NL_NOWARN)
+			prepare_warning(&warn[cnt], dquot, wtype);
+		if (reserve)
+			dquot_free_reserved_space(dquot, number);
+		else
+			dquot_decr_space(dquot, number);
+		spin_unlock(&dquot->dq_dqb_lock);
+>>>>>>> origin/android16-base
 	}
 	if (reserve)
 		*inode_reserved_space(inode) -= number;
@@ -1898,10 +2332,18 @@ void dquot_free_inode(struct inode *inode)
 {
 	unsigned int cnt;
 	struct dquot_warn warn[MAXQUOTAS];
+<<<<<<< HEAD
 	struct dquot * const *dquots;
 	int index;
 
 	if (!dquot_active(inode))
+=======
+	struct dquot __rcu * const *dquots;
+	struct dquot *dquot;
+	int index;
+
+	if (!inode_quota_active(inode))
+>>>>>>> origin/android16-base
 		return;
 
 	dquots = i_dquot(inode);
@@ -1909,6 +2351,7 @@ void dquot_free_inode(struct inode *inode)
 	spin_lock(&inode->i_lock);
 	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
 		int wtype;
+<<<<<<< HEAD
 
 		warn[cnt].w_type = QUOTA_NL_NOWARN;
 		if (!dquots[cnt])
@@ -1919,6 +2362,18 @@ void dquot_free_inode(struct inode *inode)
 			prepare_warning(&warn[cnt], dquots[cnt], wtype);
 		dquot_decr_inodes(dquots[cnt], 1);
 		spin_unlock(&dquots[cnt]->dq_dqb_lock);
+=======
+		warn[cnt].w_type = QUOTA_NL_NOWARN;
+		dquot = srcu_dereference(dquots[cnt], &dquot_srcu);
+		if (!dquot)
+			continue;
+		spin_lock(&dquot->dq_dqb_lock);
+		wtype = info_idq_free(dquot, 1);
+		if (wtype != QUOTA_NL_NOWARN)
+			prepare_warning(&warn[cnt], dquot, wtype);
+		dquot_decr_inodes(dquot, 1);
+		spin_unlock(&dquot->dq_dqb_lock);
+>>>>>>> origin/android16-base
 	}
 	spin_unlock(&inode->i_lock);
 	mark_all_dquot_dirty(dquots);
@@ -1944,8 +2399,14 @@ int __dquot_transfer(struct inode *inode, struct dquot **transfer_to)
 	qsize_t cur_space;
 	qsize_t rsv_space = 0;
 	qsize_t inode_usage = 1;
+<<<<<<< HEAD
 	struct dquot *transfer_from[MAXQUOTAS] = {};
 	int cnt, ret = 0;
+=======
+	struct dquot __rcu **dquots;
+	struct dquot *transfer_from[MAXQUOTAS] = {};
+	int cnt, index, ret = 0;
+>>>>>>> origin/android16-base
 	char is_valid[MAXQUOTAS] = {};
 	struct dquot_warn warn_to[MAXQUOTAS];
 	struct dquot_warn warn_from_inodes[MAXQUOTAS];
@@ -1976,6 +2437,10 @@ int __dquot_transfer(struct inode *inode, struct dquot **transfer_to)
 	}
 	cur_space = __inode_get_bytes(inode);
 	rsv_space = __inode_get_rsv_space(inode);
+<<<<<<< HEAD
+=======
+	dquots = i_dquot(inode);
+>>>>>>> origin/android16-base
 	/*
 	 * Build the transfer_from list, check limits, and update usage in
 	 * the target structures.
@@ -1990,7 +2455,12 @@ int __dquot_transfer(struct inode *inode, struct dquot **transfer_to)
 		if (!sb_has_quota_active(inode->i_sb, cnt))
 			continue;
 		is_valid[cnt] = 1;
+<<<<<<< HEAD
 		transfer_from[cnt] = i_dquot(inode)[cnt];
+=======
+		transfer_from[cnt] = srcu_dereference_check(dquots[cnt],
+				&dquot_srcu, lockdep_is_held(&dq_data_lock));
+>>>>>>> origin/android16-base
 		ret = dquot_add_inodes(transfer_to[cnt], inode_usage,
 				       &warn_to[cnt]);
 		if (ret)
@@ -2029,13 +2499,30 @@ int __dquot_transfer(struct inode *inode, struct dquot **transfer_to)
 						  rsv_space);
 			spin_unlock(&transfer_from[cnt]->dq_dqb_lock);
 		}
+<<<<<<< HEAD
 		i_dquot(inode)[cnt] = transfer_to[cnt];
+=======
+		rcu_assign_pointer(dquots[cnt], transfer_to[cnt]);
+>>>>>>> origin/android16-base
 	}
 	spin_unlock(&inode->i_lock);
 	spin_unlock(&dq_data_lock);
 
+<<<<<<< HEAD
 	mark_all_dquot_dirty(transfer_from);
 	mark_all_dquot_dirty(transfer_to);
+=======
+	/*
+	 * These arrays are local and we hold dquot references so we don't need
+	 * the srcu protection but still take dquot_srcu to avoid warning in
+	 * mark_all_dquot_dirty().
+	 */
+	index = srcu_read_lock(&dquot_srcu);
+	mark_all_dquot_dirty((struct dquot __rcu **)transfer_from);
+	mark_all_dquot_dirty((struct dquot __rcu **)transfer_to);
+	srcu_read_unlock(&dquot_srcu, index);
+
+>>>>>>> origin/android16-base
 	flush_warnings(warn_to);
 	flush_warnings(warn_from_inodes);
 	flush_warnings(warn_from_space);
@@ -2072,7 +2559,11 @@ int dquot_transfer(struct inode *inode, struct iattr *iattr)
 	struct super_block *sb = inode->i_sb;
 	int ret;
 
+<<<<<<< HEAD
 	if (!dquot_active(inode))
+=======
+	if (!inode_quota_active(inode))
+>>>>>>> origin/android16-base
 		return 0;
 
 	if (iattr->ia_valid & ATTR_UID && !uid_eq(iattr->ia_uid, inode->i_uid)){
@@ -2293,6 +2784,7 @@ EXPORT_SYMBOL(dquot_quota_off);
  *	Turn quotas on on a device
  */
 
+<<<<<<< HEAD
 /*
  * Helper function to turn quotas on when we already have the inode of
  * quota file and no quota information is loaded.
@@ -2302,11 +2794,79 @@ static int vfs_load_quota_inode(struct inode *inode, int type, int format_id,
 {
 	struct quota_format_type *fmt = find_quota_format(format_id);
 	struct super_block *sb = inode->i_sb;
+=======
+static int vfs_setup_quota_inode(struct inode *inode, int type)
+{
+	struct super_block *sb = inode->i_sb;
+	struct quota_info *dqopt = sb_dqopt(sb);
+
+	if (is_bad_inode(inode))
+		return -EUCLEAN;
+	if (!S_ISREG(inode->i_mode))
+		return -EACCES;
+	if (IS_RDONLY(inode))
+		return -EROFS;
+	if (sb_has_quota_loaded(sb, type))
+		return -EBUSY;
+
+	/*
+	 * Quota files should never be encrypted.  They should be thought of as
+	 * filesystem metadata, not user data.  New-style internal quota files
+	 * cannot be encrypted by users anyway, but old-style external quota
+	 * files could potentially be incorrectly created in an encrypted
+	 * directory, hence this explicit check.  Some reasons why encrypted
+	 * quota files don't work include: (1) some filesystems that support
+	 * encryption don't handle it in their quota_read and quota_write, and
+	 * (2) cleaning up encrypted quota files at unmount would need special
+	 * consideration, as quota files are cleaned up later than user files.
+	 */
+	if (IS_ENCRYPTED(inode))
+		return -EINVAL;
+
+	dqopt->files[type] = igrab(inode);
+	if (!dqopt->files[type])
+		return -EIO;
+	if (!(dqopt->flags & DQUOT_QUOTA_SYS_FILE)) {
+		/* We don't want quota and atime on quota files (deadlocks
+		 * possible) Also nobody should write to the file - we use
+		 * special IO operations which ignore the immutable bit. */
+		inode_lock(inode);
+		inode->i_flags |= S_NOQUOTA;
+		inode_unlock(inode);
+		/*
+		 * When S_NOQUOTA is set, remove dquot references as no more
+		 * references can be added
+		 */
+		__dquot_drop(inode);
+	}
+	return 0;
+}
+
+static void vfs_cleanup_quota_inode(struct super_block *sb, int type)
+{
+	struct quota_info *dqopt = sb_dqopt(sb);
+	struct inode *inode = dqopt->files[type];
+
+	if (!(dqopt->flags & DQUOT_QUOTA_SYS_FILE)) {
+		inode_lock(inode);
+		inode->i_flags &= ~S_NOQUOTA;
+		inode_unlock(inode);
+	}
+	dqopt->files[type] = NULL;
+	iput(inode);
+}
+
+int dquot_load_quota_sb(struct super_block *sb, int type, int format_id,
+	unsigned int flags)
+{
+	struct quota_format_type *fmt = find_quota_format(format_id);
+>>>>>>> origin/android16-base
 	struct quota_info *dqopt = sb_dqopt(sb);
 	int error;
 
 	if (!fmt)
 		return -ESRCH;
+<<<<<<< HEAD
 	if (!S_ISREG(inode->i_mode)) {
 		error = -EACCES;
 		goto out_fmt;
@@ -2315,6 +2875,8 @@ static int vfs_load_quota_inode(struct inode *inode, int type, int format_id,
 		error = -EROFS;
 		goto out_fmt;
 	}
+=======
+>>>>>>> origin/android16-base
 	if (!sb->s_op->quota_write || !sb->s_op->quota_read ||
 	    (type == PRJQUOTA && sb->dq_op->get_projid == NULL)) {
 		error = -EINVAL;
@@ -2346,6 +2908,7 @@ static int vfs_load_quota_inode(struct inode *inode, int type, int format_id,
 		invalidate_bdev(sb->s_bdev);
 	}
 
+<<<<<<< HEAD
 	if (!(dqopt->flags & DQUOT_QUOTA_SYS_FILE)) {
 		/* We don't want quota and atime on quota files (deadlocks
 		 * possible) Also nobody should write to the file - we use
@@ -2367,6 +2930,11 @@ static int vfs_load_quota_inode(struct inode *inode, int type, int format_id,
 	error = -EINVAL;
 	if (!fmt->qf_ops->check_quota_file(sb, type))
 		goto out_file_init;
+=======
+	error = -EINVAL;
+	if (!fmt->qf_ops->check_quota_file(sb, type))
+		goto out_fmt;
+>>>>>>> origin/android16-base
 
 	dqopt->ops[type] = fmt->qf_ops;
 	dqopt->info[type].dqi_format = fmt;
@@ -2374,7 +2942,11 @@ static int vfs_load_quota_inode(struct inode *inode, int type, int format_id,
 	INIT_LIST_HEAD(&dqopt->info[type].dqi_dirty_list);
 	error = dqopt->ops[type]->read_file_info(sb, type);
 	if (error < 0)
+<<<<<<< HEAD
 		goto out_file_init;
+=======
+		goto out_fmt;
+>>>>>>> origin/android16-base
 	if (dqopt->flags & DQUOT_QUOTA_SYS_FILE) {
 		spin_lock(&dq_data_lock);
 		dqopt->info[type].dqi_flags |= DQF_SYS_FILE;
@@ -2386,6 +2958,7 @@ static int vfs_load_quota_inode(struct inode *inode, int type, int format_id,
 
 	error = add_dquot_ref(sb, type);
 	if (error)
+<<<<<<< HEAD
 		dquot_disable(sb, type, flags);
 
 	return error;
@@ -2396,11 +2969,39 @@ out_file_flags:
 	inode_lock(inode);
 	inode->i_flags &= ~S_NOQUOTA;
 	inode_unlock(inode);
+=======
+		dquot_disable(sb, type,
+			      DQUOT_USAGE_ENABLED | DQUOT_LIMITS_ENABLED);
+
+	return error;
+>>>>>>> origin/android16-base
 out_fmt:
 	put_quota_format(fmt);
 
 	return error; 
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(dquot_load_quota_sb);
+
+/*
+ * Helper function to turn quotas on when we already have the inode of
+ * quota file and no quota information is loaded.
+ */
+static int vfs_load_quota_inode(struct inode *inode, int type, int format_id,
+	unsigned int flags)
+{
+	int err;
+
+	err = vfs_setup_quota_inode(inode, type);
+	if (err < 0)
+		return err;
+	err = dquot_load_quota_sb(inode->i_sb, type, format_id, flags);
+	if (err < 0)
+		vfs_cleanup_quota_inode(inode->i_sb, type);
+	return err;
+}
+>>>>>>> origin/android16-base
 
 /* Reenable quotas on remount RW */
 int dquot_resume(struct super_block *sb, int type)
@@ -2501,6 +3102,7 @@ int dquot_quota_on_mount(struct super_block *sb, char *qf_name,
 	struct dentry *dentry;
 	int error;
 
+<<<<<<< HEAD
 	dentry = lookup_one_len_unlocked(qf_name, sb->s_root, strlen(qf_name));
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
@@ -2510,12 +3112,21 @@ int dquot_quota_on_mount(struct super_block *sb, char *qf_name,
 		goto out;
 	}
 
+=======
+	dentry = lookup_positive_unlocked(qf_name, sb->s_root, strlen(qf_name));
+	if (IS_ERR(dentry))
+		return PTR_ERR(dentry);
+
+>>>>>>> origin/android16-base
 	error = security_quota_on(dentry);
 	if (!error)
 		error = vfs_load_quota_inode(d_inode(dentry), type, format_id,
 				DQUOT_USAGE_ENABLED | DQUOT_LIMITS_ENABLED);
 
+<<<<<<< HEAD
 out:
+=======
+>>>>>>> origin/android16-base
 	dput(dentry);
 	return error;
 }

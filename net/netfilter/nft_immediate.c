@@ -50,9 +50,15 @@ static int nft_immediate_init(const struct nft_ctx *ctx,
 
 	priv->dlen = desc.len;
 
+<<<<<<< HEAD
 	priv->dreg = nft_parse_register(tb[NFTA_IMMEDIATE_DREG]);
 	err = nft_validate_register_store(ctx, priv->dreg, &priv->data,
 					  desc.type, desc.len);
+=======
+	err = nft_parse_register_store(ctx, tb[NFTA_IMMEDIATE_DREG],
+				       &priv->dreg, &priv->data, desc.type,
+				       desc.len);
+>>>>>>> origin/android16-base
 	if (err < 0)
 		goto err1;
 

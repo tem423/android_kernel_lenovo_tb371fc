@@ -133,7 +133,11 @@ struct mga_i2c_chan *mgag200_i2c_create(struct drm_device *dev)
 	i2c->adapter.algo_data = &i2c->bit;
 
 	i2c->bit.udelay = 10;
+<<<<<<< HEAD
 	i2c->bit.timeout = 2;
+=======
+	i2c->bit.timeout = usecs_to_jiffies(2200);
+>>>>>>> origin/android16-base
 	i2c->bit.data = i2c;
 	i2c->bit.setsda		= mga_gpio_setsda;
 	i2c->bit.setscl		= mga_gpio_setscl;

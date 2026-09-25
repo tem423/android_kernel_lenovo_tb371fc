@@ -202,8 +202,11 @@ struct sdcardfs_mount_options {
 	bool default_normal;
 	bool unshared_obb;
 	unsigned int reserved_mb;
+<<<<<<< HEAD
 	/* add for limit write to data partition */
 	uid_t reserved_uid;
+=======
+>>>>>>> origin/android16-base
 	bool nocache;
 };
 
@@ -612,6 +615,7 @@ static inline int check_min_free_space(struct dentry *dentry, size_t size, int d
 		if ((u64)size > avail)
 			return 0;
 
+<<<<<<< HEAD
 		/* add for limit write to data partition, begin */
 		if (sbi->options.reserved_uid) {
 			uid_t current_uid = from_kuid(&init_user_ns, current_uid());
@@ -624,12 +628,17 @@ static inline int check_min_free_space(struct dentry *dentry, size_t size, int d
 		} else {
 		/* add for limit write to data partition, end */
 
+=======
+>>>>>>> origin/android16-base
 		/* enough space */
 		if ((avail - size) > (sbi->options.reserved_mb * 1024 * 1024))
 			return 1;
 
+<<<<<<< HEAD
 		} /* add for limit write to data partition */
 
+=======
+>>>>>>> origin/android16-base
 		return 0;
 	} else
 		return 1;

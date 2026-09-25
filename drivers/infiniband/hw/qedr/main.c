@@ -338,6 +338,13 @@ static int qedr_alloc_resources(struct qedr_dev *dev)
 		spin_lock_init(&dev->qpidr.idr_lock);
 		idr_init(&dev->qpidr.idr);
 		dev->iwarp_wq = create_singlethread_workqueue("qedr_iwarpq");
+<<<<<<< HEAD
+=======
+		if (!dev->iwarp_wq) {
+			rc = -ENOMEM;
+			goto err1;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	/* Allocate Status blocks for CNQ */
@@ -345,7 +352,11 @@ static int qedr_alloc_resources(struct qedr_dev *dev)
 				GFP_KERNEL);
 	if (!dev->sb_array) {
 		rc = -ENOMEM;
+<<<<<<< HEAD
 		goto err1;
+=======
+		goto err_destroy_wq;
+>>>>>>> origin/android16-base
 	}
 
 	dev->cnq_array = kcalloc(dev->num_cnq,
@@ -399,6 +410,12 @@ err3:
 	kfree(dev->cnq_array);
 err2:
 	kfree(dev->sb_array);
+<<<<<<< HEAD
+=======
+err_destroy_wq:
+	if (IS_IWARP(dev))
+		destroy_workqueue(dev->iwarp_wq);
+>>>>>>> origin/android16-base
 err1:
 	kfree(dev->sgid_tbl);
 	return rc;

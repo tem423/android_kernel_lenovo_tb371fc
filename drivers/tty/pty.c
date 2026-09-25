@@ -111,6 +111,7 @@ static void pty_unthrottle(struct tty_struct *tty)
 static int pty_write(struct tty_struct *tty, const unsigned char *buf, int c)
 {
 	struct tty_struct *to = tty->link;
+<<<<<<< HEAD
 	unsigned long flags;
 
 	if (tty->stopped)
@@ -126,6 +127,13 @@ static int pty_write(struct tty_struct *tty, const unsigned char *buf, int c)
 			tty_flip_buffer_push(to->port);
 	}
 	return c;
+=======
+
+	if (tty->stopped || !c)
+		return 0;
+
+	return tty_insert_flip_string_and_push_buffer(to->port, buf, c);
+>>>>>>> origin/android16-base
 }
 
 /**

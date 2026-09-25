@@ -264,6 +264,10 @@ static int xen_blkif_disconnect(struct xen_blkif *blkif)
 
 		if (ring->xenblkd) {
 			kthread_stop(ring->xenblkd);
+<<<<<<< HEAD
+=======
+			ring->xenblkd = NULL;
+>>>>>>> origin/android16-base
 			wake_up(&ring->shutdown_wq);
 		}
 
@@ -651,7 +655,12 @@ static int xen_blkbk_probe(struct xenbus_device *dev,
 	/* setup back pointer */
 	be->blkif->be = be;
 
+<<<<<<< HEAD
 	err = xenbus_watch_pathfmt(dev, &be->backend_watch, backend_changed,
+=======
+	err = xenbus_watch_pathfmt(dev, &be->backend_watch, NULL,
+				   backend_changed,
+>>>>>>> origin/android16-base
 				   "%s/%s", dev->nodename, "physical-device");
 	if (err)
 		goto fail;

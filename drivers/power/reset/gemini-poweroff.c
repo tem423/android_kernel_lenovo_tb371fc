@@ -107,8 +107,13 @@ static int gemini_poweroff_probe(struct platform_device *pdev)
 		return PTR_ERR(gpw->base);
 
 	irq = platform_get_irq(pdev, 0);
+<<<<<<< HEAD
 	if (!irq)
 		return -EINVAL;
+=======
+	if (irq < 0)
+		return irq;
+>>>>>>> origin/android16-base
 
 	gpw->dev = dev;
 

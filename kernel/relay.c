@@ -163,13 +163,21 @@ static struct rchan_buf *relay_create_buf(struct rchan *chan)
 {
 	struct rchan_buf *buf;
 
+<<<<<<< HEAD
 	if (chan->n_subbufs > KMALLOC_MAX_SIZE / sizeof(size_t *))
+=======
+	if (chan->n_subbufs > KMALLOC_MAX_SIZE / sizeof(size_t))
+>>>>>>> origin/android16-base
 		return NULL;
 
 	buf = kzalloc(sizeof(struct rchan_buf), GFP_KERNEL);
 	if (!buf)
 		return NULL;
+<<<<<<< HEAD
 	buf->padding = kmalloc_array(chan->n_subbufs, sizeof(size_t *),
+=======
+	buf->padding = kmalloc_array(chan->n_subbufs, sizeof(size_t),
+>>>>>>> origin/android16-base
 				     GFP_KERNEL);
 	if (!buf->padding)
 		goto free_buf;
@@ -997,14 +1005,22 @@ static void relay_file_read_consume(struct rchan_buf *buf,
 /*
  *	relay_file_read_avail - boolean, are there unconsumed bytes available?
  */
+<<<<<<< HEAD
 static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
+=======
+static int relay_file_read_avail(struct rchan_buf *buf)
+>>>>>>> origin/android16-base
 {
 	size_t subbuf_size = buf->chan->subbuf_size;
 	size_t n_subbufs = buf->chan->n_subbufs;
 	size_t produced = buf->subbufs_produced;
 	size_t consumed = buf->subbufs_consumed;
 
+<<<<<<< HEAD
 	relay_file_read_consume(buf, read_pos, 0);
+=======
+	relay_file_read_consume(buf, 0, 0);
+>>>>>>> origin/android16-base
 
 	consumed = buf->subbufs_consumed;
 
@@ -1065,6 +1081,7 @@ static size_t relay_file_read_subbuf_avail(size_t read_pos,
 
 /**
  *	relay_file_read_start_pos - find the first available byte to read
+<<<<<<< HEAD
  *	@read_pos: file read position
  *	@buf: relay channel buffer
  *
@@ -1074,14 +1091,29 @@ static size_t relay_file_read_subbuf_avail(size_t read_pos,
  */
 static size_t relay_file_read_start_pos(size_t read_pos,
 					struct rchan_buf *buf)
+=======
+ *	@buf: relay channel buffer
+ *
+ *	If the read_pos is in the middle of padding, return the
+ *	position of the first actually available byte, otherwise
+ *	return the original value.
+ */
+static size_t relay_file_read_start_pos(struct rchan_buf *buf)
+>>>>>>> origin/android16-base
 {
 	size_t read_subbuf, padding, padding_start, padding_end;
 	size_t subbuf_size = buf->chan->subbuf_size;
 	size_t n_subbufs = buf->chan->n_subbufs;
 	size_t consumed = buf->subbufs_consumed % n_subbufs;
+<<<<<<< HEAD
 
 	if (!read_pos)
 		read_pos = consumed * subbuf_size + buf->bytes_consumed;
+=======
+	size_t read_pos = (consumed * subbuf_size + buf->bytes_consumed)
+			% (n_subbufs * subbuf_size);
+
+>>>>>>> origin/android16-base
 	read_subbuf = read_pos / subbuf_size;
 	padding = buf->padding[read_subbuf];
 	padding_start = (read_subbuf + 1) * subbuf_size - padding;
@@ -1137,10 +1169,17 @@ static ssize_t relay_file_read(struct file *filp,
 	do {
 		void *from;
 
+<<<<<<< HEAD
 		if (!relay_file_read_avail(buf, *ppos))
 			break;
 
 		read_start = relay_file_read_start_pos(*ppos, buf);
+=======
+		if (!relay_file_read_avail(buf))
+			break;
+
+		read_start = relay_file_read_start_pos(buf);
+>>>>>>> origin/android16-base
 		avail = relay_file_read_subbuf_avail(read_start, buf);
 		if (!avail)
 			break;

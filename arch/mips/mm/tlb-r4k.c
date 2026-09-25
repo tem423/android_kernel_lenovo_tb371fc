@@ -424,6 +424,10 @@ int has_transparent_hugepage(void)
 	}
 	return mask == PM_HUGE_MASK;
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(has_transparent_hugepage);
+>>>>>>> origin/android16-base
 
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE  */
 

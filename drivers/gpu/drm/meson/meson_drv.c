@@ -141,8 +141,16 @@ static bool meson_vpu_has_available_connectors(struct device *dev)
 	for_each_endpoint_of_node(dev->of_node, ep) {
 		/* If the endpoint node exists, consider it enabled */
 		remote = of_graph_get_remote_port(ep);
+<<<<<<< HEAD
 		if (remote)
 			return true;
+=======
+		if (remote) {
+			of_node_put(remote);
+			of_node_put(ep);
+			return true;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	return false;
@@ -384,6 +392,20 @@ static int meson_probe_remote(struct platform_device *pdev,
 	return count;
 }
 
+<<<<<<< HEAD
+=======
+static void meson_drv_shutdown(struct platform_device *pdev)
+{
+	struct meson_drm *priv = dev_get_drvdata(&pdev->dev);
+
+	if (!priv)
+		return;
+
+	drm_kms_helper_poll_fini(priv->drm);
+	drm_atomic_helper_shutdown(priv->drm);
+}
+
+>>>>>>> origin/android16-base
 static int meson_drv_probe(struct platform_device *pdev)
 {
 	struct component_match *match = NULL;
@@ -428,6 +450,10 @@ MODULE_DEVICE_TABLE(of, dt_match);
 
 static struct platform_driver meson_drm_platform_driver = {
 	.probe      = meson_drv_probe,
+<<<<<<< HEAD
+=======
+	.shutdown   = meson_drv_shutdown,
+>>>>>>> origin/android16-base
 	.driver     = {
 		.name	= "meson-drm",
 		.of_match_table = dt_match,

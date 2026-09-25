@@ -429,12 +429,21 @@ static void set_clamp(
 		clamp_max = 0x3FC0;
 		break;
 	case COLOR_DEPTH_101010:
+<<<<<<< HEAD
 		/* 10bit MSB aligned on 14 bit bus '11 1111 1111 1100' */
 		clamp_max = 0x3FFC;
 		break;
 	case COLOR_DEPTH_121212:
 		/* 12bit MSB aligned on 14 bit bus '11 1111 1111 1111' */
 		clamp_max = 0x3FFF;
+=======
+		/* 10bit MSB aligned on 14 bit bus '11 1111 1111 0000' */
+		clamp_max = 0x3FF0;
+		break;
+	case COLOR_DEPTH_121212:
+		/* 12bit MSB aligned on 14 bit bus '11 1111 1111 1100' */
+		clamp_max = 0x3FFC;
+>>>>>>> origin/android16-base
 		break;
 	default:
 		clamp_max = 0x3FC0;
@@ -778,7 +787,11 @@ static void dce_transform_set_pixel_storage_depth(
 		color_depth = COLOR_DEPTH_101010;
 		pixel_depth = 0;
 		expan_mode  = 1;
+<<<<<<< HEAD
 		BREAK_TO_DEBUGGER();
+=======
+		DC_LOG_DC("The pixel depth %d is not valid, set COLOR_DEPTH_101010 instead.", depth);
+>>>>>>> origin/android16-base
 		break;
 	}
 
@@ -792,8 +805,12 @@ static void dce_transform_set_pixel_storage_depth(
 	if (!(xfm_dce->lb_pixel_depth_supported & depth)) {
 		/*we should use unsupported capabilities
 		 *  unless it is required by w/a*/
+<<<<<<< HEAD
 		DC_LOG_WARNING("%s: Capability not supported",
 			__func__);
+=======
+		DC_LOG_DC("%s: Capability not supported", __func__);
+>>>>>>> origin/android16-base
 	}
 }
 

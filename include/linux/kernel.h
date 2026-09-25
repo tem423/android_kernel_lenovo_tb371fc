@@ -300,6 +300,10 @@ extern long (*panic_blink)(int state);
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;
 void nmi_panic(struct pt_regs *regs, const char *msg);
+<<<<<<< HEAD
+=======
+void check_panic_on_warn(const char *origin);
+>>>>>>> origin/android16-base
 extern void oops_enter(void);
 extern void oops_exit(void);
 void print_oops_end_marker(void);
@@ -604,7 +608,15 @@ static inline char *hex_byte_pack_upper(char *buf, u8 byte)
 	return buf;
 }
 
+<<<<<<< HEAD
 extern int hex_to_bin(char ch);
+=======
+#ifdef __GENKSYMS__
+extern int hex_to_bin(char ch);
+#else
+extern int hex_to_bin(unsigned char ch);
+#endif
+>>>>>>> origin/android16-base
 extern int __must_check hex2bin(u8 *dst, const char *src, size_t count);
 extern char *bin2hex(char *dst, const void *src, size_t count);
 

@@ -288,6 +288,10 @@ static int octeon_mmc_probe(struct platform_device *pdev)
 		if (ret) {
 			dev_err(&pdev->dev, "Error populating slots\n");
 			octeon_mmc_set_shared_power(host, 0);
+<<<<<<< HEAD
+=======
+			of_node_put(cn);
+>>>>>>> origin/android16-base
 			goto error;
 		}
 		i++;

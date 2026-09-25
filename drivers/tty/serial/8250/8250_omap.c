@@ -162,6 +162,7 @@ static void omap8250_set_mctrl(struct uart_port *port, unsigned int mctrl)
 static void omap_8250_mdr1_errataset(struct uart_8250_port *up,
 				     struct omap8250_priv *priv)
 {
+<<<<<<< HEAD
 	u8 timeout = 255;
 	u8 old_mdr1;
 
@@ -169,10 +170,13 @@ static void omap_8250_mdr1_errataset(struct uart_8250_port *up,
 	if (old_mdr1 == priv->mdr1)
 		return;
 
+=======
+>>>>>>> origin/android16-base
 	serial_out(up, UART_OMAP_MDR1, priv->mdr1);
 	udelay(2);
 	serial_out(up, UART_FCR, up->fcr | UART_FCR_CLEAR_XMIT |
 			UART_FCR_CLEAR_RCVR);
+<<<<<<< HEAD
 	/*
 	 * Wait for FIFO to empty: when empty, RX_FIFO_E bit is 0 and
 	 * TX_FIFO_E bit is 1.
@@ -188,6 +192,8 @@ static void omap_8250_mdr1_errataset(struct uart_8250_port *up,
 		}
 		udelay(1);
 	}
+=======
+>>>>>>> origin/android16-base
 }
 
 static void omap_8250_get_divisor(struct uart_port *port, unsigned int baud,
@@ -266,6 +272,10 @@ static void omap8250_restore_regs(struct uart_8250_port *up)
 {
 	struct omap8250_priv *priv = up->port.private_data;
 	struct uart_8250_dma	*dma = up->dma;
+<<<<<<< HEAD
+=======
+	u8 mcr = serial8250_in_MCR(up);
+>>>>>>> origin/android16-base
 
 	if (dma && dma->tx_running) {
 		/*
@@ -282,7 +292,11 @@ static void omap8250_restore_regs(struct uart_8250_port *up)
 	serial_out(up, UART_EFR, UART_EFR_ECB);
 
 	serial_out(up, UART_LCR, UART_LCR_CONF_MODE_A);
+<<<<<<< HEAD
 	serial8250_out_MCR(up, UART_MCR_TCRTLR);
+=======
+	serial8250_out_MCR(up, mcr | UART_MCR_TCRTLR);
+>>>>>>> origin/android16-base
 	serial_out(up, UART_FCR, up->fcr);
 
 	omap8250_update_scr(up, priv);
@@ -298,7 +312,12 @@ static void omap8250_restore_regs(struct uart_8250_port *up)
 	serial_out(up, UART_LCR, 0);
 
 	/* drop TCR + TLR access, we setup XON/XOFF later */
+<<<<<<< HEAD
 	serial8250_out_MCR(up, up->mcr);
+=======
+	serial8250_out_MCR(up, mcr);
+
+>>>>>>> origin/android16-base
 	serial_out(up, UART_IER, up->ier);
 
 	serial_out(up, UART_LCR, UART_LCR_CONF_MODE_B);
@@ -607,7 +626,10 @@ static int omap_8250_startup(struct uart_port *port)
 
 	pm_runtime_get_sync(port->dev);
 
+<<<<<<< HEAD
 	up->mcr = 0;
+=======
+>>>>>>> origin/android16-base
 	serial_out(up, UART_FCR, UART_FCR_CLEAR_RCVR | UART_FCR_CLEAR_XMIT);
 
 	serial_out(up, UART_LCR, UART_LCR_WLEN8);
@@ -664,12 +686,20 @@ static void omap_8250_shutdown(struct uart_port *port)
 	struct uart_8250_port *up = up_to_u8250p(port);
 	struct omap8250_priv *priv = port->private_data;
 
+<<<<<<< HEAD
+=======
+	pm_runtime_get_sync(port->dev);
+
+>>>>>>> origin/android16-base
 	flush_work(&priv->qos_work);
 	if (up->dma)
 		omap_8250_rx_dma_flush(up);
 
+<<<<<<< HEAD
 	pm_runtime_get_sync(port->dev);
 
+=======
+>>>>>>> origin/android16-base
 	serial_out(up, UART_OMAP_WER, 0);
 
 	up->ier = 0;
@@ -1284,6 +1314,10 @@ static int omap8250_remove(struct platform_device *pdev)
 
 	pm_runtime_dont_use_autosuspend(&pdev->dev);
 	pm_runtime_put_sync(&pdev->dev);
+<<<<<<< HEAD
+=======
+	flush_work(&priv->qos_work);
+>>>>>>> origin/android16-base
 	pm_runtime_disable(&pdev->dev);
 	serial8250_unregister_port(priv->line);
 	pm_qos_remove_request(&priv->pm_qos_request);

@@ -65,7 +65,11 @@ static void davinci_pm_suspend(void)
 
 	/* Configure sleep count in deep sleep register */
 	val = __raw_readl(pm_config.deepsleep_reg);
+<<<<<<< HEAD
 	val &= ~DEEPSLEEP_SLEEPCOUNT_MASK,
+=======
+	val &= ~DEEPSLEEP_SLEEPCOUNT_MASK;
+>>>>>>> origin/android16-base
 	val |= pm_config.sleepcount;
 	__raw_writel(val, pm_config.deepsleep_reg);
 

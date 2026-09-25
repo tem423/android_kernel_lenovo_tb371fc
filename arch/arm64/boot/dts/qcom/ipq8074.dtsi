@@ -261,7 +261,11 @@
 			status = "disabled";
 		};
 
+<<<<<<< HEAD
 		qpic_nand: nand@79b0000 {
+=======
+		qpic_nand: nand-controller@79b0000 {
+>>>>>>> origin/android16-base
 			compatible = "qcom,ipq8074-nand";
 			reg = <0x79b0000 0x10000>;
 			#address-cells = <1>;
@@ -490,7 +494,11 @@
 	clocks {
 		sleep_clk: sleep_clk {
 			compatible = "fixed-clock";
+<<<<<<< HEAD
 			clock-frequency = <32000>;
+=======
+			clock-frequency = <32768>;
+>>>>>>> origin/android16-base
 			#clock-cells = <0>;
 		};
 

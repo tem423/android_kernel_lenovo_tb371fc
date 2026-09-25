@@ -1008,6 +1008,12 @@ err:
  *
  * The btree node will have either a read or a write lock held, depending on
  * level and op->lock.
+<<<<<<< HEAD
+=======
+ *
+ * Note: Only error code or btree pointer will be returned, it is unncessary
+ *       for callers to check NULL pointer.
+>>>>>>> origin/android16-base
  */
 struct btree *bch_btree_node_get(struct cache_set *c, struct btree_op *op,
 				 struct bkey *k, int level, bool write,
@@ -1120,16 +1126,33 @@ retry:
 	mutex_unlock(&b->c->bucket_lock);
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * Only error code or btree pointer will be returned, it is unncessary for
+ * callers to check NULL pointer.
+ */
+>>>>>>> origin/android16-base
 struct btree *__bch_btree_node_alloc(struct cache_set *c, struct btree_op *op,
 				     int level, bool wait,
 				     struct btree *parent)
 {
 	BKEY_PADDED(key) k;
+<<<<<<< HEAD
 	struct btree *b = ERR_PTR(-EAGAIN);
 
 	mutex_lock(&c->bucket_lock);
 retry:
 	if (__bch_bucket_alloc_set(c, RESERVE_BTREE, &k.key, 1, wait))
+=======
+	struct btree *b;
+
+	mutex_lock(&c->bucket_lock);
+retry:
+	/* return ERR_PTR(-EAGAIN) when it fails */
+	b = ERR_PTR(-EAGAIN);
+	if (__bch_bucket_alloc_set(c, RESERVE_BTREE, &k.key, wait))
+>>>>>>> origin/android16-base
 		goto err;
 
 	bkey_put(c, &k.key);
@@ -1174,7 +1197,11 @@ static struct btree *btree_node_alloc_replacement(struct btree *b,
 {
 	struct btree *n = bch_btree_node_alloc(b->c, op, b->level, b->parent);
 
+<<<<<<< HEAD
 	if (!IS_ERR_OR_NULL(n)) {
+=======
+	if (!IS_ERR(n)) {
+>>>>>>> origin/android16-base
 		mutex_lock(&n->write_lock);
 		bch_btree_sort_into(&b->keys, &n->keys, &b->c->sort);
 		bkey_copy_key(&n->key, &b->key);
@@ -1389,7 +1416,11 @@ static int btree_gc_coalesce(struct btree *b, struct btree_op *op,
 
 	for (i = 0; i < nodes; i++) {
 		new_nodes[i] = btree_node_alloc_replacement(r[i].b, NULL);
+<<<<<<< HEAD
 		if (IS_ERR_OR_NULL(new_nodes[i]))
+=======
+		if (IS_ERR(new_nodes[i]))
+>>>>>>> origin/android16-base
 			goto out_nocoalesce;
 	}
 
@@ -1541,6 +1572,11 @@ static int btree_gc_rewrite_node(struct btree *b, struct btree_op *op,
 		return 0;
 
 	n = btree_node_alloc_replacement(replace, NULL);
+<<<<<<< HEAD
+=======
+	if (IS_ERR(n))
+		return 0;
+>>>>>>> origin/android16-base
 
 	/* recheck reserve after allocating replacement node */
 	if (btree_check_reserve(b, NULL)) {
@@ -1706,7 +1742,11 @@ static int bch_btree_gc_root(struct btree *b, struct btree_op *op,
 	if (should_rewrite) {
 		n = btree_node_alloc_replacement(b, NULL);
 
+<<<<<<< HEAD
 		if (!IS_ERR_OR_NULL(n)) {
+=======
+		if (!IS_ERR(n)) {
+>>>>>>> origin/android16-base
 			bch_btree_node_write_sync(n);
 
 			bch_btree_set_root(n);

@@ -258,8 +258,13 @@ static int axg_tdm_iface_set_sclk(struct snd_soc_dai *dai,
 	srate = iface->slots * iface->slot_width * params_rate(params);
 
 	if (!iface->mclk_rate) {
+<<<<<<< HEAD
 		/* If no specific mclk is requested, default to bit clock * 4 */
 		clk_set_rate(iface->mclk, 4 * srate);
+=======
+		/* If no specific mclk is requested, default to bit clock * 2 */
+		clk_set_rate(iface->mclk, 2 * srate);
+>>>>>>> origin/android16-base
 	} else {
 		/* Check if we can actually get the bit clock from mclk */
 		if (iface->mclk_rate % srate) {
@@ -459,8 +464,25 @@ static int axg_tdm_iface_set_bias_level(struct snd_soc_component *component,
 	return ret;
 }
 
+<<<<<<< HEAD
 static const struct snd_soc_component_driver axg_tdm_iface_component_drv = {
 	.set_bias_level	= axg_tdm_iface_set_bias_level,
+=======
+static const struct snd_soc_dapm_widget axg_tdm_iface_dapm_widgets[] = {
+	SND_SOC_DAPM_SIGGEN("Playback Signal"),
+};
+
+static const struct snd_soc_dapm_route axg_tdm_iface_dapm_routes[] = {
+	{ "Loopback", NULL, "Playback Signal" },
+};
+
+static const struct snd_soc_component_driver axg_tdm_iface_component_drv = {
+	.dapm_widgets		= axg_tdm_iface_dapm_widgets,
+	.num_dapm_widgets	= ARRAY_SIZE(axg_tdm_iface_dapm_widgets),
+	.dapm_routes		= axg_tdm_iface_dapm_routes,
+	.num_dapm_routes	= ARRAY_SIZE(axg_tdm_iface_dapm_routes),
+	.set_bias_level		= axg_tdm_iface_set_bias_level,
+>>>>>>> origin/android16-base
 };
 
 static const struct of_device_id axg_tdm_iface_of_match[] = {

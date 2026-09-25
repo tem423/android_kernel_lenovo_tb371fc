@@ -39,6 +39,10 @@ MODULE_ALIAS("ip_set_hash:net,port,net");
 #define IP_SET_HASH_WITH_PROTO
 #define IP_SET_HASH_WITH_NETS
 #define IPSET_NET_COUNT 2
+<<<<<<< HEAD
+=======
+#define IP_SET_HASH_WITH_NET0
+>>>>>>> origin/android16-base
 
 /* IPv4 variant */
 

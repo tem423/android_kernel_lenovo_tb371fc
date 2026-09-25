@@ -542,6 +542,7 @@ struct mmc_host {
 
 	struct mmc_card		*card;		/* device attached to this host */
 
+<<<<<<< HEAD
 // bayhub chevron.li add for degrade code at 2019/8/30 start
 #ifdef CONFIG_MMC_SDHCI_BH201
 	u8					v18_disable; /* flag used for degrde to sd2.0 */
@@ -553,6 +554,8 @@ struct mmc_host {
 #endif
 // bayhub chevron.li add for degrade code at 2019/8/30 end
 
+=======
+>>>>>>> origin/android16-base
 	wait_queue_head_t	wq;
 	struct mmc_ctx		*claimer;	/* context that has host claimed */
 	int			claim_cnt;	/* "claim" nesting count */

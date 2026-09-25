@@ -35,9 +35,19 @@ ifeq ($(call is-board-platform,sdm660),true)
 AUDIO_SELECT  := CONFIG_SND_SOC_SDM660=m
 endif
 
+<<<<<<< HEAD
 AUDIO_CHIPSET := audio
 # Build/Package only in case of supported target
 ifeq ($(call is-board-platform-in-list,msmnile $(MSMSTEPPE) $(TRINKET) kona lito bengal sdmshrike sdm660),true)
+=======
+ifeq ($(call is-board-platform-in-list,msm8953 msm8937),true)
+AUDIO_SELECT  := CONFIG_SND_SOC_SDM450=m
+endif
+
+AUDIO_CHIPSET := audio
+# Build/Package only in case of supported target
+ifeq ($(call is-board-platform-in-list,msmnile $(MSMSTEPPE) $(TRINKET) kona lito bengal sdmshrike sdm660 msm8953 msm8937),true)
+>>>>>>> origin/android16-base
 
 LOCAL_PATH := $(call my-dir)
 
@@ -76,7 +86,11 @@ include $(DLKM_DIR)/AndroidKernelModule.mk
 endif
 endif
 ###########################################################
+<<<<<<< HEAD
 ifeq ($(call is-board-platform-in-list,$(MSMSTEPPE) $(TRINKET) kona sdm660), true)
+=======
+ifeq ($(call is-board-platform-in-list,$(MSMSTEPPE) $(TRINKET) kona sdm660 msm8953 msm8937), true)
+>>>>>>> origin/android16-base
 ifneq ($(TARGET_BOARD_AUTO),true)
 include $(CLEAR_VARS)
 LOCAL_MODULE              := $(AUDIO_CHIPSET)_pinctrl_wcd.ko

@@ -82,6 +82,11 @@ static int marvell_cable_detect(struct ata_port *ap)
 	switch(ap->port_no)
 	{
 	case 0:
+<<<<<<< HEAD
+=======
+		if (!ap->ioaddr.bmdma_addr)
+			return ATA_CBL_PATA_UNK;
+>>>>>>> origin/android16-base
 		if (ioread8(ap->ioaddr.bmdma_addr + 1) & 1)
 			return ATA_CBL_PATA40;
 		return ATA_CBL_PATA80;

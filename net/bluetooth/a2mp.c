@@ -388,9 +388,15 @@ static int a2mp_getampassoc_req(struct amp_mgr *mgr, struct sk_buff *skb,
 	hdev = hci_dev_get(req->id);
 	if (!hdev || hdev->amp_type == AMP_TYPE_BREDR || tmp) {
 		struct a2mp_amp_assoc_rsp rsp;
+<<<<<<< HEAD
 		rsp.id = req->id;
 
 		memset(&rsp, 0, sizeof(rsp));
+=======
+
+		memset(&rsp, 0, sizeof(rsp));
+		rsp.id = req->id;
+>>>>>>> origin/android16-base
 
 		if (tmp) {
 			rsp.status = A2MP_STATUS_COLLISION_OCCURED;
@@ -519,6 +525,10 @@ static int a2mp_createphyslink_req(struct amp_mgr *mgr, struct sk_buff *skb,
 		assoc = kmemdup(req->amp_assoc, assoc_len, GFP_KERNEL);
 		if (!assoc) {
 			amp_ctrl_put(ctrl);
+<<<<<<< HEAD
+=======
+			hci_dev_put(hdev);
+>>>>>>> origin/android16-base
 			return -ENOMEM;
 		}
 

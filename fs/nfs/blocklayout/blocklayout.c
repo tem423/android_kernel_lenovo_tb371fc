@@ -604,6 +604,11 @@ retry:
 		nfs4_delete_deviceid(node->ld, node->nfs_client, id);
 		goto retry;
 	}
+<<<<<<< HEAD
+=======
+
+	nfs4_put_deviceid_node(node);
+>>>>>>> origin/android16-base
 	return ERR_PTR(-ENODEV);
 }
 

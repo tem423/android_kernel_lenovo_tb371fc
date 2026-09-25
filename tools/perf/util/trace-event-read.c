@@ -381,6 +381,10 @@ static int read_saved_cmdline(struct tep_handle *pevent)
 		pr_debug("error reading saved cmdlines\n");
 		goto out;
 	}
+<<<<<<< HEAD
+=======
+	buf[ret] = '\0';
+>>>>>>> origin/android16-base
 
 	parse_saved_cmdline(pevent, buf, size);
 	ret = 0;

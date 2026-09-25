@@ -669,9 +669,33 @@ out:
  * Takes the lock on the TOKEN lock resource so no other
  * node can communicate while the operation is underway.
  */
+<<<<<<< HEAD
 static int lock_token(struct md_cluster_info *cinfo, bool mddev_locked)
 {
 	int error, set_bit = 0;
+=======
+static int lock_token(struct md_cluster_info *cinfo)
+{
+	int error;
+
+	error = dlm_lock_sync(cinfo->token_lockres, DLM_LOCK_EX);
+	if (error) {
+		pr_err("md-cluster(%s:%d): failed to get EX on TOKEN (%d)\n",
+				__func__, __LINE__, error);
+	} else {
+		/* Lock the receive sequence */
+		mutex_lock(&cinfo->recv_mutex);
+	}
+	return error;
+}
+
+/* lock_comm()
+ * Sets the MD_CLUSTER_SEND_LOCK bit to lock the send channel.
+ */
+static int lock_comm(struct md_cluster_info *cinfo, bool mddev_locked)
+{
+	int rv, set_bit = 0;
+>>>>>>> origin/android16-base
 	struct mddev *mddev = cinfo->mddev;
 
 	/*
@@ -682,6 +706,7 @@ static int lock_token(struct md_cluster_info *cinfo, bool mddev_locked)
 	 */
 	if (mddev_locked && !test_bit(MD_CLUSTER_HOLDING_MUTEX_FOR_RECVD,
 				      &cinfo->state)) {
+<<<<<<< HEAD
 		error = test_and_set_bit_lock(MD_CLUSTER_HOLDING_MUTEX_FOR_RECVD,
 					      &cinfo->state);
 		WARN_ON_ONCE(error);
@@ -710,6 +735,21 @@ static int lock_comm(struct md_cluster_info *cinfo, bool mddev_locked)
 		   !test_and_set_bit(MD_CLUSTER_SEND_LOCK, &cinfo->state));
 
 	return lock_token(cinfo, mddev_locked);
+=======
+		rv = test_and_set_bit_lock(MD_CLUSTER_HOLDING_MUTEX_FOR_RECVD,
+					      &cinfo->state);
+		WARN_ON_ONCE(rv);
+		md_wakeup_thread(mddev->thread);
+		set_bit = 1;
+	}
+
+	wait_event(cinfo->wait,
+		   !test_and_set_bit(MD_CLUSTER_SEND_LOCK, &cinfo->state));
+	rv = lock_token(cinfo);
+	if (set_bit)
+		clear_bit_unlock(MD_CLUSTER_HOLDING_MUTEX_FOR_RECVD, &cinfo->state);
+	return rv;
+>>>>>>> origin/android16-base
 }
 
 static void unlock_comm(struct md_cluster_info *cinfo)
@@ -789,9 +829,17 @@ static int sendmsg(struct md_cluster_info *cinfo, struct cluster_msg *cmsg,
 {
 	int ret;
 
+<<<<<<< HEAD
 	lock_comm(cinfo, mddev_locked);
 	ret = __sendmsg(cinfo, cmsg);
 	unlock_comm(cinfo);
+=======
+	ret = lock_comm(cinfo, mddev_locked);
+	if (!ret) {
+		ret = __sendmsg(cinfo, cmsg);
+		unlock_comm(cinfo);
+	}
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -1063,7 +1111,11 @@ static int metadata_update_start(struct mddev *mddev)
 		return 0;
 	}
 
+<<<<<<< HEAD
 	ret = lock_token(cinfo, 1);
+=======
+	ret = lock_token(cinfo);
+>>>>>>> origin/android16-base
 	clear_bit_unlock(MD_CLUSTER_HOLDING_MUTEX_FOR_RECVD, &cinfo->state);
 	return ret;
 }
@@ -1181,7 +1233,14 @@ static void update_size(struct mddev *mddev, sector_t old_dev_sectors)
 	int raid_slot = -1;
 
 	md_update_sb(mddev, 1);
+<<<<<<< HEAD
 	lock_comm(cinfo, 1);
+=======
+	if (lock_comm(cinfo, 1)) {
+		pr_err("%s: lock_comm failed\n", __func__);
+		return;
+	}
+>>>>>>> origin/android16-base
 
 	memset(&cmsg, 0, sizeof(cmsg));
 	cmsg.type = cpu_to_le32(METADATA_UPDATED);
@@ -1330,7 +1389,12 @@ static int add_new_disk(struct mddev *mddev, struct md_rdev *rdev)
 	cmsg.type = cpu_to_le32(NEWDISK);
 	memcpy(cmsg.uuid, uuid, 16);
 	cmsg.raid_slot = cpu_to_le32(rdev->desc_nr);
+<<<<<<< HEAD
 	lock_comm(cinfo, 1);
+=======
+	if (lock_comm(cinfo, 1))
+		return -EAGAIN;
+>>>>>>> origin/android16-base
 	ret = __sendmsg(cinfo, &cmsg);
 	if (ret) {
 		unlock_comm(cinfo);

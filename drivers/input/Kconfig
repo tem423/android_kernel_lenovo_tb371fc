@@ -197,6 +197,7 @@ config INPUT_KEYCOMBO
 	---help---
 	  Say Y here if you want to take action when some keys are pressed;
 
+<<<<<<< HEAD
 config SENSORS_HALL
 	bool "Hall sensor"
 	depends on INPUT
@@ -204,6 +205,8 @@ config SENSORS_HALL
 	Say y here if you want to use this hall sensor driver, it
 	is like a switch. For example, lid.
 
+=======
+>>>>>>> origin/android16-base
 comment "Input Device Drivers"
 
 source "drivers/input/keyboard/Kconfig"
@@ -216,8 +219,11 @@ source "drivers/input/tablet/Kconfig"
 
 source "drivers/input/touchscreen/Kconfig"
 
+<<<<<<< HEAD
 source "drivers/input/fingerprint/Kconfig"
 
+=======
+>>>>>>> origin/android16-base
 source "drivers/input/misc/Kconfig"
 
 source "drivers/input/rmi4/Kconfig"

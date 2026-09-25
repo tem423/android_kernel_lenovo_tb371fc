@@ -5,14 +5,24 @@
 
 #include <linux/linkage.h>
 #include <asm/assembler.h>
+<<<<<<< HEAD
+=======
+#include <asm/asm-offsets.h>
+>>>>>>> origin/android16-base
 #include <asm/kexec.h>
 
 	.align	3	/* not needed for this code, but keeps fncpy() happy */
 
 ENTRY(relocate_new_kernel)
 
+<<<<<<< HEAD
 	ldr	r0,kexec_indirection_page
 	ldr	r1,kexec_start_address
+=======
+	adr	r7, relocate_new_kernel_end
+	ldr	r0, [r7, #KEXEC_INDIR_PAGE]
+	ldr	r1, [r7, #KEXEC_START_ADDR]
+>>>>>>> origin/android16-base
 
 	/*
 	 * If there is no indirection page (we are doing crashdumps)
@@ -57,6 +67,7 @@ ENTRY(relocate_new_kernel)
 
 2:
 	/* Jump to relocated kernel */
+<<<<<<< HEAD
 	mov lr,r1
 	mov r0,#0
 	ldr r1,kexec_mach_type
@@ -85,6 +96,18 @@ kexec_boot_atags:
 
 ENDPROC(relocate_new_kernel)
 
+=======
+	mov	lr, r1
+	mov	r0, #0
+	ldr	r1, [r7, #KEXEC_MACH_TYPE]
+	ldr	r2, [r7, #KEXEC_R2]
+ ARM(	ret	lr	)
+ THUMB(	bx	lr	)
+
+ENDPROC(relocate_new_kernel)
+
+	.align	3
+>>>>>>> origin/android16-base
 relocate_new_kernel_end:
 
 	.globl relocate_new_kernel_size

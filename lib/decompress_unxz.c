@@ -167,7 +167,11 @@
  * memeq and memzero are not used much and any remotely sane implementation
  * is fast enough. memcpy/memmove speed matters in multi-call mode, but
  * the kernel image is decompressed in single-call mode, in which only
+<<<<<<< HEAD
  * memcpy speed can matter and only if there is a lot of uncompressible data
+=======
+ * memmove speed can matter and only if there is a lot of uncompressible data
+>>>>>>> origin/android16-base
  * (LZMA2 stores uncompressible chunks in uncompressed form). Thus, the
  * functions below should just be kept small; it's probably not worth
  * optimizing for speed.

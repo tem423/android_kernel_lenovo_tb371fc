@@ -24,7 +24,11 @@ static int __init scan_cache(unsigned long node, const char *uname,
 	if (!of_flat_dt_is_compatible(node, "jcore,cache"))
 		return 0;
 
+<<<<<<< HEAD
 	j2_ccr_base = (u32 __iomem *)of_flat_dt_translate_address(node);
+=======
+	j2_ccr_base = ioremap(of_flat_dt_translate_address(node), 4);
+>>>>>>> origin/android16-base
 
 	return 1;
 }

@@ -234,7 +234,11 @@ int bnxt_qplib_rcfw_send_message(struct bnxt_qplib_rcfw *rcfw,
 		/* failed with status */
 		dev_err(&rcfw->pdev->dev, "QPLIB: cmdq[%#x]=%#x status %#x",
 			cookie, opcode, evnt->status);
+<<<<<<< HEAD
 		rc = -EFAULT;
+=======
+		rc = -EIO;
+>>>>>>> origin/android16-base
 	}
 
 	return rc;

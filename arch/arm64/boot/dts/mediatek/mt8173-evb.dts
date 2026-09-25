@@ -51,7 +51,11 @@
 		id-gpio = <&pio 16 GPIO_ACTIVE_HIGH>;
 	};
 
+<<<<<<< HEAD
 	usb_p1_vbus: regulator@0 {
+=======
+	usb_p1_vbus: regulator-usb-p1 {
+>>>>>>> origin/android16-base
 		compatible = "regulator-fixed";
 		regulator-name = "usb_vbus";
 		regulator-min-microvolt = <5000000>;
@@ -60,7 +64,11 @@
 		enable-active-high;
 	};
 
+<<<<<<< HEAD
 	usb_p0_vbus: regulator@1 {
+=======
+	usb_p0_vbus: regulator-usb-p0 {
+>>>>>>> origin/android16-base
 		compatible = "regulator-fixed";
 		regulator-name = "vbus";
 		regulator-min-microvolt = <5000000>;

@@ -589,7 +589,11 @@ int lockup_detector_offline_cpu(unsigned int cpu)
 	return 0;
 }
 
+<<<<<<< HEAD
 static void lockup_detector_reconfigure(void)
+=======
+static void __lockup_detector_reconfigure(void)
+>>>>>>> origin/android16-base
 {
 	cpus_read_lock();
 	watchdog_nmi_stop();
@@ -609,6 +613,16 @@ static void lockup_detector_reconfigure(void)
 	__lockup_detector_cleanup();
 }
 
+<<<<<<< HEAD
+=======
+void lockup_detector_reconfigure(void)
+{
+	mutex_lock(&watchdog_mutex);
+	__lockup_detector_reconfigure();
+	mutex_unlock(&watchdog_mutex);
+}
+
+>>>>>>> origin/android16-base
 /*
  * Create the watchdog thread infrastructure and configure the detector(s).
  *
@@ -629,13 +643,21 @@ static __init void lockup_detector_setup(void)
 		return;
 
 	mutex_lock(&watchdog_mutex);
+<<<<<<< HEAD
 	lockup_detector_reconfigure();
+=======
+	__lockup_detector_reconfigure();
+>>>>>>> origin/android16-base
 	softlockup_initialized = true;
 	mutex_unlock(&watchdog_mutex);
 }
 
 #else /* CONFIG_SOFTLOCKUP_DETECTOR */
+<<<<<<< HEAD
 static void lockup_detector_reconfigure(void)
+=======
+static void __lockup_detector_reconfigure(void)
+>>>>>>> origin/android16-base
 {
 	cpus_read_lock();
 	watchdog_nmi_stop();
@@ -643,9 +665,19 @@ static void lockup_detector_reconfigure(void)
 	watchdog_nmi_start();
 	cpus_read_unlock();
 }
+<<<<<<< HEAD
 static inline void lockup_detector_setup(void)
 {
 	lockup_detector_reconfigure();
+=======
+void lockup_detector_reconfigure(void)
+{
+	__lockup_detector_reconfigure();
+}
+static inline void lockup_detector_setup(void)
+{
+	__lockup_detector_reconfigure();
+>>>>>>> origin/android16-base
 }
 #endif /* !CONFIG_SOFTLOCKUP_DETECTOR */
 
@@ -685,7 +717,11 @@ static void proc_watchdog_update(void)
 {
 	/* Remove impossible cpus to keep sysctl output clean. */
 	cpumask_and(&watchdog_cpumask, &watchdog_cpumask, cpu_possible_mask);
+<<<<<<< HEAD
 	lockup_detector_reconfigure();
+=======
+	__lockup_detector_reconfigure();
+>>>>>>> origin/android16-base
 }
 
 /*

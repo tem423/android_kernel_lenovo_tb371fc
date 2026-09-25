@@ -230,6 +230,15 @@ static void sctp_transport_seq_stop(struct seq_file *seq, void *v)
 {
 	struct sctp_ht_iter *iter = seq->private;
 
+<<<<<<< HEAD
+=======
+	if (v && v != SEQ_START_TOKEN) {
+		struct sctp_transport *transport = v;
+
+		sctp_transport_put(transport);
+	}
+
+>>>>>>> origin/android16-base
 	sctp_transport_walk_stop(&iter->hti);
 }
 
@@ -237,6 +246,15 @@ static void *sctp_transport_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 {
 	struct sctp_ht_iter *iter = seq->private;
 
+<<<<<<< HEAD
+=======
+	if (v && v != SEQ_START_TOKEN) {
+		struct sctp_transport *transport = v;
+
+		sctp_transport_put(transport);
+	}
+
+>>>>>>> origin/android16-base
 	++*pos;
 
 	return sctp_transport_get_next(seq_file_net(seq), &iter->hti);
@@ -292,8 +310,11 @@ static int sctp_assocs_seq_show(struct seq_file *seq, void *v)
 		sk->sk_rcvbuf);
 	seq_printf(seq, "\n");
 
+<<<<<<< HEAD
 	sctp_transport_put(transport);
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -369,8 +390,11 @@ static int sctp_remaddr_seq_show(struct seq_file *seq, void *v)
 		seq_printf(seq, "\n");
 	}
 
+<<<<<<< HEAD
 	sctp_transport_put(transport);
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 }
 

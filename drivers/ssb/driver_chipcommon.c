@@ -119,7 +119,11 @@ void ssb_chipco_set_clockmode(struct ssb_chipcommon *cc,
 static enum ssb_clksrc chipco_pctl_get_slowclksrc(struct ssb_chipcommon *cc)
 {
 	struct ssb_bus *bus = cc->dev->bus;
+<<<<<<< HEAD
 	u32 uninitialized_var(tmp);
+=======
+	u32 tmp;
+>>>>>>> origin/android16-base
 
 	if (cc->dev->id.revision < 6) {
 		if (bus->bustype == SSB_BUSTYPE_SSB ||
@@ -149,7 +153,11 @@ static enum ssb_clksrc chipco_pctl_get_slowclksrc(struct ssb_chipcommon *cc)
 /* Get maximum or minimum (depending on get_max flag) slowclock frequency. */
 static int chipco_pctl_clockfreqlimit(struct ssb_chipcommon *cc, int get_max)
 {
+<<<<<<< HEAD
 	int uninitialized_var(limit);
+=======
+	int limit;
+>>>>>>> origin/android16-base
 	enum ssb_clksrc clocksrc;
 	int divisor = 1;
 	u32 tmp;

@@ -96,6 +96,20 @@ DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_llc_shared_map);
 DEFINE_PER_CPU_READ_MOSTLY(struct cpuinfo_x86, cpu_info);
 EXPORT_PER_CPU_SYMBOL(cpu_info);
 
+<<<<<<< HEAD
+=======
+struct mwait_cpu_dead {
+	unsigned int	control;
+	unsigned int	status;
+};
+
+/*
+ * Cache line aligned data for mwait_play_dead(). Separate on purpose so
+ * that it's unlikely to be touched by other CPUs.
+ */
+static DEFINE_PER_CPU_ALIGNED(struct mwait_cpu_dead, mwait_cpu_dead);
+
+>>>>>>> origin/android16-base
 /* Logical package management. We might want to allocate that dynamically */
 unsigned int __max_logical_packages __read_mostly;
 EXPORT_SYMBOL(__max_logical_packages);
@@ -231,6 +245,10 @@ static void notrace start_secondary(void *unused)
 #endif
 	load_current_idt();
 	cpu_init();
+<<<<<<< HEAD
+=======
+	fpu__init_cpu();
+>>>>>>> origin/android16-base
 	x86_cpuinit.early_percpu_clock_init();
 	preempt_disable();
 	smp_callin();
@@ -1594,10 +1612,17 @@ static bool wakeup_cpu0(void)
  */
 static inline void mwait_play_dead(void)
 {
+<<<<<<< HEAD
 	unsigned int eax, ebx, ecx, edx;
 	unsigned int highest_cstate = 0;
 	unsigned int highest_subcstate = 0;
 	void *mwait_ptr;
+=======
+	struct mwait_cpu_dead *md = this_cpu_ptr(&mwait_cpu_dead);
+	unsigned int eax, ebx, ecx, edx;
+	unsigned int highest_cstate = 0;
+	unsigned int highest_subcstate = 0;
+>>>>>>> origin/android16-base
 	int i;
 
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
@@ -1631,6 +1656,7 @@ static inline void mwait_play_dead(void)
 			(highest_subcstate - 1);
 	}
 
+<<<<<<< HEAD
 	/*
 	 * This should be a memory location in a cache line which is
 	 * unlikely to be touched by other processors.  The actual
@@ -1638,6 +1664,8 @@ static inline void mwait_play_dead(void)
 	 */
 	mwait_ptr = &current_thread_info()->flags;
 
+=======
+>>>>>>> origin/android16-base
 	wbinvd();
 
 	while (1) {
@@ -1649,9 +1677,15 @@ static inline void mwait_play_dead(void)
 		 * case where we return around the loop.
 		 */
 		mb();
+<<<<<<< HEAD
 		clflush(mwait_ptr);
 		mb();
 		__monitor(mwait_ptr, 0, 0);
+=======
+		clflush(md);
+		mb();
+		__monitor(md, 0, 0);
+>>>>>>> origin/android16-base
 		mb();
 		__mwait(eax, 0);
 		/*

@@ -348,6 +348,10 @@ static int venus_remove(struct platform_device *pdev)
 	struct device *dev = core->dev;
 	int ret;
 
+<<<<<<< HEAD
+=======
+	cancel_delayed_work_sync(&core->work);
+>>>>>>> origin/android16-base
 	ret = pm_runtime_get_sync(dev);
 	WARN_ON(ret < 0);
 

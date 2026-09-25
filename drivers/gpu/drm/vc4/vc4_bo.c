@@ -417,7 +417,11 @@ struct drm_gem_object *vc4_create_object(struct drm_device *dev, size_t size)
 
 	bo = kzalloc(sizeof(*bo), GFP_KERNEL);
 	if (!bo)
+<<<<<<< HEAD
 		return ERR_PTR(-ENOMEM);
+=======
+		return NULL;
+>>>>>>> origin/android16-base
 
 	bo->madv = VC4_MADV_WILLNEED;
 	refcount_set(&bo->usecnt, 0);

@@ -24,7 +24,11 @@ struct dst_ops {
 	void			(*destroy)(struct dst_entry *);
 	void			(*ifdown)(struct dst_entry *,
 					  struct net_device *dev, int how);
+<<<<<<< HEAD
 	struct dst_entry *	(*negative_advice)(struct dst_entry *);
+=======
+	void			(*negative_advice)(struct sock *sk, struct dst_entry *);
+>>>>>>> origin/android16-base
 	void			(*link_failure)(struct sk_buff *);
 	void			(*update_pmtu)(struct dst_entry *dst, struct sock *sk,
 					       struct sk_buff *skb, u32 mtu,
@@ -53,9 +57,17 @@ static inline int dst_entries_get_slow(struct dst_ops *dst)
 	return percpu_counter_sum_positive(&dst->pcpuc_entries);
 }
 
+<<<<<<< HEAD
 static inline void dst_entries_add(struct dst_ops *dst, int val)
 {
 	percpu_counter_add(&dst->pcpuc_entries, val);
+=======
+#define DST_PERCPU_COUNTER_BATCH 32
+static inline void dst_entries_add(struct dst_ops *dst, int val)
+{
+	percpu_counter_add_batch(&dst->pcpuc_entries, val,
+				 DST_PERCPU_COUNTER_BATCH);
+>>>>>>> origin/android16-base
 }
 
 static inline int dst_entries_init(struct dst_ops *dst)

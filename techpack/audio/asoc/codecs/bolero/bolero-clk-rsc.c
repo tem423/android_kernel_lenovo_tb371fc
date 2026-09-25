@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
+=======
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/of_platform.h>
@@ -135,7 +139,10 @@ int bolero_rsc_clk_reset(struct device *dev, int clk_id)
 	dev_dbg(priv->dev,
 		"%s: clock reset after ssr, count %d\n", __func__, count);
 
+<<<<<<< HEAD
 	trace_printk("%s: clock reset after ssr, count %d\n", __func__, count);
+=======
+>>>>>>> origin/android16-base
 	while (count--) {
 		clk_prepare_enable(priv->clk[clk_id]);
 		clk_prepare_enable(priv->clk[clk_id + NPL_CLK_OFFSET]);
@@ -290,8 +297,11 @@ static int bolero_clk_rsc_mux1_clk_request(struct bolero_clk_rsc *priv,
 				if (priv->dev_up_gfmux) {
 					iowrite32(0x1, clk_muxsel);
 					muxsel = ioread32(clk_muxsel);
+<<<<<<< HEAD
 					trace_printk("%s: muxsel value after enable: %d\n",
 							__func__, muxsel);
+=======
+>>>>>>> origin/android16-base
 				}
 				bolero_clk_rsc_mux0_clk_request(priv,
 							default_clk_id,
@@ -323,8 +333,11 @@ static int bolero_clk_rsc_mux1_clk_request(struct bolero_clk_rsc *priv,
 					if (priv->dev_up_gfmux) {
 						iowrite32(0x0, clk_muxsel);
 						muxsel = ioread32(clk_muxsel);
+<<<<<<< HEAD
 						trace_printk("%s: muxsel value after disable: %d\n",
 								__func__, muxsel);
+=======
+>>>>>>> origin/android16-base
 					}
 				}
 			}
@@ -547,7 +560,10 @@ int bolero_clk_rsc_request_clock(struct device *dev,
 	if (!priv->dev_up && enable) {
 		dev_err_ratelimited(priv->dev, "%s: SSR is in progress..\n",
 				__func__);
+<<<<<<< HEAD
 		trace_printk("%s: SSR is in progress..\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		ret = -EINVAL;
 		goto err;
 	}
@@ -577,9 +593,12 @@ int bolero_clk_rsc_request_clock(struct device *dev,
 	dev_dbg(priv->dev, "%s: clk_cnt: %d for requested clk: %d, enable: %d\n",
 		__func__,  priv->clk_cnt[clk_id_req], clk_id_req,
 		enable);
+<<<<<<< HEAD
 	trace_printk("%s: clk_cnt: %d for requested clk: %d, enable: %d\n",
 		__func__,  priv->clk_cnt[clk_id_req], clk_id_req,
 		enable);
+=======
+>>>>>>> origin/android16-base
 
 	mutex_unlock(&priv->rsc_clk_lock);
 

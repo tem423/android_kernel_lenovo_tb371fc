@@ -48,7 +48,10 @@
 #include <linux/debugfs.h>
 
 typedef unsigned int pending_ring_idx_t;
+<<<<<<< HEAD
 #define INVALID_PENDING_RING_IDX (~0U)
+=======
+>>>>>>> origin/android16-base
 
 struct pending_tx_info {
 	struct xen_netif_tx_request req; /* tx request */
@@ -82,8 +85,11 @@ struct xenvif_rx_meta {
 /* Discriminate from any valid pending_idx value. */
 #define INVALID_PENDING_IDX 0xFFFF
 
+<<<<<<< HEAD
 #define MAX_BUFFER_OFFSET XEN_PAGE_SIZE
 
+=======
+>>>>>>> origin/android16-base
 #define MAX_PENDING_REQS XEN_NETIF_TX_RING_SIZE
 
 /* The maximum number of frags is derived from the size of a grant (same
@@ -169,7 +175,11 @@ struct xenvif_queue { /* Per-queue data for xenvif */
 	struct pending_tx_info pending_tx_info[MAX_PENDING_REQS];
 	grant_handle_t grant_tx_handle[MAX_PENDING_REQS];
 
+<<<<<<< HEAD
 	struct gnttab_copy tx_copy_ops[MAX_PENDING_REQS];
+=======
+	struct gnttab_copy tx_copy_ops[2 * MAX_PENDING_REQS];
+>>>>>>> origin/android16-base
 	struct gnttab_map_grant_ref tx_map_ops[MAX_PENDING_REQS];
 	struct gnttab_unmap_grant_ref tx_unmap_ops[MAX_PENDING_REQS];
 	/* passed to gnttab_[un]map_refs with pages under (un)mapping */
@@ -203,6 +213,10 @@ struct xenvif_queue { /* Per-queue data for xenvif */
 	unsigned int rx_queue_max;
 	unsigned int rx_queue_len;
 	unsigned long last_rx_time;
+<<<<<<< HEAD
+=======
+	unsigned int rx_slots_needed;
+>>>>>>> origin/android16-base
 	bool stalled;
 
 	struct xenvif_copy_state rx_copy;
@@ -345,11 +359,14 @@ void xenvif_free(struct xenvif *vif);
 int xenvif_xenbus_init(void);
 void xenvif_xenbus_fini(void);
 
+<<<<<<< HEAD
 int xenvif_schedulable(struct xenvif *vif);
 
 int xenvif_queue_stopped(struct xenvif_queue *queue);
 void xenvif_wake_queue(struct xenvif_queue *queue);
 
+=======
+>>>>>>> origin/android16-base
 /* (Un)Map communication rings. */
 void xenvif_unmap_frontend_data_rings(struct xenvif_queue *queue);
 int xenvif_map_frontend_data_rings(struct xenvif_queue *queue,
@@ -372,17 +389,24 @@ int xenvif_dealloc_kthread(void *data);
 irqreturn_t xenvif_ctrl_irq_fn(int irq, void *data);
 
 bool xenvif_have_rx_work(struct xenvif_queue *queue, bool test_kthread);
+<<<<<<< HEAD
 void xenvif_rx_action(struct xenvif_queue *queue);
 void xenvif_rx_queue_tail(struct xenvif_queue *queue, struct sk_buff *skb);
+=======
+bool xenvif_rx_queue_tail(struct xenvif_queue *queue, struct sk_buff *skb);
+>>>>>>> origin/android16-base
 
 void xenvif_carrier_on(struct xenvif *vif);
 
 /* Callback from stack when TX packet can be released */
 void xenvif_zerocopy_callback(struct ubuf_info *ubuf, bool zerocopy_success);
 
+<<<<<<< HEAD
 /* Unmap a pending page and release it back to the guest */
 void xenvif_idx_unmap(struct xenvif_queue *queue, u16 pending_idx);
 
+=======
+>>>>>>> origin/android16-base
 static inline pending_ring_idx_t nr_pending_reqs(struct xenvif_queue *queue)
 {
 	return MAX_PENDING_REQS -

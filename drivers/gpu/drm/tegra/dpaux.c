@@ -449,10 +449,15 @@ static int tegra_dpaux_probe(struct platform_device *pdev)
 		return PTR_ERR(dpaux->regs);
 
 	dpaux->irq = platform_get_irq(pdev, 0);
+<<<<<<< HEAD
 	if (dpaux->irq < 0) {
 		dev_err(&pdev->dev, "failed to get IRQ\n");
 		return -ENXIO;
 	}
+=======
+	if (dpaux->irq < 0)
+		return dpaux->irq;
+>>>>>>> origin/android16-base
 
 	if (!pdev->dev.pm_domain) {
 		dpaux->rst = devm_reset_control_get(&pdev->dev, "dpaux");

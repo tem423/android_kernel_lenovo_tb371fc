@@ -60,7 +60,11 @@
 	gic: interrupt-controller@f1001000 {
 		compatible = "arm,gic-400";
 		reg = <0x0 0xf1001000 0x0 0x1000>,  /* GICD */
+<<<<<<< HEAD
 		      <0x0 0xf1002000 0x0 0x100>;   /* GICC */
+=======
+		      <0x0 0xf1002000 0x0 0x2000>;  /* GICC */
+>>>>>>> origin/android16-base
 		#address-cells = <0>;
 		#interrupt-cells = <3>;
 		interrupt-controller;

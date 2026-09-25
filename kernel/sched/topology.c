@@ -347,7 +347,18 @@ static bool build_perf_domains(const struct cpumask *cpu_map)
 	if (!sysctl_sched_energy_aware)
 		goto free;
 
+<<<<<<< HEAD
 	/* EAS is enabled for asymmetric CPU capacity topologies. */
+=======
+	/*
+	 * EAS gets disabled when there are no asymmetric capacity
+	 * CPUs in the system. For example, all big CPUs are
+	 * hotplugged out on a b.L system. We want EAS enabled
+	 * all the time to get both power and perf benefits. Apply
+	 * this policy when WALT is enabled.
+	 */
+#ifndef CONFIG_SCHED_WALT
+>>>>>>> origin/android16-base
 	if (!per_cpu(sd_asym_cpucapacity, cpu)) {
 		if (sched_debug()) {
 			pr_info("rd %*pbl: CPUs do not have asymmetric capacities\n",
@@ -355,6 +366,10 @@ static bool build_perf_domains(const struct cpumask *cpu_map)
 		}
 		goto free;
 	}
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> origin/android16-base
 
 	for_each_cpu(i, cpu_map) {
 		/* Skip already covered CPUs. */
@@ -639,6 +654,7 @@ static void update_top_cache_domain(int cpu)
 	rcu_assign_pointer(per_cpu(sd_asym_packing, cpu), sd);
 
 	sd = lowest_flag_domain(cpu, SD_ASYM_CPUCAPACITY);
+<<<<<<< HEAD
 	/*
 	 * EAS gets disabled when there are no asymmetric capacity
 	 * CPUs in the system. For example, all big CPUs are
@@ -655,6 +671,8 @@ static void update_top_cache_domain(int cpu)
 	if (!sd)
 		sd = cpu_rq(cpu)->sd;
 
+=======
+>>>>>>> origin/android16-base
 	rcu_assign_pointer(per_cpu(sd_asym_cpucapacity, cpu), sd);
 }
 
@@ -1203,6 +1221,7 @@ static void set_domain_attribute(struct sched_domain *sd,
 	if (!attr || attr->relax_domain_level < 0) {
 		if (default_relax_domain_level < 0)
 			return;
+<<<<<<< HEAD
 		else
 			request = default_relax_domain_level;
 	} else
@@ -1213,6 +1232,15 @@ static void set_domain_attribute(struct sched_domain *sd,
 	} else {
 		/* Turn on idle balance on this domain: */
 		sd->flags |= (SD_BALANCE_WAKE|SD_BALANCE_NEWIDLE);
+=======
+		request = default_relax_domain_level;
+	} else
+		request = attr->relax_domain_level;
+
+	if (sd->level >= request) {
+		/* Turn off idle balance on this domain: */
+		sd->flags &= ~(SD_BALANCE_WAKE|SD_BALANCE_NEWIDLE);
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -1561,6 +1589,7 @@ static void init_numa_topology_type(void)
 	}
 }
 
+<<<<<<< HEAD
 void sched_init_numa(void)
 {
 	int next_distance, curr_distance = node_distance(0, 0);
@@ -1575,10 +1604,22 @@ void sched_init_numa(void)
 	/* Includes NUMA identity node at level 0. */
 	sched_domains_numa_distance[level++] = curr_distance;
 	sched_domains_numa_levels = level;
+=======
+
+#define NR_DISTANCE_VALUES (1 << DISTANCE_BITS)
+
+void sched_init_numa(void)
+{
+	struct sched_domain_topology_level *tl;
+	unsigned long *distance_map;
+	int nr_levels = 0;
+	int i, j;
+>>>>>>> origin/android16-base
 
 	/*
 	 * O(nr_nodes^2) deduplicating selection sort -- in order to find the
 	 * unique distances in the node_distance() table.
+<<<<<<< HEAD
 	 *
 	 * Assumes node_distance(0,j) includes all distances in
 	 * node_distance(i,j) in order to avoid cubic time.
@@ -1621,6 +1662,47 @@ void sched_init_numa(void)
 
 	/*
 	 * 'level' contains the number of unique distances
+=======
+	 */
+	distance_map = bitmap_alloc(NR_DISTANCE_VALUES, GFP_KERNEL);
+	if (!distance_map)
+		return;
+
+	bitmap_zero(distance_map, NR_DISTANCE_VALUES);
+	for (i = 0; i < nr_node_ids; i++) {
+		for (j = 0; j < nr_node_ids; j++) {
+			int distance = node_distance(i, j);
+
+			if (distance < LOCAL_DISTANCE || distance >= NR_DISTANCE_VALUES) {
+				sched_numa_warn("Invalid distance value range");
+				return;
+			}
+
+			bitmap_set(distance_map, distance, 1);
+		}
+	}
+	/*
+	 * We can now figure out how many unique distance values there are and
+	 * allocate memory accordingly.
+	 */
+	nr_levels = bitmap_weight(distance_map, NR_DISTANCE_VALUES);
+
+	sched_domains_numa_distance = kcalloc(nr_levels, sizeof(int), GFP_KERNEL);
+	if (!sched_domains_numa_distance) {
+		bitmap_free(distance_map);
+		return;
+	}
+
+	for (i = 0, j = 0; i < nr_levels; i++, j++) {
+		j = find_next_bit(distance_map, NR_DISTANCE_VALUES, j);
+		sched_domains_numa_distance[i] = j;
+	}
+
+	bitmap_free(distance_map);
+
+	/*
+	 * 'nr_levels' contains the number of unique distances
+>>>>>>> origin/android16-base
 	 *
 	 * The sched_domains_numa_distance[] array includes the actual distance
 	 * numbers.
@@ -1629,6 +1711,7 @@ void sched_init_numa(void)
 	/*
 	 * Here, we should temporarily reset sched_domains_numa_levels to 0.
 	 * If it fails to allocate memory for array sched_domains_numa_masks[][],
+<<<<<<< HEAD
 	 * the array will contain less then 'level' members. This could be
 	 * dangerous when we use it to iterate array sched_domains_numa_masks[][]
 	 * in other functions.
@@ -1638,6 +1721,17 @@ void sched_init_numa(void)
 	sched_domains_numa_levels = 0;
 
 	sched_domains_numa_masks = kzalloc(sizeof(void *) * level, GFP_KERNEL);
+=======
+	 * the array will contain less then 'nr_levels' members. This could be
+	 * dangerous when we use it to iterate array sched_domains_numa_masks[][]
+	 * in other functions.
+	 *
+	 * We reset it to 'nr_levels' at the end of this function.
+	 */
+	sched_domains_numa_levels = 0;
+
+	sched_domains_numa_masks = kzalloc(sizeof(void *) * nr_levels, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!sched_domains_numa_masks)
 		return;
 
@@ -1645,7 +1739,11 @@ void sched_init_numa(void)
 	 * Now for each level, construct a mask per node which contains all
 	 * CPUs of nodes that are that many hops away from us.
 	 */
+<<<<<<< HEAD
 	for (i = 0; i < level; i++) {
+=======
+	for (i = 0; i < nr_levels; i++) {
+>>>>>>> origin/android16-base
 		sched_domains_numa_masks[i] =
 			kzalloc(nr_node_ids * sizeof(void *), GFP_KERNEL);
 		if (!sched_domains_numa_masks[i])
@@ -1653,12 +1751,23 @@ void sched_init_numa(void)
 
 		for (j = 0; j < nr_node_ids; j++) {
 			struct cpumask *mask = kzalloc(cpumask_size(), GFP_KERNEL);
+<<<<<<< HEAD
+=======
+			int k;
+
+>>>>>>> origin/android16-base
 			if (!mask)
 				return;
 
 			sched_domains_numa_masks[i][j] = mask;
 
 			for_each_node(k) {
+<<<<<<< HEAD
+=======
+				if (sched_debug() && (node_distance(j, k) != node_distance(k, j)))
+					sched_numa_warn("Node-distance not symmetric");
+
+>>>>>>> origin/android16-base
 				if (node_distance(j, k) > sched_domains_numa_distance[i])
 					continue;
 
@@ -1670,7 +1779,11 @@ void sched_init_numa(void)
 	/* Compute default topology size */
 	for (i = 0; sched_domain_topology[i].mask; i++);
 
+<<<<<<< HEAD
 	tl = kzalloc((i + level + 1) *
+=======
+	tl = kzalloc((i + nr_levels + 1) *
+>>>>>>> origin/android16-base
 			sizeof(struct sched_domain_topology_level), GFP_KERNEL);
 	if (!tl)
 		return;
@@ -1693,7 +1806,11 @@ void sched_init_numa(void)
 	/*
 	 * .. and append 'j' levels of NUMA goodness.
 	 */
+<<<<<<< HEAD
 	for (j = 1; j < level; i++, j++) {
+=======
+	for (j = 1; j < nr_levels; i++, j++) {
+>>>>>>> origin/android16-base
 		tl[i] = (struct sched_domain_topology_level){
 			.mask = sd_numa_mask,
 			.sd_flags = cpu_numa_flags,
@@ -1705,8 +1822,13 @@ void sched_init_numa(void)
 
 	sched_domain_topology = tl;
 
+<<<<<<< HEAD
 	sched_domains_numa_levels = level;
 	sched_max_numa_distance = sched_domains_numa_distance[level - 1];
+=======
+	sched_domains_numa_levels = nr_levels;
+	sched_max_numa_distance = sched_domains_numa_distance[nr_levels - 1];
+>>>>>>> origin/android16-base
 
 	init_numa_topology_type();
 }
@@ -1937,13 +2059,23 @@ next_level:
 static int
 build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *attr)
 {
+<<<<<<< HEAD
 	enum s_alloc alloc_state;
+=======
+	enum s_alloc alloc_state = sa_none;
+>>>>>>> origin/android16-base
 	struct sched_domain *sd;
 	struct s_data d;
 	int i, ret = -ENOMEM;
 	struct sched_domain_topology_level *tl_asym;
 	bool has_asym = false;
 
+<<<<<<< HEAD
+=======
+	if (WARN_ON(cpumask_empty(cpu_map)))
+		goto error;
+
+>>>>>>> origin/android16-base
 	alloc_state = __visit_domain_allocation_hell(&d, cpu_map);
 	if (alloc_state != sa_rootdomain)
 		goto error;
@@ -2046,7 +2178,11 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 	rcu_read_unlock();
 
 	if (has_asym)
+<<<<<<< HEAD
 		static_branch_enable_cpuslocked(&sched_asym_cpucapacity);
+=======
+		static_branch_inc_cpuslocked(&sched_asym_cpucapacity);
+>>>>>>> origin/android16-base
 
 	ret = 0;
 error:
@@ -2137,8 +2273,17 @@ int sched_init_domains(const struct cpumask *cpu_map)
  */
 static void detach_destroy_domains(const struct cpumask *cpu_map)
 {
+<<<<<<< HEAD
 	int i;
 
+=======
+	unsigned int cpu = cpumask_any(cpu_map);
+	int i;
+
+	if (rcu_access_pointer(per_cpu(sd_asym_cpucapacity, cpu)))
+		static_branch_dec_cpuslocked(&sched_asym_cpucapacity);
+
+>>>>>>> origin/android16-base
 	rcu_read_lock();
 	for_each_cpu(i, cpu_map)
 		cpu_attach_domain(NULL, &def_root_domain, i);

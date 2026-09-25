@@ -363,6 +363,10 @@ TRACE_EVENT(docg3_io,
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/mtd/devices
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE docg3
 #include <trace/define_trace.h>

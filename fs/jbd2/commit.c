@@ -187,6 +187,7 @@ static int journal_wait_on_commit_record(journal_t *journal,
  * use writepages() because with dealyed allocation we may be doing
  * block allocation in writepages().
  */
+<<<<<<< HEAD
 static int journal_submit_inode_data_buffers(struct address_space *mapping,
 		loff_t dirty_start, loff_t dirty_end)
 {
@@ -200,6 +201,19 @@ static int journal_submit_inode_data_buffers(struct address_space *mapping,
 
 	ret = generic_writepages(mapping, &wbc);
 	return ret;
+=======
+int jbd2_journal_submit_inode_data_buffers(struct jbd2_inode *jinode)
+{
+	struct address_space *mapping = jinode->i_vfs_inode->i_mapping;
+	struct writeback_control wbc = {
+		.sync_mode =  WB_SYNC_ALL,
+		.nr_to_write = mapping->nrpages * 2,
+		.range_start = jinode->i_dirty_start,
+		.range_end = jinode->i_dirty_end,
+	};
+
+	return generic_writepages(mapping, &wbc);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -215,6 +229,7 @@ static int journal_submit_data_buffers(journal_t *journal,
 {
 	struct jbd2_inode *jinode;
 	int err, ret = 0;
+<<<<<<< HEAD
 	struct address_space *mapping;
 
 	spin_lock(&journal->j_list_lock);
@@ -225,6 +240,13 @@ static int journal_submit_data_buffers(journal_t *journal,
 		if (!(jinode->i_flags & JI_WRITE_DATA))
 			continue;
 		mapping = jinode->i_vfs_inode->i_mapping;
+=======
+
+	spin_lock(&journal->j_list_lock);
+	list_for_each_entry(jinode, &commit_transaction->t_inode_list, i_list) {
+		if (!(jinode->i_flags & JI_WRITE_DATA))
+			continue;
+>>>>>>> origin/android16-base
 		jinode->i_flags |= JI_COMMIT_RUNNING;
 		spin_unlock(&journal->j_list_lock);
 		/*
@@ -234,8 +256,12 @@ static int journal_submit_data_buffers(journal_t *journal,
 		 * only allocated blocks here.
 		 */
 		trace_jbd2_submit_inode_data(jinode->i_vfs_inode);
+<<<<<<< HEAD
 		err = journal_submit_inode_data_buffers(mapping, dirty_start,
 				dirty_end);
+=======
+		err = jbd2_journal_submit_inode_data_buffers(jinode);
+>>>>>>> origin/android16-base
 		if (!ret)
 			ret = err;
 		spin_lock(&journal->j_list_lock);
@@ -248,6 +274,18 @@ static int journal_submit_data_buffers(journal_t *journal,
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+int jbd2_journal_finish_inode_data_buffers(struct jbd2_inode *jinode)
+{
+	struct address_space *mapping = jinode->i_vfs_inode->i_mapping;
+
+	return filemap_fdatawait_range_keep_errors(mapping,
+						   jinode->i_dirty_start,
+						   jinode->i_dirty_end);
+}
+
+>>>>>>> origin/android16-base
 /*
  * Wait for data submitted for writeout, refile inodes to proper
  * transaction if needed.
@@ -262,16 +300,23 @@ static int journal_finish_inode_data_buffers(journal_t *journal,
 	/* For locking, see the comment in journal_submit_data_buffers() */
 	spin_lock(&journal->j_list_lock);
 	list_for_each_entry(jinode, &commit_transaction->t_inode_list, i_list) {
+<<<<<<< HEAD
 		loff_t dirty_start = jinode->i_dirty_start;
 		loff_t dirty_end = jinode->i_dirty_end;
 
+=======
+>>>>>>> origin/android16-base
 		if (!(jinode->i_flags & JI_WAIT_DATA))
 			continue;
 		jinode->i_flags |= JI_COMMIT_RUNNING;
 		spin_unlock(&journal->j_list_lock);
+<<<<<<< HEAD
 		err = filemap_fdatawait_range_keep_errors(
 				jinode->i_vfs_inode->i_mapping, dirty_start,
 				dirty_end);
+=======
+		err = jbd2_journal_finish_inode_data_buffers(jinode);
+>>>>>>> origin/android16-base
 		if (!ret)
 			ret = err;
 		spin_lock(&journal->j_list_lock);

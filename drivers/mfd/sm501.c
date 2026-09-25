@@ -1738,7 +1738,16 @@ static struct platform_driver sm501_plat_driver = {
 
 static int __init sm501_base_init(void)
 {
+<<<<<<< HEAD
 	platform_driver_register(&sm501_plat_driver);
+=======
+	int ret;
+
+	ret = platform_driver_register(&sm501_plat_driver);
+	if (ret < 0)
+		return ret;
+
+>>>>>>> origin/android16-base
 	return pci_register_driver(&sm501_pci_driver);
 }
 

@@ -69,6 +69,7 @@ dc21285_read_config(struct pci_bus *bus, unsigned int devfn, int where,
 	if (addr)
 		switch (size) {
 		case 1:
+<<<<<<< HEAD
 			asm("ldrb	%0, [%1, %2]"
 				: "=r" (v) : "r" (addr), "r" (where) : "cc");
 			break;
@@ -78,6 +79,17 @@ dc21285_read_config(struct pci_bus *bus, unsigned int devfn, int where,
 			break;
 		case 4:
 			asm("ldr	%0, [%1, %2]"
+=======
+			asm volatile("ldrb	%0, [%1, %2]"
+				: "=r" (v) : "r" (addr), "r" (where) : "cc");
+			break;
+		case 2:
+			asm volatile("ldrh	%0, [%1, %2]"
+				: "=r" (v) : "r" (addr), "r" (where) : "cc");
+			break;
+		case 4:
+			asm volatile("ldr	%0, [%1, %2]"
+>>>>>>> origin/android16-base
 				: "=r" (v) : "r" (addr), "r" (where) : "cc");
 			break;
 		}
@@ -103,17 +115,29 @@ dc21285_write_config(struct pci_bus *bus, unsigned int devfn, int where,
 	if (addr)
 		switch (size) {
 		case 1:
+<<<<<<< HEAD
 			asm("strb	%0, [%1, %2]"
+=======
+			asm volatile("strb	%0, [%1, %2]"
+>>>>>>> origin/android16-base
 				: : "r" (value), "r" (addr), "r" (where)
 				: "cc");
 			break;
 		case 2:
+<<<<<<< HEAD
 			asm("strh	%0, [%1, %2]"
+=======
+			asm volatile("strh	%0, [%1, %2]"
+>>>>>>> origin/android16-base
 				: : "r" (value), "r" (addr), "r" (where)
 				: "cc");
 			break;
 		case 4:
+<<<<<<< HEAD
 			asm("str	%0, [%1, %2]"
+=======
+			asm volatile("str	%0, [%1, %2]"
+>>>>>>> origin/android16-base
 				: : "r" (value), "r" (addr), "r" (where)
 				: "cc");
 			break;

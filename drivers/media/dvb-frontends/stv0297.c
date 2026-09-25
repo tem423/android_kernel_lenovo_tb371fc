@@ -722,4 +722,8 @@ MODULE_DESCRIPTION("ST STV0297 DVB-C Demodulator driver");
 MODULE_AUTHOR("Dennis Noermann and Andrew de Quincey");
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(stv0297_attach);
+=======
+EXPORT_SYMBOL_GPL(stv0297_attach);
+>>>>>>> origin/android16-base

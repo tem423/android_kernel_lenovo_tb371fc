@@ -3,8 +3,14 @@
 # Makefile for ACPICA Core interpreter
 #
 
+<<<<<<< HEAD
 ccflags-y			:= -Os -D_LINUX -DBUILDING_ACPICA
 ccflags-$(CONFIG_ACPI_DEBUG)	+= -DACPI_DEBUG_OUTPUT
+=======
+ccflags-y			:= -D_LINUX -DBUILDING_ACPICA
+ccflags-$(CONFIG_ACPI_DEBUG)	+= -DACPI_DEBUG_OUTPUT
+CFLAGS_tbfind.o 		+= $(call cc-disable-warning, stringop-truncation)
+>>>>>>> origin/android16-base
 
 # use acpi.o to put all files here into acpi.o modparam namespace
 obj-y	+= acpi.o

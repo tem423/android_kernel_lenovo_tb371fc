@@ -131,7 +131,11 @@
 	pinctrl-0 = <&emac_rgmii_pins>;
 	phy-supply = <&reg_sw>;
 	phy-handle = <&rgmii_phy>;
+<<<<<<< HEAD
 	phy-mode = "rgmii";
+=======
+	phy-mode = "rgmii-id";
+>>>>>>> origin/android16-base
 	allwinner,rx-delay-ps = <700>;
 	allwinner,tx-delay-ps = <700>;
 	status = "okay";

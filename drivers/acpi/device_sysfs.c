@@ -164,8 +164,13 @@ static int create_pnp_modalias(struct acpi_device *acpi_dev, char *modalias,
 		return 0;
 
 	len = snprintf(modalias, size, "acpi:");
+<<<<<<< HEAD
 	if (len <= 0)
 		return len;
+=======
+	if (len >= size)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	size -= len;
 
@@ -218,8 +223,15 @@ static int create_of_modalias(struct acpi_device *acpi_dev, char *modalias,
 	len = snprintf(modalias, size, "of:N%sT", (char *)buf.pointer);
 	ACPI_FREE(buf.pointer);
 
+<<<<<<< HEAD
 	if (len <= 0)
 		return len;
+=======
+	if (len >= size)
+		return -ENOMEM;
+
+	size -= len;
+>>>>>>> origin/android16-base
 
 	of_compatible = acpi_dev->data.of_compatible;
 	if (of_compatible->type == ACPI_TYPE_PACKAGE) {
@@ -259,6 +271,7 @@ int __acpi_device_uevent_modalias(struct acpi_device *adev,
 	if (add_uevent_var(env, "MODALIAS="))
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	len = create_pnp_modalias(adev, &env->buf[env->buflen - 1],
 				  sizeof(env->buf) - env->buflen);
 	if (len < 0)
@@ -273,6 +286,14 @@ int __acpi_device_uevent_modalias(struct acpi_device *adev,
 
 	len = create_of_modalias(adev, &env->buf[env->buflen - 1],
 				 sizeof(env->buf) - env->buflen);
+=======
+	if (adev->data.of_compatible)
+		len = create_of_modalias(adev, &env->buf[env->buflen - 1],
+					 sizeof(env->buf) - env->buflen);
+	else
+		len = create_pnp_modalias(adev, &env->buf[env->buflen - 1],
+					  sizeof(env->buf) - env->buflen);
+>>>>>>> origin/android16-base
 	if (len < 0)
 		return len;
 
@@ -460,7 +481,11 @@ static ssize_t description_show(struct device *dev,
 		(wchar_t *)acpi_dev->pnp.str_obj->buffer.pointer,
 		acpi_dev->pnp.str_obj->buffer.length,
 		UTF16_LITTLE_ENDIAN, buf,
+<<<<<<< HEAD
 		PAGE_SIZE);
+=======
+		PAGE_SIZE - 1);
+>>>>>>> origin/android16-base
 
 	buf[result++] = '\n';
 
@@ -545,8 +570,14 @@ int acpi_device_setup_files(struct acpi_device *dev)
 	 * If device has _STR, 'description' file is created
 	 */
 	if (acpi_has_method(dev->handle, "_STR")) {
+<<<<<<< HEAD
 		status = acpi_evaluate_object(dev->handle, "_STR",
 					NULL, &buffer);
+=======
+		status = acpi_evaluate_object_typed(dev->handle, "_STR",
+						    NULL, &buffer,
+						    ACPI_TYPE_BUFFER);
+>>>>>>> origin/android16-base
 		if (ACPI_FAILURE(status))
 			buffer.pointer = NULL;
 		dev->pnp.str_obj = buffer.pointer;

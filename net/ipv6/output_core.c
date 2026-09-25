@@ -14,6 +14,7 @@ static u32 __ipv6_select_ident(struct net *net,
 			       const struct in6_addr *dst,
 			       const struct in6_addr *src)
 {
+<<<<<<< HEAD
 	const struct {
 		struct in6_addr dst;
 		struct in6_addr src;
@@ -37,6 +38,13 @@ static u32 __ipv6_select_ident(struct net *net,
 	id = ip_idents_reserve(hash, 1);
 	if (unlikely(!id))
 		id = 1 << 31;
+=======
+	u32 id;
+
+	do {
+		id = prandom_u32();
+	} while (!id);
+>>>>>>> origin/android16-base
 
 	return id;
 }

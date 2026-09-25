@@ -80,6 +80,10 @@ static int detach_port(char *port)
 	}
 
 	if (!found) {
+<<<<<<< HEAD
+=======
+		ret = -1;
+>>>>>>> origin/android16-base
 		err("Invalid port %s > maxports %d",
 			port, vhci_driver->nports);
 		goto call_driver_close;

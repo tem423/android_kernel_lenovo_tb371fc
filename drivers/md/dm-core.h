@@ -18,6 +18,11 @@
 #include "dm.h"
 
 #define DM_RESERVED_MAX_IOS		1024
+<<<<<<< HEAD
+=======
+#define DM_MAX_TARGETS			1048576
+#define DM_MAX_TARGET_PARAMS		1024
+>>>>>>> origin/android16-base
 
 struct dm_kobject_holder {
 	struct kobject kobj;

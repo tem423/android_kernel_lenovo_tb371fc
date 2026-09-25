@@ -469,7 +469,11 @@ void debug_dma_dump_mappings(struct device *dev)
  * At any time debug_dma_assert_idle() can be called to trigger a
  * warning if any cachelines in the given page are in the active set.
  */
+<<<<<<< HEAD
 static RADIX_TREE(dma_active_cacheline, GFP_NOWAIT);
+=======
+static RADIX_TREE(dma_active_cacheline, GFP_ATOMIC);
+>>>>>>> origin/android16-base
 static DEFINE_SPINLOCK(radix_lock);
 #define ACTIVE_CACHELINE_MAX_OVERLAP ((1 << RADIX_TREE_MAX_TAGS) - 1)
 #define CACHELINE_PER_PAGE_SHIFT (PAGE_SHIFT - L1_CACHE_SHIFT)
@@ -963,7 +967,11 @@ static int device_dma_allocations(struct device *dev, struct dma_debug_entry **o
 static int dma_debug_device_change(struct notifier_block *nb, unsigned long action, void *data)
 {
 	struct device *dev = data;
+<<<<<<< HEAD
 	struct dma_debug_entry *uninitialized_var(entry);
+=======
+	struct dma_debug_entry *entry;
+>>>>>>> origin/android16-base
 	int count;
 
 	if (dma_debug_disabled())
@@ -1056,7 +1064,11 @@ static __init int dma_debug_cmdline(char *str)
 		global_disable = true;
 	}
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 static __init int dma_debug_entries_cmdline(char *str)
@@ -1065,7 +1077,11 @@ static __init int dma_debug_entries_cmdline(char *str)
 		return -EINVAL;
 	if (!get_option(&str, &nr_prealloc_entries))
 		nr_prealloc_entries = PREALLOC_DMA_DEBUG_ENTRIES;
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 __setup("dma_debug=", dma_debug_cmdline);
@@ -1422,6 +1438,15 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
 	if (unlikely(dma_debug_disabled()))
 		return;
 
+<<<<<<< HEAD
+=======
+	for_each_sg(sg, s, nents, i) {
+		check_for_stack(dev, sg_page(s), s->offset);
+		if (!PageHighMem(sg_page(s)))
+			check_for_illegal_area(dev, sg_virt(s), s->length);
+	}
+
+>>>>>>> origin/android16-base
 	for_each_sg(sg, s, mapped_ents, i) {
 		entry = dma_entry_alloc();
 		if (!entry)
@@ -1437,12 +1462,15 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
 		entry->sg_call_ents   = nents;
 		entry->sg_mapped_ents = mapped_ents;
 
+<<<<<<< HEAD
 		check_for_stack(dev, sg_page(s), s->offset);
 
 		if (!PageHighMem(sg_page(s))) {
 			check_for_illegal_area(dev, sg_virt(s), sg_dma_len(s));
 		}
 
+=======
+>>>>>>> origin/android16-base
 		check_sg_segment(dev, s);
 
 		add_dma_entry(entry);

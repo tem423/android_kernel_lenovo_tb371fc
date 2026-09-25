@@ -120,9 +120,19 @@ static inline void tdma_port_write_desc_addr(struct bcm_sysport_priv *priv,
 					     struct dma_desc *desc,
 					     unsigned int port)
 {
+<<<<<<< HEAD
 	/* Ports are latched, so write upper address first */
 	tdma_writel(priv, desc->addr_status_len, TDMA_WRITE_PORT_HI(port));
 	tdma_writel(priv, desc->addr_lo, TDMA_WRITE_PORT_LO(port));
+=======
+	unsigned long desc_flags;
+
+	/* Ports are latched, so write upper address first */
+	spin_lock_irqsave(&priv->desc_lock, desc_flags);
+	tdma_writel(priv, desc->addr_status_len, TDMA_WRITE_PORT_HI(port));
+	tdma_writel(priv, desc->addr_lo, TDMA_WRITE_PORT_LO(port));
+	spin_unlock_irqrestore(&priv->desc_lock, desc_flags);
+>>>>>>> origin/android16-base
 }
 
 /* Ethtool operations */
@@ -1315,6 +1325,10 @@ static netdev_tx_t bcm_sysport_xmit(struct sk_buff *skb,
 		netif_err(priv, tx_err, dev, "DMA map failed at %p (len=%d)\n",
 			  skb->data, skb_len);
 		ret = NETDEV_TX_OK;
+<<<<<<< HEAD
+=======
+		dev_kfree_skb_any(skb);
+>>>>>>> origin/android16-base
 		goto out;
 	}
 
@@ -2003,6 +2017,10 @@ static int bcm_sysport_open(struct net_device *dev)
 	}
 
 	/* Initialize both hardware and software ring */
+<<<<<<< HEAD
+=======
+	spin_lock_init(&priv->desc_lock);
+>>>>>>> origin/android16-base
 	for (i = 0; i < dev->num_tx_queues; i++) {
 		ret = bcm_sysport_init_tx_ring(priv, i);
 		if (ret) {
@@ -2507,6 +2525,10 @@ static int bcm_sysport_probe(struct platform_device *pdev)
 	/* HW supported features, none enabled by default */
 	dev->hw_features |= NETIF_F_RXCSUM | NETIF_F_HIGHDMA |
 				NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
+<<<<<<< HEAD
+=======
+	dev->max_mtu = UMAC_MAX_MTU_SIZE;
+>>>>>>> origin/android16-base
 
 	/* Request the WOL interrupt and advertise suspend if available */
 	priv->wol_irq_disabled = 1;

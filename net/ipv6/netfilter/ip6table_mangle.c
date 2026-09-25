@@ -60,7 +60,11 @@ ip6t_mangle_out(struct sk_buff *skb, const struct nf_hook_state *state)
 	     skb->mark != mark ||
 	     ipv6_hdr(skb)->hop_limit != hop_limit ||
 	     flowlabel != *((u_int32_t *)ipv6_hdr(skb)))) {
+<<<<<<< HEAD
 		err = ip6_route_me_harder(state->net, skb);
+=======
+		err = ip6_route_me_harder(state->net, state->sk, skb);
+>>>>>>> origin/android16-base
 		if (err < 0)
 			ret = NF_DROP_ERR(err);
 	}

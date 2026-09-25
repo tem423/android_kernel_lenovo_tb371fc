@@ -118,8 +118,11 @@ static void vfio_pci_probe_mmaps(struct vfio_pci_device *vdev)
 	int bar;
 	struct vfio_pci_dummy_resource *dummy_res;
 
+<<<<<<< HEAD
 	INIT_LIST_HEAD(&vdev->dummy_resources_list);
 
+=======
+>>>>>>> origin/android16-base
 	for (bar = PCI_STD_RESOURCES; bar <= PCI_STD_RESOURCE_END; bar++) {
 		res = vdev->pdev->resource + bar;
 
@@ -1361,6 +1364,10 @@ static vm_fault_t vfio_pci_mmap_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct vfio_pci_device *vdev = vma->vm_private_data;
+<<<<<<< HEAD
+=======
+	struct vfio_pci_mmap_vma *mmap_vma;
+>>>>>>> origin/android16-base
 	vm_fault_t ret = VM_FAULT_NOPAGE;
 
 	mutex_lock(&vdev->vma_lock);
@@ -1368,12 +1375,35 @@ static vm_fault_t vfio_pci_mmap_fault(struct vm_fault *vmf)
 
 	if (!__vfio_pci_memory_enabled(vdev)) {
 		ret = VM_FAULT_SIGBUS;
+<<<<<<< HEAD
 		mutex_unlock(&vdev->vma_lock);
+=======
+		goto up_out;
+	}
+
+	/*
+	 * We populate the whole vma on fault, so we need to test whether
+	 * the vma has already been mapped, such as for concurrent faults
+	 * to the same vma.  io_remap_pfn_range() will trigger a BUG_ON if
+	 * we ask it to fill the same range again.
+	 */
+	list_for_each_entry(mmap_vma, &vdev->vma_list, vma_next) {
+		if (mmap_vma->vma == vma)
+			goto up_out;
+	}
+
+	if (io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
+			       vma->vm_end - vma->vm_start,
+			       vma->vm_page_prot)) {
+		ret = VM_FAULT_SIGBUS;
+		zap_vma_ptes(vma, vma->vm_start, vma->vm_end - vma->vm_start);
+>>>>>>> origin/android16-base
 		goto up_out;
 	}
 
 	if (__vfio_pci_add_vma(vdev, vma)) {
 		ret = VM_FAULT_OOM;
+<<<<<<< HEAD
 		mutex_unlock(&vdev->vma_lock);
 		goto up_out;
 	}
@@ -1386,6 +1416,14 @@ static vm_fault_t vfio_pci_mmap_fault(struct vm_fault *vmf)
 
 up_out:
 	up_read(&vdev->memory_lock);
+=======
+		zap_vma_ptes(vma, vma->vm_start, vma->vm_end - vma->vm_start);
+	}
+
+up_out:
+	up_read(&vdev->memory_lock);
+	mutex_unlock(&vdev->vma_lock);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -1522,6 +1560,10 @@ static int vfio_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	mutex_init(&vdev->igate);
 	spin_lock_init(&vdev->irqlock);
 	mutex_init(&vdev->ioeventfds_lock);
+<<<<<<< HEAD
+=======
+	INIT_LIST_HEAD(&vdev->dummy_resources_list);
+>>>>>>> origin/android16-base
 	INIT_LIST_HEAD(&vdev->ioeventfds_list);
 	mutex_init(&vdev->vma_lock);
 	INIT_LIST_HEAD(&vdev->vma_list);

@@ -175,7 +175,11 @@ multiq_destroy(struct Qdisc *sch)
 
 	tcf_block_put(q->block);
 	for (band = 0; band < q->bands; band++)
+<<<<<<< HEAD
 		qdisc_destroy(q->queues[band]);
+=======
+		qdisc_put(q->queues[band]);
+>>>>>>> origin/android16-base
 
 	kfree(q->queues);
 }
@@ -204,7 +208,11 @@ static int multiq_tune(struct Qdisc *sch, struct nlattr *opt,
 			q->queues[i] = &noop_qdisc;
 			qdisc_tree_reduce_backlog(child, child->q.qlen,
 						  child->qstats.backlog);
+<<<<<<< HEAD
 			qdisc_destroy(child);
+=======
+			qdisc_put(child);
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -228,7 +236,11 @@ static int multiq_tune(struct Qdisc *sch, struct nlattr *opt,
 					qdisc_tree_reduce_backlog(old,
 								  old->q.qlen,
 								  old->qstats.backlog);
+<<<<<<< HEAD
 					qdisc_destroy(old);
+=======
+					qdisc_put(old);
+>>>>>>> origin/android16-base
 				}
 				sch_tree_unlock(sch);
 			}

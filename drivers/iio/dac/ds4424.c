@@ -236,12 +236,15 @@ static int ds4424_probe(struct i2c_client *client,
 	indio_dev->dev.of_node = client->dev.of_node;
 	indio_dev->dev.parent = &client->dev;
 
+<<<<<<< HEAD
 	if (!client->dev.of_node) {
 		dev_err(&client->dev,
 				"Not found DT.\n");
 		return -ENODEV;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	data->vcc_reg = devm_regulator_get(&client->dev, "vcc");
 	if (IS_ERR(data->vcc_reg)) {
 		dev_err(&client->dev,

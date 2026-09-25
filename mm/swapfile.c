@@ -620,6 +620,10 @@ static void __del_from_avail_list(struct swap_info_struct *p)
 {
 	int nid;
 
+<<<<<<< HEAD
+=======
+	assert_spin_locked(&p->lock);
+>>>>>>> origin/android16-base
 	for_each_node(nid)
 		plist_del(&p->avail_lists[nid], &swap_avail_heads[nid]);
 }
@@ -1029,6 +1033,10 @@ start:
 			goto check_out;
 		pr_debug("scan_swap_map of si %d failed to find offset\n",
 			si->type);
+<<<<<<< HEAD
+=======
+		cond_resched();
+>>>>>>> origin/android16-base
 
 		spin_lock(&swap_avail_lock);
 nextsi:
@@ -2326,7 +2334,11 @@ sector_t map_swap_page(struct page *page, struct block_device **bdev)
 {
 	swp_entry_t entry;
 	entry.val = page_private(page);
+<<<<<<< HEAD
 	return map_swap_entry(entry, bdev);
+=======
+	return map_swap_entry(entry, bdev) << (PAGE_SHIFT - 9);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -2595,8 +2607,13 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 		spin_unlock(&swap_lock);
 		goto out_dput;
 	}
+<<<<<<< HEAD
 	del_from_avail_list(p);
 	spin_lock(&p->lock);
+=======
+	spin_lock(&p->lock);
+	del_from_avail_list(p);
+>>>>>>> origin/android16-base
 	if (p->prio < 0) {
 		struct swap_info_struct *si = p;
 		int nid;
@@ -2847,6 +2864,10 @@ late_initcall(max_swapfiles_check);
 static struct swap_info_struct *alloc_swap_info(void)
 {
 	struct swap_info_struct *p;
+<<<<<<< HEAD
+=======
+	struct swap_info_struct *defer = NULL;
+>>>>>>> origin/android16-base
 	unsigned int type;
 	int i;
 	int size = sizeof(*p) + nr_node_ids * sizeof(struct plist_node);
@@ -2876,7 +2897,11 @@ static struct swap_info_struct *alloc_swap_info(void)
 		smp_wmb();
 		WRITE_ONCE(nr_swapfiles, nr_swapfiles + 1);
 	} else {
+<<<<<<< HEAD
 		kvfree(p);
+=======
+		defer = p;
+>>>>>>> origin/android16-base
 		p = swap_info[type];
 		/*
 		 * Do not memset this entry: a racing procfs swap_next()
@@ -2889,6 +2914,10 @@ static struct swap_info_struct *alloc_swap_info(void)
 		plist_node_init(&p->avail_lists[i], 0);
 	p->flags = SWP_USED;
 	spin_unlock(&swap_lock);
+<<<<<<< HEAD
+=======
+	kvfree(defer);
+>>>>>>> origin/android16-base
 	spin_lock_init(&p->lock);
 	spin_lock_init(&p->cont_lock);
 

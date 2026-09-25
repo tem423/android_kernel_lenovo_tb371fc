@@ -246,7 +246,11 @@ static unsigned int ath9k_regread(void *hw_priv, u32 reg_offset)
 	if (unlikely(r)) {
 		ath_dbg(common, WMI, "REGISTER READ FAILED: (0x%04x, %d)\n",
 			reg_offset, r);
+<<<<<<< HEAD
 		return -EIO;
+=======
+		return -1;
+>>>>>>> origin/android16-base
 	}
 
 	return be32_to_cpu(val);
@@ -946,7 +950,10 @@ int ath9k_htc_probe_device(struct htc_target *htc_handle, struct device *dev,
 	priv->hw = hw;
 	priv->htc = htc_handle;
 	priv->dev = dev;
+<<<<<<< HEAD
 	htc_handle->drv_priv = priv;
+=======
+>>>>>>> origin/android16-base
 	SET_IEEE80211_DEV(hw, priv->dev);
 
 	ret = ath9k_htc_wait_for_target(priv);
@@ -967,6 +974,11 @@ int ath9k_htc_probe_device(struct htc_target *htc_handle, struct device *dev,
 	if (ret)
 		goto err_init;
 
+<<<<<<< HEAD
+=======
+	htc_handle->drv_priv = priv;
+
+>>>>>>> origin/android16-base
 	return 0;
 
 err_init:

@@ -57,7 +57,11 @@ void die(const char *str, struct pt_regs *regs, long err)
 	if (panic_on_oops)
 		panic("Fatal exception");
 
+<<<<<<< HEAD
 	do_exit(SIGSEGV);
+=======
+	make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 }
 
 void die_if_kernel(const char *str, struct pt_regs *regs, long err)

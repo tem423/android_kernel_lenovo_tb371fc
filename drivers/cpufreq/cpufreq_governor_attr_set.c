@@ -77,8 +77,13 @@ unsigned int gov_attr_set_put(struct gov_attr_set *attr_set, struct list_head *l
 	if (count)
 		return count;
 
+<<<<<<< HEAD
 	kobject_put(&attr_set->kobj);
 	mutex_destroy(&attr_set->update_lock);
+=======
+	mutex_destroy(&attr_set->update_lock);
+	kobject_put(&attr_set->kobj);
+>>>>>>> origin/android16-base
 	return 0;
 }
 EXPORT_SYMBOL_GPL(gov_attr_set_put);

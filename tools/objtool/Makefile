@@ -7,6 +7,7 @@ ARCH := x86
 endif
 
 # always use the host compiler
+<<<<<<< HEAD
 ifneq ($(LLVM),)
 HOSTAR	?= llvm-ar
 HOSTCC	?= clang
@@ -16,6 +17,8 @@ HOSTAR	?= ar
 HOSTCC	?= gcc
 HOSTLD	?= ld
 endif
+=======
+>>>>>>> origin/android16-base
 AR	 = $(HOSTAR)
 CC	 = $(HOSTCC)
 LD	 = $(HOSTLD)

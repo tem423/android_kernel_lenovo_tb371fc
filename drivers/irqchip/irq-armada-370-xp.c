@@ -232,6 +232,7 @@ static int armada_370_xp_msi_alloc(struct irq_domain *domain, unsigned int virq,
 	int hwirq, i;
 
 	mutex_lock(&msi_used_lock);
+<<<<<<< HEAD
 
 	hwirq = bitmap_find_next_zero_area(msi_used, PCI_MSI_DOORBELL_NR,
 					   0, nr_irqs, 0);
@@ -243,6 +244,15 @@ static int armada_370_xp_msi_alloc(struct irq_domain *domain, unsigned int virq,
 	bitmap_set(msi_used, hwirq, nr_irqs);
 	mutex_unlock(&msi_used_lock);
 
+=======
+	hwirq = bitmap_find_free_region(msi_used, PCI_MSI_DOORBELL_NR,
+					order_base_2(nr_irqs));
+	mutex_unlock(&msi_used_lock);
+
+	if (hwirq < 0)
+		return -ENOSPC;
+
+>>>>>>> origin/android16-base
 	for (i = 0; i < nr_irqs; i++) {
 		irq_domain_set_info(domain, virq + i, hwirq + i,
 				    &armada_370_xp_msi_bottom_irq_chip,
@@ -250,7 +260,11 @@ static int armada_370_xp_msi_alloc(struct irq_domain *domain, unsigned int virq,
 				    NULL, NULL);
 	}
 
+<<<<<<< HEAD
 	return hwirq;
+=======
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static void armada_370_xp_msi_free(struct irq_domain *domain,
@@ -259,7 +273,11 @@ static void armada_370_xp_msi_free(struct irq_domain *domain,
 	struct irq_data *d = irq_domain_get_irq_data(domain, virq);
 
 	mutex_lock(&msi_used_lock);
+<<<<<<< HEAD
 	bitmap_clear(msi_used, d->hwirq, nr_irqs);
+=======
+	bitmap_release_region(msi_used, d->hwirq, order_base_2(nr_irqs));
+>>>>>>> origin/android16-base
 	mutex_unlock(&msi_used_lock);
 }
 
@@ -350,6 +368,13 @@ static struct irq_chip armada_370_xp_irq_chip = {
 static int armada_370_xp_mpic_irq_map(struct irq_domain *h,
 				      unsigned int virq, irq_hw_number_t hw)
 {
+<<<<<<< HEAD
+=======
+	/* IRQs 0 and 1 cannot be mapped, they are handled internally */
+	if (hw <= 1)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	armada_370_xp_irq_mask(irq_get_irq_data(virq));
 	if (!is_percpu_irq(hw))
 		writel(hw, per_cpu_int_base +
@@ -396,7 +421,20 @@ static void armada_xp_mpic_smp_cpu_init(void)
 
 static void armada_xp_mpic_perf_init(void)
 {
+<<<<<<< HEAD
 	unsigned long cpuid = cpu_logical_map(smp_processor_id());
+=======
+	unsigned long cpuid;
+
+	/*
+	 * This Performance Counter Overflow interrupt is specific for
+	 * Armada 370 and XP. It is not available on Armada 375, 38x and 39x.
+	 */
+	if (!of_machine_is_compatible("marvell,armada-370-xp"))
+		return;
+
+	cpuid = cpu_logical_map(smp_processor_id());
+>>>>>>> origin/android16-base
 
 	/* Enable Performance Counter Overflow interrupts */
 	writel(ARMADA_370_XP_INT_CAUSE_PERF(cpuid),

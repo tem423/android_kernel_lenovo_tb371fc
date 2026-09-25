@@ -163,7 +163,11 @@
 			};
 
 			uart0: serial@12000 {
+<<<<<<< HEAD
 				compatible = "marvell,armada-38x-uart";
+=======
+				compatible = "marvell,armada-38x-uart", "ns16550a";
+>>>>>>> origin/android16-base
 				reg = <0x12000 0x100>;
 				reg-shift = <2>;
 				interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
@@ -173,7 +177,11 @@
 			};
 
 			uart1: serial@12100 {
+<<<<<<< HEAD
 				compatible = "marvell,armada-38x-uart";
+=======
+				compatible = "marvell,armada-38x-uart", "ns16550a";
+>>>>>>> origin/android16-base
 				reg = <0x12100 0x100>;
 				reg-shift = <2>;
 				interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;

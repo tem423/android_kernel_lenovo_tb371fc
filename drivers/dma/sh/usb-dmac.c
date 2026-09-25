@@ -860,8 +860,13 @@ static int usb_dmac_probe(struct platform_device *pdev)
 
 error:
 	of_dma_controller_free(pdev->dev.of_node);
+<<<<<<< HEAD
 	pm_runtime_put(&pdev->dev);
 error_pm:
+=======
+error_pm:
+	pm_runtime_put(&pdev->dev);
+>>>>>>> origin/android16-base
 	pm_runtime_disable(&pdev->dev);
 	return ret;
 }

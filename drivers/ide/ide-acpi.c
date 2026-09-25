@@ -180,7 +180,11 @@ err:
 static acpi_handle ide_acpi_hwif_get_handle(ide_hwif_t *hwif)
 {
 	struct device		*dev = hwif->gendev.parent;
+<<<<<<< HEAD
 	acpi_handle		uninitialized_var(dev_handle);
+=======
+	acpi_handle		dev_handle;
+>>>>>>> origin/android16-base
 	u64			pcidevfn;
 	acpi_handle		chan_handle;
 	int			err;

@@ -585,6 +585,7 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
 		if (start >= end)
 			continue;
 
+<<<<<<< HEAD
 		/*
 		 * Don't confuse VM with a node that doesn't have the
 		 * minimum amount of memory:
@@ -592,6 +593,8 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
 		if (end && (end - start) < NODE_MIN_SIZE)
 			continue;
 
+=======
+>>>>>>> origin/android16-base
 		alloc_node_data(nid);
 	}
 
@@ -826,7 +829,11 @@ void debug_cpumask_set_cpu(int cpu, int node, bool enable)
 		return;
 	}
 	mask = node_to_cpumask_map[node];
+<<<<<<< HEAD
 	if (!mask) {
+=======
+	if (!cpumask_available(mask)) {
+>>>>>>> origin/android16-base
 		pr_err("node_to_cpumask_map[%i] NULL\n", node);
 		dump_stack();
 		return;
@@ -872,7 +879,11 @@ const struct cpumask *cpumask_of_node(int node)
 		dump_stack();
 		return cpu_none_mask;
 	}
+<<<<<<< HEAD
 	if (node_to_cpumask_map[node] == NULL) {
+=======
+	if (!cpumask_available(node_to_cpumask_map[node])) {
+>>>>>>> origin/android16-base
 		printk(KERN_WARNING
 			"cpumask_of_node(%d): no node_to_cpumask_map!\n",
 			node);

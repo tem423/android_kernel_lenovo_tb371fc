@@ -286,17 +286,34 @@ static int nvmem_add_cells_from_of(struct nvmem_device *nvmem)
 
 	for_each_child_of_node(parent, child) {
 		addr = of_get_property(child, "reg", &len);
+<<<<<<< HEAD
 		if (!addr || (len < 2 * sizeof(u32))) {
 			dev_err(dev, "nvmem: invalid reg on %pOF\n", child);
+=======
+		if (!addr)
+			continue;
+		if (len < 2 * sizeof(u32)) {
+			dev_err(dev, "nvmem: invalid reg on %pOF\n", child);
+			of_node_put(child);
+>>>>>>> origin/android16-base
 			return -EINVAL;
 		}
 
 		cell = kzalloc(sizeof(*cell), GFP_KERNEL);
+<<<<<<< HEAD
 		if (!cell)
 			return -ENOMEM;
 
 		cell->nvmem = nvmem;
 		cell->np = of_node_get(child);
+=======
+		if (!cell) {
+			of_node_put(child);
+			return -ENOMEM;
+		}
+
+		cell->nvmem = nvmem;
+>>>>>>> origin/android16-base
 		cell->offset = be32_to_cpup(addr++);
 		cell->bytes = be32_to_cpup(addr);
 		cell->name = child->name;
@@ -317,9 +334,17 @@ static int nvmem_add_cells_from_of(struct nvmem_device *nvmem)
 				cell->name, nvmem->stride);
 			/* Cells already added will be freed later. */
 			kfree(cell);
+<<<<<<< HEAD
 			return -EINVAL;
 		}
 
+=======
+			of_node_put(child);
+			return -EINVAL;
+		}
+
+		cell->np = of_node_get(child);
+>>>>>>> origin/android16-base
 		nvmem_cell_add(cell);
 	}
 
@@ -662,13 +687,22 @@ void nvmem_device_put(struct nvmem_device *nvmem)
 EXPORT_SYMBOL_GPL(nvmem_device_put);
 
 /**
+<<<<<<< HEAD
  * devm_nvmem_device_get() - Get nvmem cell of device form a given id
+=======
+ * devm_nvmem_device_get() - Get nvmem device of device form a given id
+>>>>>>> origin/android16-base
  *
  * @dev: Device that requests the nvmem device.
  * @id: name id for the requested nvmem device.
  *
+<<<<<<< HEAD
  * Return: ERR_PTR() on error or a valid pointer to a struct nvmem_cell
  * on success.  The nvmem_cell will be freed by the automatically once the
+=======
+ * Return: ERR_PTR() on error or a valid pointer to a struct nvmem_device
+ * on success.  The nvmem_device will be freed by the automatically once the
+>>>>>>> origin/android16-base
  * device is freed.
  */
 struct nvmem_device *devm_nvmem_device_get(struct device *dev, const char *id)
@@ -900,8 +934,13 @@ static void nvmem_shift_read_buffer_in_place(struct nvmem_cell *cell, void *buf)
 		*p-- = 0;
 
 	/* clear msb bits if any leftover in the last byte */
+<<<<<<< HEAD
 	if (cell->nbits%BITS_PER_BYTE)
 		*p &= GENMASK((cell->nbits%BITS_PER_BYTE) - 1, 0);
+=======
+	if (cell->nbits % BITS_PER_BYTE)
+		*p &= GENMASK((cell->nbits % BITS_PER_BYTE) - 1, 0);
+>>>>>>> origin/android16-base
 }
 
 static int __nvmem_cell_read(struct nvmem_device *nvmem,

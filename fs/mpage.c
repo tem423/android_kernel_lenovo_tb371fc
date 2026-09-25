@@ -32,6 +32,7 @@
 #include <linux/cleancache.h>
 #include "internal.h"
 
+<<<<<<< HEAD
 #define CREATE_TRACE_POINTS
 #include <trace/events/android_fs.h>
 
@@ -42,6 +43,8 @@ EXPORT_TRACEPOINT_SYMBOL(android_fs_dataread_end);
 EXPORT_TRACEPOINT_SYMBOL(android_fs_fsync_start);
 EXPORT_TRACEPOINT_SYMBOL(android_fs_fsync_end);
 
+=======
+>>>>>>> origin/android16-base
 /*
  * I/O completion handler for multipage BIOs.
  *
@@ -59,6 +62,7 @@ static void mpage_end_io(struct bio *bio)
 	struct bio_vec *bv;
 	int i;
 
+<<<<<<< HEAD
 	if (trace_android_fs_dataread_end_enabled() &&
 	    (bio_data_dir(bio) == READ)) {
 		struct page *first_page = bio->bi_io_vec[0].bv_page;
@@ -69,6 +73,8 @@ static void mpage_end_io(struct bio *bio)
 						      bio->bi_iter.bi_size);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	bio_for_each_segment_all(bv, bio, i) {
 		struct page *page = bv->bv_page;
 		page_endio(page, bio_op(bio),
@@ -80,6 +86,7 @@ static void mpage_end_io(struct bio *bio)
 
 static struct bio *mpage_bio_submit(int op, int op_flags, struct bio *bio)
 {
+<<<<<<< HEAD
 	if (trace_android_fs_dataread_start_enabled() && (op == REQ_OP_READ)) {
 		struct page *first_page = bio->bi_io_vec[0].bv_page;
 
@@ -98,6 +105,8 @@ static struct bio *mpage_bio_submit(int op, int op_flags, struct bio *bio)
 				current->comm);
 		}
 	}
+=======
+>>>>>>> origin/android16-base
 	bio->bi_end_io = mpage_end_io;
 	bio_set_op_attrs(bio, op, op_flags);
 	guard_bio_eod(op, bio);

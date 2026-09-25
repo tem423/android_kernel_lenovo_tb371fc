@@ -55,12 +55,28 @@ nilfs_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
 	struct inode *inode;
 	ino_t ino;
+<<<<<<< HEAD
+=======
+	int res;
+>>>>>>> origin/android16-base
 
 	if (dentry->d_name.len > NILFS_NAME_LEN)
 		return ERR_PTR(-ENAMETOOLONG);
 
+<<<<<<< HEAD
 	ino = nilfs_inode_by_name(dir, &dentry->d_name);
 	inode = ino ? nilfs_iget(dir->i_sb, NILFS_I(dir)->i_root, ino) : NULL;
+=======
+	res = nilfs_inode_by_name(dir, &dentry->d_name, &ino);
+	if (res) {
+		if (res != -ENOENT)
+			return ERR_PTR(res);
+		inode = NULL;
+	} else {
+		inode = nilfs_iget(dir->i_sb, NILFS_I(dir)->i_root, ino);
+	}
+
+>>>>>>> origin/android16-base
 	return d_splice_alias(inode, dentry);
 }
 
@@ -148,6 +164,12 @@ static int nilfs_symlink(struct inode *dir, struct dentry *dentry,
 	/* slow symlink */
 	inode->i_op = &nilfs_symlink_inode_operations;
 	inode_nohighmem(inode);
+<<<<<<< HEAD
+=======
+	mapping_set_gfp_mask(inode->i_mapping,
+			     mapping_gfp_constraint(inode->i_mapping,
+						    ~__GFP_FS));
+>>>>>>> origin/android16-base
 	inode->i_mapping->a_ops = &nilfs_aops;
 	err = page_symlink(inode, symname, l);
 	if (err)
@@ -261,10 +283,18 @@ static int nilfs_do_unlink(struct inode *dir, struct dentry *dentry)
 	struct page *page;
 	int err;
 
+<<<<<<< HEAD
 	err = -ENOENT;
 	de = nilfs_find_entry(dir, &dentry->d_name, &page);
 	if (!de)
 		goto out;
+=======
+	de = nilfs_find_entry(dir, &dentry->d_name, &page);
+	if (IS_ERR(de)) {
+		err = PTR_ERR(de);
+		goto out;
+	}
+>>>>>>> origin/android16-base
 
 	inode = d_inode(dentry);
 	err = -EIO;
@@ -272,9 +302,15 @@ static int nilfs_do_unlink(struct inode *dir, struct dentry *dentry)
 		goto out;
 
 	if (!inode->i_nlink) {
+<<<<<<< HEAD
 		nilfs_msg(inode->i_sb, KERN_WARNING,
 			  "deleting nonexistent file (ino=%lu), %d",
 			  inode->i_ino, inode->i_nlink);
+=======
+		nilfs_warn(inode->i_sb,
+			   "deleting nonexistent file (ino=%lu), %d",
+			   inode->i_ino, inode->i_nlink);
+>>>>>>> origin/android16-base
 		set_nlink(inode, 1);
 	}
 	err = nilfs_delete_entry(de, page);
@@ -358,10 +394,18 @@ static int nilfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 	if (unlikely(err))
 		return err;
 
+<<<<<<< HEAD
 	err = -ENOENT;
 	old_de = nilfs_find_entry(old_dir, &old_dentry->d_name, &old_page);
 	if (!old_de)
 		goto out;
+=======
+	old_de = nilfs_find_entry(old_dir, &old_dentry->d_name, &old_page);
+	if (IS_ERR(old_de)) {
+		err = PTR_ERR(old_de);
+		goto out;
+	}
+>>>>>>> origin/android16-base
 
 	if (S_ISDIR(old_inode->i_mode)) {
 		err = -EIO;
@@ -378,10 +422,19 @@ static int nilfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 		if (dir_de && !nilfs_empty_dir(new_inode))
 			goto out_dir;
 
+<<<<<<< HEAD
 		err = -ENOENT;
 		new_de = nilfs_find_entry(new_dir, &new_dentry->d_name, &new_page);
 		if (!new_de)
 			goto out_dir;
+=======
+		new_de = nilfs_find_entry(new_dir, &new_dentry->d_name,
+					  &new_page);
+		if (IS_ERR(new_de)) {
+			err = PTR_ERR(new_de);
+			goto out_dir;
+		}
+>>>>>>> origin/android16-base
 		nilfs_set_link(new_dir, new_de, new_page, old_inode);
 		nilfs_mark_inode_dirty(new_dir);
 		new_inode->i_ctime = current_time(new_inode);
@@ -435,14 +488,25 @@ out:
  */
 static struct dentry *nilfs_get_parent(struct dentry *child)
 {
+<<<<<<< HEAD
 	unsigned long ino;
+=======
+	ino_t ino;
+	int res;
+>>>>>>> origin/android16-base
 	struct inode *inode;
 	struct qstr dotdot = QSTR_INIT("..", 2);
 	struct nilfs_root *root;
 
+<<<<<<< HEAD
 	ino = nilfs_inode_by_name(d_inode(child), &dotdot);
 	if (!ino)
 		return ERR_PTR(-ENOENT);
+=======
+	res = nilfs_inode_by_name(d_inode(child), &dotdot, &ino);
+	if (res)
+		return ERR_PTR(res);
+>>>>>>> origin/android16-base
 
 	root = NILFS_I(d_inode(child))->i_root;
 

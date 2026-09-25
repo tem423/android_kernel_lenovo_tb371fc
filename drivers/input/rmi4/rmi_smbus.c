@@ -238,12 +238,38 @@ static void rmi_smb_clear_state(struct rmi_smb_xport *rmi_smb)
 
 static int rmi_smb_enable_smbus_mode(struct rmi_smb_xport *rmi_smb)
 {
+<<<<<<< HEAD
 	int retval;
 
 	/* we need to get the smbus version to activate the touchpad */
 	retval = rmi_smb_get_version(rmi_smb);
 	if (retval < 0)
 		return retval;
+=======
+	struct i2c_client *client = rmi_smb->client;
+	int smbus_version;
+
+	/*
+	 * psmouse driver resets the controller, we only need to wait
+	 * to give the firmware chance to fully reinitialize.
+	 */
+	if (rmi_smb->xport.pdata.reset_delay_ms)
+		msleep(rmi_smb->xport.pdata.reset_delay_ms);
+
+	/* we need to get the smbus version to activate the touchpad */
+	smbus_version = rmi_smb_get_version(rmi_smb);
+	if (smbus_version < 0)
+		return smbus_version;
+
+	rmi_dbg(RMI_DEBUG_XPORT, &client->dev, "Smbus version is %d",
+		smbus_version);
+
+	if (smbus_version != 2 && smbus_version != 3) {
+		dev_err(&client->dev, "Unrecognized SMB version %d\n",
+				smbus_version);
+		return -ENODEV;
+	}
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -256,11 +282,18 @@ static int rmi_smb_reset(struct rmi_transport_dev *xport, u16 reset_addr)
 	rmi_smb_clear_state(rmi_smb);
 
 	/*
+<<<<<<< HEAD
 	 * we do not call the actual reset command, it has to be handled in
 	 * PS/2 or there will be races between PS/2 and SMBus.
 	 * PS/2 should ensure that a psmouse_reset is called before
 	 * intializing the device and after it has been removed to be in a known
 	 * state.
+=======
+	 * We do not call the actual reset command, it has to be handled in
+	 * PS/2 or there will be races between PS/2 and SMBus. PS/2 should
+	 * ensure that a psmouse_reset is called before initializing the
+	 * device and after it has been removed to be in a known state.
+>>>>>>> origin/android16-base
 	 */
 	return rmi_smb_enable_smbus_mode(rmi_smb);
 }
@@ -276,7 +309,10 @@ static int rmi_smb_probe(struct i2c_client *client,
 {
 	struct rmi_device_platform_data *pdata = dev_get_platdata(&client->dev);
 	struct rmi_smb_xport *rmi_smb;
+<<<<<<< HEAD
 	int smbus_version;
+=======
+>>>>>>> origin/android16-base
 	int error;
 
 	if (!pdata) {
@@ -315,6 +351,7 @@ static int rmi_smb_probe(struct i2c_client *client,
 	rmi_smb->xport.proto_name = "smb";
 	rmi_smb->xport.ops = &rmi_smb_ops;
 
+<<<<<<< HEAD
 	smbus_version = rmi_smb_get_version(rmi_smb);
 	if (smbus_version < 0)
 		return smbus_version;
@@ -327,6 +364,11 @@ static int rmi_smb_probe(struct i2c_client *client,
 				smbus_version);
 		return -ENODEV;
 	}
+=======
+	error = rmi_smb_enable_smbus_mode(rmi_smb);
+	if (error)
+		return error;
+>>>>>>> origin/android16-base
 
 	i2c_set_clientdata(client, rmi_smb);
 

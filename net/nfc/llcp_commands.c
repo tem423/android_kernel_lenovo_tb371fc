@@ -27,7 +27,11 @@
 #include "nfc.h"
 #include "llcp.h"
 
+<<<<<<< HEAD
 static u8 llcp_tlv_length[LLCP_TLV_MAX] = {
+=======
+static const u8 llcp_tlv_length[LLCP_TLV_MAX] = {
+>>>>>>> origin/android16-base
 	0,
 	1, /* VERSION */
 	2, /* MIUX */
@@ -41,7 +45,11 @@ static u8 llcp_tlv_length[LLCP_TLV_MAX] = {
 
 };
 
+<<<<<<< HEAD
 static u8 llcp_tlv8(u8 *tlv, u8 type)
+=======
+static u8 llcp_tlv8(const u8 *tlv, u8 type)
+>>>>>>> origin/android16-base
 {
 	if (tlv[0] != type || tlv[1] != llcp_tlv_length[tlv[0]])
 		return 0;
@@ -49,7 +57,11 @@ static u8 llcp_tlv8(u8 *tlv, u8 type)
 	return tlv[2];
 }
 
+<<<<<<< HEAD
 static u16 llcp_tlv16(u8 *tlv, u8 type)
+=======
+static u16 llcp_tlv16(const u8 *tlv, u8 type)
+>>>>>>> origin/android16-base
 {
 	if (tlv[0] != type || tlv[1] != llcp_tlv_length[tlv[0]])
 		return 0;
@@ -58,37 +70,65 @@ static u16 llcp_tlv16(u8 *tlv, u8 type)
 }
 
 
+<<<<<<< HEAD
 static u8 llcp_tlv_version(u8 *tlv)
+=======
+static u8 llcp_tlv_version(const u8 *tlv)
+>>>>>>> origin/android16-base
 {
 	return llcp_tlv8(tlv, LLCP_TLV_VERSION);
 }
 
+<<<<<<< HEAD
 static u16 llcp_tlv_miux(u8 *tlv)
+=======
+static u16 llcp_tlv_miux(const u8 *tlv)
+>>>>>>> origin/android16-base
 {
 	return llcp_tlv16(tlv, LLCP_TLV_MIUX) & 0x7ff;
 }
 
+<<<<<<< HEAD
 static u16 llcp_tlv_wks(u8 *tlv)
+=======
+static u16 llcp_tlv_wks(const u8 *tlv)
+>>>>>>> origin/android16-base
 {
 	return llcp_tlv16(tlv, LLCP_TLV_WKS);
 }
 
+<<<<<<< HEAD
 static u16 llcp_tlv_lto(u8 *tlv)
+=======
+static u16 llcp_tlv_lto(const u8 *tlv)
+>>>>>>> origin/android16-base
 {
 	return llcp_tlv8(tlv, LLCP_TLV_LTO);
 }
 
+<<<<<<< HEAD
 static u8 llcp_tlv_opt(u8 *tlv)
+=======
+static u8 llcp_tlv_opt(const u8 *tlv)
+>>>>>>> origin/android16-base
 {
 	return llcp_tlv8(tlv, LLCP_TLV_OPT);
 }
 
+<<<<<<< HEAD
 static u8 llcp_tlv_rw(u8 *tlv)
+=======
+static u8 llcp_tlv_rw(const u8 *tlv)
+>>>>>>> origin/android16-base
 {
 	return llcp_tlv8(tlv, LLCP_TLV_RW) & 0xf;
 }
 
+<<<<<<< HEAD
 u8 *nfc_llcp_build_tlv(u8 type, u8 *value, u8 value_length, u8 *tlv_length)
+=======
+u8 *nfc_llcp_build_tlv(u8 type, const u8 *value, u8 value_length, u8 *tlv_length)
+>>>>>>> origin/android16-base
 {
 	u8 *tlv, length;
 
@@ -142,7 +182,11 @@ struct nfc_llcp_sdp_tlv *nfc_llcp_build_sdres_tlv(u8 tid, u8 sap)
 	return sdres;
 }
 
+<<<<<<< HEAD
 struct nfc_llcp_sdp_tlv *nfc_llcp_build_sdreq_tlv(u8 tid, char *uri,
+=======
+struct nfc_llcp_sdp_tlv *nfc_llcp_build_sdreq_tlv(u8 tid, const char *uri,
+>>>>>>> origin/android16-base
 						  size_t uri_len)
 {
 	struct nfc_llcp_sdp_tlv *sdreq;
@@ -202,9 +246,16 @@ void nfc_llcp_free_sdp_tlv_list(struct hlist_head *head)
 }
 
 int nfc_llcp_parse_gb_tlv(struct nfc_llcp_local *local,
+<<<<<<< HEAD
 			  u8 *tlv_array, u16 tlv_array_len)
 {
 	u8 *tlv = tlv_array, type, length, offset = 0;
+=======
+			  const u8 *tlv_array, u16 tlv_array_len)
+{
+	const u8 *tlv = tlv_array;
+	u8 type, length, offset = 0;
+>>>>>>> origin/android16-base
 
 	pr_debug("TLV array length %d\n", tlv_array_len);
 
@@ -251,9 +302,16 @@ int nfc_llcp_parse_gb_tlv(struct nfc_llcp_local *local,
 }
 
 int nfc_llcp_parse_connection_tlv(struct nfc_llcp_sock *sock,
+<<<<<<< HEAD
 				  u8 *tlv_array, u16 tlv_array_len)
 {
 	u8 *tlv = tlv_array, type, length, offset = 0;
+=======
+				  const u8 *tlv_array, u16 tlv_array_len)
+{
+	const u8 *tlv = tlv_array;
+	u8 type, length, offset = 0;
+>>>>>>> origin/android16-base
 
 	pr_debug("TLV array length %d\n", tlv_array_len);
 
@@ -307,7 +365,11 @@ static struct sk_buff *llcp_add_header(struct sk_buff *pdu,
 	return pdu;
 }
 
+<<<<<<< HEAD
 static struct sk_buff *llcp_add_tlv(struct sk_buff *pdu, u8 *tlv,
+=======
+static struct sk_buff *llcp_add_tlv(struct sk_buff *pdu, const u8 *tlv,
+>>>>>>> origin/android16-base
 				    u8 tlv_length)
 {
 	/* XXX Add an skb length check */
@@ -401,9 +463,17 @@ int nfc_llcp_send_connect(struct nfc_llcp_sock *sock)
 {
 	struct nfc_llcp_local *local;
 	struct sk_buff *skb;
+<<<<<<< HEAD
 	u8 *service_name_tlv = NULL, service_name_tlv_length;
 	u8 *miux_tlv = NULL, miux_tlv_length;
 	u8 *rw_tlv = NULL, rw_tlv_length, rw;
+=======
+	const u8 *service_name_tlv = NULL;
+	const u8 *miux_tlv = NULL;
+	const u8 *rw_tlv = NULL;
+	u8 service_name_tlv_length = 0;
+	u8 miux_tlv_length,  rw_tlv_length, rw;
+>>>>>>> origin/android16-base
 	int err;
 	u16 size = 0;
 	__be16 miux;
@@ -477,8 +547,14 @@ int nfc_llcp_send_cc(struct nfc_llcp_sock *sock)
 {
 	struct nfc_llcp_local *local;
 	struct sk_buff *skb;
+<<<<<<< HEAD
 	u8 *miux_tlv = NULL, miux_tlv_length;
 	u8 *rw_tlv = NULL, rw_tlv_length, rw;
+=======
+	const u8 *miux_tlv = NULL;
+	const u8 *rw_tlv = NULL;
+	u8 miux_tlv_length, rw_tlv_length, rw;
+>>>>>>> origin/android16-base
 	int err;
 	u16 size = 0;
 	__be16 miux;

@@ -206,7 +206,11 @@ struct __packed ems_cpc_msg {
 	__le32 ts_sec;	/* timestamp in seconds */
 	__le32 ts_nsec;	/* timestamp in nano seconds */
 
+<<<<<<< HEAD
 	union {
+=======
+	union __packed {
+>>>>>>> origin/android16-base
 		u8 generic[64];
 		struct cpc_can_msg can_msg;
 		struct cpc_can_params can_params;
@@ -267,6 +271,11 @@ struct ems_usb {
 	unsigned int free_slots; /* remember number of available slots */
 
 	struct ems_cpc_msg active_params; /* active controller parameters */
+<<<<<<< HEAD
+=======
+	void *rxbuf[MAX_RX_URBS];
+	dma_addr_t rxbuf_dma[MAX_RX_URBS];
+>>>>>>> origin/android16-base
 };
 
 static void ems_usb_read_interrupt_callback(struct urb *urb)
@@ -599,6 +608,10 @@ static int ems_usb_start(struct ems_usb *dev)
 	for (i = 0; i < MAX_RX_URBS; i++) {
 		struct urb *urb = NULL;
 		u8 *buf = NULL;
+<<<<<<< HEAD
+=======
+		dma_addr_t buf_dma;
+>>>>>>> origin/android16-base
 
 		/* create a URB, and a buffer for it */
 		urb = usb_alloc_urb(0, GFP_KERNEL);
@@ -608,7 +621,11 @@ static int ems_usb_start(struct ems_usb *dev)
 		}
 
 		buf = usb_alloc_coherent(dev->udev, RX_BUFFER_SIZE, GFP_KERNEL,
+<<<<<<< HEAD
 					 &urb->transfer_dma);
+=======
+					 &buf_dma);
+>>>>>>> origin/android16-base
 		if (!buf) {
 			netdev_err(netdev, "No memory left for USB buffer\n");
 			usb_free_urb(urb);
@@ -616,6 +633,11 @@ static int ems_usb_start(struct ems_usb *dev)
 			break;
 		}
 
+<<<<<<< HEAD
+=======
+		urb->transfer_dma = buf_dma;
+
+>>>>>>> origin/android16-base
 		usb_fill_bulk_urb(urb, dev->udev, usb_rcvbulkpipe(dev->udev, 2),
 				  buf, RX_BUFFER_SIZE,
 				  ems_usb_read_bulk_callback, dev);
@@ -631,6 +653,12 @@ static int ems_usb_start(struct ems_usb *dev)
 			break;
 		}
 
+<<<<<<< HEAD
+=======
+		dev->rxbuf[i] = buf;
+		dev->rxbuf_dma[i] = buf_dma;
+
+>>>>>>> origin/android16-base
 		/* Drop reference, USB core will take care of freeing it */
 		usb_free_urb(urb);
 	}
@@ -696,6 +724,13 @@ static void unlink_all_urbs(struct ems_usb *dev)
 
 	usb_kill_anchored_urbs(&dev->rx_submitted);
 
+<<<<<<< HEAD
+=======
+	for (i = 0; i < MAX_RX_URBS; ++i)
+		usb_free_coherent(dev->udev, RX_BUFFER_SIZE,
+				  dev->rxbuf[i], dev->rxbuf_dma[i]);
+
+>>>>>>> origin/android16-base
 	usb_kill_anchored_urbs(&dev->tx_submitted);
 	atomic_set(&dev->active_tx_urbs, 0);
 
@@ -823,7 +858,10 @@ static netdev_tx_t ems_usb_start_xmit(struct sk_buff *skb, struct net_device *ne
 
 		usb_unanchor_urb(urb);
 		usb_free_coherent(dev->udev, size, buf, urb->transfer_dma);
+<<<<<<< HEAD
 		dev_kfree_skb(skb);
+=======
+>>>>>>> origin/android16-base
 
 		atomic_dec(&dev->active_tx_urbs);
 
@@ -1065,7 +1103,10 @@ static void ems_usb_disconnect(struct usb_interface *intf)
 
 	if (dev) {
 		unregister_netdev(dev->netdev);
+<<<<<<< HEAD
 		free_candev(dev->netdev);
+=======
+>>>>>>> origin/android16-base
 
 		unlink_all_urbs(dev);
 
@@ -1073,6 +1114,11 @@ static void ems_usb_disconnect(struct usb_interface *intf)
 
 		kfree(dev->intr_in_buffer);
 		kfree(dev->tx_msg_buffer);
+<<<<<<< HEAD
+=======
+
+		free_candev(dev->netdev);
+>>>>>>> origin/android16-base
 	}
 }
 

@@ -160,6 +160,10 @@ out:
 	rcu_read_unlock_bh();
 	return ret;
 #else
+<<<<<<< HEAD
+=======
+	kfree_skb(skb);
+>>>>>>> origin/android16-base
 	return -EAFNOSUPPORT;
 #endif
 }
@@ -241,7 +245,11 @@ int wg_socket_endpoint_from_skb(struct endpoint *endpoint,
 		endpoint->addr4.sin_addr.s_addr = ip_hdr(skb)->saddr;
 		endpoint->src4.s_addr = ip_hdr(skb)->daddr;
 		endpoint->src_if4 = skb->skb_iif;
+<<<<<<< HEAD
 	} else if (skb->protocol == htons(ETH_P_IPV6)) {
+=======
+	} else if (IS_ENABLED(CONFIG_IPV6) && skb->protocol == htons(ETH_P_IPV6)) {
+>>>>>>> origin/android16-base
 		endpoint->addr6.sin6_family = AF_INET6;
 		endpoint->addr6.sin6_port = udp_hdr(skb)->source;
 		endpoint->addr6.sin6_addr = ipv6_hdr(skb)->saddr;
@@ -284,7 +292,11 @@ void wg_socket_set_peer_endpoint(struct wg_peer *peer,
 		peer->endpoint.addr4 = endpoint->addr4;
 		peer->endpoint.src4 = endpoint->src4;
 		peer->endpoint.src_if4 = endpoint->src_if4;
+<<<<<<< HEAD
 	} else if (endpoint->addr.sa_family == AF_INET6) {
+=======
+	} else if (IS_ENABLED(CONFIG_IPV6) && endpoint->addr.sa_family == AF_INET6) {
+>>>>>>> origin/android16-base
 		peer->endpoint.addr6 = endpoint->addr6;
 		peer->endpoint.src6 = endpoint->src6;
 	} else {
@@ -308,7 +320,11 @@ void wg_socket_clear_peer_endpoint_src(struct wg_peer *peer)
 {
 	write_lock_bh(&peer->endpoint_lock);
 	memset(&peer->endpoint.src6, 0, sizeof(peer->endpoint.src6));
+<<<<<<< HEAD
 	dst_cache_reset(&peer->endpoint_cache);
+=======
+	dst_cache_reset_now(&peer->endpoint_cache);
+>>>>>>> origin/android16-base
 	write_unlock_bh(&peer->endpoint_lock);
 }
 
@@ -430,7 +446,11 @@ void wg_socket_reinit(struct wg_device *wg, struct sock *new4,
 	if (new4)
 		wg->incoming_port = ntohs(inet_sk(new4)->inet_sport);
 	mutex_unlock(&wg->socket_update_lock);
+<<<<<<< HEAD
 	synchronize_rcu();
+=======
+	synchronize_net();
+>>>>>>> origin/android16-base
 	sock_free(old4);
 	sock_free(old6);
 }

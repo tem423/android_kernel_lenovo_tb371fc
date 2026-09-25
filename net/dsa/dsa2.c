@@ -596,6 +596,10 @@ static int dsa_port_parse_of(struct dsa_port *dp, struct device_node *dn)
 		struct net_device *master;
 
 		master = of_find_net_device_by_node(ethernet);
+<<<<<<< HEAD
+=======
+		of_node_put(ethernet);
+>>>>>>> origin/android16-base
 		if (!master)
 			return -EPROBE_DEFER;
 

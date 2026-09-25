@@ -339,7 +339,11 @@ void cxgbi_hbas_remove(struct cxgbi_device *cdev)
 EXPORT_SYMBOL_GPL(cxgbi_hbas_remove);
 
 int cxgbi_hbas_add(struct cxgbi_device *cdev, u64 max_lun,
+<<<<<<< HEAD
 		unsigned int max_id, struct scsi_host_template *sht,
+=======
+		unsigned int max_conns, struct scsi_host_template *sht,
+>>>>>>> origin/android16-base
 		struct scsi_transport_template *stt)
 {
 	struct cxgbi_hba *chba;
@@ -359,7 +363,11 @@ int cxgbi_hbas_add(struct cxgbi_device *cdev, u64 max_lun,
 
 		shost->transportt = stt;
 		shost->max_lun = max_lun;
+<<<<<<< HEAD
 		shost->max_id = max_id;
+=======
+		shost->max_id = max_conns - 1;
+>>>>>>> origin/android16-base
 		shost->max_channel = 0;
 		shost->max_cmd_len = 16;
 

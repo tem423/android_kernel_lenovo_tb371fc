@@ -245,7 +245,10 @@ static int tegra_pwm_probe(struct platform_device *pdev)
 static int tegra_pwm_remove(struct platform_device *pdev)
 {
 	struct tegra_pwm_chip *pc = platform_get_drvdata(pdev);
+<<<<<<< HEAD
 	unsigned int i;
+=======
+>>>>>>> origin/android16-base
 	int err;
 
 	if (WARN_ON(!pc))
@@ -255,6 +258,7 @@ static int tegra_pwm_remove(struct platform_device *pdev)
 	if (err < 0)
 		return err;
 
+<<<<<<< HEAD
 	for (i = 0; i < pc->chip.npwm; i++) {
 		struct pwm_device *pwm = &pc->chip.pwms[i];
 
@@ -267,6 +271,8 @@ static int tegra_pwm_remove(struct platform_device *pdev)
 		clk_disable_unprepare(pc->clk);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	reset_control_assert(pc->rst);
 	clk_disable_unprepare(pc->clk);
 

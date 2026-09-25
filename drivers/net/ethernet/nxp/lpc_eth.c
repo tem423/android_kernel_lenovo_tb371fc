@@ -1037,9 +1037,12 @@ static int lpc_eth_close(struct net_device *ndev)
 	napi_disable(&pldat->napi);
 	netif_stop_queue(ndev);
 
+<<<<<<< HEAD
 	if (ndev->phydev)
 		phy_stop(ndev->phydev);
 
+=======
+>>>>>>> origin/android16-base
 	spin_lock_irqsave(&pldat->lock, flags);
 	__lpc_eth_reset(pldat);
 	netif_carrier_off(ndev);
@@ -1047,6 +1050,11 @@ static int lpc_eth_close(struct net_device *ndev)
 	writel(0, LPC_ENET_MAC2(pldat->net_base));
 	spin_unlock_irqrestore(&pldat->lock, flags);
 
+<<<<<<< HEAD
+=======
+	if (ndev->phydev)
+		phy_stop(ndev->phydev);
+>>>>>>> origin/android16-base
 	clk_disable_unprepare(pldat->clk);
 
 	return 0;
@@ -1513,6 +1521,10 @@ static int lpc_eth_drv_resume(struct platform_device *pdev)
 {
 	struct net_device *ndev = platform_get_drvdata(pdev);
 	struct netdata_local *pldat;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 
 	if (device_may_wakeup(&pdev->dev))
 		disable_irq_wake(ndev->irq);
@@ -1522,7 +1534,13 @@ static int lpc_eth_drv_resume(struct platform_device *pdev)
 			pldat = netdev_priv(ndev);
 
 			/* Enable interface clock */
+<<<<<<< HEAD
 			clk_enable(pldat->clk);
+=======
+			ret = clk_enable(pldat->clk);
+			if (ret)
+				return ret;
+>>>>>>> origin/android16-base
 
 			/* Reset and initialize */
 			__lpc_eth_reset(pldat);

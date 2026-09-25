@@ -232,25 +232,44 @@ EXPORT_SYMBOL(unregister_lsm_notifier);
 
 /* Security operations */
 
+<<<<<<< HEAD
 int security_binder_set_context_mgr(struct task_struct *mgr)
+=======
+int security_binder_set_context_mgr(const struct cred *mgr)
+>>>>>>> origin/android16-base
 {
 	return call_int_hook(binder_set_context_mgr, 0, mgr);
 }
 
+<<<<<<< HEAD
 int security_binder_transaction(struct task_struct *from,
 				struct task_struct *to)
+=======
+int security_binder_transaction(const struct cred *from,
+				const struct cred *to)
+>>>>>>> origin/android16-base
 {
 	return call_int_hook(binder_transaction, 0, from, to);
 }
 
+<<<<<<< HEAD
 int security_binder_transfer_binder(struct task_struct *from,
 				    struct task_struct *to)
+=======
+int security_binder_transfer_binder(const struct cred *from,
+				    const struct cred *to)
+>>>>>>> origin/android16-base
 {
 	return call_int_hook(binder_transfer_binder, 0, from, to);
 }
 
+<<<<<<< HEAD
 int security_binder_transfer_file(struct task_struct *from,
 				  struct task_struct *to, struct file *file)
+=======
+int security_binder_transfer_file(const struct cred *from,
+				  const struct cred *to, struct file *file)
+>>>>>>> origin/android16-base
 {
 	return call_int_hook(binder_transfer_file, 0, from, to, file);
 }
@@ -503,6 +522,17 @@ out:
 }
 EXPORT_SYMBOL(security_inode_init_security);
 
+<<<<<<< HEAD
+=======
+int security_inode_init_security_anon(struct inode *inode,
+				      const struct qstr *name,
+				      const struct inode *context_inode)
+{
+	return call_int_hook(inode_init_security_anon, 0, inode, name,
+			     context_inode);
+}
+
+>>>>>>> origin/android16-base
 int security_old_inode_init_security(struct inode *inode, struct inode *dir,
 				     const struct qstr *qstr, const char **name,
 				     void **value, size_t *len)
@@ -891,6 +921,26 @@ int security_file_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return call_int_hook(file_ioctl, 0, file, cmd, arg);
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * security_file_ioctl_compat() - Check if an ioctl is allowed in compat mode
+ * @file: associated file
+ * @cmd: ioctl cmd
+ * @arg: ioctl arguments
+ *
+ * Compat version of security_file_ioctl() that correctly handles 32-bit
+ * processes running on 64-bit kernels.
+ *
+ * Return: Returns 0 if permission is granted.
+ */
+int security_file_ioctl_compat(struct file *file, unsigned int cmd,
+			       unsigned long arg)
+{
+	return call_int_hook(file_ioctl_compat, 0, file, cmd, arg);
+}
+
+>>>>>>> origin/android16-base
 static inline unsigned long mmap_prot(struct file *file, unsigned long prot)
 {
 	/*
@@ -927,12 +977,22 @@ static inline unsigned long mmap_prot(struct file *file, unsigned long prot)
 int security_mmap_file(struct file *file, unsigned long prot,
 			unsigned long flags)
 {
+<<<<<<< HEAD
 	int ret;
 	ret = call_int_hook(mmap_file, 0, file, prot,
 					mmap_prot(file, prot), flags);
 	if (ret)
 		return ret;
 	return ima_file_mmap(file, prot);
+=======
+	unsigned long prot_adj = mmap_prot(file, prot);
+	int ret;
+
+	ret = call_int_hook(mmap_file, 0, file, prot, prot_adj, flags);
+	if (ret)
+		return ret;
+	return ima_file_mmap(file, prot, prot_adj, flags);
+>>>>>>> origin/android16-base
 }
 
 int security_mmap_addr(unsigned long addr)

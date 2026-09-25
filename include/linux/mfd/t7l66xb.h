@@ -16,7 +16,10 @@
 
 struct t7l66xb_platform_data {
 	int (*enable)(struct platform_device *dev);
+<<<<<<< HEAD
 	int (*disable)(struct platform_device *dev);
+=======
+>>>>>>> origin/android16-base
 	int (*suspend)(struct platform_device *dev);
 	int (*resume)(struct platform_device *dev);
 

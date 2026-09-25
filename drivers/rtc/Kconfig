@@ -639,6 +639,10 @@ config RTC_DRV_S5M
 	tristate "Samsung S2M/S5M series"
 	depends on MFD_SEC_CORE || COMPILE_TEST
 	select REGMAP_IRQ
+<<<<<<< HEAD
+=======
+	select REGMAP_I2C
+>>>>>>> origin/android16-base
 	help
 	  If you say yes here you will get support for the
 	  RTC of Samsung S2MPS14 and S5M PMIC series.
@@ -1403,7 +1407,11 @@ config RTC_DRV_AT91RM9200
 config RTC_DRV_AT91SAM9
 	tristate "AT91SAM9 RTT as RTC"
 	depends on ARCH_AT91 || COMPILE_TEST
+<<<<<<< HEAD
 	depends on HAS_IOMEM
+=======
+	depends on OF && HAS_IOMEM
+>>>>>>> origin/android16-base
 	select MFD_SYSCON
 	help
 	  Some AT91SAM9 SoCs provide an RTT (Real Time Timer) block which
@@ -1718,7 +1726,12 @@ config RTC_DRV_MOXART
 
 config RTC_DRV_MT6397
 	tristate "MediaTek PMIC based RTC"
+<<<<<<< HEAD
 	depends on MFD_MT6397 || (COMPILE_TEST && IRQ_DOMAIN)
+=======
+	depends on MFD_MT6397 || COMPILE_TEST
+	select IRQ_DOMAIN
+>>>>>>> origin/android16-base
 	help
 	  This selects the MediaTek(R) RTC driver. RTC is part of MediaTek
 	  MT6397 PMIC. You should enable MT6397 PMIC MFD before select

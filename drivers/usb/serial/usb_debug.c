@@ -69,6 +69,14 @@ static void usb_debug_process_read_urb(struct urb *urb)
 	usb_serial_generic_process_read_urb(urb);
 }
 
+<<<<<<< HEAD
+=======
+static void usb_debug_init_termios(struct tty_struct *tty)
+{
+	tty->termios.c_lflag &= ~(ECHO | ECHONL);
+}
+
+>>>>>>> origin/android16-base
 static struct usb_serial_driver debug_device = {
 	.driver = {
 		.owner =	THIS_MODULE,
@@ -78,6 +86,10 @@ static struct usb_serial_driver debug_device = {
 	.num_ports =		1,
 	.bulk_out_size =	USB_DEBUG_MAX_PACKET_SIZE,
 	.break_ctl =		usb_debug_break_ctl,
+<<<<<<< HEAD
+=======
+	.init_termios =		usb_debug_init_termios,
+>>>>>>> origin/android16-base
 	.process_read_urb =	usb_debug_process_read_urb,
 };
 
@@ -89,6 +101,10 @@ static struct usb_serial_driver dbc_device = {
 	.id_table =		dbc_id_table,
 	.num_ports =		1,
 	.break_ctl =		usb_debug_break_ctl,
+<<<<<<< HEAD
+=======
+	.init_termios =		usb_debug_init_termios,
+>>>>>>> origin/android16-base
 	.process_read_urb =	usb_debug_process_read_urb,
 };
 

@@ -28,5 +28,9 @@ static inline cycles_t get_cycles (void)
 	__asm__ __volatile__ ("rpcc %0" : "=r"(ret));
 	return ret;
 }
+<<<<<<< HEAD
+=======
+#define get_cycles get_cycles
+>>>>>>> origin/android16-base
 
 #endif

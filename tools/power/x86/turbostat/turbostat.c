@@ -1524,9 +1524,16 @@ int sum_counters(struct thread_data *t, struct core_data *c,
 	average.packages.rapl_dram_perf_status += p->rapl_dram_perf_status;
 
 	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
+<<<<<<< HEAD
 		if (mp->format == FORMAT_RAW)
 			continue;
 		average.packages.counter[i] += p->counter[i];
+=======
+		if ((mp->format == FORMAT_RAW) && (topo.num_packages == 0))
+			average.packages.counter[i] = p->counter[i];
+		else
+			average.packages.counter[i] += p->counter[i];
+>>>>>>> origin/android16-base
 	}
 	return 0;
 }

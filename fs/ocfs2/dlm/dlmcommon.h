@@ -704,10 +704,13 @@ struct dlm_begin_reco
 	__be32 pad2;
 };
 
+<<<<<<< HEAD
 
 #define BITS_PER_BYTE 8
 #define BITS_TO_BYTES(bits) (((bits)+BITS_PER_BYTE-1)/BITS_PER_BYTE)
 
+=======
+>>>>>>> origin/android16-base
 struct dlm_query_join_request
 {
 	u8 node_idx;

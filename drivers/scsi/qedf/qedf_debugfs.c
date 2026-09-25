@@ -11,6 +11,10 @@
 #include <linux/uaccess.h>
 #include <linux/debugfs.h>
 #include <linux/module.h>
+<<<<<<< HEAD
+=======
+#include <linux/vmalloc.h>
+>>>>>>> origin/android16-base
 
 #include "qedf.h"
 #include "qedf_dbg.h"
@@ -117,7 +121,13 @@ static ssize_t
 qedf_dbg_fp_int_cmd_read(struct file *filp, char __user *buffer, size_t count,
 			 loff_t *ppos)
 {
+<<<<<<< HEAD
 	size_t cnt = 0;
+=======
+	ssize_t ret;
+	size_t cnt = 0;
+	char *cbuf;
+>>>>>>> origin/android16-base
 	int id;
 	struct qedf_fastpath *fp = NULL;
 	struct qedf_dbg_ctx *qedf_dbg =
@@ -127,12 +137,21 @@ qedf_dbg_fp_int_cmd_read(struct file *filp, char __user *buffer, size_t count,
 
 	QEDF_INFO(qedf_dbg, QEDF_LOG_DEBUGFS, "entered\n");
 
+<<<<<<< HEAD
 	cnt = sprintf(buffer, "\nFastpath I/O completions\n\n");
+=======
+	cbuf = vmalloc(QEDF_DEBUGFS_LOG_LEN);
+	if (!cbuf)
+		return 0;
+
+	cnt += scnprintf(cbuf + cnt, QEDF_DEBUGFS_LOG_LEN - cnt, "\nFastpath I/O completions\n\n");
+>>>>>>> origin/android16-base
 
 	for (id = 0; id < qedf->num_queues; id++) {
 		fp = &(qedf->fp_array[id]);
 		if (fp->sb_id == QEDF_SB_ID_NULL)
 			continue;
+<<<<<<< HEAD
 		cnt += sprintf((buffer + cnt), "#%d: %lu\n", id,
 			       fp->completions);
 	}
@@ -140,6 +159,17 @@ qedf_dbg_fp_int_cmd_read(struct file *filp, char __user *buffer, size_t count,
 	cnt = min_t(int, count, cnt - *ppos);
 	*ppos += cnt;
 	return cnt;
+=======
+		cnt += scnprintf(cbuf + cnt, QEDF_DEBUGFS_LOG_LEN - cnt,
+				 "#%d: %lu\n", id, fp->completions);
+	}
+
+	ret = simple_read_from_buffer(buffer, count, ppos, cbuf, cnt);
+
+	vfree(cbuf);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -181,7 +211,11 @@ qedf_dbg_debug_cmd_write(struct file *filp, const char __user *buffer,
 	if (!count || *ppos)
 		return 0;
 
+<<<<<<< HEAD
 	kern_buf = memdup_user(buffer, count);
+=======
+	kern_buf = memdup_user_nul(buffer, count);
+>>>>>>> origin/android16-base
 	if (IS_ERR(kern_buf))
 		return PTR_ERR(kern_buf);
 
@@ -204,18 +238,29 @@ qedf_dbg_stop_io_on_error_cmd_read(struct file *filp, char __user *buffer,
 				   size_t count, loff_t *ppos)
 {
 	int cnt;
+<<<<<<< HEAD
+=======
+	char cbuf[7];
+>>>>>>> origin/android16-base
 	struct qedf_dbg_ctx *qedf_dbg =
 				(struct qedf_dbg_ctx *)filp->private_data;
 	struct qedf_ctx *qedf = container_of(qedf_dbg,
 	    struct qedf_ctx, dbg_ctx);
 
 	QEDF_INFO(qedf_dbg, QEDF_LOG_DEBUGFS, "entered\n");
+<<<<<<< HEAD
 	cnt = sprintf(buffer, "%s\n",
 	    qedf->stop_io_on_error ? "true" : "false");
 
 	cnt = min_t(int, count, cnt - *ppos);
 	*ppos += cnt;
 	return cnt;
+=======
+	cnt = scnprintf(cbuf, sizeof(cbuf), "%s\n",
+	    qedf->stop_io_on_error ? "true" : "false");
+
+	return simple_read_from_buffer(buffer, count, ppos, cbuf, cnt);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t

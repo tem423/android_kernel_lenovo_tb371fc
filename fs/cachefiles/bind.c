@@ -249,6 +249,11 @@ error_open_root:
 	kmem_cache_free(cachefiles_object_jar, fsdef);
 error_root_object:
 	cachefiles_end_secure(cache, saved_cred);
+<<<<<<< HEAD
+=======
+	put_cred(cache->cache_cred);
+	cache->cache_cred = NULL;
+>>>>>>> origin/android16-base
 	pr_err("Failed to register: %d\n", ret);
 	return ret;
 }
@@ -269,6 +274,10 @@ void cachefiles_daemon_unbind(struct cachefiles_cache *cache)
 
 	dput(cache->graveyard);
 	mntput(cache->mnt);
+<<<<<<< HEAD
+=======
+	put_cred(cache->cache_cred);
+>>>>>>> origin/android16-base
 
 	kfree(cache->rootdirname);
 	kfree(cache->secctx);

@@ -1339,8 +1339,11 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 	struct journal_head *jh;
 	int ret = 0;
 
+<<<<<<< HEAD
 	if (is_handle_aborted(handle))
 		return -EROFS;
+=======
+>>>>>>> origin/android16-base
 	if (!buffer_jbd(bh))
 		return -EUCLEAN;
 
@@ -1387,6 +1390,21 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 	journal = transaction->t_journal;
 	jbd_lock_bh_state(bh);
 
+<<<<<<< HEAD
+=======
+	if (is_handle_aborted(handle)) {
+		/*
+		 * Check journal aborting with @jh->b_state_lock locked,
+		 * since 'jh->b_transaction' could be replaced with
+		 * 'jh->b_next_transaction' during old transaction
+		 * committing if journal aborted, which may fail
+		 * assertion on 'jh->b_frozen_data == NULL'.
+		 */
+		ret = -EROFS;
+		goto out_unlock_bh;
+	}
+
+>>>>>>> origin/android16-base
 	if (jh->b_modified == 0) {
 		/*
 		 * This buffer's got modified and becoming part

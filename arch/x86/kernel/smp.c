@@ -33,7 +33,11 @@
 #include <asm/mce.h>
 #include <asm/trace/irq_vectors.h>
 #include <asm/kexec.h>
+<<<<<<< HEAD
 #include <asm/virtext.h>
+=======
+#include <asm/reboot.h>
+>>>>>>> origin/android16-base
 
 /*
  *	Some notes on x86 processor bugs affecting SMP operation:
@@ -163,7 +167,11 @@ static int smp_stop_nmi_callback(unsigned int val, struct pt_regs *regs)
 	if (raw_smp_processor_id() == atomic_read(&stopping_cpu))
 		return NMI_HANDLED;
 
+<<<<<<< HEAD
 	cpu_emergency_vmxoff();
+=======
+	cpu_emergency_disable_virtualization();
+>>>>>>> origin/android16-base
 	stop_this_cpu(NULL);
 
 	return NMI_HANDLED;
@@ -176,7 +184,11 @@ static int smp_stop_nmi_callback(unsigned int val, struct pt_regs *regs)
 asmlinkage __visible void smp_reboot_interrupt(void)
 {
 	ipi_entering_ack_irq();
+<<<<<<< HEAD
 	cpu_emergency_vmxoff();
+=======
+	cpu_emergency_disable_virtualization();
+>>>>>>> origin/android16-base
 	stop_this_cpu(NULL);
 	irq_exit();
 }

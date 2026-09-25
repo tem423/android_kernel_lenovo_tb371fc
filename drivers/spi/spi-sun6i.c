@@ -301,6 +301,13 @@ static int sun6i_spi_transfer_one(struct spi_master *master,
 	}
 
 	sun6i_spi_write(sspi, SUN6I_CLK_CTL_REG, reg);
+<<<<<<< HEAD
+=======
+	/* Finally enable the bus - doing so before might raise SCK to HIGH */
+	reg = sun6i_spi_read(sspi, SUN6I_GBL_CTL_REG);
+	reg |= SUN6I_GBL_CTL_BUS_ENABLE;
+	sun6i_spi_write(sspi, SUN6I_GBL_CTL_REG, reg);
+>>>>>>> origin/android16-base
 
 	/* Setup the transfer now... */
 	if (sspi->tx_buf)
@@ -409,7 +416,11 @@ static int sun6i_spi_runtime_resume(struct device *dev)
 	}
 
 	sun6i_spi_write(sspi, SUN6I_GBL_CTL_REG,
+<<<<<<< HEAD
 			SUN6I_GBL_CTL_BUS_ENABLE | SUN6I_GBL_CTL_MASTER | SUN6I_GBL_CTL_TP);
+=======
+			SUN6I_GBL_CTL_MASTER | SUN6I_GBL_CTL_TP);
+>>>>>>> origin/android16-base
 
 	return 0;
 

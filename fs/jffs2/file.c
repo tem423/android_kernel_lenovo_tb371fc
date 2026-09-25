@@ -135,6 +135,7 @@ static int jffs2_write_begin(struct file *filp, struct address_space *mapping,
 	struct page *pg;
 	struct inode *inode = mapping->host;
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
+<<<<<<< HEAD
 	pgoff_t index = pos >> PAGE_SHIFT;
 	uint32_t pageofs = index << PAGE_SHIFT;
 	int ret = 0;
@@ -149,17 +150,36 @@ static int jffs2_write_begin(struct file *filp, struct address_space *mapping,
 	if (pageofs > inode->i_size) {
 		/* Make new hole frag from old EOF to new page */
 		struct jffs2_sb_info *c = JFFS2_SB_INFO(inode->i_sb);
+=======
+	struct jffs2_sb_info *c = JFFS2_SB_INFO(inode->i_sb);
+	pgoff_t index = pos >> PAGE_SHIFT;
+	int ret = 0;
+
+	jffs2_dbg(1, "%s()\n", __func__);
+
+	if (pos > inode->i_size) {
+		/* Make new hole frag from old EOF to new position */
+>>>>>>> origin/android16-base
 		struct jffs2_raw_inode ri;
 		struct jffs2_full_dnode *fn;
 		uint32_t alloc_len;
 
+<<<<<<< HEAD
 		jffs2_dbg(1, "Writing new hole frag 0x%x-0x%x between current EOF and new page\n",
 			  (unsigned int)inode->i_size, pageofs);
+=======
+		jffs2_dbg(1, "Writing new hole frag 0x%x-0x%x between current EOF and new position\n",
+			  (unsigned int)inode->i_size, (uint32_t)pos);
+>>>>>>> origin/android16-base
 
 		ret = jffs2_reserve_space(c, sizeof(ri), &alloc_len,
 					  ALLOC_NORMAL, JFFS2_SUMMARY_INODE_SIZE);
 		if (ret)
+<<<<<<< HEAD
 			goto out_page;
+=======
+			goto out_err;
+>>>>>>> origin/android16-base
 
 		mutex_lock(&f->sem);
 		memset(&ri, 0, sizeof(ri));
@@ -174,10 +194,17 @@ static int jffs2_write_begin(struct file *filp, struct address_space *mapping,
 		ri.mode = cpu_to_jemode(inode->i_mode);
 		ri.uid = cpu_to_je16(i_uid_read(inode));
 		ri.gid = cpu_to_je16(i_gid_read(inode));
+<<<<<<< HEAD
 		ri.isize = cpu_to_je32(max((uint32_t)inode->i_size, pageofs));
 		ri.atime = ri.ctime = ri.mtime = cpu_to_je32(JFFS2_NOW());
 		ri.offset = cpu_to_je32(inode->i_size);
 		ri.dsize = cpu_to_je32(pageofs - inode->i_size);
+=======
+		ri.isize = cpu_to_je32((uint32_t)pos);
+		ri.atime = ri.ctime = ri.mtime = cpu_to_je32(JFFS2_NOW());
+		ri.offset = cpu_to_je32(inode->i_size);
+		ri.dsize = cpu_to_je32((uint32_t)pos - inode->i_size);
+>>>>>>> origin/android16-base
 		ri.csize = cpu_to_je32(0);
 		ri.compr = JFFS2_COMPR_ZERO;
 		ri.node_crc = cpu_to_je32(crc32(0, &ri, sizeof(ri)-8));
@@ -189,7 +216,11 @@ static int jffs2_write_begin(struct file *filp, struct address_space *mapping,
 			ret = PTR_ERR(fn);
 			jffs2_complete_reservation(c);
 			mutex_unlock(&f->sem);
+<<<<<<< HEAD
 			goto out_page;
+=======
+			goto out_err;
+>>>>>>> origin/android16-base
 		}
 		ret = jffs2_add_full_dnode_to_inode(c, f, fn);
 		if (f->metadata) {
@@ -204,14 +235,37 @@ static int jffs2_write_begin(struct file *filp, struct address_space *mapping,
 			jffs2_free_full_dnode(fn);
 			jffs2_complete_reservation(c);
 			mutex_unlock(&f->sem);
+<<<<<<< HEAD
 			goto out_page;
 		}
 		jffs2_complete_reservation(c);
 		inode->i_size = pageofs;
+=======
+			goto out_err;
+		}
+		jffs2_complete_reservation(c);
+		inode->i_size = pos;
+>>>>>>> origin/android16-base
 		mutex_unlock(&f->sem);
 	}
 
 	/*
+<<<<<<< HEAD
+=======
+	 * While getting a page and reading data in, lock c->alloc_sem until
+	 * the page is Uptodate. Otherwise GC task may attempt to read the same
+	 * page in read_cache_page(), which causes a deadlock.
+	 */
+	mutex_lock(&c->alloc_sem);
+	pg = grab_cache_page_write_begin(mapping, index, flags);
+	if (!pg) {
+		ret = -ENOMEM;
+		goto release_sem;
+	}
+	*pagep = pg;
+
+	/*
+>>>>>>> origin/android16-base
 	 * Read in the page if it wasn't already present. Cannot optimize away
 	 * the whole page write case until jffs2_write_end can handle the
 	 * case of a short-copy.
@@ -220,6 +274,7 @@ static int jffs2_write_begin(struct file *filp, struct address_space *mapping,
 		mutex_lock(&f->sem);
 		ret = jffs2_do_readpage_nolock(inode, pg);
 		mutex_unlock(&f->sem);
+<<<<<<< HEAD
 		if (ret)
 			goto out_page;
 	}
@@ -229,6 +284,19 @@ static int jffs2_write_begin(struct file *filp, struct address_space *mapping,
 out_page:
 	unlock_page(pg);
 	put_page(pg);
+=======
+		if (ret) {
+			unlock_page(pg);
+			put_page(pg);
+			goto release_sem;
+		}
+	}
+	jffs2_dbg(1, "end write_begin(). pg->flags %lx\n", pg->flags);
+
+release_sem:
+	mutex_unlock(&c->alloc_sem);
+out_err:
+>>>>>>> origin/android16-base
 	return ret;
 }
 

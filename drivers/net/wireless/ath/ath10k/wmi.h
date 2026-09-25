@@ -1988,7 +1988,13 @@ struct wmi_channel {
 	union {
 		__le32 reginfo1;
 		struct {
+<<<<<<< HEAD
 			u8 antenna_max;
+=======
+			/* note: power unit is 1 dBm */
+			u8 antenna_max;
+			/* note: power unit is 0.5 dBm */
+>>>>>>> origin/android16-base
 			u8 max_tx_power;
 		} __packed;
 	} __packed;
@@ -2008,6 +2014,10 @@ struct wmi_channel_arg {
 	u32 min_power;
 	u32 max_power;
 	u32 max_reg_power;
+<<<<<<< HEAD
+=======
+	/* note: power unit is 1 dBm */
+>>>>>>> origin/android16-base
 	u32 max_antenna_gain;
 	u32 reg_class_id;
 	enum wmi_phy_mode mode;
@@ -6710,6 +6720,10 @@ struct wmi_svc_rdy_ev_arg {
 };
 
 struct wmi_svc_avail_ev_arg {
+<<<<<<< HEAD
+=======
+	bool service_map_ext_valid;
+>>>>>>> origin/android16-base
 	__le32 service_map_ext_len;
 	const __le32 *service_map_ext;
 };

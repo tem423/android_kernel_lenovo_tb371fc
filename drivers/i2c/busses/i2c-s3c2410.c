@@ -233,8 +233,22 @@ static bool is_ack(struct s3c24xx_i2c *i2c)
 	int tries;
 
 	for (tries = 50; tries; --tries) {
+<<<<<<< HEAD
 		if (readl(i2c->regs + S3C2410_IICCON)
 			& S3C2410_IICCON_IRQPEND) {
+=======
+		unsigned long tmp = readl(i2c->regs + S3C2410_IICCON);
+
+		if (!(tmp & S3C2410_IICCON_ACKEN)) {
+			/*
+			 * Wait a bit for the bus to stabilize,
+			 * delay estimated experimentally.
+			 */
+			usleep_range(100, 200);
+			return true;
+		}
+		if (tmp & S3C2410_IICCON_IRQPEND) {
+>>>>>>> origin/android16-base
 			if (!(readl(i2c->regs + S3C2410_IICSTAT)
 				& S3C2410_IICSTAT_LASTBIT))
 				return true;
@@ -287,6 +301,7 @@ static void s3c24xx_i2c_message_start(struct s3c24xx_i2c *i2c,
 
 	stat |= S3C2410_IICSTAT_START;
 	writel(stat, i2c->regs + S3C2410_IICSTAT);
+<<<<<<< HEAD
 
 	if (i2c->quirks & QUIRK_POLL) {
 		while ((i2c->msg_num != 0) && is_ack(i2c)) {
@@ -297,6 +312,8 @@ static void s3c24xx_i2c_message_start(struct s3c24xx_i2c *i2c,
 				dev_err(i2c->dev, "deal with arbitration loss\n");
 		}
 	}
+=======
+>>>>>>> origin/android16-base
 }
 
 static inline void s3c24xx_i2c_stop(struct s3c24xx_i2c *i2c, int ret)
@@ -493,7 +510,14 @@ static int i2c_s3c_irq_nextbyte(struct s3c24xx_i2c *i2c, unsigned long iicstat)
 					 * forces us to send a new START
 					 * when we change direction
 					 */
+<<<<<<< HEAD
 					s3c24xx_i2c_stop(i2c, -EINVAL);
+=======
+					dev_dbg(i2c->dev,
+						"missing START before write->read\n");
+					s3c24xx_i2c_stop(i2c, -EINVAL);
+					break;
+>>>>>>> origin/android16-base
 				}
 
 				goto retry_write;
@@ -700,7 +724,11 @@ static void s3c24xx_i2c_wait_idle(struct s3c24xx_i2c *i2c)
 static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
 			      struct i2c_msg *msgs, int num)
 {
+<<<<<<< HEAD
 	unsigned long timeout;
+=======
+	unsigned long timeout = 0;
+>>>>>>> origin/android16-base
 	int ret;
 
 	if (i2c->suspended)
@@ -723,6 +751,7 @@ static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
 	s3c24xx_i2c_message_start(i2c, msgs);
 
 	if (i2c->quirks & QUIRK_POLL) {
+<<<<<<< HEAD
 		ret = i2c->msg_idx;
 
 		if (ret != num)
@@ -733,6 +762,21 @@ static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
 
 	timeout = wait_event_timeout(i2c->wait, i2c->msg_num == 0, HZ * 5);
 
+=======
+		while ((i2c->msg_num != 0) && is_ack(i2c)) {
+			unsigned long stat = readl(i2c->regs + S3C2410_IICSTAT);
+
+			i2c_s3c_irq_nextbyte(i2c, stat);
+
+			stat = readl(i2c->regs + S3C2410_IICSTAT);
+			if (stat & S3C2410_IICSTAT_ARBITR)
+				dev_err(i2c->dev, "deal with arbitration loss\n");
+		}
+	} else {
+		timeout = wait_event_timeout(i2c->wait, i2c->msg_num == 0, HZ * 5);
+	}
+
+>>>>>>> origin/android16-base
 	ret = i2c->msg_idx;
 
 	/*
@@ -1176,7 +1220,11 @@ static int s3c24xx_i2c_probe(struct platform_device *pdev)
 	 */
 	if (!(i2c->quirks & QUIRK_POLL)) {
 		i2c->irq = ret = platform_get_irq(pdev, 0);
+<<<<<<< HEAD
 		if (ret <= 0) {
+=======
+		if (ret < 0) {
+>>>>>>> origin/android16-base
 			dev_err(&pdev->dev, "cannot find IRQ\n");
 			clk_unprepare(i2c->clk);
 			return ret;

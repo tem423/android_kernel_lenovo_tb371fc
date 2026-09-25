@@ -114,8 +114,13 @@ struct hvcall_ppp_data {
  */
 static unsigned int h_get_ppp(struct hvcall_ppp_data *ppp_data)
 {
+<<<<<<< HEAD
 	unsigned long rc;
 	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
+=======
+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
+	long rc;
+>>>>>>> origin/android16-base
 
 	rc = plpar_hcall9(H_GET_PPP, retbuf);
 
@@ -161,7 +166,11 @@ static void parse_ppp_data(struct seq_file *m)
 	struct hvcall_ppp_data ppp_data;
 	struct device_node *root;
 	const __be32 *perf_level;
+<<<<<<< HEAD
 	int rc;
+=======
+	long rc;
+>>>>>>> origin/android16-base
 
 	rc = h_get_ppp(&ppp_data);
 	if (rc)
@@ -291,6 +300,10 @@ static void parse_mpp_x_data(struct seq_file *m)
  */
 static void parse_system_parameter_string(struct seq_file *m)
 {
+<<<<<<< HEAD
+=======
+	const s32 token = rtas_token("ibm,get-system-parameter");
+>>>>>>> origin/android16-base
 	int call_status;
 
 	unsigned char *local_buffer = kmalloc(SPLPAR_MAXLENGTH, GFP_KERNEL);
@@ -300,6 +313,7 @@ static void parse_system_parameter_string(struct seq_file *m)
 		return;
 	}
 
+<<<<<<< HEAD
 	spin_lock(&rtas_data_buf_lock);
 	memset(rtas_data_buf, 0, SPLPAR_MAXLENGTH);
 	call_status = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
@@ -310,6 +324,17 @@ static void parse_system_parameter_string(struct seq_file *m)
 	memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
 	local_buffer[SPLPAR_MAXLENGTH - 1] = '\0';
 	spin_unlock(&rtas_data_buf_lock);
+=======
+	do {
+		spin_lock(&rtas_data_buf_lock);
+		memset(rtas_data_buf, 0, SPLPAR_MAXLENGTH);
+		call_status = rtas_call(token, 3, 1, NULL, SPLPAR_CHARACTERISTICS_TOKEN,
+					__pa(rtas_data_buf), RTAS_DATA_BUF_SIZE);
+		memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
+		local_buffer[SPLPAR_MAXLENGTH - 1] = '\0';
+		spin_unlock(&rtas_data_buf_lock);
+	} while (rtas_busy_delay(call_status));
+>>>>>>> origin/android16-base
 
 	if (call_status != 0) {
 		printk(KERN_INFO

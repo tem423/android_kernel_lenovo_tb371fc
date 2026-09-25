@@ -33,12 +33,20 @@ nvbios_addr(struct nvkm_bios *bios, u32 *addr, u8 size)
 {
 	u32 p = *addr;
 
+<<<<<<< HEAD
 	if (*addr > bios->image0_size && bios->imaged_addr) {
+=======
+	if (*addr >= bios->image0_size && bios->imaged_addr) {
+>>>>>>> origin/android16-base
 		*addr -= bios->image0_size;
 		*addr += bios->imaged_addr;
 	}
 
+<<<<<<< HEAD
 	if (unlikely(*addr + size >= bios->size)) {
+=======
+	if (unlikely(*addr + size > bios->size)) {
+>>>>>>> origin/android16-base
 		nvkm_error(&bios->subdev, "OOB %d %08x %08x\n", size, p, *addr);
 		return false;
 	}

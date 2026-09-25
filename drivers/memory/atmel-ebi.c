@@ -524,6 +524,7 @@ static int atmel_ebi_probe(struct platform_device *pdev)
 	smc_np = of_parse_phandle(dev->of_node, "atmel,smc", 0);
 
 	ebi->smc.regmap = syscon_node_to_regmap(smc_np);
+<<<<<<< HEAD
 	if (IS_ERR(ebi->smc.regmap))
 		return PTR_ERR(ebi->smc.regmap);
 
@@ -538,6 +539,29 @@ static int atmel_ebi_probe(struct platform_device *pdev)
 
 		ebi->smc.clk = NULL;
 	}
+=======
+	if (IS_ERR(ebi->smc.regmap)) {
+		ret = PTR_ERR(ebi->smc.regmap);
+		goto put_node;
+	}
+
+	ebi->smc.layout = atmel_hsmc_get_reg_layout(smc_np);
+	if (IS_ERR(ebi->smc.layout)) {
+		ret = PTR_ERR(ebi->smc.layout);
+		goto put_node;
+	}
+
+	ebi->smc.clk = of_clk_get(smc_np, 0);
+	if (IS_ERR(ebi->smc.clk)) {
+		if (PTR_ERR(ebi->smc.clk) != -ENOENT) {
+			ret = PTR_ERR(ebi->smc.clk);
+			goto put_node;
+		}
+
+		ebi->smc.clk = NULL;
+	}
+	of_node_put(smc_np);
+>>>>>>> origin/android16-base
 	ret = clk_prepare_enable(ebi->smc.clk);
 	if (ret)
 		return ret;
@@ -579,12 +603,26 @@ static int atmel_ebi_probe(struct platform_device *pdev)
 				child);
 
 			ret = atmel_ebi_dev_disable(ebi, child);
+<<<<<<< HEAD
 			if (ret)
 				return ret;
+=======
+			if (ret) {
+				of_node_put(child);
+				return ret;
+			}
+>>>>>>> origin/android16-base
 		}
 	}
 
 	return of_platform_populate(np, NULL, NULL, dev);
+<<<<<<< HEAD
+=======
+
+put_node:
+	of_node_put(smc_np);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static __maybe_unused int atmel_ebi_resume(struct device *dev)

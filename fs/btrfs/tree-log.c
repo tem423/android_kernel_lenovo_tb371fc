@@ -881,9 +881,17 @@ out:
 }
 
 /*
+<<<<<<< HEAD
  * helper function to see if a given name and sequence number found
  * in an inode back reference are already in a directory and correctly
  * point to this inode
+=======
+ * See if a given name and sequence number found in an inode back reference are
+ * already in a directory and correctly point to this inode.
+ *
+ * Returns: < 0 on error, 0 if the directory entry does not exists and 1 if it
+ * exists.
+>>>>>>> origin/android16-base
  */
 static noinline int inode_in_dir(struct btrfs_root *root,
 				 struct btrfs_path *path,
@@ -892,6 +900,7 @@ static noinline int inode_in_dir(struct btrfs_root *root,
 {
 	struct btrfs_dir_item *di;
 	struct btrfs_key location;
+<<<<<<< HEAD
 	int match = 0;
 
 	di = btrfs_lookup_dir_index_item(NULL, root, path, dirid,
@@ -915,6 +924,37 @@ static noinline int inode_in_dir(struct btrfs_root *root,
 out:
 	btrfs_release_path(path);
 	return match;
+=======
+	int ret = 0;
+
+	di = btrfs_lookup_dir_index_item(NULL, root, path, dirid,
+					 index, name, name_len, 0);
+	if (IS_ERR(di)) {
+		if (PTR_ERR(di) != -ENOENT)
+			ret = PTR_ERR(di);
+		goto out;
+	} else if (di) {
+		btrfs_dir_item_key_to_cpu(path->nodes[0], di, &location);
+		if (location.objectid != objectid)
+			goto out;
+	} else {
+		goto out;
+	}
+
+	btrfs_release_path(path);
+	di = btrfs_lookup_dir_item(NULL, root, path, dirid, name, name_len, 0);
+	if (IS_ERR(di)) {
+		ret = PTR_ERR(di);
+		goto out;
+	} else if (di) {
+		btrfs_dir_item_key_to_cpu(path->nodes[0], di, &location);
+		if (location.objectid == objectid)
+			ret = 1;
+	}
+out:
+	btrfs_release_path(path);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -1073,7 +1113,13 @@ again:
 	extref = btrfs_lookup_inode_extref(NULL, root, path, name, namelen,
 					   inode_objectid, parent_objectid, 0,
 					   0);
+<<<<<<< HEAD
 	if (!IS_ERR_OR_NULL(extref)) {
+=======
+	if (IS_ERR(extref)) {
+		return PTR_ERR(extref);
+	} else if (extref) {
+>>>>>>> origin/android16-base
 		u32 item_size;
 		u32 cur_offset = 0;
 		unsigned long base;
@@ -1141,7 +1187,14 @@ next:
 	/* look for a conflicting sequence number */
 	di = btrfs_lookup_dir_index_item(trans, root, path, btrfs_ino(dir),
 					 ref_index, name, namelen, 0);
+<<<<<<< HEAD
 	if (di && !IS_ERR(di)) {
+=======
+	if (IS_ERR(di)) {
+		if (PTR_ERR(di) != -ENOENT)
+			return PTR_ERR(di);
+	} else if (di) {
+>>>>>>> origin/android16-base
 		ret = drop_one_dir_item(trans, root, path, dir, di);
 		if (ret)
 			return ret;
@@ -1151,7 +1204,13 @@ next:
 	/* look for a conflicing name */
 	di = btrfs_lookup_dir_item(trans, root, path, btrfs_ino(dir),
 				   name, namelen, 0);
+<<<<<<< HEAD
 	if (di && !IS_ERR(di)) {
+=======
+	if (IS_ERR(di)) {
+		return PTR_ERR(di);
+	} else if (di) {
+>>>>>>> origin/android16-base
 		ret = drop_one_dir_item(trans, root, path, dir, di);
 		if (ret)
 			return ret;
@@ -1276,6 +1335,18 @@ again:
 						 inode, name, namelen);
 			kfree(name);
 			iput(dir);
+<<<<<<< HEAD
+=======
+			/*
+			 * Whenever we need to check if a name exists or not, we
+			 * check the subvolume tree. So after an unlink we must
+			 * run delayed items, so that future checks for a name
+			 * during log replay see that the name does not exists
+			 * anymore.
+			 */
+			if (!ret)
+				ret = btrfs_run_delayed_items(trans);
+>>>>>>> origin/android16-base
 			if (ret)
 				goto out;
 			goto again;
@@ -1416,10 +1487,19 @@ static noinline int add_inode_ref(struct btrfs_trans_handle *trans,
 		if (ret)
 			goto out;
 
+<<<<<<< HEAD
 		/* if we already have a perfect match, we're done */
 		if (!inode_in_dir(root, path, btrfs_ino(BTRFS_I(dir)),
 					btrfs_ino(BTRFS_I(inode)), ref_index,
 					name, namelen)) {
+=======
+		ret = inode_in_dir(root, path, btrfs_ino(BTRFS_I(dir)),
+				   btrfs_ino(BTRFS_I(inode)), ref_index,
+				   name, namelen);
+		if (ret < 0) {
+			goto out;
+		} else if (ret == 0) {
+>>>>>>> origin/android16-base
 			/*
 			 * look for a conflicting back reference in the
 			 * metadata. if we find one we have to unlink that name
@@ -1465,6 +1545,18 @@ static noinline int add_inode_ref(struct btrfs_trans_handle *trans,
 				 */
 				if (!ret && inode->i_nlink == 0)
 					inc_nlink(inode);
+<<<<<<< HEAD
+=======
+				/*
+				 * Whenever we need to check if a name exists or
+				 * not, we check the subvolume tree. So after an
+				 * unlink we must run delayed items, so that future
+				 * checks for a name during log replay see that the
+				 * name does not exists anymore.
+				 */
+				if (!ret)
+					ret = btrfs_run_delayed_items(trans);
+>>>>>>> origin/android16-base
 			}
 			if (ret < 0)
 				goto out;
@@ -1478,6 +1570,10 @@ static noinline int add_inode_ref(struct btrfs_trans_handle *trans,
 
 			btrfs_update_inode(trans, root, inode);
 		}
+<<<<<<< HEAD
+=======
+		/* Else, ret == 1, we already have a perfect match, we're done. */
+>>>>>>> origin/android16-base
 
 		ref_ptr = (unsigned long)(ref_ptr + ref_struct_size) + namelen;
 		kfree(name);
@@ -1699,6 +1795,10 @@ static noinline int fixup_inode_link_counts(struct btrfs_trans_handle *trans,
 			break;
 
 		if (ret == 1) {
+<<<<<<< HEAD
+=======
+			ret = 0;
+>>>>>>> origin/android16-base
 			if (path->slots[0] == 0)
 				break;
 			path->slots[0]--;
@@ -1711,17 +1811,32 @@ static noinline int fixup_inode_link_counts(struct btrfs_trans_handle *trans,
 
 		ret = btrfs_del_item(trans, root, path);
 		if (ret)
+<<<<<<< HEAD
 			goto out;
 
 		btrfs_release_path(path);
 		inode = read_one_inode(root, key.offset);
 		if (!inode)
 			return -EIO;
+=======
+			break;
+
+		btrfs_release_path(path);
+		inode = read_one_inode(root, key.offset);
+		if (!inode) {
+			ret = -EIO;
+			break;
+		}
+>>>>>>> origin/android16-base
 
 		ret = fixup_inode_link_count(trans, root, inode);
 		iput(inode);
 		if (ret)
+<<<<<<< HEAD
 			goto out;
+=======
+			break;
+>>>>>>> origin/android16-base
 
 		/*
 		 * fixup on a directory may create new entries,
@@ -1730,8 +1845,11 @@ static noinline int fixup_inode_link_counts(struct btrfs_trans_handle *trans,
 		 */
 		key.offset = (u64)-1;
 	}
+<<<<<<< HEAD
 	ret = 0;
 out:
+=======
+>>>>>>> origin/android16-base
 	btrfs_release_path(path);
 	return ret;
 }
@@ -1770,8 +1888,11 @@ static noinline int link_to_fixup_dir(struct btrfs_trans_handle *trans,
 		ret = btrfs_update_inode(trans, root, inode);
 	} else if (ret == -EEXIST) {
 		ret = 0;
+<<<<<<< HEAD
 	} else {
 		BUG(); /* Logic Error */
+=======
+>>>>>>> origin/android16-base
 	}
 	iput(inode);
 
@@ -1867,8 +1988,13 @@ static noinline int replay_one_name(struct btrfs_trans_handle *trans,
 	struct btrfs_key log_key;
 	struct inode *dir;
 	u8 log_type;
+<<<<<<< HEAD
 	int exists;
 	int ret = 0;
+=======
+	bool exists;
+	int ret;
+>>>>>>> origin/android16-base
 	bool update_size = (key->type == BTRFS_DIR_INDEX_KEY);
 	bool name_added = false;
 
@@ -1888,12 +2014,21 @@ static noinline int replay_one_name(struct btrfs_trans_handle *trans,
 		   name_len);
 
 	btrfs_dir_item_key_to_cpu(eb, di, &log_key);
+<<<<<<< HEAD
 	exists = btrfs_lookup_inode(trans, root, path, &log_key, 0);
 	if (exists == 0)
 		exists = 1;
 	else
 		exists = 0;
 	btrfs_release_path(path);
+=======
+	ret = btrfs_lookup_inode(trans, root, path, &log_key, 0);
+	btrfs_release_path(path);
+	if (ret < 0)
+		goto out;
+	exists = (ret == 0);
+	ret = 0;
+>>>>>>> origin/android16-base
 
 	if (key->type == BTRFS_DIR_ITEM_KEY) {
 		dst_di = btrfs_lookup_dir_item(trans, root, path, key->objectid,
@@ -1908,7 +2043,18 @@ static noinline int replay_one_name(struct btrfs_trans_handle *trans,
 		ret = -EINVAL;
 		goto out;
 	}
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(dst_di)) {
+=======
+
+	if (dst_di == ERR_PTR(-ENOENT))
+		dst_di = NULL;
+
+	if (IS_ERR(dst_di)) {
+		ret = PTR_ERR(dst_di);
+		goto out;
+	} else if (!dst_di) {
+>>>>>>> origin/android16-base
 		/* we need a sequence number to insert, so we only
 		 * do inserts for the BTRFS_DIR_INDEX_KEY types
 		 */
@@ -2390,7 +2536,13 @@ again:
 		else {
 			ret = find_dir_range(log, path, dirid, key_type,
 					     &range_start, &range_end);
+<<<<<<< HEAD
 			if (ret != 0)
+=======
+			if (ret < 0)
+				goto out;
+			else if (ret > 0)
+>>>>>>> origin/android16-base
 				break;
 		}
 
@@ -4192,7 +4344,11 @@ static int btrfs_log_prealloc_extents(struct btrfs_trans_handle *trans,
 	struct extent_buffer *leaf;
 	int slot;
 	int ins_nr = 0;
+<<<<<<< HEAD
 	int start_slot;
+=======
+	int start_slot = 0;
+>>>>>>> origin/android16-base
 	int ret;
 
 	if (!(inode->flags & BTRFS_INODE_PREALLOC))
@@ -4865,6 +5021,21 @@ static int btrfs_log_inode(struct btrfs_trans_handle *trans,
 	}
 
 	/*
+<<<<<<< HEAD
+=======
+	 * For symlinks, we must always log their content, which is stored in an
+	 * inline extent, otherwise we could end up with an empty symlink after
+	 * log replay, which is invalid on linux (symlink(2) returns -ENOENT if
+	 * one attempts to create an empty symlink).
+	 * We don't need to worry about flushing delalloc, because when we create
+	 * the inline extent when the symlink is created (we never have delalloc
+	 * for symlinks).
+	 */
+	if (S_ISLNK(inode->vfs_inode.i_mode))
+		inode_only = LOG_INODE_ALL;
+
+	/*
+>>>>>>> origin/android16-base
 	 * a brute force approach to making sure we get the most uptodate
 	 * copies of everything.
 	 */
@@ -5420,7 +5591,11 @@ process_leaf:
 			}
 
 			ctx->log_new_dentries = false;
+<<<<<<< HEAD
 			if (type == BTRFS_FT_DIR || type == BTRFS_FT_SYMLINK)
+=======
+			if (type == BTRFS_FT_DIR)
+>>>>>>> origin/android16-base
 				log_mode = LOG_INODE_ALL;
 			ret = btrfs_log_inode(trans, root, BTRFS_I(di_inode),
 					      log_mode, 0, LLONG_MAX, ctx);
@@ -5971,6 +6146,10 @@ next:
 error:
 	if (wc.trans)
 		btrfs_end_transaction(wc.trans);
+<<<<<<< HEAD
+=======
+	clear_bit(BTRFS_FS_LOG_RECOVERING, &fs_info->flags);
+>>>>>>> origin/android16-base
 	btrfs_free_path(path);
 	return ret;
 }

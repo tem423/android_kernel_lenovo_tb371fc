@@ -105,7 +105,11 @@ static int ce4100_i2c_probe(struct pci_dev *dev,
 	int i;
 	struct ce4100_devices *sds;
 
+<<<<<<< HEAD
 	ret = pci_enable_device_mem(dev);
+=======
+	ret = pcim_enable_device(dev);
+>>>>>>> origin/android16-base
 	if (ret)
 		return ret;
 
@@ -114,10 +118,15 @@ static int ce4100_i2c_probe(struct pci_dev *dev,
 		return -EINVAL;
 	}
 	sds = kzalloc(sizeof(*sds), GFP_KERNEL);
+<<<<<<< HEAD
 	if (!sds) {
 		ret = -ENOMEM;
 		goto err_mem;
 	}
+=======
+	if (!sds)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < ARRAY_SIZE(sds->pdev); i++) {
 		sds->pdev[i] = add_i2c_device(dev, i);
@@ -133,8 +142,11 @@ static int ce4100_i2c_probe(struct pci_dev *dev,
 
 err_dev_add:
 	kfree(sds);
+<<<<<<< HEAD
 err_mem:
 	pci_disable_device(dev);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 

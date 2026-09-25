@@ -82,7 +82,11 @@ DEFINE_EVENT(hdac_stream, snd_hdac_stream_stop,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../sound/hda
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

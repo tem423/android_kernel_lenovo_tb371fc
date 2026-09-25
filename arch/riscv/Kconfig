@@ -84,6 +84,14 @@ config GENERIC_CSUM
 config GENERIC_HWEIGHT
 	def_bool y
 
+<<<<<<< HEAD
+=======
+config ILLEGAL_POINTER_VALUE
+	hex
+	default 0 if 32BIT
+	default 0xdead000000000000 if 64BIT
+
+>>>>>>> origin/android16-base
 config PGTABLE_LEVELS
 	int
 	default 3 if 64BIT

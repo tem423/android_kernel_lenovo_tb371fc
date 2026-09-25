@@ -1291,9 +1291,13 @@ static void __del_reloc_root(struct btrfs_root *root)
 			RB_CLEAR_NODE(&node->rb_node);
 		}
 		spin_unlock(&rc->reloc_root_tree.lock);
+<<<<<<< HEAD
 		if (!node)
 			return;
 		BUG_ON((struct btrfs_root *)node->data != root);
+=======
+		ASSERT(!node || (struct btrfs_root *)node->data == root);
+>>>>>>> origin/android16-base
 	}
 
 	spin_lock(&fs_info->trans_lock);
@@ -1757,8 +1761,13 @@ int replace_path(struct btrfs_trans_handle *trans,
 	int ret;
 	int slot;
 
+<<<<<<< HEAD
 	BUG_ON(src->root_key.objectid != BTRFS_TREE_RELOC_OBJECTID);
 	BUG_ON(dest->root_key.objectid == BTRFS_TREE_RELOC_OBJECTID);
+=======
+	ASSERT(src->root_key.objectid == BTRFS_TREE_RELOC_OBJECTID);
+	ASSERT(dest->root_key.objectid != BTRFS_TREE_RELOC_OBJECTID);
+>>>>>>> origin/android16-base
 
 	last_snapshot = btrfs_root_last_snapshot(&src->root_item);
 again:
@@ -1792,7 +1801,11 @@ again:
 		struct btrfs_key first_key;
 
 		level = btrfs_header_level(parent);
+<<<<<<< HEAD
 		BUG_ON(level < lowest_level);
+=======
+		ASSERT(level >= lowest_level);
+>>>>>>> origin/android16-base
 
 		ret = btrfs_bin_search(parent, &key, level, &slot);
 		if (ret && slot > 0)
@@ -2343,7 +2356,11 @@ again:
 	list_splice(&reloc_roots, &rc->reloc_roots);
 
 	if (!err)
+<<<<<<< HEAD
 		btrfs_commit_transaction(trans);
+=======
+		err = btrfs_commit_transaction(trans);
+>>>>>>> origin/android16-base
 	else
 		btrfs_end_transaction(trans);
 	return err;
@@ -3932,8 +3949,17 @@ int prepare_to_relocate(struct reloc_control *rc)
 		 */
 		return PTR_ERR(trans);
 	}
+<<<<<<< HEAD
 	btrfs_commit_transaction(trans);
 	return 0;
+=======
+
+	ret = btrfs_commit_transaction(trans);
+	if (ret)
+		unset_reloc_control(rc);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static noinline_for_stack int relocate_block_group(struct reloc_control *rc)
@@ -4099,7 +4125,13 @@ restart:
 		err = PTR_ERR(trans);
 		goto out_free;
 	}
+<<<<<<< HEAD
 	btrfs_commit_transaction(trans);
+=======
+	ret = btrfs_commit_transaction(trans);
+	if (ret && !err)
+		err = ret;
+>>>>>>> origin/android16-base
 out_free:
 	btrfs_free_block_rsv(fs_info, rc->block_rsv);
 	btrfs_free_path(path);

@@ -67,7 +67,11 @@
 		#sound-dai-cells = <0>;
 	};
 
+<<<<<<< HEAD
 	ir_recv: gpio-ir-receiver {
+=======
+	ir_recv: ir-receiver {
+>>>>>>> origin/android16-base
 		compatible = "gpio-ir-receiver";
 		gpios = <&gpio0 RK_PB2 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";

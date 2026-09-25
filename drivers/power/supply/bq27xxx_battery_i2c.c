@@ -176,10 +176,14 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
 	di->bus.write = bq27xxx_battery_i2c_write;
 	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
 	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+<<<<<<< HEAD
 	ret = bq27xxx_battery_i2c_read(di, 0x0a, true);
 	if(ret < 0){
 		goto err_failed;
 	}
+=======
+
+>>>>>>> origin/android16-base
 	ret = bq27xxx_battery_setup(di);
 	if (ret)
 		goto err_failed;
@@ -190,7 +194,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
 	i2c_set_clientdata(client, di);
 
 	if (client->irq) {
+<<<<<<< HEAD
 		ret = devm_request_threaded_irq(&client->dev, client->irq,
+=======
+		ret = request_threaded_irq(client->irq,
+>>>>>>> origin/android16-base
 				NULL, bq27xxx_battery_irq_handler_thread,
 				IRQF_ONESHOT,
 				di->name, di);
@@ -198,9 +206,17 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
 			dev_err(&client->dev,
 				"Unable to register IRQ %d error %d\n",
 				client->irq, ret);
+<<<<<<< HEAD
 			return ret;
 		}
 	}
+=======
+			bq27xxx_battery_teardown(di);
+			goto err_failed;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	return 0;
 
 err_mem:
@@ -218,7 +234,13 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
 {
 	struct bq27xxx_device_info *di = i2c_get_clientdata(client);
 
+<<<<<<< HEAD
 	bq27xxx_battery_maintenance(di);
+=======
+	if (client->irq)
+		free_irq(client->irq, di);
+
+>>>>>>> origin/android16-base
 	bq27xxx_battery_teardown(di);
 
 	mutex_lock(&battery_mutex);

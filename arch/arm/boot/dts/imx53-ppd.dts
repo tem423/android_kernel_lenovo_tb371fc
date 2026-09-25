@@ -70,6 +70,15 @@
 		clock-frequency = <11289600>;
 	};
 
+<<<<<<< HEAD
+=======
+	achc_24M: achc-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <24000000>;
+	};
+
+>>>>>>> origin/android16-base
 	sgtlsound: sound {
 		compatible = "fsl,imx53-cpuvo-sgtl5000",
 			     "fsl,imx-audio-sgtl5000";
@@ -287,6 +296,7 @@
 		    &gpio4 12 GPIO_ACTIVE_LOW>;
 	status = "okay";
 
+<<<<<<< HEAD
 	spidev0: spi@0 {
 		compatible = "ge,achc";
 		reg = <0>;
@@ -297,6 +307,15 @@
 		compatible = "ge,achc";
 		reg = <1>;
 		spi-max-frequency = <1000000>;
+=======
+	spidev0: spi@1 {
+		compatible = "ge,achc", "nxp,kinetis-k20";
+		reg = <1>, <0>;
+		vdd-supply = <&reg_3v3>;
+		vdda-supply = <&reg_3v3>;
+		clocks = <&achc_24M>;
+		reset-gpios = <&gpio3 6 GPIO_ACTIVE_LOW>;
+>>>>>>> origin/android16-base
 	};
 
 	gpioxra0: gpio@2 {
@@ -459,7 +478,11 @@
 	scl-gpios = <&gpio3 21 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
+<<<<<<< HEAD
 	i2c-switch@70 {
+=======
+	i2c-mux@70 {
+>>>>>>> origin/android16-base
 		compatible = "nxp,pca9547";
 		#address-cells = <1>;
 		#size-cells = <0>;

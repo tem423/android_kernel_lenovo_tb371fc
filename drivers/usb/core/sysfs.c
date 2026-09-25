@@ -689,6 +689,10 @@ static int add_power_attributes(struct device *dev)
 
 static void remove_power_attributes(struct device *dev)
 {
+<<<<<<< HEAD
+=======
+	sysfs_unmerge_group(&dev->kobj, &usb3_hardware_lpm_attr_group);
+>>>>>>> origin/android16-base
 	sysfs_unmerge_group(&dev->kobj, &usb2_hardware_lpm_attr_group);
 	sysfs_unmerge_group(&dev->kobj, &power_attr_group);
 }
@@ -888,11 +892,15 @@ read_descriptors(struct file *filp, struct kobject *kobj,
 	size_t srclen, n;
 	int cfgno;
 	void *src;
+<<<<<<< HEAD
 	int retval;
 
 	retval = usb_lock_device_interruptible(udev);
 	if (retval < 0)
 		return -EINTR;
+=======
+
+>>>>>>> origin/android16-base
 	/* The binary attribute begins with the device descriptor.
 	 * Following that are the raw descriptor entries for all the
 	 * configurations (config plus subsidiary descriptors).
@@ -917,7 +925,10 @@ read_descriptors(struct file *filp, struct kobject *kobj,
 			off -= srclen;
 		}
 	}
+<<<<<<< HEAD
 	usb_unlock_device(udev);
+=======
+>>>>>>> origin/android16-base
 	return count - nleft;
 }
 
@@ -1074,14 +1085,34 @@ static ssize_t interface_authorized_store(struct device *dev,
 {
 	struct usb_interface *intf = to_usb_interface(dev);
 	bool val;
+<<<<<<< HEAD
+=======
+	struct kernfs_node *kn;
+>>>>>>> origin/android16-base
 
 	if (strtobool(buf, &val) != 0)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (val)
 		usb_authorize_interface(intf);
 	else
 		usb_deauthorize_interface(intf);
+=======
+	if (val) {
+		usb_authorize_interface(intf);
+	} else {
+		/*
+		 * Prevent deadlock if another process is concurrently
+		 * trying to unregister intf.
+		 */
+		kn = sysfs_break_active_protection(&dev->kobj, &attr->attr);
+		if (kn) {
+			usb_deauthorize_interface(intf);
+			sysfs_unbreak_active_protection(kn);
+		}
+	}
+>>>>>>> origin/android16-base
 
 	return count;
 }

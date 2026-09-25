@@ -419,6 +419,10 @@ static int raydium_i2c_write_object(struct i2c_client *client,
 				    enum raydium_bl_ack state)
 {
 	int error;
+<<<<<<< HEAD
+=======
+	static const u8 cmd[] = { 0xFF, 0x39 };
+>>>>>>> origin/android16-base
 
 	error = raydium_i2c_send(client, RM_CMD_BOOT_WRT, data, len);
 	if (error) {
@@ -427,7 +431,11 @@ static int raydium_i2c_write_object(struct i2c_client *client,
 		return error;
 	}
 
+<<<<<<< HEAD
 	error = raydium_i2c_send(client, RM_CMD_BOOT_ACK, NULL, 0);
+=======
+	error = raydium_i2c_send(client, RM_CMD_BOOT_ACK, cmd, sizeof(cmd));
+>>>>>>> origin/android16-base
 	if (error) {
 		dev_err(&client->dev, "Ack obj command failed: %d\n", error);
 		return error;

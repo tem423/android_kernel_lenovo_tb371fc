@@ -26,6 +26,12 @@
 #include "amdgpu.h"
 #include "amdgpu_gfx.h"
 
+<<<<<<< HEAD
+=======
+/* 0.5 second timeout */
+#define GFX_OFF_DELAY_ENABLE         msecs_to_jiffies(500)
+
+>>>>>>> origin/android16-base
 /*
  * GPU scratch registers helpers function.
  */
@@ -173,7 +179,11 @@ static int amdgpu_gfx_kiq_acquire(struct amdgpu_device *adev,
 		    * adev->gfx.mec.num_pipe_per_mec
 		    * adev->gfx.mec.num_queue_per_pipe;
 
+<<<<<<< HEAD
 	while (queue_bit-- >= 0) {
+=======
+	while (--queue_bit >= 0) {
+>>>>>>> origin/android16-base
 		if (test_bit(queue_bit, adev->gfx.mec.queue_bitmap))
 			continue;
 
@@ -340,3 +350,43 @@ void amdgpu_gfx_compute_mqd_sw_fini(struct amdgpu_device *adev)
 			      &ring->mqd_gpu_addr,
 			      &ring->mqd_ptr);
 }
+<<<<<<< HEAD
+=======
+
+/* amdgpu_gfx_off_ctrl - Handle gfx off feature enable/disable
+ *
+ * @adev: amdgpu_device pointer
+ * @bool enable true: enable gfx off feature, false: disable gfx off feature
+ *
+ * 1. gfx off feature will be enabled by gfx ip after gfx cg gp enabled.
+ * 2. other client can send request to disable gfx off feature, the request should be honored.
+ * 3. other client can cancel their request of disable gfx off feature
+ * 4. other client should not send request to enable gfx off feature before disable gfx off feature.
+ */
+
+void amdgpu_gfx_off_ctrl(struct amdgpu_device *adev, bool enable)
+{
+	if (!(adev->powerplay.pp_feature & PP_GFXOFF_MASK))
+		return;
+
+	if (!adev->powerplay.pp_funcs->set_powergating_by_smu)
+		return;
+
+
+	mutex_lock(&adev->gfx.gfx_off_mutex);
+
+	if (!enable)
+		adev->gfx.gfx_off_req_count++;
+	else if (adev->gfx.gfx_off_req_count > 0)
+		adev->gfx.gfx_off_req_count--;
+
+	if (enable && !adev->gfx.gfx_off_state && !adev->gfx.gfx_off_req_count) {
+		schedule_delayed_work(&adev->gfx.gfx_off_delay_work, GFX_OFF_DELAY_ENABLE);
+	} else if (!enable && adev->gfx.gfx_off_state) {
+		if (!amdgpu_dpm_set_powergating_by_smu(adev, AMD_IP_BLOCK_TYPE_GFX, false))
+			adev->gfx.gfx_off_state = false;
+	}
+
+	mutex_unlock(&adev->gfx.gfx_off_mutex);
+}
+>>>>>>> origin/android16-base

@@ -25,10 +25,14 @@
 /* Default operating mode is wlan STA + BT */
 static u16 dev_oper_mode = DEV_OPMODE_STA_BT_DUAL;
 module_param(dev_oper_mode, ushort, 0444);
+<<<<<<< HEAD
 MODULE_PARM_DESC(dev_oper_mode,
 		 "1[Wi-Fi], 4[BT], 8[BT LE], 5[Wi-Fi STA + BT classic]\n"
 		 "9[Wi-Fi STA + BT LE], 13[Wi-Fi STA + BT classic + BT LE]\n"
 		 "6[AP + BT classic], 14[AP + BT classic + BT LE]");
+=======
+MODULE_PARM_DESC(dev_oper_mode, DEV_OPMODE_PARAM_DESC);
+>>>>>>> origin/android16-base
 
 static int rsi_rx_urb_submit(struct rsi_hw *adapter, u8 ep_num, gfp_t flags);
 
@@ -61,7 +65,11 @@ static int rsi_usb_card_write(struct rsi_hw *adapter,
 			      (void *)seg,
 			      (int)len,
 			      &transfer,
+<<<<<<< HEAD
 			      HZ * 5);
+=======
+			      USB_CTRL_SET_TIMEOUT);
+>>>>>>> origin/android16-base
 
 	if (status < 0) {
 		rsi_dbg(ERR_ZONE,
@@ -315,7 +323,10 @@ static int rsi_rx_urb_submit(struct rsi_hw *adapter, u8 ep_num, gfp_t mem_flags)
 	struct sk_buff *skb;
 	u8 dword_align_bytes = 0;
 
+<<<<<<< HEAD
 #define RSI_MAX_RX_USB_PKT_SIZE	3000
+=======
+>>>>>>> origin/android16-base
 	skb = dev_alloc_skb(RSI_MAX_RX_USB_PKT_SIZE);
 	if (!skb)
 		return -ENOMEM;

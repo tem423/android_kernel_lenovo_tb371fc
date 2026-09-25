@@ -109,6 +109,10 @@ int main(void)
 	fd1 = open_port(0, 1);
 	if (fd1 >= 0)
 		error(1, 0, "Was allowed to create an ipv4 reuseport on an already bound non-reuseport socket with no ipv6");
+<<<<<<< HEAD
 	fprintf(stderr, "Success");
+=======
+	fprintf(stderr, "Success\n");
+>>>>>>> origin/android16-base
 	return 0;
 }

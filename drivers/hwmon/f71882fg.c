@@ -1590,8 +1590,14 @@ static ssize_t show_temp(struct device *dev, struct device_attribute *devattr,
 		temp *= 125;
 		if (sign)
 			temp -= 128000;
+<<<<<<< HEAD
 	} else
 		temp = data->temp[nr] * 1000;
+=======
+	} else {
+		temp = ((s8)data->temp[nr]) * 1000;
+	}
+>>>>>>> origin/android16-base
 
 	return sprintf(buf, "%d\n", temp);
 }

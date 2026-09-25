@@ -429,6 +429,10 @@ static int solo_sysfs_init(struct solo_dev *solo_dev)
 		     solo_dev->nr_chans);
 
 	if (device_register(dev)) {
+<<<<<<< HEAD
+=======
+		put_device(dev);
+>>>>>>> origin/android16-base
 		dev->parent = NULL;
 		return -ENOMEM;
 	}

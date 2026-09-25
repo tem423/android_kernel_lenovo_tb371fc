@@ -127,6 +127,10 @@ enum i40e_state_t {
 	__I40E_RESET_INTR_RECEIVED,
 	__I40E_REINIT_REQUESTED,
 	__I40E_PF_RESET_REQUESTED,
+<<<<<<< HEAD
+=======
+	__I40E_PF_RESET_AND_REBUILD_REQUESTED,
+>>>>>>> origin/android16-base
 	__I40E_CORE_RESET_REQUESTED,
 	__I40E_GLOBAL_RESET_REQUESTED,
 	__I40E_EMP_RESET_REQUESTED,
@@ -147,11 +151,21 @@ enum i40e_state_t {
 	__I40E_CLIENT_SERVICE_REQUESTED,
 	__I40E_CLIENT_L2_CHANGE,
 	__I40E_CLIENT_RESET,
+<<<<<<< HEAD
+=======
+	__I40E_VF_RESETS_DISABLED,	/* disable resets during i40e_remove */
+	__I40E_VFS_RELEASING,
+>>>>>>> origin/android16-base
 	/* This must be last as it determines the size of the BITMAP */
 	__I40E_STATE_SIZE__,
 };
 
 #define I40E_PF_RESET_FLAG	BIT_ULL(__I40E_PF_RESET_REQUESTED)
+<<<<<<< HEAD
+=======
+#define I40E_PF_RESET_AND_REBUILD_FLAG	\
+	BIT_ULL(__I40E_PF_RESET_AND_REBUILD_REQUESTED)
+>>>>>>> origin/android16-base
 
 /* VSI state flags */
 enum i40e_vsi_state_t {
@@ -161,6 +175,10 @@ enum i40e_vsi_state_t {
 	__I40E_VSI_OVERFLOW_PROMISC,
 	__I40E_VSI_REINIT_REQUESTED,
 	__I40E_VSI_DOWN_REQUESTED,
+<<<<<<< HEAD
+=======
+	__I40E_VSI_RELEASING,
+>>>>>>> origin/android16-base
 	/* This must be last as it determines the size of the BITMAP */
 	__I40E_VSI_STATE_SIZE__,
 };
@@ -173,7 +191,10 @@ enum i40e_interrupt_policy {
 
 struct i40e_lump_tracking {
 	u16 num_entries;
+<<<<<<< HEAD
 	u16 search_hint;
+=======
+>>>>>>> origin/android16-base
 	u16 list[0];
 #define I40E_PILE_VALID_BIT  0x8000
 #define I40E_IWARP_IRQ_PILE_ID  (I40E_PILE_VALID_BIT - 2)
@@ -703,12 +724,21 @@ struct i40e_vsi {
 	struct rtnl_link_stats64 net_stats_offsets;
 	struct i40e_eth_stats eth_stats;
 	struct i40e_eth_stats eth_stats_offsets;
+<<<<<<< HEAD
 	u32 tx_restart;
 	u32 tx_busy;
 	u64 tx_linearize;
 	u64 tx_force_wb;
 	u32 rx_buf_failed;
 	u32 rx_page_failed;
+=======
+	u64 tx_restart;
+	u64 tx_busy;
+	u64 tx_linearize;
+	u64 tx_force_wb;
+	u64 rx_buf_failed;
+	u64 rx_page_failed;
+>>>>>>> origin/android16-base
 
 	/* These are containers of ring pointers, allocated at run-time */
 	struct i40e_ring **rx_rings;

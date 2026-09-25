@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+ * Copyright (c) 2022, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 
@@ -2908,18 +2912,32 @@ static int msm_compr_pointer(struct snd_compr_stream *cstream,
 	spin_lock_irqsave(&prtd->lock, flags);
 	tstamp.sampling_rate = prtd->sample_rate;
 	tstamp.byte_offset = prtd->byte_offset;
+<<<<<<< HEAD
 	if (cstream->direction == SND_COMPRESS_PLAYBACK)
 		tstamp.copied_total = prtd->copied_total;
 	else if (cstream->direction == SND_COMPRESS_CAPTURE)
 		tstamp.copied_total = prtd->received_total;
+=======
+	if (cstream->direction == SND_COMPRESS_PLAYBACK) {
+		runtime->total_bytes_transferred = prtd->copied_total;
+		tstamp.copied_total = prtd->copied_total;
+	}
+	else if (cstream->direction == SND_COMPRESS_CAPTURE) {
+		runtime->total_bytes_available = prtd->received_total;
+		tstamp.copied_total = prtd->received_total;
+	}
+>>>>>>> origin/android16-base
 	first_buffer = prtd->first_buffer;
 	if (atomic_read(&prtd->error)) {
 		pr_err_ratelimited("%s Got RESET EVENTS notification, return error\n",
 				   __func__);
+<<<<<<< HEAD
 		if (cstream->direction == SND_COMPRESS_PLAYBACK)
 			runtime->total_bytes_transferred = tstamp.copied_total;
 		else
 			runtime->total_bytes_available = tstamp.copied_total;
+=======
+>>>>>>> origin/android16-base
 		tstamp.pcm_io_frames = 0;
 		memcpy(arg, &tstamp, sizeof(struct snd_compr_tstamp));
 		spin_unlock_irqrestore(&prtd->lock, flags);

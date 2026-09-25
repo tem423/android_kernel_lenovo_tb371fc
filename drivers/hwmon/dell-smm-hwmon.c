@@ -304,7 +304,11 @@ static int i8k_get_fan_nominal_speed(int fan, int speed)
 }
 
 /*
+<<<<<<< HEAD
  * Set the fan speed (off, low, high). Returns the new fan status.
+=======
+ * Set the fan speed (off, low, high, ...).
+>>>>>>> origin/android16-base
  */
 static int i8k_set_fan(int fan, int speed)
 {
@@ -316,7 +320,11 @@ static int i8k_set_fan(int fan, int speed)
 	speed = (speed < 0) ? 0 : ((speed > i8k_fan_max) ? i8k_fan_max : speed);
 	regs.ebx = (fan & 0xff) | (speed << 8);
 
+<<<<<<< HEAD
 	return i8k_smm(&regs) ? : i8k_get_fan_status(fan);
+=======
+	return i8k_smm(&regs);
+>>>>>>> origin/android16-base
 }
 
 static int i8k_get_temp_type(int sensor)
@@ -430,7 +438,11 @@ static int
 i8k_ioctl_unlocked(struct file *fp, unsigned int cmd, unsigned long arg)
 {
 	int val = 0;
+<<<<<<< HEAD
 	int speed;
+=======
+	int speed, err;
+>>>>>>> origin/android16-base
 	unsigned char buff[16];
 	int __user *argp = (int __user *)arg;
 
@@ -491,7 +503,15 @@ i8k_ioctl_unlocked(struct file *fp, unsigned int cmd, unsigned long arg)
 		if (copy_from_user(&speed, argp + 1, sizeof(int)))
 			return -EFAULT;
 
+<<<<<<< HEAD
 		val = i8k_set_fan(val, speed);
+=======
+		err = i8k_set_fan(val, speed);
+		if (err < 0)
+			return err;
+
+		val = i8k_get_fan_status(val);
+>>>>>>> origin/android16-base
 		break;
 
 	default:
@@ -591,15 +611,29 @@ static const struct file_operations i8k_fops = {
 	.unlocked_ioctl	= i8k_ioctl,
 };
 
+<<<<<<< HEAD
 static void __init i8k_init_procfs(void)
 {
 	/* Register the proc entry */
 	proc_create("i8k", 0, NULL, &i8k_fops);
+=======
+static struct proc_dir_entry *entry;
+
+static void __init i8k_init_procfs(void)
+{
+	/* Register the proc entry */
+	entry = proc_create("i8k", 0, NULL, &i8k_fops);
+>>>>>>> origin/android16-base
 }
 
 static void __exit i8k_exit_procfs(void)
 {
+<<<<<<< HEAD
 	remove_proc_entry("i8k", NULL);
+=======
+	if (entry)
+		remove_proc_entry("i8k", NULL);
+>>>>>>> origin/android16-base
 }
 
 #else

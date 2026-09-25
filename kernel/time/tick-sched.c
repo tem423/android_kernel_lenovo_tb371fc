@@ -205,6 +205,14 @@ static bool check_tick_dependency(atomic_t *dep)
 		return true;
 	}
 
+<<<<<<< HEAD
+=======
+	if (val & TICK_DEP_MASK_RCU) {
+		trace_tick_stop(0, TICK_DEP_MASK_RCU);
+		return true;
+	}
+
+>>>>>>> origin/android16-base
 	return false;
 }
 
@@ -331,6 +339,10 @@ void tick_nohz_dep_set_cpu(int cpu, enum tick_dep_bits bit)
 		preempt_enable();
 	}
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL_GPL(tick_nohz_dep_set_cpu);
+>>>>>>> origin/android16-base
 
 void tick_nohz_dep_clear_cpu(int cpu, enum tick_dep_bits bit)
 {
@@ -338,6 +350,10 @@ void tick_nohz_dep_clear_cpu(int cpu, enum tick_dep_bits bit)
 
 	atomic_andnot(BIT(bit), &ts->tick_dep_mask);
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL_GPL(tick_nohz_dep_clear_cpu);
+>>>>>>> origin/android16-base
 
 /*
  * Set a per-task tick dependency. Posix CPU timers need this in order to elapse
@@ -405,7 +421,11 @@ void __init tick_nohz_full_setup(cpumask_var_t cpumask)
 	tick_nohz_full_running = true;
 }
 
+<<<<<<< HEAD
 static int tick_nohz_cpu_down(unsigned int cpu)
+=======
+bool tick_nohz_cpu_hotpluggable(unsigned int cpu)
+>>>>>>> origin/android16-base
 {
 	/*
 	 * The boot CPU handles housekeeping duty (unbound timers,
@@ -413,8 +433,18 @@ static int tick_nohz_cpu_down(unsigned int cpu)
 	 * CPUs. It must remain online when nohz full is enabled.
 	 */
 	if (tick_nohz_full_running && tick_do_timer_cpu == cpu)
+<<<<<<< HEAD
 		return -EBUSY;
 	return 0;
+=======
+		return false;
+	return true;
+}
+
+static int tick_nohz_cpu_down(unsigned int cpu)
+{
+	return tick_nohz_cpu_hotpluggable(cpu) ? 0 : -EBUSY;
+>>>>>>> origin/android16-base
 }
 
 void __init tick_nohz_init(void)
@@ -1364,13 +1394,30 @@ void tick_setup_sched_timer(void)
 void tick_cancel_sched_timer(int cpu)
 {
 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+<<<<<<< HEAD
+=======
+	ktime_t idle_sleeptime, iowait_sleeptime;
+	unsigned long idle_calls, idle_sleeps;
+>>>>>>> origin/android16-base
 
 # ifdef CONFIG_HIGH_RES_TIMERS
 	if (ts->sched_timer.base)
 		hrtimer_cancel(&ts->sched_timer);
 # endif
 
+<<<<<<< HEAD
 	memset(ts, 0, sizeof(*ts));
+=======
+	idle_sleeptime = ts->idle_sleeptime;
+	iowait_sleeptime = ts->iowait_sleeptime;
+	idle_calls = ts->idle_calls;
+	idle_sleeps = ts->idle_sleeps;
+	memset(ts, 0, sizeof(*ts));
+	ts->idle_sleeptime = idle_sleeptime;
+	ts->iowait_sleeptime = iowait_sleeptime;
+	ts->idle_calls = idle_calls;
+	ts->idle_sleeps = idle_sleeps;
+>>>>>>> origin/android16-base
 }
 #endif
 

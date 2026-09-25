@@ -73,6 +73,14 @@ static int pnw_setup(struct mid8250 *mid, struct uart_port *p)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static void pnw_exit(struct mid8250 *mid)
+{
+	pci_dev_put(mid->dma_dev);
+}
+
+>>>>>>> origin/android16-base
 static int tng_handle_irq(struct uart_port *p)
 {
 	struct mid8250 *mid = p->private_data;
@@ -124,6 +132,14 @@ static int tng_setup(struct mid8250 *mid, struct uart_port *p)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static void tng_exit(struct mid8250 *mid)
+{
+	pci_dev_put(mid->dma_dev);
+}
+
+>>>>>>> origin/android16-base
 static int dnv_handle_irq(struct uart_port *p)
 {
 	struct mid8250 *mid = p->private_data;
@@ -330,9 +346,15 @@ static int mid8250_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 
 	pci_set_drvdata(pdev, mid);
 	return 0;
+<<<<<<< HEAD
 err:
 	if (mid->board->exit)
 		mid->board->exit(mid);
+=======
+
+err:
+	mid->board->exit(mid);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -342,8 +364,12 @@ static void mid8250_remove(struct pci_dev *pdev)
 
 	serial8250_unregister_port(mid->line);
 
+<<<<<<< HEAD
 	if (mid->board->exit)
 		mid->board->exit(mid);
+=======
+	mid->board->exit(mid);
+>>>>>>> origin/android16-base
 }
 
 static const struct mid8250_board pnw_board = {
@@ -351,6 +377,10 @@ static const struct mid8250_board pnw_board = {
 	.freq = 50000000,
 	.base_baud = 115200,
 	.setup = pnw_setup,
+<<<<<<< HEAD
+=======
+	.exit = pnw_exit,
+>>>>>>> origin/android16-base
 };
 
 static const struct mid8250_board tng_board = {
@@ -358,6 +388,10 @@ static const struct mid8250_board tng_board = {
 	.freq = 38400000,
 	.base_baud = 1843200,
 	.setup = tng_setup,
+<<<<<<< HEAD
+=======
+	.exit = tng_exit,
+>>>>>>> origin/android16-base
 };
 
 static const struct mid8250_board dnv_board = {

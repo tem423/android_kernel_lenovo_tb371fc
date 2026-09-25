@@ -11,6 +11,10 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+<<<<<<< HEAD
+=======
+#include <linux/clk.h>
+>>>>>>> origin/android16-base
 #include <linux/hrtimer.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
@@ -104,10 +108,18 @@ struct mmdc_pmu {
 	cpumask_t cpu;
 	struct hrtimer hrtimer;
 	unsigned int active_events;
+<<<<<<< HEAD
+=======
+	int id;
+>>>>>>> origin/android16-base
 	struct device *dev;
 	struct perf_event *mmdc_events[MMDC_NUM_COUNTERS];
 	struct hlist_node node;
 	struct fsl_mmdc_devtype_data *devtype_data;
+<<<<<<< HEAD
+=======
+	struct clk *mmdc_ipg_clk;
+>>>>>>> origin/android16-base
 };
 
 /*
@@ -443,8 +455,11 @@ static enum hrtimer_restart mmdc_pmu_timer_handler(struct hrtimer *hrtimer)
 static int mmdc_pmu_init(struct mmdc_pmu *pmu_mmdc,
 		void __iomem *mmdc_base, struct device *dev)
 {
+<<<<<<< HEAD
 	int mmdc_num;
 
+=======
+>>>>>>> origin/android16-base
 	*pmu_mmdc = (struct mmdc_pmu) {
 		.pmu = (struct pmu) {
 			.task_ctx_nr    = perf_invalid_context,
@@ -461,26 +476,48 @@ static int mmdc_pmu_init(struct mmdc_pmu *pmu_mmdc,
 		.active_events = 0,
 	};
 
+<<<<<<< HEAD
 	mmdc_num = ida_simple_get(&mmdc_ida, 0, 0, GFP_KERNEL);
 
 	return mmdc_num;
+=======
+	pmu_mmdc->id = ida_simple_get(&mmdc_ida, 0, 0, GFP_KERNEL);
+
+	return pmu_mmdc->id;
+>>>>>>> origin/android16-base
 }
 
 static int imx_mmdc_remove(struct platform_device *pdev)
 {
 	struct mmdc_pmu *pmu_mmdc = platform_get_drvdata(pdev);
 
+<<<<<<< HEAD
 	cpuhp_state_remove_instance_nocalls(cpuhp_mmdc_state, &pmu_mmdc->node);
 	perf_pmu_unregister(&pmu_mmdc->pmu);
+=======
+	ida_simple_remove(&mmdc_ida, pmu_mmdc->id);
+	cpuhp_state_remove_instance_nocalls(cpuhp_mmdc_state, &pmu_mmdc->node);
+	perf_pmu_unregister(&pmu_mmdc->pmu);
+	iounmap(pmu_mmdc->mmdc_base);
+	clk_disable_unprepare(pmu_mmdc->mmdc_ipg_clk);
+>>>>>>> origin/android16-base
 	kfree(pmu_mmdc);
 	return 0;
 }
 
+<<<<<<< HEAD
 static int imx_mmdc_perf_init(struct platform_device *pdev, void __iomem *mmdc_base)
 {
 	struct mmdc_pmu *pmu_mmdc;
 	char *name;
 	int mmdc_num;
+=======
+static int imx_mmdc_perf_init(struct platform_device *pdev, void __iomem *mmdc_base,
+			      struct clk *mmdc_ipg_clk)
+{
+	struct mmdc_pmu *pmu_mmdc;
+	char *name;
+>>>>>>> origin/android16-base
 	int ret;
 	const struct of_device_id *of_id =
 		of_match_device(imx_mmdc_dt_ids, &pdev->dev);
@@ -503,6 +540,7 @@ static int imx_mmdc_perf_init(struct platform_device *pdev, void __iomem *mmdc_b
 		cpuhp_mmdc_state = ret;
 	}
 
+<<<<<<< HEAD
 	mmdc_num = mmdc_pmu_init(pmu_mmdc, mmdc_base, &pdev->dev);
 	if (mmdc_num == 0)
 		name = "mmdc";
@@ -510,6 +548,20 @@ static int imx_mmdc_perf_init(struct platform_device *pdev, void __iomem *mmdc_b
 		name = devm_kasprintf(&pdev->dev,
 				GFP_KERNEL, "mmdc%d", mmdc_num);
 
+=======
+	ret = mmdc_pmu_init(pmu_mmdc, mmdc_base, &pdev->dev);
+	if (ret < 0)
+		goto  pmu_free;
+
+	name = devm_kasprintf(&pdev->dev,
+				GFP_KERNEL, "mmdc%d", ret);
+	if (!name) {
+		ret = -ENOMEM;
+		goto pmu_release_id;
+	}
+
+	pmu_mmdc->mmdc_ipg_clk = mmdc_ipg_clk;
+>>>>>>> origin/android16-base
 	pmu_mmdc->devtype_data = (struct fsl_mmdc_devtype_data *)of_id->data;
 
 	hrtimer_init(&pmu_mmdc->hrtimer, CLOCK_MONOTONIC,
@@ -532,6 +584,11 @@ pmu_register_err:
 	pr_warn("MMDC Perf PMU failed (%d), disabled\n", ret);
 	cpuhp_state_remove_instance_nocalls(cpuhp_mmdc_state, &pmu_mmdc->node);
 	hrtimer_cancel(&pmu_mmdc->hrtimer);
+<<<<<<< HEAD
+=======
+pmu_release_id:
+	ida_simple_remove(&mmdc_ida, pmu_mmdc->id);
+>>>>>>> origin/android16-base
 pmu_free:
 	kfree(pmu_mmdc);
 	return ret;
@@ -539,14 +596,35 @@ pmu_free:
 
 #else
 #define imx_mmdc_remove NULL
+<<<<<<< HEAD
 #define imx_mmdc_perf_init(pdev, mmdc_base) 0
+=======
+#define imx_mmdc_perf_init(pdev, mmdc_base, mmdc_ipg_clk) 0
+>>>>>>> origin/android16-base
 #endif
 
 static int imx_mmdc_probe(struct platform_device *pdev)
 {
 	struct device_node *np = pdev->dev.of_node;
 	void __iomem *mmdc_base, *reg;
+<<<<<<< HEAD
 	u32 val;
+=======
+	struct clk *mmdc_ipg_clk;
+	u32 val;
+	int err;
+
+	/* the ipg clock is optional */
+	mmdc_ipg_clk = devm_clk_get(&pdev->dev, NULL);
+	if (IS_ERR(mmdc_ipg_clk))
+		mmdc_ipg_clk = NULL;
+
+	err = clk_prepare_enable(mmdc_ipg_clk);
+	if (err) {
+		dev_err(&pdev->dev, "Unable to enable mmdc ipg clock.\n");
+		return err;
+	}
+>>>>>>> origin/android16-base
 
 	mmdc_base = of_iomap(np, 0);
 	WARN_ON(!mmdc_base);
@@ -564,7 +642,17 @@ static int imx_mmdc_probe(struct platform_device *pdev)
 	val &= ~(1 << BP_MMDC_MAPSR_PSD);
 	writel_relaxed(val, reg);
 
+<<<<<<< HEAD
 	return imx_mmdc_perf_init(pdev, mmdc_base);
+=======
+	err = imx_mmdc_perf_init(pdev, mmdc_base, mmdc_ipg_clk);
+	if (err) {
+		iounmap(mmdc_base);
+		clk_disable_unprepare(mmdc_ipg_clk);
+	}
+
+	return err;
+>>>>>>> origin/android16-base
 }
 
 int imx_mmdc_get_ddr_type(void)

@@ -596,7 +596,12 @@ nfs4_reset_recoverydir(char *recdir)
 		return status;
 	status = -ENOTDIR;
 	if (d_is_dir(path.dentry)) {
+<<<<<<< HEAD
 		strcpy(user_recovery_dirname, recdir);
+=======
+		strscpy(user_recovery_dirname, recdir,
+			sizeof(user_recovery_dirname));
+>>>>>>> origin/android16-base
 		status = 0;
 	}
 	path_put(&path);

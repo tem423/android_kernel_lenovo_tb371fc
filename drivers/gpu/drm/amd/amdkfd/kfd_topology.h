@@ -164,7 +164,14 @@ struct kfd_topology_device {
 	struct attribute		attr_gpuid;
 	struct attribute		attr_name;
 	struct attribute		attr_props;
+<<<<<<< HEAD
 	uint8_t				oem_id[CRAT_OEMID_LENGTH];
+=======
+	union {
+		uint8_t				oem_id[CRAT_OEMID_LENGTH];
+		uint64_t			oem_id64;
+	};
+>>>>>>> origin/android16-base
 	uint8_t				oem_table_id[CRAT_OEMTABLEID_LENGTH];
 	uint32_t			oem_revision;
 };

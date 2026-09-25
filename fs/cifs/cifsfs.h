@@ -121,7 +121,14 @@ extern const struct dentry_operations cifs_ci_dentry_ops;
 #ifdef CONFIG_CIFS_DFS_UPCALL
 extern struct vfsmount *cifs_dfs_d_automount(struct path *path);
 #else
+<<<<<<< HEAD
 #define cifs_dfs_d_automount NULL
+=======
+static inline struct vfsmount *cifs_dfs_d_automount(struct path *path)
+{
+	return ERR_PTR(-EREMOTE);
+}
+>>>>>>> origin/android16-base
 #endif
 
 /* Functions related to symlinks */

@@ -307,10 +307,17 @@ static int ili9881c_prepare(struct drm_panel *panel)
 	msleep(5);
 
 	/* And reset it */
+<<<<<<< HEAD
 	gpiod_set_value(ctx->reset, 1);
 	msleep(20);
 
 	gpiod_set_value(ctx->reset, 0);
+=======
+	gpiod_set_value_cansleep(ctx->reset, 1);
+	msleep(20);
+
+	gpiod_set_value_cansleep(ctx->reset, 0);
+>>>>>>> origin/android16-base
 	msleep(20);
 
 	for (i = 0; i < ARRAY_SIZE(ili9881c_init); i++) {
@@ -367,7 +374,11 @@ static int ili9881c_unprepare(struct drm_panel *panel)
 
 	mipi_dsi_dcs_enter_sleep_mode(ctx->dsi);
 	regulator_disable(ctx->power);
+<<<<<<< HEAD
 	gpiod_set_value(ctx->reset, 1);
+=======
+	gpiod_set_value_cansleep(ctx->reset, 1);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

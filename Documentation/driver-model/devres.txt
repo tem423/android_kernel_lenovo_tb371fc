@@ -235,6 +235,10 @@ certainly invest a bit more effort into libata core layer).
 
 CLOCK
   devm_clk_get()
+<<<<<<< HEAD
+=======
+  devm_clk_get_optional()
+>>>>>>> origin/android16-base
   devm_clk_put()
   devm_clk_hw_register()
   devm_of_clk_add_hw_provider()

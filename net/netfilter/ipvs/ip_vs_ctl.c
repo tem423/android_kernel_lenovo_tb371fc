@@ -1269,7 +1269,11 @@ ip_vs_add_service(struct netns_ipvs *ipvs, struct ip_vs_service_user_kern *u,
 	ip_vs_addr_copy(svc->af, &svc->addr, &u->addr);
 	svc->port = u->port;
 	svc->fwmark = u->fwmark;
+<<<<<<< HEAD
 	svc->flags = u->flags;
+=======
+	svc->flags = u->flags & ~IP_VS_SVC_F_HASHED;
+>>>>>>> origin/android16-base
 	svc->timeout = u->timeout * HZ;
 	svc->netmask = u->netmask;
 	svc->ipvs = ipvs;
@@ -1656,6 +1660,10 @@ static int ip_vs_zero_all(struct netns_ipvs *ipvs)
 #ifdef CONFIG_SYSCTL
 
 static int zero;
+<<<<<<< HEAD
+=======
+static int one = 1;
+>>>>>>> origin/android16-base
 static int three = 3;
 
 static int
@@ -1667,12 +1675,27 @@ proc_do_defense_mode(struct ctl_table *table, int write,
 	int val = *valp;
 	int rc;
 
+<<<<<<< HEAD
 	rc = proc_dointvec(table, write, buffer, lenp, ppos);
 	if (write && (*valp != val)) {
 		if ((*valp < 0) || (*valp > 3)) {
 			/* Restore the correct value */
 			*valp = val;
 		} else {
+=======
+	struct ctl_table tmp = {
+		.data = &val,
+		.maxlen = sizeof(int),
+		.mode = table->mode,
+	};
+
+	rc = proc_dointvec(&tmp, write, buffer, lenp, ppos);
+	if (write && (*valp != val)) {
+		if (val < 0 || val > 3) {
+			rc = -EINVAL;
+		} else {
+			*valp = val;
+>>>>>>> origin/android16-base
 			update_defense_level(ipvs);
 		}
 	}
@@ -1683,6 +1706,7 @@ static int
 proc_do_sync_threshold(struct ctl_table *table, int write,
 		       void __user *buffer, size_t *lenp, loff_t *ppos)
 {
+<<<<<<< HEAD
 	int *valp = table->data;
 	int val[2];
 	int rc;
@@ -1714,6 +1738,29 @@ proc_do_sync_mode(struct ctl_table *table, int write,
 			*valp = val;
 		}
 	}
+=======
+	struct netns_ipvs *ipvs = table->extra2;
+	int *valp = table->data;
+	int val[2];
+	int rc;
+	struct ctl_table tmp = {
+		.data = &val,
+		.maxlen = table->maxlen,
+		.mode = table->mode,
+	};
+
+	mutex_lock(&ipvs->sync_mutex);
+	memcpy(val, valp, sizeof(val));
+	rc = proc_dointvec(&tmp, write, buffer, lenp, ppos);
+	if (write) {
+		if (val[0] < 0 || val[1] < 0 ||
+		    (val[0] >= val[1] && val[1]))
+			rc = -EINVAL;
+		else
+			memcpy(valp, val, sizeof(val));
+	}
+	mutex_unlock(&ipvs->sync_mutex);
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -1725,12 +1772,27 @@ proc_do_sync_ports(struct ctl_table *table, int write,
 	int val = *valp;
 	int rc;
 
+<<<<<<< HEAD
 	rc = proc_dointvec(table, write, buffer, lenp, ppos);
 	if (write && (*valp != val)) {
 		if (*valp < 1 || !is_power_of_2(*valp)) {
 			/* Restore the correct value */
 			*valp = val;
 		}
+=======
+	struct ctl_table tmp = {
+		.data = &val,
+		.maxlen = sizeof(int),
+		.mode = table->mode,
+	};
+
+	rc = proc_dointvec(&tmp, write, buffer, lenp, ppos);
+	if (write && (*valp != val)) {
+		if (val < 1 || !is_power_of_2(val))
+			rc = -EINVAL;
+		else
+			*valp = val;
+>>>>>>> origin/android16-base
 	}
 	return rc;
 }
@@ -1790,7 +1852,13 @@ static struct ctl_table vs_vars[] = {
 		.procname	= "sync_version",
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
+<<<<<<< HEAD
 		.proc_handler	= proc_do_sync_mode,
+=======
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &zero,
+		.extra2		= &one,
+>>>>>>> origin/android16-base
 	},
 	{
 		.procname	= "sync_ports",
@@ -3942,6 +4010,10 @@ static int __net_init ip_vs_control_net_init_sysctl(struct netns_ipvs *ipvs)
 	ipvs->sysctl_sync_threshold[0] = DEFAULT_SYNC_THRESHOLD;
 	ipvs->sysctl_sync_threshold[1] = DEFAULT_SYNC_PERIOD;
 	tbl[idx].data = &ipvs->sysctl_sync_threshold;
+<<<<<<< HEAD
+=======
+	tbl[idx].extra2 = ipvs;
+>>>>>>> origin/android16-base
 	tbl[idx++].maxlen = sizeof(ipvs->sysctl_sync_threshold);
 	ipvs->sysctl_sync_refresh_period = DEFAULT_SYNC_REFRESH_PERIOD;
 	tbl[idx++].data = &ipvs->sysctl_sync_refresh_period;
@@ -3955,6 +4027,14 @@ static int __net_init ip_vs_control_net_init_sysctl(struct netns_ipvs *ipvs)
 	tbl[idx++].data = &ipvs->sysctl_conn_reuse_mode;
 	tbl[idx++].data = &ipvs->sysctl_schedule_icmp;
 	tbl[idx++].data = &ipvs->sysctl_ignore_tunneled;
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_IP_VS_DEBUG
+	/* Global sysctls must be ro in non-init netns */
+	if (!net_eq(net, &init_net))
+		tbl[idx++].mode = 0444;
+#endif
+>>>>>>> origin/android16-base
 
 	ipvs->sysctl_hdr = register_net_sysctl(net, "net/ipv4/vs", tbl);
 	if (ipvs->sysctl_hdr == NULL) {

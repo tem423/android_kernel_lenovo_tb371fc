@@ -12,8 +12,14 @@
 #include <linux/string.h>
 #include <asm/setup.h>
 
+<<<<<<< HEAD
 extern void mvme16x_cons_write(struct console *co,
 			       const char *str, unsigned count);
+=======
+
+#include "../mvme147/mvme147.h"
+#include "../mvme16x/mvme16x.h"
+>>>>>>> origin/android16-base
 
 asmlinkage void __init debug_cons_nputs(const char *s, unsigned n);
 
@@ -22,7 +28,13 @@ static void __ref debug_cons_write(struct console *c,
 {
 #if !(defined(CONFIG_SUN3) || defined(CONFIG_M68000) || \
       defined(CONFIG_COLDFIRE))
+<<<<<<< HEAD
 	if (MACH_IS_MVME16x)
+=======
+	if (MACH_IS_MVME147)
+		mvme147_scc_write(c, s, n);
+	else if (MACH_IS_MVME16x)
+>>>>>>> origin/android16-base
 		mvme16x_cons_write(c, s, n);
 	else
 		debug_cons_nputs(s, n);

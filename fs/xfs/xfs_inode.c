@@ -2899,7 +2899,10 @@ xfs_rename(
 	 * appropriately.
 	 */
 	if (flags & RENAME_WHITEOUT) {
+<<<<<<< HEAD
 		ASSERT(!(flags & (RENAME_NOREPLACE | RENAME_EXCHANGE)));
+=======
+>>>>>>> origin/android16-base
 		error = xfs_rename_alloc_whiteout(target_dp, &wip);
 		if (error)
 			return error;

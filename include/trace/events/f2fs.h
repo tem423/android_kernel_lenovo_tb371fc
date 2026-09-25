@@ -6,6 +6,10 @@
 #define _TRACE_F2FS_H
 
 #include <linux/tracepoint.h>
+<<<<<<< HEAD
+=======
+#include <uapi/linux/f2fs.h>
+>>>>>>> origin/android16-base
 
 #define show_dev(dev)		MAJOR(dev), MINOR(dev)
 #define show_dev_ino(entry)	show_dev(entry->dev), (unsigned long)entry->ino
@@ -14,10 +18,13 @@ TRACE_DEFINE_ENUM(NODE);
 TRACE_DEFINE_ENUM(DATA);
 TRACE_DEFINE_ENUM(META);
 TRACE_DEFINE_ENUM(META_FLUSH);
+<<<<<<< HEAD
 TRACE_DEFINE_ENUM(INMEM);
 TRACE_DEFINE_ENUM(INMEM_DROP);
 TRACE_DEFINE_ENUM(INMEM_INVALIDATE);
 TRACE_DEFINE_ENUM(INMEM_REVOKE);
+=======
+>>>>>>> origin/android16-base
 TRACE_DEFINE_ENUM(IPU);
 TRACE_DEFINE_ENUM(OPU);
 TRACE_DEFINE_ENUM(HOT);
@@ -51,6 +58,11 @@ TRACE_DEFINE_ENUM(CP_DISCARD);
 TRACE_DEFINE_ENUM(CP_TRIMMED);
 TRACE_DEFINE_ENUM(CP_PAUSE);
 TRACE_DEFINE_ENUM(CP_RESIZE);
+<<<<<<< HEAD
+=======
+TRACE_DEFINE_ENUM(EX_READ);
+TRACE_DEFINE_ENUM(EX_BLOCK_AGE);
+>>>>>>> origin/android16-base
 
 #define show_block_type(type)						\
 	__print_symbolic(type,						\
@@ -58,10 +70,13 @@ TRACE_DEFINE_ENUM(CP_RESIZE);
 		{ DATA,		"DATA" },				\
 		{ META,		"META" },				\
 		{ META_FLUSH,	"META_FLUSH" },				\
+<<<<<<< HEAD
 		{ INMEM,	"INMEM" },				\
 		{ INMEM_DROP,	"INMEM_DROP" },				\
 		{ INMEM_INVALIDATE,	"INMEM_INVALIDATE" },		\
 		{ INMEM_REVOKE,	"INMEM_REVOKE" },			\
+=======
+>>>>>>> origin/android16-base
 		{ IPU,		"IN-PLACE" },				\
 		{ OPU,		"OUT-OF-PLACE" })
 
@@ -121,13 +136,24 @@ TRACE_DEFINE_ENUM(CP_RESIZE);
 
 #define show_alloc_mode(type)						\
 	__print_symbolic(type,						\
+<<<<<<< HEAD
 		{ LFS,	"LFS-mode" },					\
 		{ SSR,	"SSR-mode" })
+=======
+		{ LFS,		"LFS-mode" },				\
+		{ SSR,		"SSR-mode" },				\
+		{ AT_SSR,	"AT_SSR-mode" })
+>>>>>>> origin/android16-base
 
 #define show_victim_policy(type)					\
 	__print_symbolic(type,						\
 		{ GC_GREEDY,	"Greedy" },				\
+<<<<<<< HEAD
 		{ GC_CB,	"Cost-Benefit" })
+=======
+		{ GC_CB,	"Cost-Benefit" },			\
+		{ GC_AT,	"Age-threshold" })
+>>>>>>> origin/android16-base
 
 #define show_cpreason(type)						\
 	__print_flags(type, "|",					\
@@ -152,7 +178,12 @@ TRACE_DEFINE_ENUM(CP_RESIZE);
 		{ CP_NODE_NEED_CP,	"node needs cp" },		\
 		{ CP_FASTBOOT_MODE,	"fastboot mode" },		\
 		{ CP_SPEC_LOG_NUM,	"log type is 2" },		\
+<<<<<<< HEAD
 		{ CP_RECOVER_DIR,	"dir needs recovery" })
+=======
+		{ CP_RECOVER_DIR,	"dir needs recovery" },		\
+		{ CP_XATTR_DIR,		"dir's xattr updated" })
+>>>>>>> origin/android16-base
 
 #define show_shutdown_mode(type)					\
 	__print_symbolic(type,						\
@@ -168,6 +199,14 @@ TRACE_DEFINE_ENUM(CP_RESIZE);
 		{ COMPRESS_LZ4,		"LZ4" },			\
 		{ COMPRESS_ZSTD,	"ZSTD" })
 
+<<<<<<< HEAD
+=======
+#define show_extent_type(type)						\
+	__print_symbolic(type,						\
+		{ EX_READ,	"Read" },				\
+		{ EX_BLOCK_AGE,	"Block Age" })
+
+>>>>>>> origin/android16-base
 struct f2fs_sb_info;
 struct f2fs_io_info;
 struct extent_info;
@@ -519,7 +558,11 @@ TRACE_EVENT(f2fs_truncate_partial_nodes,
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
 		__field(ino_t,	ino)
+<<<<<<< HEAD
 		__field(nid_t,	nid[3])
+=======
+		__array(nid_t,	nid, 3)
+>>>>>>> origin/android16-base
 		__field(int,	depth)
 		__field(int,	err)
 	),
@@ -546,17 +589,28 @@ TRACE_EVENT(f2fs_truncate_partial_nodes,
 
 TRACE_EVENT(f2fs_file_write_iter,
 
+<<<<<<< HEAD
 	TP_PROTO(struct inode *inode, unsigned long offset,
 		unsigned long length, int ret),
+=======
+	TP_PROTO(struct inode *inode, loff_t offset, size_t length,
+		 ssize_t ret),
+>>>>>>> origin/android16-base
 
 	TP_ARGS(inode, offset, length, ret),
 
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
 		__field(ino_t,	ino)
+<<<<<<< HEAD
 		__field(unsigned long, offset)
 		__field(unsigned long, length)
 		__field(int,	ret)
+=======
+		__field(loff_t, offset)
+		__field(size_t, length)
+		__field(ssize_t, ret)
+>>>>>>> origin/android16-base
 	),
 
 	TP_fast_assign(
@@ -568,7 +622,11 @@ TRACE_EVENT(f2fs_file_write_iter,
 	),
 
 	TP_printk("dev = (%d,%d), ino = %lu, "
+<<<<<<< HEAD
 		"offset = %lu, length = %lu, written(err) = %d",
+=======
+		"offset = %lld, length = %zu, written(err) = %zd",
+>>>>>>> origin/android16-base
 		show_dev_ino(__entry),
 		__entry->offset,
 		__entry->length,
@@ -576,9 +634,16 @@ TRACE_EVENT(f2fs_file_write_iter,
 );
 
 TRACE_EVENT(f2fs_map_blocks,
+<<<<<<< HEAD
 	TP_PROTO(struct inode *inode, struct f2fs_map_blocks *map, int ret),
 
 	TP_ARGS(inode, map, ret),
+=======
+	TP_PROTO(struct inode *inode, struct f2fs_map_blocks *map,
+				int create, int flag, int ret),
+
+	TP_ARGS(inode, map, create, flag, ret),
+>>>>>>> origin/android16-base
 
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
@@ -589,11 +654,21 @@ TRACE_EVENT(f2fs_map_blocks,
 		__field(unsigned int,	m_flags)
 		__field(int,	m_seg_type)
 		__field(bool,	m_may_create)
+<<<<<<< HEAD
+=======
+		__field(bool,	m_multidev_dio)
+		__field(int,	create)
+		__field(int,	flag)
+>>>>>>> origin/android16-base
 		__field(int,	ret)
 	),
 
 	TP_fast_assign(
+<<<<<<< HEAD
 		__entry->dev		= inode->i_sb->s_dev;
+=======
+		__entry->dev		= map->m_bdev->bd_dev;
+>>>>>>> origin/android16-base
 		__entry->ino		= inode->i_ino;
 		__entry->m_lblk		= map->m_lblk;
 		__entry->m_pblk		= map->m_pblk;
@@ -601,12 +676,24 @@ TRACE_EVENT(f2fs_map_blocks,
 		__entry->m_flags	= map->m_flags;
 		__entry->m_seg_type	= map->m_seg_type;
 		__entry->m_may_create	= map->m_may_create;
+<<<<<<< HEAD
+=======
+		__entry->m_multidev_dio	= map->m_multidev_dio;
+		__entry->create		= create;
+		__entry->flag		= flag;
+>>>>>>> origin/android16-base
 		__entry->ret		= ret;
 	),
 
 	TP_printk("dev = (%d,%d), ino = %lu, file offset = %llu, "
+<<<<<<< HEAD
 		"start blkaddr = 0x%llx, len = 0x%llx, flags = %u,"
 		"seg_type = %d, may_create = %d, err = %d",
+=======
+		"start blkaddr = 0x%llx, len = 0x%llx, flags = %u, "
+		"seg_type = %d, may_create = %d, multidevice = %d, "
+		"create = %d, flag = %d, err = %d",
+>>>>>>> origin/android16-base
 		show_dev_ino(__entry),
 		(unsigned long long)__entry->m_lblk,
 		(unsigned long long)__entry->m_pblk,
@@ -614,6 +701,12 @@ TRACE_EVENT(f2fs_map_blocks,
 		__entry->m_flags,
 		__entry->m_seg_type,
 		__entry->m_may_create,
+<<<<<<< HEAD
+=======
+		__entry->m_multidev_dio,
+		__entry->create,
+		__entry->flag,
+>>>>>>> origin/android16-base
 		__entry->ret)
 );
 
@@ -647,19 +740,35 @@ TRACE_EVENT(f2fs_background_gc,
 
 TRACE_EVENT(f2fs_gc_begin,
 
+<<<<<<< HEAD
 	TP_PROTO(struct super_block *sb, bool sync, bool background,
+=======
+	TP_PROTO(struct super_block *sb, int gc_type, bool no_bg_gc,
+			unsigned int nr_free_secs,
+>>>>>>> origin/android16-base
 			long long dirty_nodes, long long dirty_dents,
 			long long dirty_imeta, unsigned int free_sec,
 			unsigned int free_seg, int reserved_seg,
 			unsigned int prefree_seg),
 
+<<<<<<< HEAD
 	TP_ARGS(sb, sync, background, dirty_nodes, dirty_dents, dirty_imeta,
+=======
+	TP_ARGS(sb, gc_type, no_bg_gc, nr_free_secs, dirty_nodes,
+		dirty_dents, dirty_imeta,
+>>>>>>> origin/android16-base
 		free_sec, free_seg, reserved_seg, prefree_seg),
 
 	TP_STRUCT__entry(
 		__field(dev_t,		dev)
+<<<<<<< HEAD
 		__field(bool,		sync)
 		__field(bool,		background)
+=======
+		__field(int,		gc_type)
+		__field(bool,		no_bg_gc)
+		__field(unsigned int,	nr_free_secs)
+>>>>>>> origin/android16-base
 		__field(long long,	dirty_nodes)
 		__field(long long,	dirty_dents)
 		__field(long long,	dirty_imeta)
@@ -671,8 +780,14 @@ TRACE_EVENT(f2fs_gc_begin,
 
 	TP_fast_assign(
 		__entry->dev		= sb->s_dev;
+<<<<<<< HEAD
 		__entry->sync		= sync;
 		__entry->background	= background;
+=======
+		__entry->gc_type	= gc_type;
+		__entry->no_bg_gc	= no_bg_gc;
+		__entry->nr_free_secs	= nr_free_secs;
+>>>>>>> origin/android16-base
 		__entry->dirty_nodes	= dirty_nodes;
 		__entry->dirty_dents	= dirty_dents;
 		__entry->dirty_imeta	= dirty_imeta;
@@ -682,12 +797,22 @@ TRACE_EVENT(f2fs_gc_begin,
 		__entry->prefree_seg	= prefree_seg;
 	),
 
+<<<<<<< HEAD
 	TP_printk("dev = (%d,%d), sync = %d, background = %d, nodes = %lld, "
 		"dents = %lld, imeta = %lld, free_sec:%u, free_seg:%u, "
 		"rsv_seg:%d, prefree_seg:%u",
 		show_dev(__entry->dev),
 		__entry->sync,
 		__entry->background,
+=======
+	TP_printk("dev = (%d,%d), gc_type = %s, no_background_GC = %d, nr_free_secs = %u, "
+		"nodes = %lld, dents = %lld, imeta = %lld, free_sec:%u, free_seg:%u, "
+		"rsv_seg:%d, prefree_seg:%u",
+		show_dev(__entry->dev),
+		show_gc_type(__entry->gc_type),
+		(__entry->gc_type == BG_GC) ? __entry->no_bg_gc : -1,
+		__entry->nr_free_secs,
+>>>>>>> origin/android16-base
 		__entry->dirty_nodes,
 		__entry->dirty_dents,
 		__entry->dirty_imeta,
@@ -813,7 +938,11 @@ TRACE_EVENT(f2fs_lookup_start,
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
 		__field(ino_t,	ino)
+<<<<<<< HEAD
 		__string(name, dentry->d_name.name)
+=======
+		__string(name,	dentry->d_name.name)
+>>>>>>> origin/android16-base
 		__field(unsigned int, flags)
 	),
 
@@ -840,7 +969,11 @@ TRACE_EVENT(f2fs_lookup_end,
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
 		__field(ino_t,	ino)
+<<<<<<< HEAD
 		__string(name, dentry->d_name.name)
+=======
+		__string(name,	dentry->d_name.name)
+>>>>>>> origin/android16-base
 		__field(nid_t,	cino)
 		__field(int,	err)
 	),
@@ -1282,6 +1415,7 @@ DEFINE_EVENT(f2fs__page, f2fs_vm_page_mkwrite,
 	TP_ARGS(page, type)
 );
 
+<<<<<<< HEAD
 DEFINE_EVENT(f2fs__page, f2fs_register_inmem_page,
 
 	TP_PROTO(struct page *page, int type),
@@ -1296,6 +1430,8 @@ DEFINE_EVENT(f2fs__page, f2fs_commit_inmem_page,
 	TP_ARGS(page, type)
 );
 
+=======
+>>>>>>> origin/android16-base
 TRACE_EVENT(f2fs_filemap_fault,
 
 	TP_PROTO(struct inode *inode, pgoff_t index, unsigned long ret),
@@ -1532,20 +1668,31 @@ TRACE_EVENT(f2fs_issue_flush,
 
 TRACE_EVENT(f2fs_lookup_extent_tree_start,
 
+<<<<<<< HEAD
 	TP_PROTO(struct inode *inode, unsigned int pgofs),
 
 	TP_ARGS(inode, pgofs),
+=======
+	TP_PROTO(struct inode *inode, unsigned int pgofs, enum extent_type type),
+
+	TP_ARGS(inode, pgofs, type),
+>>>>>>> origin/android16-base
 
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
 		__field(ino_t,	ino)
 		__field(unsigned int, pgofs)
+<<<<<<< HEAD
+=======
+		__field(enum extent_type, type)
+>>>>>>> origin/android16-base
 	),
 
 	TP_fast_assign(
 		__entry->dev = inode->i_sb->s_dev;
 		__entry->ino = inode->i_ino;
 		__entry->pgofs = pgofs;
+<<<<<<< HEAD
 	),
 
 	TP_printk("dev = (%d,%d), ino = %lu, pgofs = %u",
@@ -1554,6 +1701,18 @@ TRACE_EVENT(f2fs_lookup_extent_tree_start,
 );
 
 TRACE_EVENT_CONDITION(f2fs_lookup_extent_tree_end,
+=======
+		__entry->type = type;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, pgofs = %u, type = %s",
+		show_dev_ino(__entry),
+		__entry->pgofs,
+		show_extent_type(__entry->type))
+);
+
+TRACE_EVENT_CONDITION(f2fs_lookup_read_extent_tree_end,
+>>>>>>> origin/android16-base
 
 	TP_PROTO(struct inode *inode, unsigned int pgofs,
 						struct extent_info *ei),
@@ -1567,8 +1726,13 @@ TRACE_EVENT_CONDITION(f2fs_lookup_extent_tree_end,
 		__field(ino_t,	ino)
 		__field(unsigned int, pgofs)
 		__field(unsigned int, fofs)
+<<<<<<< HEAD
 		__field(u32, blk)
 		__field(unsigned int, len)
+=======
+		__field(unsigned int, len)
+		__field(u32, blk)
+>>>>>>> origin/android16-base
 	),
 
 	TP_fast_assign(
@@ -1576,6 +1740,7 @@ TRACE_EVENT_CONDITION(f2fs_lookup_extent_tree_end,
 		__entry->ino = inode->i_ino;
 		__entry->pgofs = pgofs;
 		__entry->fofs = ei->fofs;
+<<<<<<< HEAD
 		__entry->blk = ei->blk;
 		__entry->len = ei->len;
 	),
@@ -1595,6 +1760,67 @@ TRACE_EVENT(f2fs_update_extent_tree_range,
 						unsigned int len),
 
 	TP_ARGS(inode, pgofs, blkaddr, len),
+=======
+		__entry->len = ei->len;
+		__entry->blk = ei->blk;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, pgofs = %u, "
+		"read_ext_info(fofs: %u, len: %u, blk: %u)",
+		show_dev_ino(__entry),
+		__entry->pgofs,
+		__entry->fofs,
+		__entry->len,
+		__entry->blk)
+);
+
+TRACE_EVENT_CONDITION(f2fs_lookup_age_extent_tree_end,
+
+	TP_PROTO(struct inode *inode, unsigned int pgofs,
+						struct extent_info *ei),
+
+	TP_ARGS(inode, pgofs, ei),
+
+	TP_CONDITION(ei),
+
+	TP_STRUCT__entry(
+		__field(dev_t,	dev)
+		__field(ino_t,	ino)
+		__field(unsigned int, pgofs)
+		__field(unsigned int, fofs)
+		__field(unsigned int, len)
+		__field(unsigned long long, age)
+		__field(unsigned long long, blocks)
+	),
+
+	TP_fast_assign(
+		__entry->dev = inode->i_sb->s_dev;
+		__entry->ino = inode->i_ino;
+		__entry->pgofs = pgofs;
+		__entry->fofs = ei->fofs;
+		__entry->len = ei->len;
+		__entry->age = ei->age;
+		__entry->blocks = ei->last_blocks;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, pgofs = %u, "
+		"age_ext_info(fofs: %u, len: %u, age: %llu, blocks: %llu)",
+		show_dev_ino(__entry),
+		__entry->pgofs,
+		__entry->fofs,
+		__entry->len,
+		__entry->age,
+		__entry->blocks)
+);
+
+TRACE_EVENT(f2fs_update_read_extent_tree_range,
+
+	TP_PROTO(struct inode *inode, unsigned int pgofs, unsigned int len,
+						block_t blkaddr,
+						unsigned int c_len),
+
+	TP_ARGS(inode, pgofs, len, blkaddr, c_len),
+>>>>>>> origin/android16-base
 
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
@@ -1602,12 +1828,17 @@ TRACE_EVENT(f2fs_update_extent_tree_range,
 		__field(unsigned int, pgofs)
 		__field(u32, blk)
 		__field(unsigned int, len)
+<<<<<<< HEAD
+=======
+		__field(unsigned int, c_len)
+>>>>>>> origin/android16-base
 	),
 
 	TP_fast_assign(
 		__entry->dev = inode->i_sb->s_dev;
 		__entry->ino = inode->i_ino;
 		__entry->pgofs = pgofs;
+<<<<<<< HEAD
 		__entry->blk = blkaddr;
 		__entry->len = len;
 	),
@@ -1618,54 +1849,145 @@ TRACE_EVENT(f2fs_update_extent_tree_range,
 		__entry->pgofs,
 		__entry->blk,
 		__entry->len)
+=======
+		__entry->len = len;
+		__entry->blk = blkaddr;
+		__entry->c_len = c_len;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, pgofs = %u, "
+				"len = %u, blkaddr = %u, c_len = %u",
+		show_dev_ino(__entry),
+		__entry->pgofs,
+		__entry->len,
+		__entry->blk,
+		__entry->c_len)
+);
+
+TRACE_EVENT(f2fs_update_age_extent_tree_range,
+
+	TP_PROTO(struct inode *inode, unsigned int pgofs, unsigned int len,
+					unsigned long long age,
+					unsigned long long last_blks),
+
+	TP_ARGS(inode, pgofs, len, age, last_blks),
+
+	TP_STRUCT__entry(
+		__field(dev_t,	dev)
+		__field(ino_t,	ino)
+		__field(unsigned int, pgofs)
+		__field(unsigned int, len)
+		__field(unsigned long long, age)
+		__field(unsigned long long, blocks)
+	),
+
+	TP_fast_assign(
+		__entry->dev = inode->i_sb->s_dev;
+		__entry->ino = inode->i_ino;
+		__entry->pgofs = pgofs;
+		__entry->len = len;
+		__entry->age = age;
+		__entry->blocks = last_blks;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, pgofs = %u, "
+				"len = %u, age = %llu, blocks = %llu",
+		show_dev_ino(__entry),
+		__entry->pgofs,
+		__entry->len,
+		__entry->age,
+		__entry->blocks)
+>>>>>>> origin/android16-base
 );
 
 TRACE_EVENT(f2fs_shrink_extent_tree,
 
 	TP_PROTO(struct f2fs_sb_info *sbi, unsigned int node_cnt,
+<<<<<<< HEAD
 						unsigned int tree_cnt),
 
 	TP_ARGS(sbi, node_cnt, tree_cnt),
+=======
+			unsigned int tree_cnt, enum extent_type type),
+
+	TP_ARGS(sbi, node_cnt, tree_cnt, type),
+>>>>>>> origin/android16-base
 
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
 		__field(unsigned int, node_cnt)
 		__field(unsigned int, tree_cnt)
+<<<<<<< HEAD
+=======
+		__field(enum extent_type, type)
+>>>>>>> origin/android16-base
 	),
 
 	TP_fast_assign(
 		__entry->dev = sbi->sb->s_dev;
 		__entry->node_cnt = node_cnt;
 		__entry->tree_cnt = tree_cnt;
+<<<<<<< HEAD
 	),
 
 	TP_printk("dev = (%d,%d), shrunk: node_cnt = %u, tree_cnt = %u",
 		show_dev(__entry->dev),
 		__entry->node_cnt,
 		__entry->tree_cnt)
+=======
+		__entry->type = type;
+	),
+
+	TP_printk("dev = (%d,%d), shrunk: node_cnt = %u, tree_cnt = %u, type = %s",
+		show_dev(__entry->dev),
+		__entry->node_cnt,
+		__entry->tree_cnt,
+		show_extent_type(__entry->type))
+>>>>>>> origin/android16-base
 );
 
 TRACE_EVENT(f2fs_destroy_extent_tree,
 
+<<<<<<< HEAD
 	TP_PROTO(struct inode *inode, unsigned int node_cnt),
 
 	TP_ARGS(inode, node_cnt),
+=======
+	TP_PROTO(struct inode *inode, unsigned int node_cnt,
+				enum extent_type type),
+
+	TP_ARGS(inode, node_cnt, type),
+>>>>>>> origin/android16-base
 
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
 		__field(ino_t,	ino)
 		__field(unsigned int, node_cnt)
+<<<<<<< HEAD
+=======
+		__field(enum extent_type, type)
+>>>>>>> origin/android16-base
 	),
 
 	TP_fast_assign(
 		__entry->dev = inode->i_sb->s_dev;
 		__entry->ino = inode->i_ino;
 		__entry->node_cnt = node_cnt;
+<<<<<<< HEAD
 	),
 
 	TP_printk("dev = (%d,%d), ino = %lu, destroyed: node_cnt = %u",
 		show_dev_ino(__entry),
 		__entry->node_cnt)
+=======
+		__entry->type = type;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, destroyed: node_cnt = %u, type = %s",
+		show_dev_ino(__entry),
+		__entry->node_cnt,
+		show_extent_type(__entry->type))
+>>>>>>> origin/android16-base
 );
 
 DECLARE_EVENT_CLASS(f2fs_sync_dirty_inodes,
@@ -1824,6 +2146,10 @@ DEFINE_EVENT(f2fs_zip_end, f2fs_decompress_pages_end,
 	TP_ARGS(inode, cluster_idx, compressed_size, ret)
 );
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_F2FS_IOSTAT
+>>>>>>> origin/android16-base
 TRACE_EVENT(f2fs_iostat,
 
 	TP_PROTO(struct f2fs_sb_info *sbi, unsigned long long *iostat),
@@ -1900,6 +2226,262 @@ TRACE_EVENT(f2fs_iostat,
 		__entry->fs_cdrio, __entry->fs_nrio, __entry->fs_mrio)
 );
 
+<<<<<<< HEAD
+=======
+#ifndef __F2FS_IOSTAT_LATENCY_TYPE
+#define __F2FS_IOSTAT_LATENCY_TYPE
+struct f2fs_iostat_latency {
+	unsigned int peak_lat;
+	unsigned int avg_lat;
+	unsigned int cnt;
+};
+#endif /* __F2FS_IOSTAT_LATENCY_TYPE */
+
+TRACE_EVENT(f2fs_iostat_latency,
+
+	TP_PROTO(struct f2fs_sb_info *sbi, struct f2fs_iostat_latency (*iostat_lat)[NR_PAGE_TYPE]),
+
+	TP_ARGS(sbi, iostat_lat),
+
+	TP_STRUCT__entry(
+		__field(dev_t,	dev)
+		__field(unsigned int,	d_rd_peak)
+		__field(unsigned int,	d_rd_avg)
+		__field(unsigned int,	d_rd_cnt)
+		__field(unsigned int,	n_rd_peak)
+		__field(unsigned int,	n_rd_avg)
+		__field(unsigned int,	n_rd_cnt)
+		__field(unsigned int,	m_rd_peak)
+		__field(unsigned int,	m_rd_avg)
+		__field(unsigned int,	m_rd_cnt)
+		__field(unsigned int,	d_wr_s_peak)
+		__field(unsigned int,	d_wr_s_avg)
+		__field(unsigned int,	d_wr_s_cnt)
+		__field(unsigned int,	n_wr_s_peak)
+		__field(unsigned int,	n_wr_s_avg)
+		__field(unsigned int,	n_wr_s_cnt)
+		__field(unsigned int,	m_wr_s_peak)
+		__field(unsigned int,	m_wr_s_avg)
+		__field(unsigned int,	m_wr_s_cnt)
+		__field(unsigned int,	d_wr_as_peak)
+		__field(unsigned int,	d_wr_as_avg)
+		__field(unsigned int,	d_wr_as_cnt)
+		__field(unsigned int,	n_wr_as_peak)
+		__field(unsigned int,	n_wr_as_avg)
+		__field(unsigned int,	n_wr_as_cnt)
+		__field(unsigned int,	m_wr_as_peak)
+		__field(unsigned int,	m_wr_as_avg)
+		__field(unsigned int,	m_wr_as_cnt)
+	),
+
+	TP_fast_assign(
+		__entry->dev		= sbi->sb->s_dev;
+		__entry->d_rd_peak	= iostat_lat[0][DATA].peak_lat;
+		__entry->d_rd_avg	= iostat_lat[0][DATA].avg_lat;
+		__entry->d_rd_cnt	= iostat_lat[0][DATA].cnt;
+		__entry->n_rd_peak	= iostat_lat[0][NODE].peak_lat;
+		__entry->n_rd_avg	= iostat_lat[0][NODE].avg_lat;
+		__entry->n_rd_cnt	= iostat_lat[0][NODE].cnt;
+		__entry->m_rd_peak	= iostat_lat[0][META].peak_lat;
+		__entry->m_rd_avg	= iostat_lat[0][META].avg_lat;
+		__entry->m_rd_cnt	= iostat_lat[0][META].cnt;
+		__entry->d_wr_s_peak	= iostat_lat[1][DATA].peak_lat;
+		__entry->d_wr_s_avg	= iostat_lat[1][DATA].avg_lat;
+		__entry->d_wr_s_cnt	= iostat_lat[1][DATA].cnt;
+		__entry->n_wr_s_peak	= iostat_lat[1][NODE].peak_lat;
+		__entry->n_wr_s_avg	= iostat_lat[1][NODE].avg_lat;
+		__entry->n_wr_s_cnt	= iostat_lat[1][NODE].cnt;
+		__entry->m_wr_s_peak	= iostat_lat[1][META].peak_lat;
+		__entry->m_wr_s_avg	= iostat_lat[1][META].avg_lat;
+		__entry->m_wr_s_cnt	= iostat_lat[1][META].cnt;
+		__entry->d_wr_as_peak	= iostat_lat[2][DATA].peak_lat;
+		__entry->d_wr_as_avg	= iostat_lat[2][DATA].avg_lat;
+		__entry->d_wr_as_cnt	= iostat_lat[2][DATA].cnt;
+		__entry->n_wr_as_peak	= iostat_lat[2][NODE].peak_lat;
+		__entry->n_wr_as_avg	= iostat_lat[2][NODE].avg_lat;
+		__entry->n_wr_as_cnt	= iostat_lat[2][NODE].cnt;
+		__entry->m_wr_as_peak	= iostat_lat[2][META].peak_lat;
+		__entry->m_wr_as_avg	= iostat_lat[2][META].avg_lat;
+		__entry->m_wr_as_cnt	= iostat_lat[2][META].cnt;
+	),
+
+	TP_printk("dev = (%d,%d), "
+		"iotype [peak lat.(ms)/avg lat.(ms)/count], "
+		"rd_data [%u/%u/%u], rd_node [%u/%u/%u], rd_meta [%u/%u/%u], "
+		"wr_sync_data [%u/%u/%u], wr_sync_node [%u/%u/%u], "
+		"wr_sync_meta [%u/%u/%u], wr_async_data [%u/%u/%u], "
+		"wr_async_node [%u/%u/%u], wr_async_meta [%u/%u/%u]",
+		show_dev(__entry->dev),
+		__entry->d_rd_peak, __entry->d_rd_avg, __entry->d_rd_cnt,
+		__entry->n_rd_peak, __entry->n_rd_avg, __entry->n_rd_cnt,
+		__entry->m_rd_peak, __entry->m_rd_avg, __entry->m_rd_cnt,
+		__entry->d_wr_s_peak, __entry->d_wr_s_avg, __entry->d_wr_s_cnt,
+		__entry->n_wr_s_peak, __entry->n_wr_s_avg, __entry->n_wr_s_cnt,
+		__entry->m_wr_s_peak, __entry->m_wr_s_avg, __entry->m_wr_s_cnt,
+		__entry->d_wr_as_peak, __entry->d_wr_as_avg, __entry->d_wr_as_cnt,
+		__entry->n_wr_as_peak, __entry->n_wr_as_avg, __entry->n_wr_as_cnt,
+		__entry->m_wr_as_peak, __entry->m_wr_as_avg, __entry->m_wr_as_cnt)
+);
+#endif
+
+TRACE_EVENT(f2fs_bmap,
+
+	TP_PROTO(struct inode *inode, sector_t lblock, sector_t pblock),
+
+	TP_ARGS(inode, lblock, pblock),
+
+	TP_STRUCT__entry(
+		__field(dev_t, dev)
+		__field(ino_t, ino)
+		__field(sector_t, lblock)
+		__field(sector_t, pblock)
+	),
+
+	TP_fast_assign(
+		__entry->dev		= inode->i_sb->s_dev;
+		__entry->ino		= inode->i_ino;
+		__entry->lblock		= lblock;
+		__entry->pblock		= pblock;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, lblock:%lld, pblock:%lld",
+		show_dev_ino(__entry),
+		(unsigned long long)__entry->lblock,
+		(unsigned long long)__entry->pblock)
+);
+
+TRACE_EVENT(f2fs_fiemap,
+
+	TP_PROTO(struct inode *inode, sector_t lblock, sector_t pblock,
+		unsigned long long len, unsigned int flags, int ret),
+
+	TP_ARGS(inode, lblock, pblock, len, flags, ret),
+
+	TP_STRUCT__entry(
+		__field(dev_t, dev)
+		__field(ino_t, ino)
+		__field(sector_t, lblock)
+		__field(sector_t, pblock)
+		__field(unsigned long long, len)
+		__field(unsigned int, flags)
+		__field(int, ret)
+	),
+
+	TP_fast_assign(
+		__entry->dev		= inode->i_sb->s_dev;
+		__entry->ino		= inode->i_ino;
+		__entry->lblock		= lblock;
+		__entry->pblock		= pblock;
+		__entry->len		= len;
+		__entry->flags		= flags;
+		__entry->ret		= ret;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, lblock:%lld, pblock:%lld, "
+		"len:%llu, flags:%u, ret:%d",
+		show_dev_ino(__entry),
+		(unsigned long long)__entry->lblock,
+		(unsigned long long)__entry->pblock,
+		__entry->len,
+		__entry->flags,
+		__entry->ret)
+);
+
+DECLARE_EVENT_CLASS(f2fs__rw_start,
+
+	TP_PROTO(struct inode *inode, loff_t offset, int bytes,
+			pid_t pid, char *pathname, char *command),
+
+	TP_ARGS(inode, offset, bytes, pid, pathname, command),
+
+	TP_STRUCT__entry(
+		__string(pathbuf, pathname)
+		__field(loff_t, offset)
+		__field(int, bytes)
+		__field(loff_t, i_size)
+		__string(cmdline, command)
+		__field(pid_t, pid)
+		__field(ino_t, ino)
+	),
+
+	TP_fast_assign(
+		/*
+		 * Replace the spaces in filenames and cmdlines
+		 * because this screws up the tooling that parses
+		 * the traces.
+		 */
+		__assign_str(pathbuf, pathname);
+		(void)strreplace(__get_str(pathbuf), ' ', '_');
+		__entry->offset = offset;
+		__entry->bytes = bytes;
+		__entry->i_size = i_size_read(inode);
+		__assign_str(cmdline, command);
+		(void)strreplace(__get_str(cmdline), ' ', '_');
+		__entry->pid = pid;
+		__entry->ino = inode->i_ino;
+	),
+
+	TP_printk("entry_name %s, offset %llu, bytes %d, cmdline %s,"
+		" pid %d, i_size %llu, ino %lu",
+		__get_str(pathbuf), __entry->offset, __entry->bytes,
+		__get_str(cmdline), __entry->pid, __entry->i_size,
+		(unsigned long) __entry->ino)
+);
+
+DECLARE_EVENT_CLASS(f2fs__rw_end,
+
+	TP_PROTO(struct inode *inode, loff_t offset, int bytes),
+
+	TP_ARGS(inode, offset, bytes),
+
+	TP_STRUCT__entry(
+		__field(ino_t,	ino)
+		__field(loff_t,	offset)
+		__field(int,	bytes)
+	),
+
+	TP_fast_assign(
+		__entry->ino		= inode->i_ino;
+		__entry->offset		= offset;
+		__entry->bytes		= bytes;
+	),
+
+	TP_printk("ino %lu, offset %llu, bytes %d",
+		(unsigned long) __entry->ino,
+		__entry->offset, __entry->bytes)
+);
+
+DEFINE_EVENT(f2fs__rw_start, f2fs_dataread_start,
+
+	TP_PROTO(struct inode *inode, loff_t offset, int bytes,
+		pid_t pid, char *pathname, char *command),
+
+	TP_ARGS(inode, offset, bytes, pid, pathname, command)
+);
+
+DEFINE_EVENT(f2fs__rw_end, f2fs_dataread_end,
+
+	TP_PROTO(struct inode *inode, loff_t offset, int bytes),
+
+	TP_ARGS(inode, offset, bytes)
+);
+
+DEFINE_EVENT(f2fs__rw_start, f2fs_datawrite_start,
+
+	TP_PROTO(struct inode *inode, loff_t offset, int bytes,
+		pid_t pid, char *pathname, char *command),
+
+	TP_ARGS(inode, offset, bytes, pid, pathname, command)
+);
+
+DEFINE_EVENT(f2fs__rw_end, f2fs_datawrite_end,
+
+	TP_PROTO(struct inode *inode, loff_t offset, int bytes),
+
+	TP_ARGS(inode, offset, bytes)
+);
+
+>>>>>>> origin/android16-base
 #endif /* _TRACE_F2FS_H */
 
  /* This part must be outside protection */

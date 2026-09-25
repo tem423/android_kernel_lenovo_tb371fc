@@ -6,12 +6,15 @@
 #include <linux/if_arp.h>
 #include <net/rtnetlink.h>
 
+<<<<<<< HEAD
 struct pcpu_lstats {
 	u64 packets;
 	u64 bytes;
 	struct u64_stats_sync syncp;
 };
 
+=======
+>>>>>>> origin/android16-base
 static netdev_tx_t nlmon_xmit(struct sk_buff *skb, struct net_device *dev)
 {
 	int len = skb->len;

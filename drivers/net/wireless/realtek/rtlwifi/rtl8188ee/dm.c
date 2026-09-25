@@ -827,7 +827,11 @@ static void rtl88e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	}
 
 	if (rtlpriv->btcoexist.bt_edca_dl != 0) {
+<<<<<<< HEAD
 		edca_be_ul = rtlpriv->btcoexist.bt_edca_dl;
+=======
+		edca_be_dl = rtlpriv->btcoexist.bt_edca_dl;
+>>>>>>> origin/android16-base
 		bt_change_edca = true;
 	}
 

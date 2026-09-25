@@ -825,13 +825,21 @@ rir_found:
 }
 
 static u8 skx_close_row[] = {
+<<<<<<< HEAD
 	15, 16, 17, 18, 20, 21, 22, 28, 10, 11, 12, 13, 29, 30, 31, 32, 33
+=======
+	15, 16, 17, 18, 20, 21, 22, 28, 10, 11, 12, 13, 29, 30, 31, 32, 33, 34
+>>>>>>> origin/android16-base
 };
 static u8 skx_close_column[] = {
 	3, 4, 5, 14, 19, 23, 24, 25, 26, 27
 };
 static u8 skx_open_row[] = {
+<<<<<<< HEAD
 	14, 15, 16, 20, 28, 21, 22, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33
+=======
+	14, 15, 16, 20, 28, 21, 22, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33, 34
+>>>>>>> origin/android16-base
 };
 static u8 skx_open_column[] = {
 	3, 4, 5, 6, 7, 8, 9, 10, 11, 12
@@ -896,12 +904,20 @@ static bool skx_decode(struct decoded_addr *res)
 
 #ifdef CONFIG_EDAC_DEBUG
 /*
+<<<<<<< HEAD
  * Debug feature. Make /sys/kernel/debug/skx_edac_test/addr.
  * Write an address to this file to exercise the address decode
  * logic in this driver.
  */
 static struct dentry *skx_test;
 static u64 skx_fake_addr;
+=======
+ * Debug feature.
+ * Exercise the address decode logic by writing an address to
+ * /sys/kernel/debug/edac/skx_test/addr.
+ */
+static struct dentry *skx_test;
+>>>>>>> origin/android16-base
 
 static int debugfs_u64_set(void *data, u64 val)
 {
@@ -912,6 +928,7 @@ static int debugfs_u64_set(void *data, u64 val)
 
 	return 0;
 }
+<<<<<<< HEAD
 
 DEFINE_SIMPLE_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
 
@@ -925,6 +942,21 @@ static void setup_skx_debug(void)
 {
 	skx_test = debugfs_create_dir("skx_edac_test", NULL);
 	mydebugfs_create("addr", S_IWUSR, skx_test, &skx_fake_addr);
+=======
+DEFINE_SIMPLE_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
+
+static void setup_skx_debug(void)
+{
+	skx_test = edac_debugfs_create_dir("skx_test");
+	if (!skx_test)
+		return;
+
+	if (!edac_debugfs_create_file("addr", 0200, skx_test,
+				      NULL, &fops_u64_wo)) {
+		debugfs_remove(skx_test);
+		skx_test = NULL;
+	}
+>>>>>>> origin/android16-base
 }
 
 static void teardown_skx_debug(void)

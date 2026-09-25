@@ -57,7 +57,13 @@
 #define     BME680_NB_CONV_0_VAL		0
 
 #define BME680_REG_MEAS_STAT_0			0x1D
+<<<<<<< HEAD
 #define   BME680_GAS_MEAS_BIT			BIT(6)
+=======
+#define   BME680_NEW_DATA_BIT			BIT(7)
+#define   BME680_GAS_MEAS_BIT			BIT(6)
+#define   BME680_MEAS_BIT			BIT(5)
+>>>>>>> origin/android16-base
 
 /* Calibration Parameters */
 #define BME680_T2_LSB_REG	0x8A

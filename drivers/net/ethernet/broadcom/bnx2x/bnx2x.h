@@ -1256,7 +1256,11 @@ enum {
 
 struct bnx2x_fw_stats_req {
 	struct stats_query_header hdr;
+<<<<<<< HEAD
 	struct stats_query_entry query[FP_SB_MAX_E1x+
+=======
+	struct stats_query_entry query[FP_SB_MAX_E2 +
+>>>>>>> origin/android16-base
 		BNX2X_FIRST_QUEUE_QUERY_IDX];
 };
 

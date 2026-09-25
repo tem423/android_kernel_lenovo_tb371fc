@@ -449,13 +449,21 @@ static void ath10k_wmi_event_tdls_peer(struct ath10k *ar, struct sk_buff *skb)
 	case WMI_TDLS_TEARDOWN_REASON_TX:
 	case WMI_TDLS_TEARDOWN_REASON_RSSI:
 	case WMI_TDLS_TEARDOWN_REASON_PTR_TIMEOUT:
+<<<<<<< HEAD
+=======
+		rcu_read_lock();
+>>>>>>> origin/android16-base
 		station = ieee80211_find_sta_by_ifaddr(ar->hw,
 						       ev->peer_macaddr.addr,
 						       NULL);
 		if (!station) {
 			ath10k_warn(ar, "did not find station from tdls peer event");
+<<<<<<< HEAD
 			kfree(tb);
 			return;
+=======
+			goto exit;
+>>>>>>> origin/android16-base
 		}
 		arvif = ath10k_get_arvif(ar, __le32_to_cpu(ev->vdev_id));
 		ieee80211_tdls_oper_request(
@@ -465,7 +473,17 @@ static void ath10k_wmi_event_tdls_peer(struct ath10k *ar, struct sk_buff *skb)
 					GFP_ATOMIC
 					);
 		break;
+<<<<<<< HEAD
 	}
+=======
+	default:
+		kfree(tb);
+		return;
+	}
+
+exit:
+	rcu_read_unlock();
+>>>>>>> origin/android16-base
 	kfree(tb);
 }
 
@@ -678,6 +696,13 @@ ath10k_wmi_tlv_op_pull_mgmt_tx_compl_ev(struct ath10k *ar, struct sk_buff *skb,
 	}
 
 	ev = tb[WMI_TLV_TAG_STRUCT_MGMT_TX_COMPL_EVENT];
+<<<<<<< HEAD
+=======
+	if (!ev) {
+		kfree(tb);
+		return -EPROTO;
+	}
+>>>>>>> origin/android16-base
 
 	arg->desc_id = ev->desc_id;
 	arg->status = ev->status;
@@ -1157,13 +1182,22 @@ static int ath10k_wmi_tlv_svc_avail_parse(struct ath10k *ar, u16 tag, u16 len,
 
 	switch (tag) {
 	case WMI_TLV_TAG_STRUCT_SERVICE_AVAILABLE_EVENT:
+<<<<<<< HEAD
+=======
+		arg->service_map_ext_valid = true;
+>>>>>>> origin/android16-base
 		arg->service_map_ext_len = *(__le32 *)ptr;
 		arg->service_map_ext = ptr + sizeof(__le32);
 		return 0;
 	default:
 		break;
 	}
+<<<<<<< HEAD
 	return -EPROTO;
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static int ath10k_wmi_tlv_op_pull_svc_avail(struct ath10k *ar,
@@ -2643,9 +2677,20 @@ ath10k_wmi_tlv_op_cleanup_mgmt_tx_send(struct ath10k *ar,
 				       struct sk_buff *msdu)
 {
 	struct ath10k_skb_cb *cb = ATH10K_SKB_CB(msdu);
+<<<<<<< HEAD
 	struct ath10k_wmi *wmi = &ar->wmi;
 
 	idr_remove(&wmi->mgmt_pending_tx, cb->msdu_id);
+=======
+	struct ath10k_mgmt_tx_pkt_addr *pkt_addr;
+	struct ath10k_wmi *wmi = &ar->wmi;
+
+	spin_lock_bh(&ar->data_lock);
+	pkt_addr = idr_remove(&wmi->mgmt_pending_tx, cb->msdu_id);
+	spin_unlock_bh(&ar->data_lock);
+
+	kfree(pkt_addr);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

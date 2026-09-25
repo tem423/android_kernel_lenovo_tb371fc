@@ -239,10 +239,19 @@ static int _omap_device_notifier_call(struct notifier_block *nb,
 		break;
 	case BUS_NOTIFY_BIND_DRIVER:
 		od = to_omap_device(pdev);
+<<<<<<< HEAD
 		if (od && (od->_state == OMAP_DEVICE_STATE_ENABLED) &&
 		    pm_runtime_status_suspended(dev)) {
 			od->_driver_status = BUS_NOTIFY_BIND_DRIVER;
 			pm_runtime_set_active(dev);
+=======
+		if (od) {
+			od->_driver_status = BUS_NOTIFY_BIND_DRIVER;
+			if (od->_state == OMAP_DEVICE_STATE_ENABLED &&
+			    pm_runtime_status_suspended(dev)) {
+				pm_runtime_set_active(dev);
+			}
+>>>>>>> origin/android16-base
 		}
 		break;
 	case BUS_NOTIFY_ADD_DEVICE:

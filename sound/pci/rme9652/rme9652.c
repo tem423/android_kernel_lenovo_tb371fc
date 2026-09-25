@@ -1761,7 +1761,12 @@ static int snd_rme9652_free(struct snd_rme9652 *rme9652)
 	if (rme9652->port)
 		pci_release_regions(rme9652->pci);
 
+<<<<<<< HEAD
 	pci_disable_device(rme9652->pci);
+=======
+	if (pci_is_enabled(rme9652->pci))
+		pci_disable_device(rme9652->pci);
+>>>>>>> origin/android16-base
 	return 0;
 }
 

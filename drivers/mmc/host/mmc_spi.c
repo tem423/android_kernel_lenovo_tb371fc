@@ -269,10 +269,13 @@ static int mmc_spi_response_get(struct mmc_spi_host *host,
 	u8 	leftover = 0;
 	unsigned short rotator;
 	int 	i;
+<<<<<<< HEAD
 	char	tag[32];
 
 	snprintf(tag, sizeof(tag), "  ... CMD%d response SPI_%s",
 		cmd->opcode, maptype(cmd));
+=======
+>>>>>>> origin/android16-base
 
 	/* Except for data block reads, the whole response will already
 	 * be stored in the scratch buffer.  It's somewhere after the
@@ -422,8 +425,14 @@ checkstatus:
 	}
 
 	if (value < 0)
+<<<<<<< HEAD
 		dev_dbg(&host->spi->dev, "%s: resp %04x %08x\n",
 			tag, cmd->resp[0], cmd->resp[1]);
+=======
+		dev_dbg(&host->spi->dev,
+			"  ... CMD%d response SPI_%s: resp %04x %08x\n",
+			cmd->opcode, maptype(cmd), cmd->resp[0], cmd->resp[1]);
+>>>>>>> origin/android16-base
 
 	/* disable chipselect on errors and some success cases */
 	if (value >= 0 && cs_on)

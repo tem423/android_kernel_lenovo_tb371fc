@@ -178,7 +178,11 @@ int sctp_sched_set_sched(struct sctp_association *asoc,
 		if (!SCTP_SO(&asoc->stream, i)->ext)
 			continue;
 
+<<<<<<< HEAD
 		ret = n->init_sid(&asoc->stream, i, GFP_KERNEL);
+=======
+		ret = n->init_sid(&asoc->stream, i, GFP_ATOMIC);
+>>>>>>> origin/android16-base
 		if (ret)
 			goto err;
 	}

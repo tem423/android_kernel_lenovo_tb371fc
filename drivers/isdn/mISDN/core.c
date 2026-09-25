@@ -231,7 +231,11 @@ mISDN_register_device(struct mISDNdevice *dev,
 
 	err = get_free_devid();
 	if (err < 0)
+<<<<<<< HEAD
 		goto error1;
+=======
+		return err;
+>>>>>>> origin/android16-base
 	dev->id = err;
 
 	device_initialize(&dev->dev);
@@ -242,11 +246,19 @@ mISDN_register_device(struct mISDNdevice *dev,
 	if (debug & DEBUG_CORE)
 		printk(KERN_DEBUG "mISDN_register %s %d\n",
 		       dev_name(&dev->dev), dev->id);
+<<<<<<< HEAD
+=======
+	dev->dev.class = &mISDN_class;
+
+>>>>>>> origin/android16-base
 	err = create_stack(dev);
 	if (err)
 		goto error1;
 
+<<<<<<< HEAD
 	dev->dev.class = &mISDN_class;
+=======
+>>>>>>> origin/android16-base
 	dev->dev.platform_data = dev;
 	dev->dev.parent = parent;
 	dev_set_drvdata(&dev->dev, dev);
@@ -258,8 +270,13 @@ mISDN_register_device(struct mISDNdevice *dev,
 
 error3:
 	delete_stack(dev);
+<<<<<<< HEAD
 	return err;
 error1:
+=======
+error1:
+	put_device(&dev->dev);
+>>>>>>> origin/android16-base
 	return err;
 
 }
@@ -390,7 +407,11 @@ mISDNInit(void)
 	err = mISDN_inittimer(&debug);
 	if (err)
 		goto error2;
+<<<<<<< HEAD
 	err = l1_init(&debug);
+=======
+	err = Isdnl1_Init(&debug);
+>>>>>>> origin/android16-base
 	if (err)
 		goto error3;
 	err = Isdnl2_Init(&debug);
@@ -404,7 +425,11 @@ mISDNInit(void)
 error5:
 	Isdnl2_cleanup();
 error4:
+<<<<<<< HEAD
 	l1_cleanup();
+=======
+	Isdnl1_cleanup();
+>>>>>>> origin/android16-base
 error3:
 	mISDN_timer_cleanup();
 error2:
@@ -417,7 +442,11 @@ static void mISDN_cleanup(void)
 {
 	misdn_sock_cleanup();
 	Isdnl2_cleanup();
+<<<<<<< HEAD
 	l1_cleanup();
+=======
+	Isdnl1_cleanup();
+>>>>>>> origin/android16-base
 	mISDN_timer_cleanup();
 	class_unregister(&mISDN_class);
 

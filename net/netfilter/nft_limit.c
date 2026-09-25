@@ -79,13 +79,21 @@ static int nft_limit_init(struct nft_limit *limit,
 		return -EOVERFLOW;
 
 	if (pkts) {
+<<<<<<< HEAD
 		tokens = div_u64(limit->nsecs, limit->rate) * limit->burst;
+=======
+		tokens = div64_u64(limit->nsecs, limit->rate) * limit->burst;
+>>>>>>> origin/android16-base
 	} else {
 		/* The token bucket size limits the number of tokens can be
 		 * accumulated. tokens_max specifies the bucket size.
 		 * tokens_max = unit * (rate + burst) / rate.
 		 */
+<<<<<<< HEAD
 		tokens = div_u64(limit->nsecs * (limit->rate + limit->burst),
+=======
+		tokens = div64_u64(limit->nsecs * (limit->rate + limit->burst),
+>>>>>>> origin/android16-base
 				 limit->rate);
 	}
 

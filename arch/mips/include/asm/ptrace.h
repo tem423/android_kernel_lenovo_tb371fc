@@ -65,6 +65,10 @@ static inline void instruction_pointer_set(struct pt_regs *regs,
                                            unsigned long val)
 {
 	regs->cp0_epc = val;
+<<<<<<< HEAD
+=======
+	regs->cp0_cause &= ~CAUSEF_BD;
+>>>>>>> origin/android16-base
 }
 
 /* Query offset/name of register from its name/offset */

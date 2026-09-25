@@ -5,6 +5,10 @@ obj-$(CONFIG_FS_VERITY) += enable.o \
 			   init.o \
 			   measure.o \
 			   open.o \
+<<<<<<< HEAD
+=======
+			   read_metadata.o \
+>>>>>>> origin/android16-base
 			   verify.o
 
 obj-$(CONFIG_FS_VERITY_BUILTIN_SIGNATURES) += signature.o

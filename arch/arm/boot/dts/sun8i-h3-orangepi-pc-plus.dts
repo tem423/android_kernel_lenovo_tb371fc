@@ -53,11 +53,14 @@
 	};
 };
 
+<<<<<<< HEAD
 &emac {
 	/* LEDs changed to active high on the plus */
 	/delete-property/ allwinner,leds-active-low;
 };
 
+=======
+>>>>>>> origin/android16-base
 &mmc1 {
 	vmmc-supply = <&reg_vcc3v3>;
 	bus-width = <4>;

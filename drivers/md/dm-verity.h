@@ -72,11 +72,19 @@ struct dm_verity_io {
 	/* original value of bio->bi_end_io */
 	bio_end_io_t *orig_bi_end_io;
 
+<<<<<<< HEAD
 	sector_t block;
 	unsigned n_blocks;
 
 	struct bvec_iter iter;
 
+=======
+	struct bvec_iter iter;
+
+	sector_t block;
+	unsigned n_blocks;
+
+>>>>>>> origin/android16-base
 	struct work_struct work;
 
 	/*
@@ -109,12 +117,15 @@ static inline u8 *verity_io_want_digest(struct dm_verity *v,
 	return (u8 *)(io + 1) + v->ahash_reqsize + v->digest_size;
 }
 
+<<<<<<< HEAD
 static inline u8 *verity_io_digest_end(struct dm_verity *v,
 				       struct dm_verity_io *io)
 {
 	return verity_io_want_digest(v, io) + v->digest_size;
 }
 
+=======
+>>>>>>> origin/android16-base
 extern int verity_for_bv_block(struct dm_verity *v, struct dm_verity_io *io,
 			       struct bvec_iter *iter,
 			       int (*process)(struct dm_verity *v,

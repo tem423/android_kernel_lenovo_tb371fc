@@ -544,7 +544,12 @@ static int st21nfca_hci_i2c_probe(struct i2c_client *client,
 	phy->gpiod_ena = devm_gpiod_get(dev, "enable", GPIOD_OUT_LOW);
 	if (IS_ERR(phy->gpiod_ena)) {
 		nfc_err(dev, "Unable to get ENABLE GPIO\n");
+<<<<<<< HEAD
 		return PTR_ERR(phy->gpiod_ena);
+=======
+		r = PTR_ERR(phy->gpiod_ena);
+		goto out_free;
+>>>>>>> origin/android16-base
 	}
 
 	phy->se_status.is_ese_present =
@@ -555,7 +560,11 @@ static int st21nfca_hci_i2c_probe(struct i2c_client *client,
 	r = st21nfca_hci_platform_init(phy);
 	if (r < 0) {
 		nfc_err(&client->dev, "Unable to reboot st21nfca\n");
+<<<<<<< HEAD
 		return r;
+=======
+		goto out_free;
+>>>>>>> origin/android16-base
 	}
 
 	r = devm_request_threaded_irq(&client->dev, client->irq, NULL,
@@ -564,6 +573,7 @@ static int st21nfca_hci_i2c_probe(struct i2c_client *client,
 				ST21NFCA_HCI_DRIVER_NAME, phy);
 	if (r < 0) {
 		nfc_err(&client->dev, "Unable to register IRQ handler\n");
+<<<<<<< HEAD
 		return r;
 	}
 
@@ -573,6 +583,25 @@ static int st21nfca_hci_i2c_probe(struct i2c_client *client,
 					ST21NFCA_HCI_LLC_MAX_PAYLOAD,
 					&phy->hdev,
 					&phy->se_status);
+=======
+		goto out_free;
+	}
+
+	r = st21nfca_hci_probe(phy, &i2c_phy_ops, LLC_SHDLC_NAME,
+			       ST21NFCA_FRAME_HEADROOM,
+			       ST21NFCA_FRAME_TAILROOM,
+			       ST21NFCA_HCI_LLC_MAX_PAYLOAD,
+			       &phy->hdev,
+			       &phy->se_status);
+	if (r)
+		goto out_free;
+
+	return 0;
+
+out_free:
+	kfree_skb(phy->pending_skb);
+	return r;
+>>>>>>> origin/android16-base
 }
 
 static int st21nfca_hci_i2c_remove(struct i2c_client *client)
@@ -585,6 +614,11 @@ static int st21nfca_hci_i2c_remove(struct i2c_client *client)
 
 	if (phy->powered)
 		st21nfca_hci_i2c_disable(phy);
+<<<<<<< HEAD
+=======
+	if (phy->pending_skb)
+		kfree_skb(phy->pending_skb);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

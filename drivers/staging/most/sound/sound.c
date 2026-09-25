@@ -86,6 +86,11 @@ static void swap_copy24(u8 *dest, const u8 *source, unsigned int bytes)
 {
 	unsigned int i = 0;
 
+<<<<<<< HEAD
+=======
+	if (bytes < 2)
+		return;
+>>>>>>> origin/android16-base
 	while (i < bytes - 2) {
 		dest[i] = source[i + 2];
 		dest[i + 1] = source[i + 1];

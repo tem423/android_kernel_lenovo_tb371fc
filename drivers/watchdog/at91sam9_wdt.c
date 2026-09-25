@@ -206,10 +206,16 @@ static int at91_wdt_init(struct platform_device *pdev, struct at91wdt *wdt)
 			 "min heartbeat and max heartbeat might be too close for the system to handle it correctly\n");
 
 	if ((tmp & AT91_WDT_WDFIEN) && wdt->irq) {
+<<<<<<< HEAD
 		err = request_irq(wdt->irq, wdt_interrupt,
 				  IRQF_SHARED | IRQF_IRQPOLL |
 				  IRQF_NO_SUSPEND,
 				  pdev->name, wdt);
+=======
+		err = devm_request_irq(dev, wdt->irq, wdt_interrupt,
+				       IRQF_SHARED | IRQF_IRQPOLL | IRQF_NO_SUSPEND,
+				       pdev->name, wdt);
+>>>>>>> origin/android16-base
 		if (err)
 			return err;
 	}

@@ -428,7 +428,14 @@ static struct reset_control *__reset_control_get_internal(
 	if (!rstc)
 		return ERR_PTR(-ENOMEM);
 
+<<<<<<< HEAD
 	try_module_get(rcdev->owner);
+=======
+	if (!try_module_get(rcdev->owner)) {
+		kfree(rstc);
+		return ERR_PTR(-ENODEV);
+	}
+>>>>>>> origin/android16-base
 
 	rstc->rcdev = rcdev;
 	list_add(&rstc->list, &rcdev->reset_control_head);
@@ -456,6 +463,12 @@ static void __reset_control_put_internal(struct reset_control *rstc)
 {
 	lockdep_assert_held(&reset_list_mutex);
 
+<<<<<<< HEAD
+=======
+	if (IS_ERR_OR_NULL(rstc))
+		return;
+
+>>>>>>> origin/android16-base
 	kref_put(&rstc->refcnt, __reset_control_release);
 }
 

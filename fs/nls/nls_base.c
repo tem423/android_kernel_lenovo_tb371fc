@@ -272,7 +272,11 @@ int unregister_nls(struct nls_table * nls)
 	return -EINVAL;
 }
 
+<<<<<<< HEAD
 static struct nls_table *find_nls(char *charset)
+=======
+static struct nls_table *find_nls(const char *charset)
+>>>>>>> origin/android16-base
 {
 	struct nls_table *nls;
 	spin_lock(&nls_lock);
@@ -288,7 +292,11 @@ static struct nls_table *find_nls(char *charset)
 	return nls;
 }
 
+<<<<<<< HEAD
 struct nls_table *load_nls(char *charset)
+=======
+struct nls_table *load_nls(const char *charset)
+>>>>>>> origin/android16-base
 {
 	return try_then_request_module(find_nls(charset), "nls_%s", charset);
 }

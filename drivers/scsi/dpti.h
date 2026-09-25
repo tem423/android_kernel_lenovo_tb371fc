@@ -251,7 +251,10 @@ typedef struct _adpt_hba {
 	void __iomem *FwDebugBLEDflag_P;// Virtual Addr Of FW Debug BLED
 	void __iomem *FwDebugBLEDvalue_P;// Virtual Addr Of FW Debug BLED
 	u32 FwDebugFlags;
+<<<<<<< HEAD
 	u32 *ioctl_reply_context[4];
+=======
+>>>>>>> origin/android16-base
 } adpt_hba;
 
 struct sg_simple_element {

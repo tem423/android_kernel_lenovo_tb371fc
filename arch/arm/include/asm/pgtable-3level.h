@@ -37,6 +37,11 @@
 #define PTE_HWTABLE_OFF		(0)
 #define PTE_HWTABLE_SIZE	(PTRS_PER_PTE * sizeof(u64))
 
+<<<<<<< HEAD
+=======
+#define MAX_POSSIBLE_PHYSMEM_BITS 40
+
+>>>>>>> origin/android16-base
 /*
  * PGDIR_SHIFT determines the size a top-level page table entry can map.
  */

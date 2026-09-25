@@ -131,7 +131,11 @@ nv50_dmac_destroy(struct nv50_dmac *dmac)
 
 int
 nv50_dmac_create(struct nvif_device *device, struct nvif_object *disp,
+<<<<<<< HEAD
 		 const s32 *oclass, u8 head, void *data, u32 size, u64 syncbuf,
+=======
+		 const s32 *oclass, u8 head, void *data, u32 size, s64 syncbuf,
+>>>>>>> origin/android16-base
 		 struct nv50_dmac *dmac)
 {
 	struct nouveau_cli *cli = (void *)device->object.client;
@@ -166,7 +170,11 @@ nv50_dmac_create(struct nvif_device *device, struct nvif_object *disp,
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	if (!syncbuf)
+=======
+	if (syncbuf < 0)
+>>>>>>> origin/android16-base
 		return 0;
 
 	ret = nvif_object_init(&dmac->base.user, 0xf0000000, NV_DMA_IN_MEMORY,

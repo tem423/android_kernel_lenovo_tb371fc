@@ -218,6 +218,7 @@ struct bt_iter_data {
 	bool reserved;
 };
 
+<<<<<<< HEAD
 static struct request *blk_mq_find_and_get_req(struct blk_mq_tags *tags,
 		unsigned int bitnr)
 {
@@ -232,6 +233,8 @@ static struct request *blk_mq_find_and_get_req(struct blk_mq_tags *tags,
 	return rq;
 }
 
+=======
+>>>>>>> origin/android16-base
 static bool bt_iter(struct sbitmap *bitmap, unsigned int bitnr, void *data)
 {
 	struct bt_iter_data *iter_data = data;
@@ -239,15 +242,23 @@ static bool bt_iter(struct sbitmap *bitmap, unsigned int bitnr, void *data)
 	struct blk_mq_tags *tags = hctx->tags;
 	bool reserved = iter_data->reserved;
 	struct request *rq;
+<<<<<<< HEAD
 	bool ret = true;
 
 	if (!reserved)
 		bitnr += tags->nr_reserved_tags;
+=======
+
+	if (!reserved)
+		bitnr += tags->nr_reserved_tags;
+	rq = tags->rqs[bitnr];
+>>>>>>> origin/android16-base
 
 	/*
 	 * We can hit rq == NULL here, because the tagging functions
 	 * test and set the bit before assining ->rqs[].
 	 */
+<<<<<<< HEAD
 	rq = blk_mq_find_and_get_req(tags, bitnr);
 	if (!rq)
 		return true;
@@ -256,6 +267,11 @@ static bool bt_iter(struct sbitmap *bitmap, unsigned int bitnr, void *data)
 		iter_data->fn(hctx, rq, iter_data->data, reserved);
 	blk_mq_put_rq_ref(rq);
 	return ret;
+=======
+	if (rq && rq->q == hctx->queue)
+		iter_data->fn(hctx, rq, iter_data->data, reserved);
+	return true;
+>>>>>>> origin/android16-base
 }
 
 static void bt_for_each(struct blk_mq_hw_ctx *hctx, struct sbitmap_queue *bt,
@@ -284,7 +300,10 @@ static bool bt_tags_iter(struct sbitmap *bitmap, unsigned int bitnr, void *data)
 	struct blk_mq_tags *tags = iter_data->tags;
 	bool reserved = iter_data->reserved;
 	struct request *rq;
+<<<<<<< HEAD
 	bool ret = true;
+=======
+>>>>>>> origin/android16-base
 
 	if (!reserved)
 		bitnr += tags->nr_reserved_tags;
@@ -293,6 +312,7 @@ static bool bt_tags_iter(struct sbitmap *bitmap, unsigned int bitnr, void *data)
 	 * We can hit rq == NULL here, because the tagging functions
 	 * test and set the bit before assining ->rqs[].
 	 */
+<<<<<<< HEAD
 	rq = blk_mq_find_and_get_req(tags, bitnr);
 	if (!rq)
 		return true;
@@ -300,6 +320,13 @@ static bool bt_tags_iter(struct sbitmap *bitmap, unsigned int bitnr, void *data)
 		iter_data->fn(rq, iter_data->data, reserved);
 	blk_mq_put_rq_ref(rq);
 	return ret;
+=======
+	rq = tags->rqs[bitnr];
+	if (rq && blk_mq_request_started(rq))
+		iter_data->fn(rq, iter_data->data, reserved);
+
+	return true;
+>>>>>>> origin/android16-base
 }
 
 static void bt_tags_for_each(struct blk_mq_tags *tags, struct sbitmap_queue *bt,
@@ -399,12 +426,17 @@ struct blk_mq_tags *blk_mq_init_tags(unsigned int total_tags,
 				     int node, int alloc_policy)
 {
 	struct blk_mq_tags *tags;
+<<<<<<< HEAD
+=======
+	struct ext_blk_mq_tags *etags;
+>>>>>>> origin/android16-base
 
 	if (total_tags > BLK_MQ_TAG_MAX) {
 		pr_err("blk-mq: tag depth too large\n");
 		return NULL;
 	}
 
+<<<<<<< HEAD
 	tags = kzalloc_node(sizeof(*tags), GFP_KERNEL, node);
 	if (!tags)
 		return NULL;
@@ -412,6 +444,16 @@ struct blk_mq_tags *blk_mq_init_tags(unsigned int total_tags,
 	tags->nr_tags = total_tags;
 	tags->nr_reserved_tags = reserved_tags;
 	spin_lock_init(&tags->lock);
+=======
+	etags = kzalloc_node(sizeof(*etags), GFP_KERNEL, node);
+	if (!etags)
+		return NULL;
+
+	tags = &etags->tags;
+	tags->nr_tags = total_tags;
+	tags->nr_reserved_tags = reserved_tags;
+	spin_lock_init(&etags->lock);
+>>>>>>> origin/android16-base
 
 	return blk_mq_init_bitmap_tags(tags, node, alloc_policy);
 }

@@ -1606,7 +1606,11 @@ TRACE_EVENT(pnfs_update_layout,
 #endif /* _TRACE_NFS4_H */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../.
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE nfs4trace
 /* This part must be outside protection */
 #include <trace/define_trace.h>

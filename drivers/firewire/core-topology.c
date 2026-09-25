@@ -386,16 +386,25 @@ static void report_found_node(struct fw_card *card,
 	card->bm_retries = 0;
 }
 
+<<<<<<< HEAD
 void fw_destroy_nodes(struct fw_card *card)
 {
 	unsigned long flags;
 
 	spin_lock_irqsave(&card->lock, flags);
+=======
+/* Must be called with card->lock held */
+void fw_destroy_nodes(struct fw_card *card)
+{
+>>>>>>> origin/android16-base
 	card->color++;
 	if (card->local_node != NULL)
 		for_each_fw_node(card, card->local_node, report_lost_node);
 	card->local_node = NULL;
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&card->lock, flags);
+=======
+>>>>>>> origin/android16-base
 }
 
 static void move_tree(struct fw_node *node0, struct fw_node *node1, int port)
@@ -521,6 +530,11 @@ void fw_core_handle_bus_reset(struct fw_card *card, int node_id, int generation,
 	struct fw_node *local_node;
 	unsigned long flags;
 
+<<<<<<< HEAD
+=======
+	spin_lock_irqsave(&card->lock, flags);
+
+>>>>>>> origin/android16-base
 	/*
 	 * If the selfID buffer is not the immediate successor of the
 	 * previously processed one, we cannot reliably compare the
@@ -532,8 +546,11 @@ void fw_core_handle_bus_reset(struct fw_card *card, int node_id, int generation,
 		card->bm_retries = 0;
 	}
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&card->lock, flags);
 
+=======
+>>>>>>> origin/android16-base
 	card->broadcast_channel_allocated = card->broadcast_channel_auto_allocated;
 	card->node_id = node_id;
 	/*

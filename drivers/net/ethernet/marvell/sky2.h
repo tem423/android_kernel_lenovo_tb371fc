@@ -2201,7 +2201,11 @@ struct rx_ring_info {
 	struct sk_buff	*skb;
 	dma_addr_t	data_addr;
 	DEFINE_DMA_UNMAP_LEN(data_size);
+<<<<<<< HEAD
 	dma_addr_t	frag_addr[ETH_JUMBO_MTU >> PAGE_SHIFT];
+=======
+	dma_addr_t	frag_addr[ETH_JUMBO_MTU >> PAGE_SHIFT ?: 1];
+>>>>>>> origin/android16-base
 };
 
 enum flow_control {

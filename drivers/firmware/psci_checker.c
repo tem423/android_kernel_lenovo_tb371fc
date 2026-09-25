@@ -162,7 +162,11 @@ static int alloc_init_cpu_groups(cpumask_var_t **pcpu_groups)
 	if (!alloc_cpumask_var(&tmp, GFP_KERNEL))
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	cpu_groups = kcalloc(nb_available_cpus, sizeof(cpu_groups),
+=======
+	cpu_groups = kcalloc(nb_available_cpus, sizeof(*cpu_groups),
+>>>>>>> origin/android16-base
 			     GFP_KERNEL);
 	if (!cpu_groups) {
 		free_cpumask_var(tmp);

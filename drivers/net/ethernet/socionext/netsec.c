@@ -1386,14 +1386,26 @@ static int netsec_netdev_init(struct net_device *ndev)
 		goto err1;
 
 	/* set phy power down */
+<<<<<<< HEAD
 	data = netsec_phy_read(priv->mii_bus, priv->phy_addr, MII_BMCR) |
 		BMCR_PDOWN;
 	netsec_phy_write(priv->mii_bus, priv->phy_addr, MII_BMCR, data);
+=======
+	data = netsec_phy_read(priv->mii_bus, priv->phy_addr, MII_BMCR);
+	netsec_phy_write(priv->mii_bus, priv->phy_addr, MII_BMCR,
+			 data | BMCR_PDOWN);
+>>>>>>> origin/android16-base
 
 	ret = netsec_reset_hardware(priv, true);
 	if (ret)
 		goto err2;
 
+<<<<<<< HEAD
+=======
+	/* Restore phy power state */
+	netsec_phy_write(priv->mii_bus, priv->phy_addr, MII_BMCR, data);
+
+>>>>>>> origin/android16-base
 	return 0;
 err2:
 	netsec_free_dring(priv, NETSEC_RING_RX);
@@ -1546,11 +1558,19 @@ static int netsec_register_mdio(struct netsec_priv *priv, u32 phy_addr)
 			ret = PTR_ERR(priv->phydev);
 			dev_err(priv->dev, "get_phy_device err(%d)\n", ret);
 			priv->phydev = NULL;
+<<<<<<< HEAD
+=======
+			mdiobus_unregister(bus);
+>>>>>>> origin/android16-base
 			return -ENODEV;
 		}
 
 		ret = phy_device_register(priv->phydev);
 		if (ret) {
+<<<<<<< HEAD
+=======
+			phy_device_free(priv->phydev);
+>>>>>>> origin/android16-base
 			mdiobus_unregister(bus);
 			dev_err(priv->dev,
 				"phy_device_register err(%d)\n", ret);

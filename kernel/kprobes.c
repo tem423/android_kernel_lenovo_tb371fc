@@ -418,8 +418,13 @@ static inline int kprobe_optready(struct kprobe *p)
 	return 0;
 }
 
+<<<<<<< HEAD
 /* Return true(!0) if the kprobe is disarmed. Note: p must be on hash list */
 static inline int kprobe_disarmed(struct kprobe *p)
+=======
+/* Return true if the kprobe is disarmed. Note: p must be on hash list */
+bool kprobe_disarmed(struct kprobe *p)
+>>>>>>> origin/android16-base
 {
 	struct optimized_kprobe *op;
 
@@ -626,7 +631,11 @@ void wait_for_kprobe_optimizer(void)
 	mutex_unlock(&kprobe_mutex);
 }
 
+<<<<<<< HEAD
 static bool optprobe_queued_unopt(struct optimized_kprobe *op)
+=======
+bool optprobe_queued_unopt(struct optimized_kprobe *op)
+>>>>>>> origin/android16-base
 {
 	struct optimized_kprobe *_op;
 
@@ -1565,8 +1574,22 @@ static int check_kprobe_address_safe(struct kprobe *p,
 	jump_label_lock();
 	preempt_disable();
 
+<<<<<<< HEAD
 	/* Ensure it is not in reserved area nor out of text */
 	if (!kernel_text_address((unsigned long) p->addr) ||
+=======
+	/* Ensure the address is in a text area, and find a module if exists. */
+	*probed_mod = NULL;
+	if (!core_kernel_text((unsigned long) p->addr)) {
+		*probed_mod = __module_text_address((unsigned long) p->addr);
+		if (!(*probed_mod)) {
+			ret = -EINVAL;
+			goto out;
+		}
+	}
+	/* Ensure it is not in reserved area. */
+	if (in_gate_area_no_mm((unsigned long) p->addr) ||
+>>>>>>> origin/android16-base
 	    within_kprobe_blacklist((unsigned long) p->addr) ||
 	    jump_label_text_reserved(p->addr, p->addr) ||
 	    find_bug((unsigned long)p->addr)) {
@@ -1574,8 +1597,12 @@ static int check_kprobe_address_safe(struct kprobe *p,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	/* Check if are we probing a module */
 	*probed_mod = __module_text_address((unsigned long) p->addr);
+=======
+	/* Get module refcount and reject __init functions for loaded modules. */
+>>>>>>> origin/android16-base
 	if (*probed_mod) {
 		/*
 		 * We must hold a refcount of the probed module while updating
@@ -1708,11 +1735,20 @@ static struct kprobe *__disable_kprobe(struct kprobe *p)
 		/* Try to disarm and disable this/parent probe */
 		if (p == orig_p || aggr_kprobe_disabled(orig_p)) {
 			/*
+<<<<<<< HEAD
 			 * If kprobes_all_disarmed is set, orig_p
 			 * should have already been disarmed, so
 			 * skip unneed disarming process.
 			 */
 			if (!kprobes_all_disarmed) {
+=======
+			 * Don't be lazy here.  Even if 'kprobes_all_disarmed'
+			 * is false, 'orig_p' might not have been armed yet.
+			 * Note arm_all_kprobes() __tries__ to arm all kprobes
+			 * on the best effort basis.
+			 */
+			if (!kprobes_all_disarmed && !kprobe_disabled(orig_p)) {
+>>>>>>> origin/android16-base
 				ret = disarm_kprobe(orig_p, true);
 				if (ret) {
 					p->flags &= ~KPROBE_FLAG_DISABLED;
@@ -1921,11 +1957,29 @@ bool __weak arch_kprobe_on_func_entry(unsigned long offset)
 	return !offset;
 }
 
+<<<<<<< HEAD
 bool kprobe_on_func_entry(kprobe_opcode_t *addr, const char *sym, unsigned long offset)
+=======
+/**
+ * kprobe_on_func_entry() -- check whether given address is function entry
+ * @addr: Target address
+ * @sym:  Target symbol name
+ * @offset: The offset from the symbol or the address
+ *
+ * This checks whether the given @addr+@offset or @sym+@offset is on the
+ * function entry address or not.
+ * This returns 0 if it is the function entry, or -EINVAL if it is not.
+ * And also it returns -ENOENT if it fails the symbol or address lookup.
+ * Caller must pass @addr or @sym (either one must be NULL), or this
+ * returns -EINVAL.
+ */
+int kprobe_on_func_entry(kprobe_opcode_t *addr, const char *sym, unsigned long offset)
+>>>>>>> origin/android16-base
 {
 	kprobe_opcode_t *kp_addr = _kprobe_addr(addr, sym, offset);
 
 	if (IS_ERR(kp_addr))
+<<<<<<< HEAD
 		return false;
 
 	if (!kallsyms_lookup_size_offset((unsigned long)kp_addr, NULL, &offset) ||
@@ -1933,16 +1987,40 @@ bool kprobe_on_func_entry(kprobe_opcode_t *addr, const char *sym, unsigned long 
 		return false;
 
 	return true;
+=======
+		return PTR_ERR(kp_addr);
+
+	if (!kallsyms_lookup_size_offset((unsigned long)kp_addr, NULL, &offset))
+		return -ENOENT;
+
+	if (!arch_kprobe_on_func_entry(offset))
+		return -EINVAL;
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 int register_kretprobe(struct kretprobe *rp)
 {
+<<<<<<< HEAD
 	int ret = 0;
+=======
+	int ret;
+>>>>>>> origin/android16-base
 	struct kretprobe_instance *inst;
 	int i;
 	void *addr;
 
+<<<<<<< HEAD
 	if (!kprobe_on_func_entry(rp->kp.addr, rp->kp.symbol_name, rp->kp.offset))
+=======
+	ret = kprobe_on_func_entry(rp->kp.addr, rp->kp.symbol_name, rp->kp.offset);
+	if (ret)
+		return ret;
+
+	/* If only rp->kp.addr is specified, check reregistering kprobes */
+	if (rp->kp.addr && check_kprobe_rereg(&rp->kp))
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	if (kretprobe_blacklist_size) {
@@ -1956,6 +2034,12 @@ int register_kretprobe(struct kretprobe *rp)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	if (rp->data_size > KRETPROBE_MAX_DATA_SIZE)
+		return -E2BIG;
+
+>>>>>>> origin/android16-base
 	rp->kp.pre_handler = pre_handler_kretprobe;
 	rp->kp.post_handler = NULL;
 	rp->kp.fault_handler = NULL;
@@ -2146,8 +2230,16 @@ int enable_kprobe(struct kprobe *kp)
 	if (!kprobes_all_disarmed && kprobe_disabled(p)) {
 		p->flags &= ~KPROBE_FLAG_DISABLED;
 		ret = arm_kprobe(p);
+<<<<<<< HEAD
 		if (ret)
 			p->flags |= KPROBE_FLAG_DISABLED;
+=======
+		if (ret) {
+			p->flags |= KPROBE_FLAG_DISABLED;
+			if (p != kp)
+				kp->flags |= KPROBE_FLAG_DISABLED;
+		}
+>>>>>>> origin/android16-base
 	}
 out:
 	mutex_unlock(&kprobe_mutex);

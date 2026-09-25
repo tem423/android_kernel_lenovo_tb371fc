@@ -74,7 +74,10 @@ MODULE_FIRMWARE(XHCI_RCAR_FIRMWARE_NAME_V3);
 
 /* For soc_device_attribute */
 #define RCAR_XHCI_FIRMWARE_V2   BIT(0) /* FIRMWARE V2 */
+<<<<<<< HEAD
 #define RCAR_XHCI_FIRMWARE_V3   BIT(1) /* FIRMWARE V3 */
+=======
+>>>>>>> origin/android16-base
 
 static const struct soc_device_attribute rcar_quirks_match[]  = {
 	{
@@ -143,14 +146,27 @@ static int xhci_rcar_download_firmware(struct usb_hcd *hcd)
 	const struct soc_device_attribute *attr;
 	const char *firmware_name;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * According to the datasheet, "Upon the completion of FW Download,
+	 * there is no need to write or reload FW".
+	 */
+	if (readl(regs + RCAR_USB3_DL_CTRL) & RCAR_USB3_DL_CTRL_FW_SUCCESS)
+		return 0;
+
+>>>>>>> origin/android16-base
 	attr = soc_device_match(rcar_quirks_match);
 	if (attr)
 		quirks = (uintptr_t)attr->data;
 
 	if (quirks & RCAR_XHCI_FIRMWARE_V2)
 		firmware_name = XHCI_RCAR_FIRMWARE_NAME_V2;
+<<<<<<< HEAD
 	else if (quirks & RCAR_XHCI_FIRMWARE_V3)
 		firmware_name = XHCI_RCAR_FIRMWARE_NAME_V3;
+=======
+>>>>>>> origin/android16-base
 	else
 		firmware_name = priv->firmware_name;
 

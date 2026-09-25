@@ -177,8 +177,14 @@ void tls_preserve_current_state(void);
 
 static inline void start_thread_common(struct pt_regs *regs, unsigned long pc)
 {
+<<<<<<< HEAD
 	memset(regs, 0, sizeof(*regs));
 	forget_syscall(regs);
+=======
+	s32 previous_syscall = regs->syscallno;
+	memset(regs, 0, sizeof(*regs));
+	regs->syscallno = previous_syscall;
+>>>>>>> origin/android16-base
 	regs->pc = pc;
 }
 

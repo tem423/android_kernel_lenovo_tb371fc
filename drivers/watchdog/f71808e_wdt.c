@@ -237,15 +237,27 @@ static int watchdog_set_timeout(int timeout)
 
 	mutex_lock(&watchdog.lock);
 
+<<<<<<< HEAD
 	watchdog.timeout = timeout;
 	if (timeout > 0xff) {
 		watchdog.timer_val = DIV_ROUND_UP(timeout, 60);
 		watchdog.minutes_mode = true;
+=======
+	if (timeout > 0xff) {
+		watchdog.timer_val = DIV_ROUND_UP(timeout, 60);
+		watchdog.minutes_mode = true;
+		timeout = watchdog.timer_val * 60;
+>>>>>>> origin/android16-base
 	} else {
 		watchdog.timer_val = timeout;
 		watchdog.minutes_mode = false;
 	}
 
+<<<<<<< HEAD
+=======
+	watchdog.timeout = timeout;
+
+>>>>>>> origin/android16-base
 	mutex_unlock(&watchdog.lock);
 
 	return 0;

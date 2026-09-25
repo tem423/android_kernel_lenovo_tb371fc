@@ -317,7 +317,11 @@ mtk_stp_split(struct btmtkuart_dev *bdev, const unsigned char *data, int count,
 	return data;
 }
 
+<<<<<<< HEAD
 static int btmtkuart_recv(struct hci_dev *hdev, const u8 *data, size_t count)
+=======
+static void btmtkuart_recv(struct hci_dev *hdev, const u8 *data, size_t count)
+>>>>>>> origin/android16-base
 {
 	struct btmtkuart_dev *bdev = hci_get_drvdata(hdev);
 	const unsigned char *p_left = data, *p_h4;
@@ -356,25 +360,37 @@ static int btmtkuart_recv(struct hci_dev *hdev, const u8 *data, size_t count)
 			bt_dev_err(bdev->hdev,
 				   "Frame reassembly failed (%d)", err);
 			bdev->rx_skb = NULL;
+<<<<<<< HEAD
 			return err;
+=======
+			return;
+>>>>>>> origin/android16-base
 		}
 
 		sz_left -= sz_h4;
 		p_left += sz_h4;
 	}
+<<<<<<< HEAD
 
 	return 0;
+=======
+>>>>>>> origin/android16-base
 }
 
 static int btmtkuart_receive_buf(struct serdev_device *serdev, const u8 *data,
 				 size_t count)
 {
 	struct btmtkuart_dev *bdev = serdev_device_get_drvdata(serdev);
+<<<<<<< HEAD
 	int err;
 
 	err = btmtkuart_recv(bdev->hdev, data, count);
 	if (err < 0)
 		return err;
+=======
+
+	btmtkuart_recv(bdev->hdev, data, count);
+>>>>>>> origin/android16-base
 
 	bdev->hdev->stat.byte_rx += count;
 

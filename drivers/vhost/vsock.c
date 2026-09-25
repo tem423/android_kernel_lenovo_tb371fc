@@ -354,7 +354,11 @@ vhost_vsock_alloc_pkt(struct vhost_virtqueue *vq,
 		return NULL;
 	}
 
+<<<<<<< HEAD
 	pkt->buf = kmalloc(pkt->len, GFP_KERNEL);
+=======
+	pkt->buf = kvmalloc(pkt->len, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!pkt->buf) {
 		kfree(pkt);
 		return NULL;
@@ -490,7 +494,11 @@ static void vhost_vsock_handle_tx_kick(struct vhost_work *work)
 			virtio_transport_free_pkt(pkt);
 
 		len += sizeof(pkt->hdr);
+<<<<<<< HEAD
 		vhost_add_used(vq, head, len);
+=======
+		vhost_add_used(vq, head, 0);
+>>>>>>> origin/android16-base
 		total_len += len;
 		added = true;
 	} while(likely(!vhost_exceeds_weight(vq, ++pkts, total_len)));
@@ -569,6 +577,7 @@ err:
 	return ret;
 }
 
+<<<<<<< HEAD
 static int vhost_vsock_stop(struct vhost_vsock *vsock)
 {
 	size_t i;
@@ -579,6 +588,20 @@ static int vhost_vsock_stop(struct vhost_vsock *vsock)
 	ret = vhost_dev_check_owner(&vsock->dev);
 	if (ret)
 		goto err;
+=======
+static int vhost_vsock_stop(struct vhost_vsock *vsock, bool check_owner)
+{
+	size_t i;
+	int ret = 0;
+
+	mutex_lock(&vsock->dev.mutex);
+
+	if (check_owner) {
+		ret = vhost_dev_check_owner(&vsock->dev);
+		if (ret)
+			goto err;
+	}
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < ARRAY_SIZE(vsock->vqs); i++) {
 		struct vhost_virtqueue *vq = &vsock->vqs[i];
@@ -693,7 +716,16 @@ static int vhost_vsock_dev_release(struct inode *inode, struct file *file)
 	 * inefficient.  Room for improvement here. */
 	vsock_for_each_connected_socket(vhost_vsock_reset_orphans);
 
+<<<<<<< HEAD
 	vhost_vsock_stop(vsock);
+=======
+	/* Don't check the owner, because we are in the release path, so we
+	 * need to stop the vsock device in any case.
+	 * vhost_vsock_stop() can not fail in this case, so we don't need to
+	 * check the return code.
+	 */
+	vhost_vsock_stop(vsock, false);
+>>>>>>> origin/android16-base
 	vhost_vsock_flush(vsock);
 	vhost_dev_stop(&vsock->dev);
 
@@ -791,7 +823,11 @@ static long vhost_vsock_dev_ioctl(struct file *f, unsigned int ioctl,
 		if (start)
 			return vhost_vsock_start(vsock);
 		else
+<<<<<<< HEAD
 			return vhost_vsock_stop(vsock);
+=======
+			return vhost_vsock_stop(vsock, true);
+>>>>>>> origin/android16-base
 	case VHOST_GET_FEATURES:
 		features = VHOST_VSOCK_FEATURES;
 		if (copy_to_user(argp, &features, sizeof(features)))

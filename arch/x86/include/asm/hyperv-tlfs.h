@@ -682,7 +682,11 @@ struct hv_enlightened_vmcs {
 	u64 guest_rip;
 
 	u32 hv_clean_fields;
+<<<<<<< HEAD
 	u32 hv_padding_32;
+=======
+	u32 padding32_1;
+>>>>>>> origin/android16-base
 	u32 hv_synthetic_controls;
 	struct {
 		u32 nested_flush_hypercall:1;
@@ -690,7 +694,11 @@ struct hv_enlightened_vmcs {
 		u32 reserved:30;
 	} hv_enlightenments_control;
 	u32 hv_vp_id;
+<<<<<<< HEAD
 
+=======
+	u32 padding32_2;
+>>>>>>> origin/android16-base
 	u64 hv_vm_id;
 	u64 partition_assist_page;
 	u64 padding64_4[4];

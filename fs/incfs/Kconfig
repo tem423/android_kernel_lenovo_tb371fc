@@ -2,6 +2,7 @@ config INCREMENTAL_FS
 	tristate "Incremental file system support"
 	depends on BLOCK
 	select DECOMPRESS_LZ4
+<<<<<<< HEAD
 	select CRC32
 	select CRYPTO
 	select CRYPTO_RSA
@@ -9,6 +10,11 @@ config INCREMENTAL_FS
 	select X509_CERTIFICATE_PARSER
 	select ASYMMETRIC_KEY_TYPE
 	select ASYMMETRIC_PUBLIC_KEY_SUBTYPE
+=======
+	select DECOMPRESS_ZSTD
+	select CRYPTO_ZSTD
+	select CRYPTO_SHA256
+>>>>>>> origin/android16-base
 	help
 	  Incremental FS is a read-only virtual file system that facilitates execution
 	  of programs while their binaries are still being lazily downloaded over the

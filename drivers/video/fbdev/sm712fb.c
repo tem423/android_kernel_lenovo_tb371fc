@@ -1047,7 +1047,11 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
 	if (count + p > total_size)
 		count = total_size - p;
 
+<<<<<<< HEAD
 	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count, GFP_KERNEL);
+=======
+	buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!buffer)
 		return -ENOMEM;
 
@@ -1059,6 +1063,7 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
 	while (count) {
 		c = (count > PAGE_SIZE) ? PAGE_SIZE : count;
 		dst = buffer;
+<<<<<<< HEAD
 		for (i = c >> 2; i--;) {
 			*dst = fb_readl(src++);
 			*dst = big_swap(*dst);
@@ -1077,6 +1082,15 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
 				}
 			}
 			src = (u32 __iomem *)src8;
+=======
+		for (i = (c + 3) >> 2; i--;) {
+			u32 val;
+
+			val = fb_readl(src);
+			*dst = big_swap(val);
+			src++;
+			dst++;
+>>>>>>> origin/android16-base
 		}
 
 		if (copy_to_user(buf, buffer, c)) {
@@ -1130,7 +1144,11 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
 		count = total_size - p;
 	}
 
+<<<<<<< HEAD
 	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count, GFP_KERNEL);
+=======
+	buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!buffer)
 		return -ENOMEM;
 
@@ -1148,6 +1166,7 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
 			break;
 		}
 
+<<<<<<< HEAD
 		for (i = c >> 2; i--;) {
 			fb_writel(big_swap(*src), dst++);
 			src++;
@@ -1166,6 +1185,13 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
 			}
 			dst = (u32 __iomem *)dst8;
 		}
+=======
+		for (i = (c + 3) >> 2; i--;) {
+			fb_writel(big_swap(*src), dst);
+			dst++;
+			src++;
+		}
+>>>>>>> origin/android16-base
 
 		*ppos += c;
 		buf += c;

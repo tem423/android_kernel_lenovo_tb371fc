@@ -46,9 +46,15 @@
 /* Impose limit on how much memory KFD can use */
 static struct {
 	uint64_t max_system_mem_limit;
+<<<<<<< HEAD
 	uint64_t max_userptr_mem_limit;
 	int64_t system_mem_used;
 	int64_t userptr_mem_used;
+=======
+	uint64_t max_ttm_mem_limit;
+	int64_t system_mem_used;
+	int64_t ttm_mem_used;
+>>>>>>> origin/android16-base
 	spinlock_t mem_limit_lock;
 } kfd_mem_limit;
 
@@ -90,8 +96,13 @@ static bool check_if_add_bo_to_vm(struct amdgpu_vm *avm,
 }
 
 /* Set memory usage limits. Current, limits are
+<<<<<<< HEAD
  *  System (kernel) memory - 3/8th System RAM
  *  Userptr memory - 3/4th System RAM
+=======
+ *  System (TTM + userptr) memory - 3/4th System RAM
+ *  TTM memory - 3/8th System RAM
+>>>>>>> origin/android16-base
  */
 void amdgpu_amdkfd_gpuvm_init_mem_limits(void)
 {
@@ -103,6 +114,7 @@ void amdgpu_amdkfd_gpuvm_init_mem_limits(void)
 	mem *= si.mem_unit;
 
 	spin_lock_init(&kfd_mem_limit.mem_limit_lock);
+<<<<<<< HEAD
 	kfd_mem_limit.max_system_mem_limit = (mem >> 1) - (mem >> 3);
 	kfd_mem_limit.max_userptr_mem_limit = mem - (mem >> 2);
 	pr_debug("Kernel memory limit %lluM, userptr limit %lluM\n",
@@ -114,12 +126,26 @@ static int amdgpu_amdkfd_reserve_system_mem_limit(struct amdgpu_device *adev,
 					      uint64_t size, u32 domain)
 {
 	size_t acc_size;
+=======
+	kfd_mem_limit.max_system_mem_limit = (mem >> 1) + (mem >> 2);
+	kfd_mem_limit.max_ttm_mem_limit = (mem >> 1) - (mem >> 3);
+	pr_debug("Kernel memory limit %lluM, TTM limit %lluM\n",
+		(kfd_mem_limit.max_system_mem_limit >> 20),
+		(kfd_mem_limit.max_ttm_mem_limit >> 20));
+}
+
+static int amdgpu_amdkfd_reserve_system_mem_limit(struct amdgpu_device *adev,
+		uint64_t size, u32 domain, bool sg)
+{
+	size_t acc_size, system_mem_needed, ttm_mem_needed;
+>>>>>>> origin/android16-base
 	int ret = 0;
 
 	acc_size = ttm_bo_dma_acc_size(&adev->mman.bdev, size,
 				       sizeof(struct amdgpu_bo));
 
 	spin_lock(&kfd_mem_limit.mem_limit_lock);
+<<<<<<< HEAD
 	if (domain == AMDGPU_GEM_DOMAIN_GTT) {
 		if (kfd_mem_limit.system_mem_used + (acc_size + size) >
 			kfd_mem_limit.max_system_mem_limit) {
@@ -139,12 +165,43 @@ static int amdgpu_amdkfd_reserve_system_mem_limit(struct amdgpu_device *adev,
 		kfd_mem_limit.userptr_mem_used += size;
 	}
 err_no_mem:
+=======
+
+	if (domain == AMDGPU_GEM_DOMAIN_GTT) {
+		/* TTM GTT memory */
+		system_mem_needed = acc_size + size;
+		ttm_mem_needed = acc_size + size;
+	} else if (domain == AMDGPU_GEM_DOMAIN_CPU && !sg) {
+		/* Userptr */
+		system_mem_needed = acc_size + size;
+		ttm_mem_needed = acc_size;
+	} else {
+		/* VRAM and SG */
+		system_mem_needed = acc_size;
+		ttm_mem_needed = acc_size;
+	}
+
+	if ((kfd_mem_limit.system_mem_used + system_mem_needed >
+		kfd_mem_limit.max_system_mem_limit) ||
+		(kfd_mem_limit.ttm_mem_used + ttm_mem_needed >
+		kfd_mem_limit.max_ttm_mem_limit))
+		ret = -ENOMEM;
+	else {
+		kfd_mem_limit.system_mem_used += system_mem_needed;
+		kfd_mem_limit.ttm_mem_used += ttm_mem_needed;
+	}
+
+>>>>>>> origin/android16-base
 	spin_unlock(&kfd_mem_limit.mem_limit_lock);
 	return ret;
 }
 
 static void unreserve_system_mem_limit(struct amdgpu_device *adev,
+<<<<<<< HEAD
 				       uint64_t size, u32 domain)
+=======
+		uint64_t size, u32 domain, bool sg)
+>>>>>>> origin/android16-base
 {
 	size_t acc_size;
 
@@ -154,6 +211,7 @@ static void unreserve_system_mem_limit(struct amdgpu_device *adev,
 	spin_lock(&kfd_mem_limit.mem_limit_lock);
 	if (domain == AMDGPU_GEM_DOMAIN_GTT) {
 		kfd_mem_limit.system_mem_used -= (acc_size + size);
+<<<<<<< HEAD
 	} else if (domain == AMDGPU_GEM_DOMAIN_CPU) {
 		kfd_mem_limit.system_mem_used -= acc_size;
 		kfd_mem_limit.userptr_mem_used -= size;
@@ -162,6 +220,20 @@ static void unreserve_system_mem_limit(struct amdgpu_device *adev,
 		  "kfd system memory accounting unbalanced");
 	WARN_ONCE(kfd_mem_limit.userptr_mem_used < 0,
 		  "kfd userptr memory accounting unbalanced");
+=======
+		kfd_mem_limit.ttm_mem_used -= (acc_size + size);
+	} else if (domain == AMDGPU_GEM_DOMAIN_CPU && !sg) {
+		kfd_mem_limit.system_mem_used -= (acc_size + size);
+		kfd_mem_limit.ttm_mem_used -= acc_size;
+	} else {
+		kfd_mem_limit.system_mem_used -= acc_size;
+		kfd_mem_limit.ttm_mem_used -= acc_size;
+	}
+	WARN_ONCE(kfd_mem_limit.system_mem_used < 0,
+		  "kfd system memory accounting unbalanced");
+	WARN_ONCE(kfd_mem_limit.ttm_mem_used < 0,
+		  "kfd TTM memory accounting unbalanced");
+>>>>>>> origin/android16-base
 
 	spin_unlock(&kfd_mem_limit.mem_limit_lock);
 }
@@ -171,6 +243,7 @@ void amdgpu_amdkfd_unreserve_system_memory_limit(struct amdgpu_bo *bo)
 	spin_lock(&kfd_mem_limit.mem_limit_lock);
 
 	if (bo->flags & AMDGPU_AMDKFD_USERPTR_BO) {
+<<<<<<< HEAD
 		kfd_mem_limit.system_mem_used -= bo->tbo.acc_size;
 		kfd_mem_limit.userptr_mem_used -= amdgpu_bo_size(bo);
 	} else if (bo->preferred_domains == AMDGPU_GEM_DOMAIN_GTT) {
@@ -181,6 +254,24 @@ void amdgpu_amdkfd_unreserve_system_memory_limit(struct amdgpu_bo *bo)
 		  "kfd system memory accounting unbalanced");
 	WARN_ONCE(kfd_mem_limit.userptr_mem_used < 0,
 		  "kfd userptr memory accounting unbalanced");
+=======
+		kfd_mem_limit.system_mem_used -=
+			(bo->tbo.acc_size + amdgpu_bo_size(bo));
+		kfd_mem_limit.ttm_mem_used -= bo->tbo.acc_size;
+	} else if (bo->preferred_domains == AMDGPU_GEM_DOMAIN_GTT) {
+		kfd_mem_limit.system_mem_used -=
+			(bo->tbo.acc_size + amdgpu_bo_size(bo));
+		kfd_mem_limit.ttm_mem_used -=
+			(bo->tbo.acc_size + amdgpu_bo_size(bo));
+	} else {
+		kfd_mem_limit.system_mem_used -= bo->tbo.acc_size;
+		kfd_mem_limit.ttm_mem_used -= bo->tbo.acc_size;
+	}
+	WARN_ONCE(kfd_mem_limit.system_mem_used < 0,
+		  "kfd system memory accounting unbalanced");
+	WARN_ONCE(kfd_mem_limit.ttm_mem_used < 0,
+		  "kfd TTM memory accounting unbalanced");
+>>>>>>> origin/android16-base
 
 	spin_unlock(&kfd_mem_limit.mem_limit_lock);
 }
@@ -1044,11 +1135,23 @@ int amdgpu_amdkfd_gpuvm_acquire_process_vm(struct kgd_dev *kgd,
 					   struct dma_fence **ef)
 {
 	struct amdgpu_device *adev = get_amdgpu_device(kgd);
+<<<<<<< HEAD
 	struct drm_file *drm_priv = filp->private_data;
 	struct amdgpu_fpriv *drv_priv = drm_priv->driver_priv;
 	struct amdgpu_vm *avm = &drv_priv->vm;
 	int ret;
 
+=======
+	struct amdgpu_fpriv *drv_priv;
+	struct amdgpu_vm *avm;
+	int ret;
+
+	ret = amdgpu_file_to_fpriv(filp, &drv_priv);
+	if (ret)
+		return ret;
+	avm = &drv_priv->vm;
+
+>>>>>>> origin/android16-base
 	/* Already a compute VM? */
 	if (avm->process_info)
 		return -EINVAL;
@@ -1197,10 +1300,18 @@ int amdgpu_amdkfd_gpuvm_alloc_memory_of_gpu(
 
 	amdgpu_sync_create(&(*mem)->sync);
 
+<<<<<<< HEAD
 	ret = amdgpu_amdkfd_reserve_system_mem_limit(adev, size, alloc_domain);
 	if (ret) {
 		pr_debug("Insufficient system memory\n");
 		goto err_reserve_system_mem;
+=======
+	ret = amdgpu_amdkfd_reserve_system_mem_limit(adev, size,
+						     alloc_domain, false);
+	if (ret) {
+		pr_debug("Insufficient system memory\n");
+		goto err_reserve_limit;
+>>>>>>> origin/android16-base
 	}
 
 	pr_debug("\tcreate BO VA 0x%llx size 0x%llx domain %s\n",
@@ -1248,10 +1359,18 @@ int amdgpu_amdkfd_gpuvm_alloc_memory_of_gpu(
 allocate_init_user_pages_failed:
 	amdgpu_bo_unref(&bo);
 	/* Don't unreserve system mem limit twice */
+<<<<<<< HEAD
 	goto err_reserve_system_mem;
 err_bo_create:
 	unreserve_system_mem_limit(adev, size, alloc_domain);
 err_reserve_system_mem:
+=======
+	goto err_reserve_limit;
+err_bo_create:
+	unreserve_system_mem_limit(adev, size, alloc_domain, false);
+err_reserve_limit:
+	amdgpu_sync_free(&(*mem)->sync);
+>>>>>>> origin/android16-base
 	mutex_destroy(&(*mem)->lock);
 	kfree(*mem);
 	return ret;

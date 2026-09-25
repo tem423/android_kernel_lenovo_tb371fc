@@ -766,6 +766,11 @@ static int vb2ops_venc_queue_setup(struct vb2_queue *vq,
 		return -EINVAL;
 
 	if (*nplanes) {
+<<<<<<< HEAD
+=======
+		if (*nplanes != q_data->fmt->num_planes)
+			return -EINVAL;
+>>>>>>> origin/android16-base
 		for (i = 0; i < *nplanes; i++)
 			if (sizes[i] < q_data->sizeimage[i])
 				return -EINVAL;

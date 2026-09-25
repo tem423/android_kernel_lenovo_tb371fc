@@ -34,6 +34,11 @@
 	| MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED			\
 	| MEMBARRIER_PRIVATE_EXPEDITED_SYNC_CORE_BITMASK)
 
+<<<<<<< HEAD
+=======
+static DEFINE_MUTEX(membarrier_ipi_mutex);
+
+>>>>>>> origin/android16-base
 static void ipi_mb(void *info)
 {
 	smp_mb();	/* IPIs should be serializing but paranoid. */
@@ -64,6 +69,10 @@ static int membarrier_global_expedited(void)
 		fallback = true;
 	}
 
+<<<<<<< HEAD
+=======
+	mutex_lock(&membarrier_ipi_mutex);
+>>>>>>> origin/android16-base
 	cpus_read_lock();
 	for_each_online_cpu(cpu) {
 		struct task_struct *p;
@@ -104,6 +113,10 @@ static int membarrier_global_expedited(void)
 	 * rq->curr modification in scheduler.
 	 */
 	smp_mb();	/* exit from system call is not a mb */
+<<<<<<< HEAD
+=======
+	mutex_unlock(&membarrier_ipi_mutex);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -144,6 +157,10 @@ static int membarrier_private_expedited(int flags)
 		fallback = true;
 	}
 
+<<<<<<< HEAD
+=======
+	mutex_lock(&membarrier_ipi_mutex);
+>>>>>>> origin/android16-base
 	cpus_read_lock();
 	for_each_online_cpu(cpu) {
 		struct task_struct *p;
@@ -182,6 +199,10 @@ static int membarrier_private_expedited(int flags)
 	 * rq->curr modification in scheduler.
 	 */
 	smp_mb();	/* exit from system call is not a mb */
+<<<<<<< HEAD
+=======
+	mutex_unlock(&membarrier_ipi_mutex);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

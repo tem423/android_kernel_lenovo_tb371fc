@@ -47,7 +47,10 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask);
 int hard_smp_processor_id(void);
 #define raw_smp_processor_id() (current_thread_info()->cpu)
 
+<<<<<<< HEAD
 void smp_fill_in_cpu_possible_map(void);
+=======
+>>>>>>> origin/android16-base
 void smp_fill_in_sib_core_maps(void);
 void cpu_play_dead(void);
 
@@ -77,7 +80,10 @@ void __cpu_die(unsigned int cpu);
 #define smp_fill_in_sib_core_maps() do { } while (0)
 #define smp_fetch_global_regs() do { } while (0)
 #define smp_fetch_global_pmu() do { } while (0)
+<<<<<<< HEAD
 #define smp_fill_in_cpu_possible_map() do { } while (0)
+=======
+>>>>>>> origin/android16-base
 #define smp_init_cpu_poke() do { } while (0)
 #define scheduler_poke() do { } while (0)
 

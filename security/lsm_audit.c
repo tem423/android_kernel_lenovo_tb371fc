@@ -277,7 +277,13 @@ static void dump_common_audit_data(struct audit_buffer *ab,
 		struct inode *inode;
 
 		audit_log_format(ab, " name=");
+<<<<<<< HEAD
 		audit_log_untrustedstring(ab, a->u.dentry->d_name.name);
+=======
+		spin_lock(&a->u.dentry->d_lock);
+		audit_log_untrustedstring(ab, a->u.dentry->d_name.name);
+		spin_unlock(&a->u.dentry->d_lock);
+>>>>>>> origin/android16-base
 
 		inode = d_backing_inode(a->u.dentry);
 		if (inode) {
@@ -295,8 +301,14 @@ static void dump_common_audit_data(struct audit_buffer *ab,
 		dentry = d_find_alias(inode);
 		if (dentry) {
 			audit_log_format(ab, " name=");
+<<<<<<< HEAD
 			audit_log_untrustedstring(ab,
 					 dentry->d_name.name);
+=======
+			spin_lock(&dentry->d_lock);
+			audit_log_untrustedstring(ab, dentry->d_name.name);
+			spin_unlock(&dentry->d_lock);
+>>>>>>> origin/android16-base
 			dput(dentry);
 		}
 		audit_log_format(ab, " dev=");

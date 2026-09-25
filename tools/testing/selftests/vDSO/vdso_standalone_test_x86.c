@@ -20,7 +20,11 @@ extern void *vdso_sym(const char *version, const char *name);
 extern void vdso_init_from_sysinfo_ehdr(uintptr_t base);
 extern void vdso_init_from_auxv(void *auxv);
 
+<<<<<<< HEAD
 /* We need a libc functions... */
+=======
+/* We need some libc functions... */
+>>>>>>> origin/android16-base
 int strcmp(const char *a, const char *b)
 {
 	/* This implementation is buggy: it never returns -1. */
@@ -36,6 +40,23 @@ int strcmp(const char *a, const char *b)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * The clang build needs this, although gcc does not.
+ * Stolen from lib/string.c.
+ */
+void *memcpy(void *dest, const void *src, size_t count)
+{
+	char *tmp = dest;
+	const char *s = src;
+
+	while (count--)
+		*tmp++ = *s++;
+	return dest;
+}
+
+>>>>>>> origin/android16-base
 /* ...and two syscalls.  This is x86-specific. */
 static inline long x86_syscall3(long nr, long a0, long a1, long a2)
 {
@@ -72,7 +93,11 @@ void to_base10(char *lastdig, time_t n)
 	}
 }
 
+<<<<<<< HEAD
 __attribute__((externally_visible)) void c_main(void **stack)
+=======
+void c_main(void **stack)
+>>>>>>> origin/android16-base
 {
 	/* Parse the stack */
 	long argc = (long)*stack;

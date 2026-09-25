@@ -609,7 +609,40 @@ static struct attribute *vmbus_dev_attrs[] = {
 	&dev_attr_device.attr,
 	NULL,
 };
+<<<<<<< HEAD
 ATTRIBUTE_GROUPS(vmbus_dev);
+=======
+
+/*
+ * Device-level attribute_group callback function. Returns the permission for
+ * each attribute, and returns 0 if an attribute is not visible.
+ */
+static umode_t vmbus_dev_attr_is_visible(struct kobject *kobj,
+					 struct attribute *attr, int idx)
+{
+	struct device *dev = kobj_to_dev(kobj);
+	const struct hv_device *hv_dev = device_to_hv_device(dev);
+
+	/* Hide the monitor attributes if the monitor mechanism is not used. */
+	if (!hv_dev->channel->offermsg.monitor_allocated &&
+	    (attr == &dev_attr_monitor_id.attr ||
+	     attr == &dev_attr_server_monitor_pending.attr ||
+	     attr == &dev_attr_client_monitor_pending.attr ||
+	     attr == &dev_attr_server_monitor_latency.attr ||
+	     attr == &dev_attr_client_monitor_latency.attr ||
+	     attr == &dev_attr_server_monitor_conn_id.attr ||
+	     attr == &dev_attr_client_monitor_conn_id.attr))
+		return 0;
+
+	return attr->mode;
+}
+
+static const struct attribute_group vmbus_dev_group = {
+	.attrs = vmbus_dev_attrs,
+	.is_visible = vmbus_dev_attr_is_visible
+};
+__ATTRIBUTE_GROUPS(vmbus_dev);
+>>>>>>> origin/android16-base
 
 /*
  * vmbus_uevent - add uevent for our device
@@ -1117,7 +1150,11 @@ static void vmbus_isr(void)
 			tasklet_schedule(&hv_cpu->msg_dpc);
 	}
 
+<<<<<<< HEAD
 	add_interrupt_randomness(HYPERVISOR_CALLBACK_VECTOR, 0);
+=======
+	add_interrupt_randomness(HYPERVISOR_CALLBACK_VECTOR);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -1484,10 +1521,41 @@ static struct attribute *vmbus_chan_attrs[] = {
 	NULL
 };
 
+<<<<<<< HEAD
 static struct kobj_type vmbus_chan_ktype = {
 	.sysfs_ops = &vmbus_chan_sysfs_ops,
 	.release = vmbus_chan_release,
 	.default_attrs = vmbus_chan_attrs,
+=======
+/*
+ * Channel-level attribute_group callback function. Returns the permission for
+ * each attribute, and returns 0 if an attribute is not visible.
+ */
+static umode_t vmbus_chan_attr_is_visible(struct kobject *kobj,
+					  struct attribute *attr, int idx)
+{
+	const struct vmbus_channel *channel =
+		container_of(kobj, struct vmbus_channel, kobj);
+
+	/* Hide the monitor attributes if the monitor mechanism is not used. */
+	if (!channel->offermsg.monitor_allocated &&
+	    (attr == &chan_attr_pending.attr ||
+	     attr == &chan_attr_latency.attr ||
+	     attr == &chan_attr_monitor_id.attr))
+		return 0;
+
+	return attr->mode;
+}
+
+static struct attribute_group vmbus_chan_group = {
+	.attrs = vmbus_chan_attrs,
+	.is_visible = vmbus_chan_attr_is_visible
+};
+
+static struct kobj_type vmbus_chan_ktype = {
+	.sysfs_ops = &vmbus_chan_sysfs_ops,
+	.release = vmbus_chan_release,
+>>>>>>> origin/android16-base
 };
 
 /*
@@ -1495,6 +1563,10 @@ static struct kobj_type vmbus_chan_ktype = {
  */
 int vmbus_add_channel_kobj(struct hv_device *dev, struct vmbus_channel *channel)
 {
+<<<<<<< HEAD
+=======
+	const struct device *device = &dev->device;
+>>>>>>> origin/android16-base
 	struct kobject *kobj = &channel->kobj;
 	u32 relid = channel->offermsg.child_relid;
 	int ret;
@@ -1502,8 +1574,27 @@ int vmbus_add_channel_kobj(struct hv_device *dev, struct vmbus_channel *channel)
 	kobj->kset = dev->channels_kset;
 	ret = kobject_init_and_add(kobj, &vmbus_chan_ktype, NULL,
 				   "%u", relid);
+<<<<<<< HEAD
 	if (ret)
 		return ret;
+=======
+	if (ret) {
+		kobject_put(kobj);
+		return ret;
+	}
+
+	ret = sysfs_create_group(kobj, &vmbus_chan_group);
+
+	if (ret) {
+		/*
+		 * The calling functions' error handling paths will cleanup the
+		 * empty channel directory.
+		 */
+		kobject_put(kobj);
+		dev_err(device, "Unable to set up channel sysfs files\n");
+		return ret;
+	}
+>>>>>>> origin/android16-base
 
 	kobject_uevent(kobj, KOBJ_ADD);
 
@@ -1511,6 +1602,17 @@ int vmbus_add_channel_kobj(struct hv_device *dev, struct vmbus_channel *channel)
 }
 
 /*
+<<<<<<< HEAD
+=======
+ * vmbus_remove_channel_attr_group - remove the channel's attribute group
+ */
+void vmbus_remove_channel_attr_group(struct vmbus_channel *channel)
+{
+	sysfs_remove_group(&channel->kobj, &vmbus_chan_group);
+}
+
+/*
+>>>>>>> origin/android16-base
  * vmbus_device_create - Creates and registers a new child device
  * on the vmbus.
  */
@@ -1558,6 +1660,10 @@ int vmbus_device_register(struct hv_device *child_device_obj)
 	ret = device_register(&child_device_obj->device);
 	if (ret) {
 		pr_err("Unable to register child device\n");
+<<<<<<< HEAD
+=======
+		put_device(&child_device_obj->device);
+>>>>>>> origin/android16-base
 		return ret;
 	}
 
@@ -1770,7 +1876,11 @@ int vmbus_allocate_mmio(struct resource **new, struct hv_device *device_obj,
 			bool fb_overlap_ok)
 {
 	struct resource *iter, *shadow;
+<<<<<<< HEAD
 	resource_size_t range_min, range_max, start;
+=======
+	resource_size_t range_min, range_max, start, end;
+>>>>>>> origin/android16-base
 	const char *dev_n = dev_name(&device_obj->device);
 	int retval;
 
@@ -1805,6 +1915,17 @@ int vmbus_allocate_mmio(struct resource **new, struct hv_device *device_obj,
 		range_max = iter->end;
 		start = (range_min + align - 1) & ~(align - 1);
 		for (; start + size - 1 <= range_max; start += align) {
+<<<<<<< HEAD
+=======
+			end = start + size - 1;
+
+			/* Skip the whole fb_mmio region if not fb_overlap_ok */
+			if (!fb_overlap_ok && fb_mmio &&
+			    (((start >= fb_mmio->start) && (start <= fb_mmio->end)) ||
+			     ((end >= fb_mmio->start) && (end <= fb_mmio->end))))
+				continue;
+
+>>>>>>> origin/android16-base
 			shadow = __request_region(iter, start, size, NULL,
 						  IORESOURCE_BUSY);
 			if (!shadow)
@@ -1888,6 +2009,10 @@ acpi_walk_err:
 		vmbus_acpi_remove(device);
 	return ret_val;
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL_GPL(vmbus_device_unregister);
+>>>>>>> origin/android16-base
 
 static const struct acpi_device_id vmbus_acpi_device_ids[] = {
 	{"VMBUS", 0},
@@ -1986,10 +2111,22 @@ static void __exit vmbus_exit(void)
 	if (ms_hyperv.misc_features & HV_FEATURE_GUEST_CRASH_MSR_AVAILABLE) {
 		kmsg_dump_unregister(&hv_kmsg_dumper);
 		unregister_die_notifier(&hyperv_die_block);
+<<<<<<< HEAD
 		atomic_notifier_chain_unregister(&panic_notifier_list,
 						 &hyperv_panic_block);
 	}
 
+=======
+	}
+
+	/*
+	 * The panic notifier is always registered, hence we should
+	 * also unconditionally unregister it here as well.
+	 */
+	atomic_notifier_chain_unregister(&panic_notifier_list,
+					 &hyperv_panic_block);
+
+>>>>>>> origin/android16-base
 	free_page((unsigned long)hv_panic_page);
 	unregister_sysctl_table(hv_ctl_table_hdr);
 	hv_ctl_table_hdr = NULL;

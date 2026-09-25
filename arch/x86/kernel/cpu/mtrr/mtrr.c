@@ -819,7 +819,11 @@ void mtrr_save_state(void)
 {
 	int first_cpu;
 
+<<<<<<< HEAD
 	if (!mtrr_enabled())
+=======
+	if (!mtrr_enabled() || !mtrr_state.have_fixed)
+>>>>>>> origin/android16-base
 		return;
 
 	first_cpu = cpumask_first(cpu_online_mask);

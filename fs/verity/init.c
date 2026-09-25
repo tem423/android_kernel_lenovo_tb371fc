@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
+<<<<<<< HEAD
  * fs/verity/init.c: fs-verity module initialization and logging
+=======
+ * fs-verity module initialization and logging
+>>>>>>> origin/android16-base
  *
  * Copyright 2019 Google LLC
  */

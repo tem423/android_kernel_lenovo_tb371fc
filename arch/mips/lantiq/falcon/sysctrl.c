@@ -169,6 +169,11 @@ static inline void clkdev_add_sys(const char *dev, unsigned int module,
 {
 	struct clk *clk = kzalloc(sizeof(struct clk), GFP_KERNEL);
 
+<<<<<<< HEAD
+=======
+	if (!clk)
+		return;
+>>>>>>> origin/android16-base
 	clk->cl.dev_id = dev;
 	clk->cl.con_id = NULL;
 	clk->cl.clk = clk;

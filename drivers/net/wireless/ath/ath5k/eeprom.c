@@ -529,7 +529,11 @@ ath5k_eeprom_read_freq_list(struct ath5k_hw *ah, int *offset, int max,
 		ee->ee_n_piers[mode]++;
 
 		freq2 = (val >> 8) & 0xff;
+<<<<<<< HEAD
 		if (!freq2)
+=======
+		if (!freq2 || i >= max)
+>>>>>>> origin/android16-base
 			break;
 
 		pc[i++].freq = ath5k_eeprom_bin2freq(ee,
@@ -746,6 +750,12 @@ ath5k_eeprom_convert_pcal_info_5111(struct ath5k_hw *ah, int mode,
 			}
 		}
 
+<<<<<<< HEAD
+=======
+		if (idx == AR5K_EEPROM_N_PD_CURVES)
+			goto err_out;
+
+>>>>>>> origin/android16-base
 		ee->ee_pd_gains[mode] = 1;
 
 		pd = &chinfo[pier].pd_curves[idx];

@@ -169,7 +169,10 @@ enum sde_stage {
 	SDE_STAGE_8,
 	SDE_STAGE_9,
 	SDE_STAGE_10,
+<<<<<<< HEAD
 	SDE_STAGE_11,
+=======
+>>>>>>> origin/android16-base
 	SDE_STAGE_MAX
 };
 
@@ -553,8 +556,11 @@ struct sde_hw_cp_cfg {
 	u32 displayh;
 	struct sde_hw_dspp *dspp[DSPP_MAX];
 	bool broadcast_disabled;
+<<<<<<< HEAD
 	u32 mi_dimlayer_type;
 	void *payload_clear;
+=======
+>>>>>>> origin/android16-base
 };
 
 /**

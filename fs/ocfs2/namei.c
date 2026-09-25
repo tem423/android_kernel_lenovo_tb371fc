@@ -245,6 +245,10 @@ static int ocfs2_mknod(struct inode *dir,
 	handle_t *handle = NULL;
 	struct ocfs2_super *osb;
 	struct ocfs2_dinode *dirfe;
+<<<<<<< HEAD
+=======
+	struct ocfs2_dinode *fe = NULL;
+>>>>>>> origin/android16-base
 	struct buffer_head *new_fe_bh = NULL;
 	struct inode *inode = NULL;
 	struct ocfs2_alloc_context *inode_ac = NULL;
@@ -395,6 +399,10 @@ static int ocfs2_mknod(struct inode *dir,
 		goto leave;
 	}
 
+<<<<<<< HEAD
+=======
+	fe = (struct ocfs2_dinode *) new_fe_bh->b_data;
+>>>>>>> origin/android16-base
 	if (S_ISDIR(mode)) {
 		status = ocfs2_fill_new_dir(osb, handle, dir, inode,
 					    new_fe_bh, data_ac, meta_ac);
@@ -460,8 +468,16 @@ static int ocfs2_mknod(struct inode *dir,
 leave:
 	if (status < 0 && did_quota_inode)
 		dquot_free_inode(inode);
+<<<<<<< HEAD
 	if (handle)
 		ocfs2_commit_trans(osb, handle);
+=======
+	if (handle) {
+		if (status < 0 && fe)
+			ocfs2_set_links_count(fe, 0);
+		ocfs2_commit_trans(osb, handle);
+	}
+>>>>>>> origin/android16-base
 
 	ocfs2_inode_unlock(dir, 1);
 	if (did_block_signals)
@@ -566,7 +582,11 @@ static int __ocfs2_mknod_locked(struct inode *dir,
 	fe->i_last_eb_blk = 0;
 	strcpy(fe->i_signature, OCFS2_INODE_SIGNATURE);
 	fe->i_flags |= cpu_to_le32(OCFS2_VALID_FL);
+<<<<<<< HEAD
 	ktime_get_real_ts64(&ts);
+=======
+	ktime_get_coarse_real_ts64(&ts);
+>>>>>>> origin/android16-base
 	fe->i_atime = fe->i_ctime = fe->i_mtime =
 		cpu_to_le64(ts.tv_sec);
 	fe->i_mtime_nsec = fe->i_ctime_nsec = fe->i_atime_nsec =
@@ -639,6 +659,7 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
 		return status;
 	}
 
+<<<<<<< HEAD
 	status = __ocfs2_mknod_locked(dir, inode, dev, new_fe_bh,
 				    parent_fe_bh, handle, inode_ac,
 				    fe_blkno, suballoc_loc, suballoc_bit);
@@ -651,6 +672,11 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
 	}
 
 	return status;
+=======
+	return __ocfs2_mknod_locked(dir, inode, dev, new_fe_bh,
+				    parent_fe_bh, handle, inode_ac,
+				    fe_blkno, suballoc_loc, suballoc_bit);
+>>>>>>> origin/android16-base
 }
 
 static int ocfs2_mkdir(struct inode *dir,
@@ -1542,6 +1568,13 @@ static int ocfs2_rename(struct inode *old_dir,
 		status = ocfs2_add_entry(handle, new_dentry, old_inode,
 					 OCFS2_I(old_inode)->ip_blkno,
 					 new_dir_bh, &target_insert);
+<<<<<<< HEAD
+=======
+		if (status < 0) {
+			mlog_errno(status);
+			goto bail;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	old_inode->i_ctime = current_time(old_inode);
@@ -2031,8 +2064,16 @@ bail:
 					ocfs2_clusters_to_bytes(osb->sb, 1));
 	if (status < 0 && did_quota_inode)
 		dquot_free_inode(inode);
+<<<<<<< HEAD
 	if (handle)
 		ocfs2_commit_trans(osb, handle);
+=======
+	if (handle) {
+		if (status < 0 && fe)
+			ocfs2_set_links_count(fe, 0);
+		ocfs2_commit_trans(osb, handle);
+	}
+>>>>>>> origin/android16-base
 
 	ocfs2_inode_unlock(dir, 1);
 	if (did_block_signals)
@@ -2507,7 +2548,11 @@ int ocfs2_create_inode_in_orphan(struct inode *dir,
 	struct buffer_head *new_di_bh = NULL;
 	struct ocfs2_alloc_context *inode_ac = NULL;
 	struct ocfs2_dir_lookup_result orphan_insert = { NULL, };
+<<<<<<< HEAD
 	u64 uninitialized_var(di_blkno), suballoc_loc;
+=======
+	u64 di_blkno, suballoc_loc;
+>>>>>>> origin/android16-base
 	u16 suballoc_bit;
 
 	status = ocfs2_inode_lock(dir, &parent_di_bh, 1);

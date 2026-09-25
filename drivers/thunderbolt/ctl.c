@@ -387,7 +387,11 @@ static void tb_ctl_rx_submit(struct ctl_pkg *pkg)
 
 static int tb_async_error(const struct ctl_pkg *pkg)
 {
+<<<<<<< HEAD
 	const struct cfg_error_pkg *error = (const struct cfg_error_pkg *)pkg;
+=======
+	const struct cfg_error_pkg *error = pkg->buffer;
+>>>>>>> origin/android16-base
 
 	if (pkg->frame.eof != TB_CFG_PKG_ERROR)
 		return false;

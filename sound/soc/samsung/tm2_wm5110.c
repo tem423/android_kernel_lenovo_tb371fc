@@ -541,7 +541,11 @@ static int tm2_probe(struct platform_device *pdev)
 
 		ret = of_parse_phandle_with_args(dev->of_node, "i2s-controller",
 						 cells_name, i, &args);
+<<<<<<< HEAD
 		if (!args.np) {
+=======
+		if (ret) {
+>>>>>>> origin/android16-base
 			dev_err(dev, "i2s-controller property parse error: %d\n", i);
 			ret = -EINVAL;
 			goto dai_node_put;

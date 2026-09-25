@@ -467,6 +467,10 @@ static void __init sparse_init_nid(int nid, unsigned long pnum_begin,
 			pr_err("%s: node[%d] memory map backing failed. Some memory will not be available.",
 			       __func__, nid);
 			pnum_begin = pnum;
+<<<<<<< HEAD
+=======
+			sparse_buffer_fini();
+>>>>>>> origin/android16-base
 			goto failed;
 		}
 		check_usemap_section_nr(nid, usemap);

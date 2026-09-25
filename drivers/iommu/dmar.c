@@ -374,7 +374,11 @@ static int dmar_pci_bus_notifier(struct notifier_block *nb,
 
 static struct notifier_block dmar_pci_bus_nb = {
 	.notifier_call = dmar_pci_bus_notifier,
+<<<<<<< HEAD
 	.priority = INT_MIN,
+=======
+	.priority = 1,
+>>>>>>> origin/android16-base
 };
 
 static struct dmar_drhd_unit *
@@ -804,6 +808,10 @@ int __init dmar_dev_scope_init(void)
 			info = dmar_alloc_pci_notify_info(dev,
 					BUS_NOTIFY_ADD_DEVICE);
 			if (!info) {
+<<<<<<< HEAD
+=======
+				pci_dev_put(dev);
+>>>>>>> origin/android16-base
 				return dmar_dev_scope_status;
 			} else {
 				dmar_pci_bus_add_dev(info);
@@ -1029,8 +1037,13 @@ static int alloc_iommu(struct dmar_drhd_unit *drhd)
 {
 	struct intel_iommu *iommu;
 	u32 ver, sts;
+<<<<<<< HEAD
 	int agaw = 0;
 	int msagaw = 0;
+=======
+	int agaw = -1;
+	int msagaw = -1;
+>>>>>>> origin/android16-base
 	int err;
 
 	if (!drhd->reg_base_addr) {
@@ -1055,6 +1068,7 @@ static int alloc_iommu(struct dmar_drhd_unit *drhd)
 	}
 
 	err = -EINVAL;
+<<<<<<< HEAD
 	agaw = iommu_calculate_agaw(iommu);
 	if (agaw < 0) {
 		pr_err("Cannot get a valid agaw for iommu (seq_id = %d)\n",
@@ -1066,6 +1080,30 @@ static int alloc_iommu(struct dmar_drhd_unit *drhd)
 		pr_err("Cannot get a valid max agaw for iommu (seq_id = %d)\n",
 			iommu->seq_id);
 		goto err_unmap;
+=======
+	if (cap_sagaw(iommu->cap) == 0) {
+		pr_info("%s: No supported address widths. Not attempting DMA translation.\n",
+			iommu->name);
+		drhd->ignored = 1;
+	}
+
+	if (!drhd->ignored) {
+		agaw = iommu_calculate_agaw(iommu);
+		if (agaw < 0) {
+			pr_err("Cannot get a valid agaw for iommu (seq_id = %d)\n",
+			       iommu->seq_id);
+			drhd->ignored = 1;
+		}
+	}
+	if (!drhd->ignored) {
+		msagaw = iommu_calculate_max_sagaw(iommu);
+		if (msagaw < 0) {
+			pr_err("Cannot get a valid max agaw for iommu (seq_id = %d)\n",
+			       iommu->seq_id);
+			drhd->ignored = 1;
+			agaw = -1;
+		}
+>>>>>>> origin/android16-base
 	}
 	iommu->agaw = agaw;
 	iommu->msagaw = msagaw;
@@ -1092,7 +1130,16 @@ static int alloc_iommu(struct dmar_drhd_unit *drhd)
 
 	raw_spin_lock_init(&iommu->register_lock);
 
+<<<<<<< HEAD
 	if (intel_iommu_enabled) {
+=======
+	/*
+	 * This is only for hotplug; at boot time intel_iommu_enabled won't
+	 * be set yet. When intel_iommu_init() runs, it registers the units
+	 * present at boot time, then sets intel_iommu_enabled.
+	 */
+	if (intel_iommu_enabled && !drhd->ignored) {
+>>>>>>> origin/android16-base
 		err = iommu_device_sysfs_add(&iommu->iommu, NULL,
 					     intel_iommu_groups,
 					     "%s", iommu->name);
@@ -1103,6 +1150,7 @@ static int alloc_iommu(struct dmar_drhd_unit *drhd)
 
 		err = iommu_device_register(&iommu->iommu);
 		if (err)
+<<<<<<< HEAD
 			goto err_unmap;
 	}
 
@@ -1110,6 +1158,18 @@ static int alloc_iommu(struct dmar_drhd_unit *drhd)
 
 	return 0;
 
+=======
+			goto err_sysfs;
+	}
+
+	drhd->iommu = iommu;
+	iommu->drhd = drhd;
+
+	return 0;
+
+err_sysfs:
+	iommu_device_sysfs_remove(&iommu->iommu);
+>>>>>>> origin/android16-base
 err_unmap:
 	unmap_iommu(iommu);
 error_free_seq_id:
@@ -1121,7 +1181,11 @@ error:
 
 static void free_iommu(struct intel_iommu *iommu)
 {
+<<<<<<< HEAD
 	if (intel_iommu_enabled) {
+=======
+	if (intel_iommu_enabled && !iommu->drhd->ignored) {
+>>>>>>> origin/android16-base
 		iommu_device_unregister(&iommu->iommu);
 		iommu_device_sysfs_remove(&iommu->iommu);
 	}
@@ -1272,7 +1336,11 @@ restart:
 	 */
 	writel(qi->free_head << DMAR_IQ_SHIFT, iommu->reg + DMAR_IQT_REG);
 
+<<<<<<< HEAD
 	while (qi->desc_status[wait_index] != QI_DONE) {
+=======
+	while (READ_ONCE(qi->desc_status[wait_index]) != QI_DONE) {
+>>>>>>> origin/android16-base
 		/*
 		 * We will leave the interrupts disabled, to prevent interrupt
 		 * context to queue another cmd while a cmd is already submitted

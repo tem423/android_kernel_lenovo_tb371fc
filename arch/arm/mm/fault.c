@@ -149,7 +149,11 @@ __do_kernel_fault(struct mm_struct *mm, unsigned long addr, unsigned int fsr,
 	show_pte(mm, addr);
 	die("Oops", regs, fsr);
 	bust_spinlocks(0);
+<<<<<<< HEAD
 	do_exit(SIGKILL);
+=======
+	make_task_dead(SIGKILL);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -320,7 +324,11 @@ retry:
 	 * signal first. We do not need to release the mmap_sem because
 	 * it would already be released in __lock_page_or_retry in
 	 * mm/filemap.c. */
+<<<<<<< HEAD
 	if ((fault & VM_FAULT_RETRY) && fatal_signal_pending(current)) {
+=======
+	if (fault_signal_pending(fault, regs)) {
+>>>>>>> origin/android16-base
 		if (!user_mode(regs))
 			goto no_context;
 		return 0;

@@ -116,8 +116,12 @@ kill_whiteout:
 	goto out;
 }
 
+<<<<<<< HEAD
 static int ovl_mkdir_real(struct inode *dir, struct dentry **newdentry,
 			  umode_t mode)
+=======
+int ovl_mkdir_real(struct inode *dir, struct dentry **newdentry, umode_t mode)
+>>>>>>> origin/android16-base
 {
 	int err;
 	struct dentry *d, *dentry = *newdentry;
@@ -517,8 +521,15 @@ static int ovl_create_over_whiteout(struct dentry *dentry, struct inode *inode,
 			goto out_cleanup;
 	}
 	err = ovl_instantiate(dentry, inode, newdentry, hardlink);
+<<<<<<< HEAD
 	if (err)
 		goto out_cleanup;
+=======
+	if (err) {
+		ovl_cleanup(udir, newdentry);
+		dput(newdentry);
+	}
+>>>>>>> origin/android16-base
 out_dput:
 	dput(upper);
 out_unlock:
@@ -560,6 +571,7 @@ static int ovl_create_or_link(struct dentry *dentry, struct inode *inode,
 			goto out_revert_creds;
 	}
 
+<<<<<<< HEAD
 	err = -ENOMEM;
 	override_cred = prepare_creds();
 	if (override_cred) {
@@ -583,6 +595,45 @@ static int ovl_create_or_link(struct dentry *dentry, struct inode *inode,
 		else
 			err = ovl_create_over_whiteout(dentry, inode, attr);
 	}
+=======
+	if (!attr->hardlink) {
+		err = -ENOMEM;
+		override_cred = prepare_creds();
+		if (!override_cred)
+			goto out_revert_creds;
+		/*
+		 * In the creation cases(create, mkdir, mknod, symlink),
+		 * ovl should transfer current's fs{u,g}id to underlying
+		 * fs. Because underlying fs want to initialize its new
+		 * inode owner using current's fs{u,g}id. And in this
+		 * case, the @inode is a new inode that is initialized
+		 * in inode_init_owner() to current's fs{u,g}id. So use
+		 * the inode's i_{u,g}id to override the cred's fs{u,g}id.
+		 *
+		 * But in the other hardlink case, ovl_link() does not
+		 * create a new inode, so just use the ovl mounter's
+		 * fs{u,g}id.
+		 */
+		override_cred->fsuid = inode->i_uid;
+		override_cred->fsgid = inode->i_gid;
+		err = security_dentry_create_files_as(dentry,
+				attr->mode, &dentry->d_name,
+				old_cred ? old_cred : current_cred(),
+				override_cred);
+		if (err) {
+			put_cred(override_cred);
+			goto out_revert_creds;
+		}
+		hold_cred = override_creds(override_cred);
+		put_cred(override_cred);
+	}
+
+	if (!ovl_dentry_is_whiteout(dentry))
+		err = ovl_create_upper(dentry, inode, attr);
+	else
+		err = ovl_create_over_whiteout(dentry, inode, attr);
+
+>>>>>>> origin/android16-base
 out_revert_creds:
 	ovl_revert_creds(old_cred ?: hold_cred);
 	if (old_cred && hold_cred)
@@ -949,8 +1000,13 @@ static char *ovl_get_redirect(struct dentry *dentry, bool abs_redirect)
 
 		buflen -= thislen;
 		memcpy(&buf[buflen], name, thislen);
+<<<<<<< HEAD
 		tmp = dget_dlock(d->d_parent);
 		spin_unlock(&d->d_lock);
+=======
+		spin_unlock(&d->d_lock);
+		tmp = dget_parent(d);
+>>>>>>> origin/android16-base
 
 		dput(d);
 		d = tmp;
@@ -1167,9 +1223,19 @@ static int ovl_rename(struct inode *olddir, struct dentry *old,
 				goto out_dput;
 		}
 	} else {
+<<<<<<< HEAD
 		if (!d_is_negative(newdentry) &&
 		    (!new_opaque || !ovl_is_whiteout(newdentry)))
 			goto out_dput;
+=======
+		if (!d_is_negative(newdentry)) {
+			if (!new_opaque || !ovl_is_whiteout(newdentry))
+				goto out_dput;
+		} else {
+			if (flags & RENAME_EXCHANGE)
+				goto out_dput;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	if (olddentry == trap)

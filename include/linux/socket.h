@@ -26,7 +26,11 @@ typedef __kernel_sa_family_t	sa_family_t;
 /*
  *	1003.1g requires sa_family_t and that sa_data is char.
  */
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> origin/android16-base
 struct sockaddr {
 	sa_family_t	sa_family;	/* address family, AF_xxx	*/
 	char		sa_data[14];	/* 14 bytes of protocol address	*/
@@ -44,7 +48,11 @@ struct linger {
  *	system, not 4.3. Thus msg_accrights(len) are now missing. They
  *	belong in an obscure libc emulation or the bin.
  */
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> origin/android16-base
 struct msghdr {
 	void		*msg_name;	/* ptr to socket address structure */
 	int		msg_namelen;	/* size of socket address structure */
@@ -54,7 +62,11 @@ struct msghdr {
 	unsigned int	msg_flags;	/* flags on received message */
 	struct kiocb	*msg_iocb;	/* ptr to iocb for async requests */
 };
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> origin/android16-base
 struct user_msghdr {
 	void		__user *msg_name;	/* ptr to socket address structure */
 	int		msg_namelen;		/* size of socket address structure */
@@ -122,7 +134,11 @@ struct cmsghdr {
  *	inside range, given by msg->msg_controllen before using
  *	ancillary object DATA.				--ANK (980731)
  */
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> origin/android16-base
 static inline struct cmsghdr * __cmsg_nxthdr(void *__ctl, __kernel_size_t __size,
 					       struct cmsghdr *__cmsg)
 {
@@ -264,10 +280,17 @@ struct ucred {
 /* Maximum queue length specifiable by listen.  */
 #define SOMAXCONN	128
 
+<<<<<<< HEAD
 /* Flags we can use with send/ and recv. 
    Added those for 1003.1g not all are supported yet
  */
  
+=======
+/* Flags we can use with send/ and recv.
+   Added those for 1003.1g not all are supported yet
+ */
+
+>>>>>>> origin/android16-base
 #define MSG_OOB		1
 #define MSG_PEEK	2
 #define MSG_DONTROUTE	4
@@ -384,6 +407,9 @@ extern int __sys_getpeername(int fd, struct sockaddr __user *usockaddr,
 extern int __sys_socketpair(int family, int type, int protocol,
 			    int __user *usockvec);
 extern int __sys_shutdown(int fd, int how);
+<<<<<<< HEAD
 
 extern struct ns_common *get_net_ns(struct ns_common *ns);
+=======
+>>>>>>> origin/android16-base
 #endif /* _LINUX_SOCKET_H */

@@ -836,13 +836,22 @@ static int fw_range_cmp(u32 offset, const struct intel_forcewake_range *entry)
 })
 
 static enum forcewake_domains
+<<<<<<< HEAD
 find_fw_domain(struct drm_i915_private *dev_priv, u32 offset)
+=======
+find_fw_domain(struct intel_uncore *uncore, u32 offset)
+>>>>>>> origin/android16-base
 {
 	const struct intel_forcewake_range *entry;
 
 	entry = BSEARCH(offset,
+<<<<<<< HEAD
 			dev_priv->uncore.fw_domains_table,
 			dev_priv->uncore.fw_domains_table_entries,
+=======
+			uncore->fw_domains_table,
+			uncore->fw_domains_table_entries,
+>>>>>>> origin/android16-base
 			fw_range_cmp);
 
 	if (!entry)
@@ -854,11 +863,19 @@ find_fw_domain(struct drm_i915_private *dev_priv, u32 offset)
 	 * translate it here to the list of available domains.
 	 */
 	if (entry->domains == FORCEWAKE_ALL)
+<<<<<<< HEAD
 		return dev_priv->uncore.fw_domains;
 
 	WARN(entry->domains & ~dev_priv->uncore.fw_domains,
 	     "Uninitialized forcewake domain(s) 0x%x accessed at 0x%x\n",
 	     entry->domains & ~dev_priv->uncore.fw_domains, offset);
+=======
+		return uncore->fw_domains;
+
+	WARN(entry->domains & ~uncore->fw_domains,
+	     "Uninitialized forcewake domain(s) 0x%x accessed at 0x%x\n",
+	     entry->domains & ~uncore->fw_domains, offset);
+>>>>>>> origin/android16-base
 
 	return entry->domains;
 }
@@ -886,7 +903,11 @@ static const struct intel_forcewake_range __vlv_fw_ranges[] = {
 ({ \
 	enum forcewake_domains __fwd = 0; \
 	if (NEEDS_FORCE_WAKE((offset))) \
+<<<<<<< HEAD
 		__fwd = find_fw_domain(dev_priv, offset); \
+=======
+		__fwd = find_fw_domain(&dev_priv->uncore, offset); \
+>>>>>>> origin/android16-base
 	__fwd; \
 })
 
@@ -894,7 +915,11 @@ static const struct intel_forcewake_range __vlv_fw_ranges[] = {
 ({ \
 	enum forcewake_domains __fwd = 0; \
 	if (GEN11_NEEDS_FORCE_WAKE((offset))) \
+<<<<<<< HEAD
 		__fwd = find_fw_domain(dev_priv, offset); \
+=======
+		__fwd = find_fw_domain(&dev_priv->uncore, offset); \
+>>>>>>> origin/android16-base
 	__fwd; \
 })
 
@@ -980,7 +1005,11 @@ static const struct intel_forcewake_range __chv_fw_ranges[] = {
 ({ \
 	enum forcewake_domains __fwd = 0; \
 	if (NEEDS_FORCE_WAKE((offset)) && !is_gen8_shadowed(offset)) \
+<<<<<<< HEAD
 		__fwd = find_fw_domain(dev_priv, offset); \
+=======
+		__fwd = find_fw_domain(&dev_priv->uncore, offset); \
+>>>>>>> origin/android16-base
 	__fwd; \
 })
 
@@ -988,7 +1017,11 @@ static const struct intel_forcewake_range __chv_fw_ranges[] = {
 ({ \
 	enum forcewake_domains __fwd = 0; \
 	if (GEN11_NEEDS_FORCE_WAKE((offset)) && !is_gen11_shadowed(offset)) \
+<<<<<<< HEAD
 		__fwd = find_fw_domain(dev_priv, offset); \
+=======
+		__fwd = find_fw_domain(&dev_priv->uncore, offset); \
+>>>>>>> origin/android16-base
 	__fwd; \
 })
 

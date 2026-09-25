@@ -76,8 +76,13 @@
 #define EARLY_KASLR	(0)
 #endif
 
+<<<<<<< HEAD
 #define EARLY_ENTRIES(vstart, vend, shift) (((vend) >> (shift)) \
 					- ((vstart) >> (shift)) + 1 + EARLY_KASLR)
+=======
+#define EARLY_ENTRIES(vstart, vend, shift) \
+	((((vend) - 1) >> (shift)) - ((vstart) >> (shift)) + 1 + EARLY_KASLR)
+>>>>>>> origin/android16-base
 
 #define EARLY_PGDS(vstart, vend) (EARLY_ENTRIES(vstart, vend, PGDIR_SHIFT))
 

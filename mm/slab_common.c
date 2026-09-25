@@ -311,6 +311,7 @@ int slab_unmergeable(struct kmem_cache *s)
 	if (s->refcount < 0)
 		return 1;
 
+<<<<<<< HEAD
 #ifdef CONFIG_MEMCG_KMEM
 	/*
 	 * Skip the dying kmem_cache.
@@ -319,6 +320,8 @@ int slab_unmergeable(struct kmem_cache *s)
 		return 1;
 #endif
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -918,6 +921,19 @@ void kmem_cache_destroy(struct kmem_cache *s)
 	get_online_mems();
 
 	mutex_lock(&slab_mutex);
+<<<<<<< HEAD
+=======
+
+	/*
+	 * Another thread referenced it again
+	 */
+	if (READ_ONCE(s->refcount)) {
+		spin_lock_irq(&memcg_kmem_wq_lock);
+		s->memcg_params.dying = false;
+		spin_unlock_irq(&memcg_kmem_wq_lock);
+		goto out_unlock;
+	}
+>>>>>>> origin/android16-base
 #endif
 
 	err = shutdown_memcg_caches(s);

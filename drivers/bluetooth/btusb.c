@@ -501,6 +501,7 @@ static inline void btusb_free_frags(struct btusb_data *data)
 
 	spin_lock_irqsave(&data->rxlock, flags);
 
+<<<<<<< HEAD
 	kfree_skb(data->evt_skb);
 	data->evt_skb = NULL;
 
@@ -508,6 +509,15 @@ static inline void btusb_free_frags(struct btusb_data *data)
 	data->acl_skb = NULL;
 
 	kfree_skb(data->sco_skb);
+=======
+	dev_kfree_skb_irq(data->evt_skb);
+	data->evt_skb = NULL;
+
+	dev_kfree_skb_irq(data->acl_skb);
+	data->acl_skb = NULL;
+
+	dev_kfree_skb_irq(data->sco_skb);
+>>>>>>> origin/android16-base
 	data->sco_skb = NULL;
 
 	spin_unlock_irqrestore(&data->rxlock, flags);
@@ -743,7 +753,19 @@ static int btusb_submit_intr_urb(struct hci_dev *hdev, gfp_t mem_flags)
 	if (!urb)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	size = le16_to_cpu(data->intr_ep->wMaxPacketSize);
+=======
+	if (le16_to_cpu(data->udev->descriptor.idVendor)  == 0x0a12 &&
+	    le16_to_cpu(data->udev->descriptor.idProduct) == 0x0001)
+		/* Fake CSR devices don't seem to support sort-transter */
+		size = le16_to_cpu(data->intr_ep->wMaxPacketSize);
+	else
+		/* Use maximum HCI Event size so the USB stack handles
+		 * ZPL/short-transfer automatically.
+		 */
+		size = HCI_MAX_EVENT_SIZE;
+>>>>>>> origin/android16-base
 
 	buf = kmalloc(size, mem_flags);
 	if (!buf) {
@@ -2595,6 +2617,14 @@ static int btusb_setup_qca_download_fw(struct hci_dev *hdev,
 	sent += size;
 	count -= size;
 
+<<<<<<< HEAD
+=======
+	/* ep2 need time to switch from function acl to function dfu,
+	 * so we add 20ms delay here.
+	 */
+	msleep(20);
+
+>>>>>>> origin/android16-base
 	while (count) {
 		size = min_t(size_t, count, QCA_DFU_PACKET_LEN);
 

@@ -98,6 +98,7 @@ static const struct watchdog_ops men_z069_ops = {
 	.set_timeout = men_z069_wdt_set_timeout,
 };
 
+<<<<<<< HEAD
 static struct watchdog_device men_z069_wdt = {
 	.info = &men_z069_info,
 	.ops = &men_z069_ops,
@@ -106,6 +107,8 @@ static struct watchdog_device men_z069_wdt = {
 	.max_timeout = MEN_Z069_WDT_COUNTER_MAX / MEN_Z069_TIMER_FREQ,
 };
 
+=======
+>>>>>>> origin/android16-base
 static int men_z069_probe(struct mcb_device *dev,
 			  const struct mcb_device_id *id)
 {
@@ -125,15 +128,28 @@ static int men_z069_probe(struct mcb_device *dev,
 		goto release_mem;
 
 	drv->mem = mem;
+<<<<<<< HEAD
 
 	drv->wdt = men_z069_wdt;
+=======
+	drv->wdt.info = &men_z069_info;
+	drv->wdt.ops = &men_z069_ops;
+	drv->wdt.timeout = MEN_Z069_DEFAULT_TIMEOUT;
+	drv->wdt.min_timeout = 1;
+	drv->wdt.max_timeout = MEN_Z069_WDT_COUNTER_MAX / MEN_Z069_TIMER_FREQ;
+
+>>>>>>> origin/android16-base
 	watchdog_init_timeout(&drv->wdt, 0, &dev->dev);
 	watchdog_set_nowayout(&drv->wdt, nowayout);
 	watchdog_set_drvdata(&drv->wdt, drv);
 	drv->wdt.parent = &dev->dev;
 	mcb_set_drvdata(dev, drv);
 
+<<<<<<< HEAD
 	return watchdog_register_device(&men_z069_wdt);
+=======
+	return watchdog_register_device(&drv->wdt);
+>>>>>>> origin/android16-base
 
 release_mem:
 	mcb_release_mem(mem);

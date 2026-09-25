@@ -191,11 +191,19 @@ static int max31760_parse_dt(struct device *dev,
 	if (!gpio_is_valid(pdata->fan_pwr_bp)) {
 		pr_err("%s fan_pwr_bp gpio not specified\n", __func__);
 		ret = -EINVAL;
+<<<<<<< HEAD
 	} else
+=======
+	} else {
+>>>>>>> origin/android16-base
 		ret = gpio_request(pdata->fan_pwr_bp, "fan_pwr_bp");
 		if (ret) {
 			pr_err("max31760 fan_pwr_bp gpio request failed\n");
 			goto error2;
+<<<<<<< HEAD
+=======
+		}
+>>>>>>> origin/android16-base
 	}
 	turn_gpio(pdata, true);
 

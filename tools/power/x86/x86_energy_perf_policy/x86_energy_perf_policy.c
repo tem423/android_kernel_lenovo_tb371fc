@@ -1112,6 +1112,10 @@ unsigned int get_pkg_num(int cpu)
 	retval = fscanf(fp, "%d\n", &pkg);
 	if (retval != 1)
 		errx(1, "%s: failed to parse", pathname);
+<<<<<<< HEAD
+=======
+	fclose(fp);
+>>>>>>> origin/android16-base
 	return pkg;
 }
 

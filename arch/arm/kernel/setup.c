@@ -558,9 +558,17 @@ void notrace cpu_init(void)
 	 * In Thumb-2, msr with an immediate value is not allowed.
 	 */
 #ifdef CONFIG_THUMB2_KERNEL
+<<<<<<< HEAD
 #define PLC	"r"
 #else
 #define PLC	"I"
+=======
+#define PLC_l	"l"
+#define PLC_r	"r"
+#else
+#define PLC_l	"I"
+#define PLC_r	"I"
+>>>>>>> origin/android16-base
 #endif
 
 	/*
@@ -582,6 +590,7 @@ void notrace cpu_init(void)
 	"msr	cpsr_c, %9"
 	    :
 	    : "r" (stk),
+<<<<<<< HEAD
 	      PLC (PSR_F_BIT | PSR_I_BIT | IRQ_MODE),
 	      "I" (offsetof(struct stack, irq[0])),
 	      PLC (PSR_F_BIT | PSR_I_BIT | ABT_MODE),
@@ -591,6 +600,17 @@ void notrace cpu_init(void)
 	      PLC (PSR_F_BIT | PSR_I_BIT | FIQ_MODE),
 	      "I" (offsetof(struct stack, fiq[0])),
 	      PLC (PSR_F_BIT | PSR_I_BIT | SVC_MODE)
+=======
+	      PLC_r (PSR_F_BIT | PSR_I_BIT | IRQ_MODE),
+	      "I" (offsetof(struct stack, irq[0])),
+	      PLC_r (PSR_F_BIT | PSR_I_BIT | ABT_MODE),
+	      "I" (offsetof(struct stack, abt[0])),
+	      PLC_r (PSR_F_BIT | PSR_I_BIT | UND_MODE),
+	      "I" (offsetof(struct stack, und[0])),
+	      PLC_r (PSR_F_BIT | PSR_I_BIT | FIQ_MODE),
+	      "I" (offsetof(struct stack, fiq[0])),
+	      PLC_l (PSR_F_BIT | PSR_I_BIT | SVC_MODE)
+>>>>>>> origin/android16-base
 	    : "r14");
 #endif
 }

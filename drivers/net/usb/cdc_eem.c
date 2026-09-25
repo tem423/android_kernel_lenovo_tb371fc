@@ -135,10 +135,17 @@ static struct sk_buff *eem_tx_fixup(struct usbnet *dev, struct sk_buff *skb,
 	}
 
 	skb2 = skb_copy_expand(skb, EEM_HEAD, ETH_FCS_LEN + padlen, flags);
+<<<<<<< HEAD
 	if (!skb2)
 		return NULL;
 
 	dev_kfree_skb_any(skb);
+=======
+	dev_kfree_skb_any(skb);
+	if (!skb2)
+		return NULL;
+
+>>>>>>> origin/android16-base
 	skb = skb2;
 
 done:

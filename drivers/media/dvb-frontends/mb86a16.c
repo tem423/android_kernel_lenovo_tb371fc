@@ -1863,6 +1863,10 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(mb86a16_attach);
+=======
+EXPORT_SYMBOL_GPL(mb86a16_attach);
+>>>>>>> origin/android16-base
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Manu Abraham");

@@ -494,9 +494,15 @@ fail_hypfs_vm_exit:
 	hypfs_vm_exit();
 fail_hypfs_diag_exit:
 	hypfs_diag_exit();
+<<<<<<< HEAD
 fail_dbfs_exit:
 	hypfs_dbfs_exit();
 	pr_err("Initialization of hypfs failed with rc=%i\n", rc);
+=======
+	pr_err("Initialization of hypfs failed with rc=%i\n", rc);
+fail_dbfs_exit:
+	hypfs_dbfs_exit();
+>>>>>>> origin/android16-base
 	return rc;
 }
 device_initcall(hypfs_init)

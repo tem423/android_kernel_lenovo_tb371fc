@@ -580,11 +580,14 @@ static const struct net_device_ops netxen_netdev_ops = {
 	.ndo_set_features = netxen_set_features,
 };
 
+<<<<<<< HEAD
 static inline bool netxen_function_zero(struct pci_dev *pdev)
 {
 	return (PCI_FUNC(pdev->devfn) == 0) ? true : false;
 }
 
+=======
+>>>>>>> origin/android16-base
 static inline void netxen_set_interrupt_mode(struct netxen_adapter *adapter,
 					     u32 mode)
 {
@@ -680,7 +683,11 @@ static int netxen_setup_intr(struct netxen_adapter *adapter)
 	netxen_initialize_interrupt_registers(adapter);
 	netxen_set_msix_bit(pdev, 0);
 
+<<<<<<< HEAD
 	if (netxen_function_zero(pdev)) {
+=======
+	if (adapter->portnum == 0) {
+>>>>>>> origin/android16-base
 		if (!netxen_setup_msi_interrupts(adapter, num_msix))
 			netxen_set_interrupt_mode(adapter, NETXEN_MSI_MODE);
 		else
@@ -1623,6 +1630,11 @@ err_out_free_netdev:
 	free_netdev(netdev);
 
 err_out_free_res:
+<<<<<<< HEAD
+=======
+	if (NX_IS_REVISION_P3(pdev->revision))
+		pci_disable_pcie_error_reporting(pdev);
+>>>>>>> origin/android16-base
 	pci_release_regions(pdev);
 
 err_out_disable_pdev:

@@ -20,6 +20,7 @@
 #define __ASM_OPENRISC_TLB_H__
 
 /*
+<<<<<<< HEAD
  * or32 doesn't need any special per-pte or
  * per-vma handling..
  */
@@ -28,6 +29,12 @@
 #define __tlb_remove_tlb_entry(tlb, ptep, address) do { } while (0)
 
 #define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
+=======
+ * OpenRISC doesn't have an efficient flush_tlb_range() so use flush_tlb_mm()
+ * for everything.
+ */
+
+>>>>>>> origin/android16-base
 #include <linux/pagemap.h>
 #include <asm-generic/tlb.h>
 

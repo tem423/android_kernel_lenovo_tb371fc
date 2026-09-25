@@ -643,7 +643,10 @@ ENTRY(__switch_to_asm)
 	movl	%ebx, PER_CPU_VAR(stack_canary)+stack_canary_offset
 #endif
 
+<<<<<<< HEAD
 #ifdef CONFIG_RETPOLINE
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * When switching from a shallower to a deeper call stack
 	 * the RSB may either underflow or use entries populated
@@ -652,7 +655,10 @@ ENTRY(__switch_to_asm)
 	 * speculative execution to prevent attack.
 	 */
 	FILL_RETURN_BUFFER %ebx, RSB_CLEAR_LOOPS, X86_FEATURE_RSB_CTXSW
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> origin/android16-base
 
 	/* restore callee-saved registers */
 	popfl
@@ -1502,13 +1508,23 @@ ENTRY(async_page_fault)
 END(async_page_fault)
 #endif
 
+<<<<<<< HEAD
 ENTRY(rewind_stack_do_exit)
+=======
+ENTRY(rewind_stack_and_make_dead)
+>>>>>>> origin/android16-base
 	/* Prevent any naive code from trying to unwind to our caller. */
 	xorl	%ebp, %ebp
 
 	movl	PER_CPU_VAR(cpu_current_top_of_stack), %esi
 	leal	-TOP_OF_KERNEL_STACK_PADDING-PTREGS_SIZE(%esi), %esp
 
+<<<<<<< HEAD
 	call	do_exit
 1:	jmp 1b
 END(rewind_stack_do_exit)
+=======
+	call	make_task_dead
+1:	jmp 1b
+END(rewind_stack_and_make_dead)
+>>>>>>> origin/android16-base

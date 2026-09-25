@@ -116,6 +116,7 @@ static int sprd_wdt_load_value(struct sprd_wdt *wdt, u32 timeout,
 	u32 tmr_step = timeout * SPRD_WDT_CNT_STEP;
 	u32 prtmr_step = pretimeout * SPRD_WDT_CNT_STEP;
 
+<<<<<<< HEAD
 	sprd_wdt_unlock(wdt->base);
 	writel_relaxed((tmr_step >> SPRD_WDT_CNT_HIGH_SHIFT) &
 		      SPRD_WDT_LOW_VALUE_MASK, wdt->base + SPRD_WDT_LOAD_HIGH);
@@ -128,6 +129,8 @@ static int sprd_wdt_load_value(struct sprd_wdt *wdt, u32 timeout,
 		       wdt->base + SPRD_WDT_IRQ_LOAD_LOW);
 	sprd_wdt_lock(wdt->base);
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Waiting the load value operation done,
 	 * it needs two or three RTC clock cycles.
@@ -142,6 +145,22 @@ static int sprd_wdt_load_value(struct sprd_wdt *wdt, u32 timeout,
 
 	if (delay_cnt >= SPRD_WDT_LOAD_TIMEOUT)
 		return -EBUSY;
+<<<<<<< HEAD
+=======
+
+	sprd_wdt_unlock(wdt->base);
+	writel_relaxed((tmr_step >> SPRD_WDT_CNT_HIGH_SHIFT) &
+		      SPRD_WDT_LOW_VALUE_MASK, wdt->base + SPRD_WDT_LOAD_HIGH);
+	writel_relaxed((tmr_step & SPRD_WDT_LOW_VALUE_MASK),
+		       wdt->base + SPRD_WDT_LOAD_LOW);
+	writel_relaxed((prtmr_step >> SPRD_WDT_CNT_HIGH_SHIFT) &
+			SPRD_WDT_LOW_VALUE_MASK,
+		       wdt->base + SPRD_WDT_IRQ_LOAD_HIGH);
+	writel_relaxed(prtmr_step & SPRD_WDT_LOW_VALUE_MASK,
+		       wdt->base + SPRD_WDT_IRQ_LOAD_LOW);
+	sprd_wdt_lock(wdt->base);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -360,6 +379,7 @@ static int __maybe_unused sprd_wdt_pm_resume(struct device *dev)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	if (watchdog_active(&wdt->wdd)) {
 		ret = sprd_wdt_start(&wdt->wdd);
 		if (ret) {
@@ -369,6 +389,12 @@ static int __maybe_unused sprd_wdt_pm_resume(struct device *dev)
 	}
 
 	return 0;
+=======
+	if (watchdog_active(&wdt->wdd))
+		ret = sprd_wdt_start(&wdt->wdd);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static const struct dev_pm_ops sprd_wdt_pm_ops = {

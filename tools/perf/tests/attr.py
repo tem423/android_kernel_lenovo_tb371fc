@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 #! /usr/bin/python
+=======
+>>>>>>> origin/android16-base
 # SPDX-License-Identifier: GPL-2.0
 
 import os

@@ -625,8 +625,11 @@ static void mpc_rcvd_sweep_resp(struct mpcg_info *mpcginfo)
 		ctcm_clear_busy_do(dev);
 	}
 
+<<<<<<< HEAD
 	kfree(mpcginfo);
 
+=======
+>>>>>>> origin/android16-base
 	return;
 
 }
@@ -1205,10 +1208,17 @@ static void ctcmpc_unpack_skb(struct channel *ch, struct sk_buff *pskb)
 						CTCM_FUNTAIL, dev->name);
 			priv->stats.rx_dropped++;
 			/* mpcginfo only used for non-data transfers */
+<<<<<<< HEAD
 			kfree(mpcginfo);
 			if (do_debug_data)
 				ctcmpc_dump_skb(pskb, -8);
 		}
+=======
+			if (do_debug_data)
+				ctcmpc_dump_skb(pskb, -8);
+		}
+		kfree(mpcginfo);
+>>>>>>> origin/android16-base
 	}
 done:
 
@@ -1991,7 +2001,10 @@ static void mpc_action_rcvd_xid0(fsm_instance *fsm, int event, void *arg)
 		}
 		break;
 	}
+<<<<<<< HEAD
 	kfree(mpcginfo);
+=======
+>>>>>>> origin/android16-base
 
 	CTCM_PR_DEBUG("ctcmpc:%s() %s xid2:%i xid7:%i xidt_p2:%i \n",
 		__func__, ch->id, grp->outstanding_xid2,
@@ -2052,7 +2065,10 @@ static void mpc_action_rcvd_xid7(fsm_instance *fsm, int event, void *arg)
 		mpc_validate_xid(mpcginfo);
 		break;
 	}
+<<<<<<< HEAD
 	kfree(mpcginfo);
+=======
+>>>>>>> origin/android16-base
 	return;
 }
 

@@ -184,7 +184,11 @@ static irqreturn_t pcl711_interrupt(int irq, void *d)
 	struct comedi_device *dev = d;
 	struct comedi_subdevice *s = dev->read_subdev;
 	struct comedi_cmd *cmd = &s->async->cmd;
+<<<<<<< HEAD
 	unsigned int data;
+=======
+	unsigned short data;
+>>>>>>> origin/android16-base
 
 	if (!dev->attached) {
 		dev_err(dev->class_dev, "spurious interrupt\n");

@@ -50,6 +50,10 @@ static inline cycles_t get_cycles(void)
 	return ret;
 #endif
 }
+<<<<<<< HEAD
+=======
+#define get_cycles get_cycles
+>>>>>>> origin/android16-base
 
 #endif	/* __KERNEL__ */
 #endif	/* _ASM_POWERPC_TIMEX_H */

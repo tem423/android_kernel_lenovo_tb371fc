@@ -998,7 +998,11 @@ int vivid_vid_out_s_fbuf(struct file *file, void *fh,
 		return -EINVAL;
 	}
 	dev->fbuf_out_flags &= ~(chroma_flags | alpha_flags);
+<<<<<<< HEAD
 	dev->fbuf_out_flags = a->flags & (chroma_flags | alpha_flags);
+=======
+	dev->fbuf_out_flags |= a->flags & (chroma_flags | alpha_flags);
+>>>>>>> origin/android16-base
 	return 0;
 }
 

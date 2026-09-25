@@ -37,7 +37,11 @@ static long do_sys_name_to_handle(struct path *path,
 	if (f_handle.handle_bytes > MAX_HANDLE_SZ)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	handle = kmalloc(sizeof(struct file_handle) + f_handle.handle_bytes,
+=======
+	handle = kzalloc(sizeof(struct file_handle) + f_handle.handle_bytes,
+>>>>>>> origin/android16-base
 			 GFP_KERNEL);
 	if (!handle)
 		return -ENOMEM;

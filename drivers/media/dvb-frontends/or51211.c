@@ -561,5 +561,9 @@ MODULE_DESCRIPTION("Oren OR51211 VSB [pcHDTV HD-2000] Demodulator Driver");
 MODULE_AUTHOR("Kirk Lapray");
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(or51211_attach);
+=======
+EXPORT_SYMBOL_GPL(or51211_attach);
+>>>>>>> origin/android16-base
 

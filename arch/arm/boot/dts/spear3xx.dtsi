@@ -53,7 +53,11 @@
 		};
 
 		gmac: eth@e0800000 {
+<<<<<<< HEAD
 			compatible = "st,spear600-gmac";
+=======
+			compatible = "snps,dwmac-3.40a";
+>>>>>>> origin/android16-base
 			reg = <0xe0800000 0x8000>;
 			interrupts = <23 22>;
 			interrupt-names = "macirq", "eth_wake_irq";

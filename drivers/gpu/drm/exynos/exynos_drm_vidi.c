@@ -302,6 +302,10 @@ static int vidi_get_modes(struct drm_connector *connector)
 	struct vidi_context *ctx = ctx_from_connector(connector);
 	struct edid *edid;
 	int edid_len;
+<<<<<<< HEAD
+=======
+	int count;
+>>>>>>> origin/android16-base
 
 	/*
 	 * the edid data comes from user side and it would be set
@@ -321,7 +325,15 @@ static int vidi_get_modes(struct drm_connector *connector)
 
 	drm_connector_update_edid_property(connector, edid);
 
+<<<<<<< HEAD
 	return drm_add_edid_modes(connector, edid);
+=======
+	count = drm_add_edid_modes(connector, edid);
+
+	kfree(edid);
+
+	return count;
+>>>>>>> origin/android16-base
 }
 
 static const struct drm_connector_helper_funcs vidi_connector_helper_funcs = {
@@ -480,8 +492,11 @@ static int vidi_remove(struct platform_device *pdev)
 	if (ctx->raw_edid != (struct edid *)fake_edid_info) {
 		kfree(ctx->raw_edid);
 		ctx->raw_edid = NULL;
+<<<<<<< HEAD
 
 		return -EINVAL;
+=======
+>>>>>>> origin/android16-base
 	}
 
 	component_del(&pdev->dev, &vidi_component_ops);

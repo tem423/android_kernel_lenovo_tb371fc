@@ -16,8 +16,13 @@ extern void __gnu_mcount_nc(void);
 
 #ifdef CONFIG_DYNAMIC_FTRACE
 struct dyn_arch_ftrace {
+<<<<<<< HEAD
 #ifdef CONFIG_OLD_MCOUNT
 	bool	old_mcount;
+=======
+#ifdef CONFIG_ARM_MODULE_PLTS
+	struct module *mod;
+>>>>>>> origin/android16-base
 #endif
 };
 

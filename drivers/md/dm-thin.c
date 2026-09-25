@@ -2222,6 +2222,10 @@ static void process_thin_deferred_bios(struct thin_c *tc)
 			throttle_work_update(&pool->throttle);
 			dm_pool_issue_prefetches(pool->pmd);
 		}
+<<<<<<< HEAD
+=======
+		cond_resched();
+>>>>>>> origin/android16-base
 	}
 	blk_finish_plug(&plug);
 }
@@ -2305,6 +2309,10 @@ static void process_thin_deferred_cells(struct thin_c *tc)
 			else
 				pool->process_cell(tc, cell);
 		}
+<<<<<<< HEAD
+=======
+		cond_resched();
+>>>>>>> origin/android16-base
 	} while (!list_empty(&cells));
 }
 
@@ -2921,6 +2929,11 @@ static void __pool_destroy(struct pool *pool)
 	dm_bio_prison_destroy(pool->prison);
 	dm_kcopyd_client_destroy(pool->copier);
 
+<<<<<<< HEAD
+=======
+	cancel_delayed_work_sync(&pool->waker);
+	cancel_delayed_work_sync(&pool->no_space_timeout);
+>>>>>>> origin/android16-base
 	if (pool->wq)
 		destroy_workqueue(pool->wq);
 
@@ -3547,6 +3560,7 @@ static int pool_preresume(struct dm_target *ti)
 	 */
 	r = bind_control_target(pool, ti);
 	if (r)
+<<<<<<< HEAD
 		return r;
 
 	r = maybe_resize_data_dev(ti, &need_commit1);
@@ -3561,6 +3575,30 @@ static int pool_preresume(struct dm_target *ti)
 		(void) commit(pool);
 
 	return 0;
+=======
+		goto out;
+
+	r = maybe_resize_data_dev(ti, &need_commit1);
+	if (r)
+		goto out;
+
+	r = maybe_resize_metadata_dev(ti, &need_commit2);
+	if (r)
+		goto out;
+
+	if (need_commit1 || need_commit2)
+		(void) commit(pool);
+out:
+	/*
+	 * When a thin-pool is PM_FAIL, it cannot be rebuilt if
+	 * bio is in deferred list. Therefore need to return 0
+	 * to allow pool_resume() to flush IO.
+	 */
+	if (r && get_pool_mode(pool) == PM_FAIL)
+		r = 0;
+
+	return r;
+>>>>>>> origin/android16-base
 }
 
 static void pool_suspend_active_thins(struct pool *pool)

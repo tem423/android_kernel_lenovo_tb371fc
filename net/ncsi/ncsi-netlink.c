@@ -71,8 +71,13 @@ static int ncsi_write_channel_info(struct sk_buff *skb,
 	if (ndp->force_channel == nc)
 		nla_put_flag(skb, NCSI_CHANNEL_ATTR_FORCED);
 
+<<<<<<< HEAD
 	nla_put_u32(skb, NCSI_CHANNEL_ATTR_VERSION_MAJOR, nc->version.version);
 	nla_put_u32(skb, NCSI_CHANNEL_ATTR_VERSION_MINOR, nc->version.alpha2);
+=======
+	nla_put_u32(skb, NCSI_CHANNEL_ATTR_VERSION_MAJOR, nc->version.major);
+	nla_put_u32(skb, NCSI_CHANNEL_ATTR_VERSION_MINOR, nc->version.minor);
+>>>>>>> origin/android16-base
 	nla_put_string(skb, NCSI_CHANNEL_ATTR_VERSION_STR, nc->version.fw_name);
 
 	vid_nest = nla_nest_start(skb, NCSI_CHANNEL_ATTR_VLAN_LIST);
@@ -397,6 +402,7 @@ static struct genl_family ncsi_genl_family __ro_after_init = {
 	.n_ops = ARRAY_SIZE(ncsi_ops),
 };
 
+<<<<<<< HEAD
 int ncsi_init_netlink(struct net_device *dev)
 {
 	int rc;
@@ -418,3 +424,10 @@ int ncsi_unregister_netlink(struct net_device *dev)
 
 	return rc;
 }
+=======
+static int __init ncsi_init_netlink(void)
+{
+	return genl_register_family(&ncsi_genl_family);
+}
+subsys_initcall(ncsi_init_netlink);
+>>>>>>> origin/android16-base

@@ -24,13 +24,22 @@
 #include <linux/sysfs.h>
 #include <linux/quota.h>
 #include <linux/unicode.h>
+<<<<<<< HEAD
+=======
+#include <linux/zstd.h>
+#include <linux/lz4.h>
+>>>>>>> origin/android16-base
 
 #include "f2fs.h"
 #include "node.h"
 #include "segment.h"
 #include "xattr.h"
 #include "gc.h"
+<<<<<<< HEAD
 #include "trace.h"
+=======
+#include "iostat.h"
+>>>>>>> origin/android16-base
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/f2fs.h>
@@ -44,7 +53,10 @@ const char *f2fs_fault_name[FAULT_MAX] = {
 	[FAULT_KVMALLOC]	= "kvmalloc",
 	[FAULT_PAGE_ALLOC]	= "page alloc",
 	[FAULT_PAGE_GET]	= "page get",
+<<<<<<< HEAD
 	[FAULT_ALLOC_BIO]	= "alloc bio",
+=======
+>>>>>>> origin/android16-base
 	[FAULT_ALLOC_NID]	= "alloc nid",
 	[FAULT_ORPHAN]		= "orphan",
 	[FAULT_BLOCK]		= "no more block",
@@ -55,6 +67,13 @@ const char *f2fs_fault_name[FAULT_MAX] = {
 	[FAULT_CHECKPOINT]	= "checkpoint error",
 	[FAULT_DISCARD]		= "discard error",
 	[FAULT_WRITE_IO]	= "write IO error",
+<<<<<<< HEAD
+=======
+	[FAULT_SLAB_ALLOC]	= "slab alloc",
+	[FAULT_DQUOT_INIT]	= "dquot initialize",
+	[FAULT_LOCK_OP]		= "lock_op",
+	[FAULT_BLKADDR]		= "invalid blkaddr",
+>>>>>>> origin/android16-base
 };
 
 void f2fs_build_fault_attr(struct f2fs_sb_info *sbi, unsigned int rate,
@@ -104,6 +123,10 @@ enum {
 	Opt_noinline_dentry,
 	Opt_flush_merge,
 	Opt_noflush_merge,
+<<<<<<< HEAD
+=======
+	Opt_barrier,
+>>>>>>> origin/android16-base
 	Opt_nobarrier,
 	Opt_fastboot,
 	Opt_extent_cache,
@@ -133,7 +156,10 @@ enum {
 	Opt_jqfmt_vfsold,
 	Opt_jqfmt_vfsv0,
 	Opt_jqfmt_vfsv1,
+<<<<<<< HEAD
 	Opt_whint,
+=======
+>>>>>>> origin/android16-base
 	Opt_alloc,
 	Opt_fsync,
 	Opt_test_dummy_encryption,
@@ -142,9 +168,27 @@ enum {
 	Opt_checkpoint_disable_cap,
 	Opt_checkpoint_disable_cap_perc,
 	Opt_checkpoint_enable,
+<<<<<<< HEAD
 	Opt_compress_algorithm,
 	Opt_compress_log_size,
 	Opt_compress_extension,
+=======
+	Opt_checkpoint_merge,
+	Opt_nocheckpoint_merge,
+	Opt_compress_algorithm,
+	Opt_compress_log_size,
+	Opt_compress_extension,
+	Opt_nocompress_extension,
+	Opt_compress_chksum,
+	Opt_compress_mode,
+	Opt_compress_cache,
+	Opt_atgc,
+	Opt_gc_merge,
+	Opt_nogc_merge,
+	Opt_discard_unit,
+	Opt_memory_mode,
+	Opt_age_extent_cache,
+>>>>>>> origin/android16-base
 	Opt_err,
 };
 
@@ -170,6 +214,10 @@ static match_table_t f2fs_tokens = {
 	{Opt_noinline_dentry, "noinline_dentry"},
 	{Opt_flush_merge, "flush_merge"},
 	{Opt_noflush_merge, "noflush_merge"},
+<<<<<<< HEAD
+=======
+	{Opt_barrier, "barrier"},
+>>>>>>> origin/android16-base
 	{Opt_nobarrier, "nobarrier"},
 	{Opt_fastboot, "fastboot"},
 	{Opt_extent_cache, "extent_cache"},
@@ -199,7 +247,10 @@ static match_table_t f2fs_tokens = {
 	{Opt_jqfmt_vfsold, "jqfmt=vfsold"},
 	{Opt_jqfmt_vfsv0, "jqfmt=vfsv0"},
 	{Opt_jqfmt_vfsv1, "jqfmt=vfsv1"},
+<<<<<<< HEAD
 	{Opt_whint, "whint_mode=%s"},
+=======
+>>>>>>> origin/android16-base
 	{Opt_alloc, "alloc_mode=%s"},
 	{Opt_fsync, "fsync_mode=%s"},
 	{Opt_test_dummy_encryption, "test_dummy_encryption=%s"},
@@ -209,9 +260,27 @@ static match_table_t f2fs_tokens = {
 	{Opt_checkpoint_disable_cap, "checkpoint=disable:%u"},
 	{Opt_checkpoint_disable_cap_perc, "checkpoint=disable:%u%%"},
 	{Opt_checkpoint_enable, "checkpoint=enable"},
+<<<<<<< HEAD
 	{Opt_compress_algorithm, "compress_algorithm=%s"},
 	{Opt_compress_log_size, "compress_log_size=%u"},
 	{Opt_compress_extension, "compress_extension=%s"},
+=======
+	{Opt_checkpoint_merge, "checkpoint_merge"},
+	{Opt_nocheckpoint_merge, "nocheckpoint_merge"},
+	{Opt_compress_algorithm, "compress_algorithm=%s"},
+	{Opt_compress_log_size, "compress_log_size=%u"},
+	{Opt_compress_extension, "compress_extension=%s"},
+	{Opt_nocompress_extension, "nocompress_extension=%s"},
+	{Opt_compress_chksum, "compress_chksum"},
+	{Opt_compress_mode, "compress_mode=%s"},
+	{Opt_compress_cache, "compress_cache"},
+	{Opt_atgc, "atgc"},
+	{Opt_gc_merge, "gc_merge"},
+	{Opt_nogc_merge, "nogc_merge"},
+	{Opt_discard_unit, "discard_unit=%s"},
+	{Opt_memory_mode, "memory=%s"},
+	{Opt_age_extent_cache, "age_extent_cache"},
+>>>>>>> origin/android16-base
 	{Opt_err, NULL},
 };
 
@@ -260,16 +329,42 @@ static int f2fs_sb_read_encoding(const struct f2fs_super_block *sb,
 
 	return 0;
 }
+<<<<<<< HEAD
+=======
+
+struct kmem_cache *f2fs_cf_name_slab;
+static int __init f2fs_create_casefold_cache(void)
+{
+	f2fs_cf_name_slab = f2fs_kmem_cache_create("f2fs_casefolded_name",
+							F2FS_NAME_LEN);
+	return f2fs_cf_name_slab ? 0 : -ENOMEM;
+}
+
+static void f2fs_destroy_casefold_cache(void)
+{
+	kmem_cache_destroy(f2fs_cf_name_slab);
+}
+#else
+static int __init f2fs_create_casefold_cache(void) { return 0; }
+static void f2fs_destroy_casefold_cache(void) { }
+>>>>>>> origin/android16-base
 #endif
 
 static inline void limit_reserve_root(struct f2fs_sb_info *sbi)
 {
+<<<<<<< HEAD
 	block_t limit = min((sbi->user_block_count << 1) / 1000,
 			sbi->user_block_count - sbi->reserved_blocks);
 	/* add for limit data partition writen */
 	limit = max(limit, (block_t)51200);   // reserve size must be greater than 200M
 
 	/* limit is 0.2% */
+=======
+	block_t limit = min((sbi->user_block_count >> 3),
+			sbi->user_block_count - sbi->reserved_blocks);
+
+	/* limit is 12.5% */
+>>>>>>> origin/android16-base
 	if (test_opt(sbi, RESERVE_ROOT) &&
 			F2FS_OPTION(sbi).root_reserved_blocks > limit) {
 		F2FS_OPTION(sbi).root_reserved_blocks = limit;
@@ -288,6 +383,49 @@ static inline void limit_reserve_root(struct f2fs_sb_info *sbi)
 					   F2FS_OPTION(sbi).s_resgid));
 }
 
+<<<<<<< HEAD
+=======
+static inline int adjust_reserved_segment(struct f2fs_sb_info *sbi)
+{
+	unsigned int sec_blks = sbi->blocks_per_seg * sbi->segs_per_sec;
+	unsigned int avg_vblocks;
+	unsigned int wanted_reserved_segments;
+	block_t avail_user_block_count;
+
+	if (!F2FS_IO_ALIGNED(sbi))
+		return 0;
+
+	/* average valid block count in section in worst case */
+	avg_vblocks = sec_blks / F2FS_IO_SIZE(sbi);
+
+	/*
+	 * we need enough free space when migrating one section in worst case
+	 */
+	wanted_reserved_segments = (F2FS_IO_SIZE(sbi) / avg_vblocks) *
+						reserved_segments(sbi);
+	wanted_reserved_segments -= reserved_segments(sbi);
+
+	avail_user_block_count = sbi->user_block_count -
+				sbi->current_reserved_blocks -
+				F2FS_OPTION(sbi).root_reserved_blocks;
+
+	if (wanted_reserved_segments * sbi->blocks_per_seg >
+					avail_user_block_count) {
+		f2fs_err(sbi, "IO align feature can't grab additional reserved segment: %u, available segments: %u",
+			wanted_reserved_segments,
+			avail_user_block_count >> sbi->log_blocks_per_seg);
+		return -ENOSPC;
+	}
+
+	SM_I(sbi)->additional_reserved_segments = wanted_reserved_segments;
+
+	f2fs_info(sbi, "IO align feature needs additional reserved segment: %u",
+			 wanted_reserved_segments);
+
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static inline void adjust_unusable_cap_perc(struct f2fs_sb_info *sbi)
 {
 	if (!F2FS_OPTION(sbi).unusable_cap_perc)
@@ -351,7 +489,11 @@ static int f2fs_set_qf_name(struct super_block *sb, int qtype,
 	set_opt(sbi, QUOTA);
 	return 0;
 errout:
+<<<<<<< HEAD
 	kvfree(qname);
+=======
+	kfree(qname);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -363,7 +505,11 @@ static int f2fs_clear_qf_name(struct super_block *sb, int qtype)
 		f2fs_err(sbi, "Cannot change journaled quota options when quota turned on");
 		return -EINVAL;
 	}
+<<<<<<< HEAD
 	kvfree(F2FS_OPTION(sbi).s_qf_names[qtype]);
+=======
+	kfree(F2FS_OPTION(sbi).s_qf_names[qtype]);
+>>>>>>> origin/android16-base
 	F2FS_OPTION(sbi).s_qf_names[qtype] = NULL;
 	return 0;
 }
@@ -453,28 +599,161 @@ static int f2fs_set_test_dummy_encryption(struct super_block *sb,
 		return -EINVAL;
 	}
 	f2fs_warn(sbi, "Test dummy encryption mode enabled");
+<<<<<<< HEAD
 #else
 	f2fs_warn(sbi, "Test dummy encryption mount option ignored");
 #endif
 	return 0;
 }
 
+=======
+	return 0;
+#else
+	f2fs_warn(sbi, "test_dummy_encryption option not supported");
+	return -EINVAL;
+#endif
+}
+
+#ifdef CONFIG_F2FS_FS_COMPRESSION
+/*
+ * 1. The same extension name cannot not appear in both compress and non-compress extension
+ * at the same time.
+ * 2. If the compress extension specifies all files, the types specified by the non-compress
+ * extension will be treated as special cases and will not be compressed.
+ * 3. Don't allow the non-compress extension specifies all files.
+ */
+static int f2fs_test_compress_extension(struct f2fs_sb_info *sbi)
+{
+	unsigned char (*ext)[F2FS_EXTENSION_LEN];
+	unsigned char (*noext)[F2FS_EXTENSION_LEN];
+	int ext_cnt, noext_cnt, index = 0, no_index = 0;
+
+	ext = F2FS_OPTION(sbi).extensions;
+	ext_cnt = F2FS_OPTION(sbi).compress_ext_cnt;
+	noext = F2FS_OPTION(sbi).noextensions;
+	noext_cnt = F2FS_OPTION(sbi).nocompress_ext_cnt;
+
+	if (!noext_cnt)
+		return 0;
+
+	for (no_index = 0; no_index < noext_cnt; no_index++) {
+		if (!strcasecmp("*", noext[no_index])) {
+			f2fs_info(sbi, "Don't allow the nocompress extension specifies all files");
+			return -EINVAL;
+		}
+		for (index = 0; index < ext_cnt; index++) {
+			if (!strcasecmp(ext[index], noext[no_index])) {
+				f2fs_info(sbi, "Don't allow the same extension %s appear in both compress and nocompress extension",
+						ext[index]);
+				return -EINVAL;
+			}
+		}
+	}
+	return 0;
+}
+
+#ifdef CONFIG_F2FS_FS_LZ4
+static int f2fs_set_lz4hc_level(struct f2fs_sb_info *sbi, const char *str)
+{
+#ifdef CONFIG_F2FS_FS_LZ4HC
+	unsigned int level;
+#endif
+
+	if (strlen(str) == 3) {
+		F2FS_OPTION(sbi).compress_level = 0;
+		return 0;
+	}
+
+#ifdef CONFIG_F2FS_FS_LZ4HC
+	str += 3;
+
+	if (str[0] != ':') {
+		f2fs_info(sbi, "wrong format, e.g. <alg_name>:<compr_level>");
+		return -EINVAL;
+	}
+	if (kstrtouint(str + 1, 10, &level))
+		return -EINVAL;
+
+	if (level < LZ4HC_MIN_CLEVEL || level > LZ4HC_MAX_CLEVEL) {
+		f2fs_info(sbi, "invalid lz4hc compress level: %d", level);
+		return -EINVAL;
+	}
+
+	F2FS_OPTION(sbi).compress_level = level;
+	return 0;
+#else
+	f2fs_info(sbi, "kernel doesn't support lz4hc compression");
+	return -EINVAL;
+#endif
+}
+#endif
+
+#ifdef CONFIG_F2FS_FS_ZSTD
+static int f2fs_set_zstd_level(struct f2fs_sb_info *sbi, const char *str)
+{
+	unsigned int level;
+	int len = 4;
+
+	if (strlen(str) == len) {
+		F2FS_OPTION(sbi).compress_level = 0;
+		return 0;
+	}
+
+	str += len;
+
+	if (str[0] != ':') {
+		f2fs_info(sbi, "wrong format, e.g. <alg_name>:<compr_level>");
+		return -EINVAL;
+	}
+	if (kstrtouint(str + 1, 10, &level))
+		return -EINVAL;
+
+	if (!level || level > ZSTD_maxCLevel()) {
+		f2fs_info(sbi, "invalid zstd compress level: %d", level);
+		return -EINVAL;
+	}
+
+	F2FS_OPTION(sbi).compress_level = level;
+	return 0;
+}
+#endif
+#endif
+
+>>>>>>> origin/android16-base
 static int parse_options(struct super_block *sb, char *options, bool is_remount)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
 	substring_t args[MAX_OPT_ARGS];
+<<<<<<< HEAD
 	unsigned char (*ext)[F2FS_EXTENSION_LEN];
 	char *p, *name;
 	int arg = 0, ext_cnt;
+=======
+#ifdef CONFIG_F2FS_FS_COMPRESSION
+	unsigned char (*ext)[F2FS_EXTENSION_LEN];
+	unsigned char (*noext)[F2FS_EXTENSION_LEN];
+	int ext_cnt, noext_cnt;
+#endif
+	char *p, *name;
+	int arg = 0;
+>>>>>>> origin/android16-base
 	kuid_t uid;
 	kgid_t gid;
 	int ret;
 
 	if (!options)
+<<<<<<< HEAD
 		return 0;
 
 	while ((p = strsep(&options, ",")) != NULL) {
 		int token;
+=======
+		goto default_check;
+
+	while ((p = strsep(&options, ",")) != NULL) {
+		int token;
+
+>>>>>>> origin/android16-base
 		if (!*p)
 			continue;
 		/*
@@ -497,10 +776,17 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			} else if (!strcmp(name, "sync")) {
 				F2FS_OPTION(sbi).bggc_mode = BGGC_MODE_SYNC;
 			} else {
+<<<<<<< HEAD
 				kvfree(name);
 				return -EINVAL;
 			}
 			kvfree(name);
+=======
+				kfree(name);
+				return -EINVAL;
+			}
+			kfree(name);
+>>>>>>> origin/android16-base
 			break;
 		case Opt_disable_roll_forward:
 			set_opt(sbi, DISABLE_ROLL_FORWARD);
@@ -512,10 +798,21 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 				return -EINVAL;
 			break;
 		case Opt_discard:
+<<<<<<< HEAD
 			set_opt(sbi, DISCARD);
 			break;
 		case Opt_nodiscard:
 			if (f2fs_sb_has_blkzoned(sbi)) {
+=======
+			if (!f2fs_hw_support_discard(sbi)) {
+				f2fs_warn(sbi, "device does not support discard");
+				break;
+			}
+			set_opt(sbi, DISCARD);
+			break;
+		case Opt_nodiscard:
+			if (f2fs_hw_should_discard(sbi)) {
+>>>>>>> origin/android16-base
 				f2fs_warn(sbi, "discard is required for zoned block devices");
 				return -EINVAL;
 			}
@@ -578,7 +875,12 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 		case Opt_active_logs:
 			if (args->from && match_int(args, &arg))
 				return -EINVAL;
+<<<<<<< HEAD
 			if (arg != 2 && arg != 4 && arg != NR_CURSEG_TYPE)
+=======
+			if (arg != 2 && arg != 4 &&
+				arg != NR_CURSEG_PERSIST_TYPE)
+>>>>>>> origin/android16-base
 				return -EINVAL;
 			F2FS_OPTION(sbi).active_logs = arg;
 			break;
@@ -603,14 +905,27 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 		case Opt_nobarrier:
 			set_opt(sbi, NOBARRIER);
 			break;
+<<<<<<< HEAD
+=======
+		case Opt_barrier:
+			clear_opt(sbi, NOBARRIER);
+			break;
+>>>>>>> origin/android16-base
 		case Opt_fastboot:
 			set_opt(sbi, FASTBOOT);
 			break;
 		case Opt_extent_cache:
+<<<<<<< HEAD
 			set_opt(sbi, EXTENT_CACHE);
 			break;
 		case Opt_noextent_cache:
 			clear_opt(sbi, EXTENT_CACHE);
+=======
+			set_opt(sbi, READ_EXTENT_CACHE);
+			break;
+		case Opt_noextent_cache:
+			clear_opt(sbi, READ_EXTENT_CACHE);
+>>>>>>> origin/android16-base
 			break;
 		case Opt_noinline_data:
 			clear_opt(sbi, INLINE_DATA);
@@ -657,17 +972,33 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			if (!strcmp(name, "adaptive")) {
 				if (f2fs_sb_has_blkzoned(sbi)) {
 					f2fs_warn(sbi, "adaptive mode is not allowed with zoned block device feature");
+<<<<<<< HEAD
 					kvfree(name);
+=======
+					kfree(name);
+>>>>>>> origin/android16-base
 					return -EINVAL;
 				}
 				F2FS_OPTION(sbi).fs_mode = FS_MODE_ADAPTIVE;
 			} else if (!strcmp(name, "lfs")) {
 				F2FS_OPTION(sbi).fs_mode = FS_MODE_LFS;
+<<<<<<< HEAD
 			} else {
 				kvfree(name);
 				return -EINVAL;
 			}
 			kvfree(name);
+=======
+			} else if (!strcmp(name, "fragment:segment")) {
+				F2FS_OPTION(sbi).fs_mode = FS_MODE_FRAGMENT_SEG;
+			} else if (!strcmp(name, "fragment:block")) {
+				F2FS_OPTION(sbi).fs_mode = FS_MODE_FRAGMENT_BLK;
+			} else {
+				kfree(name);
+				return -EINVAL;
+			}
+			kfree(name);
+>>>>>>> origin/android16-base
 			break;
 		case Opt_io_size_bits:
 			if (args->from && match_int(args, &arg))
@@ -782,6 +1113,7 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			f2fs_info(sbi, "quota operations not supported");
 			break;
 #endif
+<<<<<<< HEAD
 		case Opt_whint:
 			name = match_strdup(&args[0]);
 			if (!name)
@@ -798,6 +1130,8 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			}
 			kvfree(name);
 			break;
+=======
+>>>>>>> origin/android16-base
 		case Opt_alloc:
 			name = match_strdup(&args[0]);
 			if (!name)
@@ -808,10 +1142,17 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			} else if (!strcmp(name, "reuse")) {
 				F2FS_OPTION(sbi).alloc_mode = ALLOC_MODE_REUSE;
 			} else {
+<<<<<<< HEAD
 				kvfree(name);
 				return -EINVAL;
 			}
 			kvfree(name);
+=======
+				kfree(name);
+				return -EINVAL;
+			}
+			kfree(name);
+>>>>>>> origin/android16-base
 			break;
 		case Opt_fsync:
 			name = match_strdup(&args[0]);
@@ -825,10 +1166,17 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 				F2FS_OPTION(sbi).fsync_mode =
 							FSYNC_MODE_NOBARRIER;
 			} else {
+<<<<<<< HEAD
 				kvfree(name);
 				return -EINVAL;
 			}
 			kvfree(name);
+=======
+				kfree(name);
+				return -EINVAL;
+			}
+			kfree(name);
+>>>>>>> origin/android16-base
 			break;
 		case Opt_test_dummy_encryption:
 			ret = f2fs_set_test_dummy_encryption(sb, p, &args[0],
@@ -863,15 +1211,30 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 		case Opt_checkpoint_enable:
 			clear_opt(sbi, DISABLE_CHECKPOINT);
 			break;
+<<<<<<< HEAD
 		case Opt_compress_algorithm:
 			if (!f2fs_sb_has_compression(sbi)) {
 				f2fs_err(sbi, "Compression feature if off");
 				return -EINVAL;
+=======
+		case Opt_checkpoint_merge:
+			set_opt(sbi, MERGE_CHECKPOINT);
+			break;
+		case Opt_nocheckpoint_merge:
+			clear_opt(sbi, MERGE_CHECKPOINT);
+			break;
+#ifdef CONFIG_F2FS_FS_COMPRESSION
+		case Opt_compress_algorithm:
+			if (!f2fs_sb_has_compression(sbi)) {
+				f2fs_info(sbi, "Image doesn't support compression");
+				break;
+>>>>>>> origin/android16-base
 			}
 			name = match_strdup(&args[0]);
 			if (!name)
 				return -ENOMEM;
 			if (!strcmp(name, "lzo")) {
+<<<<<<< HEAD
 				F2FS_OPTION(sbi).compress_algorithm =
 								COMPRESS_LZO;
 			} else if (!strcmp(name, "lz4")) {
@@ -880,6 +1243,39 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			} else if (!strcmp(name, "zstd")) {
 				F2FS_OPTION(sbi).compress_algorithm =
 								COMPRESS_ZSTD;
+=======
+#ifdef CONFIG_F2FS_FS_LZO
+				F2FS_OPTION(sbi).compress_level = 0;
+				F2FS_OPTION(sbi).compress_algorithm =
+								COMPRESS_LZO;
+#else
+				f2fs_info(sbi, "kernel doesn't support lzo compression");
+#endif
+			} else if (!strncmp(name, "lz4", 3)) {
+#ifdef CONFIG_F2FS_FS_LZ4
+				ret = f2fs_set_lz4hc_level(sbi, name);
+				if (ret) {
+					kfree(name);
+					return -EINVAL;
+				}
+				F2FS_OPTION(sbi).compress_algorithm =
+								COMPRESS_LZ4;
+#else
+				f2fs_info(sbi, "kernel doesn't support lz4 compression");
+#endif
+			} else if (!strncmp(name, "zstd", 4)) {
+#ifdef CONFIG_F2FS_FS_ZSTD
+				ret = f2fs_set_zstd_level(sbi, name);
+				if (ret) {
+					kfree(name);
+					return -EINVAL;
+				}
+				F2FS_OPTION(sbi).compress_algorithm =
+								COMPRESS_ZSTD;
+#else
+				f2fs_info(sbi, "kernel doesn't support zstd compression");
+#endif
+>>>>>>> origin/android16-base
 			} else {
 				kfree(name);
 				return -EINVAL;
@@ -888,8 +1284,13 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			break;
 		case Opt_compress_log_size:
 			if (!f2fs_sb_has_compression(sbi)) {
+<<<<<<< HEAD
 				f2fs_err(sbi, "Compression feature is off");
 				return -EINVAL;
+=======
+				f2fs_info(sbi, "Image doesn't support compression");
+				break;
+>>>>>>> origin/android16-base
 			}
 			if (args->from && match_int(args, &arg))
 				return -EINVAL;
@@ -903,8 +1304,13 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			break;
 		case Opt_compress_extension:
 			if (!f2fs_sb_has_compression(sbi)) {
+<<<<<<< HEAD
 				f2fs_err(sbi, "Compression feature is off");
 				return -EINVAL;
+=======
+				f2fs_info(sbi, "Image doesn't support compression");
+				break;
+>>>>>>> origin/android16-base
 			}
 			name = match_strdup(&args[0]);
 			if (!name)
@@ -925,12 +1331,121 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 			F2FS_OPTION(sbi).compress_ext_cnt++;
 			kfree(name);
 			break;
+<<<<<<< HEAD
+=======
+		case Opt_nocompress_extension:
+			if (!f2fs_sb_has_compression(sbi)) {
+				f2fs_info(sbi, "Image doesn't support compression");
+				break;
+			}
+			name = match_strdup(&args[0]);
+			if (!name)
+				return -ENOMEM;
+
+			noext = F2FS_OPTION(sbi).noextensions;
+			noext_cnt = F2FS_OPTION(sbi).nocompress_ext_cnt;
+
+			if (strlen(name) >= F2FS_EXTENSION_LEN ||
+				noext_cnt >= COMPRESS_EXT_NUM) {
+				f2fs_err(sbi,
+					"invalid extension length/number");
+				kfree(name);
+				return -EINVAL;
+			}
+
+			strcpy(noext[noext_cnt], name);
+			F2FS_OPTION(sbi).nocompress_ext_cnt++;
+			kfree(name);
+			break;
+		case Opt_compress_chksum:
+			F2FS_OPTION(sbi).compress_chksum = true;
+			break;
+		case Opt_compress_mode:
+			name = match_strdup(&args[0]);
+			if (!name)
+				return -ENOMEM;
+			if (!strcmp(name, "fs")) {
+				F2FS_OPTION(sbi).compress_mode = COMPR_MODE_FS;
+			} else if (!strcmp(name, "user")) {
+				F2FS_OPTION(sbi).compress_mode = COMPR_MODE_USER;
+			} else {
+				kfree(name);
+				return -EINVAL;
+			}
+			kfree(name);
+			break;
+		case Opt_compress_cache:
+			set_opt(sbi, COMPRESS_CACHE);
+			break;
+#else
+		case Opt_compress_algorithm:
+		case Opt_compress_log_size:
+		case Opt_compress_extension:
+		case Opt_nocompress_extension:
+		case Opt_compress_chksum:
+		case Opt_compress_mode:
+		case Opt_compress_cache:
+			f2fs_info(sbi, "compression options not supported");
+			break;
+#endif
+		case Opt_atgc:
+			set_opt(sbi, ATGC);
+			break;
+		case Opt_gc_merge:
+			set_opt(sbi, GC_MERGE);
+			break;
+		case Opt_nogc_merge:
+			clear_opt(sbi, GC_MERGE);
+			break;
+		case Opt_discard_unit:
+			name = match_strdup(&args[0]);
+			if (!name)
+				return -ENOMEM;
+			if (!strcmp(name, "block")) {
+				F2FS_OPTION(sbi).discard_unit =
+						DISCARD_UNIT_BLOCK;
+			} else if (!strcmp(name, "segment")) {
+				F2FS_OPTION(sbi).discard_unit =
+						DISCARD_UNIT_SEGMENT;
+			} else if (!strcmp(name, "section")) {
+				F2FS_OPTION(sbi).discard_unit =
+						DISCARD_UNIT_SECTION;
+			} else {
+				kfree(name);
+				return -EINVAL;
+			}
+			kfree(name);
+			break;
+		case Opt_memory_mode:
+			name = match_strdup(&args[0]);
+			if (!name)
+				return -ENOMEM;
+			if (!strcmp(name, "normal")) {
+				F2FS_OPTION(sbi).memory_mode =
+						MEMORY_MODE_NORMAL;
+			} else if (!strcmp(name, "low")) {
+				F2FS_OPTION(sbi).memory_mode =
+						MEMORY_MODE_LOW;
+			} else {
+				kfree(name);
+				return -EINVAL;
+			}
+			kfree(name);
+			break;
+		case Opt_age_extent_cache:
+			set_opt(sbi, AGE_EXTENT_CACHE);
+			break;
+>>>>>>> origin/android16-base
 		default:
 			f2fs_err(sbi, "Unrecognized mount option \"%s\" or missing value",
 				 p);
 			return -EINVAL;
 		}
 	}
+<<<<<<< HEAD
+=======
+default_check:
+>>>>>>> origin/android16-base
 #ifdef CONFIG_QUOTA
 	if (f2fs_check_quota_options(sbi))
 		return -EINVAL;
@@ -951,6 +1466,35 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 		return -EINVAL;
 	}
 #endif
+<<<<<<< HEAD
+=======
+	/*
+	 * The BLKZONED feature indicates that the drive was formatted with
+	 * zone alignment optimization. This is optional for host-aware
+	 * devices, but mandatory for host-managed zoned block devices.
+	 */
+#ifndef CONFIG_BLK_DEV_ZONED
+	if (f2fs_sb_has_blkzoned(sbi)) {
+		f2fs_err(sbi, "Zoned block device support is not enabled");
+		return -EINVAL;
+	}
+#endif
+	if (f2fs_sb_has_blkzoned(sbi)) {
+		if (F2FS_OPTION(sbi).discard_unit !=
+						DISCARD_UNIT_SECTION) {
+			f2fs_info(sbi, "Zoned block device doesn't need small discard, set discard_unit=section by default");
+			F2FS_OPTION(sbi).discard_unit =
+					DISCARD_UNIT_SECTION;
+		}
+	}
+
+#ifdef CONFIG_F2FS_FS_COMPRESSION
+	if (f2fs_test_compress_extension(sbi)) {
+		f2fs_err(sbi, "invalid compress or nocompress extension");
+		return -EINVAL;
+	}
+#endif
+>>>>>>> origin/android16-base
 
 	if (F2FS_IO_SIZE_BITS(sbi) && !f2fs_lfs_mode(sbi)) {
 		f2fs_err(sbi, "Should set mode=lfs with %uKB-sized IO",
@@ -983,6 +1527,7 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 	}
 
 	if (test_opt(sbi, DISABLE_CHECKPOINT) && f2fs_lfs_mode(sbi)) {
+<<<<<<< HEAD
 		f2fs_err(sbi, "LFS not compatible with checkpoint=disable\n");
 		return -EINVAL;
 	}
@@ -992,6 +1537,26 @@ static int parse_options(struct super_block *sb, char *options, bool is_remount)
 	 */
 	if (F2FS_OPTION(sbi).active_logs != NR_CURSEG_TYPE)
 		F2FS_OPTION(sbi).whint_mode = WHINT_MODE_OFF;
+=======
+		f2fs_err(sbi, "LFS not compatible with checkpoint=disable");
+		return -EINVAL;
+	}
+
+	if (test_opt(sbi, ATGC) && f2fs_lfs_mode(sbi)) {
+		f2fs_err(sbi, "LFS not compatible with ATGC");
+		return -EINVAL;
+	}
+
+	if (f2fs_is_readonly(sbi) && test_opt(sbi, FLUSH_MERGE)) {
+		f2fs_err(sbi, "FLUSH_MERGE not compatible with readonly mode");
+		return -EINVAL;
+	}
+
+	if (f2fs_sb_has_readonly(sbi) && !f2fs_readonly(sbi->sb)) {
+		f2fs_err(sbi, "Allow to mount readonly mode only");
+		return -EROFS;
+	}
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -999,7 +1564,12 @@ static struct inode *f2fs_alloc_inode(struct super_block *sb)
 {
 	struct f2fs_inode_info *fi;
 
+<<<<<<< HEAD
 	fi = kmem_cache_alloc(f2fs_inode_cachep, GFP_F2FS_ZERO);
+=======
+	fi = f2fs_kmem_cache_alloc(f2fs_inode_cachep,
+				GFP_F2FS_ZERO, false, F2FS_SB(sb));
+>>>>>>> origin/android16-base
 	if (!fi)
 		return NULL;
 
@@ -1007,6 +1577,7 @@ static struct inode *f2fs_alloc_inode(struct super_block *sb)
 
 	/* Initialize f2fs-specific inode info */
 	atomic_set(&fi->dirty_pages, 0);
+<<<<<<< HEAD
 	init_rwsem(&fi->i_sem);
 	spin_lock_init(&fi->i_size_lock);
 	INIT_LIST_HEAD(&fi->dirty_list);
@@ -1018,10 +1589,26 @@ static struct inode *f2fs_alloc_inode(struct super_block *sb)
 	init_rwsem(&fi->i_gc_rwsem[WRITE]);
 	init_rwsem(&fi->i_mmap_sem);
 	init_rwsem(&fi->i_xattr_sem);
+=======
+	atomic_set(&fi->i_compr_blocks, 0);
+	init_f2fs_rwsem(&fi->i_sem);
+	spin_lock_init(&fi->i_size_lock);
+	INIT_LIST_HEAD(&fi->dirty_list);
+	INIT_LIST_HEAD(&fi->gdirty_list);
+	init_f2fs_rwsem(&fi->i_gc_rwsem[READ]);
+	init_f2fs_rwsem(&fi->i_gc_rwsem[WRITE]);
+	init_f2fs_rwsem(&fi->i_mmap_sem);
+	init_f2fs_rwsem(&fi->i_xattr_sem);
+>>>>>>> origin/android16-base
 
 	/* Will be used by directory only */
 	fi->i_dir_level = F2FS_SB(sb)->dir_level;
 
+<<<<<<< HEAD
+=======
+	fi->ra_offset = -1;
+
+>>>>>>> origin/android16-base
 	return &fi->vfs_inode;
 }
 
@@ -1055,9 +1642,13 @@ static int f2fs_drop_inode(struct inode *inode)
 			atomic_inc(&inode->i_count);
 			spin_unlock(&inode->i_lock);
 
+<<<<<<< HEAD
 			/* some remained atomic pages should discarded */
 			if (f2fs_is_atomic_file(inode))
 				f2fs_drop_inmem_pages(inode);
+=======
+			f2fs_abort_atomic_write(inode, true);
+>>>>>>> origin/android16-base
 
 			/* should remain fi->extent_tree for writepage */
 			f2fs_destroy_extent_node(inode);
@@ -1165,8 +1756,14 @@ static void f2fs_destroy_inode(struct inode *inode)
 
 static void destroy_percpu_info(struct f2fs_sb_info *sbi)
 {
+<<<<<<< HEAD
 	percpu_counter_destroy(&sbi->alloc_valid_block_count);
 	percpu_counter_destroy(&sbi->total_valid_inode_count);
+=======
+	percpu_counter_destroy(&sbi->total_valid_inode_count);
+	percpu_counter_destroy(&sbi->rf_node_block_count);
+	percpu_counter_destroy(&sbi->alloc_valid_block_count);
+>>>>>>> origin/android16-base
 }
 
 static void destroy_device_list(struct f2fs_sb_info *sbi)
@@ -1197,6 +1794,15 @@ static void f2fs_put_super(struct super_block *sb)
 	mutex_lock(&sbi->umount_mutex);
 
 	/*
+<<<<<<< HEAD
+=======
+	 * flush all issued checkpoints and stop checkpoint issue thread.
+	 * after then, all checkpoints should be done by each process context.
+	 */
+	f2fs_stop_ckpt_thread(sbi);
+
+	/*
+>>>>>>> origin/android16-base
 	 * We don't need to do checkpoint when superblock is clean.
 	 * But, the previous checkpoint was not done by umount, it needs to do
 	 * clean checkpoint again.
@@ -1212,8 +1818,12 @@ static void f2fs_put_super(struct super_block *sb)
 	/* be sure to wait for any on-going discard commands */
 	dropped = f2fs_issue_discard_timeout(sbi);
 
+<<<<<<< HEAD
 	if ((f2fs_hw_support_discard(sbi) || f2fs_hw_should_discard(sbi)) &&
 					!sbi->discard_blks && !dropped) {
+=======
+	if (f2fs_realtime_discard_enable(sbi) && !sbi->discard_blks && !dropped) {
+>>>>>>> origin/android16-base
 		struct cp_control cpc = {
 			.reason = CP_UMOUNT | CP_TRIMMED,
 		};
@@ -1236,6 +1846,11 @@ static void f2fs_put_super(struct super_block *sb)
 
 	f2fs_bug_on(sbi, sbi->fsync_node_num);
 
+<<<<<<< HEAD
+=======
+	f2fs_destroy_compress_inode(sbi);
+
+>>>>>>> origin/android16-base
 	iput(sbi->node_inode);
 	sbi->node_inode = NULL;
 
@@ -1259,23 +1874,42 @@ static void f2fs_put_super(struct super_block *sb)
 	sb->s_fs_info = NULL;
 	if (sbi->s_chksum_driver)
 		crypto_free_shash(sbi->s_chksum_driver);
+<<<<<<< HEAD
 	kvfree(sbi->raw_super);
 
 	destroy_device_list(sbi);
+=======
+	kfree(sbi->raw_super);
+
+	destroy_device_list(sbi);
+	f2fs_destroy_page_array_cache(sbi);
+>>>>>>> origin/android16-base
 	f2fs_destroy_xattr_caches(sbi);
 	mempool_destroy(sbi->write_io_dummy);
 #ifdef CONFIG_QUOTA
 	for (i = 0; i < MAXQUOTAS; i++)
+<<<<<<< HEAD
 		kvfree(F2FS_OPTION(sbi).s_qf_names[i]);
 #endif
 	fscrypt_free_dummy_context(&F2FS_OPTION(sbi).dummy_enc_ctx);
 	destroy_percpu_info(sbi);
+=======
+		kfree(F2FS_OPTION(sbi).s_qf_names[i]);
+#endif
+	fscrypt_free_dummy_context(&F2FS_OPTION(sbi).dummy_enc_ctx);
+	destroy_percpu_info(sbi);
+	f2fs_destroy_iostat(sbi);
+>>>>>>> origin/android16-base
 	for (i = 0; i < NR_PAGE_TYPE; i++)
 		kvfree(sbi->write_io[i]);
 #ifdef CONFIG_UNICODE
 	utf8_unload(sb->s_encoding);
 #endif
+<<<<<<< HEAD
 	kvfree(sbi);
+=======
+	kfree(sbi);
+>>>>>>> origin/android16-base
 }
 
 int f2fs_sync_fs(struct super_block *sb, int sync)
@@ -1293,6 +1927,7 @@ int f2fs_sync_fs(struct super_block *sb, int sync)
 	if (unlikely(is_sbi_flag_set(sbi, SBI_POR_DOING)))
 		return -EAGAIN;
 
+<<<<<<< HEAD
 	if (sync) {
 		struct cp_control cpc;
 
@@ -1303,6 +1938,10 @@ int f2fs_sync_fs(struct super_block *sb, int sync)
 		up_write(&sbi->gc_lock);
 	}
 	f2fs_trace_ios(NULL, 1);
+=======
+	if (sync)
+		err = f2fs_issue_checkpoint(sbi);
+>>>>>>> origin/android16-base
 
 	return err;
 }
@@ -1319,11 +1958,24 @@ static int f2fs_freeze(struct super_block *sb)
 	/* must be clean, since sync_filesystem() was already called */
 	if (is_sbi_flag_set(F2FS_SB(sb), SBI_IS_DIRTY))
 		return -EINVAL;
+<<<<<<< HEAD
+=======
+
+	/* Let's flush checkpoints and stop the thread. */
+	f2fs_flush_ckpt_thread(F2FS_SB(sb));
+
+	/* to avoid deadlock on f2fs_evict_inode->SB_FREEZE_FS */
+	set_sbi_flag(F2FS_SB(sb), SBI_IS_FREEZING);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
 static int f2fs_unfreeze(struct super_block *sb)
 {
+<<<<<<< HEAD
+=======
+	clear_sbi_flag(F2FS_SB(sb), SBI_IS_FREEZING);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1379,18 +2031,36 @@ static int f2fs_statfs(struct dentry *dentry, struct kstatfs *buf)
 	u64 id = huge_encode_dev(sb->s_bdev->bd_dev);
 	block_t total_count, user_block_count, start_count;
 	u64 avail_node_count;
+<<<<<<< HEAD
 
 	total_count = le64_to_cpu(sbi->raw_super->block_count);
 	user_block_count = sbi->user_block_count;
+=======
+	unsigned int total_valid_node_count;
+
+	total_count = le64_to_cpu(sbi->raw_super->block_count);
+>>>>>>> origin/android16-base
 	start_count = le32_to_cpu(sbi->raw_super->segment0_blkaddr);
 	buf->f_type = F2FS_SUPER_MAGIC;
 	buf->f_bsize = sbi->blocksize;
 
 	buf->f_blocks = total_count - start_count;
+<<<<<<< HEAD
 	buf->f_bfree = user_block_count - valid_user_blocks(sbi) -
 						sbi->current_reserved_blocks;
 
 	spin_lock(&sbi->stat_lock);
+=======
+
+	spin_lock(&sbi->stat_lock);
+
+	user_block_count = sbi->user_block_count;
+	total_valid_node_count = valid_node_count(sbi);
+	avail_node_count = sbi->total_node_count - F2FS_RESERVED_NODE_NUM;
+	buf->f_bfree = user_block_count - valid_user_blocks(sbi) -
+						sbi->current_reserved_blocks;
+
+>>>>>>> origin/android16-base
 	if (unlikely(buf->f_bfree <= sbi->unusable_block_count))
 		buf->f_bfree = 0;
 	else
@@ -1403,14 +2073,21 @@ static int f2fs_statfs(struct dentry *dentry, struct kstatfs *buf)
 	else
 		buf->f_bavail = 0;
 
+<<<<<<< HEAD
 	avail_node_count = sbi->total_node_count - F2FS_RESERVED_NODE_NUM;
 
+=======
+>>>>>>> origin/android16-base
 	if (avail_node_count > user_block_count) {
 		buf->f_files = user_block_count;
 		buf->f_ffree = buf->f_bavail;
 	} else {
 		buf->f_files = avail_node_count;
+<<<<<<< HEAD
 		buf->f_ffree = min(avail_node_count - valid_node_count(sbi),
+=======
+		buf->f_ffree = min(avail_node_count - total_valid_node_count,
+>>>>>>> origin/android16-base
 					buf->f_bavail);
 	}
 
@@ -1464,6 +2141,10 @@ static inline void f2fs_show_quota_options(struct seq_file *seq,
 #endif
 }
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_F2FS_FS_COMPRESSION
+>>>>>>> origin/android16-base
 static inline void f2fs_show_compress_options(struct seq_file *seq,
 							struct super_block *sb)
 {
@@ -1487,6 +2168,12 @@ static inline void f2fs_show_compress_options(struct seq_file *seq,
 	}
 	seq_printf(seq, ",compress_algorithm=%s", algtype);
 
+<<<<<<< HEAD
+=======
+	if (F2FS_OPTION(sbi).compress_level)
+		seq_printf(seq, ":%d", F2FS_OPTION(sbi).compress_level);
+
+>>>>>>> origin/android16-base
 	seq_printf(seq, ",compress_log_size=%u",
 			F2FS_OPTION(sbi).compress_log_size);
 
@@ -1494,7 +2181,28 @@ static inline void f2fs_show_compress_options(struct seq_file *seq,
 		seq_printf(seq, ",compress_extension=%s",
 			F2FS_OPTION(sbi).extensions[i]);
 	}
+<<<<<<< HEAD
 }
+=======
+
+	for (i = 0; i < F2FS_OPTION(sbi).nocompress_ext_cnt; i++) {
+		seq_printf(seq, ",nocompress_extension=%s",
+			F2FS_OPTION(sbi).noextensions[i]);
+	}
+
+	if (F2FS_OPTION(sbi).compress_chksum)
+		seq_puts(seq, ",compress_chksum");
+
+	if (F2FS_OPTION(sbi).compress_mode == COMPR_MODE_FS)
+		seq_printf(seq, ",compress_mode=%s", "fs");
+	else if (F2FS_OPTION(sbi).compress_mode == COMPR_MODE_USER)
+		seq_printf(seq, ",compress_mode=%s", "user");
+
+	if (test_opt(sbi, COMPRESS_CACHE))
+		seq_puts(seq, ",compress_cache");
+}
+#endif
+>>>>>>> origin/android16-base
 
 static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 {
@@ -1507,6 +2215,12 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 	else if (F2FS_OPTION(sbi).bggc_mode == BGGC_MODE_OFF)
 		seq_printf(seq, ",background_gc=%s", "off");
 
+<<<<<<< HEAD
+=======
+	if (test_opt(sbi, GC_MERGE))
+		seq_puts(seq, ",gc_merge");
+
+>>>>>>> origin/android16-base
 	if (test_opt(sbi, DISABLE_ROLL_FORWARD))
 		seq_puts(seq, ",disable_roll_forward");
 	if (test_opt(sbi, NORECOVERY))
@@ -1548,6 +2262,7 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 		seq_puts(seq, ",inline_dentry");
 	else
 		seq_puts(seq, ",noinline_dentry");
+<<<<<<< HEAD
 	if (!f2fs_readonly(sbi->sb) && test_opt(sbi, FLUSH_MERGE))
 		seq_puts(seq, ",flush_merge");
 	if (test_opt(sbi, NOBARRIER))
@@ -1558,6 +2273,24 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 		seq_puts(seq, ",extent_cache");
 	else
 		seq_puts(seq, ",noextent_cache");
+=======
+	if (test_opt(sbi, FLUSH_MERGE))
+		seq_puts(seq, ",flush_merge");
+	else
+		seq_puts(seq, ",noflush_merge");
+	if (test_opt(sbi, NOBARRIER))
+		seq_puts(seq, ",nobarrier");
+	else
+		seq_puts(seq, ",barrier");
+	if (test_opt(sbi, FASTBOOT))
+		seq_puts(seq, ",fastboot");
+	if (test_opt(sbi, READ_EXTENT_CACHE))
+		seq_puts(seq, ",extent_cache");
+	else
+		seq_puts(seq, ",noextent_cache");
+	if (test_opt(sbi, AGE_EXTENT_CACHE))
+		seq_puts(seq, ",age_extent_cache");
+>>>>>>> origin/android16-base
 	if (test_opt(sbi, DATA_FLUSH))
 		seq_puts(seq, ",data_flush");
 
@@ -1566,6 +2299,13 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 		seq_puts(seq, "adaptive");
 	else if (F2FS_OPTION(sbi).fs_mode == FS_MODE_LFS)
 		seq_puts(seq, "lfs");
+<<<<<<< HEAD
+=======
+	else if (F2FS_OPTION(sbi).fs_mode == FS_MODE_FRAGMENT_SEG)
+		seq_puts(seq, "fragment:segment");
+	else if (F2FS_OPTION(sbi).fs_mode == FS_MODE_FRAGMENT_BLK)
+		seq_puts(seq, "fragment:block");
+>>>>>>> origin/android16-base
 	seq_printf(seq, ",active_logs=%u", F2FS_OPTION(sbi).active_logs);
 	if (test_opt(sbi, RESERVE_ROOT))
 		seq_printf(seq, ",reserve_root=%u,resuid=%u,resgid=%u",
@@ -1596,10 +2336,13 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 		seq_puts(seq, ",prjquota");
 #endif
 	f2fs_show_quota_options(seq, sbi->sb);
+<<<<<<< HEAD
 	if (F2FS_OPTION(sbi).whint_mode == WHINT_MODE_USER)
 		seq_printf(seq, ",whint_mode=%s", "user-based");
 	else if (F2FS_OPTION(sbi).whint_mode == WHINT_MODE_FS)
 		seq_printf(seq, ",whint_mode=%s", "fs-based");
+=======
+>>>>>>> origin/android16-base
 
 	fscrypt_show_test_dummy_encryption(seq, ',', sbi->sb);
 
@@ -1616,6 +2359,13 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 	if (test_opt(sbi, DISABLE_CHECKPOINT))
 		seq_printf(seq, ",checkpoint=disable:%u",
 				F2FS_OPTION(sbi).unusable_cap);
+<<<<<<< HEAD
+=======
+	if (test_opt(sbi, MERGE_CHECKPOINT))
+		seq_puts(seq, ",checkpoint_merge");
+	else
+		seq_puts(seq, ",nocheckpoint_merge");
+>>>>>>> origin/android16-base
 	if (F2FS_OPTION(sbi).fsync_mode == FSYNC_MODE_POSIX)
 		seq_printf(seq, ",fsync_mode=%s", "posix");
 	else if (F2FS_OPTION(sbi).fsync_mode == FSYNC_MODE_STRICT)
@@ -1623,17 +2373,53 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 	else if (F2FS_OPTION(sbi).fsync_mode == FSYNC_MODE_NOBARRIER)
 		seq_printf(seq, ",fsync_mode=%s", "nobarrier");
 
+<<<<<<< HEAD
 	f2fs_show_compress_options(seq, sbi->sb);
+=======
+#ifdef CONFIG_F2FS_FS_COMPRESSION
+	f2fs_show_compress_options(seq, sbi->sb);
+#endif
+
+	if (test_opt(sbi, ATGC))
+		seq_puts(seq, ",atgc");
+
+	if (F2FS_OPTION(sbi).discard_unit == DISCARD_UNIT_BLOCK)
+		seq_printf(seq, ",discard_unit=%s", "block");
+	else if (F2FS_OPTION(sbi).discard_unit == DISCARD_UNIT_SEGMENT)
+		seq_printf(seq, ",discard_unit=%s", "segment");
+	else if (F2FS_OPTION(sbi).discard_unit == DISCARD_UNIT_SECTION)
+		seq_printf(seq, ",discard_unit=%s", "section");
+
+	if (F2FS_OPTION(sbi).memory_mode == MEMORY_MODE_NORMAL)
+		seq_printf(seq, ",memory=%s", "normal");
+	else if (F2FS_OPTION(sbi).memory_mode == MEMORY_MODE_LOW)
+		seq_printf(seq, ",memory=%s", "low");
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
 static void default_options(struct f2fs_sb_info *sbi)
 {
 	/* init some FS parameters */
+<<<<<<< HEAD
 	F2FS_OPTION(sbi).active_logs = NR_CURSEG_TYPE;
 	F2FS_OPTION(sbi).inline_xattr_size = DEFAULT_INLINE_XATTR_ADDRS;
 	F2FS_OPTION(sbi).whint_mode = WHINT_MODE_OFF;
 	F2FS_OPTION(sbi).alloc_mode = ALLOC_MODE_DEFAULT;
+=======
+	if (f2fs_sb_has_readonly(sbi))
+		F2FS_OPTION(sbi).active_logs = NR_CURSEG_RO_TYPE;
+	else
+		F2FS_OPTION(sbi).active_logs = NR_CURSEG_PERSIST_TYPE;
+
+	F2FS_OPTION(sbi).inline_xattr_size = DEFAULT_INLINE_XATTR_ADDRS;
+	if (le32_to_cpu(F2FS_RAW_SUPER(sbi)->segment_count_main) <=
+							SMALL_VOLUME_SEGMENTS)
+		F2FS_OPTION(sbi).alloc_mode = ALLOC_MODE_REUSE;
+	else
+		F2FS_OPTION(sbi).alloc_mode = ALLOC_MODE_DEFAULT;
+>>>>>>> origin/android16-base
 	F2FS_OPTION(sbi).fsync_mode = FSYNC_MODE_POSIX;
 #ifdef CONFIG_FS_ENCRYPTION
 	F2FS_OPTION(sbi).inlinecrypt = false;
@@ -1643,11 +2429,18 @@ static void default_options(struct f2fs_sb_info *sbi)
 	F2FS_OPTION(sbi).compress_algorithm = COMPRESS_LZ4;
 	F2FS_OPTION(sbi).compress_log_size = MIN_COMPRESS_LOG_SIZE;
 	F2FS_OPTION(sbi).compress_ext_cnt = 0;
+<<<<<<< HEAD
 	F2FS_OPTION(sbi).bggc_mode = BGGC_MODE_ON;
+=======
+	F2FS_OPTION(sbi).compress_mode = COMPR_MODE_FS;
+	F2FS_OPTION(sbi).bggc_mode = BGGC_MODE_ON;
+	F2FS_OPTION(sbi).memory_mode = MEMORY_MODE_NORMAL;
+>>>>>>> origin/android16-base
 
 	set_opt(sbi, INLINE_XATTR);
 	set_opt(sbi, INLINE_DATA);
 	set_opt(sbi, INLINE_DENTRY);
+<<<<<<< HEAD
 	set_opt(sbi, EXTENT_CACHE);
 	set_opt(sbi, NOHEAP);
 	clear_opt(sbi, DISABLE_CHECKPOINT);
@@ -1659,6 +2452,25 @@ static void default_options(struct f2fs_sb_info *sbi)
 		F2FS_OPTION(sbi).fs_mode = FS_MODE_LFS;
 	else
 		F2FS_OPTION(sbi).fs_mode = FS_MODE_ADAPTIVE;
+=======
+	set_opt(sbi, READ_EXTENT_CACHE);
+	set_opt(sbi, NOHEAP);
+	clear_opt(sbi, DISABLE_CHECKPOINT);
+	set_opt(sbi, MERGE_CHECKPOINT);
+	F2FS_OPTION(sbi).unusable_cap = 0;
+	sbi->sb->s_flags |= SB_LAZYTIME;
+	if (!f2fs_is_readonly(sbi))
+		set_opt(sbi, FLUSH_MERGE);
+	if (f2fs_hw_support_discard(sbi) || f2fs_hw_should_discard(sbi))
+		set_opt(sbi, DISCARD);
+	if (f2fs_sb_has_blkzoned(sbi)) {
+		F2FS_OPTION(sbi).fs_mode = FS_MODE_LFS;
+		F2FS_OPTION(sbi).discard_unit = DISCARD_UNIT_SECTION;
+	} else {
+		F2FS_OPTION(sbi).fs_mode = FS_MODE_ADAPTIVE;
+		F2FS_OPTION(sbi).discard_unit = DISCARD_UNIT_BLOCK;
+	}
+>>>>>>> origin/android16-base
 
 #ifdef CONFIG_F2FS_FS_XATTR
 	set_opt(sbi, XATTR_USER);
@@ -1678,6 +2490,10 @@ static int f2fs_disable_checkpoint(struct f2fs_sb_info *sbi)
 {
 	unsigned int s_flags = sbi->sb->s_flags;
 	struct cp_control cpc;
+<<<<<<< HEAD
+=======
+	unsigned int gc_mode = sbi->gc_mode;
+>>>>>>> origin/android16-base
 	int err = 0;
 	int ret;
 	block_t unusable;
@@ -1688,11 +2504,33 @@ static int f2fs_disable_checkpoint(struct f2fs_sb_info *sbi)
 	}
 	sbi->sb->s_flags |= SB_ACTIVE;
 
+<<<<<<< HEAD
 	f2fs_update_time(sbi, DISABLE_TIME);
 
 	while (!f2fs_time_over(sbi, DISABLE_TIME)) {
 		down_write(&sbi->gc_lock);
 		err = f2fs_gc(sbi, true, false, NULL_SEGNO);
+=======
+	/* check if we need more GC first */
+	unusable = f2fs_get_unusable_blocks(sbi);
+	if (!f2fs_disable_cp_again(sbi, unusable))
+		goto skip_gc;
+
+	f2fs_update_time(sbi, DISABLE_TIME);
+
+	sbi->gc_mode = GC_URGENT_HIGH;
+
+	while (!f2fs_time_over(sbi, DISABLE_TIME)) {
+		struct f2fs_gc_control gc_control = {
+			.victim_segno = NULL_SEGNO,
+			.init_gc_type = FG_GC,
+			.should_migrate_blocks = false,
+			.err_gc_skipped = true,
+			.nr_free_secs = 1 };
+
+		f2fs_down_write(&sbi->gc_lock);
+		err = f2fs_gc(sbi, &gc_control);
+>>>>>>> origin/android16-base
 		if (err == -ENODATA) {
 			err = 0;
 			break;
@@ -1703,7 +2541,11 @@ static int f2fs_disable_checkpoint(struct f2fs_sb_info *sbi)
 
 	ret = sync_filesystem(sbi->sb);
 	if (ret || err) {
+<<<<<<< HEAD
 		err = ret ? ret: err;
+=======
+		err = ret ? ret : err;
+>>>>>>> origin/android16-base
 		goto restore_flag;
 	}
 
@@ -1713,7 +2555,12 @@ static int f2fs_disable_checkpoint(struct f2fs_sb_info *sbi)
 		goto restore_flag;
 	}
 
+<<<<<<< HEAD
 	down_write(&sbi->gc_lock);
+=======
+skip_gc:
+	f2fs_down_write(&sbi->gc_lock);
+>>>>>>> origin/android16-base
 	cpc.reason = CP_PAUSE;
 	set_sbi_flag(sbi, SBI_CP_DISABLED);
 	err = f2fs_write_checkpoint(sbi, &cpc);
@@ -1725,8 +2572,14 @@ static int f2fs_disable_checkpoint(struct f2fs_sb_info *sbi)
 	spin_unlock(&sbi->stat_lock);
 
 out_unlock:
+<<<<<<< HEAD
 	up_write(&sbi->gc_lock);
 restore_flag:
+=======
+	f2fs_up_write(&sbi->gc_lock);
+restore_flag:
+	sbi->gc_mode = gc_mode;
+>>>>>>> origin/android16-base
 	sbi->sb->s_flags = s_flags;	/* Restore SB_RDONLY status */
 	return err;
 }
@@ -1738,21 +2591,38 @@ static void f2fs_enable_checkpoint(struct f2fs_sb_info *sbi)
 	/* we should flush all the data to keep data consistency */
 	do {
 		sync_inodes_sb(sbi->sb);
+<<<<<<< HEAD
 		cond_resched();
 		congestion_wait(BLK_RW_ASYNC, DEFAULT_IO_TIMEOUT);
+=======
+		f2fs_io_schedule_timeout(DEFAULT_IO_TIMEOUT);
+>>>>>>> origin/android16-base
 	} while (get_pages(sbi, F2FS_DIRTY_DATA) && retry--);
 
 	if (unlikely(retry < 0))
 		f2fs_warn(sbi, "checkpoint=enable has some unwritten data.");
 
+<<<<<<< HEAD
 	down_write(&sbi->gc_lock);
+=======
+	f2fs_down_write(&sbi->gc_lock);
+>>>>>>> origin/android16-base
 	f2fs_dirty_to_prefree(sbi);
 
 	clear_sbi_flag(sbi, SBI_CP_DISABLED);
 	set_sbi_flag(sbi, SBI_IS_DIRTY);
+<<<<<<< HEAD
 	up_write(&sbi->gc_lock);
 
 	f2fs_sync_fs(sbi->sb, 1);
+=======
+	f2fs_up_write(&sbi->gc_lock);
+
+	f2fs_sync_fs(sbi->sb, 1);
+
+	/* Let's ensure there's no pending checkpoint anymore */
+	f2fs_flush_ckpt_thread(sbi);
+>>>>>>> origin/android16-base
 }
 
 static int f2fs_remount(struct super_block *sb, int *flags, char *data)
@@ -1761,12 +2631,27 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 	struct f2fs_mount_info org_mount_opt;
 	unsigned long old_sb_flags;
 	int err;
+<<<<<<< HEAD
 	bool need_restart_gc = false;
 	bool need_stop_gc = false;
 	bool no_extent_cache = !test_opt(sbi, EXTENT_CACHE);
 	bool disable_checkpoint = test_opt(sbi, DISABLE_CHECKPOINT);
 	bool no_io_align = !F2FS_IO_ALIGNED(sbi);
 	bool checkpoint_changed;
+=======
+	bool need_restart_gc = false, need_stop_gc = false;
+	bool need_restart_ckpt = false, need_stop_ckpt = false;
+	bool need_restart_flush = false, need_stop_flush = false;
+	bool need_restart_discard = false, need_stop_discard = false;
+	bool no_read_extent_cache = !test_opt(sbi, READ_EXTENT_CACHE);
+	bool no_age_extent_cache = !test_opt(sbi, AGE_EXTENT_CACHE);
+	bool enable_checkpoint = !test_opt(sbi, DISABLE_CHECKPOINT);
+	bool no_io_align = !F2FS_IO_ALIGNED(sbi);
+	bool no_atgc = !test_opt(sbi, ATGC);
+	bool no_discard = !test_opt(sbi, DISCARD);
+	bool no_compress_cache = !test_opt(sbi, COMPRESS_CACHE);
+	bool block_unit_discard = f2fs_block_unit_discard(sbi);
+>>>>>>> origin/android16-base
 #ifdef CONFIG_QUOTA
 	int i, j;
 #endif
@@ -1787,7 +2672,11 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 				GFP_KERNEL);
 			if (!org_mount_opt.s_qf_names[i]) {
 				for (j = 0; j < i; j++)
+<<<<<<< HEAD
 					kvfree(org_mount_opt.s_qf_names[j]);
+=======
+					kfree(org_mount_opt.s_qf_names[j]);
+>>>>>>> origin/android16-base
 				return -ENOMEM;
 			}
 		} else {
@@ -1811,8 +2700,11 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 	err = parse_options(sb, data, true);
 	if (err)
 		goto restore_opts;
+<<<<<<< HEAD
 	checkpoint_changed =
 			disable_checkpoint != test_opt(sbi, DISABLE_CHECKPOINT);
+=======
+>>>>>>> origin/android16-base
 
 	/*
 	 * Previous and new state of filesystem is RO,
@@ -1821,6 +2713,14 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 	if (f2fs_readonly(sb) && (*flags & SB_RDONLY))
 		goto skip;
 
+<<<<<<< HEAD
+=======
+	if (f2fs_sb_has_readonly(sbi) && !(*flags & SB_RDONLY)) {
+		err = -EROFS;
+		goto restore_opts;
+	}
+
+>>>>>>> origin/android16-base
 #ifdef CONFIG_QUOTA
 	if (!f2fs_readonly(sb) && (*flags & SB_RDONLY)) {
 		err = dquot_suspend(sb, -1);
@@ -1838,12 +2738,33 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 		}
 	}
 #endif
+<<<<<<< HEAD
 	/* disallow enable/disable extent_cache dynamically */
 	if (no_extent_cache == !!test_opt(sbi, EXTENT_CACHE)) {
+=======
+	/* disallow enable atgc dynamically */
+	if (no_atgc == !!test_opt(sbi, ATGC)) {
+		err = -EINVAL;
+		f2fs_warn(sbi, "switch atgc option is not allowed");
+		goto restore_opts;
+	}
+
+	/* disallow enable/disable extent_cache dynamically */
+	if (no_read_extent_cache == !!test_opt(sbi, READ_EXTENT_CACHE)) {
+>>>>>>> origin/android16-base
 		err = -EINVAL;
 		f2fs_warn(sbi, "switch extent_cache option is not allowed");
 		goto restore_opts;
 	}
+<<<<<<< HEAD
+=======
+	/* disallow enable/disable age extent_cache dynamically */
+	if (no_age_extent_cache == !!test_opt(sbi, AGE_EXTENT_CACHE)) {
+		err = -EINVAL;
+		f2fs_warn(sbi, "switch age_extent_cache option is not allowed");
+		goto restore_opts;
+	}
+>>>>>>> origin/android16-base
 
 	if (no_io_align == !!F2FS_IO_ALIGNED(sbi)) {
 		err = -EINVAL;
@@ -1851,6 +2772,21 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 		goto restore_opts;
 	}
 
+<<<<<<< HEAD
+=======
+	if (no_compress_cache == !!test_opt(sbi, COMPRESS_CACHE)) {
+		err = -EINVAL;
+		f2fs_warn(sbi, "switch compress_cache option is not allowed");
+		goto restore_opts;
+	}
+
+	if (block_unit_discard != f2fs_block_unit_discard(sbi)) {
+		err = -EINVAL;
+		f2fs_warn(sbi, "switch discard_unit option is not allowed");
+		goto restore_opts;
+	}
+
+>>>>>>> origin/android16-base
 	if ((*flags & SB_RDONLY) && test_opt(sbi, DISABLE_CHECKPOINT)) {
 		err = -EINVAL;
 		f2fs_warn(sbi, "disabling checkpoint not compatible with read-only");
@@ -1863,7 +2799,12 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 	 * option. Also sync the filesystem.
 	 */
 	if ((*flags & SB_RDONLY) ||
+<<<<<<< HEAD
 			F2FS_OPTION(sbi).bggc_mode == BGGC_MODE_OFF) {
+=======
+			(F2FS_OPTION(sbi).bggc_mode == BGGC_MODE_OFF &&
+			!test_opt(sbi, GC_MERGE))) {
+>>>>>>> origin/android16-base
 		if (sbi->gc_thread) {
 			f2fs_stop_gc_thread(sbi);
 			need_restart_gc = true;
@@ -1875,9 +2816,13 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 		need_stop_gc = true;
 	}
 
+<<<<<<< HEAD
 	if (*flags & SB_RDONLY ||
 		F2FS_OPTION(sbi).whint_mode != org_mount_opt.whint_mode) {
 		writeback_inodes_sb(sb, WB_REASON_SYNC);
+=======
+	if (*flags & SB_RDONLY) {
+>>>>>>> origin/android16-base
 		sync_inodes_sb(sb);
 
 		set_sbi_flag(sbi, SBI_IS_DIRTY);
@@ -1886,6 +2831,7 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 		clear_sbi_flag(sbi, SBI_IS_CLOSE);
 	}
 
+<<<<<<< HEAD
 	if (checkpoint_changed) {
 		if (test_opt(sbi, DISABLE_CHECKPOINT)) {
 			err = f2fs_disable_checkpoint(sbi);
@@ -1894,6 +2840,24 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 		} else {
 			f2fs_enable_checkpoint(sbi);
 		}
+=======
+	if ((*flags & SB_RDONLY) || test_opt(sbi, DISABLE_CHECKPOINT) ||
+			!test_opt(sbi, MERGE_CHECKPOINT)) {
+		f2fs_stop_ckpt_thread(sbi);
+		need_restart_ckpt = true;
+	} else {
+		/* Flush if the prevous checkpoint, if exists. */
+		f2fs_flush_ckpt_thread(sbi);
+
+		err = f2fs_start_ckpt_thread(sbi);
+		if (err) {
+			f2fs_err(sbi,
+			    "Failed to start F2FS issue_checkpoint_thread (%d)",
+			    err);
+			goto restore_gc;
+		}
+		need_stop_ckpt = true;
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -1903,16 +2867,54 @@ static int f2fs_remount(struct super_block *sb, int *flags, char *data)
 	if ((*flags & SB_RDONLY) || !test_opt(sbi, FLUSH_MERGE)) {
 		clear_opt(sbi, FLUSH_MERGE);
 		f2fs_destroy_flush_cmd_control(sbi, false);
+<<<<<<< HEAD
 	} else {
 		err = f2fs_create_flush_cmd_control(sbi);
 		if (err)
 			goto restore_gc;
 	}
+=======
+		need_restart_flush = true;
+	} else {
+		err = f2fs_create_flush_cmd_control(sbi);
+		if (err)
+			goto restore_ckpt;
+		need_stop_flush = true;
+	}
+
+	if (no_discard == !!test_opt(sbi, DISCARD)) {
+		if (test_opt(sbi, DISCARD)) {
+			err = f2fs_start_discard_thread(sbi);
+			if (err)
+				goto restore_flush;
+			need_stop_discard = true;
+		} else {
+			f2fs_stop_discard_thread(sbi);
+			f2fs_issue_discard_timeout(sbi);
+			need_restart_discard = true;
+		}
+	}
+
+	if (enable_checkpoint == !!test_opt(sbi, DISABLE_CHECKPOINT)) {
+		if (test_opt(sbi, DISABLE_CHECKPOINT)) {
+			err = f2fs_disable_checkpoint(sbi);
+			if (err)
+				goto restore_discard;
+		} else {
+			f2fs_enable_checkpoint(sbi);
+		}
+	}
+
+>>>>>>> origin/android16-base
 skip:
 #ifdef CONFIG_QUOTA
 	/* Release old quota file names */
 	for (i = 0; i < MAXQUOTAS; i++)
+<<<<<<< HEAD
 		kvfree(org_mount_opt.s_qf_names[i]);
+=======
+		kfree(org_mount_opt.s_qf_names[i]);
+>>>>>>> origin/android16-base
 #endif
 	/* Update the POSIXACL Flag */
 	sb->s_flags = (sb->s_flags & ~SB_POSIXACL) |
@@ -1922,6 +2924,31 @@ skip:
 	adjust_unusable_cap_perc(sbi);
 	*flags = (*flags & ~SB_LAZYTIME) | (sb->s_flags & SB_LAZYTIME);
 	return 0;
+<<<<<<< HEAD
+=======
+restore_discard:
+	if (need_restart_discard) {
+		if (f2fs_start_discard_thread(sbi))
+			f2fs_warn(sbi, "discard has been stopped");
+	} else if (need_stop_discard) {
+		f2fs_stop_discard_thread(sbi);
+	}
+restore_flush:
+	if (need_restart_flush) {
+		if (f2fs_create_flush_cmd_control(sbi))
+			f2fs_warn(sbi, "background flush thread has stopped");
+	} else if (need_stop_flush) {
+		clear_opt(sbi, FLUSH_MERGE);
+		f2fs_destroy_flush_cmd_control(sbi, false);
+	}
+restore_ckpt:
+	if (need_restart_ckpt) {
+		if (f2fs_start_ckpt_thread(sbi))
+			f2fs_warn(sbi, "background ckpt thread has stopped");
+	} else if (need_stop_ckpt) {
+		f2fs_stop_ckpt_thread(sbi);
+	}
+>>>>>>> origin/android16-base
 restore_gc:
 	if (need_restart_gc) {
 		if (f2fs_start_gc_thread(sbi))
@@ -1933,7 +2960,11 @@ restore_opts:
 #ifdef CONFIG_QUOTA
 	F2FS_OPTION(sbi).s_jquota_fmt = org_mount_opt.s_jquota_fmt;
 	for (i = 0; i < MAXQUOTAS; i++) {
+<<<<<<< HEAD
 		kvfree(F2FS_OPTION(sbi).s_qf_names[i]);
+=======
+		kfree(F2FS_OPTION(sbi).s_qf_names[i]);
+>>>>>>> origin/android16-base
 		F2FS_OPTION(sbi).s_qf_names[i] = org_mount_opt.s_qf_names[i];
 	}
 #endif
@@ -2025,8 +3056,12 @@ retry:
 							&page, &fsdata);
 		if (unlikely(err)) {
 			if (err == -ENOMEM) {
+<<<<<<< HEAD
 				congestion_wait(BLK_RW_ASYNC,
 						DEFAULT_IO_TIMEOUT);
+=======
+				f2fs_io_schedule_timeout(DEFAULT_IO_TIMEOUT);
+>>>>>>> origin/android16-base
 				goto retry;
 			}
 			set_sbi_flag(F2FS_SB(sb), SBI_QUOTA_NEED_REPAIR);
@@ -2054,6 +3089,19 @@ retry:
 	return len - towrite;
 }
 
+<<<<<<< HEAD
+=======
+int f2fs_dquot_initialize(struct inode *inode)
+{
+	if (time_to_inject(F2FS_I_SB(inode), FAULT_DQUOT_INIT)) {
+		f2fs_show_injection_info(F2FS_I_SB(inode), FAULT_DQUOT_INIT);
+		return -ESRCH;
+	}
+
+	return dquot_initialize(inode);
+}
+
+>>>>>>> origin/android16-base
 static struct dquot **f2fs_get_dquots(struct inode *inode)
 {
 	return F2FS_I(inode)->i_dquot;
@@ -2167,11 +3215,42 @@ static int f2fs_enable_quotas(struct super_block *sb)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int f2fs_quota_sync_file(struct f2fs_sb_info *sbi, int type)
+{
+	struct quota_info *dqopt = sb_dqopt(sbi->sb);
+	struct address_space *mapping = dqopt->files[type]->i_mapping;
+	int ret = 0;
+
+	ret = dquot_writeback_dquots(sbi->sb, type);
+	if (ret)
+		goto out;
+
+	ret = filemap_fdatawrite(mapping);
+	if (ret)
+		goto out;
+
+	/* if we are using journalled quota */
+	if (is_journalled_quota(sbi))
+		goto out;
+
+	ret = filemap_fdatawait(mapping);
+
+	truncate_inode_pages(&dqopt->files[type]->i_data, 0);
+out:
+	if (ret)
+		set_sbi_flag(sbi, SBI_QUOTA_NEED_REPAIR);
+	return ret;
+}
+
+>>>>>>> origin/android16-base
 int f2fs_quota_sync(struct super_block *sb, int type)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
 	struct quota_info *dqopt = sb_dqopt(sb);
 	int cnt;
+<<<<<<< HEAD
 	int ret;
 
 	/*
@@ -2189,12 +3268,16 @@ int f2fs_quota_sync(struct super_block *sb, int type)
 	ret = dquot_writeback_dquots(sb, type);
 	if (ret)
 		goto out;
+=======
+	int ret = 0;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Now when everything is written we can discard the pagecache so
 	 * that userspace sees the changes.
 	 */
 	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
+<<<<<<< HEAD
 		struct address_space *mapping;
 
 		if (type != -1 && cnt != type)
@@ -2225,6 +3308,41 @@ out:
 		set_sbi_flag(F2FS_SB(sb), SBI_QUOTA_NEED_REPAIR);
 	up_read(&sbi->quota_sem);
 	f2fs_unlock_op(sbi);
+=======
+
+		if (type != -1 && cnt != type)
+			continue;
+
+		if (!sb_has_quota_active(sb, cnt))
+			continue;
+
+		if (!f2fs_sb_has_quota_ino(sbi))
+			inode_lock(dqopt->files[cnt]);
+
+		/*
+		 * do_quotactl
+		 *  f2fs_quota_sync
+		 *  f2fs_down_read(quota_sem)
+		 *  dquot_writeback_dquots()
+		 *  f2fs_dquot_commit
+		 *			      block_operation
+		 *			      f2fs_down_read(quota_sem)
+		 */
+		f2fs_lock_op(sbi);
+		f2fs_down_read(&sbi->quota_sem);
+
+		ret = f2fs_quota_sync_file(sbi, cnt);
+
+		f2fs_up_read(&sbi->quota_sem);
+		f2fs_unlock_op(sbi);
+
+		if (!f2fs_sb_has_quota_ino(sbi))
+			inode_unlock(dqopt->files[cnt]);
+
+		if (ret)
+			break;
+	}
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -2342,11 +3460,19 @@ static int f2fs_dquot_commit(struct dquot *dquot)
 	struct f2fs_sb_info *sbi = F2FS_SB(dquot->dq_sb);
 	int ret;
 
+<<<<<<< HEAD
 	down_read_nested(&sbi->quota_sem, SINGLE_DEPTH_NESTING);
 	ret = dquot_commit(dquot);
 	if (ret < 0)
 		set_sbi_flag(sbi, SBI_QUOTA_NEED_REPAIR);
 	up_read(&sbi->quota_sem);
+=======
+	f2fs_down_read_nested(&sbi->quota_sem, SINGLE_DEPTH_NESTING);
+	ret = dquot_commit(dquot);
+	if (ret < 0)
+		set_sbi_flag(sbi, SBI_QUOTA_NEED_REPAIR);
+	f2fs_up_read(&sbi->quota_sem);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -2355,11 +3481,19 @@ static int f2fs_dquot_acquire(struct dquot *dquot)
 	struct f2fs_sb_info *sbi = F2FS_SB(dquot->dq_sb);
 	int ret;
 
+<<<<<<< HEAD
 	down_read(&sbi->quota_sem);
 	ret = dquot_acquire(dquot);
 	if (ret < 0)
 		set_sbi_flag(sbi, SBI_QUOTA_NEED_REPAIR);
 	up_read(&sbi->quota_sem);
+=======
+	f2fs_down_read(&sbi->quota_sem);
+	ret = dquot_acquire(dquot);
+	if (ret < 0)
+		set_sbi_flag(sbi, SBI_QUOTA_NEED_REPAIR);
+	f2fs_up_read(&sbi->quota_sem);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -2426,6 +3560,14 @@ static const struct quotactl_ops f2fs_quotactl_ops = {
 	.get_nextdqblk	= dquot_get_next_dqblk,
 };
 #else
+<<<<<<< HEAD
+=======
+int f2fs_dquot_initialize(struct inode *inode)
+{
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 int f2fs_quota_sync(struct super_block *sb, int type)
 {
 	return 0;
@@ -2587,10 +3729,17 @@ static const struct export_operations f2fs_export_ops = {
 	.get_parent = f2fs_get_parent,
 };
 
+<<<<<<< HEAD
 static loff_t max_file_blocks(void)
 {
 	loff_t result = 0;
 	loff_t leaf_count = DEF_ADDRS_PER_BLOCK;
+=======
+loff_t max_file_blocks(struct inode *inode)
+{
+	loff_t result = 0;
+	loff_t leaf_count;
+>>>>>>> origin/android16-base
 
 	/*
 	 * note: previously, result is equal to (DEF_ADDRS_PER_INODE -
@@ -2599,6 +3748,14 @@ static loff_t max_file_blocks(void)
 	 * result as zero.
 	 */
 
+<<<<<<< HEAD
+=======
+	if (inode && f2fs_compressed_file(inode))
+		leaf_count = ADDRS_PER_BLOCK(inode);
+	else
+		leaf_count = DEF_ADDRS_PER_BLOCK;
+
+>>>>>>> origin/android16-base
 	/* two direct node blocks */
 	result += (leaf_count * 2);
 
@@ -2646,9 +3803,15 @@ static inline bool sanity_check_area_boundary(struct f2fs_sb_info *sbi,
 	u32 segment_count = le32_to_cpu(raw_super->segment_count);
 	u32 log_blocks_per_seg = le32_to_cpu(raw_super->log_blocks_per_seg);
 	u64 main_end_blkaddr = main_blkaddr +
+<<<<<<< HEAD
 				(segment_count_main << log_blocks_per_seg);
 	u64 seg_end_blkaddr = segment0_blkaddr +
 				(segment_count << log_blocks_per_seg);
+=======
+				((u64)segment_count_main << log_blocks_per_seg);
+	u64 seg_end_blkaddr = segment0_blkaddr +
+				((u64)segment_count << log_blocks_per_seg);
+>>>>>>> origin/android16-base
 
 	if (segment0_blkaddr != cp_blkaddr) {
 		f2fs_info(sbi, "Mismatch start address, segment0(%u) cp_blkaddr(%u)",
@@ -2689,10 +3852,15 @@ static inline bool sanity_check_area_boundary(struct f2fs_sb_info *sbi,
 	}
 
 	if (main_end_blkaddr > seg_end_blkaddr) {
+<<<<<<< HEAD
 		f2fs_info(sbi, "Wrong MAIN_AREA boundary, start(%u) end(%u) block(%u)",
 			  main_blkaddr,
 			  segment0_blkaddr +
 			  (segment_count << log_blocks_per_seg),
+=======
+		f2fs_info(sbi, "Wrong MAIN_AREA boundary, start(%u) end(%llu) block(%u)",
+			  main_blkaddr, seg_end_blkaddr,
+>>>>>>> origin/android16-base
 			  segment_count_main << log_blocks_per_seg);
 		return true;
 	} else if (main_end_blkaddr < seg_end_blkaddr) {
@@ -2710,10 +3878,15 @@ static inline bool sanity_check_area_boundary(struct f2fs_sb_info *sbi,
 			err = __f2fs_commit_super(bh, NULL);
 			res = err ? "failed" : "done";
 		}
+<<<<<<< HEAD
 		f2fs_info(sbi, "Fix alignment : %s, start(%u) end(%u) block(%u)",
 			  res, main_blkaddr,
 			  segment0_blkaddr +
 			  (segment_count << log_blocks_per_seg),
+=======
+		f2fs_info(sbi, "Fix alignment : %s, start(%u) end(%llu) block(%u)",
+			  res, main_blkaddr, seg_end_blkaddr,
+>>>>>>> origin/android16-base
 			  segment_count_main << log_blocks_per_seg);
 		if (err)
 			return true;
@@ -2724,11 +3897,18 @@ static inline bool sanity_check_area_boundary(struct f2fs_sb_info *sbi,
 static int sanity_check_raw_super(struct f2fs_sb_info *sbi,
 				struct buffer_head *bh)
 {
+<<<<<<< HEAD
 	block_t segment_count, segs_per_sec, secs_per_zone;
 	block_t total_sections, blocks_per_seg;
 	struct f2fs_super_block *raw_super = (struct f2fs_super_block *)
 					(bh->b_data + F2FS_SUPER_OFFSET);
 	unsigned int blocksize;
+=======
+	block_t segment_count, segs_per_sec, secs_per_zone, segment_count_main;
+	block_t total_sections, blocks_per_seg;
+	struct f2fs_super_block *raw_super = (struct f2fs_super_block *)
+					(bh->b_data + F2FS_SUPER_OFFSET);
+>>>>>>> origin/android16-base
 	size_t crc_offset = 0;
 	__u32 crc = 0;
 
@@ -2754,6 +3934,7 @@ static int sanity_check_raw_super(struct f2fs_sb_info *sbi,
 		}
 	}
 
+<<<<<<< HEAD
 	if (le32_to_cpu(raw_super->magic) != F2FS_SUPER_MAGIC) {
 		f2fs_info(sbi, "Magic Mismatch, valid(0x%x) - read(0x%x)",
 			  F2FS_SUPER_MAGIC, le32_to_cpu(raw_super->magic));
@@ -2772,6 +3953,13 @@ static int sanity_check_raw_super(struct f2fs_sb_info *sbi,
 	if (blocksize != F2FS_BLKSIZE) {
 		f2fs_info(sbi, "Invalid blocksize (%u), supports only 4KB",
 			  blocksize);
+=======
+	/* Currently, support only 4KB block size */
+	if (le32_to_cpu(raw_super->log_blocksize) != F2FS_BLKSIZE_BITS) {
+		f2fs_info(sbi, "Invalid log_blocksize (%u), supports only %u",
+			  le32_to_cpu(raw_super->log_blocksize),
+			  F2FS_BLKSIZE_BITS);
+>>>>>>> origin/android16-base
 		return -EFSCORRUPTED;
 	}
 
@@ -2801,6 +3989,10 @@ static int sanity_check_raw_super(struct f2fs_sb_info *sbi,
 	}
 
 	segment_count = le32_to_cpu(raw_super->segment_count);
+<<<<<<< HEAD
+=======
+	segment_count_main = le32_to_cpu(raw_super->segment_count_main);
+>>>>>>> origin/android16-base
 	segs_per_sec = le32_to_cpu(raw_super->segs_per_sec);
 	secs_per_zone = le32_to_cpu(raw_super->secs_per_zone);
 	total_sections = le32_to_cpu(raw_super->section_count);
@@ -2814,14 +4006,27 @@ static int sanity_check_raw_super(struct f2fs_sb_info *sbi,
 		return -EFSCORRUPTED;
 	}
 
+<<<<<<< HEAD
 	if (total_sections > segment_count ||
 			total_sections < F2FS_MIN_SEGMENTS ||
+=======
+	if (total_sections > segment_count_main || total_sections < 1 ||
+>>>>>>> origin/android16-base
 			segs_per_sec > segment_count || !segs_per_sec) {
 		f2fs_info(sbi, "Invalid segment/section count (%u, %u x %u)",
 			  segment_count, total_sections, segs_per_sec);
 		return -EFSCORRUPTED;
 	}
 
+<<<<<<< HEAD
+=======
+	if (segment_count_main != total_sections * segs_per_sec) {
+		f2fs_info(sbi, "Invalid segment/section count (%u != %u * %u)",
+			  segment_count_main, total_sections, segs_per_sec);
+		return -EFSCORRUPTED;
+	}
+
+>>>>>>> origin/android16-base
 	if ((segment_count / segs_per_sec) < total_sections) {
 		f2fs_info(sbi, "Small segment_count (%u < %u * %u)",
 			  segment_count, segs_per_sec, total_sections);
@@ -2847,6 +4052,15 @@ static int sanity_check_raw_super(struct f2fs_sb_info *sbi,
 					segment_count, dev_seg_count);
 			return -EFSCORRUPTED;
 		}
+<<<<<<< HEAD
+=======
+	} else {
+		if (__F2FS_HAS_FEATURE(raw_super, F2FS_FEATURE_BLKZONED) &&
+					!bdev_is_zoned(sbi->sb->s_bdev)) {
+			f2fs_info(sbi, "Zoned block device path is missing");
+			return -EFSCORRUPTED;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	if (secs_per_zone > total_sections || !secs_per_zone) {
@@ -2865,11 +4079,21 @@ static int sanity_check_raw_super(struct f2fs_sb_info *sbi,
 		return -EFSCORRUPTED;
 	}
 
+<<<<<<< HEAD
 	if (le32_to_cpu(raw_super->cp_payload) >
 				(blocks_per_seg - F2FS_CP_PACKS)) {
 		f2fs_info(sbi, "Insane cp_payload (%u > %u)",
 			  le32_to_cpu(raw_super->cp_payload),
 			  blocks_per_seg - F2FS_CP_PACKS);
+=======
+	if (le32_to_cpu(raw_super->cp_payload) >=
+				(blocks_per_seg - F2FS_CP_PACKS -
+				NR_CURSEG_PERSIST_TYPE)) {
+		f2fs_info(sbi, "Insane cp_payload (%u >= %u)",
+			  le32_to_cpu(raw_super->cp_payload),
+			  blocks_per_seg - F2FS_CP_PACKS -
+			  NR_CURSEG_PERSIST_TYPE);
+>>>>>>> origin/android16-base
 		return -EFSCORRUPTED;
 	}
 
@@ -2905,6 +4129,10 @@ int f2fs_sanity_check_ckpt(struct f2fs_sb_info *sbi)
 	unsigned int cp_pack_start_sum, cp_payload;
 	block_t user_block_count, valid_user_blocks;
 	block_t avail_node_count, valid_node_count;
+<<<<<<< HEAD
+=======
+	unsigned int nat_blocks, nat_bits_bytes, nat_bits_blocks;
+>>>>>>> origin/android16-base
 	int i, j;
 
 	total = le32_to_cpu(raw_super->segment_count);
@@ -2922,14 +4150,25 @@ int f2fs_sanity_check_ckpt(struct f2fs_sb_info *sbi)
 	ovp_segments = le32_to_cpu(ckpt->overprov_segment_count);
 	reserved_segments = le32_to_cpu(ckpt->rsvd_segment_count);
 
+<<<<<<< HEAD
 	if (unlikely(fsmeta < F2FS_MIN_SEGMENTS ||
+=======
+	if (!f2fs_sb_has_readonly(sbi) &&
+			unlikely(fsmeta < F2FS_MIN_META_SEGMENTS ||
+>>>>>>> origin/android16-base
 			ovp_segments == 0 || reserved_segments == 0)) {
 		f2fs_err(sbi, "Wrong layout: check mkfs.f2fs version");
 		return 1;
 	}
+<<<<<<< HEAD
 
 	user_block_count = le64_to_cpu(ckpt->user_block_count);
 	segment_count_main = le32_to_cpu(raw_super->segment_count_main);
+=======
+	user_block_count = le64_to_cpu(ckpt->user_block_count);
+	segment_count_main = le32_to_cpu(raw_super->segment_count_main) +
+			(f2fs_sb_has_readonly(sbi) ? 1 : 0);
+>>>>>>> origin/android16-base
 	log_blocks_per_seg = le32_to_cpu(raw_super->log_blocks_per_seg);
 	if (!user_block_count || user_block_count >=
 			segment_count_main << log_blocks_per_seg) {
@@ -2960,6 +4199,13 @@ int f2fs_sanity_check_ckpt(struct f2fs_sb_info *sbi)
 		if (le32_to_cpu(ckpt->cur_node_segno[i]) >= main_segs ||
 			le16_to_cpu(ckpt->cur_node_blkoff[i]) >= blocks_per_seg)
 			return 1;
+<<<<<<< HEAD
+=======
+
+		if (f2fs_sb_has_readonly(sbi))
+			goto check_data;
+
+>>>>>>> origin/android16-base
 		for (j = i + 1; j < NR_CURSEG_NODE_TYPE; j++) {
 			if (le32_to_cpu(ckpt->cur_node_segno[i]) ==
 				le32_to_cpu(ckpt->cur_node_segno[j])) {
@@ -2970,10 +4216,21 @@ int f2fs_sanity_check_ckpt(struct f2fs_sb_info *sbi)
 			}
 		}
 	}
+<<<<<<< HEAD
+=======
+check_data:
+>>>>>>> origin/android16-base
 	for (i = 0; i < NR_CURSEG_DATA_TYPE; i++) {
 		if (le32_to_cpu(ckpt->cur_data_segno[i]) >= main_segs ||
 			le16_to_cpu(ckpt->cur_data_blkoff[i]) >= blocks_per_seg)
 			return 1;
+<<<<<<< HEAD
+=======
+
+		if (f2fs_sb_has_readonly(sbi))
+			goto skip_cross;
+
+>>>>>>> origin/android16-base
 		for (j = i + 1; j < NR_CURSEG_DATA_TYPE; j++) {
 			if (le32_to_cpu(ckpt->cur_data_segno[i]) ==
 				le32_to_cpu(ckpt->cur_data_segno[j])) {
@@ -2995,7 +4252,11 @@ int f2fs_sanity_check_ckpt(struct f2fs_sb_info *sbi)
 			}
 		}
 	}
+<<<<<<< HEAD
 
+=======
+skip_cross:
+>>>>>>> origin/android16-base
 	sit_bitmap_size = le32_to_cpu(ckpt->sit_ver_bitmap_bytesize);
 	nat_bitmap_size = le32_to_cpu(ckpt->nat_ver_bitmap_bytesize);
 
@@ -3010,7 +4271,11 @@ int f2fs_sanity_check_ckpt(struct f2fs_sb_info *sbi)
 	cp_payload = __cp_payload(sbi);
 	if (cp_pack_start_sum < cp_payload + 1 ||
 		cp_pack_start_sum > blocks_per_seg - 1 -
+<<<<<<< HEAD
 			NR_CURSEG_TYPE) {
+=======
+			NR_CURSEG_PERSIST_TYPE) {
+>>>>>>> origin/android16-base
 		f2fs_err(sbi, "Wrong cp_pack_start_sum: %u",
 			 cp_pack_start_sum);
 		return 1;
@@ -3025,6 +4290,20 @@ int f2fs_sanity_check_ckpt(struct f2fs_sb_info *sbi)
 		return 1;
 	}
 
+<<<<<<< HEAD
+=======
+	nat_blocks = nat_segs << log_blocks_per_seg;
+	nat_bits_bytes = nat_blocks / BITS_PER_BYTE;
+	nat_bits_blocks = F2FS_BLK_ALIGN((nat_bits_bytes << 1) + 8);
+	if (__is_set_ckpt_flags(ckpt, CP_NAT_BITS_FLAG) &&
+		(cp_payload + F2FS_CP_PACKS +
+		NR_CURSEG_PERSIST_TYPE + nat_bits_blocks >= blocks_per_seg)) {
+		f2fs_warn(sbi, "Insane cp_payload: %u, nat_bits_blocks: %u)",
+			  cp_payload, nat_bits_blocks);
+		return 1;
+	}
+
+>>>>>>> origin/android16-base
 	if (unlikely(f2fs_cp_error(sbi))) {
 		f2fs_err(sbi, "A bug case: need to run fsck");
 		return 1;
@@ -3049,14 +4328,29 @@ static void init_sb_info(struct f2fs_sb_info *sbi)
 	sbi->total_node_count =
 		(le32_to_cpu(raw_super->segment_count_nat) / 2)
 			* sbi->blocks_per_seg * NAT_ENTRY_PER_BLOCK;
+<<<<<<< HEAD
 	sbi->root_ino_num = le32_to_cpu(raw_super->root_ino);
 	sbi->node_ino_num = le32_to_cpu(raw_super->node_ino);
 	sbi->meta_ino_num = le32_to_cpu(raw_super->meta_ino);
 	sbi->cur_victim_sec = NULL_SECNO;
+=======
+	F2FS_ROOT_INO(sbi) = le32_to_cpu(raw_super->root_ino);
+	F2FS_NODE_INO(sbi) = le32_to_cpu(raw_super->node_ino);
+	F2FS_META_INO(sbi) = le32_to_cpu(raw_super->meta_ino);
+	sbi->cur_victim_sec = NULL_SECNO;
+	sbi->gc_mode = GC_NORMAL;
+>>>>>>> origin/android16-base
 	sbi->next_victim_seg[BG_GC] = NULL_SEGNO;
 	sbi->next_victim_seg[FG_GC] = NULL_SEGNO;
 	sbi->max_victim_search = DEF_MAX_VICTIM_SEARCH;
 	sbi->migration_granularity = sbi->segs_per_sec;
+<<<<<<< HEAD
+=======
+	sbi->max_fragment_chunk = DEF_FRAGMENT_SIZE;
+	sbi->max_fragment_hole = DEF_FRAGMENT_SIZE;
+	spin_lock_init(&sbi->gc_remaining_trials_lock);
+	atomic64_set(&sbi->current_atomic_write, 0);
+>>>>>>> origin/android16-base
 
 	sbi->dir_level = DEF_DIR_LEVEL;
 	sbi->interval_time[CP_TIME] = DEF_CP_INTERVAL;
@@ -3076,14 +4370,23 @@ static void init_sb_info(struct f2fs_sb_info *sbi)
 
 	INIT_LIST_HEAD(&sbi->s_list);
 	mutex_init(&sbi->umount_mutex);
+<<<<<<< HEAD
 	init_rwsem(&sbi->io_order_lock);
+=======
+	init_f2fs_rwsem(&sbi->io_order_lock);
+>>>>>>> origin/android16-base
 	spin_lock_init(&sbi->cp_lock);
 
 	sbi->dirty_device = 0;
 	spin_lock_init(&sbi->dev_lock);
 
+<<<<<<< HEAD
 	init_rwsem(&sbi->sb_lock);
 	init_rwsem(&sbi->pin_sem);
+=======
+	init_f2fs_rwsem(&sbi->sb_lock);
+	init_f2fs_rwsem(&sbi->pin_sem);
+>>>>>>> origin/android16-base
 }
 
 static int init_percpu_info(struct f2fs_sb_info *sbi)
@@ -3094,11 +4397,28 @@ static int init_percpu_info(struct f2fs_sb_info *sbi)
 	if (err)
 		return err;
 
+<<<<<<< HEAD
 	err = percpu_counter_init(&sbi->total_valid_inode_count, 0,
 								GFP_KERNEL);
 	if (err)
 		percpu_counter_destroy(&sbi->alloc_valid_block_count);
 
+=======
+	err = percpu_counter_init(&sbi->rf_node_block_count, 0, GFP_KERNEL);
+	if (err)
+		goto err_valid_block;
+
+	err = percpu_counter_init(&sbi->total_valid_inode_count, 0,
+								GFP_KERNEL);
+	if (err)
+		goto err_node_block;
+	return 0;
+
+err_node_block:
+	percpu_counter_destroy(&sbi->rf_node_block_count);
+err_valid_block:
+	percpu_counter_destroy(&sbi->alloc_valid_block_count);
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -3224,7 +4544,11 @@ static int read_raw_super_block(struct f2fs_sb_info *sbi,
 
 	/* No valid superblock */
 	if (!*raw_super)
+<<<<<<< HEAD
 		kvfree(super);
+=======
+		kfree(super);
+>>>>>>> origin/android16-base
 	else
 		err = 0;
 
@@ -3270,10 +4594,79 @@ int f2fs_commit_super(struct f2fs_sb_info *sbi, bool recover)
 	return err;
 }
 
+<<<<<<< HEAD
+=======
+void f2fs_handle_stop(struct f2fs_sb_info *sbi, unsigned char reason)
+{
+	struct f2fs_super_block *raw_super = F2FS_RAW_SUPER(sbi);
+	int err;
+
+	f2fs_down_write(&sbi->sb_lock);
+
+	if (raw_super->s_stop_reason[reason] < ((1 << BITS_PER_BYTE) - 1))
+		raw_super->s_stop_reason[reason]++;
+
+	err = f2fs_commit_super(sbi, false);
+	if (err)
+		f2fs_err(sbi, "f2fs_commit_super fails to record reason:%u err:%d",
+								reason, err);
+	f2fs_up_write(&sbi->sb_lock);
+}
+
+static void f2fs_save_errors(struct f2fs_sb_info *sbi, unsigned char flag)
+{
+	spin_lock(&sbi->error_lock);
+	if (!test_bit(flag, (unsigned long *)sbi->errors)) {
+		set_bit(flag, (unsigned long *)sbi->errors);
+		sbi->error_dirty = true;
+	}
+	spin_unlock(&sbi->error_lock);
+}
+
+static bool f2fs_update_errors(struct f2fs_sb_info *sbi)
+{
+	bool need_update = false;
+
+	spin_lock(&sbi->error_lock);
+	if (sbi->error_dirty) {
+		memcpy(F2FS_RAW_SUPER(sbi)->s_errors, sbi->errors,
+							MAX_F2FS_ERRORS);
+		sbi->error_dirty = false;
+		need_update = true;
+	}
+	spin_unlock(&sbi->error_lock);
+
+	return need_update;
+}
+
+void f2fs_handle_error(struct f2fs_sb_info *sbi, unsigned char error)
+{
+	int err;
+
+	f2fs_save_errors(sbi, error);
+
+	f2fs_down_write(&sbi->sb_lock);
+
+	if (!f2fs_update_errors(sbi))
+		goto out_unlock;
+
+	err = f2fs_commit_super(sbi, false);
+	if (err)
+		f2fs_err(sbi, "f2fs_commit_super fails to record errors:%u, err:%d",
+								error, err);
+out_unlock:
+	f2fs_up_write(&sbi->sb_lock);
+}
+
+>>>>>>> origin/android16-base
 static int f2fs_scan_devices(struct f2fs_sb_info *sbi)
 {
 	struct f2fs_super_block *raw_super = F2FS_RAW_SUPER(sbi);
 	unsigned int max_devices = MAX_DEVICES;
+<<<<<<< HEAD
+=======
+	unsigned int logical_blksize;
+>>>>>>> origin/android16-base
 	int i;
 
 	/* Initialize single device information */
@@ -3294,6 +4687,12 @@ static int f2fs_scan_devices(struct f2fs_sb_info *sbi)
 	if (!sbi->devs)
 		return -ENOMEM;
 
+<<<<<<< HEAD
+=======
+	logical_blksize = bdev_logical_block_size(sbi->sb->s_bdev);
+	sbi->aligned_blksize = true;
+
+>>>>>>> origin/android16-base
 	for (i = 0; i < max_devices; i++) {
 
 		if (i > 0 && !RDEV(i).path[0])
@@ -3330,10 +4729,20 @@ static int f2fs_scan_devices(struct f2fs_sb_info *sbi)
 		/* to release errored devices */
 		sbi->s_ndevs = i + 1;
 
+<<<<<<< HEAD
 #ifdef CONFIG_BLK_DEV_ZONED
 		if (bdev_zoned_model(FDEV(i).bdev) == BLK_ZONED_HM &&
 				!f2fs_sb_has_blkzoned(sbi)) {
 			f2fs_err(sbi, "Zoned block device feature not enabled\n");
+=======
+		if (logical_blksize != bdev_logical_block_size(FDEV(i).bdev))
+			sbi->aligned_blksize = false;
+
+#ifdef CONFIG_BLK_DEV_ZONED
+		if (bdev_zoned_model(FDEV(i).bdev) == BLK_ZONED_HM &&
+				!f2fs_sb_has_blkzoned(sbi)) {
+			f2fs_err(sbi, "Zoned block device feature not enabled");
+>>>>>>> origin/android16-base
 			return -EINVAL;
 		}
 		if (bdev_zoned_model(FDEV(i).bdev) != BLK_ZONED_NONE) {
@@ -3404,6 +4813,7 @@ static int f2fs_setup_casefold(struct f2fs_sb_info *sbi)
 
 static void f2fs_tuning_parameters(struct f2fs_sb_info *sbi)
 {
+<<<<<<< HEAD
 	struct f2fs_sm_info *sm_i = SM_I(sbi);
 
 	/* adjust parameters according to the volume size */
@@ -3414,6 +4824,18 @@ static void f2fs_tuning_parameters(struct f2fs_sb_info *sbi)
 	}
 
 	sbi->readdir_ra = 1;
+=======
+	/* adjust parameters according to the volume size */
+	if (MAIN_SEGS(sbi) <= SMALL_VOLUME_SEGMENTS) {
+		if (f2fs_block_unit_discard(sbi))
+			SM_I(sbi)->dcc_info->discard_granularity =
+						MIN_DISCARD_GRANULARITY;
+		SM_I(sbi)->ipu_policy = 1 << F2FS_IPU_FORCE |
+					1 << F2FS_IPU_HONOR_OPU_WRITE;
+	}
+
+	sbi->readdir_ra = true;
+>>>>>>> origin/android16-base
 }
 
 static int f2fs_fill_super(struct super_block *sb, void *data, int silent)
@@ -3441,6 +4863,27 @@ try_onemore:
 
 	sbi->sb = sb;
 
+<<<<<<< HEAD
+=======
+	/* initialize locks within allocated memory */
+	init_f2fs_rwsem(&sbi->gc_lock);
+	mutex_init(&sbi->writepages);
+	init_f2fs_rwsem(&sbi->cp_global_sem);
+	init_f2fs_rwsem(&sbi->node_write);
+	init_f2fs_rwsem(&sbi->node_change);
+	spin_lock_init(&sbi->stat_lock);
+	init_f2fs_rwsem(&sbi->cp_rwsem);
+	init_f2fs_rwsem(&sbi->quota_sem);
+	init_waitqueue_head(&sbi->cp_wait);
+	spin_lock_init(&sbi->error_lock);
+
+	for (i = 0; i < NR_INODE_TYPE; i++) {
+		INIT_LIST_HEAD(&sbi->inode_list[i]);
+		spin_lock_init(&sbi->inode_lock[i]);
+	}
+	mutex_init(&sbi->flush_lock);
+
+>>>>>>> origin/android16-base
 	/* Load the checksum driver */
 	sbi->s_chksum_driver = crypto_alloc_shash("crc32", 0, 0);
 	if (IS_ERR(sbi->s_chksum_driver)) {
@@ -3464,11 +4907,17 @@ try_onemore:
 	sb->s_fs_info = sbi;
 	sbi->raw_super = raw_super;
 
+<<<<<<< HEAD
+=======
+	memcpy(sbi->errors, raw_super->s_errors, MAX_F2FS_ERRORS);
+
+>>>>>>> origin/android16-base
 	/* precompute checksum seed for metadata */
 	if (f2fs_sb_has_inode_chksum(sbi))
 		sbi->s_chksum_seed = f2fs_chksum(sbi, ~0, raw_super->uuid,
 						sizeof(raw_super->uuid));
 
+<<<<<<< HEAD
 	/*
 	 * The BLKZONED feature indicates that the drive was formatted with
 	 * zone alignment optimization. This is optional for host-aware
@@ -3481,6 +4930,8 @@ try_onemore:
 		goto free_sb_buf;
 	}
 #endif
+=======
+>>>>>>> origin/android16-base
 	default_options(sbi);
 	/* parse mount options */
 	options = kstrdup((const char *)data, GFP_KERNEL);
@@ -3493,8 +4944,12 @@ try_onemore:
 	if (err)
 		goto free_options;
 
+<<<<<<< HEAD
 	sbi->max_file_blocks = max_file_blocks();
 	sb->s_maxbytes = sbi->max_file_blocks <<
+=======
+	sb->s_maxbytes = max_file_blocks(NULL) <<
+>>>>>>> origin/android16-base
 				le32_to_cpu(raw_super->log_blocksize);
 	sb->s_max_links = F2FS_LINK_MAX;
 
@@ -3533,6 +4988,7 @@ try_onemore:
 
 	/* init f2fs-specific super block info */
 	sbi->valid_super_block = valid_super_block;
+<<<<<<< HEAD
 	init_rwsem(&sbi->gc_lock);
 	mutex_init(&sbi->writepages);
 	init_rwsem(&sbi->cp_global_sem);
@@ -3581,6 +5037,25 @@ try_onemore:
 	err = init_percpu_info(sbi);
 	if (err)
 		goto free_bio_info;
+=======
+
+	/* disallow all the data/node/meta page writes */
+	set_sbi_flag(sbi, SBI_POR_DOING);
+
+	err = f2fs_init_write_merge_io(sbi);
+	if (err)
+		goto free_bio_info;
+
+	init_sb_info(sbi);
+
+	err = f2fs_init_iostat(sbi);
+	if (err)
+		goto free_bio_info;
+
+	err = init_percpu_info(sbi);
+	if (err)
+		goto free_iostat;
+>>>>>>> origin/android16-base
 
 	if (F2FS_IO_ALIGNED(sbi)) {
 		sbi->write_io_dummy =
@@ -3595,13 +5070,23 @@ try_onemore:
 	err = f2fs_init_xattr_caches(sbi);
 	if (err)
 		goto free_io_dummy;
+<<<<<<< HEAD
+=======
+	err = f2fs_init_page_array_cache(sbi);
+	if (err)
+		goto free_xattr_cache;
+>>>>>>> origin/android16-base
 
 	/* get an inode for meta space */
 	sbi->meta_inode = f2fs_iget(sb, F2FS_META_INO(sbi));
 	if (IS_ERR(sbi->meta_inode)) {
 		f2fs_err(sbi, "Failed to read F2FS meta data inode");
 		err = PTR_ERR(sbi->meta_inode);
+<<<<<<< HEAD
 		goto free_xattr_cache;
+=======
+		goto free_page_array_cache;
+>>>>>>> origin/android16-base
 	}
 
 	err = f2fs_get_valid_checkpoint(sbi);
@@ -3646,18 +5131,37 @@ try_onemore:
 	limit_reserve_root(sbi);
 	adjust_unusable_cap_perc(sbi);
 
+<<<<<<< HEAD
 	for (i = 0; i < NR_INODE_TYPE; i++) {
 		INIT_LIST_HEAD(&sbi->inode_list[i]);
 		spin_lock_init(&sbi->inode_lock[i]);
 	}
 	mutex_init(&sbi->flush_lock);
 
+=======
+>>>>>>> origin/android16-base
 	f2fs_init_extent_cache_info(sbi);
 
 	f2fs_init_ino_entry_info(sbi);
 
 	f2fs_init_fsync_node_info(sbi);
 
+<<<<<<< HEAD
+=======
+	/* setup checkpoint request control and start checkpoint issue thread */
+	f2fs_init_ckpt_req_control(sbi);
+	if (!f2fs_readonly(sb) && !test_opt(sbi, DISABLE_CHECKPOINT) &&
+			test_opt(sbi, MERGE_CHECKPOINT)) {
+		err = f2fs_start_ckpt_thread(sbi);
+		if (err) {
+			f2fs_err(sbi,
+			    "Failed to start F2FS issue_checkpoint_thread (%d)",
+			    err);
+			goto stop_ckpt_thread;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	/* setup f2fs internal modules */
 	err = f2fs_build_segment_manager(sbi);
 	if (err) {
@@ -3672,11 +5176,20 @@ try_onemore:
 		goto free_nm;
 	}
 
+<<<<<<< HEAD
 	/* For write statistics */
 	if (sb->s_bdev->bd_part)
 		sbi->sectors_written_start =
 			(u64)part_stat_read(sb->s_bdev->bd_part,
 					    sectors[STAT_WRITE]);
+=======
+	err = adjust_reserved_segment(sbi);
+	if (err)
+		goto free_nm;
+
+	/* For write statistics */
+	sbi->sectors_written_start = f2fs_get_sectors_written(sbi);
+>>>>>>> origin/android16-base
 
 	/* Read accumulated write IO statistics if exists */
 	seg_i = CURSEG_I(sbi, CURSEG_HOT_NODE);
@@ -3718,10 +5231,21 @@ try_onemore:
 		goto free_node_inode;
 	}
 
+<<<<<<< HEAD
 	err = f2fs_register_sysfs(sbi);
 	if (err)
 		goto free_root_inode;
 
+=======
+	err = f2fs_init_compress_inode(sbi);
+	if (err)
+		goto free_root_inode;
+
+	err = f2fs_register_sysfs(sbi);
+	if (err)
+		goto free_compress_inode;
+
+>>>>>>> origin/android16-base
 #ifdef CONFIG_QUOTA
 	/* Enable quota usage during mount */
 	if (f2fs_sb_has_quota_ino(sbi) && !f2fs_readonly(sb)) {
@@ -3747,9 +5271,21 @@ try_onemore:
 		 */
 		if (f2fs_hw_is_readonly(sbi)) {
 			if (!is_set_ckpt_flags(sbi, CP_UMOUNT_FLAG)) {
+<<<<<<< HEAD
 				err = -EROFS;
 				f2fs_err(sbi, "Need to recover fsync data, but write access unavailable");
 				goto free_meta;
+=======
+				err = f2fs_recover_fsync_data(sbi, true);
+				if (err > 0) {
+					err = -EROFS;
+					f2fs_err(sbi, "Need to recover fsync data, but "
+						"write access unavailable, please try "
+						"mount w/ disable_roll_forward or norecovery");
+				}
+				if (err < 0)
+					goto free_meta;
+>>>>>>> origin/android16-base
 			}
 			f2fs_info(sbi, "write access unavailable, skipping recovery");
 			goto reset_checkpoint;
@@ -3780,6 +5316,11 @@ try_onemore:
 		}
 	}
 reset_checkpoint:
+<<<<<<< HEAD
+=======
+	f2fs_init_inmem_curseg(sbi);
+
+>>>>>>> origin/android16-base
 	/* f2fs_recover_fsync_data() cleared this already */
 	clear_sbi_flag(sbi, SBI_POR_DOING);
 
@@ -3795,7 +5336,12 @@ reset_checkpoint:
 	 * If filesystem is not mounted as read-only then
 	 * do start the gc_thread.
 	 */
+<<<<<<< HEAD
 	if (F2FS_OPTION(sbi).bggc_mode != BGGC_MODE_OFF && !f2fs_readonly(sb)) {
+=======
+	if ((F2FS_OPTION(sbi).bggc_mode != BGGC_MODE_OFF ||
+		test_opt(sbi, GC_MERGE)) && !f2fs_readonly(sb)) {
+>>>>>>> origin/android16-base
 		/* After POR, we can run background GC thread.*/
 		err = f2fs_start_gc_thread(sbi);
 		if (err)
@@ -3842,6 +5388,11 @@ free_meta:
 	/* evict some inodes being cached by GC */
 	evict_inodes(sb);
 	f2fs_unregister_sysfs(sbi);
+<<<<<<< HEAD
+=======
+free_compress_inode:
+	f2fs_destroy_compress_inode(sbi);
+>>>>>>> origin/android16-base
 free_root_inode:
 	dput(sb->s_root);
 	sb->s_root = NULL;
@@ -3853,9 +5404,19 @@ free_node_inode:
 free_stats:
 	f2fs_destroy_stats(sbi);
 free_nm:
+<<<<<<< HEAD
 	f2fs_destroy_node_manager(sbi);
 free_sm:
 	f2fs_destroy_segment_manager(sbi);
+=======
+	/* stop discard thread before destroying node manager */
+	f2fs_stop_discard_thread(sbi);
+	f2fs_destroy_node_manager(sbi);
+free_sm:
+	f2fs_destroy_segment_manager(sbi);
+stop_ckpt_thread:
+	f2fs_stop_ckpt_thread(sbi);
+>>>>>>> origin/android16-base
 	f2fs_destroy_post_read_wq(sbi);
 free_devices:
 	destroy_device_list(sbi);
@@ -3864,32 +5425,58 @@ free_meta_inode:
 	make_bad_inode(sbi->meta_inode);
 	iput(sbi->meta_inode);
 	sbi->meta_inode = NULL;
+<<<<<<< HEAD
+=======
+free_page_array_cache:
+	f2fs_destroy_page_array_cache(sbi);
+>>>>>>> origin/android16-base
 free_xattr_cache:
 	f2fs_destroy_xattr_caches(sbi);
 free_io_dummy:
 	mempool_destroy(sbi->write_io_dummy);
 free_percpu:
 	destroy_percpu_info(sbi);
+<<<<<<< HEAD
+=======
+free_iostat:
+	f2fs_destroy_iostat(sbi);
+>>>>>>> origin/android16-base
 free_bio_info:
 	for (i = 0; i < NR_PAGE_TYPE; i++)
 		kvfree(sbi->write_io[i]);
 
 #ifdef CONFIG_UNICODE
 	utf8_unload(sb->s_encoding);
+<<<<<<< HEAD
+=======
+	sb->s_encoding = NULL;
+>>>>>>> origin/android16-base
 #endif
 free_options:
 #ifdef CONFIG_QUOTA
 	for (i = 0; i < MAXQUOTAS; i++)
+<<<<<<< HEAD
 		kvfree(F2FS_OPTION(sbi).s_qf_names[i]);
+=======
+		kfree(F2FS_OPTION(sbi).s_qf_names[i]);
+>>>>>>> origin/android16-base
 #endif
 	fscrypt_free_dummy_context(&F2FS_OPTION(sbi).dummy_enc_ctx);
 	kvfree(options);
 free_sb_buf:
+<<<<<<< HEAD
 	kvfree(raw_super);
 free_sbi:
 	if (sbi->s_chksum_driver)
 		crypto_free_shash(sbi->s_chksum_driver);
 	kvfree(sbi);
+=======
+	kfree(raw_super);
+free_sbi:
+	if (sbi->s_chksum_driver)
+		crypto_free_shash(sbi->s_chksum_driver);
+	kfree(sbi);
+>>>>>>> origin/android16-base
 
 	/* give only one another chance */
 	if (retry_cnt > 0 && skip_recovery) {
@@ -3915,6 +5502,18 @@ static void kill_f2fs_super(struct super_block *sb)
 		f2fs_stop_gc_thread(sbi);
 		f2fs_stop_discard_thread(sbi);
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_F2FS_FS_COMPRESSION
+		/*
+		 * latter evict_inode() can bypass checking and invalidating
+		 * compress inode cache.
+		 */
+		if (test_opt(sbi, COMPRESS_CACHE))
+			truncate_inode_pages_final(COMPRESS_MAPPING(sbi));
+#endif
+
+>>>>>>> origin/android16-base
 		if (is_sbi_flag_set(sbi, SBI_IS_DIRTY) ||
 				!is_set_ckpt_flags(sbi, CP_UMOUNT_FLAG)) {
 			struct cp_control cpc = {
@@ -3943,9 +5542,13 @@ static int __init init_inodecache(void)
 	f2fs_inode_cachep = kmem_cache_create("f2fs_inode_cache",
 			sizeof(struct f2fs_inode_info), 0,
 			SLAB_RECLAIM_ACCOUNT|SLAB_ACCOUNT, NULL);
+<<<<<<< HEAD
 	if (!f2fs_inode_cachep)
 		return -ENOMEM;
 	return 0;
+=======
+	return f2fs_inode_cachep ? 0 : -ENOMEM;
+>>>>>>> origin/android16-base
 }
 
 static void destroy_inodecache(void)
@@ -3968,8 +5571,11 @@ static int __init init_f2fs_fs(void)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	f2fs_build_trace_ios();
 
+=======
+>>>>>>> origin/android16-base
 	err = init_inodecache();
 	if (err)
 		goto fail;
@@ -3982,12 +5588,27 @@ static int __init init_f2fs_fs(void)
 	err = f2fs_create_checkpoint_caches();
 	if (err)
 		goto free_segment_manager_caches;
+<<<<<<< HEAD
 	err = f2fs_create_extent_cache();
 	if (err)
 		goto free_checkpoint_caches;
 	err = f2fs_init_sysfs();
 	if (err)
 		goto free_extent_cache;
+=======
+	err = f2fs_create_recovery_cache();
+	if (err)
+		goto free_checkpoint_caches;
+	err = f2fs_create_extent_cache();
+	if (err)
+		goto free_recovery_cache;
+	err = f2fs_create_garbage_collection_cache();
+	if (err)
+		goto free_extent_cache;
+	err = f2fs_init_sysfs();
+	if (err)
+		goto free_garbage_collection_cache;
+>>>>>>> origin/android16-base
 	err = register_shrinker(&f2fs_shrinker_info);
 	if (err)
 		goto free_sysfs;
@@ -3998,6 +5619,7 @@ static int __init init_f2fs_fs(void)
 	err = f2fs_init_post_read_processing();
 	if (err)
 		goto free_root_stats;
+<<<<<<< HEAD
 	err = f2fs_init_bio_entry_cache();
 	if (err)
 		goto free_post_read;
@@ -4012,6 +5634,37 @@ free_bioset:
 	f2fs_destroy_bioset();
 free_bio_enrty_cache:
 	f2fs_destroy_bio_entry_cache();
+=======
+	err = f2fs_init_iostat_processing();
+	if (err)
+		goto free_post_read;
+	err = f2fs_init_bio_entry_cache();
+	if (err)
+		goto free_iostat;
+	err = f2fs_init_bioset();
+	if (err)
+		goto free_bio_entry_cache;
+	err = f2fs_init_compress_mempool();
+	if (err)
+		goto free_bioset;
+	err = f2fs_init_compress_cache();
+	if (err)
+		goto free_compress_mempool;
+	err = f2fs_create_casefold_cache();
+	if (err)
+		goto free_compress_cache;
+	return 0;
+free_compress_cache:
+	f2fs_destroy_compress_cache();
+free_compress_mempool:
+	f2fs_destroy_compress_mempool();
+free_bioset:
+	f2fs_destroy_bioset();
+free_bio_entry_cache:
+	f2fs_destroy_bio_entry_cache();
+free_iostat:
+	f2fs_destroy_iostat_processing();
+>>>>>>> origin/android16-base
 free_post_read:
 	f2fs_destroy_post_read_processing();
 free_root_stats:
@@ -4021,8 +5674,17 @@ free_shrinker:
 	unregister_shrinker(&f2fs_shrinker_info);
 free_sysfs:
 	f2fs_exit_sysfs();
+<<<<<<< HEAD
 free_extent_cache:
 	f2fs_destroy_extent_cache();
+=======
+free_garbage_collection_cache:
+	f2fs_destroy_garbage_collection_cache();
+free_extent_cache:
+	f2fs_destroy_extent_cache();
+free_recovery_cache:
+	f2fs_destroy_recovery_cache();
+>>>>>>> origin/android16-base
 free_checkpoint_caches:
 	f2fs_destroy_checkpoint_caches();
 free_segment_manager_caches:
@@ -4037,20 +5699,38 @@ fail:
 
 static void __exit exit_f2fs_fs(void)
 {
+<<<<<<< HEAD
 	f2fs_destroy_compress_mempool();
 	f2fs_destroy_bioset();
 	f2fs_destroy_bio_entry_cache();
+=======
+	f2fs_destroy_casefold_cache();
+	f2fs_destroy_compress_cache();
+	f2fs_destroy_compress_mempool();
+	f2fs_destroy_bioset();
+	f2fs_destroy_bio_entry_cache();
+	f2fs_destroy_iostat_processing();
+>>>>>>> origin/android16-base
 	f2fs_destroy_post_read_processing();
 	f2fs_destroy_root_stats();
 	unregister_filesystem(&f2fs_fs_type);
 	unregister_shrinker(&f2fs_shrinker_info);
 	f2fs_exit_sysfs();
+<<<<<<< HEAD
 	f2fs_destroy_extent_cache();
+=======
+	f2fs_destroy_garbage_collection_cache();
+	f2fs_destroy_extent_cache();
+	f2fs_destroy_recovery_cache();
+>>>>>>> origin/android16-base
 	f2fs_destroy_checkpoint_caches();
 	f2fs_destroy_segment_manager_caches();
 	f2fs_destroy_node_manager_caches();
 	destroy_inodecache();
+<<<<<<< HEAD
 	f2fs_destroy_trace_ios();
+=======
+>>>>>>> origin/android16-base
 }
 
 module_init(init_f2fs_fs)
@@ -4059,4 +5739,8 @@ module_exit(exit_f2fs_fs)
 MODULE_AUTHOR("Samsung Electronics's Praesto Team");
 MODULE_DESCRIPTION("Flash Friendly File System");
 MODULE_LICENSE("GPL");
+<<<<<<< HEAD
+=======
+MODULE_SOFTDEP("pre: crc32");
+>>>>>>> origin/android16-base
 

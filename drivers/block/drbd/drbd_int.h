@@ -1689,22 +1689,38 @@ struct sib_info {
 };
 void drbd_bcast_event(struct drbd_device *device, const struct sib_info *sib);
 
+<<<<<<< HEAD
 extern void notify_resource_state(struct sk_buff *,
+=======
+extern int notify_resource_state(struct sk_buff *,
+>>>>>>> origin/android16-base
 				  unsigned int,
 				  struct drbd_resource *,
 				  struct resource_info *,
 				  enum drbd_notification_type);
+<<<<<<< HEAD
 extern void notify_device_state(struct sk_buff *,
+=======
+extern int notify_device_state(struct sk_buff *,
+>>>>>>> origin/android16-base
 				unsigned int,
 				struct drbd_device *,
 				struct device_info *,
 				enum drbd_notification_type);
+<<<<<<< HEAD
 extern void notify_connection_state(struct sk_buff *,
+=======
+extern int notify_connection_state(struct sk_buff *,
+>>>>>>> origin/android16-base
 				    unsigned int,
 				    struct drbd_connection *,
 				    struct connection_info *,
 				    enum drbd_notification_type);
+<<<<<<< HEAD
 extern void notify_peer_device_state(struct sk_buff *,
+=======
+extern int notify_peer_device_state(struct sk_buff *,
+>>>>>>> origin/android16-base
 				     unsigned int,
 				     struct drbd_peer_device *,
 				     struct peer_device_info *,

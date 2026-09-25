@@ -171,7 +171,10 @@ static void xhci_common_hub_descriptor(struct xhci_hcd *xhci,
 {
 	u16 temp;
 
+<<<<<<< HEAD
 	desc->bPwrOn2PwrGood = 10;	/* xhci section 5.4.9 says 20ms max */
+=======
+>>>>>>> origin/android16-base
 	desc->bHubContrCurrent = 0;
 
 	desc->bNbrPorts = ports;
@@ -206,6 +209,10 @@ static void xhci_usb2_hub_descriptor(struct usb_hcd *hcd, struct xhci_hcd *xhci,
 	desc->bDescriptorType = USB_DT_HUB;
 	temp = 1 + (ports / 8);
 	desc->bDescLength = USB_DT_HUB_NONVAR_SIZE + 2 * temp;
+<<<<<<< HEAD
+=======
+	desc->bPwrOn2PwrGood = 10;	/* xhci section 5.4.8 says 20ms */
+>>>>>>> origin/android16-base
 
 	/* The Device Removable bits are reported on a byte granularity.
 	 * If the port doesn't exist within that byte, the bit is set to 0.
@@ -258,6 +265,10 @@ static void xhci_usb3_hub_descriptor(struct usb_hcd *hcd, struct xhci_hcd *xhci,
 	xhci_common_hub_descriptor(xhci, desc, ports);
 	desc->bDescriptorType = USB_DT_SS_HUB;
 	desc->bDescLength = USB_DT_SS_HUB_SIZE;
+<<<<<<< HEAD
+=======
+	desc->bPwrOn2PwrGood = 50;	/* usb 3.1 may fail if less than 100ms */
+>>>>>>> origin/android16-base
 
 	/* header decode latency should be zero for roothubs,
 	 * see section 4.23.5.2.
@@ -624,6 +635,10 @@ static int xhci_enter_test_mode(struct xhci_hcd *xhci,
 			continue;
 
 		retval = xhci_disable_slot(xhci, i);
+<<<<<<< HEAD
+=======
+		xhci_free_virt_device(xhci, i);
+>>>>>>> origin/android16-base
 		if (retval)
 			xhci_err(xhci, "Failed to disable slot %d, %d. Enter test mode anyway\n",
 				 i, retval);
@@ -668,7 +683,11 @@ static int xhci_exit_test_mode(struct xhci_hcd *xhci)
 	}
 	pm_runtime_allow(xhci_to_hcd(xhci)->self.controller);
 	xhci->test_mode = 0;
+<<<<<<< HEAD
 	return xhci_reset(xhci);
+=======
+	return xhci_reset(xhci, XHCI_RESET_SHORT_USEC);
+>>>>>>> origin/android16-base
 }
 
 void xhci_set_link_state(struct xhci_hcd *xhci, struct xhci_port *port,
@@ -1610,11 +1629,19 @@ int xhci_hub_status_data(struct usb_hcd *hcd, char *buf)
 	 * Inform the usbcore about resume-in-progress by returning
 	 * a non-zero value even if there are no status changes.
 	 */
+<<<<<<< HEAD
+=======
+	spin_lock_irqsave(&xhci->lock, flags);
+
+>>>>>>> origin/android16-base
 	status = bus_state->resuming_ports;
 
 	mask = PORT_CSC | PORT_PEC | PORT_OCC | PORT_PLC | PORT_WRC | PORT_CEC;
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&xhci->lock, flags);
+=======
+>>>>>>> origin/android16-base
 	/* For each port, did anything change?  If so, set that bit in buf. */
 	for (i = 0; i < max_ports; i++) {
 		temp = readl(ports[i]->addr);
@@ -1769,6 +1796,13 @@ retry:
 	hcd->state = HC_STATE_SUSPENDED;
 	bus_state->next_statechange = jiffies + msecs_to_jiffies(10);
 	spin_unlock_irqrestore(&xhci->lock, flags);
+<<<<<<< HEAD
+=======
+
+	if (bus_state->bus_suspended)
+		usleep_range(5000, 10000);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 

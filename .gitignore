@@ -114,7 +114,10 @@ GTAGS
 # id-utils files
 ID
 
+<<<<<<< HEAD
 *.orig
+=======
+>>>>>>> origin/android16-base
 *~
 \#*#
 
@@ -136,6 +139,7 @@ all.config
 # fetched Android config fragments
 kernel/configs/android-*.cfg
 
+<<<<<<< HEAD
 # vendor device tree directories
 arch/arm64/boot/dts/vendor/
 
@@ -150,3 +154,9 @@ modules.builtin
 # Python bytecode (tb371fc helper scripts)
 __pycache__/
 *.pyc
+=======
+#
+#Ignoring Android.bp link file
+#
+Android.bp
+>>>>>>> origin/android16-base

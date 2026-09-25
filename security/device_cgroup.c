@@ -79,6 +79,20 @@ free_and_exit:
 	return -ENOMEM;
 }
 
+<<<<<<< HEAD
+=======
+static void dev_exceptions_move(struct list_head *dest, struct list_head *orig)
+{
+	struct dev_exception_item *ex, *tmp;
+
+	lockdep_assert_held(&devcgroup_mutex);
+
+	list_for_each_entry_safe(ex, tmp, orig, list) {
+		list_move_tail(&ex->list, dest);
+	}
+}
+
+>>>>>>> origin/android16-base
 /*
  * called under devcgroup_mutex
  */
@@ -600,11 +614,19 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 	int count, rc = 0;
 	struct dev_exception_item ex;
 	struct dev_cgroup *parent = css_to_devcgroup(devcgroup->css.parent);
+<<<<<<< HEAD
+=======
+	struct dev_cgroup tmp_devcgrp;
+>>>>>>> origin/android16-base
 
 	if (!capable(CAP_SYS_ADMIN))
 		return -EPERM;
 
 	memset(&ex, 0, sizeof(ex));
+<<<<<<< HEAD
+=======
+	memset(&tmp_devcgrp, 0, sizeof(tmp_devcgrp));
+>>>>>>> origin/android16-base
 	b = buffer;
 
 	switch (*b) {
@@ -616,6 +638,7 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 
 			if (!may_allow_all(parent))
 				return -EPERM;
+<<<<<<< HEAD
 			dev_exception_clean(devcgroup);
 			devcgroup->behavior = DEVCG_DEFAULT_ALLOW;
 			if (!parent)
@@ -625,6 +648,29 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 						 &parent->exceptions);
 			if (rc)
 				return rc;
+=======
+			if (!parent) {
+				devcgroup->behavior = DEVCG_DEFAULT_ALLOW;
+				dev_exception_clean(devcgroup);
+				break;
+			}
+
+			INIT_LIST_HEAD(&tmp_devcgrp.exceptions);
+			rc = dev_exceptions_copy(&tmp_devcgrp.exceptions,
+						 &devcgroup->exceptions);
+			if (rc)
+				return rc;
+			dev_exception_clean(devcgroup);
+			rc = dev_exceptions_copy(&devcgroup->exceptions,
+						 &parent->exceptions);
+			if (rc) {
+				dev_exceptions_move(&devcgroup->exceptions,
+						    &tmp_devcgrp.exceptions);
+				return rc;
+			}
+			devcgroup->behavior = DEVCG_DEFAULT_ALLOW;
+			dev_exception_clean(&tmp_devcgrp);
+>>>>>>> origin/android16-base
 			break;
 		case DEVCG_DENY:
 			if (css_has_online_children(&devcgroup->css))

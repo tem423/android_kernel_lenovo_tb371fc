@@ -246,7 +246,11 @@ int ath6kl_bmi_execute(struct ath6kl *ar, u32 addr, u32 *param)
 		return -EACCES;
 	}
 
+<<<<<<< HEAD
 	size = sizeof(cid) + sizeof(addr) + sizeof(param);
+=======
+	size = sizeof(cid) + sizeof(addr) + sizeof(*param);
+>>>>>>> origin/android16-base
 	if (size > ar->bmi.max_cmd_size) {
 		WARN_ON(1);
 		return -EINVAL;

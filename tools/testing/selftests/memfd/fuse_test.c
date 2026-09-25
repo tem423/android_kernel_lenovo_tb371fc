@@ -22,6 +22,10 @@
 #include <linux/falloc.h>
 #include <linux/fcntl.h>
 #include <linux/memfd.h>
+<<<<<<< HEAD
+=======
+#include <linux/types.h>
+>>>>>>> origin/android16-base
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>

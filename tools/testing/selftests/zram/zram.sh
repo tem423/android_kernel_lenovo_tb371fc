@@ -2,9 +2,12 @@
 # SPDX-License-Identifier: GPL-2.0
 TCID="zram.sh"
 
+<<<<<<< HEAD
 # Kselftest framework requirement - SKIP code is 4.
 ksft_skip=4
 
+=======
+>>>>>>> origin/android16-base
 . ./zram_lib.sh
 
 run_zram () {
@@ -18,6 +21,7 @@ echo ""
 
 check_prereqs
 
+<<<<<<< HEAD
 # check zram module exists
 MODULE_PATH=/lib/modules/`uname -r`/kernel/drivers/block/zram/zram.ko
 if [ -f $MODULE_PATH ]; then
@@ -29,3 +33,6 @@ else
 	echo "$TCID : CONFIG_ZRAM is not set"
 	exit $ksft_skip
 fi
+=======
+run_zram
+>>>>>>> origin/android16-base

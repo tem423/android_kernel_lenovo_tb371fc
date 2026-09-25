@@ -249,10 +249,16 @@ struct sde_kms {
 
 	/* io/register spaces: */
 	void __iomem *mmio, *vbif[VBIF_MAX], *reg_dma, *sid,
+<<<<<<< HEAD
 		*imem, *sw_fuse;
 	unsigned long mmio_len, vbif_len[VBIF_MAX],
 		reg_dma_len, sid_len, imem_len;
 	unsigned long sw_fuse_len;
+=======
+		*imem;
+	unsigned long mmio_len, vbif_len[VBIF_MAX],
+		reg_dma_len, sid_len, imem_len;
+>>>>>>> origin/android16-base
 
 	struct regulator *vdd;
 	struct regulator *mmagic;
@@ -278,7 +284,10 @@ struct sde_kms {
 	struct sde_hw_mdp *hw_mdp;
 	struct sde_hw_uidle *hw_uidle;
 	struct sde_hw_sid *hw_sid;
+<<<<<<< HEAD
 	struct sde_hw_sw_fuse *hw_sw_fuse;
+=======
+>>>>>>> origin/android16-base
 	int dsi_display_count;
 	void **dsi_displays;
 	int wb_display_count;
@@ -664,8 +673,11 @@ void sde_kms_timeline_status(struct drm_device *dev);
  */
 int sde_kms_handle_recovery(struct drm_encoder *encoder);
 
+<<<<<<< HEAD
 void sde_kms_kickoff_count(struct sde_kms *sde_kms);
 
+=======
+>>>>>>> origin/android16-base
 /**
  * sde_kms_update_pm_qos_irq_request - Update Qos vote for CPU receiving
  *					display IRQ

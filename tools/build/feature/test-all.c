@@ -14,10 +14,13 @@
 # include "test-libpython.c"
 #undef main
 
+<<<<<<< HEAD
 #define main main_test_libpython_version
 # include "test-libpython-version.c"
 #undef main
 
+=======
+>>>>>>> origin/android16-base
 #define main main_test_libperl
 # include "test-libperl.c"
 #undef main
@@ -34,6 +37,17 @@
 # include "test-libelf-mmap.c"
 #undef main
 
+<<<<<<< HEAD
+=======
+#define main main_test_get_current_dir_name
+# include "test-get_current_dir_name.c"
+#undef main
+
+#define main main_test_gettid
+# include "test-gettid.c"
+#undef main
+
+>>>>>>> origin/android16-base
 #define main main_test_glibc
 # include "test-glibc.c"
 #undef main
@@ -46,6 +60,13 @@
 # include "test-dwarf_getlocations.c"
 #undef main
 
+<<<<<<< HEAD
+=======
+#define main main_test_eventfd
+# include "test-eventfd.c"
+#undef main
+
+>>>>>>> origin/android16-base
 #define main main_test_libelf_getphdrnum
 # include "test-libelf-getphdrnum.c"
 #undef main
@@ -169,14 +190,26 @@
 int main(int argc, char *argv[])
 {
 	main_test_libpython();
+<<<<<<< HEAD
 	main_test_libpython_version();
+=======
+>>>>>>> origin/android16-base
 	main_test_libperl();
 	main_test_hello();
 	main_test_libelf();
 	main_test_libelf_mmap();
+<<<<<<< HEAD
 	main_test_glibc();
 	main_test_dwarf();
 	main_test_dwarf_getlocations();
+=======
+	main_test_get_current_dir_name();
+	main_test_gettid();
+	main_test_glibc();
+	main_test_dwarf();
+	main_test_dwarf_getlocations();
+	main_test_eventfd();
+>>>>>>> origin/android16-base
 	main_test_libelf_getphdrnum();
 	main_test_libelf_gelf_getnote();
 	main_test_libelf_getshdrstrndx();

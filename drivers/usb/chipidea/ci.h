@@ -202,6 +202,10 @@ struct hw_bank {
  * @in_lpm: if the core in low power mode
  * @wakeup_int: if wakeup interrupt occur
  * @rev: The revision number for controller
+<<<<<<< HEAD
+=======
+ * @mutex: protect code from concorrent running when doing role switch
+>>>>>>> origin/android16-base
  */
 struct ci_hdrc {
 	struct device			*dev;
@@ -254,6 +258,10 @@ struct ci_hdrc {
 	bool				in_lpm;
 	bool				wakeup_int;
 	enum ci_revision		rev;
+<<<<<<< HEAD
+=======
+	struct mutex                    mutex;
+>>>>>>> origin/android16-base
 };
 
 static inline struct ci_role_driver *ci_role(struct ci_hdrc *ci)

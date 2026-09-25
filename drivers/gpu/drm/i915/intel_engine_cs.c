@@ -463,7 +463,11 @@ static void intel_engine_init_execlist(struct intel_engine_cs *engine)
 	struct intel_engine_execlists * const execlists = &engine->execlists;
 
 	execlists->port_mask = 1;
+<<<<<<< HEAD
 	BUILD_BUG_ON_NOT_POWER_OF_2(execlists_num_ports(execlists));
+=======
+	GEM_BUG_ON(!is_power_of_2(execlists_num_ports(execlists)));
+>>>>>>> origin/android16-base
 	GEM_BUG_ON(execlists_num_ports(execlists) > EXECLIST_MAX_PORTS);
 
 	execlists->queue_priority = INT_MIN;

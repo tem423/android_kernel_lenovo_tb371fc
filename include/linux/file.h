@@ -13,6 +13,10 @@
 struct file;
 
 extern void fput(struct file *);
+<<<<<<< HEAD
+=======
+extern void fput_many(struct file *, unsigned int);
+>>>>>>> origin/android16-base
 
 struct file_operations;
 struct vfsmount;
@@ -44,6 +48,10 @@ static inline void fdput(struct fd fd)
 }
 
 extern struct file *fget(unsigned int fd);
+<<<<<<< HEAD
+=======
+extern struct file *fget_many(unsigned int fd, unsigned int refs);
+>>>>>>> origin/android16-base
 extern struct file *fget_raw(unsigned int fd);
 extern unsigned long __fdget(unsigned int fd);
 extern unsigned long __fdget_raw(unsigned int fd);

@@ -82,6 +82,10 @@ void *ife_decode(struct sk_buff *skb, u16 *metalen)
 	if (unlikely(!pskb_may_pull(skb, total_pull)))
 		return NULL;
 
+<<<<<<< HEAD
+=======
+	ifehdr = (struct ifeheadr *)(skb->data + skb->dev->hard_header_len);
+>>>>>>> origin/android16-base
 	skb_set_mac_header(skb, total_pull);
 	__skb_pull(skb, total_pull);
 	*metalen = ifehdrln - IFE_METAHDRLEN;

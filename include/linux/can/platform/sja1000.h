@@ -14,7 +14,11 @@
 #define OCR_MODE_TEST     0x01
 #define OCR_MODE_NORMAL   0x02
 #define OCR_MODE_CLOCK    0x03
+<<<<<<< HEAD
 #define OCR_MODE_MASK     0x07
+=======
+#define OCR_MODE_MASK     0x03
+>>>>>>> origin/android16-base
 #define OCR_TX0_INVERT    0x04
 #define OCR_TX0_PULLDOWN  0x08
 #define OCR_TX0_PULLUP    0x10

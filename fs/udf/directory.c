@@ -34,7 +34,11 @@ struct fileIdentDesc *udf_fileident_read(struct inode *dir, loff_t *nf_pos,
 	fibh->soffset = fibh->eoffset;
 
 	if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB) {
+<<<<<<< HEAD
 		fi = udf_get_fileident(iinfo->i_ext.i_data -
+=======
+		fi = udf_get_fileident(iinfo->i_data -
+>>>>>>> origin/android16-base
 				       (iinfo->i_efe ?
 					sizeof(struct extendedFileEntry) :
 					sizeof(struct fileEntry)),

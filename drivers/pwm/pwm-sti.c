@@ -83,6 +83,10 @@ struct sti_pwm_compat_data {
 	unsigned int cpt_num_devs;
 	unsigned int max_pwm_cnt;
 	unsigned int max_prescale;
+<<<<<<< HEAD
+=======
+	struct sti_cpt_ddata *ddata;
+>>>>>>> origin/android16-base
 };
 
 struct sti_pwm_chip {
@@ -318,7 +322,11 @@ static int sti_pwm_capture(struct pwm_chip *chip, struct pwm_device *pwm,
 {
 	struct sti_pwm_chip *pc = to_sti_pwmchip(chip);
 	struct sti_pwm_compat_data *cdata = pc->cdata;
+<<<<<<< HEAD
 	struct sti_cpt_ddata *ddata = pwm_get_chip_data(pwm);
+=======
+	struct sti_cpt_ddata *ddata = &cdata->ddata[pwm->hwpwm];
+>>>>>>> origin/android16-base
 	struct device *dev = pc->dev;
 	unsigned int effective_ticks;
 	unsigned long long high, low;
@@ -422,7 +430,11 @@ static irqreturn_t sti_pwm_interrupt(int irq, void *data)
 	while (cpt_int_stat) {
 		devicenum = ffs(cpt_int_stat) - 1;
 
+<<<<<<< HEAD
 		ddata = pwm_get_chip_data(&pc->chip.pwms[devicenum]);
+=======
+		ddata = &pc->cdata->ddata[devicenum];
+>>>>>>> origin/android16-base
 
 		/*
 		 * Capture input:
@@ -600,6 +612,7 @@ static int sti_pwm_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	if (!cdata->pwm_num_devs)
 		goto skip_pwm;
 
@@ -632,11 +645,55 @@ skip_pwm:
 	}
 
 skip_cpt:
+=======
+	if (cdata->pwm_num_devs) {
+		pc->pwm_clk = of_clk_get_by_name(dev->of_node, "pwm");
+		if (IS_ERR(pc->pwm_clk)) {
+			dev_err(dev, "failed to get PWM clock\n");
+			return PTR_ERR(pc->pwm_clk);
+		}
+
+		ret = clk_prepare(pc->pwm_clk);
+		if (ret) {
+			dev_err(dev, "failed to prepare clock\n");
+			return ret;
+		}
+	}
+
+	if (cdata->cpt_num_devs) {
+		pc->cpt_clk = of_clk_get_by_name(dev->of_node, "capture");
+		if (IS_ERR(pc->cpt_clk)) {
+			dev_err(dev, "failed to get PWM capture clock\n");
+			return PTR_ERR(pc->cpt_clk);
+		}
+
+		ret = clk_prepare(pc->cpt_clk);
+		if (ret) {
+			dev_err(dev, "failed to prepare clock\n");
+			return ret;
+		}
+
+		cdata->ddata = devm_kzalloc(dev, cdata->cpt_num_devs * sizeof(*cdata->ddata), GFP_KERNEL);
+		if (!cdata->ddata)
+			return -ENOMEM;
+	}
+
+>>>>>>> origin/android16-base
 	pc->chip.dev = dev;
 	pc->chip.ops = &sti_pwm_ops;
 	pc->chip.base = -1;
 	pc->chip.npwm = pc->cdata->pwm_num_devs;
 
+<<<<<<< HEAD
+=======
+	for (i = 0; i < cdata->cpt_num_devs; i++) {
+		struct sti_cpt_ddata *ddata = &cdata->ddata[i];
+
+		init_waitqueue_head(&ddata->wait);
+		mutex_init(&ddata->lock);
+	}
+
+>>>>>>> origin/android16-base
 	ret = pwmchip_add(&pc->chip);
 	if (ret < 0) {
 		clk_unprepare(pc->pwm_clk);
@@ -644,6 +701,7 @@ skip_cpt:
 		return ret;
 	}
 
+<<<<<<< HEAD
 	for (i = 0; i < cdata->cpt_num_devs; i++) {
 		struct sti_cpt_ddata *ddata;
 
@@ -657,6 +715,8 @@ skip_cpt:
 		pwm_set_chip_data(&pc->chip.pwms[i], ddata);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	platform_set_drvdata(pdev, pc);
 
 	return 0;

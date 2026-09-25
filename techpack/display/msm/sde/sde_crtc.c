@@ -42,7 +42,10 @@
 #include "sde_power_handle.h"
 #include "sde_core_perf.h"
 #include "sde_trace.h"
+<<<<<<< HEAD
 #include "dsi_display.h"
+=======
+>>>>>>> origin/android16-base
 
 #define SDE_PSTATES_MAX (SDE_STAGE_MAX * 4)
 #define SDE_MULTIRECT_PLANE_MAX (SDE_STAGE_MAX * 2)
@@ -1475,10 +1478,13 @@ static void _sde_crtc_blend_setup_mixer(struct drm_crtc *crtc,
 		for (i = 0; i < cstate->num_dim_layers; i++)
 			_sde_crtc_setup_dim_layer_cfg(crtc, sde_crtc,
 					mixer, &cstate->dim_layer[i]);
+<<<<<<< HEAD
 
 		if (cstate->fod_dim_layer)
 			_sde_crtc_setup_dim_layer_cfg(crtc, sde_crtc,
 					mixer, cstate->fod_dim_layer);
+=======
+>>>>>>> origin/android16-base
 	}
 
 	_sde_crtc_program_lm_output_roi(crtc);
@@ -2166,12 +2172,20 @@ static void sde_crtc_frame_event_cb(void *data, u32 event)
 	SDE_DEBUG("crtc%d\n", crtc->base.id);
 	SDE_EVT32_VERBOSE(DRMID(crtc), event);
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&sde_crtc->fevent_spin_lock, flags);
+=======
+	spin_lock_irqsave(&sde_crtc->spin_lock, flags);
+>>>>>>> origin/android16-base
 	fevent = list_first_entry_or_null(&sde_crtc->frame_event_list,
 			struct sde_crtc_frame_event, list);
 	if (fevent)
 		list_del_init(&fevent->list);
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&sde_crtc->fevent_spin_lock, flags);
+=======
+	spin_unlock_irqrestore(&sde_crtc->spin_lock, flags);
+>>>>>>> origin/android16-base
 
 	if (!fevent) {
 		SDE_ERROR("crtc%d event %d overflow\n",
@@ -2211,6 +2225,7 @@ static void sde_crtc_frame_event_cb(void *data, u32 event)
 	kthread_queue_work(&priv->event_thread[crtc_id].worker, &fevent->work);
 }
 
+<<<<<<< HEAD
 static void _sde_crtc_mi_update_state(struct sde_crtc_state *cstate, enum mi_dimlayer_type dimlayer_state)
 {
 	int i = 0;
@@ -2219,6 +2234,8 @@ static void _sde_crtc_mi_update_state(struct sde_crtc_state *cstate, enum mi_dim
 		sde_connector_mi_update_dimlayer_state(cstate->connectors[i], dimlayer_state);
 }
 
+=======
+>>>>>>> origin/android16-base
 void sde_crtc_prepare_commit(struct drm_crtc *crtc,
 		struct drm_crtc_state *old_state)
 {
@@ -2460,9 +2477,15 @@ static void sde_crtc_frame_event_work(struct kthread_work *work)
 		SDE_ERROR("crtc%d ts:%lld received panel dead event\n",
 				crtc->base.id, ktime_to_ns(fevent->ts));
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&sde_crtc->fevent_spin_lock, flags);
 	list_add_tail(&fevent->list, &sde_crtc->frame_event_list);
 	spin_unlock_irqrestore(&sde_crtc->fevent_spin_lock, flags);
+=======
+	spin_lock_irqsave(&sde_crtc->spin_lock, flags);
+	list_add_tail(&fevent->list, &sde_crtc->frame_event_list);
+	spin_unlock_irqrestore(&sde_crtc->spin_lock, flags);
+>>>>>>> origin/android16-base
 	SDE_ATRACE_END("crtc_frame_event");
 }
 
@@ -2511,7 +2534,10 @@ void _sde_crtc_clear_dim_layers_v1(struct drm_crtc_state *state)
 		memset(&cstate->dim_layer[i], 0, sizeof(cstate->dim_layer[i]));
 
 	cstate->num_dim_layers = 0;
+<<<<<<< HEAD
 	cstate->num_dim_layers_bank = 0;
+=======
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -2560,7 +2586,10 @@ static void _sde_crtc_set_dim_layer_v1(struct drm_crtc *crtc,
 
 	/* populate from user space */
 	cstate->num_dim_layers = count;
+<<<<<<< HEAD
 	cstate->num_dim_layers_bank = count;
+=======
+>>>>>>> origin/android16-base
 	for (i = 0; i < count; i++) {
 		user_cfg = &dim_layer_v1.layer_cfg[i];
 
@@ -3173,8 +3202,11 @@ static void sde_crtc_atomic_begin(struct drm_crtc *crtc,
 	struct sde_splash_display *splash_display;
 	bool cont_splash_enabled = false;
 	size_t i;
+<<<<<<< HEAD
 	uint32_t fod_sync_info;
 	struct sde_crtc_state *cstate;
+=======
+>>>>>>> origin/android16-base
 
 	if (!crtc) {
 		SDE_ERROR("invalid crtc\n");
@@ -3252,6 +3284,7 @@ static void sde_crtc_atomic_begin(struct drm_crtc *crtc,
 	}
 
 	if (sde_kms_is_cp_operation_allowed(sde_kms) &&
+<<<<<<< HEAD
 			(cont_splash_enabled || sde_crtc->enabled)) {
 
 		cstate = to_sde_crtc_state(crtc->state);
@@ -3260,6 +3293,10 @@ static void sde_crtc_atomic_begin(struct drm_crtc *crtc,
 
 		sde_cp_crtc_apply_properties(crtc);
 	}
+=======
+			(cont_splash_enabled || sde_crtc->enabled))
+		sde_cp_crtc_apply_properties(crtc);
+>>>>>>> origin/android16-base
 
 	/*
 	 * PP_DONE irq is only used by command mode for now.
@@ -3611,7 +3648,10 @@ void sde_crtc_commit_kickoff(struct drm_crtc *crtc,
 	unsigned long flags;
 	enum sde_crtc_idle_pc_state idle_pc_state;
 	struct sde_encoder_kickoff_params params = { 0 };
+<<<<<<< HEAD
 	uint32_t fod_sync_info;
+=======
+>>>>>>> origin/android16-base
 
 	if (!crtc) {
 		SDE_ERROR("invalid argument\n");
@@ -3641,9 +3681,12 @@ void sde_crtc_commit_kickoff(struct drm_crtc *crtc,
 
 	idle_pc_state = sde_crtc_get_property(cstate, CRTC_PROP_IDLE_PC_STATE);
 
+<<<<<<< HEAD
 	fod_sync_info = sde_crtc_get_mi_fod_sync_info(cstate);
 	_sde_crtc_mi_update_state(cstate, fod_sync_info);
 
+=======
+>>>>>>> origin/android16-base
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 		if (encoder->crtc != crtc)
 			continue;
@@ -4483,6 +4526,7 @@ sec_err:
 	return -EINVAL;
 }
 
+<<<<<<< HEAD
 static struct sde_hw_dim_layer* sde_crtc_setup_fod_dim_layer(
 		struct sde_crtc_state *cstate,
 		uint32_t stage)
@@ -4563,6 +4607,8 @@ static void sde_crtc_fod_atomic_check(struct sde_crtc_state *cstate,
 			pstates[plane_idx].stage++;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int _sde_crtc_check_secure_conn(struct drm_crtc *crtc,
 		struct drm_crtc_state *state, uint32_t fb_sec)
 {
@@ -4906,8 +4952,11 @@ static int _sde_crtc_atomic_check_pstates(struct drm_crtc *crtc,
 	if (rc)
 		return rc;
 
+<<<<<<< HEAD
 	sde_crtc_fod_atomic_check(cstate, pstates, cnt);
 
+=======
+>>>>>>> origin/android16-base
 	/* assign mixer stages based on sorted zpos property */
 	rc = _sde_crtc_check_zpos(state, sde_crtc, pstates, cstate, mode, cnt);
 	if (rc)
@@ -5030,6 +5079,7 @@ end:
 	return rc;
 }
 
+<<<<<<< HEAD
 static uint32_t get_current_brightness(struct sde_crtc_state *cstate)
 {
 	int i;
@@ -5181,6 +5231,8 @@ int sde_crtc_mi_atomic_check(struct sde_crtc *sde_crtc, struct sde_crtc_state *c
 	return 0;
 }
 
+=======
+>>>>>>> origin/android16-base
 /**
  * sde_crtc_get_num_datapath - get the number of datapath active
  *				of primary connector
@@ -5332,10 +5384,13 @@ static void sde_crtc_install_properties(struct drm_crtc *crtc,
 		return;
 	}
 
+<<<<<<< HEAD
 	/* mi properties */
 	msm_property_install_range(&sde_crtc->property_info, "mi_fod_sync_info",
 		0x0, 0, U32_MAX, 0, CRTC_PROP_MI_FOD_SYNC_INFO);
 
+=======
+>>>>>>> origin/android16-base
 	/* range properties */
 	msm_property_install_range(&sde_crtc->property_info,
 		"input_fence_timeout", 0x0, 0, SDE_CRTC_MAX_INPUT_FENCE_TIMEOUT,
@@ -6547,7 +6602,10 @@ struct drm_crtc *sde_crtc_init(struct drm_device *dev, struct drm_plane *plane)
 
 	mutex_init(&sde_crtc->crtc_lock);
 	spin_lock_init(&sde_crtc->spin_lock);
+<<<<<<< HEAD
 	spin_lock_init(&sde_crtc->fevent_spin_lock);
+=======
+>>>>>>> origin/android16-base
 	atomic_set(&sde_crtc->frame_pending, 0);
 	mutex_init(&sde_crtc->vblank_modeset_ctrl_lock);
 
@@ -6883,6 +6941,7 @@ void sde_crtc_update_cont_splash_settings(struct drm_crtc *crtc)
 					rate : kms->perf.max_core_clk_rate;
 	sde_crtc->cur_perf.core_clk_rate = kms->perf.max_core_clk_rate;
 }
+<<<<<<< HEAD
 
 uint32_t sde_crtc_get_mi_fod_sync_info(struct sde_crtc_state *cstate)
 {
@@ -6891,3 +6950,5 @@ uint32_t sde_crtc_get_mi_fod_sync_info(struct sde_crtc_state *cstate)
 
 	return sde_crtc_get_property(cstate, CRTC_PROP_MI_FOD_SYNC_INFO);
 }
+=======
+>>>>>>> origin/android16-base

@@ -223,8 +223,15 @@ static int machxo2_write_init(struct fpga_manager *mgr,
 		goto fail;
 
 	get_status(spi, &status);
+<<<<<<< HEAD
 	if (test_bit(FAIL, &status))
 		goto fail;
+=======
+	if (test_bit(FAIL, &status)) {
+		ret = -EINVAL;
+		goto fail;
+	}
+>>>>>>> origin/android16-base
 	dump_status_reg(&status);
 
 	spi_message_init(&msg);
@@ -310,6 +317,10 @@ static int machxo2_write_complete(struct fpga_manager *mgr,
 	dump_status_reg(&status);
 	if (!test_bit(DONE, &status)) {
 		machxo2_cleanup(mgr);
+<<<<<<< HEAD
+=======
+		ret = -EINVAL;
+>>>>>>> origin/android16-base
 		goto fail;
 	}
 
@@ -331,6 +342,10 @@ static int machxo2_write_complete(struct fpga_manager *mgr,
 			break;
 		if (++refreshloop == MACHXO2_MAX_REFRESH_LOOP) {
 			machxo2_cleanup(mgr);
+<<<<<<< HEAD
+=======
+			ret = -EINVAL;
+>>>>>>> origin/android16-base
 			goto fail;
 		}
 	} while (1);

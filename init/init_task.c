@@ -173,7 +173,12 @@ struct task_struct init_task
 	.lockdep_recursion = 0,
 #endif
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+<<<<<<< HEAD
 	.ret_stack	= NULL,
+=======
+	.ret_stack		= NULL,
+	.tracing_graph_pause	= ATOMIC_INIT(0),
+>>>>>>> origin/android16-base
 #endif
 #if defined(CONFIG_TRACING) && defined(CONFIG_PREEMPT)
 	.trace_recursion = 0,

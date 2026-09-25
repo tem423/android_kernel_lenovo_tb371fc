@@ -115,8 +115,11 @@ struct dsi_phy_cfg {
 	enum dsi_phy_type phy_type;
 	unsigned long bit_clk_rate_hz;
 	u32 data_lanes;
+<<<<<<< HEAD
 	unsigned long clk_strength;
 	bool cphy_strength;
+=======
+>>>>>>> origin/android16-base
 };
 
 struct dsi_phy_hw;

@@ -751,7 +751,11 @@ static int vmci_ctx_get_chkpt_doorbells(struct vmci_ctx *context,
 			return VMCI_ERROR_MORE_DATA;
 		}
 
+<<<<<<< HEAD
 		dbells = kmalloc(data_size, GFP_ATOMIC);
+=======
+		dbells = kzalloc(data_size, GFP_ATOMIC);
+>>>>>>> origin/android16-base
 		if (!dbells)
 			return VMCI_ERROR_NO_MEM;
 

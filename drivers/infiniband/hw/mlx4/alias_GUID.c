@@ -832,7 +832,11 @@ void mlx4_ib_destroy_alias_guid_service(struct mlx4_ib_dev *dev)
 
 int mlx4_ib_init_alias_guid_service(struct mlx4_ib_dev *dev)
 {
+<<<<<<< HEAD
 	char alias_wq_name[15];
+=======
+	char alias_wq_name[22];
+>>>>>>> origin/android16-base
 	int ret = 0;
 	int i, j;
 	union ib_gid gid;

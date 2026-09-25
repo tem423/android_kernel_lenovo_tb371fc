@@ -2336,7 +2336,11 @@ static struct buffer_head *reiserfs_breada(struct block_device *dev,
 	int i, j;
 
 	bh = __getblk(dev, block, bufsize);
+<<<<<<< HEAD
 	if (buffer_uptodate(bh))
+=======
+	if (!bh || buffer_uptodate(bh))
+>>>>>>> origin/android16-base
 		return (bh);
 
 	if (block + BUFNR > max_block) {
@@ -2346,6 +2350,11 @@ static struct buffer_head *reiserfs_breada(struct block_device *dev,
 	j = 1;
 	for (i = 1; i < blocks; i++) {
 		bh = __getblk(dev, block + i, bufsize);
+<<<<<<< HEAD
+=======
+		if (!bh)
+			break;
+>>>>>>> origin/android16-base
 		if (buffer_uptodate(bh)) {
 			brelse(bh);
 			break;
@@ -2772,6 +2781,23 @@ int journal_init(struct super_block *sb, const char *j_dev_name,
 		goto free_and_return;
 	}
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Sanity check to see if journal first block is correct.
+	 * If journal first block is invalid it can cause
+	 * zeroing important superblock members.
+	 */
+	if (!SB_ONDISK_JOURNAL_DEVICE(sb) &&
+	    SB_ONDISK_JOURNAL_1st_BLOCK(sb) < SB_JOURNAL_1st_RESERVED_BLOCK(sb)) {
+		reiserfs_warning(sb, "journal-1393",
+				 "journal 1st super block is invalid: 1st reserved block %d, but actual 1st block is %d",
+				 SB_JOURNAL_1st_RESERVED_BLOCK(sb),
+				 SB_ONDISK_JOURNAL_1st_BLOCK(sb));
+		goto free_and_return;
+	}
+
+>>>>>>> origin/android16-base
 	if (journal_init_dev(sb, journal, j_dev_name) != 0) {
 		reiserfs_warning(sb, "sh-462",
 				 "unable to initialize journal device");

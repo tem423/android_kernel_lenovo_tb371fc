@@ -388,7 +388,11 @@ static int tipc_sk_sock_err(struct socket *sock, long *timeout)
 		rc_ = tipc_sk_sock_err((sock_), timeo_);		       \
 		if (rc_)						       \
 			break;						       \
+<<<<<<< HEAD
 		prepare_to_wait(sk_sleep(sk_), &wait_, TASK_INTERRUPTIBLE);    \
+=======
+		add_wait_queue(sk_sleep(sk_), &wait_);                         \
+>>>>>>> origin/android16-base
 		release_sock(sk_);					       \
 		*(timeo_) = wait_woken(&wait_, TASK_INTERRUPTIBLE, *(timeo_)); \
 		sched_annotate_sleep();				               \
@@ -453,6 +457,10 @@ static int tipc_sk_create(struct net *net, struct socket *sock,
 	sock_init_data(sock, sk);
 	tipc_set_sk_state(sk, TIPC_OPEN);
 	if (tipc_sk_insert(tsk)) {
+<<<<<<< HEAD
+=======
+		sk_free(sk);
+>>>>>>> origin/android16-base
 		pr_warn("Socket create failed; port number exhausted\n");
 		return -EINVAL;
 	}
@@ -1187,6 +1195,12 @@ void tipc_sk_mcast_rcv(struct net *net, struct sk_buff_head *arrvq,
 		spin_lock_bh(&inputq->lock);
 		if (skb_peek(arrvq) == skb) {
 			skb_queue_splice_tail_init(&tmpq, inputq);
+<<<<<<< HEAD
+=======
+			/* Decrease the skb's refcnt as increasing in the
+			 * function tipc_skb_peek
+			 */
+>>>>>>> origin/android16-base
 			kfree_skb(__skb_dequeue(arrvq));
 		}
 		spin_unlock_bh(&inputq->lock);
@@ -1713,6 +1727,10 @@ static int tipc_recvmsg(struct socket *sock, struct msghdr *m,
 	bool connected = !tipc_sk_type_connectionless(sk);
 	struct tipc_sock *tsk = tipc_sk(sk);
 	int rc, err, hlen, dlen, copy;
+<<<<<<< HEAD
+=======
+	struct tipc_skb_cb *skb_cb;
+>>>>>>> origin/android16-base
 	struct sk_buff_head xmitq;
 	struct tipc_msg *hdr;
 	struct sk_buff *skb;
@@ -1736,6 +1754,10 @@ static int tipc_recvmsg(struct socket *sock, struct msghdr *m,
 		if (unlikely(rc))
 			goto exit;
 		skb = skb_peek(&sk->sk_receive_queue);
+<<<<<<< HEAD
+=======
+		skb_cb = TIPC_SKB_CB(skb);
+>>>>>>> origin/android16-base
 		hdr = buf_msg(skb);
 		dlen = msg_data_sz(hdr);
 		hlen = msg_hdr_sz(hdr);
@@ -1755,6 +1777,7 @@ static int tipc_recvmsg(struct socket *sock, struct msghdr *m,
 
 	/* Capture data if non-error msg, otherwise just set return value */
 	if (likely(!err)) {
+<<<<<<< HEAD
 		copy = min_t(int, dlen, buflen);
 		if (unlikely(copy != dlen))
 			m->msg_flags |= MSG_TRUNC;
@@ -1767,6 +1790,35 @@ static int tipc_recvmsg(struct socket *sock, struct msghdr *m,
 	}
 	if (unlikely(rc))
 		goto exit;
+=======
+		int offset = skb_cb->bytes_read;
+
+		copy = min_t(int, dlen - offset, buflen);
+		rc = skb_copy_datagram_msg(skb, hlen + offset, m, copy);
+		if (unlikely(rc))
+			goto exit;
+		if (unlikely(offset + copy < dlen)) {
+			if (flags & MSG_EOR) {
+				if (!(flags & MSG_PEEK))
+					skb_cb->bytes_read = offset + copy;
+			} else {
+				m->msg_flags |= MSG_TRUNC;
+				skb_cb->bytes_read = 0;
+			}
+		} else {
+			if (flags & MSG_EOR)
+				m->msg_flags |= MSG_EOR;
+			skb_cb->bytes_read = 0;
+		}
+	} else {
+		copy = 0;
+		rc = 0;
+		if (err != TIPC_CONN_SHUTDOWN && connected && !m->msg_control) {
+			rc = -ECONNRESET;
+			goto exit;
+		}
+	}
+>>>>>>> origin/android16-base
 
 	/* Mark message as group event if applicable */
 	if (unlikely(grp_evt)) {
@@ -1789,6 +1841,12 @@ static int tipc_recvmsg(struct socket *sock, struct msghdr *m,
 		tipc_node_distr_xmit(sock_net(sk), &xmitq);
 	}
 
+<<<<<<< HEAD
+=======
+	if (skb_cb->bytes_read)
+		goto exit;
+
+>>>>>>> origin/android16-base
 	tsk_advance_rx_queue(sk);
 
 	if (likely(!connected))
@@ -2200,7 +2258,11 @@ static int tipc_sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
 static void tipc_sk_enqueue(struct sk_buff_head *inputq, struct sock *sk,
 			    u32 dport, struct sk_buff_head *xmitq)
 {
+<<<<<<< HEAD
 	unsigned long time_limit = jiffies + 2;
+=======
+	unsigned long time_limit = jiffies + usecs_to_jiffies(20000);
+>>>>>>> origin/android16-base
 	struct sk_buff *skb;
 	unsigned int lim;
 	atomic_t *dcnt;
@@ -2437,7 +2499,11 @@ static int tipc_listen(struct socket *sock, int len)
 static int tipc_wait_for_accept(struct socket *sock, long timeo)
 {
 	struct sock *sk = sock->sk;
+<<<<<<< HEAD
 	DEFINE_WAIT(wait);
+=======
+	DEFINE_WAIT_FUNC(wait, woken_wake_function);
+>>>>>>> origin/android16-base
 	int err;
 
 	/* True wake-one mechanism for incoming connections: only
@@ -2446,12 +2512,21 @@ static int tipc_wait_for_accept(struct socket *sock, long timeo)
 	 * anymore, the common case will execute the loop only once.
 	*/
 	for (;;) {
+<<<<<<< HEAD
 		prepare_to_wait_exclusive(sk_sleep(sk), &wait,
 					  TASK_INTERRUPTIBLE);
 		if (timeo && skb_queue_empty(&sk->sk_receive_queue)) {
 			release_sock(sk);
 			timeo = schedule_timeout(timeo);
 			lock_sock(sk);
+=======
+		if (timeo && skb_queue_empty(&sk->sk_receive_queue)) {
+			add_wait_queue(sk_sleep(sk), &wait);
+			release_sock(sk);
+			timeo = wait_woken(&wait, TASK_INTERRUPTIBLE, timeo);
+			lock_sock(sk);
+			remove_wait_queue(sk_sleep(sk), &wait);
+>>>>>>> origin/android16-base
 		}
 		err = 0;
 		if (!skb_queue_empty(&sk->sk_receive_queue))
@@ -2463,7 +2538,10 @@ static int tipc_wait_for_accept(struct socket *sock, long timeo)
 		if (signal_pending(current))
 			break;
 	}
+<<<<<<< HEAD
 	finish_wait(sk_sleep(sk), &wait);
+=======
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -3465,7 +3543,11 @@ static int __tipc_nl_list_sk_publ(struct sk_buff *skb,
 			if (p->key == *last_publ)
 				break;
 		}
+<<<<<<< HEAD
 		if (p->key != *last_publ) {
+=======
+		if (list_entry_is_head(p, &tsk->publications, binding_sock)) {
+>>>>>>> origin/android16-base
 			/* We never set seq or call nl_dump_check_consistent()
 			 * this means that setting prev_seq here will cause the
 			 * consistence check to fail in the netlink callback

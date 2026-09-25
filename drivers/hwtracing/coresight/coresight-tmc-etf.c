@@ -413,7 +413,11 @@ static int tmc_set_etf_buffer(struct coresight_device *csdev,
 		return -EINVAL;
 
 	/* wrap head around to the amount of space we have */
+<<<<<<< HEAD
 	head = handle->head & ((buf->nr_pages << PAGE_SHIFT) - 1);
+=======
+	head = handle->head & (((unsigned long)buf->nr_pages << PAGE_SHIFT) - 1);
+>>>>>>> origin/android16-base
 
 	/* find the page to write to */
 	buf->cur = head / PAGE_SIZE;
@@ -510,7 +514,11 @@ static unsigned long tmc_update_etf_buffer(struct coresight_device *csdev,
 		buf_ptr = buf->data_pages[cur] + offset;
 		*buf_ptr = readl_relaxed(drvdata->base + TMC_RRD);
 
+<<<<<<< HEAD
 		if (lost && *barrier) {
+=======
+		if (lost && i < CORESIGHT_BARRIER_PKT_SIZE) {
+>>>>>>> origin/android16-base
 			*buf_ptr = *barrier;
 			barrier++;
 		}

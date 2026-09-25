@@ -51,6 +51,14 @@ enum batadv_forw_mode
 batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
 		       struct batadv_orig_node **mcast_single_orig);
 
+<<<<<<< HEAD
+=======
+int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
+				struct sk_buff *skb,
+				unsigned short vid,
+				struct batadv_orig_node *orig_node);
+
+>>>>>>> origin/android16-base
 void batadv_mcast_init(struct batadv_priv *bat_priv);
 
 int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
@@ -79,6 +87,19 @@ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
 }
 
 static inline int
+<<<<<<< HEAD
+=======
+batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
+			    struct sk_buff *skb,
+			    unsigned short vid,
+			    struct batadv_orig_node *orig_node)
+{
+	kfree_skb(skb);
+	return NET_XMIT_DROP;
+}
+
+static inline int
+>>>>>>> origin/android16-base
 batadv_mcast_mesh_info_put(struct sk_buff *msg, struct batadv_priv *bat_priv)
 {
 	return 0;

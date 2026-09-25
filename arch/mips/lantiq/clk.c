@@ -52,6 +52,10 @@ struct clk *clk_get_io(void)
 {
 	return &cpu_clk_generic[2];
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL_GPL(clk_get_io);
+>>>>>>> origin/android16-base
 
 struct clk *clk_get_ppe(void)
 {
@@ -160,6 +164,21 @@ void clk_deactivate(struct clk *clk)
 }
 EXPORT_SYMBOL(clk_deactivate);
 
+<<<<<<< HEAD
+=======
+struct clk *clk_get_parent(struct clk *clk)
+{
+	return NULL;
+}
+EXPORT_SYMBOL(clk_get_parent);
+
+int clk_set_parent(struct clk *clk, struct clk *parent)
+{
+	return 0;
+}
+EXPORT_SYMBOL(clk_set_parent);
+
+>>>>>>> origin/android16-base
 static inline u32 get_counter_resolution(void)
 {
 	u32 res;

@@ -121,6 +121,10 @@ SECTIONS
 	/*
 	 * Table with the patch locations to undo expolines
 	*/
+<<<<<<< HEAD
+=======
+	. = ALIGN(4);
+>>>>>>> origin/android16-base
 	.nospec_call_table : {
 		__nospec_call_start = . ;
 		*(.s390_indirect*)
@@ -152,5 +156,9 @@ SECTIONS
 	DISCARDS
 	/DISCARD/ : {
 		*(.eh_frame)
+<<<<<<< HEAD
+=======
+		*(.interp)
+>>>>>>> origin/android16-base
 	}
 }

@@ -746,6 +746,11 @@ struct usbhs_pipe *usbhs_pipe_malloc(struct usbhs_priv *priv,
 
 void usbhs_pipe_free(struct usbhs_pipe *pipe)
 {
+<<<<<<< HEAD
+=======
+	usbhsp_pipe_select(pipe);
+	usbhsp_pipe_cfg_set(pipe, 0xFFFF, 0);
+>>>>>>> origin/android16-base
 	usbhsp_put_pipe(pipe);
 }
 

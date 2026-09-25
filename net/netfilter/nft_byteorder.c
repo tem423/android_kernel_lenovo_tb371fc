@@ -19,8 +19,13 @@
 #include <net/netfilter/nf_tables.h>
 
 struct nft_byteorder {
+<<<<<<< HEAD
 	enum nft_registers	sreg:8;
 	enum nft_registers	dreg:8;
+=======
+	u8			sreg;
+	u8			dreg;
+>>>>>>> origin/android16-base
 	enum nft_byteorder_ops	op:8;
 	u8			len;
 	u8			size;
@@ -33,6 +38,7 @@ static void nft_byteorder_eval(const struct nft_expr *expr,
 	const struct nft_byteorder *priv = nft_expr_priv(expr);
 	u32 *src = &regs->data[priv->sreg];
 	u32 *dst = &regs->data[priv->dreg];
+<<<<<<< HEAD
 	union { u32 u32; u16 u16; } *s, *d;
 	unsigned int i;
 
@@ -41,19 +47,38 @@ static void nft_byteorder_eval(const struct nft_expr *expr,
 
 	switch (priv->size) {
 	case 8: {
+=======
+	u16 *s16, *d16;
+	unsigned int i;
+
+	s16 = (void *)src;
+	d16 = (void *)dst;
+
+	switch (priv->size) {
+	case 8: {
+		u64 *dst64 = (void *)dst;
+>>>>>>> origin/android16-base
 		u64 src64;
 
 		switch (priv->op) {
 		case NFT_BYTEORDER_NTOH:
 			for (i = 0; i < priv->len / 8; i++) {
 				src64 = get_unaligned((u64 *)&src[i]);
+<<<<<<< HEAD
 				put_unaligned_be64(src64, &dst[i]);
+=======
+				put_unaligned_be64(src64, &dst64[i]);
+>>>>>>> origin/android16-base
 			}
 			break;
 		case NFT_BYTEORDER_HTON:
 			for (i = 0; i < priv->len / 8; i++) {
 				src64 = get_unaligned_be64(&src[i]);
+<<<<<<< HEAD
 				put_unaligned(src64, (u64 *)&dst[i]);
+=======
+				put_unaligned(src64, &dst64[i]);
+>>>>>>> origin/android16-base
 			}
 			break;
 		}
@@ -63,11 +88,19 @@ static void nft_byteorder_eval(const struct nft_expr *expr,
 		switch (priv->op) {
 		case NFT_BYTEORDER_NTOH:
 			for (i = 0; i < priv->len / 4; i++)
+<<<<<<< HEAD
 				d[i].u32 = ntohl((__force __be32)s[i].u32);
 			break;
 		case NFT_BYTEORDER_HTON:
 			for (i = 0; i < priv->len / 4; i++)
 				d[i].u32 = (__force __u32)htonl(s[i].u32);
+=======
+				dst[i] = ntohl((__force __be32)src[i]);
+			break;
+		case NFT_BYTEORDER_HTON:
+			for (i = 0; i < priv->len / 4; i++)
+				dst[i] = (__force __u32)htonl(src[i]);
+>>>>>>> origin/android16-base
 			break;
 		}
 		break;
@@ -75,11 +108,19 @@ static void nft_byteorder_eval(const struct nft_expr *expr,
 		switch (priv->op) {
 		case NFT_BYTEORDER_NTOH:
 			for (i = 0; i < priv->len / 2; i++)
+<<<<<<< HEAD
 				d[i].u16 = ntohs((__force __be16)s[i].u16);
 			break;
 		case NFT_BYTEORDER_HTON:
 			for (i = 0; i < priv->len / 2; i++)
 				d[i].u16 = (__force __u16)htons(s[i].u16);
+=======
+				d16[i] = ntohs((__force __be16)s16[i]);
+			break;
+		case NFT_BYTEORDER_HTON:
+			for (i = 0; i < priv->len / 2; i++)
+				d16[i] = (__force __u16)htons(s16[i]);
+>>>>>>> origin/android16-base
 			break;
 		}
 		break;
@@ -133,13 +174,17 @@ static int nft_byteorder_init(const struct nft_ctx *ctx,
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	priv->sreg = nft_parse_register(tb[NFTA_BYTEORDER_SREG]);
+=======
+>>>>>>> origin/android16-base
 	err = nft_parse_u32_check(tb[NFTA_BYTEORDER_LEN], U8_MAX, &len);
 	if (err < 0)
 		return err;
 
 	priv->len = len;
 
+<<<<<<< HEAD
 	err = nft_validate_register_load(priv->sreg, priv->len);
 	if (err < 0)
 		return err;
@@ -147,6 +192,16 @@ static int nft_byteorder_init(const struct nft_ctx *ctx,
 	priv->dreg = nft_parse_register(tb[NFTA_BYTEORDER_DREG]);
 	return nft_validate_register_store(ctx, priv->dreg, NULL,
 					   NFT_DATA_VALUE, priv->len);
+=======
+	err = nft_parse_register_load(tb[NFTA_BYTEORDER_SREG], &priv->sreg,
+				      priv->len);
+	if (err < 0)
+		return err;
+
+	return nft_parse_register_store(ctx, tb[NFTA_BYTEORDER_DREG],
+					&priv->dreg, NULL, NFT_DATA_VALUE,
+					priv->len);
+>>>>>>> origin/android16-base
 }
 
 static int nft_byteorder_dump(struct sk_buff *skb, const struct nft_expr *expr)

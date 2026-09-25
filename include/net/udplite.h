@@ -24,6 +24,7 @@ static __inline__ int udplite_getfrag(void *from, char *to, int  offset,
 	return copy_from_iter_full(to, len, &msg->msg_iter) ? 0 : -EFAULT;
 }
 
+<<<<<<< HEAD
 /* Designate sk as UDP-Lite socket */
 static inline int udplite_sk_init(struct sock *sk)
 {
@@ -32,6 +33,8 @@ static inline int udplite_sk_init(struct sock *sk)
 	return 0;
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * 	Checksumming routines
  */

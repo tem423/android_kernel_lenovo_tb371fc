@@ -149,9 +149,26 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
 #define MAX_PROP_SIZE 32
 static int ufshcd_populate_vreg(struct device *dev, const char *name,
 		struct ufs_vreg **out_vreg)
+=======
+static bool phandle_exists(const struct device_node *np,
+			   const char *phandle_name, int index)
+{
+	struct device_node *parse_np = of_parse_phandle(np, phandle_name, index);
+
+	if (parse_np)
+		of_node_put(parse_np);
+
+	return parse_np != NULL;
+}
+
+#define MAX_PROP_SIZE 32
+static int ufshcd_populate_vreg(struct device *dev, const char *name,
+				struct ufs_vreg **out_vreg)
+>>>>>>> origin/android16-base
 {
 	int len, ret = 0;
 	char prop_name[MAX_PROP_SIZE];
@@ -166,7 +183,11 @@ static int ufshcd_populate_vreg(struct device *dev, const char *name,
 	}
 
 	snprintf(prop_name, MAX_PROP_SIZE, "%s-supply", name);
+<<<<<<< HEAD
 	if (!of_parse_phandle(np, prop_name, 0)) {
+=======
+	if (!phandle_exists(np, prop_name, 0)) {
+>>>>>>> origin/android16-base
 		dev_info(dev, "%s: Unable to find %s regulator, assuming enabled\n",
 				__func__, prop_name);
 		goto out;
@@ -536,8 +557,11 @@ int ufshcd_pltfrm_init(struct platform_device *pdev,
 		goto dealloc_host;
 	}
 
+<<<<<<< HEAD
 	platform_set_drvdata(pdev, hba);
 
+=======
+>>>>>>> origin/android16-base
 	pm_runtime_set_active(&pdev->dev);
 	pm_runtime_enable(&pdev->dev);
 

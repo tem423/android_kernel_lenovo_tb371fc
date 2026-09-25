@@ -2,10 +2,18 @@
 #ifndef BENCH_H
 #define BENCH_H
 
+<<<<<<< HEAD
+=======
+#include <sys/time.h>
+
+extern struct timeval bench__start, bench__end, bench__runtime;
+
+>>>>>>> origin/android16-base
 /*
  * The madvise transparent hugepage constants were added in glibc
  * 2.13. For compatibility with older versions of glibc, define these
  * tokens if they are not already defined.
+<<<<<<< HEAD
  *
  * PA-RISC uses different madvise values from other architectures and
  * needs to be special-cased.
@@ -18,13 +26,19 @@
 #  define MADV_NOHUGEPAGE	68
 # endif
 #else
+=======
+ */
+>>>>>>> origin/android16-base
 # ifndef MADV_HUGEPAGE
 #  define MADV_HUGEPAGE		14
 # endif
 # ifndef MADV_NOHUGEPAGE
 #  define MADV_NOHUGEPAGE	15
 # endif
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> origin/android16-base
 
 int bench_numa(int argc, const char **argv);
 int bench_sched_messaging(int argc, const char **argv);

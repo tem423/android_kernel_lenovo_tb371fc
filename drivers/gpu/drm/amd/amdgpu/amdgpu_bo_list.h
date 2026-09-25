@@ -61,7 +61,11 @@ int amdgpu_bo_create_list_entry_array(struct drm_amdgpu_bo_list_in *in,
 int amdgpu_bo_list_create(struct amdgpu_device *adev,
 				 struct drm_file *filp,
 				 struct drm_amdgpu_bo_list_entry *info,
+<<<<<<< HEAD
 				 unsigned num_entries,
+=======
+				 size_t num_entries,
+>>>>>>> origin/android16-base
 				 struct amdgpu_bo_list **list);
 
 static inline struct amdgpu_bo_list_entry *

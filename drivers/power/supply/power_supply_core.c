@@ -354,6 +354,13 @@ static int __power_supply_is_system_supplied(struct device *dev, void *data)
 	struct power_supply *psy = dev_get_drvdata(dev);
 	unsigned int *count = data;
 
+<<<<<<< HEAD
+=======
+	if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_SCOPE, &ret))
+		if (ret.intval == POWER_SUPPLY_SCOPE_DEVICE)
+			return 0;
+
+>>>>>>> origin/android16-base
 	(*count)++;
 	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY)
 		if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_ONLINE,
@@ -372,8 +379,13 @@ int power_supply_is_system_supplied(void)
 				      __power_supply_is_system_supplied);
 
 	/*
+<<<<<<< HEAD
 	 * If no power class device was found at all, most probably we are
 	 * running on a desktop system, so assume we are on mains power.
+=======
+	 * If no system scope power class device was found at all, most probably we
+	 * are running on a desktop system, so assume we are on mains power.
+>>>>>>> origin/android16-base
 	 */
 	if (count == 0)
 		return 1;
@@ -382,6 +394,7 @@ int power_supply_is_system_supplied(void)
 }
 EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
 
+<<<<<<< HEAD
 static int __power_supply_get_supplier_max_current(struct device *dev,
 						   void *data)
 {
@@ -422,6 +435,51 @@ int power_supply_set_input_current_limit_from_supplier(struct power_supply *psy)
 				POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
 }
 EXPORT_SYMBOL_GPL(power_supply_set_input_current_limit_from_supplier);
+=======
+struct psy_get_supplier_prop_data {
+	struct power_supply *psy;
+	enum power_supply_property psp;
+	union power_supply_propval *val;
+};
+
+static int __power_supply_get_supplier_property(struct device *dev, void *_data)
+{
+	struct power_supply *epsy = dev_get_drvdata(dev);
+	struct psy_get_supplier_prop_data *data = _data;
+
+	if (__power_supply_is_supplied_by(epsy, data->psy))
+		if (!epsy->desc->get_property(epsy, data->psp, data->val))
+			return 1; /* Success */
+
+	return 0; /* Continue iterating */
+}
+
+int power_supply_get_property_from_supplier(struct power_supply *psy,
+					    enum power_supply_property psp,
+					    union power_supply_propval *val)
+{
+	struct psy_get_supplier_prop_data data = {
+		.psy = psy,
+		.psp = psp,
+		.val = val,
+	};
+	int ret;
+
+	/*
+	 * This function is not intended for use with a supply with multiple
+	 * suppliers, we simply pick the first supply to report the psp.
+	 */
+	ret = class_for_each_device(power_supply_class, NULL, &data,
+				    __power_supply_get_supplier_property);
+	if (ret < 0)
+		return ret;
+	if (ret == 0)
+		return -ENODEV;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(power_supply_get_property_from_supplier);
+>>>>>>> origin/android16-base
 
 int power_supply_set_battery_charged(struct power_supply *psy)
 {
@@ -479,8 +537,11 @@ EXPORT_SYMBOL_GPL(power_supply_get_by_name);
  */
 void power_supply_put(struct power_supply *psy)
 {
+<<<<<<< HEAD
 	might_sleep();
 
+=======
+>>>>>>> origin/android16-base
 	atomic_dec(&psy->use_cnt);
 	put_device(&psy->dev);
 }
@@ -584,11 +645,14 @@ int power_supply_get_battery_info(struct power_supply *psy,
 	info->constant_charge_current_max_ua = -EINVAL;
 	info->constant_charge_voltage_max_uv = -EINVAL;
 
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy)) {
 		pr_info("%s psy null", __func__);
 		return -ENODEV;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (!psy->of_node) {
 		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
 			 __func__);
@@ -634,11 +698,14 @@ int power_supply_get_property(struct power_supply *psy,
 			    enum power_supply_property psp,
 			    union power_supply_propval *val)
 {
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy)) {
 		pr_info("%s psy null", __func__);
 		return -ENODEV;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (atomic_read(&psy->use_cnt) <= 0) {
 		if (!psy->initialized)
 			return -EAGAIN;
@@ -653,11 +720,14 @@ int power_supply_set_property(struct power_supply *psy,
 			    enum power_supply_property psp,
 			    const union power_supply_propval *val)
 {
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy)) {
 		pr_info("%s psy null", __func__);
 		return -ENODEV;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (atomic_read(&psy->use_cnt) <= 0 || !psy->desc->set_property)
 		return -ENODEV;
 
@@ -668,11 +738,14 @@ EXPORT_SYMBOL_GPL(power_supply_set_property);
 int power_supply_property_is_writeable(struct power_supply *psy,
 					enum power_supply_property psp)
 {
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy)) {
 		pr_info("%s psy null", __func__);
 		return -ENODEV;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (atomic_read(&psy->use_cnt) <= 0 ||
 			!psy->desc->property_is_writeable)
 		return -ENODEV;
@@ -683,11 +756,14 @@ EXPORT_SYMBOL_GPL(power_supply_property_is_writeable);
 
 void power_supply_external_power_changed(struct power_supply *psy)
 {
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy)) {
 		pr_info("%s psy null", __func__);
 		return ;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (atomic_read(&psy->use_cnt) <= 0 ||
 			!psy->desc->external_power_changed)
 		return;
@@ -698,11 +774,14 @@ EXPORT_SYMBOL_GPL(power_supply_external_power_changed);
 
 int power_supply_powers(struct power_supply *psy, struct device *dev)
 {
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy)) {
 		pr_info("%s psy null", __func__);
 		return -ENODEV;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	return sysfs_create_link(&psy->dev.kobj, &dev->kobj, "powers");
 }
 EXPORT_SYMBOL_GPL(power_supply_powers);
@@ -754,10 +833,15 @@ static int psy_register_thermal(struct power_supply *psy)
 {
 	int i;
 
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy) || psy->desc->no_thermal) {
 		pr_info("%s psy null", __func__);
 		return 0;
 	}
+=======
+	if (psy->desc->no_thermal)
+		return 0;
+>>>>>>> origin/android16-base
 
 	/* Register battery zone device psy reports temperature */
 	for (i = 0; i < psy->desc->num_properties; i++) {
@@ -772,11 +856,16 @@ static int psy_register_thermal(struct power_supply *psy)
 
 static void psy_unregister_thermal(struct power_supply *psy)
 {
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy) || IS_ERR_OR_NULL(psy->tzd)) {
 		pr_info("%s psy null", __func__);
 		return;
 	}
 
+=======
+	if (IS_ERR_OR_NULL(psy->tzd))
+		return;
+>>>>>>> origin/android16-base
 	thermal_zone_device_unregister(psy->tzd);
 }
 
@@ -863,11 +952,16 @@ static int psy_register_cooler(struct device *dev, struct power_supply *psy)
 
 static void psy_unregister_cooler(struct power_supply *psy)
 {
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(psy) || IS_ERR_OR_NULL(psy->tcd)) {
 		pr_info("%s psy null", __func__);
 		return;
 	}
 
+=======
+	if (IS_ERR_OR_NULL(psy->tcd))
+		return;
+>>>>>>> origin/android16-base
 	thermal_cooling_device_unregister(psy->tcd);
 }
 #else
@@ -987,8 +1081,13 @@ __power_supply_register(struct device *parent,
 create_triggers_failed:
 	psy_unregister_thermal(psy);
 register_thermal_failed:
+<<<<<<< HEAD
 	device_del(dev);
 wakeup_init_failed:
+=======
+wakeup_init_failed:
+	device_del(dev);
+>>>>>>> origin/android16-base
 device_add_failed:
 check_supplies_failed:
 dev_set_name_failed:

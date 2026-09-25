@@ -51,6 +51,10 @@
 #include <linux/nmi.h>
 #include <linux/bug.h>
 #include <linux/delay.h>
+<<<<<<< HEAD
+=======
+#include <linux/kvm_para.h>
+>>>>>>> origin/android16-base
 
 #include "workqueue_internal.h"
 
@@ -681,12 +685,24 @@ static void clear_work_data(struct work_struct *work)
 	set_work_data(work, WORK_STRUCT_NO_POOL, 0);
 }
 
+<<<<<<< HEAD
+=======
+static inline struct pool_workqueue *work_struct_pwq(unsigned long data)
+{
+	return (struct pool_workqueue *)(data & WORK_STRUCT_WQ_DATA_MASK);
+}
+
+>>>>>>> origin/android16-base
 static struct pool_workqueue *get_work_pwq(struct work_struct *work)
 {
 	unsigned long data = atomic_long_read(&work->data);
 
 	if (data & WORK_STRUCT_PWQ)
+<<<<<<< HEAD
 		return (void *)(data & WORK_STRUCT_WQ_DATA_MASK);
+=======
+		return work_struct_pwq(data);
+>>>>>>> origin/android16-base
 	else
 		return NULL;
 }
@@ -714,8 +730,12 @@ static struct worker_pool *get_work_pool(struct work_struct *work)
 	assert_rcu_or_pool_mutex();
 
 	if (data & WORK_STRUCT_PWQ)
+<<<<<<< HEAD
 		return ((struct pool_workqueue *)
 			(data & WORK_STRUCT_WQ_DATA_MASK))->pool;
+=======
+		return work_struct_pwq(data)->pool;
+>>>>>>> origin/android16-base
 
 	pool_id = data >> WORK_OFFQ_POOL_SHIFT;
 	if (pool_id == WORK_OFFQ_POOL_NONE)
@@ -736,8 +756,12 @@ static int get_work_pool_id(struct work_struct *work)
 	unsigned long data = atomic_long_read(&work->data);
 
 	if (data & WORK_STRUCT_PWQ)
+<<<<<<< HEAD
 		return ((struct pool_workqueue *)
 			(data & WORK_STRUCT_WQ_DATA_MASK))->pool->id;
+=======
+		return work_struct_pwq(data)->pool->id;
+>>>>>>> origin/android16-base
 
 	return data >> WORK_OFFQ_POOL_SHIFT;
 }
@@ -1415,7 +1439,10 @@ static void __queue_work(int cpu, struct workqueue_struct *wq,
 	 */
 	lockdep_assert_irqs_disabled();
 
+<<<<<<< HEAD
 	debug_work_activate(work);
+=======
+>>>>>>> origin/android16-base
 
 	/* if draining, only works from the same workqueue are allowed */
 	if (unlikely(wq->flags & __WQ_DRAINING) &&
@@ -1498,6 +1525,10 @@ retry:
 		worklist = &pwq->delayed_works;
 	}
 
+<<<<<<< HEAD
+=======
+	debug_work_activate(work);
+>>>>>>> origin/android16-base
 	insert_work(pwq, work, worklist, work_flags);
 
 	spin_unlock(&pwq->pool->lock);
@@ -1769,12 +1800,15 @@ static void worker_attach_to_pool(struct worker *worker,
 	mutex_lock(&wq_pool_attach_mutex);
 
 	/*
+<<<<<<< HEAD
 	 * set_cpus_allowed_ptr() will fail if the cpumask doesn't have any
 	 * online CPUs.  It'll be re-applied when any of the CPUs come up.
 	 */
 	set_cpus_allowed_ptr(worker->task, pool->attrs->cpumask);
 
 	/*
+=======
+>>>>>>> origin/android16-base
 	 * The wq_pool_attach_mutex ensures %POOL_DISASSOCIATED remains
 	 * stable across this function.  See the comments above the flag
 	 * definition for details.
@@ -1782,6 +1816,12 @@ static void worker_attach_to_pool(struct worker *worker,
 	if (pool->flags & POOL_DISASSOCIATED)
 		worker->flags |= WORKER_UNBOUND;
 
+<<<<<<< HEAD
+=======
+	if (worker->rescue_wq)
+		set_cpus_allowed_ptr(worker->task, pool->attrs->cpumask);
+
+>>>>>>> origin/android16-base
 	list_add_tail(&worker->node, &pool->workers);
 	worker->pool = pool;
 
@@ -2962,10 +3002,15 @@ static bool __flush_work(struct work_struct *work, bool from_cancel)
 	if (WARN_ON(!work->func))
 		return false;
 
+<<<<<<< HEAD
 	if (!from_cancel) {
 		lock_map_acquire(&work->lockdep_map);
 		lock_map_release(&work->lockdep_map);
 	}
+=======
+	lock_map_acquire(&work->lockdep_map);
+	lock_map_release(&work->lockdep_map);
+>>>>>>> origin/android16-base
 
 	if (start_flush_work(work, &barr, from_cancel)) {
 		wait_for_completion(&barr.done);
@@ -3543,6 +3588,7 @@ static void pwq_unbound_release_workfn(struct work_struct *work)
 						  unbound_release_work);
 	struct workqueue_struct *wq = pwq->wq;
 	struct worker_pool *pool = pwq->pool;
+<<<<<<< HEAD
 	bool is_last;
 
 	if (WARN_ON_ONCE(!(wq->flags & WQ_UNBOUND)))
@@ -3552,6 +3598,23 @@ static void pwq_unbound_release_workfn(struct work_struct *work)
 	list_del_rcu(&pwq->pwqs_node);
 	is_last = list_empty(&wq->pwqs);
 	mutex_unlock(&wq->mutex);
+=======
+	bool is_last = false;
+
+	/*
+	 * when @pwq is not linked, it doesn't hold any reference to the
+	 * @wq, and @wq is invalid to access.
+	 */
+	if (!list_empty(&pwq->pwqs_node)) {
+		if (WARN_ON_ONCE(!(wq->flags & WQ_UNBOUND)))
+			return;
+
+		mutex_lock(&wq->mutex);
+		list_del_rcu(&pwq->pwqs_node);
+		is_last = list_empty(&wq->pwqs);
+		mutex_unlock(&wq->mutex);
+	}
+>>>>>>> origin/android16-base
 
 	mutex_lock(&wq_pool_mutex);
 	put_unbound_pool(pool);
@@ -3597,6 +3660,7 @@ static void pwq_adjust_max_active(struct pool_workqueue *pwq)
 	 * is updated and visible.
 	 */
 	if (!freezable || !workqueue_freezing) {
+<<<<<<< HEAD
 		pwq->max_active = wq->saved_max_active;
 
 		while (!list_empty(&pwq->delayed_works) &&
@@ -3608,6 +3672,26 @@ static void pwq_adjust_max_active(struct pool_workqueue *pwq)
 		 * max_active is bumped.  It's a slow path.  Do it always.
 		 */
 		wake_up_worker(pwq->pool);
+=======
+		bool kick = false;
+
+		pwq->max_active = wq->saved_max_active;
+
+		while (!list_empty(&pwq->delayed_works) &&
+		       pwq->nr_active < pwq->max_active) {
+			pwq_activate_first_delayed(pwq);
+			kick = true;
+		}
+
+		/*
+		 * Need to kick a worker after thawed or an unbound wq's
+		 * max_active is bumped. In realtime scenarios, always kicking a
+		 * worker will cause interference on the isolated cpu cores, so
+		 * let's kick iff work items were activated.
+		 */
+		if (kick)
+			wake_up_worker(pwq->pool);
+>>>>>>> origin/android16-base
 	} else {
 		pwq->max_active = 0;
 	}
@@ -5118,9 +5202,19 @@ static int workqueue_apply_unbound_cpumask(void)
 	list_for_each_entry(wq, &workqueues, list) {
 		if (!(wq->flags & WQ_UNBOUND))
 			continue;
+<<<<<<< HEAD
 		/* creating multiple pwqs breaks ordering guarantee */
 		if (wq->flags & __WQ_ORDERED)
 			continue;
+=======
+
+		/* creating multiple pwqs breaks ordering guarantee */
+		if (!list_empty(&wq->pwqs)) {
+			if (wq->flags & __WQ_ORDERED_EXPLICIT)
+				continue;
+			wq->flags &= ~__WQ_ORDERED;
+		}
+>>>>>>> origin/android16-base
 
 		ctx = apply_wqattrs_prepare(wq, wq->unbound_attrs);
 		if (!ctx) {
@@ -5157,9 +5251,12 @@ int workqueue_set_unbound_cpumask(cpumask_var_t cpumask)
 	int ret = -EINVAL;
 	cpumask_var_t saved_cpumask;
 
+<<<<<<< HEAD
 	if (!zalloc_cpumask_var(&saved_cpumask, GFP_KERNEL))
 		return -ENOMEM;
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Not excluding isolated cpus on purpose.
 	 * If the user wishes to include them, we allow that.
@@ -5167,6 +5264,18 @@ int workqueue_set_unbound_cpumask(cpumask_var_t cpumask)
 	cpumask_and(cpumask, cpumask, cpu_possible_mask);
 	if (!cpumask_empty(cpumask)) {
 		apply_wqattrs_lock();
+<<<<<<< HEAD
+=======
+		if (cpumask_equal(cpumask, wq_unbound_cpumask)) {
+			ret = 0;
+			goto out_unlock;
+		}
+
+		if (!zalloc_cpumask_var(&saved_cpumask, GFP_KERNEL)) {
+			ret = -ENOMEM;
+			goto out_unlock;
+		}
+>>>>>>> origin/android16-base
 
 		/* save the old wq_unbound_cpumask. */
 		cpumask_copy(saved_cpumask, wq_unbound_cpumask);
@@ -5179,10 +5288,18 @@ int workqueue_set_unbound_cpumask(cpumask_var_t cpumask)
 		if (ret < 0)
 			cpumask_copy(wq_unbound_cpumask, saved_cpumask);
 
+<<<<<<< HEAD
 		apply_wqattrs_unlock();
 	}
 
 	free_cpumask_var(saved_cpumask);
+=======
+		free_cpumask_var(saved_cpumask);
+out_unlock:
+		apply_wqattrs_unlock();
+	}
+
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -5594,6 +5711,10 @@ static void wq_watchdog_timer_fn(struct timer_list *unused)
 {
 	unsigned long thresh = READ_ONCE(wq_watchdog_thresh) * HZ;
 	bool lockup_detected = false;
+<<<<<<< HEAD
+=======
+	unsigned long now = jiffies;
+>>>>>>> origin/android16-base
 	struct worker_pool *pool;
 	int pi;
 
@@ -5608,6 +5729,15 @@ static void wq_watchdog_timer_fn(struct timer_list *unused)
 		if (list_empty(&pool->worklist))
 			continue;
 
+<<<<<<< HEAD
+=======
+		/*
+		 * If a virtual machine is stopped by the host it can look to
+		 * the watchdog like a stall.
+		 */
+		kvm_check_and_clear_guest_paused();
+
+>>>>>>> origin/android16-base
 		/* get the latest of pool and touched timestamps */
 		pool_ts = READ_ONCE(pool->watchdog_ts);
 		touched = READ_ONCE(wq_watchdog_touched);
@@ -5626,12 +5756,20 @@ static void wq_watchdog_timer_fn(struct timer_list *unused)
 		}
 
 		/* did we stall? */
+<<<<<<< HEAD
 		if (time_after(jiffies, ts + thresh)) {
+=======
+		if (time_after(now, ts + thresh)) {
+>>>>>>> origin/android16-base
 			lockup_detected = true;
 			pr_emerg("BUG: workqueue lockup - pool");
 			pr_cont_pool_info(pool);
 			pr_cont(" stuck for %us!\n",
+<<<<<<< HEAD
 				jiffies_to_msecs(jiffies - pool_ts) / 1000);
+=======
+				jiffies_to_msecs(now - pool_ts) / 1000);
+>>>>>>> origin/android16-base
 		}
 	}
 

@@ -631,7 +631,11 @@ int hw_breakpoint_arch_parse(struct perf_event *bp,
 	hw->address &= ~alignment_mask;
 	hw->ctrl.len <<= offset;
 
+<<<<<<< HEAD
 	if (is_default_overflow_handler(bp)) {
+=======
+	if (uses_default_overflow_handler(bp)) {
+>>>>>>> origin/android16-base
 		/*
 		 * Mismatch breakpoints are required for single-stepping
 		 * breakpoints.
@@ -803,7 +807,11 @@ static void watchpoint_handler(unsigned long addr, unsigned int fsr,
 		 * Otherwise, insert a temporary mismatch breakpoint so that
 		 * we can single-step over the watchpoint trigger.
 		 */
+<<<<<<< HEAD
 		if (!is_default_overflow_handler(wp))
+=======
+		if (!uses_default_overflow_handler(wp))
+>>>>>>> origin/android16-base
 			continue;
 step:
 		enable_single_step(wp, instruction_pointer(regs));
@@ -816,7 +824,11 @@ step:
 		info->trigger = addr;
 		pr_debug("watchpoint fired: address = 0x%x\n", info->trigger);
 		perf_bp_event(wp, regs);
+<<<<<<< HEAD
 		if (is_default_overflow_handler(wp))
+=======
+		if (uses_default_overflow_handler(wp))
+>>>>>>> origin/android16-base
 			enable_single_step(wp, instruction_pointer(regs));
 	}
 
@@ -891,7 +903,11 @@ static void breakpoint_handler(unsigned long unknown, struct pt_regs *regs)
 			info->trigger = addr;
 			pr_debug("breakpoint fired: address = 0x%x\n", addr);
 			perf_bp_event(bp, regs);
+<<<<<<< HEAD
 			if (!bp->overflow_handler)
+=======
+			if (uses_default_overflow_handler(bp))
+>>>>>>> origin/android16-base
 				enable_single_step(bp, addr);
 			goto unlock;
 		}

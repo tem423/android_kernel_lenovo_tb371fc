@@ -803,8 +803,15 @@ int nfp_cpp_area_cache_add(struct nfp_cpp *cpp, size_t size)
 		return -ENOMEM;
 
 	cache = kzalloc(sizeof(*cache), GFP_KERNEL);
+<<<<<<< HEAD
 	if (!cache)
 		return -ENOMEM;
+=======
+	if (!cache) {
+		nfp_cpp_area_free(area);
+		return -ENOMEM;
+	}
+>>>>>>> origin/android16-base
 
 	cache->id = 0;
 	cache->addr = 0;
@@ -872,7 +879,10 @@ area_cache_get(struct nfp_cpp *cpp, u32 id,
 	}
 
 	/* Adjust the start address to be cache size aligned */
+<<<<<<< HEAD
 	cache->id = id;
+=======
+>>>>>>> origin/android16-base
 	cache->addr = addr & ~(u64)(cache->size - 1);
 
 	/* Re-init to the new ID and address */
@@ -892,6 +902,11 @@ area_cache_get(struct nfp_cpp *cpp, u32 id,
 		return NULL;
 	}
 
+<<<<<<< HEAD
+=======
+	cache->id = id;
+
+>>>>>>> origin/android16-base
 exit:
 	/* Adjust offset */
 	*offset = addr - cache->addr;

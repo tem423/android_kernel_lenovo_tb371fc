@@ -22,6 +22,10 @@
  */
 ENTRY(__iowrite32_copy)
 	movl %edx,%ecx
+<<<<<<< HEAD
 	rep movsd
+=======
+	rep movsl
+>>>>>>> origin/android16-base
 	ret
 ENDPROC(__iowrite32_copy)

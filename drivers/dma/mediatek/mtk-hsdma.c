@@ -1007,6 +1007,10 @@ static int mtk_hsdma_probe(struct platform_device *pdev)
 	return 0;
 
 err_free:
+<<<<<<< HEAD
+=======
+	mtk_hsdma_hw_deinit(hsdma);
+>>>>>>> origin/android16-base
 	of_dma_controller_free(pdev->dev.of_node);
 err_unregister:
 	dma_async_device_unregister(dd);

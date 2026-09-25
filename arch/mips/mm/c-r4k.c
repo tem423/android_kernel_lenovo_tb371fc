@@ -1673,7 +1673,11 @@ static int probe_scache(void)
 	return 1;
 }
 
+<<<<<<< HEAD
 static void __init loongson2_sc_init(void)
+=======
+static void loongson2_sc_init(void)
+>>>>>>> origin/android16-base
 {
 	struct cpuinfo_mips *c = &current_cpu_data;
 

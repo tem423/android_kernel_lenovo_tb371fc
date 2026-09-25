@@ -287,7 +287,11 @@
 
 	sound: sound {
 		compatible = "rockchip,rk3399-gru-sound";
+<<<<<<< HEAD
 		rockchip,cpu = <&i2s0 &i2s2>;
+=======
+		rockchip,cpu = <&i2s0 &spdif>;
+>>>>>>> origin/android16-base
 	};
 };
 
@@ -438,10 +442,13 @@ ap_i2c_audio: &i2c8 {
 	status = "okay";
 };
 
+<<<<<<< HEAD
 &i2s2 {
 	status = "okay";
 };
 
+=======
+>>>>>>> origin/android16-base
 &io_domains {
 	status = "okay";
 
@@ -538,6 +545,20 @@ ap_i2c_audio: &i2c8 {
 	vqmmc-supply = <&ppvar_sd_card_io>;
 };
 
+<<<<<<< HEAD
+=======
+&spdif {
+	status = "okay";
+
+	/*
+	 * SPDIF is routed internally to DP; we either don't use these pins, or
+	 * mux them to something else.
+	 */
+	/delete-property/ pinctrl-0;
+	/delete-property/ pinctrl-names;
+};
+
+>>>>>>> origin/android16-base
 &spi1 {
 	status = "okay";
 

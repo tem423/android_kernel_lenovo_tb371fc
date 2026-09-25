@@ -975,11 +975,20 @@ EXPORT_SYMBOL_GPL(of_dma_get_range);
  */
 bool of_dma_is_coherent(struct device_node *np)
 {
+<<<<<<< HEAD
 	struct device_node *node = of_node_get(np);
+=======
+	struct device_node *node;
+>>>>>>> origin/android16-base
 
 	if (IS_ENABLED(CONFIG_OF_DMA_DEFAULT_COHERENT))
 		return true;
 
+<<<<<<< HEAD
+=======
+	node = of_node_get(np);
+
+>>>>>>> origin/android16-base
 	while (node) {
 		if (of_property_read_bool(node, "dma-coherent")) {
 			of_node_put(node);

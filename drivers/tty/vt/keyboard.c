@@ -310,7 +310,11 @@ int kbd_rate(struct kbd_repeat *rpt)
 static void put_queue(struct vc_data *vc, int ch)
 {
 	tty_insert_flip_char(&vc->port, ch, 0);
+<<<<<<< HEAD
 	tty_schedule_flip(&vc->port);
+=======
+	tty_flip_buffer_push(&vc->port);
+>>>>>>> origin/android16-base
 }
 
 static void puts_queue(struct vc_data *vc, char *cp)
@@ -319,7 +323,11 @@ static void puts_queue(struct vc_data *vc, char *cp)
 		tty_insert_flip_char(&vc->port, *cp, 0);
 		cp++;
 	}
+<<<<<<< HEAD
 	tty_schedule_flip(&vc->port);
+=======
+	tty_flip_buffer_push(&vc->port);
+>>>>>>> origin/android16-base
 }
 
 static void applkey(struct vc_data *vc, int key, char mode)
@@ -564,7 +572,11 @@ static void fn_inc_console(struct vc_data *vc)
 static void fn_send_intr(struct vc_data *vc)
 {
 	tty_insert_flip_char(&vc->port, 0, TTY_BREAK);
+<<<<<<< HEAD
 	tty_schedule_flip(&vc->port);
+=======
+	tty_flip_buffer_push(&vc->port);
+>>>>>>> origin/android16-base
 }
 
 static void fn_scroll_forw(struct vc_data *vc)

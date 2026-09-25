@@ -164,6 +164,11 @@ static void sumo_construct_vid_mapping_table(struct amdgpu_device *adev,
 
 	for (i = 0; i < SUMO_MAX_HARDWARE_POWERLEVELS; i++) {
 		if (table[i].ulSupportedSCLK != 0) {
+<<<<<<< HEAD
+=======
+			if (table[i].usVoltageIndex >= SUMO_MAX_NUMBER_VOLTAGES)
+				continue;
+>>>>>>> origin/android16-base
 			vid_mapping_table->entries[table[i].usVoltageIndex].vid_7bit =
 				table[i].usVoltageID;
 			vid_mapping_table->entries[table[i].usVoltageIndex].vid_2bit =
@@ -1610,6 +1615,7 @@ static int kv_update_samu_dpm(struct amdgpu_device *adev, bool gate)
 
 static u8 kv_get_acp_boot_level(struct amdgpu_device *adev)
 {
+<<<<<<< HEAD
 	u8 i;
 	struct amdgpu_clock_voltage_dependency_table *table =
 		&adev->pm.dpm.dyn_state.acp_clock_voltage_dependency_table;
@@ -1623,6 +1629,9 @@ static u8 kv_get_acp_boot_level(struct amdgpu_device *adev)
 		i = table->count - 1;
 
 	return i;
+=======
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static void kv_update_acp_boot_level(struct amdgpu_device *adev)
@@ -2746,10 +2755,15 @@ static int kv_parse_power_table(struct amdgpu_device *adev)
 		non_clock_info = (struct _ATOM_PPLIB_NONCLOCK_INFO *)
 			&non_clock_info_array->nonClockInfo[non_clock_array_index];
 		ps = kzalloc(sizeof(struct kv_ps), GFP_KERNEL);
+<<<<<<< HEAD
 		if (ps == NULL) {
 			kfree(adev->pm.dpm.ps);
 			return -ENOMEM;
 		}
+=======
+		if (ps == NULL)
+			return -ENOMEM;
+>>>>>>> origin/android16-base
 		adev->pm.dpm.ps[i].ps_priv = ps;
 		k = 0;
 		idx = (u8 *)&power_state->v2.clockInfoIndex[0];

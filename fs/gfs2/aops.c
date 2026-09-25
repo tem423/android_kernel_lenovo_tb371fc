@@ -179,7 +179,10 @@ static int __gfs2_jdata_writepage(struct page *page, struct writeback_control *w
 {
 	struct inode *inode = page->mapping->host;
 	struct gfs2_inode *ip = GFS2_I(inode);
+<<<<<<< HEAD
 	struct gfs2_sbd *sdp = GFS2_SB(inode);
+=======
+>>>>>>> origin/android16-base
 
 	if (PageChecked(page)) {
 		ClearPageChecked(page);
@@ -187,7 +190,11 @@ static int __gfs2_jdata_writepage(struct page *page, struct writeback_control *w
 			create_empty_buffers(page, inode->i_sb->s_blocksize,
 					     BIT(BH_Dirty)|BIT(BH_Uptodate));
 		}
+<<<<<<< HEAD
 		gfs2_page_add_databufs(ip, page, 0, sdp->sd_vfs->s_blocksize);
+=======
+		gfs2_page_add_databufs(ip, page, 0, PAGE_SIZE);
+>>>>>>> origin/android16-base
 	}
 	return gfs2_write_full_page(page, gfs2_get_block_noalloc, wbc);
 }
@@ -360,7 +367,11 @@ static int gfs2_write_cache_jdata(struct address_space *mapping,
 	int done = 0;
 	struct pagevec pvec;
 	int nr_pages;
+<<<<<<< HEAD
 	pgoff_t uninitialized_var(writeback_index);
+=======
+	pgoff_t writeback_index;
+>>>>>>> origin/android16-base
 	pgoff_t index;
 	pgoff_t end;
 	pgoff_t done_index;
@@ -481,8 +492,11 @@ int stuffed_readpage(struct gfs2_inode *ip, struct page *page)
 		return error;
 
 	kaddr = kmap_atomic(page);
+<<<<<<< HEAD
 	if (dsize > gfs2_max_stuffed_size(ip))
 		dsize = gfs2_max_stuffed_size(ip);
+=======
+>>>>>>> origin/android16-base
 	memcpy(kaddr, dibh->b_data + sizeof(struct gfs2_dinode), dsize);
 	memset(kaddr + dsize, 0, PAGE_SIZE - dsize);
 	kunmap_atomic(kaddr);

@@ -16,20 +16,35 @@ struct idset {
 	unsigned long bitmap[0];
 };
 
+<<<<<<< HEAD
 static inline unsigned long bitmap_size(int num_ssid, int num_id)
 {
 	return BITS_TO_LONGS(num_ssid * num_id) * sizeof(unsigned long);
+=======
+static inline unsigned long idset_bitmap_size(int num_ssid, int num_id)
+{
+	return bitmap_size(size_mul(num_ssid, num_id));
+>>>>>>> origin/android16-base
 }
 
 static struct idset *idset_new(int num_ssid, int num_id)
 {
 	struct idset *set;
 
+<<<<<<< HEAD
 	set = vmalloc(sizeof(struct idset) + bitmap_size(num_ssid, num_id));
 	if (set) {
 		set->num_ssid = num_ssid;
 		set->num_id = num_id;
 		memset(set->bitmap, 0, bitmap_size(num_ssid, num_id));
+=======
+	set = vmalloc(sizeof(struct idset) +
+		      idset_bitmap_size(num_ssid, num_id));
+	if (set) {
+		set->num_ssid = num_ssid;
+		set->num_id = num_id;
+		memset(set->bitmap, 0, idset_bitmap_size(num_ssid, num_id));
+>>>>>>> origin/android16-base
 	}
 	return set;
 }
@@ -41,7 +56,12 @@ void idset_free(struct idset *set)
 
 void idset_fill(struct idset *set)
 {
+<<<<<<< HEAD
 	memset(set->bitmap, 0xff, bitmap_size(set->num_ssid, set->num_id));
+=======
+	memset(set->bitmap, 0xff,
+	       idset_bitmap_size(set->num_ssid, set->num_id));
+>>>>>>> origin/android16-base
 }
 
 static inline void idset_add(struct idset *set, int ssid, int id)

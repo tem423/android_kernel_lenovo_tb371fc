@@ -94,7 +94,10 @@ class KernelInclude(Include):
         # HINT: this is the only line I had to change / commented out:
         #path = utils.relative_path(None, path)
 
+<<<<<<< HEAD
         path = nodes.reprunicode(path)
+=======
+>>>>>>> origin/android16-base
         encoding = self.options.get(
             'encoding', self.state.document.settings.input_encoding)
         e_handler=self.state.document.settings.input_encoding_error_handler

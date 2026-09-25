@@ -40,6 +40,7 @@ static const struct tilcdc_panel_info panel_info_default = {
 		.raster_order           = 0,
 };
 
+<<<<<<< HEAD
 static int tilcdc_external_mode_valid(struct drm_connector *connector,
 				      struct drm_display_mode *mode)
 {
@@ -98,6 +99,8 @@ static int tilcdc_add_external_connector(struct drm_device *dev,
 	return 0;
 }
 
+=======
+>>>>>>> origin/android16-base
 static
 struct drm_connector *tilcdc_encoder_find_connector(struct drm_device *ddev,
 						    struct drm_encoder *encoder)
@@ -118,27 +121,45 @@ struct drm_connector *tilcdc_encoder_find_connector(struct drm_device *ddev,
 int tilcdc_add_component_encoder(struct drm_device *ddev)
 {
 	struct tilcdc_drm_private *priv = ddev->dev_private;
+<<<<<<< HEAD
 	struct drm_connector *connector;
 	struct drm_encoder *encoder;
 
 	list_for_each_entry(encoder, &ddev->mode_config.encoder_list, head)
 		if (encoder->possible_crtcs & (1 << priv->crtc->index))
 			break;
+=======
+	struct drm_encoder *encoder = NULL, *iter;
+
+	list_for_each_entry(iter, &ddev->mode_config.encoder_list, head)
+		if (iter->possible_crtcs & (1 << priv->crtc->index)) {
+			encoder = iter;
+			break;
+		}
+>>>>>>> origin/android16-base
 
 	if (!encoder) {
 		dev_err(ddev->dev, "%s: No suitable encoder found\n", __func__);
 		return -ENODEV;
 	}
 
+<<<<<<< HEAD
 	connector = tilcdc_encoder_find_connector(ddev, encoder);
 
 	if (!connector)
+=======
+	priv->external_connector =
+		tilcdc_encoder_find_connector(ddev, encoder);
+
+	if (!priv->external_connector)
+>>>>>>> origin/android16-base
 		return -ENODEV;
 
 	/* Only tda998x is supported at the moment. */
 	tilcdc_crtc_set_simulate_vesa_sync(priv->crtc, true);
 	tilcdc_crtc_set_panel_info(priv->crtc, &panel_info_tda998x);
 
+<<<<<<< HEAD
 	return tilcdc_add_external_connector(ddev, connector);
 }
 
@@ -152,6 +173,9 @@ void tilcdc_remove_external_device(struct drm_device *dev)
 	else if (priv->connector_funcs)
 		drm_connector_helper_add(priv->external_connector,
 					 priv->connector_funcs);
+=======
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static const struct drm_encoder_funcs tilcdc_external_encoder_funcs = {
@@ -162,7 +186,10 @@ static
 int tilcdc_attach_bridge(struct drm_device *ddev, struct drm_bridge *bridge)
 {
 	struct tilcdc_drm_private *priv = ddev->dev_private;
+<<<<<<< HEAD
 	struct drm_connector *connector;
+=======
+>>>>>>> origin/android16-base
 	int ret;
 
 	priv->external_encoder->possible_crtcs = BIT(0);
@@ -175,6 +202,7 @@ int tilcdc_attach_bridge(struct drm_device *ddev, struct drm_bridge *bridge)
 
 	tilcdc_crtc_set_panel_info(priv->crtc, &panel_info_default);
 
+<<<<<<< HEAD
 	connector = tilcdc_encoder_find_connector(ddev, priv->external_encoder);
 	if (!connector)
 		return -ENODEV;
@@ -182,6 +210,14 @@ int tilcdc_attach_bridge(struct drm_device *ddev, struct drm_bridge *bridge)
 	ret = tilcdc_add_external_connector(ddev, connector);
 
 	return ret;
+=======
+	priv->external_connector =
+		tilcdc_encoder_find_connector(ddev, priv->external_encoder);
+	if (!priv->external_connector)
+		return -ENODEV;
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 int tilcdc_attach_external_device(struct drm_device *ddev)

@@ -1048,6 +1048,15 @@ static int f_midi_bind(struct usb_configuration *c, struct usb_function *f)
 		f->ss_descriptors = usb_copy_descriptors(midi_function);
 		if (!f->ss_descriptors)
 			goto fail_f_midi;
+<<<<<<< HEAD
+=======
+
+		if (gadget_is_superspeed_plus(c->cdev->gadget)) {
+			f->ssp_descriptors = usb_copy_descriptors(midi_function);
+			if (!f->ssp_descriptors)
+				goto fail_f_midi;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	if (gadget_is_superspeed_plus(c->cdev->gadget)) {
@@ -1386,7 +1395,11 @@ static struct usb_function *f_midi_alloc(struct usb_function_instance *fi)
 	midi->id = kstrdup(opts->id, GFP_KERNEL);
 	if (opts->id && !midi->id) {
 		status = -ENOMEM;
+<<<<<<< HEAD
 		goto setup_fail;
+=======
+		goto midi_free;
+>>>>>>> origin/android16-base
 	}
 	midi->in_ports = opts->in_ports;
 	midi->out_ports = opts->out_ports;
@@ -1398,7 +1411,11 @@ static struct usb_function *f_midi_alloc(struct usb_function_instance *fi)
 
 	status = kfifo_alloc(&midi->in_req_fifo, midi->qlen, GFP_KERNEL);
 	if (status)
+<<<<<<< HEAD
 		goto setup_fail;
+=======
+		goto midi_free;
+>>>>>>> origin/android16-base
 
 	spin_lock_init(&midi->transmit_lock);
 
@@ -1415,9 +1432,19 @@ static struct usb_function *f_midi_alloc(struct usb_function_instance *fi)
 	fi->f = &midi->func;
 	return &midi->func;
 
+<<<<<<< HEAD
 setup_fail:
 	mutex_unlock(&opts->lock);
 	kfree(midi);
+=======
+midi_free:
+	if (midi)
+		kfree(midi->id);
+	kfree(midi);
+setup_fail:
+	mutex_unlock(&opts->lock);
+
+>>>>>>> origin/android16-base
 	return ERR_PTR(status);
 }
 

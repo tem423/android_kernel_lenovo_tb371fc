@@ -148,7 +148,11 @@ void sctp_transport_free(struct sctp_transport *transport)
 
 	/* Delete the ICMP proto unreachable timer if it's active. */
 	if (del_timer(&transport->proto_unreach_timer))
+<<<<<<< HEAD
 		sctp_association_put(transport->asoc);
+=======
+		sctp_transport_put(transport);
+>>>>>>> origin/android16-base
 
 	sctp_transport_put(transport);
 }

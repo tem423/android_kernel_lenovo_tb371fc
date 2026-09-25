@@ -211,6 +211,10 @@ static int __init omapdss_init_fbdev(void)
 	node = of_find_node_by_name(NULL, "omap4_padconf_global");
 	if (node)
 		omap4_dsi_mux_syscon = syscon_node_to_regmap(node);
+<<<<<<< HEAD
+=======
+	of_node_put(node);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

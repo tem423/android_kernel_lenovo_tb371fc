@@ -73,7 +73,11 @@ static void etnaviv_core_dump_header(struct core_dump_iterator *iter,
 	hdr->file_size = cpu_to_le32(data_end - iter->data);
 
 	iter->hdr++;
+<<<<<<< HEAD
 	iter->data += hdr->file_size;
+=======
+	iter->data += le32_to_cpu(hdr->file_size);
+>>>>>>> origin/android16-base
 }
 
 static void etnaviv_core_dump_registers(struct core_dump_iterator *iter,
@@ -81,10 +85,22 @@ static void etnaviv_core_dump_registers(struct core_dump_iterator *iter,
 {
 	struct etnaviv_dump_registers *reg = iter->data;
 	unsigned int i;
+<<<<<<< HEAD
 
 	for (i = 0; i < ARRAY_SIZE(etnaviv_dump_registers); i++, reg++) {
 		reg->reg = etnaviv_dump_registers[i];
 		reg->value = gpu_read(gpu, etnaviv_dump_registers[i]);
+=======
+	u32 read_addr;
+
+	for (i = 0; i < ARRAY_SIZE(etnaviv_dump_registers); i++, reg++) {
+		read_addr = etnaviv_dump_registers[i];
+		if (read_addr >= VIVS_PM_POWER_CONTROLS &&
+		    read_addr <= VIVS_PM_PULSE_EATER)
+			read_addr = gpu_fix_power_address(gpu, read_addr);
+		reg->reg = cpu_to_le32(etnaviv_dump_registers[i]);
+		reg->value = cpu_to_le32(gpu_read(gpu, read_addr));
+>>>>>>> origin/android16-base
 	}
 
 	etnaviv_core_dump_header(iter, ETDUMP_BUF_REG, reg);
@@ -220,7 +236,11 @@ void etnaviv_core_dump(struct etnaviv_gpu *gpu)
 		if (!IS_ERR(pages)) {
 			int j;
 
+<<<<<<< HEAD
 			iter.hdr->data[0] = bomap - bomap_start;
+=======
+			iter.hdr->data[0] = cpu_to_le32((bomap - bomap_start));
+>>>>>>> origin/android16-base
 
 			for (j = 0; j < obj->base.size >> PAGE_SHIFT; j++)
 				*bomap++ = cpu_to_le64(page_to_phys(*pages++));

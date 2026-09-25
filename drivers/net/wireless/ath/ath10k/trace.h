@@ -536,7 +536,11 @@ TRACE_EVENT(ath10k_wmi_diag,
 
 /* we don't want to use include/trace/events */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/wireless/ath/ath10k
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace
 

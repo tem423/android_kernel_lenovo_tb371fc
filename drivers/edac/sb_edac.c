@@ -1021,7 +1021,11 @@ static u64 haswell_get_tohm(struct sbridge_pvt *pvt)
 	pci_read_config_dword(pvt->info.pci_vtd, HASWELL_TOHM_1, &reg);
 	rc = ((reg << 6) | rc) << 26;
 
+<<<<<<< HEAD
 	return rc | 0x1ffffff;
+=======
+	return rc | 0x3ffffff;
+>>>>>>> origin/android16-base
 }
 
 static u64 knl_get_tolm(struct sbridge_pvt *pvt)

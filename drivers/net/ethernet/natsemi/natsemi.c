@@ -819,7 +819,11 @@ static int natsemi_probe1(struct pci_dev *pdev, const struct pci_device_id *ent)
 		printk(version);
 #endif
 
+<<<<<<< HEAD
 	i = pci_enable_device(pdev);
+=======
+	i = pcim_enable_device(pdev);
+>>>>>>> origin/android16-base
 	if (i) return i;
 
 	/* natsemi has a non-standard PM control register
@@ -852,7 +856,11 @@ static int natsemi_probe1(struct pci_dev *pdev, const struct pci_device_id *ent)
 	ioaddr = ioremap(iostart, iosize);
 	if (!ioaddr) {
 		i = -ENOMEM;
+<<<<<<< HEAD
 		goto err_ioremap;
+=======
+		goto err_pci_request_regions;
+>>>>>>> origin/android16-base
 	}
 
 	/* Work around the dropped serial bit. */
@@ -974,9 +982,12 @@ static int natsemi_probe1(struct pci_dev *pdev, const struct pci_device_id *ent)
  err_register_netdev:
 	iounmap(ioaddr);
 
+<<<<<<< HEAD
  err_ioremap:
 	pci_release_regions(pdev);
 
+=======
+>>>>>>> origin/android16-base
  err_pci_request_regions:
 	free_netdev(dev);
 	return i;
@@ -3242,7 +3253,10 @@ static void natsemi_remove1(struct pci_dev *pdev)
 
 	NATSEMI_REMOVE_FILE(pdev, dspcfg_workaround);
 	unregister_netdev (dev);
+<<<<<<< HEAD
 	pci_release_regions (pdev);
+=======
+>>>>>>> origin/android16-base
 	iounmap(ioaddr);
 	free_netdev (dev);
 }

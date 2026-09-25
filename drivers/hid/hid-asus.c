@@ -84,6 +84,10 @@ struct asus_kbd_leds {
 	struct hid_device *hdev;
 	struct work_struct work;
 	unsigned int brightness;
+<<<<<<< HEAD
+=======
+	spinlock_t lock;
+>>>>>>> origin/android16-base
 	bool removed;
 };
 
@@ -251,7 +255,11 @@ static int asus_raw_event(struct hid_device *hdev,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int asus_kbd_set_report(struct hid_device *hdev, u8 *buf, size_t buf_size)
+=======
+static int asus_kbd_set_report(struct hid_device *hdev, const u8 *buf, size_t buf_size)
+>>>>>>> origin/android16-base
 {
 	unsigned char *dmabuf;
 	int ret;
@@ -270,7 +278,11 @@ static int asus_kbd_set_report(struct hid_device *hdev, u8 *buf, size_t buf_size
 
 static int asus_kbd_init(struct hid_device *hdev)
 {
+<<<<<<< HEAD
 	u8 buf[] = { FEATURE_KBD_REPORT_ID, 0x41, 0x53, 0x55, 0x53, 0x20, 0x54,
+=======
+	const u8 buf[] = { FEATURE_KBD_REPORT_ID, 0x41, 0x53, 0x55, 0x53, 0x20, 0x54,
+>>>>>>> origin/android16-base
 		     0x65, 0x63, 0x68, 0x2e, 0x49, 0x6e, 0x63, 0x2e, 0x00 };
 	int ret;
 
@@ -284,7 +296,11 @@ static int asus_kbd_init(struct hid_device *hdev)
 static int asus_kbd_get_functions(struct hid_device *hdev,
 				  unsigned char *kbd_func)
 {
+<<<<<<< HEAD
 	u8 buf[] = { FEATURE_KBD_REPORT_ID, 0x05, 0x20, 0x31, 0x00, 0x08 };
+=======
+	const u8 buf[] = { FEATURE_KBD_REPORT_ID, 0x05, 0x20, 0x31, 0x00, 0x08 };
+>>>>>>> origin/android16-base
 	u8 *readbuf;
 	int ret;
 
@@ -313,24 +329,58 @@ static int asus_kbd_get_functions(struct hid_device *hdev,
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static void asus_schedule_work(struct asus_kbd_leds *led)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&led->lock, flags);
+	if (!led->removed)
+		schedule_work(&led->work);
+	spin_unlock_irqrestore(&led->lock, flags);
+}
+
+>>>>>>> origin/android16-base
 static void asus_kbd_backlight_set(struct led_classdev *led_cdev,
 				   enum led_brightness brightness)
 {
 	struct asus_kbd_leds *led = container_of(led_cdev, struct asus_kbd_leds,
 						 cdev);
+<<<<<<< HEAD
 	if (led->brightness == brightness)
 		return;
 
 	led->brightness = brightness;
 	schedule_work(&led->work);
+=======
+	unsigned long flags;
+
+	spin_lock_irqsave(&led->lock, flags);
+	led->brightness = brightness;
+	spin_unlock_irqrestore(&led->lock, flags);
+
+	asus_schedule_work(led);
+>>>>>>> origin/android16-base
 }
 
 static enum led_brightness asus_kbd_backlight_get(struct led_classdev *led_cdev)
 {
 	struct asus_kbd_leds *led = container_of(led_cdev, struct asus_kbd_leds,
 						 cdev);
+<<<<<<< HEAD
 
 	return led->brightness;
+=======
+	enum led_brightness brightness;
+	unsigned long flags;
+
+	spin_lock_irqsave(&led->lock, flags);
+	brightness = led->brightness;
+	spin_unlock_irqrestore(&led->lock, flags);
+
+	return brightness;
+>>>>>>> origin/android16-base
 }
 
 static void asus_kbd_backlight_work(struct work_struct *work)
@@ -338,11 +388,19 @@ static void asus_kbd_backlight_work(struct work_struct *work)
 	struct asus_kbd_leds *led = container_of(work, struct asus_kbd_leds, work);
 	u8 buf[] = { FEATURE_KBD_REPORT_ID, 0xba, 0xc5, 0xc4, 0x00 };
 	int ret;
+<<<<<<< HEAD
 
 	if (led->removed)
 		return;
 
 	buf[4] = led->brightness;
+=======
+	unsigned long flags;
+
+	spin_lock_irqsave(&led->lock, flags);
+	buf[4] = led->brightness;
+	spin_unlock_irqrestore(&led->lock, flags);
+>>>>>>> origin/android16-base
 
 	ret = asus_kbd_set_report(led->hdev, buf, sizeof(buf));
 	if (ret < 0)
@@ -383,6 +441,10 @@ static int asus_kbd_register_leds(struct hid_device *hdev)
 	drvdata->kbd_backlight->cdev.brightness_set = asus_kbd_backlight_set;
 	drvdata->kbd_backlight->cdev.brightness_get = asus_kbd_backlight_get;
 	INIT_WORK(&drvdata->kbd_backlight->work, asus_kbd_backlight_work);
+<<<<<<< HEAD
+=======
+	spin_lock_init(&drvdata->kbd_backlight->lock);
+>>>>>>> origin/android16-base
 
 	ret = devm_led_classdev_register(&hdev->dev, &drvdata->kbd_backlight->cdev);
 	if (ret < 0) {
@@ -594,6 +656,27 @@ static int asus_start_multitouch(struct hid_device *hdev)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int __maybe_unused asus_resume(struct hid_device *hdev) {
+	struct asus_drvdata *drvdata = hid_get_drvdata(hdev);
+	int ret = 0;
+
+	if (drvdata->kbd_backlight) {
+		const u8 buf[] = { FEATURE_KBD_REPORT_ID, 0xba, 0xc5, 0xc4,
+				drvdata->kbd_backlight->cdev.brightness };
+		ret = asus_kbd_set_report(hdev, buf, sizeof(buf));
+		if (ret < 0) {
+			hid_err(hdev, "Asus failed to set keyboard backlight: %d\n", ret);
+			goto asus_resume_err;
+		}
+	}
+
+asus_resume_err:
+	return ret;
+}
+
+>>>>>>> origin/android16-base
 static int __maybe_unused asus_reset_resume(struct hid_device *hdev)
 {
 	struct asus_drvdata *drvdata = hid_get_drvdata(hdev);
@@ -692,9 +775,19 @@ err_stop_hw:
 static void asus_remove(struct hid_device *hdev)
 {
 	struct asus_drvdata *drvdata = hid_get_drvdata(hdev);
+<<<<<<< HEAD
 
 	if (drvdata->kbd_backlight) {
 		drvdata->kbd_backlight->removed = true;
+=======
+	unsigned long flags;
+
+	if (drvdata->kbd_backlight) {
+		spin_lock_irqsave(&drvdata->kbd_backlight->lock, flags);
+		drvdata->kbd_backlight->removed = true;
+		spin_unlock_irqrestore(&drvdata->kbd_backlight->lock, flags);
+
+>>>>>>> origin/android16-base
 		cancel_work_sync(&drvdata->kbd_backlight->work);
 	}
 
@@ -807,6 +900,10 @@ static struct hid_driver asus_driver = {
 	.input_configured       = asus_input_configured,
 #ifdef CONFIG_PM
 	.reset_resume           = asus_reset_resume,
+<<<<<<< HEAD
+=======
+	.resume					= asus_resume,
+>>>>>>> origin/android16-base
 #endif
 	.raw_event		= asus_raw_event
 };

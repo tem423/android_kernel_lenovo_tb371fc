@@ -308,6 +308,11 @@ static ssize_t hfi1_write_iter(struct kiocb *kiocb, struct iov_iter *from)
 	unsigned long dim = from->nr_segs;
 	int idx;
 
+<<<<<<< HEAD
+=======
+	if (!HFI1_CAP_IS_KSET(SDMA))
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	idx = srcu_read_lock(&fd->pq_srcu);
 	pq = srcu_dereference(fd->pq, &fd->pq_srcu);
 	if (!cq || !pq) {
@@ -1220,8 +1225,15 @@ static int setup_base_ctxt(struct hfi1_filedata *fd,
 		goto done;
 
 	ret = init_user_ctxt(fd, uctxt);
+<<<<<<< HEAD
 	if (ret)
 		goto done;
+=======
+	if (ret) {
+		hfi1_free_ctxt_rcv_groups(uctxt);
+		goto done;
+	}
+>>>>>>> origin/android16-base
 
 	user_init(uctxt);
 
@@ -1357,12 +1369,24 @@ static int user_exp_rcv_setup(struct hfi1_filedata *fd, unsigned long arg,
 		addr = arg + offsetof(struct hfi1_tid_info, tidcnt);
 		if (copy_to_user((void __user *)addr, &tinfo.tidcnt,
 				 sizeof(tinfo.tidcnt)))
+<<<<<<< HEAD
 			return -EFAULT;
 
 		addr = arg + offsetof(struct hfi1_tid_info, length);
 		if (copy_to_user((void __user *)addr, &tinfo.length,
 				 sizeof(tinfo.length)))
 			ret = -EFAULT;
+=======
+			ret = -EFAULT;
+
+		addr = arg + offsetof(struct hfi1_tid_info, length);
+		if (!ret && copy_to_user((void __user *)addr, &tinfo.length,
+				 sizeof(tinfo.length)))
+			ret = -EFAULT;
+
+		if (ret)
+			hfi1_user_exp_rcv_invalid(fd, &tinfo);
+>>>>>>> origin/android16-base
 	}
 
 	return ret;

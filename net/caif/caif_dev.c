@@ -303,7 +303,11 @@ static void dev_flowctrl(struct net_device *dev, int on)
 	caifd_put(caifd);
 }
 
+<<<<<<< HEAD
 void caif_enroll_dev(struct net_device *dev, struct caif_dev_common *caifdev,
+=======
+int caif_enroll_dev(struct net_device *dev, struct caif_dev_common *caifdev,
+>>>>>>> origin/android16-base
 		     struct cflayer *link_support, int head_room,
 		     struct cflayer **layer,
 		     int (**rcv_func)(struct sk_buff *, struct net_device *,
@@ -314,11 +318,19 @@ void caif_enroll_dev(struct net_device *dev, struct caif_dev_common *caifdev,
 	enum cfcnfg_phy_preference pref;
 	struct cfcnfg *cfg = get_cfcnfg(dev_net(dev));
 	struct caif_device_entry_list *caifdevs;
+<<<<<<< HEAD
+=======
+	int res;
+>>>>>>> origin/android16-base
 
 	caifdevs = caif_device_list(dev_net(dev));
 	caifd = caif_device_alloc(dev);
 	if (!caifd)
+<<<<<<< HEAD
 		return;
+=======
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 	*layer = &caifd->layer;
 	spin_lock_init(&caifd->flow_lock);
 
@@ -339,7 +351,11 @@ void caif_enroll_dev(struct net_device *dev, struct caif_dev_common *caifdev,
 	strlcpy(caifd->layer.name, dev->name,
 		sizeof(caifd->layer.name));
 	caifd->layer.transmit = transmit;
+<<<<<<< HEAD
 	cfcnfg_add_phy_layer(cfg,
+=======
+	res = cfcnfg_add_phy_layer(cfg,
+>>>>>>> origin/android16-base
 				dev,
 				&caifd->layer,
 				pref,
@@ -349,6 +365,10 @@ void caif_enroll_dev(struct net_device *dev, struct caif_dev_common *caifdev,
 	mutex_unlock(&caifdevs->lock);
 	if (rcv_func)
 		*rcv_func = receive;
+<<<<<<< HEAD
+=======
+	return res;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(caif_enroll_dev);
 
@@ -363,6 +383,10 @@ static int caif_device_notify(struct notifier_block *me, unsigned long what,
 	struct cflayer *layer, *link_support;
 	int head_room = 0;
 	struct caif_device_entry_list *caifdevs;
+<<<<<<< HEAD
+=======
+	int res;
+>>>>>>> origin/android16-base
 
 	cfg = get_cfcnfg(dev_net(dev));
 	caifdevs = caif_device_list(dev_net(dev));
@@ -388,8 +412,15 @@ static int caif_device_notify(struct notifier_block *me, unsigned long what,
 				break;
 			}
 		}
+<<<<<<< HEAD
 		caif_enroll_dev(dev, caifdev, link_support, head_room,
 				&layer, NULL);
+=======
+		res = caif_enroll_dev(dev, caifdev, link_support, head_room,
+				&layer, NULL);
+		if (res)
+			cfserl_release(link_support);
+>>>>>>> origin/android16-base
 		caifdev->flowctrl = dev_flowctrl;
 		break;
 

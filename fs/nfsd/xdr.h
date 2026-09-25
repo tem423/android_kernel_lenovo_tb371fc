@@ -33,7 +33,11 @@ struct nfsd_readargs {
 struct nfsd_writeargs {
 	svc_fh			fh;
 	__u32			offset;
+<<<<<<< HEAD
 	int			len;
+=======
+	__u32			len;
+>>>>>>> origin/android16-base
 	struct kvec		first;
 };
 

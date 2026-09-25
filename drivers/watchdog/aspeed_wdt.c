@@ -149,7 +149,11 @@ static int aspeed_wdt_set_timeout(struct watchdog_device *wdd,
 
 	wdd->timeout = timeout;
 
+<<<<<<< HEAD
 	actual = min(timeout, wdd->max_hw_heartbeat_ms * 1000);
+=======
+	actual = min(timeout, wdd->max_hw_heartbeat_ms / 1000);
+>>>>>>> origin/android16-base
 
 	writel(actual * WDT_RATE_1MHZ, wdt->base + WDT_RELOAD_VALUE);
 	writel(WDT_RESTART_MAGIC, wdt->base + WDT_RESTART);

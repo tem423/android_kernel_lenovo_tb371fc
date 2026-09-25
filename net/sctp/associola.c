@@ -1181,8 +1181,12 @@ int sctp_assoc_update(struct sctp_association *asoc,
 		/* Add any peer addresses from the new association. */
 		list_for_each_entry(trans, &new->peer.transport_addr_list,
 				    transports)
+<<<<<<< HEAD
 			if (!sctp_assoc_lookup_paddr(asoc, &trans->ipaddr) &&
 			    !sctp_assoc_add_peer(asoc, &trans->ipaddr,
+=======
+			if (!sctp_assoc_add_peer(asoc, &trans->ipaddr,
+>>>>>>> origin/android16-base
 						 GFP_ATOMIC, trans->state))
 				return -ENOMEM;
 

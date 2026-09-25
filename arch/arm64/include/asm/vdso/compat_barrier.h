@@ -18,6 +18,7 @@
 #undef dmb
 #endif
 
+<<<<<<< HEAD
 #if __LINUX_ARM_ARCH__ >= 7
 #define dmb(option) __asm__ __volatile__ ("dmb " #option : : : "memory")
 #elif __LINUX_ARM_ARCH__ == 6
@@ -26,6 +27,9 @@
 #else
 #define dmb(x) __asm__ __volatile__ ("" : : : "memory")
 #endif
+=======
+#define dmb(option) __asm__ __volatile__ ("dmb " #option : : : "memory")
+>>>>>>> origin/android16-base
 
 #if __LINUX_ARM_ARCH__ >= 8 && defined(CONFIG_AS_DMB_ISHLD)
 #define aarch32_smp_mb()	dmb(ish)

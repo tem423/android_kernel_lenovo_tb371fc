@@ -20,6 +20,14 @@
 
 #include "internal.h"
 
+<<<<<<< HEAD
+=======
+struct follow_page_context {
+	struct dev_pagemap *pgmap;
+	unsigned int page_mask;
+};
+
+>>>>>>> origin/android16-base
 static struct page *no_page_table(struct vm_area_struct *vma,
 		unsigned int flags)
 {
@@ -80,10 +88,17 @@ static inline bool should_force_cow_break(struct vm_area_struct *vma, unsigned i
 }
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
+<<<<<<< HEAD
 		unsigned long address, pmd_t *pmd, unsigned int flags)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct dev_pagemap *pgmap = NULL;
+=======
+		unsigned long address, pmd_t *pmd, unsigned int flags,
+		struct dev_pagemap **pgmap)
+{
+	struct mm_struct *mm = vma->vm_mm;
+>>>>>>> origin/android16-base
 	struct page *page;
 	spinlock_t *ptl;
 	pte_t *ptep, pte;
@@ -125,8 +140,13 @@ retry:
 		 * Only return device mapping pages in the FOLL_GET case since
 		 * they are only valid while holding the pgmap reference.
 		 */
+<<<<<<< HEAD
 		pgmap = get_dev_pagemap(pte_pfn(pte), NULL);
 		if (pgmap)
+=======
+		*pgmap = get_dev_pagemap(pte_pfn(pte), *pgmap);
+		if (*pgmap)
+>>>>>>> origin/android16-base
 			page = pte_page(pte);
 		else
 			goto no_page;
@@ -166,12 +186,15 @@ retry:
 			page = ERR_PTR(-ENOMEM);
 			goto out;
 		}
+<<<<<<< HEAD
 
 		/* drop the pgmap reference now that we hold the page */
 		if (pgmap) {
 			put_dev_pagemap(pgmap);
 			pgmap = NULL;
 		}
+=======
+>>>>>>> origin/android16-base
 	}
 	if (flags & FOLL_TOUCH) {
 		if ((flags & FOLL_WRITE) &&
@@ -222,7 +245,12 @@ no_page:
 
 static struct page *follow_pmd_mask(struct vm_area_struct *vma,
 				    unsigned long address, pud_t *pudp,
+<<<<<<< HEAD
 				    unsigned int flags, unsigned int *page_mask)
+=======
+				    unsigned int flags,
+				    struct follow_page_context *ctx)
+>>>>>>> origin/android16-base
 {
 	pmd_t *pmd, pmdval;
 	spinlock_t *ptl;
@@ -270,13 +298,21 @@ retry:
 	}
 	if (pmd_devmap(pmdval)) {
 		ptl = pmd_lock(mm, pmd);
+<<<<<<< HEAD
 		page = follow_devmap_pmd(vma, address, pmd, flags);
+=======
+		page = follow_devmap_pmd(vma, address, pmd, flags, &ctx->pgmap);
+>>>>>>> origin/android16-base
 		spin_unlock(ptl);
 		if (page)
 			return page;
 	}
 	if (likely(!pmd_trans_huge(pmdval)))
+<<<<<<< HEAD
 		return follow_page_pte(vma, address, pmd, flags);
+=======
+		return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
+>>>>>>> origin/android16-base
 
 	if ((flags & FOLL_NUMA) && pmd_protnone(pmdval))
 		return no_page_table(vma, flags);
@@ -296,7 +332,11 @@ retry_locked:
 	}
 	if (unlikely(!pmd_trans_huge(*pmd))) {
 		spin_unlock(ptl);
+<<<<<<< HEAD
 		return follow_page_pte(vma, address, pmd, flags);
+=======
+		return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
+>>>>>>> origin/android16-base
 	}
 	if (flags & FOLL_SPLIT) {
 		int ret;
@@ -322,6 +362,7 @@ retry_locked:
 		}
 
 		return ret ? ERR_PTR(ret) :
+<<<<<<< HEAD
 			follow_page_pte(vma, address, pmd, flags);
 	}
 	page = follow_trans_huge_pmd(vma, address, pmd, flags);
@@ -334,6 +375,20 @@ retry_locked:
 static struct page *follow_pud_mask(struct vm_area_struct *vma,
 				    unsigned long address, p4d_t *p4dp,
 				    unsigned int flags, unsigned int *page_mask)
+=======
+			follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
+	}
+	page = follow_trans_huge_pmd(vma, address, pmd, flags);
+	spin_unlock(ptl);
+	ctx->page_mask = HPAGE_PMD_NR - 1;
+	return page;
+}
+
+static struct page *follow_pud_mask(struct vm_area_struct *vma,
+				    unsigned long address, p4d_t *p4dp,
+				    unsigned int flags,
+				    struct follow_page_context *ctx)
+>>>>>>> origin/android16-base
 {
 	pud_t *pud;
 	spinlock_t *ptl;
@@ -359,7 +414,11 @@ static struct page *follow_pud_mask(struct vm_area_struct *vma,
 	}
 	if (pud_devmap(*pud)) {
 		ptl = pud_lock(mm, pud);
+<<<<<<< HEAD
 		page = follow_devmap_pud(vma, address, pud, flags);
+=======
+		page = follow_devmap_pud(vma, address, pud, flags, &ctx->pgmap);
+>>>>>>> origin/android16-base
 		spin_unlock(ptl);
 		if (page)
 			return page;
@@ -367,6 +426,7 @@ static struct page *follow_pud_mask(struct vm_area_struct *vma,
 	if (unlikely(pud_bad(*pud)))
 		return no_page_table(vma, flags);
 
+<<<<<<< HEAD
 	return follow_pmd_mask(vma, address, pud, flags, page_mask);
 }
 
@@ -374,6 +434,15 @@ static struct page *follow_pud_mask(struct vm_area_struct *vma,
 static struct page *follow_p4d_mask(struct vm_area_struct *vma,
 				    unsigned long address, pgd_t *pgdp,
 				    unsigned int flags, unsigned int *page_mask)
+=======
+	return follow_pmd_mask(vma, address, pud, flags, ctx);
+}
+
+static struct page *follow_p4d_mask(struct vm_area_struct *vma,
+				    unsigned long address, pgd_t *pgdp,
+				    unsigned int flags,
+				    struct follow_page_context *ctx)
+>>>>>>> origin/android16-base
 {
 	p4d_t *p4d;
 	struct page *page;
@@ -393,7 +462,11 @@ static struct page *follow_p4d_mask(struct vm_area_struct *vma,
 			return page;
 		return no_page_table(vma, flags);
 	}
+<<<<<<< HEAD
 	return follow_pud_mask(vma, address, p4d, flags, page_mask);
+=======
+	return follow_pud_mask(vma, address, p4d, flags, ctx);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -411,13 +484,21 @@ static struct page *follow_p4d_mask(struct vm_area_struct *vma,
  */
 struct page *follow_page_mask(struct vm_area_struct *vma,
 			      unsigned long address, unsigned int flags,
+<<<<<<< HEAD
 			      unsigned int *page_mask)
+=======
+			      struct follow_page_context *ctx)
+>>>>>>> origin/android16-base
 {
 	pgd_t *pgd;
 	struct page *page;
 	struct mm_struct *mm = vma->vm_mm;
 
+<<<<<<< HEAD
 	*page_mask = 0;
+=======
+	ctx->page_mask = 0;
+>>>>>>> origin/android16-base
 
 	/* make this handle hugepd */
 	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
@@ -446,7 +527,23 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
 		return no_page_table(vma, flags);
 	}
 
+<<<<<<< HEAD
 	return follow_p4d_mask(vma, address, pgd, flags, page_mask);
+=======
+	return follow_p4d_mask(vma, address, pgd, flags, ctx);
+}
+
+struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
+			 unsigned int foll_flags)
+{
+	struct follow_page_context ctx = { NULL };
+	struct page *page;
+
+	page = follow_page_mask(vma, address, foll_flags, &ctx);
+	if (ctx.pgmap)
+		put_dev_pagemap(ctx.pgmap);
+	return page;
+>>>>>>> origin/android16-base
 }
 
 static int get_gate_page(struct mm_struct *mm, unsigned long address,
@@ -510,12 +607,21 @@ unmap:
 }
 
 /*
+<<<<<<< HEAD
  * mmap_sem must be held on entry.  If @nonblocking != NULL and
  * *@flags does not include FOLL_NOWAIT, the mmap_sem may be released.
  * If it is, *@nonblocking will be set to 0 and -EBUSY returned.
  */
 static int faultin_page(struct task_struct *tsk, struct vm_area_struct *vma,
 		unsigned long address, unsigned int *flags, int *nonblocking)
+=======
+ * mmap_sem must be held on entry.  If @locked != NULL and *@flags
+ * does not include FOLL_NOWAIT, the mmap_sem may be released.  If it
+ * is, *@locked will be set to 0 and -EBUSY returned.
+ */
+static int faultin_page(struct task_struct *tsk, struct vm_area_struct *vma,
+		unsigned long address, unsigned int *flags, int *locked)
+>>>>>>> origin/android16-base
 {
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
@@ -527,12 +633,24 @@ static int faultin_page(struct task_struct *tsk, struct vm_area_struct *vma,
 		fault_flags |= FAULT_FLAG_WRITE;
 	if (*flags & FOLL_REMOTE)
 		fault_flags |= FAULT_FLAG_REMOTE;
+<<<<<<< HEAD
 	if (nonblocking)
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY;
 	if (*flags & FOLL_NOWAIT)
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_RETRY_NOWAIT;
 	if (*flags & FOLL_TRIED) {
 		VM_WARN_ON_ONCE(fault_flags & FAULT_FLAG_ALLOW_RETRY);
+=======
+	if (locked)
+		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+	if (*flags & FOLL_NOWAIT)
+		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_RETRY_NOWAIT;
+	if (*flags & FOLL_TRIED) {
+		/*
+		 * Note: FAULT_FLAG_ALLOW_RETRY and FAULT_FLAG_TRIED
+		 * can co-exist
+		 */
+>>>>>>> origin/android16-base
 		fault_flags |= FAULT_FLAG_TRIED;
 	}
 
@@ -553,8 +671,13 @@ static int faultin_page(struct task_struct *tsk, struct vm_area_struct *vma,
 	}
 
 	if (ret & VM_FAULT_RETRY) {
+<<<<<<< HEAD
 		if (nonblocking && !(fault_flags & FAULT_FLAG_RETRY_NOWAIT))
 			*nonblocking = 0;
+=======
+		if (locked && !(fault_flags & FAULT_FLAG_RETRY_NOWAIT))
+			*locked = 0;
+>>>>>>> origin/android16-base
 		return -EBUSY;
 	}
 
@@ -631,6 +754,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
  *		only intends to ensure the pages are faulted in.
  * @vmas:	array of pointers to vmas corresponding to each page.
  *		Or NULL if the caller does not require them.
+<<<<<<< HEAD
  * @nonblocking: whether waiting for disk IO or mmap_sem contention
  *
  * Returns number of pages pinned. This may be fewer than the number
@@ -638,6 +762,22 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
  * were pinned, returns -errno. Each page returned must be released
  * with a put_page() call when it is finished with. vmas will only
  * remain valid while mmap_sem is held.
+=======
+ * @locked:     whether we're still with the mmap_sem held
+ *
+ * Returns either number of pages pinned (which may be less than the
+ * number requested), or an error. Details about the return value:
+ *
+ * -- If nr_pages is 0, returns 0.
+ * -- If nr_pages is >0, but no pages were pinned, returns -errno.
+ * -- If nr_pages is >0, and some pages were pinned, returns the number of
+ *    pages pinned. Again, this may be less than nr_pages.
+ * -- 0 return value is possible when the fault would need to be retried.
+ *
+ * The caller is responsible for releasing returned @pages, via put_page().
+ *
+ * @vmas are valid only as long as mmap_sem is held.
+>>>>>>> origin/android16-base
  *
  * Must be called with mmap_sem held.  It may be released.  See below.
  *
@@ -660,6 +800,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
  * appropriate) must be called after the page is finished with, and
  * before put_page is called.
  *
+<<<<<<< HEAD
  * If @nonblocking != NULL, __get_user_pages will not wait for disk IO
  * or mmap_sem contention, and if waiting is needed to pin all pages,
  * *@nonblocking will be set to 0.  Further, if @gup_flags does not
@@ -667,6 +808,13 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
  * this case.
  *
  * A caller using such a combination of @nonblocking and @gup_flags
+=======
+ * If @locked != NULL, *@locked will be set to 0 when mmap_sem is
+ * released by an up_read().  That can happen if @gup_flags does not
+ * have FOLL_NOWAIT.
+ *
+ * A caller using such a combination of @locked and @gup_flags
+>>>>>>> origin/android16-base
  * must therefore hold the mmap_sem for reading only, and recognize
  * when it's been released.  Otherwise, it must be held for either
  * reading or writing and will not be released.
@@ -678,11 +826,19 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 static long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 		unsigned long start, unsigned long nr_pages,
 		unsigned int gup_flags, struct page **pages,
+<<<<<<< HEAD
 		struct vm_area_struct **vmas, int *nonblocking)
 {
 	long i = 0;
 	unsigned int page_mask;
 	struct vm_area_struct *vma = NULL;
+=======
+		struct vm_area_struct **vmas, int *locked)
+{
+	long ret = 0, i = 0;
+	struct vm_area_struct *vma = NULL;
+	struct follow_page_context ctx = { NULL };
+>>>>>>> origin/android16-base
 
 	if (!nr_pages)
 		return 0;
@@ -714,18 +870,43 @@ static long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 						pages ? &pages[i] : NULL);
 				if (ret)
 					return i ? : ret;
+<<<<<<< HEAD
 				page_mask = 0;
 				goto next_page;
 			}
 
 			if (!vma || check_vma_flags(vma, gup_flags))
 				return i ? : -EFAULT;
+=======
+				ctx.page_mask = 0;
+				goto next_page;
+			}
+
+			if (!vma || check_vma_flags(vma, gup_flags)) {
+				ret = -EFAULT;
+				goto out;
+			}
+>>>>>>> origin/android16-base
 			if (is_vm_hugetlb_page(vma)) {
 				if (should_force_cow_break(vma, foll_flags))
 					foll_flags |= FOLL_WRITE;
 				i = follow_hugetlb_page(mm, vma, pages, vmas,
 						&start, &nr_pages, i,
+<<<<<<< HEAD
 						foll_flags, nonblocking);
+=======
+						foll_flags, locked);
+				if (locked && *locked == 0) {
+					/*
+					 * We've got a VM_FAULT_RETRY
+					 * and we've lost mmap_sem.
+					 * We must stop here.
+					 */
+					BUG_ON(gup_flags & FOLL_NOWAIT);
+					BUG_ON(ret != 0);
+					goto out;
+				}
+>>>>>>> origin/android16-base
 				continue;
 			}
 		}
@@ -738,6 +919,7 @@ retry:
 		 * If we have a pending SIGKILL, don't keep faulting pages and
 		 * potentially allocating memory.
 		 */
+<<<<<<< HEAD
 		if (unlikely(fatal_signal_pending(current)))
 			return i ? i : -ERESTARTSYS;
 		cond_resched();
@@ -755,6 +937,28 @@ retry:
 				return i ? i : ret;
 			case -EBUSY:
 				return i;
+=======
+		if (unlikely(fatal_signal_pending(current))) {
+			ret = -ERESTARTSYS;
+			goto out;
+		}
+		cond_resched();
+
+		page = follow_page_mask(vma, start, foll_flags, &ctx);
+		if (!page) {
+			ret = faultin_page(tsk, vma, start, &foll_flags,
+					   locked);
+			switch (ret) {
+			case 0:
+				goto retry;
+			case -EBUSY:
+				ret = 0;
+				/* FALLTHRU */
+			case -EFAULT:
+			case -ENOMEM:
+			case -EHWPOISON:
+				goto out;
+>>>>>>> origin/android16-base
 			case -ENOENT:
 				goto next_page;
 			}
@@ -766,27 +970,49 @@ retry:
 			 */
 			goto next_page;
 		} else if (IS_ERR(page)) {
+<<<<<<< HEAD
 			return i ? i : PTR_ERR(page);
+=======
+			ret = PTR_ERR(page);
+			goto out;
+>>>>>>> origin/android16-base
 		}
 		if (pages) {
 			pages[i] = page;
 			flush_anon_page(vma, page, start);
 			flush_dcache_page(page);
+<<<<<<< HEAD
 			page_mask = 0;
+=======
+			ctx.page_mask = 0;
+>>>>>>> origin/android16-base
 		}
 next_page:
 		if (vmas) {
 			vmas[i] = vma;
+<<<<<<< HEAD
 			page_mask = 0;
 		}
 		page_increm = 1 + (~(start >> PAGE_SHIFT) & page_mask);
+=======
+			ctx.page_mask = 0;
+		}
+		page_increm = 1 + (~(start >> PAGE_SHIFT) & ctx.page_mask);
+>>>>>>> origin/android16-base
 		if (page_increm > nr_pages)
 			page_increm = nr_pages;
 		i += page_increm;
 		start += page_increm * PAGE_SIZE;
 		nr_pages -= page_increm;
 	} while (nr_pages);
+<<<<<<< HEAD
 	return i;
+=======
+out:
+	if (ctx.pgmap)
+		put_dev_pagemap(ctx.pgmap);
+	return i ? i : ret;
+>>>>>>> origin/android16-base
 }
 
 static bool vma_permits_fault(struct vm_area_struct *vma,
@@ -852,7 +1078,11 @@ int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
 	address = untagged_addr(address);
 
 	if (unlocked)
+<<<<<<< HEAD
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY;
+=======
+		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+>>>>>>> origin/android16-base
 
 retry:
 	vma = find_extend_vma(mm, address);
@@ -862,6 +1092,13 @@ retry:
 	if (!vma_permits_fault(vma, fault_flags))
 		return -EFAULT;
 
+<<<<<<< HEAD
+=======
+	if ((fault_flags & FAULT_FLAG_KILLABLE) &&
+	    fatal_signal_pending(current))
+		return -EINTR;
+
+>>>>>>> origin/android16-base
 	ret = handle_mm_fault(vma, address, fault_flags);
 	major |= ret & VM_FAULT_MAJOR;
 	if (ret & VM_FAULT_ERROR) {
@@ -874,12 +1111,18 @@ retry:
 
 	if (ret & VM_FAULT_RETRY) {
 		down_read(&mm->mmap_sem);
+<<<<<<< HEAD
 		if (!(fault_flags & FAULT_FLAG_TRIED)) {
 			*unlocked = true;
 			fault_flags &= ~FAULT_FLAG_ALLOW_RETRY;
 			fault_flags |= FAULT_FLAG_TRIED;
 			goto retry;
 		}
+=======
+		*unlocked = true;
+		fault_flags |= FAULT_FLAG_TRIED;
+		goto retry;
+>>>>>>> origin/android16-base
 	}
 
 	if (tsk) {
@@ -892,6 +1135,13 @@ retry:
 }
 EXPORT_SYMBOL_GPL(fixup_user_fault);
 
+<<<<<<< HEAD
+=======
+/*
+ * Please note that this function, unlike __get_user_pages will not
+ * return 0 for nr_pages > 0 without FOLL_NOWAIT
+ */
+>>>>>>> origin/android16-base
 static __always_inline long __get_user_pages_locked(struct task_struct *tsk,
 						struct mm_struct *mm,
 						unsigned long start,
@@ -951,6 +1201,7 @@ static __always_inline long __get_user_pages_locked(struct task_struct *tsk,
 		/* VM_FAULT_RETRY triggered, so seek to the faulting offset */
 		pages += ret;
 		start += ret << PAGE_SHIFT;
+<<<<<<< HEAD
 
 		/*
 		 * Repeat on the address that fired VM_FAULT_RETRY
@@ -962,6 +1213,41 @@ static __always_inline long __get_user_pages_locked(struct task_struct *tsk,
 		down_read(&mm->mmap_sem);
 		ret = __get_user_pages(tsk, mm, start, 1, flags | FOLL_TRIED,
 				       pages, NULL, NULL);
+=======
+		lock_dropped = true;
+
+retry:
+		/*
+		 * Repeat on the address that fired VM_FAULT_RETRY
+		 * with both FAULT_FLAG_ALLOW_RETRY and
+		 * FAULT_FLAG_TRIED.  Note that GUP can be interrupted
+		 * by fatal signals, so we need to check it before we
+		 * start trying again otherwise it can loop forever.
+		 */
+
+		if (fatal_signal_pending(current)) {
+			if (!pages_done)
+				pages_done = -EINTR;
+			break;
+		}
+
+		ret = down_read_killable(&mm->mmap_sem);
+		if (ret) {
+			BUG_ON(ret > 0);
+			if (!pages_done)
+				pages_done = ret;
+			break;
+		}
+
+		*locked = 1;
+		ret = __get_user_pages(tsk, mm, start, 1, flags | FOLL_TRIED,
+				       pages, NULL, locked);
+		if (!*locked) {
+			/* Continue to retry until we succeeded */
+			BUG_ON(ret != 0);
+			goto retry;
+		}
+>>>>>>> origin/android16-base
 		if (ret != 1) {
 			BUG_ON(ret > 1);
 			if (!pages_done)
@@ -1201,7 +1487,11 @@ EXPORT_SYMBOL(get_user_pages_longterm);
  * @vma:   target vma
  * @start: start address
  * @end:   end address
+<<<<<<< HEAD
  * @nonblocking:
+=======
+ * @locked: whether the mmap_sem is still held
+>>>>>>> origin/android16-base
  *
  * This takes care of mlocking the pages too if VM_LOCKED is set.
  *
@@ -1209,6 +1499,7 @@ EXPORT_SYMBOL(get_user_pages_longterm);
  *
  * vma->vm_mm->mmap_sem must be held.
  *
+<<<<<<< HEAD
  * If @nonblocking is NULL, it may be held for read or write and will
  * be unperturbed.
  *
@@ -1217,6 +1508,16 @@ EXPORT_SYMBOL(get_user_pages_longterm);
  */
 long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *nonblocking)
+=======
+ * If @locked is NULL, it may be held for read or write and will
+ * be unperturbed.
+ *
+ * If @locked is non-NULL, it must held for read only and may be
+ * released.  If it's released, *@locked will be set to 0.
+ */
+long populate_vma_page_range(struct vm_area_struct *vma,
+		unsigned long start, unsigned long end, int *locked)
+>>>>>>> origin/android16-base
 {
 	struct mm_struct *mm = vma->vm_mm;
 	unsigned long nr_pages = (end - start) / PAGE_SIZE;
@@ -1251,7 +1552,11 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	 * not result in a stack expansion that recurses back here.
 	 */
 	return __get_user_pages(current, mm, start, nr_pages, gup_flags,
+<<<<<<< HEAD
 				NULL, NULL, nonblocking);
+=======
+				NULL, NULL, locked);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -1831,12 +2136,19 @@ bool gup_fast_permitted(unsigned long start, int nr_pages, int write)
 int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
 			  struct page **pages)
 {
+<<<<<<< HEAD
 	unsigned long addr, len, end;
+=======
+	unsigned long len, end;
+>>>>>>> origin/android16-base
 	unsigned long flags;
 	int nr = 0;
 
 	start &= PAGE_MASK;
+<<<<<<< HEAD
 	addr = start;
+=======
+>>>>>>> origin/android16-base
 	len = (unsigned long) nr_pages << PAGE_SHIFT;
 	end = start + len;
 
@@ -1864,7 +2176,11 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
 
 	if (gup_fast_permitted(start, nr_pages, write)) {
 		local_irq_save(flags);
+<<<<<<< HEAD
 		gup_pgd_range(addr, end, write, pages, &nr);
+=======
+		gup_pgd_range(start, end, write, pages, &nr);
+>>>>>>> origin/android16-base
 		local_irq_restore(flags);
 	}
 

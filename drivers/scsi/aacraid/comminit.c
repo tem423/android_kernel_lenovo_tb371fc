@@ -652,6 +652,10 @@ struct aac_dev *aac_init_adapter(struct aac_dev *dev)
 
 	if (aac_comm_init(dev)<0){
 		kfree(dev->queues);
+<<<<<<< HEAD
+=======
+		dev->queues = NULL;
+>>>>>>> origin/android16-base
 		return NULL;
 	}
 	/*
@@ -659,6 +663,10 @@ struct aac_dev *aac_init_adapter(struct aac_dev *dev)
 	 */
 	if (aac_fib_setup(dev) < 0) {
 		kfree(dev->queues);
+<<<<<<< HEAD
+=======
+		dev->queues = NULL;
+>>>>>>> origin/android16-base
 		return NULL;
 	}
 		

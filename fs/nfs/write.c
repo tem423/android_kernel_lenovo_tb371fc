@@ -598,9 +598,14 @@ release_request:
 
 static void nfs_write_error_remove_page(struct nfs_page *req)
 {
+<<<<<<< HEAD
 	nfs_end_page_writeback(req);
 	generic_error_remove_page(page_file_mapping(req->wb_page),
 				  req->wb_page);
+=======
+	SetPageError(req->wb_page);
+	nfs_end_page_writeback(req);
+>>>>>>> origin/android16-base
 	nfs_release_request(req);
 }
 
@@ -1045,6 +1050,7 @@ nfs_scan_commit_list(struct list_head *src, struct list_head *dst,
 	struct nfs_page *req, *tmp;
 	int ret = 0;
 
+<<<<<<< HEAD
 restart:
 	list_for_each_entry_safe(req, tmp, src, wb_list) {
 		kref_get(&req->wb_kref);
@@ -1064,6 +1070,13 @@ restart:
 			if (status < 0)
 				break;
 			goto restart;
+=======
+	list_for_each_entry_safe(req, tmp, src, wb_list) {
+		kref_get(&req->wb_kref);
+		if (!nfs_lock_request(req)) {
+			nfs_release_request(req);
+			continue;
+>>>>>>> origin/android16-base
 		}
 		nfs_request_remove_commit_list(req, cinfo);
 		clear_bit(PG_COMMIT_TO_DS, &req->wb_flags);
@@ -1911,6 +1924,10 @@ static int __nfs_commit_inode(struct inode *inode, int how,
 	int may_wait = how & FLUSH_SYNC;
 	int ret, nscan;
 
+<<<<<<< HEAD
+=======
+	how &= ~FLUSH_SYNC;
+>>>>>>> origin/android16-base
 	nfs_init_cinfo_from_inode(&cinfo, inode);
 	nfs_commit_begin(cinfo.mds);
 	for (;;) {

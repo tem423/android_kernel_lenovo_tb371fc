@@ -47,8 +47,13 @@ struct ims_pcu_backlight {
 #define IMS_PCU_PART_NUMBER_LEN		15
 #define IMS_PCU_SERIAL_NUMBER_LEN	8
 #define IMS_PCU_DOM_LEN			8
+<<<<<<< HEAD
 #define IMS_PCU_FW_VERSION_LEN		(9 + 1)
 #define IMS_PCU_BL_VERSION_LEN		(9 + 1)
+=======
+#define IMS_PCU_FW_VERSION_LEN		16
+#define IMS_PCU_BL_VERSION_LEN		16
+>>>>>>> origin/android16-base
 #define IMS_PCU_BL_RESET_REASON_LEN	(2 + 1)
 
 #define IMS_PCU_PCU_B_DEVICE_ID		5

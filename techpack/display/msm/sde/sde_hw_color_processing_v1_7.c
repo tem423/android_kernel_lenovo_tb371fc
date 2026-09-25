@@ -688,11 +688,15 @@ void sde_setup_dspp_pcc_v1_7(struct sde_hw_dspp *ctx, void *cfg)
 		return;
 	}
 	DRM_DEBUG_DRIVER("Enable PCC feature\n");
+<<<<<<< HEAD
 	if (hw_cfg->payload_clear) {
 		pcc = hw_cfg->payload_clear;
 	} else {
 		pcc = hw_cfg->payload;
 	}
+=======
+	pcc = hw_cfg->payload;
+>>>>>>> origin/android16-base
 
 	SDE_REG_WRITE(&ctx->hw, ctx->cap->sblk->pcc.base + PCC_CONST_COEFF_OFF,
 				  pcc->r.c & PCC_CONST_COEFF_MASK);
@@ -955,17 +959,28 @@ void sde_read_dspp_hist_v1_7(struct sde_hw_dspp *ctx, void *cfg)
 
 void sde_lock_dspp_hist_v1_7(struct sde_hw_dspp *ctx, void *cfg)
 {
+<<<<<<< HEAD
 	u32 offset_ctl, val;
 
 	if (!ctx || !cfg) {
+=======
+	u32 offset_ctl;
+
+	if (!ctx) {
+>>>>>>> origin/android16-base
 		DRM_ERROR("invalid parameters ctx %pK", ctx);
 		return;
 	}
 
 	offset_ctl = ctx->cap->sblk->hist.base + PA_HIST_CTRL_DSPP_OFF;
 
+<<<<<<< HEAD
 	val = (*(u32 *)cfg) & 0x1;
 	SDE_REG_WRITE(&ctx->hw, offset_ctl, val);
+=======
+	/* lock hist buffer */
+	SDE_REG_WRITE(&ctx->hw, offset_ctl, 1);
+>>>>>>> origin/android16-base
 }
 
 void sde_setup_dspp_dither_v1_7(struct sde_hw_dspp *ctx, void *cfg)

@@ -126,7 +126,11 @@ void nr_write_internal(struct sock *sk, int frametype)
 	unsigned char  *dptr;
 	int len, timeout;
 
+<<<<<<< HEAD
 	len = NR_NETWORK_LEN + NR_TRANSPORT_LEN;
+=======
+	len = NR_TRANSPORT_LEN;
+>>>>>>> origin/android16-base
 
 	switch (frametype & 0x0F) {
 	case NR_CONNREQ:
@@ -144,7 +148,12 @@ void nr_write_internal(struct sock *sk, int frametype)
 		return;
 	}
 
+<<<<<<< HEAD
 	if ((skb = alloc_skb(len, GFP_ATOMIC)) == NULL)
+=======
+	skb = alloc_skb(NR_NETWORK_LEN + len, GFP_ATOMIC);
+	if (!skb)
+>>>>>>> origin/android16-base
 		return;
 
 	/*
@@ -152,7 +161,11 @@ void nr_write_internal(struct sock *sk, int frametype)
 	 */
 	skb_reserve(skb, NR_NETWORK_LEN);
 
+<<<<<<< HEAD
 	dptr = skb_put(skb, skb_tailroom(skb));
+=======
+	dptr = skb_put(skb, len);
+>>>>>>> origin/android16-base
 
 	switch (frametype & 0x0F) {
 	case NR_CONNREQ:
@@ -184,7 +197,12 @@ void nr_write_internal(struct sock *sk, int frametype)
 		*dptr++ = nr->my_id;
 		*dptr++ = frametype;
 		*dptr++ = nr->window;
+<<<<<<< HEAD
 		if (nr->bpqext) *dptr++ = sysctl_netrom_network_ttl_initialiser;
+=======
+		if (nr->bpqext)
+			*dptr++ = READ_ONCE(sysctl_netrom_network_ttl_initialiser);
+>>>>>>> origin/android16-base
 		break;
 
 	case NR_DISCREQ:
@@ -238,7 +256,11 @@ void __nr_transmit_reply(struct sk_buff *skb, int mine, unsigned char cmdflags)
 	dptr[6] |= AX25_SSSID_SPARE;
 	dptr += AX25_ADDR_LEN;
 
+<<<<<<< HEAD
 	*dptr++ = sysctl_netrom_network_ttl_initialiser;
+=======
+	*dptr++ = READ_ONCE(sysctl_netrom_network_ttl_initialiser);
+>>>>>>> origin/android16-base
 
 	if (mine) {
 		*dptr++ = 0;

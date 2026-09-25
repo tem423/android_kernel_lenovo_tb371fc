@@ -37,6 +37,10 @@
 #include <media/tuner.h>
 
 static DEFINE_MUTEX(dvbdev_mutex);
+<<<<<<< HEAD
+=======
+static LIST_HEAD(dvbdevfops_list);
+>>>>>>> origin/android16-base
 static int dvbdev_debug;
 
 module_param(dvbdev_debug, int, 0644);
@@ -95,10 +99,22 @@ static DECLARE_RWSEM(minor_rwsem);
 static int dvb_device_open(struct inode *inode, struct file *file)
 {
 	struct dvb_device *dvbdev;
+<<<<<<< HEAD
 
 	mutex_lock(&dvbdev_mutex);
 	down_read(&minor_rwsem);
 	dvbdev = dvb_minors[iminor(inode)];
+=======
+	unsigned int minor = iminor(inode);
+
+	if (minor >= MAX_DVB_MINORS)
+		return -ENODEV;
+
+	mutex_lock(&dvbdev_mutex);
+	down_read(&minor_rwsem);
+
+	dvbdev = dvb_minors[minor];
+>>>>>>> origin/android16-base
 
 	if (dvbdev && dvbdev->fops) {
 		int err = 0;
@@ -107,12 +123,21 @@ static int dvb_device_open(struct inode *inode, struct file *file)
 		new_fops = fops_get(dvbdev->fops);
 		if (!new_fops)
 			goto fail;
+<<<<<<< HEAD
 		file->private_data = dvbdev;
+=======
+		file->private_data = dvb_device_get(dvbdev);
+>>>>>>> origin/android16-base
 		replace_fops(file, new_fops);
 		if (file->f_op->open)
 			err = file->f_op->open(inode, file);
 		up_read(&minor_rwsem);
 		mutex_unlock(&dvbdev_mutex);
+<<<<<<< HEAD
+=======
+		if (err)
+			dvb_device_put(dvbdev);
+>>>>>>> origin/android16-base
 		return err;
 	}
 fail:
@@ -171,6 +196,12 @@ int dvb_generic_release(struct inode *inode, struct file *file)
 	}
 
 	dvbdev->users++;
+<<<<<<< HEAD
+=======
+
+	dvb_device_put(dvbdev);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 EXPORT_SYMBOL(dvb_generic_release);
@@ -241,6 +272,10 @@ static void dvb_media_device_free(struct dvb_device *dvbdev)
 
 	if (dvbdev->adapter->conn) {
 		media_device_unregister_entity(dvbdev->adapter->conn);
+<<<<<<< HEAD
+=======
+		kfree(dvbdev->adapter->conn);
+>>>>>>> origin/android16-base
 		dvbdev->adapter->conn = NULL;
 		kfree(dvbdev->adapter->conn_pads);
 		dvbdev->adapter->conn_pads = NULL;
@@ -341,6 +376,10 @@ static int dvb_create_media_entity(struct dvb_device *dvbdev,
 				       GFP_KERNEL);
 		if (!dvbdev->pads) {
 			kfree(dvbdev->entity);
+<<<<<<< HEAD
+=======
+			dvbdev->entity = NULL;
+>>>>>>> origin/android16-base
 			return -ENOMEM;
 		}
 	}
@@ -457,14 +496,23 @@ int dvb_register_device(struct dvb_adapter *adap, struct dvb_device **pdvbdev,
 			enum dvb_device_type type, int demux_sink_pads)
 {
 	struct dvb_device *dvbdev;
+<<<<<<< HEAD
 	struct file_operations *dvbdevfops;
+=======
+	struct file_operations *dvbdevfops = NULL;
+	struct dvbdevfops_node *node = NULL, *new_node = NULL;
+>>>>>>> origin/android16-base
 	struct device *clsdev;
 	int minor;
 	int id, ret;
 
 	mutex_lock(&dvbdev_register_lock);
 
+<<<<<<< HEAD
 	if ((id = dvbdev_get_free_id (adap, type)) < 0){
+=======
+	if ((id = dvbdev_get_free_id (adap, type)) < 0) {
+>>>>>>> origin/android16-base
 		mutex_unlock(&dvbdev_register_lock);
 		*pdvbdev = NULL;
 		pr_err("%s: couldn't find free device id\n", __func__);
@@ -472,12 +520,16 @@ int dvb_register_device(struct dvb_adapter *adap, struct dvb_device **pdvbdev,
 	}
 
 	*pdvbdev = dvbdev = kzalloc(sizeof(*dvbdev), GFP_KERNEL);
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 	if (!dvbdev){
 		mutex_unlock(&dvbdev_register_lock);
 		return -ENOMEM;
 	}
 
+<<<<<<< HEAD
 	dvbdevfops = kzalloc(sizeof(struct file_operations), GFP_KERNEL);
 
 	if (!dvbdevfops){
@@ -487,31 +539,94 @@ int dvb_register_device(struct dvb_adapter *adap, struct dvb_device **pdvbdev,
 	}
 
 	memcpy(dvbdev, template, sizeof(struct dvb_device));
+=======
+	/*
+	 * When a device of the same type is probe()d more than once,
+	 * the first allocated fops are used. This prevents memory leaks
+	 * that can occur when the same device is probe()d repeatedly.
+	 */
+	list_for_each_entry(node, &dvbdevfops_list, list_head) {
+		if (node->fops->owner == adap->module &&
+				node->type == type &&
+				node->template == template) {
+			dvbdevfops = node->fops;
+			break;
+		}
+	}
+
+	if (dvbdevfops == NULL) {
+		dvbdevfops = kmemdup(template->fops, sizeof(*dvbdevfops), GFP_KERNEL);
+		if (!dvbdevfops) {
+			kfree(dvbdev);
+			*pdvbdev = NULL;
+			mutex_unlock(&dvbdev_register_lock);
+			return -ENOMEM;
+		}
+
+		new_node = kzalloc(sizeof(struct dvbdevfops_node), GFP_KERNEL);
+		if (!new_node) {
+			kfree(dvbdevfops);
+			kfree(dvbdev);
+			*pdvbdev = NULL;
+			mutex_unlock(&dvbdev_register_lock);
+			return -ENOMEM;
+		}
+
+		new_node->fops = dvbdevfops;
+		new_node->type = type;
+		new_node->template = template;
+		list_add_tail (&new_node->list_head, &dvbdevfops_list);
+	}
+
+	memcpy(dvbdev, template, sizeof(struct dvb_device));
+	kref_init(&dvbdev->ref);
+>>>>>>> origin/android16-base
 	dvbdev->type = type;
 	dvbdev->id = id;
 	dvbdev->adapter = adap;
 	dvbdev->priv = priv;
 	dvbdev->fops = dvbdevfops;
 	init_waitqueue_head (&dvbdev->wait_queue);
+<<<<<<< HEAD
 
 	memcpy(dvbdevfops, template->fops, sizeof(struct file_operations));
 	dvbdevfops->owner = adap->module;
 
 	list_add_tail (&dvbdev->list_head, &adap->device_list);
 
+=======
+	dvbdevfops->owner = adap->module;
+	list_add_tail (&dvbdev->list_head, &adap->device_list);
+>>>>>>> origin/android16-base
 	down_write(&minor_rwsem);
 #ifdef CONFIG_DVB_DYNAMIC_MINORS
 	for (minor = 0; minor < MAX_DVB_MINORS; minor++)
 		if (dvb_minors[minor] == NULL)
 			break;
+<<<<<<< HEAD
 
 	if (minor == MAX_DVB_MINORS) {
 		kfree(dvbdevfops);
 		kfree(dvbdev);
+=======
+#else
+	minor = nums2minor(adap->num, type, id);
+#endif
+	if (minor >= MAX_DVB_MINORS) {
+		if (new_node) {
+			list_del (&new_node->list_head);
+			kfree(dvbdevfops);
+			kfree(new_node);
+		}
+		list_del (&dvbdev->list_head);
+		kfree(dvbdev);
+		*pdvbdev = NULL;
+>>>>>>> origin/android16-base
 		up_write(&minor_rwsem);
 		mutex_unlock(&dvbdev_register_lock);
 		return -EINVAL;
 	}
+<<<<<<< HEAD
 #else
 	minor = nums2minor(adap->num, type, id);
 #endif
@@ -520,32 +635,73 @@ int dvb_register_device(struct dvb_adapter *adap, struct dvb_device **pdvbdev,
 	dvb_minors[minor] = dvbdev;
 	up_write(&minor_rwsem);
 
+=======
+
+	dvbdev->minor = minor;
+	dvb_minors[minor] = dvb_device_get(dvbdev);
+	up_write(&minor_rwsem);
+>>>>>>> origin/android16-base
 	ret = dvb_register_media_device(dvbdev, type, minor, demux_sink_pads);
 	if (ret) {
 		pr_err("%s: dvb_register_media_device failed to create the mediagraph\n",
 		      __func__);
+<<<<<<< HEAD
 
 		dvb_media_device_free(dvbdev);
 		kfree(dvbdevfops);
 		kfree(dvbdev);
 		up_write(&minor_rwsem);
+=======
+		if (new_node) {
+			list_del (&new_node->list_head);
+			kfree(dvbdevfops);
+			kfree(new_node);
+		}
+		dvb_media_device_free(dvbdev);
+		list_del (&dvbdev->list_head);
+		kfree(dvbdev);
+		*pdvbdev = NULL;
+>>>>>>> origin/android16-base
 		mutex_unlock(&dvbdev_register_lock);
 		return ret;
 	}
 
+<<<<<<< HEAD
 	mutex_unlock(&dvbdev_register_lock);
 
+=======
+>>>>>>> origin/android16-base
 	clsdev = device_create(dvb_class, adap->device,
 			       MKDEV(DVB_MAJOR, minor),
 			       dvbdev, "dvb%d.%s%d", adap->num, dnames[type], id);
 	if (IS_ERR(clsdev)) {
 		pr_err("%s: failed to create device dvb%d.%s%d (%ld)\n",
 		       __func__, adap->num, dnames[type], id, PTR_ERR(clsdev));
+<<<<<<< HEAD
 		return PTR_ERR(clsdev);
 	}
 	dprintk("DVB: register adapter%d/%s%d @ minor: %i (0x%02x)\n",
 		adap->num, dnames[type], id, minor, minor);
 
+=======
+		if (new_node) {
+			list_del (&new_node->list_head);
+			kfree(dvbdevfops);
+			kfree(new_node);
+		}
+		dvb_media_device_free(dvbdev);
+		list_del (&dvbdev->list_head);
+		kfree(dvbdev);
+		*pdvbdev = NULL;
+		mutex_unlock(&dvbdev_register_lock);
+		return PTR_ERR(clsdev);
+	}
+
+	dprintk("DVB: register adapter%d/%s%d @ minor: %i (0x%02x)\n",
+		adap->num, dnames[type], id, minor, minor);
+
+	mutex_unlock(&dvbdev_register_lock);
+>>>>>>> origin/android16-base
 	return 0;
 }
 EXPORT_SYMBOL(dvb_register_device);
@@ -558,6 +714,10 @@ void dvb_remove_device(struct dvb_device *dvbdev)
 
 	down_write(&minor_rwsem);
 	dvb_minors[dvbdev->minor] = NULL;
+<<<<<<< HEAD
+=======
+	dvb_device_put(dvbdev);
+>>>>>>> origin/android16-base
 	up_write(&minor_rwsem);
 
 	dvb_media_device_free(dvbdev);
@@ -569,6 +729,7 @@ void dvb_remove_device(struct dvb_device *dvbdev)
 EXPORT_SYMBOL(dvb_remove_device);
 
 
+<<<<<<< HEAD
 void dvb_free_device(struct dvb_device *dvbdev)
 {
 	if (!dvbdev)
@@ -578,12 +739,39 @@ void dvb_free_device(struct dvb_device *dvbdev)
 	kfree (dvbdev);
 }
 EXPORT_SYMBOL(dvb_free_device);
+=======
+static void dvb_free_device(struct kref *ref)
+{
+	struct dvb_device *dvbdev = container_of(ref, struct dvb_device, ref);
+
+	kfree (dvbdev);
+}
+
+
+struct dvb_device *dvb_device_get(struct dvb_device *dvbdev)
+{
+	kref_get(&dvbdev->ref);
+	return dvbdev;
+}
+EXPORT_SYMBOL(dvb_device_get);
+
+
+void dvb_device_put(struct dvb_device *dvbdev)
+{
+	if (dvbdev)
+		kref_put(&dvbdev->ref, dvb_free_device);
+}
+>>>>>>> origin/android16-base
 
 
 void dvb_unregister_device(struct dvb_device *dvbdev)
 {
 	dvb_remove_device(dvbdev);
+<<<<<<< HEAD
 	dvb_free_device(dvbdev);
+=======
+	dvb_device_put(dvbdev);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(dvb_unregister_device);
 
@@ -899,7 +1087,11 @@ int dvb_usercopy(struct file *file,
 		     int (*func)(struct file *file,
 		     unsigned int cmd, void *arg))
 {
+<<<<<<< HEAD
 	char    sbuf[128];
+=======
+	char    sbuf[128] = {};
+>>>>>>> origin/android16-base
 	void    *mbuf = NULL;
 	void    *parg = NULL;
 	int     err  = -EINVAL;
@@ -1056,9 +1248,23 @@ error:
 
 static void __exit exit_dvbdev(void)
 {
+<<<<<<< HEAD
 	class_destroy(dvb_class);
 	cdev_del(&dvb_device_cdev);
 	unregister_chrdev_region(MKDEV(DVB_MAJOR, 0), MAX_DVB_MINORS);
+=======
+	struct dvbdevfops_node *node, *next;
+
+	class_destroy(dvb_class);
+	cdev_del(&dvb_device_cdev);
+	unregister_chrdev_region(MKDEV(DVB_MAJOR, 0), MAX_DVB_MINORS);
+
+	list_for_each_entry_safe(node, next, &dvbdevfops_list, list_head) {
+		list_del (&node->list_head);
+		kfree(node->fops);
+		kfree(node);
+	}
+>>>>>>> origin/android16-base
 }
 
 subsys_initcall(init_dvbdev);

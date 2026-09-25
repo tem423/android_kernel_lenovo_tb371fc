@@ -33,7 +33,11 @@ static int riscv_clock_next_event(unsigned long delta,
 
 static DEFINE_PER_CPU(struct clock_event_device, riscv_clock_event) = {
 	.name			= "riscv_timer_clockevent",
+<<<<<<< HEAD
 	.features		= CLOCK_EVT_FEAT_ONESHOT,
+=======
+	.features		= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_C3STOP,
+>>>>>>> origin/android16-base
 	.rating			= 100,
 	.set_next_event		= riscv_clock_next_event,
 };

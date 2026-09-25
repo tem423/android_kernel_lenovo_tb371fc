@@ -3585,7 +3585,11 @@ static int adv7842_remove(struct i2c_client *client)
 	struct adv7842_state *state = to_state(sd);
 
 	adv7842_irq_enable(sd, false);
+<<<<<<< HEAD
 	cancel_delayed_work(&state->delayed_work_enable_hotplug);
+=======
+	cancel_delayed_work_sync(&state->delayed_work_enable_hotplug);
+>>>>>>> origin/android16-base
 	v4l2_device_unregister_subdev(sd);
 	media_entity_cleanup(&sd->entity);
 	adv7842_unregister_clients(sd);

@@ -71,6 +71,12 @@ struct machdep_calls {
 	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
 				*bridge);
 
+<<<<<<< HEAD
+=======
+	/* finds all the pci_controllers present at boot */
+	void 		(*discover_phbs)(void);
+
+>>>>>>> origin/android16-base
 	/* To setup PHBs when using automatic OF platform driver for PCI */
 	int		(*pci_setup_phb)(struct pci_controller *host);
 

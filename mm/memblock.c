@@ -234,6 +234,7 @@ __memblock_find_range_top_down(phys_addr_t start, phys_addr_t end,
  *
  * Find @size free area aligned to @align in the specified range and node.
  *
+<<<<<<< HEAD
  * When allocation direction is bottom-up, the @start should be greater
  * than the end of the kernel image. Otherwise, it will be trimmed. The
  * reason is that we want the bottom-up allocation just near the kernel
@@ -242,6 +243,8 @@ __memblock_find_range_top_down(phys_addr_t start, phys_addr_t end,
  *
  * If bottom-up allocation failed, will try to allocate memory top-down.
  *
+=======
+>>>>>>> origin/android16-base
  * Return:
  * Found address on success, 0 on failure.
  */
@@ -250,8 +253,11 @@ phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
 					phys_addr_t end, int nid,
 					enum memblock_flags flags)
 {
+<<<<<<< HEAD
 	phys_addr_t kernel_end, ret;
 
+=======
+>>>>>>> origin/android16-base
 	/* pump up @end */
 	if (end == MEMBLOCK_ALLOC_ACCESSIBLE ||
 	    end == MEMBLOCK_ALLOC_KASAN)
@@ -260,6 +266,7 @@ phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
 	/* avoid allocating the first page */
 	start = max_t(phys_addr_t, start, PAGE_SIZE);
 	end = max(start, end);
+<<<<<<< HEAD
 	kernel_end = __pa_symbol(_end);
 
 	/*
@@ -294,6 +301,15 @@ phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
 
 	return __memblock_find_range_top_down(start, end, size, align, nid,
 					      flags);
+=======
+
+	if (memblock_bottom_up())
+		return __memblock_find_range_bottom_up(start, end, size, align,
+						       nid, flags);
+	else
+		return __memblock_find_range_top_down(start, end, size, align,
+						      nid, flags);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -360,14 +376,28 @@ void __init memblock_discard(void)
 		addr = __pa(memblock.reserved.regions);
 		size = PAGE_ALIGN(sizeof(struct memblock_region) *
 				  memblock.reserved.max);
+<<<<<<< HEAD
 		__memblock_free_late(addr, size);
+=======
+		if (memblock_reserved_in_slab)
+			kfree(memblock.reserved.regions);
+		else
+			__memblock_free_late(addr, size);
+>>>>>>> origin/android16-base
 	}
 
 	if (memblock.memory.regions != memblock_memory_init_regions) {
 		addr = __pa(memblock.memory.regions);
 		size = PAGE_ALIGN(sizeof(struct memblock_region) *
 				  memblock.memory.max);
+<<<<<<< HEAD
 		__memblock_free_late(addr, size);
+=======
+		if (memblock_memory_in_slab)
+			kfree(memblock.memory.regions);
+		else
+			__memblock_free_late(addr, size);
+>>>>>>> origin/android16-base
 	}
 }
 #endif

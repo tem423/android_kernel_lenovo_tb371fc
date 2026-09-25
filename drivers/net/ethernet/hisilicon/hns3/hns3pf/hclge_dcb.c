@@ -96,6 +96,18 @@ static int hclge_ets_validate(struct hclge_dev *hdev, struct ieee_ets *ets,
 				*changed = true;
 			break;
 		case IEEE_8021QAZ_TSA_ETS:
+<<<<<<< HEAD
+=======
+			/* The hardware will switch to sp mode if bandwidth is
+			 * 0, so limit ets bandwidth must be greater than 0.
+			 */
+			if (!ets->tc_tx_bw[i]) {
+				dev_err(&hdev->pdev->dev,
+					"tc%u ets bw cannot be 0\n", i);
+				return -EINVAL;
+			}
+
+>>>>>>> origin/android16-base
 			if (hdev->tm_info.tc_info[i].tc_sch_mode !=
 				HCLGE_SCH_MODE_DWRR)
 				*changed = true;
@@ -204,6 +216,7 @@ static int hclge_ieee_getpfc(struct hnae3_handle *h, struct ieee_pfc *pfc)
 	u64 requests[HNAE3_MAX_TC], indications[HNAE3_MAX_TC];
 	struct hclge_vport *vport = hclge_get_vport(h);
 	struct hclge_dev *hdev = vport->back;
+<<<<<<< HEAD
 	u8 i, j, pfc_map, *prio_tc;
 	int ret;
 
@@ -219,6 +232,14 @@ static int hclge_ieee_getpfc(struct hnae3_handle *h, struct ieee_pfc *pfc)
 				pfc->pfc_en |= BIT(j);
 		}
 	}
+=======
+	int ret;
+	u8 i;
+
+	memset(pfc, 0, sizeof(*pfc));
+	pfc->pfc_cap = hdev->pfc_max;
+	pfc->pfc_en = hdev->tm_info.pfc_en;
+>>>>>>> origin/android16-base
 
 	ret = hclge_pfc_tx_stats_get(hdev, requests);
 	if (ret)

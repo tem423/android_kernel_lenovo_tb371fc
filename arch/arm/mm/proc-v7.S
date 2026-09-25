@@ -638,7 +638,11 @@ __v7_setup_stack:
 	string	cpu_elf_name, "v7"
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/android16-base
 
 	/*
 	 * Standard v7 proc info content

@@ -143,7 +143,11 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_LPAR)
 _GLOBAL(swsusp_arch_resume)
 	/* Stop pending alitvec streams and memory accesses */
 BEGIN_FTR_SECTION
+<<<<<<< HEAD
 	DSSALL
+=======
+	PPC_DSSALL
+>>>>>>> origin/android16-base
 END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
 	sync
 

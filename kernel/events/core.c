@@ -826,7 +826,11 @@ static DEFINE_PER_CPU(struct list_head, cgrp_cpuctx_list);
  */
 static void perf_cgroup_switch(struct task_struct *task, int mode)
 {
+<<<<<<< HEAD
 	struct perf_cpu_context *cpuctx;
+=======
+	struct perf_cpu_context *cpuctx, *tmp;
+>>>>>>> origin/android16-base
 	struct list_head *list;
 	unsigned long flags;
 
@@ -837,7 +841,11 @@ static void perf_cgroup_switch(struct task_struct *task, int mode)
 	local_irq_save(flags);
 
 	list = this_cpu_ptr(&cgrp_cpuctx_list);
+<<<<<<< HEAD
 	list_for_each_entry(cpuctx, list, cgrp_cpuctx_entry) {
+=======
+	list_for_each_entry_safe(cpuctx, tmp, list, cgrp_cpuctx_entry) {
+>>>>>>> origin/android16-base
 		WARN_ON_ONCE(cpuctx->ctx.nr_cgroups == 0);
 
 		perf_ctx_lock(cpuctx, cpuctx->task_ctx);
@@ -1161,6 +1169,14 @@ static int perf_mux_hrtimer_restart(struct perf_cpu_context *cpuctx)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int perf_mux_hrtimer_restart_ipi(void *arg)
+{
+	return perf_mux_hrtimer_restart(arg);
+}
+
+>>>>>>> origin/android16-base
 void perf_pmu_disable(struct pmu *pmu)
 {
 	int *count = this_cpu_ptr(pmu->pmu_disable_count);
@@ -1733,12 +1749,17 @@ static inline void perf_event__state_init(struct perf_event *event)
 					      PERF_EVENT_STATE_INACTIVE;
 }
 
+<<<<<<< HEAD
 static void __perf_event_read_size(struct perf_event *event, int nr_siblings)
+=======
+static int __perf_event_read_size(u64 read_format, int nr_siblings)
+>>>>>>> origin/android16-base
 {
 	int entry = sizeof(u64); /* value */
 	int size = 0;
 	int nr = 1;
 
+<<<<<<< HEAD
 	if (event->attr.read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
 		size += sizeof(u64);
 
@@ -1749,12 +1770,32 @@ static void __perf_event_read_size(struct perf_event *event, int nr_siblings)
 		entry += sizeof(u64);
 
 	if (event->attr.read_format & PERF_FORMAT_GROUP) {
+=======
+	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
+		size += sizeof(u64);
+
+	if (read_format & PERF_FORMAT_TOTAL_TIME_RUNNING)
+		size += sizeof(u64);
+
+	if (read_format & PERF_FORMAT_ID)
+		entry += sizeof(u64);
+
+	if (read_format & PERF_FORMAT_GROUP) {
+>>>>>>> origin/android16-base
 		nr += nr_siblings;
 		size += sizeof(u64);
 	}
 
+<<<<<<< HEAD
 	size += entry * nr;
 	event->read_size = size;
+=======
+	/*
+	 * Since perf_event_validate_size() limits this to 16k and inhibits
+	 * adding more siblings, this will never overflow.
+	 */
+	return size + nr * entry;
+>>>>>>> origin/android16-base
 }
 
 static void __perf_event_header_size(struct perf_event *event, u64 sample_type)
@@ -1795,8 +1836,14 @@ static void __perf_event_header_size(struct perf_event *event, u64 sample_type)
  */
 static void perf_event__header_size(struct perf_event *event)
 {
+<<<<<<< HEAD
 	__perf_event_read_size(event,
 			       event->group_leader->nr_siblings);
+=======
+	event->read_size =
+		__perf_event_read_size(event->attr.read_format,
+				       event->group_leader->nr_siblings);
+>>>>>>> origin/android16-base
 	__perf_event_header_size(event, event->attr.sample_type);
 }
 
@@ -1827,6 +1874,7 @@ static void perf_event__id_header_size(struct perf_event *event)
 	event->id_header_size = size;
 }
 
+<<<<<<< HEAD
 static bool perf_event_validate_size(struct perf_event *event)
 {
 	/*
@@ -1845,6 +1893,37 @@ static bool perf_event_validate_size(struct perf_event *event)
 	    event->id_header_size + sizeof(struct perf_event_header) >= 16*1024)
 		return false;
 
+=======
+/*
+ * Check that adding an event to the group does not result in anybody
+ * overflowing the 64k event limit imposed by the output buffer.
+ *
+ * Specifically, check that the read_size for the event does not exceed 16k,
+ * read_size being the one term that grows with groups size. Since read_size
+ * depends on per-event read_format, also (re)check the existing events.
+ *
+ * This leaves 48k for the constant size fields and things like callchains,
+ * branch stacks and register sets.
+ */
+static bool perf_event_validate_size(struct perf_event *event)
+{
+	struct perf_event *sibling, *group_leader = event->group_leader;
+
+	if (__perf_event_read_size(event->attr.read_format,
+				   group_leader->nr_siblings + 1) > 16*1024)
+		return false;
+
+	if (__perf_event_read_size(group_leader->attr.read_format,
+				   group_leader->nr_siblings + 1) > 16*1024)
+		return false;
+
+	for_each_sibling_event(sibling, group_leader) {
+		if (__perf_event_read_size(sibling->attr.read_format,
+					   group_leader->nr_siblings + 1) > 16*1024)
+			return false;
+	}
+
+>>>>>>> origin/android16-base
 	return true;
 }
 
@@ -1871,6 +1950,10 @@ static void perf_group_attach(struct perf_event *event)
 
 	list_add_tail(&event->sibling_list, &group_leader->sibling_list);
 	group_leader->nr_siblings++;
+<<<<<<< HEAD
+=======
+	group_leader->group_generation++;
+>>>>>>> origin/android16-base
 
 	perf_event__header_size(group_leader);
 
@@ -1941,6 +2024,10 @@ static void perf_group_detach(struct perf_event *event)
 	if (event->group_leader != event) {
 		list_del_init(&event->sibling_list);
 		event->group_leader->nr_siblings--;
+<<<<<<< HEAD
+=======
+		event->group_leader->group_generation++;
+>>>>>>> origin/android16-base
 
 		if (event->shared)
 			event->group_leader = event;
@@ -3655,7 +3742,15 @@ static void perf_adjust_period(struct perf_event *event, u64 nsec, u64 count, bo
 	period = perf_calculate_period(event, nsec, count);
 
 	delta = (s64)(period - hwc->sample_period);
+<<<<<<< HEAD
 	delta = (delta + 7) / 8; /* low pass filter */
+=======
+	if (delta >= 0)
+		delta += 7;
+	else
+		delta -= 7;
+	delta /= 8; /* low pass filter */
+>>>>>>> origin/android16-base
 
 	sample_period = hwc->sample_period + delta;
 
@@ -4232,7 +4327,13 @@ find_get_context(struct pmu *pmu, struct task_struct *task,
 		cpuctx = per_cpu_ptr(pmu->pmu_cpu_context, cpu);
 		ctx = &cpuctx->ctx;
 		get_ctx(ctx);
+<<<<<<< HEAD
 		++ctx->pin_count;
+=======
+		raw_spin_lock_irqsave(&ctx->lock, flags);
+		++ctx->pin_count;
+		raw_spin_unlock_irqrestore(&ctx->lock, flags);
+>>>>>>> origin/android16-base
 
 		return ctx;
 	}
@@ -4752,6 +4853,10 @@ static int __perf_event_release_kernel(struct perf_event *event)
 again:
 	mutex_lock(&event->child_mutex);
 	list_for_each_entry(child, &event->child_list, child_list) {
+<<<<<<< HEAD
+=======
+		void *var = NULL;
+>>>>>>> origin/android16-base
 
 		/*
 		 * Cannot change, child events are not migrated, see the
@@ -4792,11 +4897,29 @@ again:
 			 * this can't be the last reference.
 			 */
 			put_event(event);
+<<<<<<< HEAD
+=======
+		} else {
+			var = &ctx->refcount;
+>>>>>>> origin/android16-base
 		}
 
 		mutex_unlock(&event->child_mutex);
 		mutex_unlock(&ctx->mutex);
 		put_ctx(ctx);
+<<<<<<< HEAD
+=======
+
+		if (var) {
+			/*
+			 * If perf_event_free_task() has deleted all events from the
+			 * ctx while the child_mutex got released above, make sure to
+			 * notify about the preceding put_ctx().
+			 */
+			smp_mb(); /* pairs with wait_var_event() */
+			wake_up_var(var);
+		}
+>>>>>>> origin/android16-base
 		goto again;
 	}
 	mutex_unlock(&event->child_mutex);
@@ -4887,7 +5010,11 @@ static int __perf_read_group_add(struct perf_event *leader,
 					u64 read_format, u64 *values)
 {
 	struct perf_event_context *ctx = leader->ctx;
+<<<<<<< HEAD
 	struct perf_event *sub;
+=======
+	struct perf_event *sub, *parent;
+>>>>>>> origin/android16-base
 	unsigned long flags;
 	int n = 1; /* skip @nr */
 	int ret;
@@ -4897,6 +5024,36 @@ static int __perf_read_group_add(struct perf_event *leader,
 		return ret;
 
 	raw_spin_lock_irqsave(&ctx->lock, flags);
+<<<<<<< HEAD
+=======
+	/*
+	 * Verify the grouping between the parent and child (inherited)
+	 * events is still in tact.
+	 *
+	 * Specifically:
+	 *  - leader->ctx->lock pins leader->sibling_list
+	 *  - parent->child_mutex pins parent->child_list
+	 *  - parent->ctx->mutex pins parent->sibling_list
+	 *
+	 * Because parent->ctx != leader->ctx (and child_list nests inside
+	 * ctx->mutex), group destruction is not atomic between children, also
+	 * see perf_event_release_kernel(). Additionally, parent can grow the
+	 * group.
+	 *
+	 * Therefore it is possible to have parent and child groups in a
+	 * different configuration and summing over such a beast makes no sense
+	 * what so ever.
+	 *
+	 * Reject this.
+	 */
+	parent = leader->parent;
+	if (parent &&
+	    (parent->group_generation != leader->group_generation ||
+	     parent->nr_siblings != leader->nr_siblings)) {
+		ret = -ECHILD;
+		goto unlock;
+	}
+>>>>>>> origin/android16-base
 
 	/*
 	 * Since we co-schedule groups, {enabled,running} times of siblings
@@ -4926,8 +5083,14 @@ static int __perf_read_group_add(struct perf_event *leader,
 			values[n++] = primary_event_id(sub);
 	}
 
+<<<<<<< HEAD
 	raw_spin_unlock_irqrestore(&ctx->lock, flags);
 	return 0;
+=======
+unlock:
+	raw_spin_unlock_irqrestore(&ctx->lock, flags);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int perf_read_group(struct perf_event *event,
@@ -4946,10 +5109,13 @@ static int perf_read_group(struct perf_event *event,
 
 	values[0] = 1 + leader->nr_siblings;
 
+<<<<<<< HEAD
 	/*
 	 * By locking the child_mutex of the leader we effectively
 	 * lock the child list of all siblings.. XXX explain how.
 	 */
+=======
+>>>>>>> origin/android16-base
 	mutex_lock(&leader->child_mutex);
 
 	ret = __perf_read_group_add(leader, read_format, values);
@@ -5654,11 +5820,18 @@ static void perf_pmu_output_stop(struct perf_event *event);
 static void perf_mmap_close(struct vm_area_struct *vma)
 {
 	struct perf_event *event = vma->vm_file->private_data;
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 	struct ring_buffer *rb = ring_buffer_get(event);
 	struct user_struct *mmap_user = rb->mmap_user;
 	int mmap_locked = rb->mmap_locked;
 	unsigned long size = perf_data_size(rb);
+<<<<<<< HEAD
+=======
+	bool detach_rest = false;
+>>>>>>> origin/android16-base
 
 	if (event->pmu->event_unmapped)
 		event->pmu->event_unmapped(event, vma->vm_mm);
@@ -5689,7 +5862,12 @@ static void perf_mmap_close(struct vm_area_struct *vma)
 		mutex_unlock(&event->mmap_mutex);
 	}
 
+<<<<<<< HEAD
 	atomic_dec(&rb->mmap_count);
+=======
+	if (atomic_dec_and_test(&rb->mmap_count))
+		detach_rest = true;
+>>>>>>> origin/android16-base
 
 	if (!atomic_dec_and_mutex_lock(&event->mmap_count, &event->mmap_mutex))
 		goto out_put;
@@ -5698,7 +5876,11 @@ static void perf_mmap_close(struct vm_area_struct *vma)
 	mutex_unlock(&event->mmap_mutex);
 
 	/* If there's still other mmap()s of this buffer, we're done. */
+<<<<<<< HEAD
 	if (atomic_read(&rb->mmap_count))
+=======
+	if (!detach_rest)
+>>>>>>> origin/android16-base
 		goto out_put;
 
 	/*
@@ -5810,6 +5992,11 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
 			return -EINVAL;
 
 		nr_pages = vma_size / PAGE_SIZE;
+<<<<<<< HEAD
+=======
+		if (nr_pages > INT_MAX)
+			return -ENOMEM;
+>>>>>>> origin/android16-base
 
 		mutex_lock(&event->mmap_mutex);
 		ret = -EINVAL;
@@ -5877,10 +6064,17 @@ again:
 
 		if (!atomic_inc_not_zero(&event->rb->mmap_count)) {
 			/*
+<<<<<<< HEAD
 			 * Raced against perf_mmap_close() through
 			 * perf_event_set_output(). Try again, hope for better
 			 * luck.
 			 */
+=======
+			 * Raced against perf_mmap_close(); remove the
+			 * event and try again.
+			 */
+			ring_buffer_attach(event, NULL);
+>>>>>>> origin/android16-base
 			mutex_unlock(&event->mmap_mutex);
 			goto again;
 		}
@@ -6344,9 +6538,22 @@ static void perf_output_read_group(struct perf_output_handle *handle,
 {
 	struct perf_event *leader = event->group_leader, *sub;
 	u64 read_format = event->attr.read_format;
+<<<<<<< HEAD
 	u64 values[5];
 	int n = 0;
 
+=======
+	unsigned long flags;
+	u64 values[5];
+	int n = 0;
+
+	/*
+	 * Disabling interrupts avoids all counter scheduling
+	 * (context switches, timer based rotation and IPIs).
+	 */
+	local_irq_save(flags);
+
+>>>>>>> origin/android16-base
 	values[n++] = 1 + leader->nr_siblings;
 
 	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
@@ -6378,6 +6585,11 @@ static void perf_output_read_group(struct perf_output_handle *handle,
 
 		__output_copy(handle, values, n * sizeof(u64));
 	}
+<<<<<<< HEAD
+=======
+
+	local_irq_restore(flags);
+>>>>>>> origin/android16-base
 }
 
 #define PERF_FORMAT_TOTAL_TIMES (PERF_FORMAT_TOTAL_TIME_ENABLED|\
@@ -6582,7 +6794,10 @@ void perf_output_sample(struct perf_output_handle *handle,
 static u64 perf_virt_to_phys(u64 virt)
 {
 	u64 phys_addr = 0;
+<<<<<<< HEAD
 	struct page *p = NULL;
+=======
+>>>>>>> origin/android16-base
 
 	if (!virt)
 		return 0;
@@ -6601,6 +6816,7 @@ static u64 perf_virt_to_phys(u64 virt)
 		 * If failed, leave phys_addr as 0.
 		 */
 		if (current->mm != NULL) {
+<<<<<<< HEAD
 			pagefault_disable();
 			if (__get_user_pages_fast(virt, 1, 0, &p) == 1)
 				phys_addr = page_to_phys(p) + virt % PAGE_SIZE;
@@ -6609,6 +6825,17 @@ static u64 perf_virt_to_phys(u64 virt)
 
 		if (p)
 			put_page(p);
+=======
+			struct page *p;
+
+			pagefault_disable();
+			if (__get_user_pages_fast(virt, 1, 0, &p) == 1) {
+				phys_addr = page_to_phys(p) + virt % PAGE_SIZE;
+				put_page(p);
+			}
+			pagefault_enable();
+		}
+>>>>>>> origin/android16-base
 	}
 
 	return phys_addr;
@@ -8001,8 +8228,13 @@ __perf_event_account_interrupt(struct perf_event *event, int throttle)
 		hwc->interrupts = 1;
 	} else {
 		hwc->interrupts++;
+<<<<<<< HEAD
 		if (unlikely(throttle
 			     && hwc->interrupts >= max_samples_per_tick)) {
+=======
+		if (unlikely(throttle &&
+			     hwc->interrupts > max_samples_per_tick)) {
+>>>>>>> origin/android16-base
 			__this_cpu_inc(perf_throttled_count);
 			tick_dep_set_cpu(smp_processor_id(), TICK_DEP_BIT_PERF_EVENTS);
 			hwc->interrupts = MAX_INTERRUPTS;
@@ -9074,7 +9306,11 @@ static void perf_event_addr_filters_apply(struct perf_event *event)
 		return;
 
 	if (ifh->nr_file_filters) {
+<<<<<<< HEAD
 		mm = get_task_mm(event->ctx->task);
+=======
+		mm = get_task_mm(task);
+>>>>>>> origin/android16-base
 		if (!mm)
 			goto restart;
 
@@ -9297,8 +9533,16 @@ perf_event_parse_addr_filter(struct perf_event *event, char *fstr,
 			}
 
 			/* ready to consume more filters */
+<<<<<<< HEAD
 			state = IF_STATE_ACTION;
 			filter = NULL;
+=======
+			kfree(filename);
+			filename = NULL;
+			state = IF_STATE_ACTION;
+			filter = NULL;
+			kernel = 0;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -9803,8 +10047,12 @@ perf_event_mux_interval_ms_store(struct device *dev,
 		cpuctx = per_cpu_ptr(pmu->pmu_cpu_context, cpu);
 		cpuctx->hrtimer_interval = ns_to_ktime(NSEC_PER_MSEC * timer);
 
+<<<<<<< HEAD
 		cpu_function_call(cpu,
 			(remote_function_f)perf_mux_hrtimer_restart, cpuctx);
+=======
+		cpu_function_call(cpu, perf_mux_hrtimer_restart_ipi, cpuctx);
+>>>>>>> origin/android16-base
 	}
 	cpus_read_unlock();
 	mutex_unlock(&mux_interval_mutex);
@@ -9841,13 +10089,24 @@ static int pmu_dev_alloc(struct pmu *pmu)
 
 	pmu->dev->groups = pmu->attr_groups;
 	device_initialize(pmu->dev);
+<<<<<<< HEAD
 	ret = dev_set_name(pmu->dev, "%s", pmu->name);
 	if (ret)
 		goto free_dev;
+=======
+>>>>>>> origin/android16-base
 
 	dev_set_drvdata(pmu->dev, pmu);
 	pmu->dev->bus = &pmu_bus;
 	pmu->dev->release = pmu_dev_release;
+<<<<<<< HEAD
+=======
+
+	ret = dev_set_name(pmu->dev, "%s", pmu->name);
+	if (ret)
+		goto free_dev;
+
+>>>>>>> origin/android16-base
 	ret = device_add(pmu->dev);
 	if (ret)
 		goto free_dev;
@@ -10358,7 +10617,10 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 	if (!group_leader)
 		group_leader = event;
 
+<<<<<<< HEAD
 	mutex_init(&event->group_leader_mutex);
+=======
+>>>>>>> origin/android16-base
 	mutex_init(&event->child_mutex);
 	INIT_LIST_HEAD(&event->child_list);
 
@@ -10553,18 +10815,23 @@ static int perf_copy_attr(struct perf_event_attr __user *uattr,
 	u32 size;
 	int ret;
 
+<<<<<<< HEAD
 	if (!access_ok(VERIFY_WRITE, uattr, PERF_ATTR_SIZE_VER0))
 		return -EFAULT;
 
 	/*
 	 * zero the full structure, so that a short copy will be nice.
 	 */
+=======
+	/* Zero the full structure, so that a short copy will be nice. */
+>>>>>>> origin/android16-base
 	memset(attr, 0, sizeof(*attr));
 
 	ret = get_user(size, &uattr->size);
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	if (size > PAGE_SIZE)	/* silly large */
 		goto err_size;
 
@@ -10602,6 +10869,21 @@ static int perf_copy_attr(struct perf_event_attr __user *uattr,
 	if (ret)
 		return -EFAULT;
 
+=======
+	/* ABI compatibility quirk: */
+	if (!size)
+		size = PERF_ATTR_SIZE_VER0;
+	if (size < PERF_ATTR_SIZE_VER0 || size > PAGE_SIZE)
+		goto err_size;
+
+	ret = copy_struct_from_user(attr, sizeof(*attr), uattr, size);
+	if (ret) {
+		if (ret == -E2BIG)
+			goto err_size;
+		return ret;
+	}
+
+>>>>>>> origin/android16-base
 	attr->size = size;
 
 	if (attr->__reserved_1)
@@ -10684,14 +10966,33 @@ err_size:
 	goto out;
 }
 
+<<<<<<< HEAD
+=======
+static void mutex_lock_double(struct mutex *a, struct mutex *b)
+{
+	if (b < a)
+		swap(a, b);
+
+	mutex_lock(a);
+	mutex_lock_nested(b, SINGLE_DEPTH_NESTING);
+}
+
+>>>>>>> origin/android16-base
 static int
 perf_event_set_output(struct perf_event *event, struct perf_event *output_event)
 {
 	struct ring_buffer *rb = NULL;
 	int ret = -EINVAL;
 
+<<<<<<< HEAD
 	if (!output_event)
 		goto set;
+=======
+	if (!output_event) {
+		mutex_lock(&event->mmap_mutex);
+		goto set;
+	}
+>>>>>>> origin/android16-base
 
 	/* don't allow circular references */
 	if (event == output_event)
@@ -10706,7 +11007,11 @@ perf_event_set_output(struct perf_event *event, struct perf_event *output_event)
 	/*
 	 * If its not a per-cpu rb, it must be the same task.
 	 */
+<<<<<<< HEAD
 	if (output_event->cpu == -1 && output_event->ctx != event->ctx)
+=======
+	if (output_event->cpu == -1 && output_event->hw.target != event->hw.target)
+>>>>>>> origin/android16-base
 		goto out;
 
 	/*
@@ -10729,8 +11034,20 @@ perf_event_set_output(struct perf_event *event, struct perf_event *output_event)
 	    event->pmu != output_event->pmu)
 		goto out;
 
+<<<<<<< HEAD
 set:
 	mutex_lock(&event->mmap_mutex);
+=======
+	/*
+	 * Hold both mmap_mutex to serialize against perf_mmap_close().  Since
+	 * output_event is already on rb->event_list, and the list iteration
+	 * restarts after every removal, it is guaranteed this new event is
+	 * observed *OR* if output_event is already removed, it's guaranteed we
+	 * observe !rb->mmap_count.
+	 */
+	mutex_lock_double(&event->mmap_mutex, &output_event->mmap_mutex);
+set:
+>>>>>>> origin/android16-base
 	/* Can't redirect output if we've got an active mmap() */
 	if (atomic_read(&event->mmap_count))
 		goto unlock;
@@ -10740,6 +11057,15 @@ set:
 		rb = ring_buffer_get(output_event);
 		if (!rb)
 			goto unlock;
+<<<<<<< HEAD
+=======
+
+		/* did we race against perf_mmap_close() */
+		if (!atomic_read(&rb->mmap_count)) {
+			ring_buffer_put(rb);
+			goto unlock;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	ring_buffer_attach(event, rb);
@@ -10747,11 +11073,17 @@ set:
 	ret = 0;
 unlock:
 	mutex_unlock(&event->mmap_mutex);
+<<<<<<< HEAD
+=======
+	if (output_event)
+		mutex_unlock(&output_event->mmap_mutex);
+>>>>>>> origin/android16-base
 
 out:
 	return ret;
 }
 
+<<<<<<< HEAD
 static void mutex_lock_double(struct mutex *a, struct mutex *b)
 {
 	if (b < a)
@@ -10761,6 +11093,8 @@ static void mutex_lock_double(struct mutex *a, struct mutex *b)
 	mutex_lock_nested(b, SINGLE_DEPTH_NESTING);
 }
 
+=======
+>>>>>>> origin/android16-base
 static int perf_event_set_clock(struct perf_event *event, clockid_t clk_id)
 {
 	bool nmi_safe = false;
@@ -10869,7 +11203,11 @@ SYSCALL_DEFINE5(perf_event_open,
 	struct perf_event *group_leader = NULL, *output_event = NULL;
 	struct perf_event *event = NULL, *sibling;
 	struct perf_event_attr attr;
+<<<<<<< HEAD
 	struct perf_event_context *ctx, *uninitialized_var(gctx);
+=======
+	struct perf_event_context *ctx, *gctx;
+>>>>>>> origin/android16-base
 	struct file *event_file = NULL;
 	struct fd group = {NULL, 0};
 	struct task_struct *task = NULL;
@@ -10884,12 +11222,21 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (flags & ~PERF_FLAG_ALL)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	/* Do we allow access to perf_event_open(2) ? */
 	err = security_perf_event_open(&attr, PERF_SECURITY_OPEN);
 	if (err)
 		return err;
 
 	err = perf_copy_attr(attr_uptr, &attr);
+=======
+	err = perf_copy_attr(attr_uptr, &attr);
+	if (err)
+		return err;
+
+	/* Do we allow access to perf_event_open(2) ? */
+	err = security_perf_event_open(&attr, PERF_SECURITY_OPEN);
+>>>>>>> origin/android16-base
 	if (err)
 		return err;
 
@@ -10946,6 +11293,7 @@ SYSCALL_DEFINE5(perf_event_open,
 			group_leader = NULL;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * Take the group_leader's group_leader_mutex before observing
 	 * anything in the group leader that leads to changes in ctx,
@@ -10956,6 +11304,8 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (group_leader)
 		mutex_lock(&group_leader->group_leader_mutex);
 
+=======
+>>>>>>> origin/android16-base
 	if (pid != -1 && !(flags & PERF_FLAG_PID_CGROUP)) {
 		task = find_lively_task_by_vpid(pid);
 		if (IS_ERR(task)) {
@@ -11095,6 +11445,12 @@ SYSCALL_DEFINE5(perf_event_open,
 		 * Do not allow to attach to a group in a different task
 		 * or CPU context. If we're moving SW events, we'll fix
 		 * this up later, so allow that.
+<<<<<<< HEAD
+=======
+		 *
+		 * Racy, not holding group_leader->ctx->mutex, see comment with
+		 * perf_event_ctx_lock().
+>>>>>>> origin/android16-base
 		 */
 		if (!move_group && group_leader->ctx != ctx)
 			goto err_context;
@@ -11144,6 +11500,10 @@ SYSCALL_DEFINE5(perf_event_open,
 			} else {
 				perf_event_ctx_unlock(group_leader, gctx);
 				move_group = 0;
+<<<<<<< HEAD
+=======
+				goto not_move_group;
+>>>>>>> origin/android16-base
 			}
 		}
 
@@ -11160,7 +11520,21 @@ SYSCALL_DEFINE5(perf_event_open,
 		}
 	} else {
 		mutex_lock(&ctx->mutex);
+<<<<<<< HEAD
 	}
+=======
+
+		/*
+		 * Now that we hold ctx->lock, (re)validate group_leader->ctx == ctx,
+		 * see the group_leader && !move_group test earlier.
+		 */
+		if (group_leader && group_leader->ctx != ctx) {
+			err = -EINVAL;
+			goto err_locked;
+		}
+	}
+not_move_group:
+>>>>>>> origin/android16-base
 
 	if (ctx->task == TASK_TOMBSTONE) {
 		err = -ESRCH;
@@ -11257,8 +11631,11 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (move_group)
 		perf_event_ctx_unlock(group_leader, gctx);
 	mutex_unlock(&ctx->mutex);
+<<<<<<< HEAD
 	if (group_leader)
 		mutex_unlock(&group_leader->group_leader_mutex);
+=======
+>>>>>>> origin/android16-base
 
 	if (task) {
 		mutex_unlock(&task->signal->cred_guard_mutex);
@@ -11312,8 +11689,11 @@ err_task:
 	if (task)
 		put_task_struct(task);
 err_group_fd:
+<<<<<<< HEAD
 	if (group_leader)
 		mutex_unlock(&group_leader->group_leader_mutex);
+=======
+>>>>>>> origin/android16-base
 	fdput(group);
 err_fd:
 	put_unused_fd(event_fd);
@@ -11904,6 +12284,11 @@ static int inherit_group(struct perf_event *parent_event,
 		if (IS_ERR(child_ctr))
 			return PTR_ERR(child_ctr);
 	}
+<<<<<<< HEAD
+=======
+	if (leader)
+		leader->group_generation = parent_event->group_generation;
+>>>>>>> origin/android16-base
 	return 0;
 }
 

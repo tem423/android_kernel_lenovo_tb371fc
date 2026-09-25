@@ -12,6 +12,7 @@
 #include <asm/user32.h>
 #include <asm/unistd.h>
 
+<<<<<<< HEAD
 #define COMPAT_USER_HZ		100
 #define COMPAT_UTS_MACHINE	"i686\0\0"
 
@@ -19,11 +20,19 @@ typedef u32		compat_size_t;
 typedef s32		compat_ssize_t;
 typedef s32		compat_clock_t;
 typedef s32		compat_pid_t;
+=======
+#include <asm-generic/compat.h>
+
+#define COMPAT_USER_HZ		100
+#define COMPAT_UTS_MACHINE	"i686\0\0"
+
+>>>>>>> origin/android16-base
 typedef u16		__compat_uid_t;
 typedef u16		__compat_gid_t;
 typedef u32		__compat_uid32_t;
 typedef u32		__compat_gid32_t;
 typedef u16		compat_mode_t;
+<<<<<<< HEAD
 typedef u32		compat_ino_t;
 typedef u16		compat_dev_t;
 typedef s32		compat_off_t;
@@ -48,13 +57,29 @@ typedef u32		compat_uptr_t;
 struct compat_stat {
 	compat_dev_t	st_dev;
 	u16		__pad1;
+=======
+typedef u16		compat_dev_t;
+typedef u16		compat_nlink_t;
+typedef u16		compat_ipc_pid_t;
+typedef u32		compat_caddr_t;
+typedef __kernel_fsid_t	compat_fsid_t;
+typedef s64 __attribute__((aligned(4))) compat_s64;
+typedef u64 __attribute__((aligned(4))) compat_u64;
+
+struct compat_stat {
+	u32		st_dev;
+>>>>>>> origin/android16-base
 	compat_ino_t	st_ino;
 	compat_mode_t	st_mode;
 	compat_nlink_t	st_nlink;
 	__compat_uid_t	st_uid;
 	__compat_gid_t	st_gid;
+<<<<<<< HEAD
 	compat_dev_t	st_rdev;
 	u16		__pad2;
+=======
+	u32		st_rdev;
+>>>>>>> origin/android16-base
 	u32		st_size;
 	u32		st_blksize;
 	u32		st_blocks;

@@ -118,6 +118,10 @@ static const struct i2c_device_id da9052_i2c_id[] = {
 	{"da9053-bc", DA9053_BC},
 	{}
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(i2c, da9052_i2c_id);
+>>>>>>> origin/android16-base
 
 #ifdef CONFIG_OF
 static const struct of_device_id dialog_dt_ids[] = {

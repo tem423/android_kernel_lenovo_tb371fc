@@ -670,7 +670,11 @@ static void coda_setup_iram(struct coda_ctx *ctx)
 		/* Only H.264BP and H.263P3 are considered */
 		iram_info->buf_dbk_y_use = coda_iram_alloc(iram_info, w64);
 		iram_info->buf_dbk_c_use = coda_iram_alloc(iram_info, w64);
+<<<<<<< HEAD
 		if (!iram_info->buf_dbk_c_use)
+=======
+		if (!iram_info->buf_dbk_y_use || !iram_info->buf_dbk_c_use)
+>>>>>>> origin/android16-base
 			goto out;
 		iram_info->axi_sram_use |= dbk_bits;
 
@@ -694,7 +698,11 @@ static void coda_setup_iram(struct coda_ctx *ctx)
 
 		iram_info->buf_dbk_y_use = coda_iram_alloc(iram_info, w128);
 		iram_info->buf_dbk_c_use = coda_iram_alloc(iram_info, w128);
+<<<<<<< HEAD
 		if (!iram_info->buf_dbk_c_use)
+=======
+		if (!iram_info->buf_dbk_y_use || !iram_info->buf_dbk_c_use)
+>>>>>>> origin/android16-base
 			goto out;
 		iram_info->axi_sram_use |= dbk_bits;
 
@@ -901,10 +909,23 @@ static int coda_start_encoding(struct coda_ctx *ctx)
 	}
 
 	if (dst_fourcc == V4L2_PIX_FMT_JPEG) {
+<<<<<<< HEAD
 		if (!ctx->params.jpeg_qmat_tab[0])
 			ctx->params.jpeg_qmat_tab[0] = kmalloc(64, GFP_KERNEL);
 		if (!ctx->params.jpeg_qmat_tab[1])
 			ctx->params.jpeg_qmat_tab[1] = kmalloc(64, GFP_KERNEL);
+=======
+		if (!ctx->params.jpeg_qmat_tab[0]) {
+			ctx->params.jpeg_qmat_tab[0] = kmalloc(64, GFP_KERNEL);
+			if (!ctx->params.jpeg_qmat_tab[0])
+				return -ENOMEM;
+		}
+		if (!ctx->params.jpeg_qmat_tab[1]) {
+			ctx->params.jpeg_qmat_tab[1] = kmalloc(64, GFP_KERNEL);
+			if (!ctx->params.jpeg_qmat_tab[1])
+				return -ENOMEM;
+		}
+>>>>>>> origin/android16-base
 		coda_set_jpeg_compression_quality(ctx, ctx->params.jpeg_quality);
 	}
 

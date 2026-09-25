@@ -59,7 +59,11 @@ show_##name(struct device *dev, struct device_attribute *attr,	\
 		char *buf)						\
 {									\
 	u32 cpu=dev->id;						\
+<<<<<<< HEAD
 	return sprintf(buf, "%lx\n", name[cpu]);			\
+=======
+	return sprintf(buf, "%llx\n", name[cpu]);			\
+>>>>>>> origin/android16-base
 }
 
 #define store(name)							\
@@ -86,9 +90,15 @@ store_call_start(struct device *dev, struct device_attribute *attr,
 
 #ifdef ERR_INJ_DEBUG
 	printk(KERN_DEBUG "pal_mc_err_inject for cpu%d:\n", cpu);
+<<<<<<< HEAD
 	printk(KERN_DEBUG "err_type_info=%lx,\n", err_type_info[cpu]);
 	printk(KERN_DEBUG "err_struct_info=%lx,\n", err_struct_info[cpu]);
 	printk(KERN_DEBUG "err_data_buffer=%lx, %lx, %lx.\n",
+=======
+	printk(KERN_DEBUG "err_type_info=%llx,\n", err_type_info[cpu]);
+	printk(KERN_DEBUG "err_struct_info=%llx,\n", err_struct_info[cpu]);
+	printk(KERN_DEBUG "err_data_buffer=%llx, %llx, %llx.\n",
+>>>>>>> origin/android16-base
 			  err_data_buffer[cpu].data1,
 			  err_data_buffer[cpu].data2,
 			  err_data_buffer[cpu].data3);
@@ -117,8 +127,13 @@ store_call_start(struct device *dev, struct device_attribute *attr,
 
 #ifdef ERR_INJ_DEBUG
 	printk(KERN_DEBUG "Returns: status=%d,\n", (int)status[cpu]);
+<<<<<<< HEAD
 	printk(KERN_DEBUG "capabilities=%lx,\n", capabilities[cpu]);
 	printk(KERN_DEBUG "resources=%lx\n", resources[cpu]);
+=======
+	printk(KERN_DEBUG "capabilities=%llx,\n", capabilities[cpu]);
+	printk(KERN_DEBUG "resources=%llx\n", resources[cpu]);
+>>>>>>> origin/android16-base
 #endif
 	return size;
 }
@@ -131,7 +146,11 @@ show_virtual_to_phys(struct device *dev, struct device_attribute *attr,
 			char *buf)
 {
 	unsigned int cpu=dev->id;
+<<<<<<< HEAD
 	return sprintf(buf, "%lx\n", phys_addr[cpu]);
+=======
+	return sprintf(buf, "%llx\n", phys_addr[cpu]);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -145,7 +164,11 @@ store_virtual_to_phys(struct device *dev, struct device_attribute *attr,
 	ret = get_user_pages_fast(virt_addr, 1, FOLL_WRITE, NULL);
 	if (ret<=0) {
 #ifdef ERR_INJ_DEBUG
+<<<<<<< HEAD
 		printk("Virtual address %lx is not existing.\n",virt_addr);
+=======
+		printk("Virtual address %llx is not existing.\n", virt_addr);
+>>>>>>> origin/android16-base
 #endif
 		return -EINVAL;
 	}
@@ -163,7 +186,11 @@ show_err_data_buffer(struct device *dev,
 {
 	unsigned int cpu=dev->id;
 
+<<<<<<< HEAD
 	return sprintf(buf, "%lx, %lx, %lx\n",
+=======
+	return sprintf(buf, "%llx, %llx, %llx\n",
+>>>>>>> origin/android16-base
 			err_data_buffer[cpu].data1,
 			err_data_buffer[cpu].data2,
 			err_data_buffer[cpu].data3);
@@ -178,13 +205,21 @@ store_err_data_buffer(struct device *dev,
 	int ret;
 
 #ifdef ERR_INJ_DEBUG
+<<<<<<< HEAD
 	printk("write err_data_buffer=[%lx,%lx,%lx] on cpu%d\n",
+=======
+	printk("write err_data_buffer=[%llx,%llx,%llx] on cpu%d\n",
+>>>>>>> origin/android16-base
 		 err_data_buffer[cpu].data1,
 		 err_data_buffer[cpu].data2,
 		 err_data_buffer[cpu].data3,
 		 cpu);
 #endif
+<<<<<<< HEAD
 	ret=sscanf(buf, "%lx, %lx, %lx",
+=======
+	ret = sscanf(buf, "%llx, %llx, %llx",
+>>>>>>> origin/android16-base
 			&err_data_buffer[cpu].data1,
 			&err_data_buffer[cpu].data2,
 			&err_data_buffer[cpu].data3);

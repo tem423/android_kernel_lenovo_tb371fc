@@ -17,6 +17,10 @@
 #include <linux/types.h>
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
+<<<<<<< HEAD
+=======
+#include <linux/sched/task.h>
+>>>>>>> origin/android16-base
 #include <linux/mm_types.h>
 #include <linux/kernel.h>
 #include <linux/errno.h>
@@ -110,7 +114,11 @@ void die(const char *str, struct pt_regs *fp, unsigned long err)
 	dump(fp);
 
 	spin_unlock_irq(&die_lock);
+<<<<<<< HEAD
 	do_exit(SIGSEGV);
+=======
+	make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 }
 
 static int kstack_depth_to_print = 24;

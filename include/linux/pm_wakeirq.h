@@ -17,8 +17,13 @@
 #ifdef CONFIG_PM
 
 extern int dev_pm_set_wake_irq(struct device *dev, int irq);
+<<<<<<< HEAD
 extern int dev_pm_set_dedicated_wake_irq(struct device *dev,
 					 int irq);
+=======
+extern int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq);
+extern int dev_pm_set_dedicated_wake_irq_reverse(struct device *dev, int irq);
+>>>>>>> origin/android16-base
 extern void dev_pm_clear_wake_irq(struct device *dev);
 extern void dev_pm_enable_wake_irq(struct device *dev);
 extern void dev_pm_disable_wake_irq(struct device *dev);
@@ -35,6 +40,14 @@ static inline int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static inline int dev_pm_set_dedicated_wake_irq_reverse(struct device *dev, int irq)
+{
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static inline void dev_pm_clear_wake_irq(struct device *dev)
 {
 }

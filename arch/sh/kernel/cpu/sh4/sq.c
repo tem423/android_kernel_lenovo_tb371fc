@@ -383,7 +383,11 @@ static int __init sq_api_init(void)
 	if (unlikely(!sq_cache))
 		return ret;
 
+<<<<<<< HEAD
 	sq_bitmap = kzalloc(size, GFP_KERNEL);
+=======
+	sq_bitmap = kcalloc(size, sizeof(long), GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (unlikely(!sq_bitmap))
 		goto out;
 

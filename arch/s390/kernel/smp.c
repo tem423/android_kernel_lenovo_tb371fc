@@ -145,7 +145,11 @@ static int pcpu_sigp_retry(struct pcpu *pcpu, u8 order, u32 parm)
 
 static inline int pcpu_stopped(struct pcpu *pcpu)
 {
+<<<<<<< HEAD
 	u32 uninitialized_var(status);
+=======
+	u32 status;
+>>>>>>> origin/android16-base
 
 	if (__pcpu_sigp(pcpu->address, SIGP_SENSE,
 			0, &status) != SIGP_CC_STATUS_STORED)
@@ -751,7 +755,11 @@ static int smp_add_core(struct sclp_core_entry *core, cpumask_t *avail,
 static int __smp_rescan_cpus(struct sclp_core_info *info, bool early)
 {
 	struct sclp_core_entry *core;
+<<<<<<< HEAD
 	cpumask_t avail;
+=======
+	static cpumask_t avail;
+>>>>>>> origin/android16-base
 	bool configured;
 	u16 core_id;
 	int nr, i;
@@ -831,7 +839,11 @@ void __init smp_detect_cpus(void)
  */
 static void smp_start_secondary(void *cpuvoid)
 {
+<<<<<<< HEAD
 	int cpu = smp_processor_id();
+=======
+	int cpu = raw_smp_processor_id();
+>>>>>>> origin/android16-base
 
 	S390_lowcore.last_update_clock = get_tod_clock();
 	S390_lowcore.restart_stack = (unsigned long) restart_stack;
@@ -844,6 +856,10 @@ static void smp_start_secondary(void *cpuvoid)
 	set_cpu_flag(CIF_ASCE_PRIMARY);
 	set_cpu_flag(CIF_ASCE_SECONDARY);
 	cpu_init();
+<<<<<<< HEAD
+=======
+	rcu_cpu_starting(cpu);
+>>>>>>> origin/android16-base
 	preempt_disable();
 	init_cpu_timer();
 	vtime_init();
@@ -862,6 +878,7 @@ static void smp_start_secondary(void *cpuvoid)
 /* Upping and downing of CPUs */
 int __cpu_up(unsigned int cpu, struct task_struct *tidle)
 {
+<<<<<<< HEAD
 	struct pcpu *pcpu;
 	int base, i, rc;
 
@@ -880,6 +897,14 @@ int __cpu_up(unsigned int cpu, struct task_struct *tidle)
 	 */
 	if (i > smp_cpu_mtid &&
 	    pcpu_sigp_retry(pcpu_devices + base, SIGP_INITIAL_CPU_RESET, 0) !=
+=======
+	struct pcpu *pcpu = pcpu_devices + cpu;
+	int rc;
+
+	if (pcpu->state != CPU_STATE_CONFIGURED)
+		return -EIO;
+	if (pcpu_sigp_retry(pcpu, SIGP_INITIAL_CPU_RESET, 0) !=
+>>>>>>> origin/android16-base
 	    SIGP_CC_ORDER_CODE_ACCEPTED)
 		return -EIO;
 

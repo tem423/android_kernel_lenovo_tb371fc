@@ -354,7 +354,11 @@ static ssize_t flags_write(struct file *filp, const char __user *ubuf,
 	char buf[MAX_FLAG_OPT_SIZE], *__buf;
 	int err;
 
+<<<<<<< HEAD
 	if (cnt > MAX_FLAG_OPT_SIZE)
+=======
+	if (!cnt || cnt > MAX_FLAG_OPT_SIZE)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	if (copy_from_user(&buf, ubuf, cnt))

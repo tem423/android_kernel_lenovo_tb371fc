@@ -588,6 +588,12 @@
 		iram: iram@ffff4c00 {
 			compatible = "mmio-sram";
 			reg = <0xffff4c00 0xb400>;
+<<<<<<< HEAD
+=======
+			ranges = <0 0xffff4c00 0xb400>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+>>>>>>> origin/android16-base
 		};
 	};
 };

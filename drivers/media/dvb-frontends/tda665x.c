@@ -239,7 +239,11 @@ struct dvb_frontend *tda665x_attach(struct dvb_frontend *fe,
 
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(tda665x_attach);
+=======
+EXPORT_SYMBOL_GPL(tda665x_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("TDA665x driver");
 MODULE_AUTHOR("Manu Abraham");

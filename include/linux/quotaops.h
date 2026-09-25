@@ -59,7 +59,11 @@ static inline bool dquot_is_busy(struct dquot *dquot)
 {
 	if (test_bit(DQ_MOD_B, &dquot->dq_flags))
 		return true;
+<<<<<<< HEAD
 	if (atomic_read(&dquot->dq_count) > 1)
+=======
+	if (atomic_read(&dquot->dq_count) > 0)
+>>>>>>> origin/android16-base
 		return true;
 	return false;
 }
@@ -99,6 +103,11 @@ int dquot_file_open(struct inode *inode, struct file *file);
 
 int dquot_enable(struct inode *inode, int type, int format_id,
 	unsigned int flags);
+<<<<<<< HEAD
+=======
+int dquot_load_quota_sb(struct super_block *sb, int type, int format_id,
+	unsigned int flags);
+>>>>>>> origin/android16-base
 int dquot_quota_on(struct super_block *sb, int type, int format_id,
 	const struct path *path);
 int dquot_quota_on_mount(struct super_block *sb, char *qf_name,

@@ -2513,8 +2513,15 @@ static int ath6kl_wmi_sync_point(struct wmi *wmi, u8 if_idx)
 		goto free_data_skb;
 
 	for (index = 0; index < num_pri_streams; index++) {
+<<<<<<< HEAD
 		if (WARN_ON(!data_sync_bufs[index].skb))
 			goto free_data_skb;
+=======
+		if (WARN_ON(!data_sync_bufs[index].skb)) {
+			ret = -ENOMEM;
+			goto free_data_skb;
+		}
+>>>>>>> origin/android16-base
 
 		ep_id = ath6kl_ac2_endpoint_id(wmi->parent_dev,
 					       data_sync_bufs[index].

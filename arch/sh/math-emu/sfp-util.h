@@ -67,7 +67,10 @@
   } while (0)
 
 #define abort()	return 0
+<<<<<<< HEAD
 
 #define __BYTE_ORDER __LITTLE_ENDIAN
 
 
+=======
+>>>>>>> origin/android16-base

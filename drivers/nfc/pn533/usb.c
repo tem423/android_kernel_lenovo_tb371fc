@@ -165,10 +165,23 @@ static int pn533_usb_send_ack(struct pn533 *dev, gfp_t flags)
 	return usb_submit_urb(phy->ack_urb, flags);
 }
 
+<<<<<<< HEAD
+=======
+struct pn533_out_arg {
+	struct pn533_usb_phy *phy;
+	struct completion done;
+};
+
+>>>>>>> origin/android16-base
 static int pn533_usb_send_frame(struct pn533 *dev,
 				struct sk_buff *out)
 {
 	struct pn533_usb_phy *phy = dev->phy;
+<<<<<<< HEAD
+=======
+	struct pn533_out_arg arg;
+	void *cntx;
+>>>>>>> origin/android16-base
 	int rc;
 
 	if (phy->priv == NULL)
@@ -180,10 +193,24 @@ static int pn533_usb_send_frame(struct pn533 *dev,
 	print_hex_dump_debug("PN533 TX: ", DUMP_PREFIX_NONE, 16, 1,
 			     out->data, out->len, false);
 
+<<<<<<< HEAD
+=======
+	arg.phy = phy;
+	init_completion(&arg.done);
+	cntx = phy->out_urb->context;
+	phy->out_urb->context = &arg;
+
+>>>>>>> origin/android16-base
 	rc = usb_submit_urb(phy->out_urb, GFP_KERNEL);
 	if (rc)
 		return rc;
 
+<<<<<<< HEAD
+=======
+	wait_for_completion(&arg.done);
+	phy->out_urb->context = cntx;
+
+>>>>>>> origin/android16-base
 	if (dev->protocol_type == PN533_PROTO_REQ_RESP) {
 		/* request for response for sent packet directly */
 		rc = pn533_submit_urb_for_response(phy, GFP_KERNEL);
@@ -424,7 +451,35 @@ static int pn533_acr122_poweron_rdr(struct pn533_usb_phy *phy)
 	return arg.rc;
 }
 
+<<<<<<< HEAD
 static void pn533_send_complete(struct urb *urb)
+=======
+static void pn533_out_complete(struct urb *urb)
+{
+	struct pn533_out_arg *arg = urb->context;
+	struct pn533_usb_phy *phy = arg->phy;
+
+	switch (urb->status) {
+	case 0:
+		break; /* success */
+	case -ECONNRESET:
+	case -ENOENT:
+		dev_dbg(&phy->udev->dev,
+			"The urb has been stopped (status %d)\n",
+			urb->status);
+		break;
+	case -ESHUTDOWN:
+	default:
+		nfc_err(&phy->udev->dev,
+			"Urb failure (status %d)\n",
+			urb->status);
+	}
+
+	complete(&arg->done);
+}
+
+static void pn533_ack_complete(struct urb *urb)
+>>>>>>> origin/android16-base
 {
 	struct pn533_usb_phy *phy = urb->context;
 
@@ -512,10 +567,17 @@ static int pn533_usb_probe(struct usb_interface *interface,
 
 	usb_fill_bulk_urb(phy->out_urb, phy->udev,
 			  usb_sndbulkpipe(phy->udev, out_endpoint),
+<<<<<<< HEAD
 			  NULL, 0, pn533_send_complete, phy);
 	usb_fill_bulk_urb(phy->ack_urb, phy->udev,
 			  usb_sndbulkpipe(phy->udev, out_endpoint),
 			  NULL, 0, pn533_send_complete, phy);
+=======
+			  NULL, 0, pn533_out_complete, phy);
+	usb_fill_bulk_urb(phy->ack_urb, phy->udev,
+			  usb_sndbulkpipe(phy->udev, out_endpoint),
+			  NULL, 0, pn533_ack_complete, phy);
+>>>>>>> origin/android16-base
 
 	switch (id->driver_info) {
 	case PN533_DEVICE_STD:

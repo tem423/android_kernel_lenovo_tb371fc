@@ -97,7 +97,12 @@ int ptp_set_pinfunc(struct ptp_clock *ptp, unsigned int pin,
 	}
 
 	if (info->verify(info, pin, func, chan)) {
+<<<<<<< HEAD
 		pr_err("driver cannot use function %u on pin %u\n", func, chan);
+=======
+		pr_err("driver cannot use function %u and channel %u on pin %u\n",
+		       func, chan, pin);
+>>>>>>> origin/android16-base
 		return -EOPNOTSUPP;
 	}
 
@@ -346,7 +351,12 @@ ssize_t ptp_read(struct posix_clock *pc,
 
 	for (i = 0; i < cnt; i++) {
 		event[i] = queue->buf[queue->head];
+<<<<<<< HEAD
 		queue->head = (queue->head + 1) % PTP_MAX_TIMESTAMPS;
+=======
+		/* Paired with READ_ONCE() in queue_cnt() */
+		WRITE_ONCE(queue->head, (queue->head + 1) % PTP_MAX_TIMESTAMPS);
+>>>>>>> origin/android16-base
 	}
 
 	spin_unlock_irqrestore(&queue->lock, flags);

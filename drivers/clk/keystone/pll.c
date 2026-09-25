@@ -213,7 +213,11 @@ static void __init _of_pll_clk_init(struct device_node *node, bool pllctrl)
 	}
 
 	clk = clk_register_pll(NULL, node->name, parent_name, pll_data);
+<<<<<<< HEAD
 	if (clk) {
+=======
+	if (!IS_ERR_OR_NULL(clk)) {
+>>>>>>> origin/android16-base
 		of_clk_add_provider(node, of_clk_src_simple_get, clk);
 		return;
 	}
@@ -285,12 +289,22 @@ static void __init of_pll_div_clk_init(struct device_node *node)
 
 	clk = clk_register_divider(NULL, clk_name, parent_name, 0, reg, shift,
 				 mask, 0, NULL);
+<<<<<<< HEAD
 	if (clk) {
 		of_clk_add_provider(node, of_clk_src_simple_get, clk);
 	} else {
 		pr_err("%s: error registering divider %s\n", __func__, clk_name);
 		iounmap(reg);
 	}
+=======
+	if (IS_ERR(clk)) {
+		pr_err("%s: error registering divider %s\n", __func__, clk_name);
+		iounmap(reg);
+		return;
+	}
+
+	of_clk_add_provider(node, of_clk_src_simple_get, clk);
+>>>>>>> origin/android16-base
 }
 CLK_OF_DECLARE(pll_divider_clock, "ti,keystone,pll-divider-clock", of_pll_div_clk_init);
 
@@ -332,9 +346,18 @@ static void __init of_pll_mux_clk_init(struct device_node *node)
 	clk = clk_register_mux(NULL, clk_name, (const char **)&parents,
 				ARRAY_SIZE(parents) , 0, reg, shift, mask,
 				0, NULL);
+<<<<<<< HEAD
 	if (clk)
 		of_clk_add_provider(node, of_clk_src_simple_get, clk);
 	else
 		pr_err("%s: error registering mux %s\n", __func__, clk_name);
+=======
+	if (IS_ERR(clk)) {
+		pr_err("%s: error registering mux %s\n", __func__, clk_name);
+		return;
+	}
+
+	of_clk_add_provider(node, of_clk_src_simple_get, clk);
+>>>>>>> origin/android16-base
 }
 CLK_OF_DECLARE(pll_mux_clock, "ti,keystone,pll-mux-clock", of_pll_mux_clk_init);

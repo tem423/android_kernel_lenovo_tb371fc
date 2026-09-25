@@ -348,6 +348,7 @@ static const struct rtc_class_ops at91_rtc_ops = {
 	.alarm_irq_enable = at91_rtc_alarm_irq_enable,
 };
 
+<<<<<<< HEAD
 static const struct regmap_config gpbr_regmap_config = {
 	.name = "gpbr",
 	.reg_bits = 32,
@@ -355,6 +356,8 @@ static const struct regmap_config gpbr_regmap_config = {
 	.reg_stride = 4,
 };
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Initialize and install RTC driver
  */
@@ -365,6 +368,10 @@ static int at91_rtc_probe(struct platform_device *pdev)
 	int		ret, irq;
 	u32		mr;
 	unsigned int	sclk_rate;
+<<<<<<< HEAD
+=======
+	struct of_phandle_args args;
+>>>>>>> origin/android16-base
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0) {
@@ -390,6 +397,7 @@ static int at91_rtc_probe(struct platform_device *pdev)
 	if (IS_ERR(rtc->rtt))
 		return PTR_ERR(rtc->rtt);
 
+<<<<<<< HEAD
 	if (!pdev->dev.of_node) {
 		/*
 		 * TODO: Remove this code chunk when removing non DT board
@@ -418,6 +426,17 @@ static int at91_rtc_probe(struct platform_device *pdev)
 		rtc->gpbr_offset = args.args[0];
 	}
 
+=======
+	ret = of_parse_phandle_with_fixed_args(pdev->dev.of_node,
+					"atmel,rtt-rtc-time-reg", 1, 0,
+					&args);
+	if (ret)
+		return ret;
+
+	rtc->gpbr = syscon_node_to_regmap(args.np);
+	of_node_put(args.np);
+	rtc->gpbr_offset = args.args[0];
+>>>>>>> origin/android16-base
 	if (IS_ERR(rtc->gpbr)) {
 		dev_err(&pdev->dev, "failed to retrieve gpbr regmap, aborting.\n");
 		return -ENOMEM;
@@ -569,13 +588,19 @@ static int at91_rtc_resume(struct device *dev)
 
 static SIMPLE_DEV_PM_OPS(at91_rtc_pm_ops, at91_rtc_suspend, at91_rtc_resume);
 
+<<<<<<< HEAD
 #ifdef CONFIG_OF
+=======
+>>>>>>> origin/android16-base
 static const struct of_device_id at91_rtc_dt_ids[] = {
 	{ .compatible = "atmel,at91sam9260-rtt" },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, at91_rtc_dt_ids);
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> origin/android16-base
 
 static struct platform_driver at91_rtc_driver = {
 	.probe		= at91_rtc_probe,

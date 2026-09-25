@@ -36,6 +36,12 @@
 #define NR_LINES_TZDATA 1
 #define TMON_LOG_FILE "/var/tmp/tmon.log"
 
+<<<<<<< HEAD
+=======
+#include <sys/time.h>
+#include <pthread.h>
+
+>>>>>>> origin/android16-base
 extern unsigned long ticktime;
 extern double time_elapsed;
 extern unsigned long target_temp_user;

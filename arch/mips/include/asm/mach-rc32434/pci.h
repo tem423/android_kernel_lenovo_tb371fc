@@ -377,7 +377,11 @@ struct pci_msu {
 				 PCI_CFG04_STAT_SSE | \
 				 PCI_CFG04_STAT_PE)
 
+<<<<<<< HEAD
 #define KORINA_CNFG1		((KORINA_STAT<<16)|KORINA_CMD)
+=======
+#define KORINA_CNFG1		(KORINA_STAT | KORINA_CMD)
+>>>>>>> origin/android16-base
 
 #define KORINA_REVID		0
 #define KORINA_CLASS_CODE	0

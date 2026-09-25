@@ -31,6 +31,10 @@
 #include <asm/reboot.h>
 #include <asm/setup.h>
 #include <asm/mach-au1x00/au1000.h>
+<<<<<<< HEAD
+=======
+#include <asm/mach-au1x00/gpio-au1000.h>
+>>>>>>> origin/android16-base
 #include <prom.h>
 
 const char *get_system_type(void)

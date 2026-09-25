@@ -875,7 +875,11 @@ out:
 
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(dvb_pll_attach);
+=======
+EXPORT_SYMBOL_GPL(dvb_pll_attach);
+>>>>>>> origin/android16-base
 
 
 static int

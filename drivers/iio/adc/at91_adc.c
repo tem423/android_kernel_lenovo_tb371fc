@@ -617,8 +617,15 @@ static struct iio_trigger *at91_adc_allocate_trigger(struct iio_dev *idev,
 	trig->ops = &at91_adc_trigger_ops;
 
 	ret = iio_trigger_register(trig);
+<<<<<<< HEAD
 	if (ret)
 		return NULL;
+=======
+	if (ret) {
+		iio_trigger_free(trig);
+		return NULL;
+	}
+>>>>>>> origin/android16-base
 
 	return trig;
 }

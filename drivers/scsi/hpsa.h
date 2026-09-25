@@ -300,6 +300,10 @@ struct ctlr_info {
 	int	needs_abort_tags_swizzled;
 	struct workqueue_struct *resubmit_wq;
 	struct workqueue_struct *rescan_ctlr_wq;
+<<<<<<< HEAD
+=======
+	struct workqueue_struct *monitor_ctlr_wq;
+>>>>>>> origin/android16-base
 	atomic_t abort_cmds_available;
 	wait_queue_head_t event_sync_wait_queue;
 	struct mutex reset_mutex;

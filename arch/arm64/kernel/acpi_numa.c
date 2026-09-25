@@ -28,7 +28,11 @@
 
 #include <asm/numa.h>
 
+<<<<<<< HEAD
 static int acpi_early_node_map[NR_CPUS] __initdata = { NUMA_NO_NODE };
+=======
+static int acpi_early_node_map[NR_CPUS] __initdata = { [0 ... NR_CPUS - 1] = NUMA_NO_NODE };
+>>>>>>> origin/android16-base
 
 int __init acpi_numa_get_nid(unsigned int cpu)
 {

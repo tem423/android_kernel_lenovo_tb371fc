@@ -905,9 +905,37 @@ register_unwind_table (struct module *mod)
 int
 module_finalize (const Elf_Ehdr *hdr, const Elf_Shdr *sechdrs, struct module *mod)
 {
+<<<<<<< HEAD
 	DEBUGP("%s: init: entry=%p\n", __func__, mod->init);
 	if (mod->arch.unwind)
 		register_unwind_table(mod);
+=======
+	struct mod_arch_specific *mas = &mod->arch;
+
+	DEBUGP("%s: init: entry=%p\n", __func__, mod->init);
+	if (mas->unwind)
+		register_unwind_table(mod);
+
+	/*
+	 * ".opd" was already relocated to the final destination. Store
+	 * it's address for use in symbolizer.
+	 */
+	mas->opd_addr = (void *)mas->opd->sh_addr;
+	mas->opd_size = mas->opd->sh_size;
+
+	/*
+	 * Module relocation was already done at this point. Section
+	 * headers are about to be deleted. Wipe out load-time context.
+	 */
+	mas->core_plt = NULL;
+	mas->init_plt = NULL;
+	mas->got = NULL;
+	mas->opd = NULL;
+	mas->unwind = NULL;
+	mas->gp = 0;
+	mas->next_got_entry = 0;
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -926,10 +954,16 @@ module_arch_cleanup (struct module *mod)
 
 void *dereference_module_function_descriptor(struct module *mod, void *ptr)
 {
+<<<<<<< HEAD
 	Elf64_Shdr *opd = mod->arch.opd;
 
 	if (ptr < (void *)opd->sh_addr ||
 			ptr >= (void *)(opd->sh_addr + opd->sh_size))
+=======
+	struct mod_arch_specific *mas = &mod->arch;
+
+	if (ptr < mas->opd_addr || ptr >= mas->opd_addr + mas->opd_size)
+>>>>>>> origin/android16-base
 		return ptr;
 
 	return dereference_function_descriptor(ptr);

@@ -151,12 +151,20 @@ static int __init rockchip_grf_init(void)
 		return -ENODEV;
 	if (!match || !match->data) {
 		pr_err("%s: missing grf data\n", __func__);
+<<<<<<< HEAD
+=======
+		of_node_put(np);
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 
 	grf_info = match->data;
 
 	grf = syscon_node_to_regmap(np);
+<<<<<<< HEAD
+=======
+	of_node_put(np);
+>>>>>>> origin/android16-base
 	if (IS_ERR(grf)) {
 		pr_err("%s: could not get grf syscon\n", __func__);
 		return PTR_ERR(grf);

@@ -2,6 +2,10 @@
 #include <linux/kernel.h>
 #include <linux/netdevice.h>
 #include <net/net_namespace.h>
+<<<<<<< HEAD
+=======
+#include <net/netns/generic.h>
+>>>>>>> origin/android16-base
 #include <net/netfilter/nf_tables.h>
 #include <linux/netfilter_ipv4.h>
 #include <linux/netfilter_ipv6.h>
@@ -10,6 +14,11 @@
 #include <net/netfilter/nf_tables_ipv4.h>
 #include <net/netfilter/nf_tables_ipv6.h>
 
+<<<<<<< HEAD
+=======
+extern unsigned int nf_tables_net_id;
+
+>>>>>>> origin/android16-base
 #ifdef CONFIG_NF_TABLES_IPV4
 static unsigned int nft_do_chain_ipv4(void *priv,
 				      struct sk_buff *skb,
@@ -293,6 +302,12 @@ static void nft_netdev_event(unsigned long event, struct net_device *dev,
 		if (strcmp(basechain->dev_name, dev->name) != 0)
 			return;
 
+<<<<<<< HEAD
+=======
+		if (!basechain->ops.dev)
+			return;
+
+>>>>>>> origin/android16-base
 		/* UNREGISTER events are also happpening on netns exit.
 		 *
 		 * Altough nf_tables core releases all tables/chains, only
@@ -315,6 +330,10 @@ static int nf_tables_netdev_event(struct notifier_block *this,
 				  unsigned long event, void *ptr)
 {
 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+<<<<<<< HEAD
+=======
+	struct nftables_pernet *nft_net;
+>>>>>>> origin/android16-base
 	struct nft_table *table;
 	struct nft_chain *chain, *nr;
 	struct nft_ctx ctx = {
@@ -325,8 +344,14 @@ static int nf_tables_netdev_event(struct notifier_block *this,
 	    event != NETDEV_CHANGENAME)
 		return NOTIFY_DONE;
 
+<<<<<<< HEAD
 	mutex_lock(&ctx.net->nft.commit_mutex);
 	list_for_each_entry(table, &ctx.net->nft.tables, list) {
+=======
+	nft_net = net_generic(ctx.net, nf_tables_net_id);
+	mutex_lock(&nft_net->commit_mutex);
+	list_for_each_entry(table, &nft_net->tables, list) {
+>>>>>>> origin/android16-base
 		if (table->family != NFPROTO_NETDEV)
 			continue;
 
@@ -340,7 +365,11 @@ static int nf_tables_netdev_event(struct notifier_block *this,
 			nft_netdev_event(event, dev, &ctx);
 		}
 	}
+<<<<<<< HEAD
 	mutex_unlock(&ctx.net->nft.commit_mutex);
+=======
+	mutex_unlock(&nft_net->commit_mutex);
+>>>>>>> origin/android16-base
 
 	return NOTIFY_DONE;
 }

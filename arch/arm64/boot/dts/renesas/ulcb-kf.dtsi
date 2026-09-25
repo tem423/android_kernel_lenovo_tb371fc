@@ -165,7 +165,11 @@
 	};
 
 	scif1_pins: scif1 {
+<<<<<<< HEAD
 		groups = "scif1_data_b", "scif1_ctrl";
+=======
+		groups = "scif1_data_b";
+>>>>>>> origin/android16-base
 		function = "scif1";
 	};
 
@@ -178,7 +182,10 @@
 &scif1 {
 	pinctrl-0 = <&scif1_pins>;
 	pinctrl-names = "default";
+<<<<<<< HEAD
 	uart-has-rtscts;
+=======
+>>>>>>> origin/android16-base
 
 	status = "okay";
 };

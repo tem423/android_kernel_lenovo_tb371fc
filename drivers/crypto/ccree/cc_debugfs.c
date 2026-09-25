@@ -46,7 +46,11 @@ int __init cc_debugfs_global_init(void)
 	return !cc_debugfs_dir;
 }
 
+<<<<<<< HEAD
 void __exit cc_debugfs_global_fini(void)
+=======
+void cc_debugfs_global_fini(void)
+>>>>>>> origin/android16-base
 {
 	debugfs_remove(cc_debugfs_dir);
 }

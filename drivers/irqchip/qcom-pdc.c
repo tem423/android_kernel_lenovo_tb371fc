@@ -59,18 +59,30 @@ static u32 pdc_reg_read(int reg, u32 i)
 static void pdc_enable_intr(struct irq_data *d, bool on)
 {
 	int pin_out = d->hwirq;
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 	u32 index, mask;
 	u32 enable;
 
 	index = pin_out / 32;
 	mask = pin_out % 32;
 
+<<<<<<< HEAD
 	raw_spin_lock(&pdc_lock);
+=======
+	raw_spin_lock_irqsave(&pdc_lock, flags);
+>>>>>>> origin/android16-base
 	enable = pdc_reg_read(IRQ_ENABLE_BANK, index);
 	enable = on ? ENABLE_INTR(enable, mask) : CLEAR_INTR(enable, mask);
 	pdc_reg_write(IRQ_ENABLE_BANK, index, enable);
 	ipc_log_string(pdc_ipc_log, "PIN=%d enable=%d", d->hwirq, on);
+<<<<<<< HEAD
 	raw_spin_unlock(&pdc_lock);
+=======
+	raw_spin_unlock_irqrestore(&pdc_lock, flags);
+>>>>>>> origin/android16-base
 }
 
 static void qcom_pdc_gic_disable(struct irq_data *d)

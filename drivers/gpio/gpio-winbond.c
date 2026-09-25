@@ -385,12 +385,22 @@ static int winbond_gpio_get(struct gpio_chip *gc, unsigned int offset)
 	unsigned long *base = gpiochip_get_data(gc);
 	const struct winbond_gpio_info *info;
 	bool val;
+<<<<<<< HEAD
 
 	winbond_gpio_get_info(&offset, &info);
 
 	val = winbond_sio_enter(*base);
 	if (val)
 		return val;
+=======
+	int ret;
+
+	winbond_gpio_get_info(&offset, &info);
+
+	ret = winbond_sio_enter(*base);
+	if (ret)
+		return ret;
+>>>>>>> origin/android16-base
 
 	winbond_sio_select_logical(*base, info->dev);
 

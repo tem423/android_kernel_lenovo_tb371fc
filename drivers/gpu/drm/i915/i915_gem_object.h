@@ -136,6 +136,10 @@ struct drm_i915_gem_object {
 	 * activity?
 	 */
 #define I915_BO_ACTIVE_REF 0
+<<<<<<< HEAD
+=======
+#define I915_BO_WAS_BOUND_BIT    1
+>>>>>>> origin/android16-base
 
 	/*
 	 * Is the object to be mapped as read-only to the GPU

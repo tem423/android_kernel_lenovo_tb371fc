@@ -755,7 +755,11 @@ skip_cqe:
 static int __c4iw_poll_cq_one(struct c4iw_cq *chp, struct c4iw_qp *qhp,
 			      struct ib_wc *wc, struct c4iw_srq *srq)
 {
+<<<<<<< HEAD
 	struct t4_cqe uninitialized_var(cqe);
+=======
+	struct t4_cqe cqe;
+>>>>>>> origin/android16-base
 	struct t4_wq *wq = qhp ? &qhp->wq : NULL;
 	u32 credit = 0;
 	u8 cqe_flushed;
@@ -1012,6 +1016,12 @@ struct ib_cq *c4iw_create_cq(struct ib_device *ibdev,
 
 	rhp = to_c4iw_dev(ibdev);
 
+<<<<<<< HEAD
+=======
+	if (entries < 1 || entries > ibdev->attrs.max_cqe)
+		return ERR_PTR(-EINVAL);
+
+>>>>>>> origin/android16-base
 	if (vector >= rhp->rdev.lldi.nciq)
 		return ERR_PTR(-EINVAL);
 

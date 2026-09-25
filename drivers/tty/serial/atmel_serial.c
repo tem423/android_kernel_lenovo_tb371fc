@@ -791,11 +791,19 @@ static void atmel_complete_tx_dma(void *arg)
 
 	port->icount.tx += atmel_port->tx_len;
 
+<<<<<<< HEAD
 	spin_lock_irq(&atmel_port->lock_tx);
 	async_tx_ack(atmel_port->desc_tx);
 	atmel_port->cookie_tx = -EINVAL;
 	atmel_port->desc_tx = NULL;
 	spin_unlock_irq(&atmel_port->lock_tx);
+=======
+	spin_lock(&atmel_port->lock_tx);
+	async_tx_ack(atmel_port->desc_tx);
+	atmel_port->cookie_tx = -EINVAL;
+	atmel_port->desc_tx = NULL;
+	spin_unlock(&atmel_port->lock_tx);
+>>>>>>> origin/android16-base
 
 	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
@@ -918,6 +926,16 @@ static void atmel_tx_dma(struct uart_port *port)
 		desc->callback = atmel_complete_tx_dma;
 		desc->callback_param = atmel_port;
 		atmel_port->cookie_tx = dmaengine_submit(desc);
+<<<<<<< HEAD
+=======
+		if (dma_submit_error(atmel_port->cookie_tx)) {
+			dev_err(port->dev, "dma_submit_error %d\n",
+				atmel_port->cookie_tx);
+			return;
+		}
+
+		dma_async_issue_pending(chan);
+>>>>>>> origin/android16-base
 	}
 
 	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
@@ -1176,6 +1194,16 @@ static int atmel_prepare_rx_dma(struct uart_port *port)
 	desc->callback_param = port;
 	atmel_port->desc_rx = desc;
 	atmel_port->cookie_rx = dmaengine_submit(desc);
+<<<<<<< HEAD
+=======
+	if (dma_submit_error(atmel_port->cookie_rx)) {
+		dev_err(port->dev, "dma_submit_error %d\n",
+			atmel_port->cookie_rx);
+		goto chan_err;
+	}
+
+	dma_async_issue_pending(atmel_port->chan_rx);
+>>>>>>> origin/android16-base
 
 	return 0;
 
@@ -2497,6 +2525,7 @@ static void __init atmel_console_get_options(struct uart_port *port, int *baud,
 	else if (mr == ATMEL_US_PAR_ODD)
 		*parity = 'o';
 
+<<<<<<< HEAD
 	/*
 	 * The serial core only rounds down when matching this to a
 	 * supported baud rate. Make sure we don't end up slightly
@@ -2504,6 +2533,9 @@ static void __init atmel_console_get_options(struct uart_port *port, int *baud,
 	 * to a much lower baud rate than we really want.
 	 */
 	*baud = port->uartclk / (16 * (quot - 1));
+=======
+	*baud = port->uartclk / (16 * quot);
+>>>>>>> origin/android16-base
 }
 
 static int __init atmel_console_setup(struct console *co, char *options)

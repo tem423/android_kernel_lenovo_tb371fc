@@ -158,70 +158,110 @@
 		#clock-cells = <0>;
 	};
 
+<<<<<<< HEAD
 	clk26m: oscillator@0 {
+=======
+	clk26m: oscillator-26m {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <26000000>;
 		clock-output-names = "clk26m";
 	};
 
+<<<<<<< HEAD
 	clk32k: oscillator@1 {
+=======
+	clk32k: oscillator-32k {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <32768>;
 		clock-output-names = "clk32k";
 	};
 
+<<<<<<< HEAD
 	clkfpc: oscillator@2 {
+=======
+	clkfpc: oscillator-50m {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <50000000>;
 		clock-output-names = "clkfpc";
 	};
 
+<<<<<<< HEAD
 	clkaud_ext_i_0: oscillator@3 {
+=======
+	clkaud_ext_i_0: oscillator-aud0 {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <6500000>;
 		clock-output-names = "clkaud_ext_i_0";
 	};
 
+<<<<<<< HEAD
 	clkaud_ext_i_1: oscillator@4 {
+=======
+	clkaud_ext_i_1: oscillator-aud1 {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <196608000>;
 		clock-output-names = "clkaud_ext_i_1";
 	};
 
+<<<<<<< HEAD
 	clkaud_ext_i_2: oscillator@5 {
+=======
+	clkaud_ext_i_2: oscillator-aud2 {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <180633600>;
 		clock-output-names = "clkaud_ext_i_2";
 	};
 
+<<<<<<< HEAD
 	clki2si0_mck_i: oscillator@6 {
+=======
+	clki2si0_mck_i: oscillator-i2s0 {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <30000000>;
 		clock-output-names = "clki2si0_mck_i";
 	};
 
+<<<<<<< HEAD
 	clki2si1_mck_i: oscillator@7 {
+=======
+	clki2si1_mck_i: oscillator-i2s1 {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <30000000>;
 		clock-output-names = "clki2si1_mck_i";
 	};
 
+<<<<<<< HEAD
 	clki2si2_mck_i: oscillator@8 {
+=======
+	clki2si2_mck_i: oscillator-i2s2 {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <30000000>;
 		clock-output-names = "clki2si2_mck_i";
 	};
 
+<<<<<<< HEAD
 	clktdmin_mclk_i: oscillator@9 {
+=======
+	clktdmin_mclk_i: oscillator-mclk {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <30000000>;
@@ -264,7 +304,11 @@
 		reg = <0 0x10005000 0 0x1000>;
 	};
 
+<<<<<<< HEAD
 	pio: pinctrl@10005000 {
+=======
+	pio: pinctrl@1000b000 {
+>>>>>>> origin/android16-base
 		compatible = "mediatek,mt2712-pinctrl";
 		reg = <0 0x1000b000 0 0x1000>;
 		mediatek,pctl-regmap = <&syscfg_pctl_a>;

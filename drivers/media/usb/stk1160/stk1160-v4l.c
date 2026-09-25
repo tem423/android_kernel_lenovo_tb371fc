@@ -269,7 +269,11 @@ out_uninit:
 	stk1160_uninit_isoc(dev);
 out_stop_hw:
 	usb_set_interface(dev->udev, 0, 0);
+<<<<<<< HEAD
 	stk1160_clear_queue(dev);
+=======
+	stk1160_clear_queue(dev, VB2_BUF_STATE_QUEUED);
+>>>>>>> origin/android16-base
 
 	mutex_unlock(&dev->v4l_lock);
 
@@ -317,7 +321,11 @@ static int stk1160_stop_streaming(struct stk1160 *dev)
 
 	stk1160_stop_hw(dev);
 
+<<<<<<< HEAD
 	stk1160_clear_queue(dev);
+=======
+	stk1160_clear_queue(dev, VB2_BUF_STATE_ERROR);
+>>>>>>> origin/android16-base
 
 	stk1160_dbg("streaming stopped\n");
 
@@ -762,7 +770,11 @@ static const struct video_device v4l_template = {
 /********************************************************************/
 
 /* Must be called with both v4l_lock and vb_queue_lock hold */
+<<<<<<< HEAD
 void stk1160_clear_queue(struct stk1160 *dev)
+=======
+void stk1160_clear_queue(struct stk1160 *dev, enum vb2_buffer_state vb2_state)
+>>>>>>> origin/android16-base
 {
 	struct stk1160_buffer *buf;
 	unsigned long flags;
@@ -773,7 +785,11 @@ void stk1160_clear_queue(struct stk1160 *dev)
 		buf = list_first_entry(&dev->avail_bufs,
 			struct stk1160_buffer, list);
 		list_del(&buf->list);
+<<<<<<< HEAD
 		vb2_buffer_done(&buf->vb.vb2_buf, VB2_BUF_STATE_ERROR);
+=======
+		vb2_buffer_done(&buf->vb.vb2_buf, vb2_state);
+>>>>>>> origin/android16-base
 		stk1160_dbg("buffer [%p/%d] aborted\n",
 			    buf, buf->vb.vb2_buf.index);
 	}
@@ -783,7 +799,11 @@ void stk1160_clear_queue(struct stk1160 *dev)
 		buf = dev->isoc_ctl.buf;
 		dev->isoc_ctl.buf = NULL;
 
+<<<<<<< HEAD
 		vb2_buffer_done(&buf->vb.vb2_buf, VB2_BUF_STATE_ERROR);
+=======
+		vb2_buffer_done(&buf->vb.vb2_buf, vb2_state);
+>>>>>>> origin/android16-base
 		stk1160_dbg("buffer [%p/%d] aborted\n",
 			    buf, buf->vb.vb2_buf.index);
 	}

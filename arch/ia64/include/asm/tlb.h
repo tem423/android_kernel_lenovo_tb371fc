@@ -47,6 +47,7 @@
 #include <asm/tlbflush.h>
 #include <asm/machvec.h>
 
+<<<<<<< HEAD
 /*
  * If we can't allocate a page to make a big batch of page pointers
  * to work on, then just handle a few from the on-stack structure.
@@ -305,5 +306,8 @@ do {							\
 	tlb->need_flush = 1;				\
 	__pud_free_tlb(tlb, pudp, address);		\
 } while (0)
+=======
+#include <asm-generic/tlb.h>
+>>>>>>> origin/android16-base
 
 #endif /* _ASM_IA64_TLB_H */

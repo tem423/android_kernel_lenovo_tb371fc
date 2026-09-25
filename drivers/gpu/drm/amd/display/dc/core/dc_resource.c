@@ -1569,6 +1569,11 @@ static bool are_stream_backends_same(
 bool dc_is_stream_unchanged(
 	struct dc_stream_state *old_stream, struct dc_stream_state *stream)
 {
+<<<<<<< HEAD
+=======
+	if (!old_stream || !stream)
+		return false;
+>>>>>>> origin/android16-base
 
 	if (!are_stream_backends_same(old_stream, stream))
 		return false;
@@ -1703,6 +1708,12 @@ static struct audio *find_first_free_audio(
 {
 	int i, available_audio_count;
 
+<<<<<<< HEAD
+=======
+	if (id == ENGINE_ID_UNKNOWN)
+		return NULL;
+
+>>>>>>> origin/android16-base
 	available_audio_count = pool->audio_count;
 
 	for (i = 0; i < available_audio_count; i++) {

@@ -78,7 +78,10 @@ DEFINE_RAID_ATTRIBUTE(enum raid_state, state)
 	
 struct raid_template *raid_class_attach(struct raid_function_template *);
 void raid_class_release(struct raid_template *);
+<<<<<<< HEAD
 
 int __must_check raid_component_add(struct raid_template *, struct device *,
 				    struct device *);
 
+=======
+>>>>>>> origin/android16-base

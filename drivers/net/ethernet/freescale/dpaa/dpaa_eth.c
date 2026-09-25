@@ -2055,12 +2055,19 @@ static netdev_tx_t
 dpaa_start_xmit(struct sk_buff *skb, struct net_device *net_dev)
 {
 	const int queue_mapping = skb_get_queue_mapping(skb);
+<<<<<<< HEAD
 	bool nonlinear = skb_is_nonlinear(skb);
+=======
+>>>>>>> origin/android16-base
 	struct rtnl_link_stats64 *percpu_stats;
 	struct dpaa_percpu_priv *percpu_priv;
 	struct netdev_queue *txq;
 	struct dpaa_priv *priv;
 	struct qm_fd fd;
+<<<<<<< HEAD
+=======
+	bool nonlinear;
+>>>>>>> origin/android16-base
 	int offset = 0;
 	int err = 0;
 
@@ -2070,6 +2077,16 @@ dpaa_start_xmit(struct sk_buff *skb, struct net_device *net_dev)
 
 	qm_fd_clear_fd(&fd);
 
+<<<<<<< HEAD
+=======
+	/* Packet data is always read as 32-bit words, so zero out any part of
+	 * the skb which might be sent if we have to pad the packet
+	 */
+	if (__skb_put_padto(skb, ETH_ZLEN, false))
+		goto enomem;
+
+	nonlinear = skb_is_nonlinear(skb);
+>>>>>>> origin/android16-base
 	if (!nonlinear) {
 		/* We're going to store the skb backpointer at the beginning
 		 * of the data buffer, so we need a privately owned skb

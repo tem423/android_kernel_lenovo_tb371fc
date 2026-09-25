@@ -1553,6 +1553,10 @@ static int _remove_from_waiters(struct dlm_lkb *lkb, int mstype,
 		lkb->lkb_wait_type = 0;
 		lkb->lkb_flags &= ~DLM_IFL_OVERLAP_CANCEL;
 		lkb->lkb_wait_count--;
+<<<<<<< HEAD
+=======
+		unhold_lkb(lkb);
+>>>>>>> origin/android16-base
 		goto out_del;
 	}
 
@@ -1579,6 +1583,10 @@ static int _remove_from_waiters(struct dlm_lkb *lkb, int mstype,
 		log_error(ls, "remwait error %x reply %d wait_type %d overlap",
 			  lkb->lkb_id, mstype, lkb->lkb_wait_type);
 		lkb->lkb_wait_count--;
+<<<<<<< HEAD
+=======
+		unhold_lkb(lkb);
+>>>>>>> origin/android16-base
 		lkb->lkb_wait_type = 0;
 	}
 
@@ -1856,7 +1864,11 @@ static void del_timeout(struct dlm_lkb *lkb)
 void dlm_scan_timeout(struct dlm_ls *ls)
 {
 	struct dlm_rsb *r;
+<<<<<<< HEAD
 	struct dlm_lkb *lkb;
+=======
+	struct dlm_lkb *lkb = NULL, *iter;
+>>>>>>> origin/android16-base
 	int do_cancel, do_warn;
 	s64 wait_us;
 
@@ -1867,6 +1879,7 @@ void dlm_scan_timeout(struct dlm_ls *ls)
 		do_cancel = 0;
 		do_warn = 0;
 		mutex_lock(&ls->ls_timeout_mutex);
+<<<<<<< HEAD
 		list_for_each_entry(lkb, &ls->ls_timeout, lkb_time_list) {
 
 			wait_us = ktime_to_us(ktime_sub(ktime_get(),
@@ -1877,17 +1890,38 @@ void dlm_scan_timeout(struct dlm_ls *ls)
 				do_cancel = 1;
 
 			if ((lkb->lkb_flags & DLM_IFL_WATCH_TIMEWARN) &&
+=======
+		list_for_each_entry(iter, &ls->ls_timeout, lkb_time_list) {
+
+			wait_us = ktime_to_us(ktime_sub(ktime_get(),
+							iter->lkb_timestamp));
+
+			if ((iter->lkb_exflags & DLM_LKF_TIMEOUT) &&
+			    wait_us >= (iter->lkb_timeout_cs * 10000))
+				do_cancel = 1;
+
+			if ((iter->lkb_flags & DLM_IFL_WATCH_TIMEWARN) &&
+>>>>>>> origin/android16-base
 			    wait_us >= dlm_config.ci_timewarn_cs * 10000)
 				do_warn = 1;
 
 			if (!do_cancel && !do_warn)
 				continue;
+<<<<<<< HEAD
 			hold_lkb(lkb);
+=======
+			hold_lkb(iter);
+			lkb = iter;
+>>>>>>> origin/android16-base
 			break;
 		}
 		mutex_unlock(&ls->ls_timeout_mutex);
 
+<<<<<<< HEAD
 		if (!do_cancel && !do_warn)
+=======
+		if (!lkb)
+>>>>>>> origin/android16-base
 			break;
 
 		r = lkb->lkb_resource;
@@ -2888,6 +2922,7 @@ static int set_unlock_args(uint32_t flags, void *astarg, struct dlm_args *args)
 static int validate_lock_args(struct dlm_ls *ls, struct dlm_lkb *lkb,
 			      struct dlm_args *args)
 {
+<<<<<<< HEAD
 	int rv = -EINVAL;
 
 	if (args->flags & DLM_LKF_CONVERT) {
@@ -2899,6 +2934,11 @@ static int validate_lock_args(struct dlm_ls *ls, struct dlm_lkb *lkb,
 			goto out;
 
 		rv = -EBUSY;
+=======
+	int rv = -EBUSY;
+
+	if (args->flags & DLM_LKF_CONVERT) {
+>>>>>>> origin/android16-base
 		if (lkb->lkb_status != DLM_LKSTS_GRANTED)
 			goto out;
 
@@ -2907,6 +2947,17 @@ static int validate_lock_args(struct dlm_ls *ls, struct dlm_lkb *lkb,
 
 		if (is_overlap(lkb))
 			goto out;
+<<<<<<< HEAD
+=======
+
+		rv = -EINVAL;
+		if (lkb->lkb_flags & DLM_IFL_MSTCPY)
+			goto out;
+
+		if (args->flags & DLM_LKF_QUECVT &&
+		    !__quecvt_compat_matrix[lkb->lkb_grmode+1][args->mode+1])
+			goto out;
+>>>>>>> origin/android16-base
 	}
 
 	lkb->lkb_exflags = args->flags;
@@ -3977,6 +4028,17 @@ static int validate_message(struct dlm_lkb *lkb, struct dlm_message *ms)
 	int from = ms->m_header.h_nodeid;
 	int error = 0;
 
+<<<<<<< HEAD
+=======
+	/* currently mixing of user/kernel locks are not supported */
+	if (ms->m_flags & DLM_IFL_USER && ~lkb->lkb_flags & DLM_IFL_USER) {
+		log_error(lkb->lkb_resource->res_ls,
+			  "got user dlm message for a kernel lock");
+		error = -EINVAL;
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	switch (ms->m_type) {
 	case DLM_MSG_CONVERT:
 	case DLM_MSG_UNLOCK:
@@ -4005,6 +4067,10 @@ static int validate_message(struct dlm_lkb *lkb, struct dlm_message *ms)
 		error = -EINVAL;
 	}
 
+<<<<<<< HEAD
+=======
+out:
+>>>>>>> origin/android16-base
 	if (error)
 		log_error(lkb->lkb_resource->res_ls,
 			  "ignore invalid message %d from %d %x %x %x %d",
@@ -4058,13 +4124,21 @@ static void send_repeat_remove(struct dlm_ls *ls, char *ms_name, int len)
 	rv = _create_message(ls, sizeof(struct dlm_message) + len,
 			     dir_nodeid, DLM_MSG_REMOVE, &ms, &mh);
 	if (rv)
+<<<<<<< HEAD
 		return;
+=======
+		goto out;
+>>>>>>> origin/android16-base
 
 	memcpy(ms->m_extra, name, len);
 	ms->m_hash = hash;
 
 	send_message(mh, ms);
 
+<<<<<<< HEAD
+=======
+out:
+>>>>>>> origin/android16-base
 	spin_lock(&ls->ls_remove_spin);
 	ls->ls_remove_len = 0;
 	memset(ls->ls_remove_name, 0, DLM_RESNAME_MAXLEN);
@@ -5231,6 +5305,7 @@ void dlm_recover_waiters_pre(struct dlm_ls *ls)
 
 static struct dlm_lkb *find_resend_waiter(struct dlm_ls *ls)
 {
+<<<<<<< HEAD
 	struct dlm_lkb *lkb;
 	int found = 0;
 
@@ -5239,13 +5314,25 @@ static struct dlm_lkb *find_resend_waiter(struct dlm_ls *ls)
 		if (lkb->lkb_flags & DLM_IFL_RESEND) {
 			hold_lkb(lkb);
 			found = 1;
+=======
+	struct dlm_lkb *lkb = NULL, *iter;
+
+	mutex_lock(&ls->ls_waiters_mutex);
+	list_for_each_entry(iter, &ls->ls_waiters, lkb_wait_reply) {
+		if (iter->lkb_flags & DLM_IFL_RESEND) {
+			hold_lkb(iter);
+			lkb = iter;
+>>>>>>> origin/android16-base
 			break;
 		}
 	}
 	mutex_unlock(&ls->ls_waiters_mutex);
 
+<<<<<<< HEAD
 	if (!found)
 		lkb = NULL;
+=======
+>>>>>>> origin/android16-base
 	return lkb;
 }
 
@@ -5305,11 +5392,24 @@ int dlm_recover_waiters_post(struct dlm_ls *ls)
 		lkb->lkb_flags &= ~DLM_IFL_OVERLAP_UNLOCK;
 		lkb->lkb_flags &= ~DLM_IFL_OVERLAP_CANCEL;
 		lkb->lkb_wait_type = 0;
+<<<<<<< HEAD
 		lkb->lkb_wait_count = 0;
 		mutex_lock(&ls->ls_waiters_mutex);
 		list_del_init(&lkb->lkb_wait_reply);
 		mutex_unlock(&ls->ls_waiters_mutex);
 		unhold_lkb(lkb); /* for waiters list */
+=======
+		/* drop all wait_count references we still
+		 * hold a reference for this iteration.
+		 */
+		while (lkb->lkb_wait_count) {
+			lkb->lkb_wait_count--;
+			unhold_lkb(lkb);
+		}
+		mutex_lock(&ls->ls_waiters_mutex);
+		list_del_init(&lkb->lkb_wait_reply);
+		mutex_unlock(&ls->ls_waiters_mutex);
+>>>>>>> origin/android16-base
 
 		if (oc || ou) {
 			/* do an unlock or cancel instead of resending */
@@ -5899,6 +5999,7 @@ int dlm_user_adopt_orphan(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
 		     int mode, uint32_t flags, void *name, unsigned int namelen,
 		     unsigned long timeout_cs, uint32_t *lkid)
 {
+<<<<<<< HEAD
 	struct dlm_lkb *lkb;
 	struct dlm_user_args *ua;
 	int found_other_mode = 0;
@@ -5912,24 +6013,53 @@ int dlm_user_adopt_orphan(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
 		if (memcmp(lkb->lkb_resource->res_name, name, namelen))
 			continue;
 		if (lkb->lkb_grmode != mode) {
+=======
+	struct dlm_lkb *lkb = NULL, *iter;
+	struct dlm_user_args *ua;
+	int found_other_mode = 0;
+	int rv = 0;
+
+	mutex_lock(&ls->ls_orphans_mutex);
+	list_for_each_entry(iter, &ls->ls_orphans, lkb_ownqueue) {
+		if (iter->lkb_resource->res_length != namelen)
+			continue;
+		if (memcmp(iter->lkb_resource->res_name, name, namelen))
+			continue;
+		if (iter->lkb_grmode != mode) {
+>>>>>>> origin/android16-base
 			found_other_mode = 1;
 			continue;
 		}
 
+<<<<<<< HEAD
 		found = 1;
 		list_del_init(&lkb->lkb_ownqueue);
 		lkb->lkb_flags &= ~DLM_IFL_ORPHAN;
 		*lkid = lkb->lkb_id;
+=======
+		lkb = iter;
+		list_del_init(&iter->lkb_ownqueue);
+		iter->lkb_flags &= ~DLM_IFL_ORPHAN;
+		*lkid = iter->lkb_id;
+>>>>>>> origin/android16-base
 		break;
 	}
 	mutex_unlock(&ls->ls_orphans_mutex);
 
+<<<<<<< HEAD
 	if (!found && found_other_mode) {
+=======
+	if (!lkb && found_other_mode) {
+>>>>>>> origin/android16-base
 		rv = -EAGAIN;
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (!found) {
+=======
+	if (!lkb) {
+>>>>>>> origin/android16-base
 		rv = -ENOENT;
 		goto out;
 	}

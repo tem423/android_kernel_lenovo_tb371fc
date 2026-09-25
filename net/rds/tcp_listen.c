@@ -198,6 +198,15 @@ int rds_tcp_accept_one(struct socket *sock)
 	}
 #endif
 
+<<<<<<< HEAD
+=======
+	if (!rds_tcp_laddr_check(sock_net(sock->sk), peer_addr, dev_if)) {
+		/* local address connection is only allowed via loopback */
+		ret = -EOPNOTSUPP;
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	conn = rds_conn_create(sock_net(sock->sk),
 			       my_addr, peer_addr,
 			       &rds_tcp_transport, GFP_KERNEL, dev_if);
@@ -326,7 +335,11 @@ struct socket *rds_tcp_listen_init(struct net *net, bool isv6)
 		addr_len = sizeof(*sin);
 	}
 
+<<<<<<< HEAD
 	ret = sock->ops->bind(sock, (struct sockaddr *)&ss, addr_len);
+=======
+	ret = kernel_bind(sock, (struct sockaddr *)&ss, addr_len);
+>>>>>>> origin/android16-base
 	if (ret < 0) {
 		rdsdebug("could not bind %s listener socket: %d\n",
 			 isv6 ? "IPv6" : "IPv4", ret);

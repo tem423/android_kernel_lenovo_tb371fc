@@ -130,7 +130,11 @@ xfs_bmap_rtalloc(
 	 * pick an extent that will space things out in the rt area.
 	 */
 	if (ap->eof && ap->offset == 0) {
+<<<<<<< HEAD
 		xfs_rtblock_t uninitialized_var(rtx); /* realtime extent no */
+=======
+		xfs_rtblock_t rtx; /* realtime extent no */
+>>>>>>> origin/android16-base
 
 		error = xfs_rtpick_extent(mp, ap->tp, ralen, &rtx);
 		if (error)

@@ -58,6 +58,10 @@ static struct memory_type_mapping mem_type_mapping_tbl[] = {
 };
 
 static const struct of_device_id mwifiex_sdio_of_match_table[] = {
+<<<<<<< HEAD
+=======
+	{ .compatible = "marvell,sd8787" },
+>>>>>>> origin/android16-base
 	{ .compatible = "marvell,sd8897" },
 	{ .compatible = "marvell,sd8997" },
 	{ }

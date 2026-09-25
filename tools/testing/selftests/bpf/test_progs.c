@@ -1112,7 +1112,11 @@ static int extract_build_id(char *build_id, size_t size)
 
 	if (getline(&line, &len, fp) == -1)
 		goto err;
+<<<<<<< HEAD
 	fclose(fp);
+=======
+	pclose(fp);
+>>>>>>> origin/android16-base
 
 	if (len > size)
 		len = size;
@@ -1121,7 +1125,11 @@ static int extract_build_id(char *build_id, size_t size)
 	free(line);
 	return 0;
 err:
+<<<<<<< HEAD
 	fclose(fp);
+=======
+	pclose(fp);
+>>>>>>> origin/android16-base
 	return -1;
 }
 

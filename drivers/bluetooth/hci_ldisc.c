@@ -773,7 +773,12 @@ static int hci_uart_tty_ioctl(struct tty_struct *tty, struct file *file,
 		break;
 
 	case HCIUARTGETPROTO:
+<<<<<<< HEAD
 		if (test_bit(HCI_UART_PROTO_SET, &hu->flags))
+=======
+		if (test_bit(HCI_UART_PROTO_SET, &hu->flags) &&
+		    test_bit(HCI_UART_PROTO_READY, &hu->flags))
+>>>>>>> origin/android16-base
 			err = hu->proto->id;
 		else
 			err = -EUNATCH;

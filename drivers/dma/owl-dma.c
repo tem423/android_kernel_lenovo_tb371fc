@@ -230,7 +230,11 @@ static void pchan_update(struct owl_dma_pchan *pchan, u32 reg,
 	else
 		regval &= ~val;
 
+<<<<<<< HEAD
 	writel(val, pchan->base + reg);
+=======
+	writel(regval, pchan->base + reg);
+>>>>>>> origin/android16-base
 }
 
 static void pchan_writel(struct owl_dma_pchan *pchan, u32 reg, u32 data)
@@ -254,7 +258,11 @@ static void dma_update(struct owl_dma *od, u32 reg, u32 val, bool state)
 	else
 		regval &= ~val;
 
+<<<<<<< HEAD
 	writel(val, od->base + reg);
+=======
+	writel(regval, od->base + reg);
+>>>>>>> origin/android16-base
 }
 
 static void dma_writel(struct owl_dma *od, u32 reg, u32 data)
@@ -932,6 +940,10 @@ static int owl_dma_remove(struct platform_device *pdev)
 	owl_dma_free(od);
 
 	clk_disable_unprepare(od->clk);
+<<<<<<< HEAD
+=======
+	dma_pool_destroy(od->lli_pool);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

@@ -57,7 +57,11 @@ fi
 cd /etc/selinux/dummy/contexts/files
 $SF file_contexts /
 
+<<<<<<< HEAD
 mounts=`cat /proc/$$/mounts | egrep "ext2|ext3|xfs|jfs|ext4|ext4dev|gfs2" | awk '{ print $2 '}`
+=======
+mounts=`cat /proc/$$/mounts | grep -E "ext2|ext3|xfs|jfs|ext4|ext4dev|gfs2" | awk '{ print $2 '}`
+>>>>>>> origin/android16-base
 $SF file_contexts $mounts
 
 

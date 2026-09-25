@@ -818,8 +818,16 @@ int drm_dev_register(struct drm_device *dev, unsigned long flags)
 			goto err_minors;
 	}
 
+<<<<<<< HEAD
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
 		drm_modeset_register_all(dev);
+=======
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		ret = drm_modeset_register_all(dev);
+		if (ret)
+			goto err_unload;
+	}
+>>>>>>> origin/android16-base
 
 	ret = 0;
 
@@ -831,6 +839,12 @@ int drm_dev_register(struct drm_device *dev, unsigned long flags)
 
 	goto out_unlock;
 
+<<<<<<< HEAD
+=======
+err_unload:
+	if (dev->driver->unload)
+		dev->driver->unload(dev);
+>>>>>>> origin/android16-base
 err_minors:
 	remove_compat_control_link(dev);
 	drm_minor_unregister(dev, DRM_MINOR_PRIMARY);

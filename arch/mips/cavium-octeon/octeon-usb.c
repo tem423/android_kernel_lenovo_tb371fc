@@ -543,6 +543,10 @@ static int __init dwc3_octeon_device_init(void)
 			devm_iounmap(&pdev->dev, base);
 			devm_release_mem_region(&pdev->dev, res->start,
 						resource_size(res));
+<<<<<<< HEAD
+=======
+			put_device(&pdev->dev);
+>>>>>>> origin/android16-base
 		}
 	} while (node != NULL);
 

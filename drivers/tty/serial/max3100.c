@@ -45,6 +45,12 @@
 #include <linux/freezer.h>
 #include <linux/tty.h>
 #include <linux/tty_flip.h>
+<<<<<<< HEAD
+=======
+#include <linux/types.h>
+
+#include <asm/unaligned.h>
+>>>>>>> origin/android16-base
 
 #include <linux/serial_max3100.h>
 
@@ -191,7 +197,11 @@ static void max3100_timeout(struct timer_list *t)
 static int max3100_sr(struct max3100_port *s, u16 tx, u16 *rx)
 {
 	struct spi_message message;
+<<<<<<< HEAD
 	u16 etx, erx;
+=======
+	__be16 etx, erx;
+>>>>>>> origin/android16-base
 	int status;
 	struct spi_transfer tran = {
 		.tx_buf = &etx,
@@ -213,7 +223,11 @@ static int max3100_sr(struct max3100_port *s, u16 tx, u16 *rx)
 	return 0;
 }
 
+<<<<<<< HEAD
 static int max3100_handlerx(struct max3100_port *s, u16 rx)
+=======
+static int max3100_handlerx_unlocked(struct max3100_port *s, u16 rx)
+>>>>>>> origin/android16-base
 {
 	unsigned int ch, flg, status = 0;
 	int ret = 0, cts;
@@ -253,6 +267,20 @@ static int max3100_handlerx(struct max3100_port *s, u16 rx)
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static int max3100_handlerx(struct max3100_port *s, u16 rx)
+{
+	unsigned long flags;
+	int ret;
+
+	uart_port_lock_irqsave(&s->port, &flags);
+	ret = max3100_handlerx_unlocked(s, rx);
+	uart_port_unlock_irqrestore(&s->port, flags);
+	return ret;
+}
+
+>>>>>>> origin/android16-base
 static void max3100_work(struct work_struct *w)
 {
 	struct max3100_port *s = container_of(w, struct max3100_port, work);
@@ -743,13 +771,21 @@ static int max3100_probe(struct spi_device *spi)
 	mutex_lock(&max3100s_lock);
 
 	if (!uart_driver_registered) {
+<<<<<<< HEAD
 		uart_driver_registered = 1;
+=======
+>>>>>>> origin/android16-base
 		retval = uart_register_driver(&max3100_uart_driver);
 		if (retval) {
 			printk(KERN_ERR "Couldn't register max3100 uart driver\n");
 			mutex_unlock(&max3100s_lock);
 			return retval;
 		}
+<<<<<<< HEAD
+=======
+
+		uart_driver_registered = 1;
+>>>>>>> origin/android16-base
 	}
 
 	for (i = 0; i < MAX_MAX3100; i++)
@@ -835,6 +871,10 @@ static int max3100_remove(struct spi_device *spi)
 		}
 	pr_debug("removing max3100 driver\n");
 	uart_unregister_driver(&max3100_uart_driver);
+<<<<<<< HEAD
+=======
+	uart_driver_registered = 0;
+>>>>>>> origin/android16-base
 
 	mutex_unlock(&max3100s_lock);
 	return 0;

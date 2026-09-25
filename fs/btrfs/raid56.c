@@ -318,6 +318,12 @@ static void merge_rbio(struct btrfs_raid_bio *dest,
 {
 	bio_list_merge(&dest->bio_list, &victim->bio_list);
 	dest->bio_list_bytes += victim->bio_list_bytes;
+<<<<<<< HEAD
+=======
+	/* Also inherit the bitmaps from @victim. */
+	bitmap_or(dest->dbitmap, victim->dbitmap, dest->dbitmap,
+		  dest->stripe_npages);
+>>>>>>> origin/android16-base
 	dest->generic_bio_cnt += victim->generic_bio_cnt;
 	bio_list_init(&victim->bio_list);
 }
@@ -862,6 +868,15 @@ static void rbio_orig_end_io(struct btrfs_raid_bio *rbio, blk_status_t err)
 
 	if (rbio->generic_bio_cnt)
 		btrfs_bio_counter_sub(rbio->fs_info, rbio->generic_bio_cnt);
+<<<<<<< HEAD
+=======
+	/*
+	 * Clear the data bitmap, as the rbio may be cached for later usage.
+	 * do this before before unlock_stripe() so there will be no new bio
+	 * for this bio.
+	 */
+	bitmap_clear(rbio->dbitmap, 0, rbio->stripe_npages);
+>>>>>>> origin/android16-base
 
 	/*
 	 * At this moment, rbio->bio_list is empty, however since rbio does not
@@ -1182,14 +1197,19 @@ static noinline void finish_rmw(struct btrfs_raid_bio *rbio)
 	int nr_data = rbio->nr_data;
 	int stripe;
 	int pagenr;
+<<<<<<< HEAD
 	int p_stripe = -1;
 	int q_stripe = -1;
+=======
+	bool has_qstripe;
+>>>>>>> origin/android16-base
 	struct bio_list bio_list;
 	struct bio *bio;
 	int ret;
 
 	bio_list_init(&bio_list);
 
+<<<<<<< HEAD
 	if (rbio->real_stripes - rbio->nr_data == 1) {
 		p_stripe = rbio->real_stripes - 1;
 	} else if (rbio->real_stripes - rbio->nr_data == 2) {
@@ -1198,6 +1218,17 @@ static noinline void finish_rmw(struct btrfs_raid_bio *rbio)
 	} else {
 		BUG();
 	}
+=======
+	if (rbio->real_stripes - rbio->nr_data == 1)
+		has_qstripe = false;
+	else if (rbio->real_stripes - rbio->nr_data == 2)
+		has_qstripe = true;
+	else
+		BUG();
+
+	/* We should have at least one data sector. */
+	ASSERT(bitmap_weight(rbio->dbitmap, rbio->stripe_npages));
+>>>>>>> origin/android16-base
 
 	/* at this point we either have a full stripe,
 	 * or we've read the full stripe from the drive.
@@ -1241,7 +1272,11 @@ static noinline void finish_rmw(struct btrfs_raid_bio *rbio)
 		SetPageUptodate(p);
 		pointers[stripe++] = kmap(p);
 
+<<<<<<< HEAD
 		if (q_stripe != -1) {
+=======
+		if (has_qstripe) {
+>>>>>>> origin/android16-base
 
 			/*
 			 * raid6, add the qstripe and call the
@@ -1272,6 +1307,14 @@ static noinline void finish_rmw(struct btrfs_raid_bio *rbio)
 	for (stripe = 0; stripe < rbio->real_stripes; stripe++) {
 		for (pagenr = 0; pagenr < rbio->stripe_npages; pagenr++) {
 			struct page *page;
+<<<<<<< HEAD
+=======
+
+			/* This vertical stripe has no data, skip it. */
+			if (!test_bit(pagenr, rbio->dbitmap))
+				continue;
+
+>>>>>>> origin/android16-base
 			if (stripe < rbio->nr_data) {
 				page = page_in_rbio(rbio, stripe, pagenr, 1);
 				if (!page)
@@ -1296,6 +1339,14 @@ static noinline void finish_rmw(struct btrfs_raid_bio *rbio)
 
 		for (pagenr = 0; pagenr < rbio->stripe_npages; pagenr++) {
 			struct page *page;
+<<<<<<< HEAD
+=======
+
+			/* This vertical stripe has no data, skip it. */
+			if (!test_bit(pagenr, rbio->dbitmap))
+				continue;
+
+>>>>>>> origin/android16-base
 			if (stripe < rbio->nr_data) {
 				page = page_in_rbio(rbio, stripe, pagenr, 1);
 				if (!page)
@@ -1736,6 +1787,36 @@ static void btrfs_raid_unplug(struct blk_plug_cb *cb, bool from_schedule)
 	run_plug(plug);
 }
 
+<<<<<<< HEAD
+=======
+/* Add the original bio into rbio->bio_list, and update rbio::dbitmap. */
+static void rbio_add_bio(struct btrfs_raid_bio *rbio, struct bio *orig_bio)
+{
+	const struct btrfs_fs_info *fs_info = rbio->fs_info;
+	const u64 orig_logical = orig_bio->bi_iter.bi_sector << SECTOR_SHIFT;
+	const u64 full_stripe_start = rbio->bbio->raid_map[0];
+	const u32 orig_len = orig_bio->bi_iter.bi_size;
+	const u32 sectorsize = fs_info->sectorsize;
+	u64 cur_logical;
+
+	ASSERT(orig_logical >= full_stripe_start &&
+	       orig_logical + orig_len <= full_stripe_start +
+	       rbio->nr_data * rbio->stripe_len);
+
+	bio_list_add(&rbio->bio_list, orig_bio);
+	rbio->bio_list_bytes += orig_bio->bi_iter.bi_size;
+
+	/* Update the dbitmap. */
+	for (cur_logical = orig_logical; cur_logical < orig_logical + orig_len;
+	     cur_logical += sectorsize) {
+		int bit = ((u32)(cur_logical - full_stripe_start) >>
+			   PAGE_SHIFT) % rbio->stripe_npages;
+
+		set_bit(bit, rbio->dbitmap);
+	}
+}
+
+>>>>>>> origin/android16-base
 /*
  * our main entry point for writes from the rest of the FS.
  */
@@ -1752,9 +1833,14 @@ int raid56_parity_write(struct btrfs_fs_info *fs_info, struct bio *bio,
 		btrfs_put_bbio(bbio);
 		return PTR_ERR(rbio);
 	}
+<<<<<<< HEAD
 	bio_list_add(&rbio->bio_list, bio);
 	rbio->bio_list_bytes = bio->bi_iter.bi_size;
 	rbio->operation = BTRFS_RBIO_WRITE;
+=======
+	rbio->operation = BTRFS_RBIO_WRITE;
+	rbio_add_bio(rbio, bio);
+>>>>>>> origin/android16-base
 
 	btrfs_bio_counter_inc_noblocked(fs_info);
 	rbio->generic_bio_cnt = 1;
@@ -2056,9 +2142,18 @@ static int __raid56_parity_recover(struct btrfs_raid_bio *rbio)
 	atomic_set(&rbio->error, 0);
 
 	/*
+<<<<<<< HEAD
 	 * read everything that hasn't failed.  Thanks to the
 	 * stripe cache, it is possible that some or all of these
 	 * pages are going to be uptodate.
+=======
+	 * Read everything that hasn't failed. However this time we will
+	 * not trust any cached sector.
+	 * As we may read out some stale data but higher layer is not reading
+	 * that stale part.
+	 *
+	 * So here we always re-read everything in recovery path.
+>>>>>>> origin/android16-base
 	 */
 	for (stripe = 0; stripe < rbio->real_stripes; stripe++) {
 		if (rbio->faila == stripe || rbio->failb == stripe) {
@@ -2067,6 +2162,7 @@ static int __raid56_parity_recover(struct btrfs_raid_bio *rbio)
 		}
 
 		for (pagenr = 0; pagenr < rbio->stripe_npages; pagenr++) {
+<<<<<<< HEAD
 			struct page *p;
 
 			/*
@@ -2077,6 +2173,8 @@ static int __raid56_parity_recover(struct btrfs_raid_bio *rbio)
 			if (PageUptodate(p))
 				continue;
 
+=======
+>>>>>>> origin/android16-base
 			ret = rbio_add_io_page(rbio, &bio_list,
 				       rbio_stripe_page(rbio, stripe, pagenr),
 				       stripe, pagenr, rbio->stripe_len);
@@ -2158,8 +2256,12 @@ int raid56_parity_recover(struct btrfs_fs_info *fs_info, struct bio *bio,
 	}
 
 	rbio->operation = BTRFS_RBIO_READ_REBUILD;
+<<<<<<< HEAD
 	bio_list_add(&rbio->bio_list, bio);
 	rbio->bio_list_bytes = bio->bi_iter.bi_size;
+=======
+	rbio_add_bio(rbio, bio);
+>>>>>>> origin/android16-base
 
 	rbio->faila = find_logical_bio_stripe(rbio, bio);
 	if (rbio->faila == -1) {
@@ -2340,8 +2442,12 @@ static noinline void finish_parity_scrub(struct btrfs_raid_bio *rbio,
 	int nr_data = rbio->nr_data;
 	int stripe;
 	int pagenr;
+<<<<<<< HEAD
 	int p_stripe = -1;
 	int q_stripe = -1;
+=======
+	bool has_qstripe;
+>>>>>>> origin/android16-base
 	struct page *p_page = NULL;
 	struct page *q_page = NULL;
 	struct bio_list bio_list;
@@ -2351,6 +2457,7 @@ static noinline void finish_parity_scrub(struct btrfs_raid_bio *rbio,
 
 	bio_list_init(&bio_list);
 
+<<<<<<< HEAD
 	if (rbio->real_stripes - rbio->nr_data == 1) {
 		p_stripe = rbio->real_stripes - 1;
 	} else if (rbio->real_stripes - rbio->nr_data == 2) {
@@ -2359,6 +2466,14 @@ static noinline void finish_parity_scrub(struct btrfs_raid_bio *rbio,
 	} else {
 		BUG();
 	}
+=======
+	if (rbio->real_stripes - rbio->nr_data == 1)
+		has_qstripe = false;
+	else if (rbio->real_stripes - rbio->nr_data == 2)
+		has_qstripe = true;
+	else
+		BUG();
+>>>>>>> origin/android16-base
 
 	if (bbio->num_tgtdevs && bbio->tgtdev_map[rbio->scrubp]) {
 		is_replace = 1;
@@ -2380,17 +2495,32 @@ static noinline void finish_parity_scrub(struct btrfs_raid_bio *rbio,
 		goto cleanup;
 	SetPageUptodate(p_page);
 
+<<<<<<< HEAD
 	if (q_stripe != -1) {
+=======
+	if (has_qstripe) {
+		/* RAID6, allocate and map temp space for the Q stripe */
+>>>>>>> origin/android16-base
 		q_page = alloc_page(GFP_NOFS | __GFP_HIGHMEM);
 		if (!q_page) {
 			__free_page(p_page);
 			goto cleanup;
 		}
 		SetPageUptodate(q_page);
+<<<<<<< HEAD
+=======
+		pointers[rbio->real_stripes - 1] = kmap(q_page);
+>>>>>>> origin/android16-base
 	}
 
 	atomic_set(&rbio->error, 0);
 
+<<<<<<< HEAD
+=======
+	/* Map the parity stripe just once */
+	pointers[nr_data] = kmap(p_page);
+
+>>>>>>> origin/android16-base
 	for_each_set_bit(pagenr, rbio->dbitmap, rbio->stripe_npages) {
 		struct page *p;
 		void *parity;
@@ -2400,6 +2530,7 @@ static noinline void finish_parity_scrub(struct btrfs_raid_bio *rbio,
 			pointers[stripe] = kmap(p);
 		}
 
+<<<<<<< HEAD
 		/* then add the parity stripe */
 		pointers[stripe++] = kmap(p_page);
 
@@ -2411,6 +2542,10 @@ static noinline void finish_parity_scrub(struct btrfs_raid_bio *rbio,
 			 */
 			pointers[stripe++] = kmap(q_page);
 
+=======
+		if (has_qstripe) {
+			/* RAID6, call the library function to fill in our P/Q */
+>>>>>>> origin/android16-base
 			raid6_call.gen_syndrome(rbio->real_stripes, PAGE_SIZE,
 						pointers);
 		} else {
@@ -2431,12 +2566,23 @@ static noinline void finish_parity_scrub(struct btrfs_raid_bio *rbio,
 
 		for (stripe = 0; stripe < nr_data; stripe++)
 			kunmap(page_in_rbio(rbio, stripe, pagenr, 0));
+<<<<<<< HEAD
 		kunmap(p_page);
 	}
 
 	__free_page(p_page);
 	if (q_page)
 		__free_page(q_page);
+=======
+	}
+
+	kunmap(p_page);
+	__free_page(p_page);
+	if (q_page) {
+		kunmap(q_page);
+		__free_page(q_page);
+	}
+>>>>>>> origin/android16-base
 
 writeback:
 	/*

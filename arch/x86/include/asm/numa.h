@@ -11,6 +11,7 @@
 
 #define NR_NODE_MEMBLKS		(MAX_NUMNODES*2)
 
+<<<<<<< HEAD
 /*
  * Too small node sizes may confuse the VM badly. Usually they
  * result from BIOS bugs. So dont recognize nodes as standalone
@@ -18,6 +19,8 @@
  */
 #define NODE_MIN_SIZE (4*1024*1024)
 
+=======
+>>>>>>> origin/android16-base
 extern int numa_off;
 
 /*

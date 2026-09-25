@@ -241,6 +241,7 @@ int vt_waitactive(int n)
 #define GPLAST 0x3df
 #define GPNUM (GPLAST - GPFIRST + 1)
 
+<<<<<<< HEAD
 
 
 static inline int 
@@ -283,6 +284,8 @@ do_fontx_ioctl(struct vc_data *vc, int cmd, struct consolefontdesc __user *user_
 	return -EINVAL;
 }
 
+=======
+>>>>>>> origin/android16-base
 static inline int 
 do_unimap_ioctl(int cmd, struct unimapdesc __user *user_ud, int perm, struct vc_data *vc)
 {
@@ -484,6 +487,7 @@ int vt_ioctl(struct tty_struct *tty,
 			ret = -EINVAL;
 			goto out;
 		}
+<<<<<<< HEAD
 		/* FIXME: this needs the console lock extending */
 		if (vc->vc_mode == (unsigned char) arg)
 			break;
@@ -494,6 +498,21 @@ int vt_ioctl(struct tty_struct *tty,
 		 * explicitly blank/unblank the screen if switching modes
 		 */
 		console_lock();
+=======
+		console_lock();
+		if (vc->vc_mode == (unsigned char) arg) {
+			console_unlock();
+			break;
+		}
+		vc->vc_mode = (unsigned char) arg;
+		if (console != fg_console) {
+			console_unlock();
+			break;
+		}
+		/*
+		 * explicitly blank/unblank the screen if switching modes
+		 */
+>>>>>>> origin/android16-base
 		if (arg == KD_TEXT)
 			do_unblank_screen(1);
 		else
@@ -688,6 +707,10 @@ int vt_ioctl(struct tty_struct *tty,
 			ret =  -ENXIO;
 		else {
 			arg--;
+<<<<<<< HEAD
+=======
+			arg = array_index_nospec(arg, MAX_NR_CONSOLES);
+>>>>>>> origin/android16-base
 			console_lock();
 			ret = vc_allocate(arg);
 			console_unlock();
@@ -712,9 +735,15 @@ int vt_ioctl(struct tty_struct *tty,
 		if (vsa.console == 0 || vsa.console > MAX_NR_CONSOLES)
 			ret = -ENXIO;
 		else {
+<<<<<<< HEAD
 			vsa.console = array_index_nospec(vsa.console,
 							 MAX_NR_CONSOLES + 1);
 			vsa.console--;
+=======
+			vsa.console--;
+			vsa.console = array_index_nospec(vsa.console,
+							 MAX_NR_CONSOLES);
+>>>>>>> origin/android16-base
 			console_lock();
 			ret = vc_allocate(vsa.console);
 			if (ret == 0) {
@@ -895,17 +924,29 @@ int vt_ioctl(struct tty_struct *tty,
 			if (vcp) {
 				int ret;
 				int save_scan_lines = vcp->vc_scan_lines;
+<<<<<<< HEAD
 				int save_font_height = vcp->vc_font.height;
+=======
+				int save_cell_height = vcp->vc_cell_height;
+>>>>>>> origin/android16-base
 
 				if (v.v_vlin)
 					vcp->vc_scan_lines = v.v_vlin;
 				if (v.v_clin)
+<<<<<<< HEAD
 					vcp->vc_font.height = v.v_clin;
+=======
+					vcp->vc_cell_height = v.v_clin;
+>>>>>>> origin/android16-base
 				vcp->vc_resize_user = 1;
 				ret = vc_resize(vcp, v.v_cols, v.v_rows);
 				if (ret) {
 					vcp->vc_scan_lines = save_scan_lines;
+<<<<<<< HEAD
 					vcp->vc_font.height = save_font_height;
+=======
+					vcp->vc_cell_height = save_cell_height;
+>>>>>>> origin/android16-base
 					console_unlock();
 					return ret;
 				}
@@ -915,6 +956,7 @@ int vt_ioctl(struct tty_struct *tty,
 		break;
 	}
 
+<<<<<<< HEAD
 	case PIO_FONT: {
 		if (!perm)
 			return -EPERM;
@@ -939,6 +981,8 @@ int vt_ioctl(struct tty_struct *tty,
 		break;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	case PIO_CMAP:
                 if (!perm)
 			ret = -EPERM;
@@ -950,6 +994,7 @@ int vt_ioctl(struct tty_struct *tty,
                 ret = con_get_cmap(up);
 		break;
 
+<<<<<<< HEAD
 	case PIO_FONTX:
 	case GIO_FONTX:
 		ret = do_fontx_ioctl(vc, cmd, up, perm, &op);
@@ -980,6 +1025,8 @@ int vt_ioctl(struct tty_struct *tty,
 #endif
 	}
 
+=======
+>>>>>>> origin/android16-base
 	case KDFONTOP: {
 		if (copy_from_user(&op, up, sizeof(op))) {
 			ret = -EFAULT;
@@ -1093,6 +1140,7 @@ void vc_SAK(struct work_struct *work)
 
 #ifdef CONFIG_COMPAT
 
+<<<<<<< HEAD
 struct compat_consolefontdesc {
 	unsigned short charcount;       /* characters in font (256 or 512) */
 	unsigned short charheight;      /* scan lines per character (1-32) */
@@ -1141,6 +1189,8 @@ compat_fontx_ioctl(struct vc_data *vc, int cmd,
 	return -EINVAL;
 }
 
+=======
+>>>>>>> origin/android16-base
 struct compat_console_font_op {
 	compat_uint_t op;        /* operation code KD_FONT_OP_* */
 	compat_uint_t flags;     /* KD_FONT_FLAG_* */
@@ -1218,11 +1268,14 @@ long vt_compat_ioctl(struct tty_struct *tty,
 	/*
 	 * these need special handlers for incompatible data structures
 	 */
+<<<<<<< HEAD
 	case PIO_FONTX:
 	case GIO_FONTX:
 		ret = compat_fontx_ioctl(vc, cmd, up, perm, &op);
 		break;
 
+=======
+>>>>>>> origin/android16-base
 	case KDFONTOP:
 		ret = compat_kdfontop_ioctl(up, perm, &op, vc);
 		break;

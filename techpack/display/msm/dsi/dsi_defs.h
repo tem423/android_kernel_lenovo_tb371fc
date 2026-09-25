@@ -297,7 +297,10 @@ enum dsi_cmd_set_type {
 	DSI_CMD_SET_POST_CMD_TO_VID_SWITCH,
 	DSI_CMD_SET_VID_TO_CMD_SWITCH,
 	DSI_CMD_SET_POST_VID_TO_CMD_SWITCH,
+<<<<<<< HEAD
 	DSI_CMD_SET_PANEL_STATUS_OFFSET,
+=======
+>>>>>>> origin/android16-base
 	DSI_CMD_SET_PANEL_STATUS,
 	DSI_CMD_SET_LP1,
 	DSI_CMD_SET_LP2,
@@ -308,6 +311,7 @@ enum dsi_cmd_set_type {
 	DSI_CMD_SET_POST_TIMING_SWITCH,
 	DSI_CMD_SET_QSYNC_ON,
 	DSI_CMD_SET_QSYNC_OFF,
+<<<<<<< HEAD
 	/* xiaomi add start */
 	DSI_CMD_SET_MI_CEON,
 	DSI_CMD_SET_MI_CEOFF,
@@ -409,6 +413,8 @@ enum dsi_cmd_set_type {
 	DSI_CMD_SET_MI_DIM_FP_DBV_MAX_IN_HBM,
 	DSI_CMD_SET_MI_DIM_FP_DBV_MAX_IN_NORMAL,
 	/* xiaomi add end */
+=======
+>>>>>>> origin/android16-base
 	DSI_CMD_SET_MAX
 };
 
@@ -617,10 +623,13 @@ struct dsi_host_common_cfg {
 	enum dsi_phy_type phy_type;
 	struct dsi_split_link_config split_link;
 	u32 byte_intf_clk_div;
+<<<<<<< HEAD
 	u32 clk_strength;
 	bool cphy_strength;
 	u32 dma_sched_line;
 	u32 dma_sched_window;
+=======
+>>>>>>> origin/android16-base
 };
 
 /**

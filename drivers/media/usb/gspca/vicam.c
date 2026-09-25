@@ -234,7 +234,11 @@ static int sd_init(struct gspca_dev *gspca_dev)
 {
 	int ret;
 	const struct ihex_binrec *rec;
+<<<<<<< HEAD
 	const struct firmware *uninitialized_var(fw);
+=======
+	const struct firmware *fw;
+>>>>>>> origin/android16-base
 	u8 *firmware_buf;
 
 	ret = request_ihex_firmware(&fw, VICAM_FIRMWARE,

@@ -124,7 +124,11 @@ static struct pll_vco fabia_vco[] = {
 
 static struct clk_alpha_pll gpll0 = {
 	.offset = 0x0,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.vco_table = fabia_vco,
 	.num_vco = ARRAY_SIZE(fabia_vco),
 	.clkr = {
@@ -134,58 +138,98 @@ static struct clk_alpha_pll gpll0 = {
 			.name = "gpll0",
 			.parent_names = (const char *[]){ "xo" },
 			.num_parents = 1,
+<<<<<<< HEAD
 			.ops = &clk_alpha_pll_ops,
+=======
+			.ops = &clk_alpha_pll_fixed_fabia_ops,
+>>>>>>> origin/android16-base
 		}
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll0_out_even = {
 	.offset = 0x0,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll0_out_even",
 		.parent_names = (const char *[]){ "gpll0" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll0_out_main = {
 	.offset = 0x0,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll0_out_main",
 		.parent_names = (const char *[]){ "gpll0" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll0_out_odd = {
 	.offset = 0x0,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll0_out_odd",
 		.parent_names = (const char *[]){ "gpll0" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll0_out_test = {
 	.offset = 0x0,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll0_out_test",
 		.parent_names = (const char *[]){ "gpll0" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll gpll1 = {
 	.offset = 0x1000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.vco_table = fabia_vco,
 	.num_vco = ARRAY_SIZE(fabia_vco),
 	.clkr = {
@@ -195,58 +239,98 @@ static struct clk_alpha_pll gpll1 = {
 			.name = "gpll1",
 			.parent_names = (const char *[]){ "xo" },
 			.num_parents = 1,
+<<<<<<< HEAD
 			.ops = &clk_alpha_pll_ops,
+=======
+			.ops = &clk_alpha_pll_fixed_fabia_ops,
+>>>>>>> origin/android16-base
 		}
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll1_out_even = {
 	.offset = 0x1000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll1_out_even",
 		.parent_names = (const char *[]){ "gpll1" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll1_out_main = {
 	.offset = 0x1000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll1_out_main",
 		.parent_names = (const char *[]){ "gpll1" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll1_out_odd = {
 	.offset = 0x1000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll1_out_odd",
 		.parent_names = (const char *[]){ "gpll1" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll1_out_test = {
 	.offset = 0x1000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll1_out_test",
 		.parent_names = (const char *[]){ "gpll1" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll gpll2 = {
 	.offset = 0x2000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.vco_table = fabia_vco,
 	.num_vco = ARRAY_SIZE(fabia_vco),
 	.clkr = {
@@ -256,58 +340,98 @@ static struct clk_alpha_pll gpll2 = {
 			.name = "gpll2",
 			.parent_names = (const char *[]){ "xo" },
 			.num_parents = 1,
+<<<<<<< HEAD
 			.ops = &clk_alpha_pll_ops,
+=======
+			.ops = &clk_alpha_pll_fixed_fabia_ops,
+>>>>>>> origin/android16-base
 		}
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll2_out_even = {
 	.offset = 0x2000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll2_out_even",
 		.parent_names = (const char *[]){ "gpll2" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll2_out_main = {
 	.offset = 0x2000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll2_out_main",
 		.parent_names = (const char *[]){ "gpll2" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll2_out_odd = {
 	.offset = 0x2000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll2_out_odd",
 		.parent_names = (const char *[]){ "gpll2" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll2_out_test = {
 	.offset = 0x2000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll2_out_test",
 		.parent_names = (const char *[]){ "gpll2" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll gpll3 = {
 	.offset = 0x3000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.vco_table = fabia_vco,
 	.num_vco = ARRAY_SIZE(fabia_vco),
 	.clkr = {
@@ -317,58 +441,98 @@ static struct clk_alpha_pll gpll3 = {
 			.name = "gpll3",
 			.parent_names = (const char *[]){ "xo" },
 			.num_parents = 1,
+<<<<<<< HEAD
 			.ops = &clk_alpha_pll_ops,
+=======
+			.ops = &clk_alpha_pll_fixed_fabia_ops,
+>>>>>>> origin/android16-base
 		}
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll3_out_even = {
 	.offset = 0x3000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll3_out_even",
 		.parent_names = (const char *[]){ "gpll3" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll3_out_main = {
 	.offset = 0x3000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll3_out_main",
 		.parent_names = (const char *[]){ "gpll3" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll3_out_odd = {
 	.offset = 0x3000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll3_out_odd",
 		.parent_names = (const char *[]){ "gpll3" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll3_out_test = {
 	.offset = 0x3000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll3_out_test",
 		.parent_names = (const char *[]){ "gpll3" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll gpll4 = {
 	.offset = 0x77000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.vco_table = fabia_vco,
 	.num_vco = ARRAY_SIZE(fabia_vco),
 	.clkr = {
@@ -378,52 +542,88 @@ static struct clk_alpha_pll gpll4 = {
 			.name = "gpll4",
 			.parent_names = (const char *[]){ "xo" },
 			.num_parents = 1,
+<<<<<<< HEAD
 			.ops = &clk_alpha_pll_ops,
+=======
+			.ops = &clk_alpha_pll_fixed_fabia_ops,
+>>>>>>> origin/android16-base
 		}
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll4_out_even = {
 	.offset = 0x77000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll4_out_even",
 		.parent_names = (const char *[]){ "gpll4" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll4_out_main = {
 	.offset = 0x77000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll4_out_main",
 		.parent_names = (const char *[]){ "gpll4" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll4_out_odd = {
 	.offset = 0x77000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll4_out_odd",
 		.parent_names = (const char *[]){ "gpll4" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
 static struct clk_alpha_pll_postdiv gpll4_out_test = {
 	.offset = 0x77000,
+<<<<<<< HEAD
 	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_DEFAULT],
+=======
+	.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_FABIA],
+>>>>>>> origin/android16-base
 	.clkr.hw.init = &(struct clk_init_data){
 		.name = "gpll4_out_test",
 		.parent_names = (const char *[]){ "gpll4" },
 		.num_parents = 1,
+<<<<<<< HEAD
 		.ops = &clk_alpha_pll_postdiv_ops,
+=======
+		.ops = &clk_alpha_pll_postdiv_fabia_ops,
+>>>>>>> origin/android16-base
 	},
 };
 

@@ -684,9 +684,16 @@ void __gmap_zap(struct gmap *gmap, unsigned long gaddr)
 		vmaddr |= gaddr & ~PMD_MASK;
 		/* Get pointer to the page table entry */
 		ptep = get_locked_pte(gmap->mm, vmaddr, &ptl);
+<<<<<<< HEAD
 		if (likely(ptep))
 			ptep_zap_unused(gmap->mm, vmaddr, ptep, 0);
 		pte_unmap_unlock(ptep, ptl);
+=======
+		if (likely(ptep)) {
+			ptep_zap_unused(gmap->mm, vmaddr, ptep, 0);
+			pte_unmap_unlock(ptep, ptl);
+		}
+>>>>>>> origin/android16-base
 	}
 }
 EXPORT_SYMBOL_GPL(__gmap_zap);
@@ -2582,7 +2589,11 @@ static int __s390_enable_skey_hugetlb(pte_t *pte, unsigned long addr,
 		return 0;
 
 	start = pmd_val(*pmd) & HPAGE_MASK;
+<<<<<<< HEAD
 	end = start + HPAGE_SIZE - 1;
+=======
+	end = start + HPAGE_SIZE;
+>>>>>>> origin/android16-base
 	__storage_key_init_range(start, end);
 	set_bit(PG_arch_1, &page->flags);
 	return 0;

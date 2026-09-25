@@ -349,8 +349,15 @@ static void rpc_make_runnable(struct workqueue_struct *wq,
 	if (RPC_IS_ASYNC(task)) {
 		INIT_WORK(&task->u.tk_work, rpc_async_schedule);
 		queue_work(wq, &task->u.tk_work);
+<<<<<<< HEAD
 	} else
 		wake_up_bit(&task->tk_runstate, RPC_TASK_QUEUED);
+=======
+	} else {
+		smp_mb__after_atomic();
+		wake_up_bit(&task->tk_runstate, RPC_TASK_QUEUED);
+	}
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -499,10 +506,27 @@ static struct rpc_task *__rpc_find_next_queued_priority(struct rpc_wait_queue *q
 	struct rpc_task *task;
 
 	/*
+<<<<<<< HEAD
 	 * Service a batch of tasks from a single owner.
 	 */
 	q = &queue->tasks[queue->priority];
 	if (!list_empty(q) && --queue->nr) {
+=======
+	 * Service the privileged queue.
+	 */
+	q = &queue->tasks[RPC_NR_PRIORITY - 1];
+	if (queue->maxpriority > RPC_PRIORITY_PRIVILEGED && !list_empty(q)) {
+		task = list_first_entry(q, struct rpc_task, u.tk_wait.list);
+		goto out;
+	}
+
+	/*
+	 * Service a batch of tasks from a single owner.
+	 */
+	q = &queue->tasks[queue->priority];
+	if (!list_empty(q) && queue->nr) {
+		queue->nr--;
+>>>>>>> origin/android16-base
 		task = list_first_entry(q, struct rpc_task, u.tk_wait.list);
 		goto out;
 	}
@@ -699,7 +723,10 @@ rpc_init_task_statistics(struct rpc_task *task)
 	/* Initialize retry counters */
 	task->tk_garb_retry = 2;
 	task->tk_cred_retry = 2;
+<<<<<<< HEAD
 	task->tk_rebind_retry = 2;
+=======
+>>>>>>> origin/android16-base
 
 	/* starting timestamp */
 	task->tk_start = ktime_get();
@@ -883,8 +910,15 @@ int rpc_malloc(struct rpc_task *task)
 	struct rpc_buffer *buf;
 	gfp_t gfp = GFP_NOIO | __GFP_NOWARN;
 
+<<<<<<< HEAD
 	if (RPC_IS_SWAPPER(task))
 		gfp = __GFP_MEMALLOC | GFP_NOWAIT | __GFP_NOWARN;
+=======
+	if (RPC_IS_ASYNC(task))
+		gfp = GFP_NOWAIT | __GFP_NOWARN;
+	if (RPC_IS_SWAPPER(task))
+		gfp |= __GFP_MEMALLOC;
+>>>>>>> origin/android16-base
 
 	size += sizeof(struct rpc_buffer);
 	if (size <= RPC_BUFFER_MAXSIZE)

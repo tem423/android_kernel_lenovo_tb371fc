@@ -535,7 +535,11 @@ void set_link_ipg(struct hfi1_pportdata *ppd)
 	u16 shift, mult;
 	u64 src;
 	u32 current_egress_rate; /* Mbits /sec */
+<<<<<<< HEAD
 	u32 max_pkt_time;
+=======
+	u64 max_pkt_time;
+>>>>>>> origin/android16-base
 	/*
 	 * max_pkt_time is the maximum packet egress time in units
 	 * of the fabric clock period 1/(805 MHz).
@@ -1146,7 +1150,11 @@ void hfi1_free_ctxtdata(struct hfi1_devdata *dd, struct hfi1_ctxtdata *rcd)
 	rcd->egrbufs.rcvtids = NULL;
 
 	for (e = 0; e < rcd->egrbufs.alloced; e++) {
+<<<<<<< HEAD
 		if (rcd->egrbufs.buffers[e].dma)
+=======
+		if (rcd->egrbufs.buffers[e].addr)
+>>>>>>> origin/android16-base
 			dma_free_coherent(&dd->pcidev->dev,
 					  rcd->egrbufs.buffers[e].len,
 					  rcd->egrbufs.buffers[e].addr,

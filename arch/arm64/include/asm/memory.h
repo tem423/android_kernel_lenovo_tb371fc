@@ -62,8 +62,16 @@
 #define PAGE_OFFSET		(UL(0xffffffffffffffff) - \
 	(UL(1) << (VA_BITS - 1)) + 1)
 #define KIMAGE_VADDR		(MODULES_END)
+<<<<<<< HEAD
 #define MODULES_END		(MODULES_VADDR + MODULES_VSIZE)
 #define MODULES_VADDR		(VA_START + KASAN_SHADOW_SIZE)
+=======
+#define BPF_JIT_REGION_START	(VA_START + KASAN_SHADOW_SIZE)
+#define BPF_JIT_REGION_SIZE	(SZ_128M)
+#define BPF_JIT_REGION_END	(BPF_JIT_REGION_START + BPF_JIT_REGION_SIZE)
+#define MODULES_END		(MODULES_VADDR + MODULES_VSIZE)
+#define MODULES_VADDR		(BPF_JIT_REGION_END)
+>>>>>>> origin/android16-base
 #define MODULES_VSIZE		(SZ_128M)
 #define VMEMMAP_START		(PAGE_OFFSET - VMEMMAP_SIZE)
 #define PCI_IO_END		(VMEMMAP_START - SZ_2M)
@@ -323,6 +331,7 @@ static inline void *phys_to_virt(phys_addr_t x)
  * virtual address. Therefore, use inline assembly to ensure we are
  * always taking the address of the actual function.
  */
+<<<<<<< HEAD
 #define __pa_function(x) ({						\
 	unsigned long addr;						\
 	asm("adrp %0, " __stringify(x) "\n\t"				\
@@ -330,6 +339,17 @@ static inline void *phys_to_virt(phys_addr_t x)
 	__pa_symbol(addr);						\
 })
 
+=======
+#define __va_function(x) ({						\
+	void *addr;							\
+	asm("adrp %0, " __stringify(x) "\n\t"				\
+	    "add  %0, %0, :lo12:" __stringify(x) : "=r" (addr));	\
+	addr;								\
+})
+
+#define __pa_function(x) 	__pa_symbol(__va_function(x))
+
+>>>>>>> origin/android16-base
 /*
  *  virt_to_page(k)	convert a _valid_ virtual address to struct page *
  *  virt_addr_valid(k)	indicates whether a virtual address is valid
@@ -337,6 +357,14 @@ static inline void *phys_to_virt(phys_addr_t x)
 #define ARCH_PFN_OFFSET		((unsigned long)PHYS_PFN_OFFSET)
 
 #ifndef CONFIG_SPARSEMEM_VMEMMAP
+<<<<<<< HEAD
+=======
+#define page_to_virt(x)	({						\
+	__typeof__(x) __page = x;					\
+	void *__addr = __va(page_to_phys(__page));			\
+	(void *)__tag_set((const void *)__addr, page_kasan_tag(__page));\
+})
+>>>>>>> origin/android16-base
 #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
 #define _virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
 #else

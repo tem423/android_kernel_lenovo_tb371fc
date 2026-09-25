@@ -417,8 +417,13 @@ static int ipcget_public(struct ipc_namespace *ns, struct ipc_ids *ids,
 static void ipc_kht_remove(struct ipc_ids *ids, struct kern_ipc_perm *ipcp)
 {
 	if (ipcp->key != IPC_PRIVATE)
+<<<<<<< HEAD
 		rhashtable_remove_fast(&ids->key_ht, &ipcp->khtnode,
 				       ipc_kht_params);
+=======
+		WARN_ON_ONCE(rhashtable_remove_fast(&ids->key_ht, &ipcp->khtnode,
+				       ipc_kht_params));
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -433,7 +438,11 @@ void ipc_rmid(struct ipc_ids *ids, struct kern_ipc_perm *ipcp)
 {
 	int idx = ipcid_to_idx(ipcp->id);
 
+<<<<<<< HEAD
 	idr_remove(&ids->ipcs_idr, idx);
+=======
+	WARN_ON_ONCE(idr_remove(&ids->ipcs_idr, idx) != ipcp);
+>>>>>>> origin/android16-base
 	ipc_kht_remove(ids, ipcp);
 	ids->in_use--;
 	ipcp->deleted = true;

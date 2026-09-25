@@ -197,6 +197,10 @@ static struct file *alloc_file(const struct path *path, int flags,
 	file->f_inode = path->dentry->d_inode;
 	file->f_mapping = path->dentry->d_inode->i_mapping;
 	file->f_wb_err = filemap_sample_wb_err(file->f_mapping);
+<<<<<<< HEAD
+=======
+	file->f_sb_err = file_sample_sb_err(file);
+>>>>>>> origin/android16-base
 	if ((file->f_mode & FMODE_READ) &&
 	     likely(fop->read || fop->read_iter))
 		file->f_mode |= FMODE_CAN_READ;
@@ -332,9 +336,15 @@ void flush_delayed_fput_wait(void)
 	flush_delayed_work(&delayed_fput_work);
 }
 
+<<<<<<< HEAD
 void fput(struct file *file)
 {
 	if (atomic_long_dec_and_test(&file->f_count)) {
+=======
+void fput_many(struct file *file, unsigned int refs)
+{
+	if (atomic_long_sub_and_test(refs, &file->f_count)) {
+>>>>>>> origin/android16-base
 		struct task_struct *task = current;
 
 		if (likely(!in_interrupt() && !(task->flags & PF_KTHREAD))) {
@@ -353,6 +363,14 @@ void fput(struct file *file)
 	}
 }
 
+<<<<<<< HEAD
+=======
+void fput(struct file *file)
+{
+	fput_many(file, 1);
+}
+
+>>>>>>> origin/android16-base
 /*
  * synchronous analog of fput(); for kernel threads that might be needed
  * in some umount() (and thus can't use flush_delayed_fput() without

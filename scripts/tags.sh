@@ -28,6 +28,16 @@ fi
 # ignore userspace tools
 ignore="$ignore ( -path ${tree}tools ) -prune -o"
 
+<<<<<<< HEAD
+=======
+# gtags(1) refuses to index any file outside of its current working dir.
+# If gtags indexing is requested and the build output directory is not
+# the kernel source tree, index all files in absolute-path form.
+if [[ "$1" == "gtags" && -n "${tree}" ]]; then
+	tree=$(realpath "$tree")/
+fi
+
+>>>>>>> origin/android16-base
 # Detect if ALLSOURCE_ARCHS is set. If not, we assume SRCARCH
 if [ "${ALLSOURCE_ARCHS}" = "" ]; then
 	ALLSOURCE_ARCHS=${SRCARCH}
@@ -136,7 +146,11 @@ docscope()
 
 dogtags()
 {
+<<<<<<< HEAD
 	all_target_sources | gtags -i -f -
+=======
+	all_target_sources | gtags -i -C "${tree:-.}" -f - "$PWD"
+>>>>>>> origin/android16-base
 }
 
 # Basic regular expressions with an optional /kind-spec/ for ctags and

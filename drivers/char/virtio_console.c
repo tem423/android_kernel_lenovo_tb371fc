@@ -488,7 +488,11 @@ static struct port_buffer *get_inbuf(struct port *port)
 
 	buf = virtqueue_get_buf(port->in_vq, &len);
 	if (buf) {
+<<<<<<< HEAD
 		buf->len = len;
+=======
+		buf->len = min_t(size_t, len, buf->size);
+>>>>>>> origin/android16-base
 		buf->offset = 0;
 		port->stats.bytes_received += len;
 	}
@@ -1738,7 +1742,11 @@ static void control_work_handler(struct work_struct *work)
 	while ((buf = virtqueue_get_buf(vq, &len))) {
 		spin_unlock(&portdev->c_ivq_lock);
 
+<<<<<<< HEAD
 		buf->len = len;
+=======
+		buf->len = min_t(size_t, len, buf->size);
+>>>>>>> origin/android16-base
 		buf->offset = 0;
 
 		handle_control_message(vq->vdev, portdev, buf);
@@ -1985,6 +1993,16 @@ static void virtcons_remove(struct virtio_device *vdev)
 	list_del(&portdev->list);
 	spin_unlock_irq(&pdrvdata_lock);
 
+<<<<<<< HEAD
+=======
+	/* Device is going away, exit any polling for buffers */
+	virtio_break_device(vdev);
+	if (use_multiport(portdev))
+		flush_work(&portdev->control_work);
+	else
+		flush_work(&portdev->config_work);
+
+>>>>>>> origin/android16-base
 	/* Disable interrupts for vqs */
 	vdev->config->reset(vdev);
 	/* Finish up work that's lined up */
@@ -2068,25 +2086,45 @@ static int virtcons_probe(struct virtio_device *vdev)
 		multiport = true;
 	}
 
+<<<<<<< HEAD
 	err = init_vqs(portdev);
 	if (err < 0) {
 		dev_err(&vdev->dev, "Error %d initializing vqs\n", err);
 		goto free_chrdev;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	spin_lock_init(&portdev->ports_lock);
 	INIT_LIST_HEAD(&portdev->ports);
 	INIT_LIST_HEAD(&portdev->list);
 
+<<<<<<< HEAD
 	virtio_device_ready(portdev->vdev);
 
+=======
+>>>>>>> origin/android16-base
 	INIT_WORK(&portdev->config_work, &config_work_handler);
 	INIT_WORK(&portdev->control_work, &control_work_handler);
 
 	if (multiport) {
 		spin_lock_init(&portdev->c_ivq_lock);
 		spin_lock_init(&portdev->c_ovq_lock);
+<<<<<<< HEAD
 
+=======
+	}
+
+	err = init_vqs(portdev);
+	if (err < 0) {
+		dev_err(&vdev->dev, "Error %d initializing vqs\n", err);
+		goto free_chrdev;
+	}
+
+	virtio_device_ready(portdev->vdev);
+
+	if (multiport) {
+>>>>>>> origin/android16-base
 		err = fill_queue(portdev->c_ivq, &portdev->c_ivq_lock);
 		if (err < 0) {
 			dev_err(&vdev->dev,
@@ -2258,7 +2296,11 @@ static struct virtio_driver virtio_rproc_serial = {
 	.remove =	virtcons_remove,
 };
 
+<<<<<<< HEAD
 static int __init init(void)
+=======
+static int __init virtio_console_init(void)
+>>>>>>> origin/android16-base
 {
 	int err;
 
@@ -2295,7 +2337,11 @@ free:
 	return err;
 }
 
+<<<<<<< HEAD
 static void __exit fini(void)
+=======
+static void __exit virtio_console_fini(void)
+>>>>>>> origin/android16-base
 {
 	reclaim_dma_bufs();
 
@@ -2305,8 +2351,13 @@ static void __exit fini(void)
 	class_destroy(pdrvdata.class);
 	debugfs_remove_recursive(pdrvdata.debugfs_dir);
 }
+<<<<<<< HEAD
 module_init(init);
 module_exit(fini);
+=======
+module_init(virtio_console_init);
+module_exit(virtio_console_fini);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("Virtio console driver");
 MODULE_LICENSE("GPL");

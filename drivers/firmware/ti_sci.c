@@ -176,7 +176,11 @@ static int ti_sci_debugfs_create(struct platform_device *pdev,
 {
 	struct device *dev = &pdev->dev;
 	struct resource *res;
+<<<<<<< HEAD
 	char debug_name[50] = "ti_sci_debug@";
+=======
+	char debug_name[50];
+>>>>>>> origin/android16-base
 
 	/* Debug region is optional */
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
@@ -193,10 +197,17 @@ static int ti_sci_debugfs_create(struct platform_device *pdev,
 	/* Setup NULL termination */
 	info->debug_buffer[info->debug_region_size] = 0;
 
+<<<<<<< HEAD
 	info->d = debugfs_create_file(strncat(debug_name, dev_name(dev),
 					      sizeof(debug_name) -
 					      sizeof("ti_sci_debug@")),
 				      0444, NULL, info, &ti_sci_debug_fops);
+=======
+	snprintf(debug_name, sizeof(debug_name), "ti_sci_debug@%s",
+		 dev_name(dev));
+	info->d = debugfs_create_file(debug_name, 0444, NULL, info,
+				      &ti_sci_debug_fops);
+>>>>>>> origin/android16-base
 	if (IS_ERR(info->d))
 		return PTR_ERR(info->d);
 
@@ -205,6 +216,7 @@ static int ti_sci_debugfs_create(struct platform_device *pdev,
 	return 0;
 }
 
+<<<<<<< HEAD
 /**
  * ti_sci_debugfs_destroy() - clean up log debug file
  * @pdev:	platform device pointer
@@ -218,6 +230,8 @@ static void ti_sci_debugfs_destroy(struct platform_device *pdev,
 
 	debugfs_remove(info->d);
 }
+=======
+>>>>>>> origin/android16-base
 #else /* CONFIG_DEBUG_FS */
 static inline int ti_sci_debugfs_create(struct platform_device *dev,
 					struct ti_sci_info *info)
@@ -1937,6 +1951,7 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
 static int ti_sci_remove(struct platform_device *pdev)
 {
 	struct ti_sci_info *info;
@@ -1974,6 +1989,14 @@ static struct platform_driver ti_sci_driver = {
 	.driver = {
 		   .name = "ti-sci",
 		   .of_match_table = of_match_ptr(ti_sci_of_match),
+=======
+static struct platform_driver ti_sci_driver = {
+	.probe = ti_sci_probe,
+	.driver = {
+		   .name = "ti-sci",
+		   .of_match_table = of_match_ptr(ti_sci_of_match),
+		   .suppress_bind_attrs = true,
+>>>>>>> origin/android16-base
 	},
 };
 module_platform_driver(ti_sci_driver);

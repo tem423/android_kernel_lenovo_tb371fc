@@ -1089,7 +1089,11 @@ static long pkey_unlocked_ioctl(struct file *filp, unsigned int cmd,
 		if (rc)
 			break;
 		if (copy_to_user(ucs, &kcs, sizeof(kcs)))
+<<<<<<< HEAD
 			return -EFAULT;
+=======
+			rc = -EFAULT;
+>>>>>>> origin/android16-base
 		memzero_explicit(&kcs, sizeof(kcs));
 		break;
 	}
@@ -1120,7 +1124,11 @@ static long pkey_unlocked_ioctl(struct file *filp, unsigned int cmd,
 		if (rc)
 			break;
 		if (copy_to_user(ucp, &kcp, sizeof(kcp)))
+<<<<<<< HEAD
 			return -EFAULT;
+=======
+			rc = -EFAULT;
+>>>>>>> origin/android16-base
 		memzero_explicit(&kcp, sizeof(kcp));
 		break;
 	}

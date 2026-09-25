@@ -163,6 +163,10 @@ int cifs_posix_open(char *full_path, struct inode **pinode,
 			goto posix_open_ret;
 		}
 	} else {
+<<<<<<< HEAD
+=======
+		cifs_revalidate_mapping(*pinode);
+>>>>>>> origin/android16-base
 		cifs_fattr_to_inode(*pinode, &fattr);
 	}
 
@@ -3990,9 +3994,15 @@ static int cifs_readpage_worker(struct file *file, struct page *page,
 
 io_error:
 	kunmap(page);
+<<<<<<< HEAD
 	unlock_page(page);
 
 read_complete:
+=======
+
+read_complete:
+	unlock_page(page);
+>>>>>>> origin/android16-base
 	return rc;
 }
 

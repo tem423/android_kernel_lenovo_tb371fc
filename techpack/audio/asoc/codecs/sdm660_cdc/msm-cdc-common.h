@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
+<<<<<<< HEAD
  * Copyright (c) 2016-2017, 2020, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2016-2017, 2020-2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/regmap.h>
@@ -56,5 +60,9 @@ enum dig_cdc_notify_event {
 	DIG_CDC_EVENT_POST_RX2_INT_OFF,
 	DIG_CDC_EVENT_SSR_DOWN,
 	DIG_CDC_EVENT_SSR_UP,
+<<<<<<< HEAD
+=======
+	DIG_CDC_EVENT_CAP_CONFIGURE,
+>>>>>>> origin/android16-base
 	DIG_CDC_EVENT_LAST,
 };

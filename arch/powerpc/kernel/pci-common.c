@@ -75,6 +75,7 @@ const struct dma_map_ops *get_pci_dma_ops(void)
 }
 EXPORT_SYMBOL(get_pci_dma_ops);
 
+<<<<<<< HEAD
 /*
  * This function should run under locking protection, specifically
  * hose_spinlock.
@@ -83,15 +84,45 @@ static int get_phb_number(struct device_node *dn)
 {
 	int ret, phb_id = -1;
 	u32 prop_32;
+=======
+static int get_phb_number(struct device_node *dn)
+{
+	int ret, phb_id = -1;
+>>>>>>> origin/android16-base
 	u64 prop;
 
 	/*
 	 * Try fixed PHB numbering first, by checking archs and reading
+<<<<<<< HEAD
 	 * the respective device-tree properties. Firstly, try powernv by
 	 * reading "ibm,opal-phbid", only present in OPAL environment.
 	 */
 	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
 	if (ret) {
+=======
+	 * the respective device-tree properties. Firstly, try reading
+	 * standard "linux,pci-domain", then try reading "ibm,opal-phbid"
+	 * (only present in powernv OPAL environment), then try device-tree
+	 * alias and as the last try to use lower bits of "reg" property.
+	 */
+	ret = of_get_pci_domain_nr(dn);
+	if (ret >= 0) {
+		prop = ret;
+		ret = 0;
+	}
+	if (ret)
+		ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
+
+	if (ret) {
+		ret = of_alias_get_id(dn, "pci");
+		if (ret >= 0) {
+			prop = ret;
+			ret = 0;
+		}
+	}
+	if (ret) {
+		u32 prop_32;
+>>>>>>> origin/android16-base
 		ret = of_property_read_u32_index(dn, "reg", 1, &prop_32);
 		prop = prop_32;
 	}
@@ -99,6 +130,7 @@ static int get_phb_number(struct device_node *dn)
 	if (!ret)
 		phb_id = (int)(prop & (MAX_PHBS - 1));
 
+<<<<<<< HEAD
 	/* We need to be sure to not use the same PHB number twice. */
 	if ((phb_id >= 0) && !test_and_set_bit(phb_id, phb_bitmap))
 		return phb_id;
@@ -107,10 +139,25 @@ static int get_phb_number(struct device_node *dn)
 	 * If not pseries nor powernv, or if fixed PHB numbering tried to add
 	 * the same PHB number twice, then fallback to dynamic PHB numbering.
 	 */
+=======
+	spin_lock(&hose_spinlock);
+
+	/* We need to be sure to not use the same PHB number twice. */
+	if ((phb_id >= 0) && !test_and_set_bit(phb_id, phb_bitmap))
+		goto out_unlock;
+
+	/* If everything fails then fallback to dynamic PHB numbering. */
+>>>>>>> origin/android16-base
 	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
 	BUG_ON(phb_id >= MAX_PHBS);
 	set_bit(phb_id, phb_bitmap);
 
+<<<<<<< HEAD
+=======
+out_unlock:
+	spin_unlock(&hose_spinlock);
+
+>>>>>>> origin/android16-base
 	return phb_id;
 }
 
@@ -121,10 +168,20 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
 	phb = zalloc_maybe_bootmem(sizeof(struct pci_controller), GFP_KERNEL);
 	if (phb == NULL)
 		return NULL;
+<<<<<<< HEAD
 	spin_lock(&hose_spinlock);
 	phb->global_number = get_phb_number(dev);
 	list_add_tail(&phb->list_node, &hose_list);
 	spin_unlock(&hose_spinlock);
+=======
+
+	phb->global_number = get_phb_number(dev);
+
+	spin_lock(&hose_spinlock);
+	list_add_tail(&phb->list_node, &hose_list);
+	spin_unlock(&hose_spinlock);
+
+>>>>>>> origin/android16-base
 	phb->dn = dev;
 	phb->is_dynamic = slab_is_available();
 #ifdef CONFIG_PPC64
@@ -1671,3 +1728,16 @@ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
 }
 DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
 DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+<<<<<<< HEAD
+=======
+
+
+static int __init discover_phbs(void)
+{
+	if (ppc_md.discover_phbs)
+		ppc_md.discover_phbs();
+
+	return 0;
+}
+core_initcall(discover_phbs);
+>>>>>>> origin/android16-base

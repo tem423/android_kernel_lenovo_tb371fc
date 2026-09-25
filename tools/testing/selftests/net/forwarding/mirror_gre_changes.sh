@@ -72,7 +72,12 @@ test_span_gre_ttl()
 
 	RET=0
 
+<<<<<<< HEAD
 	mirror_install $swp1 ingress $tundev "matchall $tcflags"
+=======
+	mirror_install $swp1 ingress $tundev \
+		"prot ip flower $tcflags ip_prot icmp"
+>>>>>>> origin/android16-base
 	tc filter add dev $h3 ingress pref 77 prot $prot \
 		flower ip_ttl 50 action pass
 

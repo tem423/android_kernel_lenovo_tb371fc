@@ -2495,6 +2495,10 @@ out_free:
 	for (i = 0; i < mp->rxq_count; i++)
 		rxq_deinit(mp->rxq + i);
 out:
+<<<<<<< HEAD
+=======
+	napi_disable(&mp->napi);
+>>>>>>> origin/android16-base
 	free_irq(dev->irq, dev);
 
 	return err;

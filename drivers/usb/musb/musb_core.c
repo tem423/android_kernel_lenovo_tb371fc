@@ -1905,9 +1905,18 @@ static void musb_pm_runtime_check_session(struct musb *musb)
 		MUSB_DEVCTL_HR;
 	switch (devctl & ~s) {
 	case MUSB_QUIRK_B_DISCONNECT_99:
+<<<<<<< HEAD
 		musb_dbg(musb, "Poll devctl in case of suspend after disconnect\n");
 		schedule_delayed_work(&musb->irq_work,
 				      msecs_to_jiffies(1000));
+=======
+		if (musb->quirk_retries && !musb->flush_irq_work) {
+			musb_dbg(musb, "Poll devctl in case of suspend after disconnect\n");
+			schedule_delayed_work(&musb->irq_work,
+					      msecs_to_jiffies(1000));
+			musb->quirk_retries--;
+		}
+>>>>>>> origin/android16-base
 		break;
 	case MUSB_QUIRK_B_INVALID_VBUS_91:
 		if (musb->quirk_retries && !musb->flush_irq_work) {
@@ -2145,11 +2154,16 @@ int musb_queue_resume_work(struct musb *musb,
 {
 	struct musb_pending_work *w;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	bool is_suspended;
+>>>>>>> origin/android16-base
 	int error;
 
 	if (WARN_ON(!callback))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (pm_runtime_active(musb->controller))
 		return callback(musb, data);
 
@@ -2171,6 +2185,31 @@ int musb_queue_resume_work(struct musb *musb,
 	}
 	spin_unlock_irqrestore(&musb->list_lock, flags);
 
+=======
+	spin_lock_irqsave(&musb->list_lock, flags);
+	is_suspended = musb->is_runtime_suspended;
+
+	if (is_suspended) {
+		w = devm_kzalloc(musb->controller, sizeof(*w), GFP_ATOMIC);
+		if (!w) {
+			error = -ENOMEM;
+			goto out_unlock;
+		}
+
+		w->callback = callback;
+		w->data = data;
+
+		list_add_tail(&w->node, &musb->pending_list);
+		error = 0;
+	}
+
+out_unlock:
+	spin_unlock_irqrestore(&musb->list_lock, flags);
+
+	if (!is_suspended)
+		error = callback(musb, data);
+
+>>>>>>> origin/android16-base
 	return error;
 }
 EXPORT_SYMBOL_GPL(musb_queue_resume_work);

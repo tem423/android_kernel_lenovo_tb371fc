@@ -406,12 +406,15 @@ static int lpc18xx_pwm_probe(struct platform_device *pdev)
 	lpc18xx_pwm_writel(lpc18xx_pwm, LPC18XX_PWM_LIMIT,
 			   BIT(lpc18xx_pwm->period_event));
 
+<<<<<<< HEAD
 	ret = pwmchip_add(&lpc18xx_pwm->chip);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "pwmchip_add failed: %d\n", ret);
 		goto disable_pwmclk;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	for (i = 0; i < lpc18xx_pwm->chip.npwm; i++) {
 		struct lpc18xx_pwm_data *data;
 
@@ -421,14 +424,21 @@ static int lpc18xx_pwm_probe(struct platform_device *pdev)
 				    GFP_KERNEL);
 		if (!data) {
 			ret = -ENOMEM;
+<<<<<<< HEAD
 			goto remove_pwmchip;
+=======
+			goto disable_pwmclk;
+>>>>>>> origin/android16-base
 		}
 
 		pwm_set_chip_data(pwm, data);
 	}
 
+<<<<<<< HEAD
 	platform_set_drvdata(pdev, lpc18xx_pwm);
 
+=======
+>>>>>>> origin/android16-base
 	val = lpc18xx_pwm_readl(lpc18xx_pwm, LPC18XX_PWM_CTRL);
 	val &= ~LPC18XX_PWM_BIDIR;
 	val &= ~LPC18XX_PWM_CTRL_HALT;
@@ -436,10 +446,23 @@ static int lpc18xx_pwm_probe(struct platform_device *pdev)
 	val |= LPC18XX_PWM_PRE(0);
 	lpc18xx_pwm_writel(lpc18xx_pwm, LPC18XX_PWM_CTRL, val);
 
+<<<<<<< HEAD
 	return 0;
 
 remove_pwmchip:
 	pwmchip_remove(&lpc18xx_pwm->chip);
+=======
+	ret = pwmchip_add(&lpc18xx_pwm->chip);
+	if (ret < 0) {
+		dev_err(&pdev->dev, "pwmchip_add failed: %d\n", ret);
+		goto disable_pwmclk;
+	}
+
+	platform_set_drvdata(pdev, lpc18xx_pwm);
+
+	return 0;
+
+>>>>>>> origin/android16-base
 disable_pwmclk:
 	clk_disable_unprepare(lpc18xx_pwm->pwm_clk);
 	return ret;

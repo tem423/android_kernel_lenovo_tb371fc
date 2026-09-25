@@ -140,7 +140,13 @@ struct af_alg_async_req {
  *			SG?
  * @enc:		Cryptographic operation to be performed when
  *			recvmsg is invoked.
+<<<<<<< HEAD
  * @len:		Length of memory allocated for this data structure.
+=======
+ * @init:		True if metadata has been sent.
+ * @len:		Length of memory allocated for this data structure.
+ * @inflight:		Non-zero when AIO requests are in flight.
+>>>>>>> origin/android16-base
  */
 struct af_alg_ctx {
 	struct list_head tsgl_list;
@@ -156,8 +162,16 @@ struct af_alg_ctx {
 	bool more;
 	bool merge;
 	bool enc;
+<<<<<<< HEAD
 
 	unsigned int len;
+=======
+	bool init;
+
+	unsigned int len;
+
+	unsigned int inflight;
+>>>>>>> origin/android16-base
 };
 
 int af_alg_register_type(const struct af_alg_type *type);
@@ -169,9 +183,12 @@ int af_alg_accept(struct sock *sk, struct socket *newsock, bool kern);
 
 int af_alg_make_sg(struct af_alg_sgl *sgl, struct iov_iter *iter, int len);
 void af_alg_free_sg(struct af_alg_sgl *sgl);
+<<<<<<< HEAD
 void af_alg_link_sg(struct af_alg_sgl *sgl_prev, struct af_alg_sgl *sgl_new);
 
 int af_alg_cmsg_send(struct msghdr *msg, struct af_alg_control *con);
+=======
+>>>>>>> origin/android16-base
 
 static inline struct alg_sock *alg_sk(struct sock *sk)
 {
@@ -230,6 +247,7 @@ static inline bool af_alg_readable(struct sock *sk)
 	return PAGE_SIZE <= af_alg_rcvbuf(sk);
 }
 
+<<<<<<< HEAD
 int af_alg_alloc_tsgl(struct sock *sk);
 unsigned int af_alg_count_tsgl(struct sock *sk, size_t bytes, size_t offset);
 void af_alg_pull_tsgl(struct sock *sk, size_t used, struct scatterlist *dst,
@@ -239,6 +257,13 @@ int af_alg_wait_for_wmem(struct sock *sk, unsigned int flags);
 void af_alg_wmem_wakeup(struct sock *sk);
 int af_alg_wait_for_data(struct sock *sk, unsigned flags);
 void af_alg_data_wakeup(struct sock *sk);
+=======
+unsigned int af_alg_count_tsgl(struct sock *sk, size_t bytes, size_t offset);
+void af_alg_pull_tsgl(struct sock *sk, size_t used, struct scatterlist *dst,
+		      size_t dst_offset);
+void af_alg_wmem_wakeup(struct sock *sk);
+int af_alg_wait_for_data(struct sock *sk, unsigned flags, unsigned min);
+>>>>>>> origin/android16-base
 int af_alg_sendmsg(struct socket *sock, struct msghdr *msg, size_t size,
 		   unsigned int ivsize);
 ssize_t af_alg_sendpage(struct socket *sock, struct page *page,

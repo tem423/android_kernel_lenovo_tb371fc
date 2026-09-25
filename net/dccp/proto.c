@@ -174,12 +174,25 @@ const char *dccp_packet_name(const int type)
 
 EXPORT_SYMBOL_GPL(dccp_packet_name);
 
+<<<<<<< HEAD
 static void dccp_sk_destruct(struct sock *sk)
+=======
+void dccp_destruct_common(struct sock *sk)
+>>>>>>> origin/android16-base
 {
 	struct dccp_sock *dp = dccp_sk(sk);
 
 	ccid_hc_tx_delete(dp->dccps_hc_tx_ccid, sk);
 	dp->dccps_hc_tx_ccid = NULL;
+<<<<<<< HEAD
+=======
+}
+EXPORT_SYMBOL_GPL(dccp_destruct_common);
+
+static void dccp_sk_destruct(struct sock *sk)
+{
+	dccp_destruct_common(sk);
+>>>>>>> origin/android16-base
 	inet_sock_destruct(sk);
 }
 
@@ -322,11 +335,23 @@ EXPORT_SYMBOL_GPL(dccp_disconnect);
 __poll_t dccp_poll(struct file *file, struct socket *sock,
 		       poll_table *wait)
 {
+<<<<<<< HEAD
 	__poll_t mask;
 	struct sock *sk = sock->sk;
 
 	sock_poll_wait(file, sock, wait);
 	if (sk->sk_state == DCCP_LISTEN)
+=======
+	struct sock *sk = sock->sk;
+	__poll_t mask;
+	u8 shutdown;
+	int state;
+
+	sock_poll_wait(file, sock, wait);
+
+	state = inet_sk_state_load(sk);
+	if (state == DCCP_LISTEN)
+>>>>>>> origin/android16-base
 		return inet_csk_listen_poll(sk);
 
 	/* Socket is not locked. We are protected from async events
@@ -335,6 +360,7 @@ __poll_t dccp_poll(struct file *file, struct socket *sock,
 	 */
 
 	mask = 0;
+<<<<<<< HEAD
 	if (sk->sk_err)
 		mask = EPOLLERR;
 
@@ -349,6 +375,23 @@ __poll_t dccp_poll(struct file *file, struct socket *sock,
 			mask |= EPOLLIN | EPOLLRDNORM;
 
 		if (!(sk->sk_shutdown & SEND_SHUTDOWN)) {
+=======
+	if (READ_ONCE(sk->sk_err))
+		mask = EPOLLERR;
+	shutdown = READ_ONCE(sk->sk_shutdown);
+
+	if (shutdown == SHUTDOWN_MASK || state == DCCP_CLOSED)
+		mask |= EPOLLHUP;
+	if (shutdown & RCV_SHUTDOWN)
+		mask |= EPOLLIN | EPOLLRDNORM | EPOLLRDHUP;
+
+	/* Connected? */
+	if ((1 << state) & ~(DCCPF_REQUESTING | DCCPF_RESPOND)) {
+		if (atomic_read(&sk->sk_rmem_alloc) > 0)
+			mask |= EPOLLIN | EPOLLRDNORM;
+
+		if (!(shutdown & SEND_SHUTDOWN)) {
+>>>>>>> origin/android16-base
 			if (sk_stream_is_writeable(sk)) {
 				mask |= EPOLLOUT | EPOLLWRNORM;
 			} else {  /* send SIGIO later */
@@ -366,7 +409,10 @@ __poll_t dccp_poll(struct file *file, struct socket *sock,
 	}
 	return mask;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 EXPORT_SYMBOL_GPL(dccp_poll);
 
 int dccp_ioctl(struct sock *sk, int cmd, unsigned long arg)
@@ -642,7 +688,11 @@ static int do_dccp_getsockopt(struct sock *sk, int level, int optname,
 		return dccp_getsockopt_service(sk, len,
 					       (__be32 __user *)optval, optlen);
 	case DCCP_SOCKOPT_GET_CUR_MPS:
+<<<<<<< HEAD
 		val = dp->dccps_mss_cache;
+=======
+		val = READ_ONCE(dp->dccps_mss_cache);
+>>>>>>> origin/android16-base
 		break;
 	case DCCP_SOCKOPT_AVAILABLE_CCIDS:
 		return ccid_getsockopt_builtin_ccids(sk, len, optval, optlen);
@@ -764,16 +814,23 @@ int dccp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 
 	trace_dccp_probe(sk, len);
 
+<<<<<<< HEAD
 	if (len > dp->dccps_mss_cache)
+=======
+	if (len > READ_ONCE(dp->dccps_mss_cache))
+>>>>>>> origin/android16-base
 		return -EMSGSIZE;
 
 	lock_sock(sk);
 
+<<<<<<< HEAD
 	if (dccp_qpolicy_full(sk)) {
 		rc = -EAGAIN;
 		goto out_release;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	timeo = sock_sndtimeo(sk, noblock);
 
 	/*
@@ -792,11 +849,28 @@ int dccp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 	if (skb == NULL)
 		goto out_release;
 
+<<<<<<< HEAD
+=======
+	if (dccp_qpolicy_full(sk)) {
+		rc = -EAGAIN;
+		goto out_discard;
+	}
+
+>>>>>>> origin/android16-base
 	if (sk->sk_state == DCCP_CLOSED) {
 		rc = -ENOTCONN;
 		goto out_discard;
 	}
 
+<<<<<<< HEAD
+=======
+	/* We need to check dccps_mss_cache after socket is locked. */
+	if (len > dp->dccps_mss_cache) {
+		rc = -EMSGSIZE;
+		goto out_discard;
+	}
+
+>>>>>>> origin/android16-base
 	skb_reserve(skb, sk->sk_prot->max_header);
 	rc = memcpy_from_msg(skb_put(skb, len), msg, len);
 	if (rc != 0)

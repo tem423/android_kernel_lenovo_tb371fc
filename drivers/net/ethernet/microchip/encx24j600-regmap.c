@@ -367,7 +367,11 @@ static int regmap_encx24j600_phy_reg_read(void *context, unsigned int reg,
 		goto err_out;
 
 	usleep_range(26, 100);
+<<<<<<< HEAD
 	while ((ret = regmap_read(ctx->regmap, MISTAT, &mistat) != 0) &&
+=======
+	while (((ret = regmap_read(ctx->regmap, MISTAT, &mistat)) == 0) &&
+>>>>>>> origin/android16-base
 	       (mistat & BUSY))
 		cpu_relax();
 
@@ -405,7 +409,11 @@ static int regmap_encx24j600_phy_reg_write(void *context, unsigned int reg,
 		goto err_out;
 
 	usleep_range(26, 100);
+<<<<<<< HEAD
 	while ((ret = regmap_read(ctx->regmap, MISTAT, &mistat) != 0) &&
+=======
+	while (((ret = regmap_read(ctx->regmap, MISTAT, &mistat)) == 0) &&
+>>>>>>> origin/android16-base
 	       (mistat & BUSY))
 		cpu_relax();
 
@@ -505,13 +513,28 @@ static struct regmap_bus phymap_encx24j600 = {
 	.reg_read = regmap_encx24j600_phy_reg_read,
 };
 
+<<<<<<< HEAD
 void devm_regmap_init_encx24j600(struct device *dev,
 				 struct encx24j600_context *ctx)
+=======
+int devm_regmap_init_encx24j600(struct device *dev,
+				struct encx24j600_context *ctx)
+>>>>>>> origin/android16-base
 {
 	mutex_init(&ctx->mutex);
 	regcfg.lock_arg = ctx;
 	ctx->regmap = devm_regmap_init(dev, &regmap_encx24j600, ctx, &regcfg);
+<<<<<<< HEAD
 	ctx->phymap = devm_regmap_init(dev, &phymap_encx24j600, ctx, &phycfg);
+=======
+	if (IS_ERR(ctx->regmap))
+		return PTR_ERR(ctx->regmap);
+	ctx->phymap = devm_regmap_init(dev, &phymap_encx24j600, ctx, &phycfg);
+	if (IS_ERR(ctx->phymap))
+		return PTR_ERR(ctx->phymap);
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(devm_regmap_init_encx24j600);
 

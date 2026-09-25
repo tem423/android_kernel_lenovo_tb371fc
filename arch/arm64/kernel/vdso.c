@@ -271,6 +271,7 @@ static int __aarch32_alloc_vdso_pages(void)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	ret = aarch32_alloc_kuser_vdso_page();
 	if (ret) {
 		unsigned long c_vvar =
@@ -283,6 +284,9 @@ static int __aarch32_alloc_vdso_pages(void)
 	}
 
 	return ret;
+=======
+	return aarch32_alloc_kuser_vdso_page();
+>>>>>>> origin/android16-base
 }
 #else
 static int __aarch32_alloc_vdso_pages(void)

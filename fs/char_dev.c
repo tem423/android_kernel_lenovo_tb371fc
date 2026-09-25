@@ -553,7 +553,11 @@ int cdev_device_add(struct cdev *cdev, struct device *dev)
 	}
 
 	rc = device_add(dev);
+<<<<<<< HEAD
 	if (rc)
+=======
+	if (rc && dev->devt)
+>>>>>>> origin/android16-base
 		cdev_del(cdev);
 
 	return rc;

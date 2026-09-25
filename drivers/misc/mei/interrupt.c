@@ -224,6 +224,12 @@ static int mei_cl_irq_read(struct mei_cl *cl, struct mei_cl_cb *cb,
 		return ret;
 	}
 
+<<<<<<< HEAD
+=======
+	pm_runtime_mark_last_busy(dev->dev);
+	pm_request_autosuspend(dev->dev);
+
+>>>>>>> origin/android16-base
 	list_move_tail(&cb->list, &cl->rd_pending);
 
 	return 0;

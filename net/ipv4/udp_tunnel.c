@@ -186,6 +186,10 @@ EXPORT_SYMBOL_GPL(udp_tunnel_xmit_skb);
 void udp_tunnel_sock_release(struct socket *sock)
 {
 	rcu_assign_sk_user_data(sock->sk, NULL);
+<<<<<<< HEAD
+=======
+	synchronize_rcu();
+>>>>>>> origin/android16-base
 	kernel_sock_shutdown(sock, SHUT_RDWR);
 	sock_release(sock);
 }

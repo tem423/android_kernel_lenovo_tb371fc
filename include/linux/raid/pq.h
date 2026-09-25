@@ -32,7 +32,10 @@ extern const char raid6_empty_zero_page[PAGE_SIZE];
 
 #include <errno.h>
 #include <inttypes.h>
+<<<<<<< HEAD
 #include <limits.h>
+=======
+>>>>>>> origin/android16-base
 #include <stddef.h>
 #include <sys/mman.h>
 #include <sys/types.h>

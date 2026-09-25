@@ -249,6 +249,12 @@ config ARCH_HAS_FORTIFY_SOURCE
 config ARCH_HAS_SET_MEMORY
 	bool
 
+<<<<<<< HEAD
+=======
+config ARCH_HAS_CPU_FINALIZE_INIT
+	bool
+
+>>>>>>> origin/android16-base
 # Select if arch init_task must go in the __init_task_data section
 config ARCH_TASK_STRUCT_ON_STACK
        bool
@@ -363,9 +369,12 @@ config HAVE_ARCH_JUMP_LABEL
 config HAVE_RCU_TABLE_FREE
 	bool
 
+<<<<<<< HEAD
 config HAVE_RCU_TABLE_INVALIDATE
 	bool
 
+=======
+>>>>>>> origin/android16-base
 config ARCH_WANT_IRQS_OFF_ACTIVATE_MM
 	bool
 	help
@@ -373,6 +382,15 @@ config ARCH_WANT_IRQS_OFF_ACTIVATE_MM
 	  irqs disabled over activate_mm. Architectures that do IPI based TLB
 	  shootdowns should enable this.
 
+<<<<<<< HEAD
+=======
+config HAVE_MMU_GATHER_PAGE_SIZE
+	bool
+
+config HAVE_MMU_GATHER_NO_GATHER
+	bool
+
+>>>>>>> origin/android16-base
 config ARCH_HAVE_NMI_SAFE_CMPXCHG
 	bool
 
@@ -638,6 +656,21 @@ config HAVE_IRQ_TIME_ACCOUNTING
 	  Archs need to ensure they use a high enough resolution clock to
 	  support irq time accounting and then call enable_sched_clock_irqtime().
 
+<<<<<<< HEAD
+=======
+config HAVE_MOVE_PUD
+	bool
+	help
+	  Architectures that select this are able to move page tables at the
+	  PUD level. If there are only 3 page table levels, the move effectively
+	  happens at the PGD level.
+
+config HAVE_MOVE_PMD
+	bool
+	help
+	  Archs that select this are able to move page tables at the PMD level.
+
+>>>>>>> origin/android16-base
 config HAVE_ARCH_TRANSPARENT_HUGEPAGE
 	bool
 
@@ -991,6 +1024,12 @@ config PANIC_ON_REFCOUNT_ERROR
 	  or potential memory-leaks) with an object associated with that
 	  reference counter.
 
+<<<<<<< HEAD
+=======
+config ARCH_USE_MEMREMAP_PROT
+	bool
+
+>>>>>>> origin/android16-base
 # Select if the architecture has support for applying RELR relocations.
 config ARCH_HAS_RELR
 	bool
@@ -1005,6 +1044,18 @@ config RELR
 	  well as compatible NM and OBJCOPY utilities (llvm-nm and llvm-objcopy
 	  are compatible).
 
+<<<<<<< HEAD
+=======
+config ARCH_HAS_NONLEAF_PMD_YOUNG
+	bool
+	depends on PGTABLE_LEVELS > 2
+	help
+	  Architectures that select this option are capable of setting the
+	  accessed bit in non-leaf PMD entries when using them as part of linear
+	  address translations. Page table walkers that clear the accessed bit
+	  may use this capability to reduce their search space.
+
+>>>>>>> origin/android16-base
 source "kernel/gcov/Kconfig"
 
 source "scripts/gcc-plugins/Kconfig"

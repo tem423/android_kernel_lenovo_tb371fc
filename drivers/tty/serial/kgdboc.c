@@ -16,6 +16,10 @@
 #include <linux/console.h>
 #include <linux/vt_kern.h>
 #include <linux/input.h>
+<<<<<<< HEAD
+=======
+#include <linux/irq_work.h>
+>>>>>>> origin/android16-base
 #include <linux/module.h>
 
 #define MAX_CONFIG_LEN		40
@@ -35,6 +39,28 @@ static int kgdboc_use_kms;  /* 1 if we use kernel mode switching */
 static struct tty_driver	*kgdb_tty_driver;
 static int			kgdb_tty_line;
 
+<<<<<<< HEAD
+=======
+/*
+ * When we leave the debug trap handler we need to reset the keyboard status
+ * (since the original keyboard state gets partially clobbered by kdb use of
+ * the keyboard).
+ *
+ * The path to deliver the reset is somewhat circuitous.
+ *
+ * To deliver the reset we register an input handler, reset the keyboard and
+ * then deregister the input handler. However, to get this done right, we do
+ * have to carefully manage the calling context because we can only register
+ * input handlers from task context.
+ *
+ * In particular we need to trigger the action from the debug trap handler with
+ * all its NMI and/or NMI-like oddities. To solve this the kgdboc trap exit code
+ * (the "post_exception" callback) uses irq_work_queue(), which is NMI-safe, to
+ * schedule a callback from a hardirq context. From there we have to defer the
+ * work again, this time using schedule_work(), to get a callback using the
+ * system workqueue, which runs in task context.
+ */
+>>>>>>> origin/android16-base
 #ifdef CONFIG_KDB_KEYBOARD
 static int kgdboc_reset_connect(struct input_handler *handler,
 				struct input_dev *dev,
@@ -86,10 +112,24 @@ static void kgdboc_restore_input_helper(struct work_struct *dummy)
 
 static DECLARE_WORK(kgdboc_restore_input_work, kgdboc_restore_input_helper);
 
+<<<<<<< HEAD
 static void kgdboc_restore_input(void)
 {
 	if (likely(system_state == SYSTEM_RUNNING))
 		schedule_work(&kgdboc_restore_input_work);
+=======
+static void kgdboc_queue_restore_input_helper(struct irq_work *unused)
+{
+	schedule_work(&kgdboc_restore_input_work);
+}
+
+static DEFINE_IRQ_WORK(kgdboc_restore_input_irq_work, kgdboc_queue_restore_input_helper);
+
+static void kgdboc_restore_input(void)
+{
+	if (likely(system_state == SYSTEM_RUNNING))
+		irq_work_queue(&kgdboc_restore_input_irq_work);
+>>>>>>> origin/android16-base
 }
 
 static int kgdboc_register_kbd(char **cptr)
@@ -120,6 +160,10 @@ static void kgdboc_unregister_kbd(void)
 			i--;
 		}
 	}
+<<<<<<< HEAD
+=======
+	irq_work_sync(&kgdboc_restore_input_irq_work);
+>>>>>>> origin/android16-base
 	flush_work(&kgdboc_restore_input_work);
 }
 #else /* ! CONFIG_KDB_KEYBOARD */
@@ -302,16 +346,28 @@ static int kgdboc_option_setup(char *opt)
 {
 	if (!opt) {
 		pr_err("config string not provided\n");
+<<<<<<< HEAD
 		return -EINVAL;
+=======
+		return 1;
+>>>>>>> origin/android16-base
 	}
 
 	if (strlen(opt) >= MAX_CONFIG_LEN) {
 		pr_err("config string too long\n");
+<<<<<<< HEAD
 		return -ENOSPC;
 	}
 	strcpy(config, opt);
 
 	return 0;
+=======
+		return 1;
+	}
+	strcpy(config, opt);
+
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 __setup("kgdboc=", kgdboc_option_setup);

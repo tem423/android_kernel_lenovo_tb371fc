@@ -4,10 +4,20 @@
  */
 #include <linux/crc32.h>
 #include <linux/file.h>
+<<<<<<< HEAD
 #include <linux/gfp.h>
 #include <linux/ktime.h>
 #include <linux/lz4.h>
 #include <linux/mm.h>
+=======
+#include <linux/fsverity.h>
+#include <linux/gfp.h>
+#include <linux/kobject.h>
+#include <linux/ktime.h>
+#include <linux/lz4.h>
+#include <linux/mm.h>
+#include <linux/namei.h>
+>>>>>>> origin/android16-base
 #include <linux/pagemap.h>
 #include <linux/slab.h>
 #include <linux/types.h>
@@ -16,6 +26,13 @@
 #include "data_mgmt.h"
 #include "format.h"
 #include "integrity.h"
+<<<<<<< HEAD
+=======
+#include "sysfs.h"
+#include "verity.h"
+
+static int incfs_scan_metadata_chain(struct data_file *df);
+>>>>>>> origin/android16-base
 
 static void log_wake_up_all(struct work_struct *work)
 {
@@ -24,12 +41,32 @@ static void log_wake_up_all(struct work_struct *work)
 	wake_up_all(&rl->ml_notif_wq);
 }
 
+<<<<<<< HEAD
+=======
+static void zstd_free_workspace(struct work_struct *work)
+{
+	struct delayed_work *dw = container_of(work, struct delayed_work, work);
+	struct mount_info *mi =
+		container_of(dw, struct mount_info, mi_zstd_cleanup_work);
+
+	mutex_lock(&mi->mi_zstd_workspace_mutex);
+	kvfree(mi->mi_zstd_workspace);
+	mi->mi_zstd_workspace = NULL;
+	mi->mi_zstd_stream = NULL;
+	mutex_unlock(&mi->mi_zstd_workspace_mutex);
+}
+
+>>>>>>> origin/android16-base
 struct mount_info *incfs_alloc_mount_info(struct super_block *sb,
 					  struct mount_options *options,
 					  struct path *backing_dir_path)
 {
 	struct mount_info *mi = NULL;
 	int error = 0;
+<<<<<<< HEAD
+=======
+	struct incfs_sysfs_node *node;
+>>>>>>> origin/android16-base
 
 	mi = kzalloc(sizeof(*mi), GFP_NOFS);
 	if (!mi)
@@ -40,12 +77,34 @@ struct mount_info *incfs_alloc_mount_info(struct super_block *sb,
 	mi->mi_owner = get_current_cred();
 	path_get(&mi->mi_backing_dir_path);
 	mutex_init(&mi->mi_dir_struct_mutex);
+<<<<<<< HEAD
 	mutex_init(&mi->mi_pending_reads_mutex);
 	init_waitqueue_head(&mi->mi_pending_reads_notif_wq);
 	init_waitqueue_head(&mi->mi_log.ml_notif_wq);
 	INIT_DELAYED_WORK(&mi->mi_log.ml_wakeup_work, log_wake_up_all);
 	spin_lock_init(&mi->mi_log.rl_lock);
 	INIT_LIST_HEAD(&mi->mi_reads_list_head);
+=======
+	init_waitqueue_head(&mi->mi_pending_reads_notif_wq);
+	init_waitqueue_head(&mi->mi_log.ml_notif_wq);
+	init_waitqueue_head(&mi->mi_blocks_written_notif_wq);
+	atomic_set(&mi->mi_blocks_written, 0);
+	INIT_DELAYED_WORK(&mi->mi_log.ml_wakeup_work, log_wake_up_all);
+	spin_lock_init(&mi->mi_log.rl_lock);
+	spin_lock_init(&mi->pending_read_lock);
+	INIT_LIST_HEAD(&mi->mi_reads_list_head);
+	spin_lock_init(&mi->mi_per_uid_read_timeouts_lock);
+	mutex_init(&mi->mi_zstd_workspace_mutex);
+	INIT_DELAYED_WORK(&mi->mi_zstd_cleanup_work, zstd_free_workspace);
+	mutex_init(&mi->mi_le_mutex);
+
+	node = incfs_add_sysfs_node(options->sysfs_name, mi);
+	if (IS_ERR(node)) {
+		error = PTR_ERR(node);
+		goto err;
+	}
+	mi->mi_sysfs_node = node;
+>>>>>>> origin/android16-base
 
 	error = incfs_realloc_mount_info(mi, options);
 	if (error)
@@ -95,16 +154,45 @@ int incfs_realloc_mount_info(struct mount_info *mi,
 		kfree(old_buffer);
 	}
 
+<<<<<<< HEAD
+=======
+	if (options->sysfs_name && !mi->mi_sysfs_node)
+		mi->mi_sysfs_node = incfs_add_sysfs_node(options->sysfs_name,
+							 mi);
+	else if (!options->sysfs_name && mi->mi_sysfs_node) {
+		incfs_free_sysfs_node(mi->mi_sysfs_node);
+		mi->mi_sysfs_node = NULL;
+	} else if (options->sysfs_name &&
+		strcmp(options->sysfs_name,
+		       kobject_name(&mi->mi_sysfs_node->isn_sysfs_node))) {
+		incfs_free_sysfs_node(mi->mi_sysfs_node);
+		mi->mi_sysfs_node = incfs_add_sysfs_node(options->sysfs_name,
+							 mi);
+	}
+
+	if (IS_ERR(mi->mi_sysfs_node)) {
+		int err = PTR_ERR(mi->mi_sysfs_node);
+
+		mi->mi_sysfs_node = NULL;
+		return err;
+	}
+
+>>>>>>> origin/android16-base
 	mi->mi_options = *options;
 	return 0;
 }
 
 void incfs_free_mount_info(struct mount_info *mi)
 {
+<<<<<<< HEAD
+=======
+	int i;
+>>>>>>> origin/android16-base
 	if (!mi)
 		return;
 
 	flush_delayed_work(&mi->mi_log.ml_wakeup_work);
+<<<<<<< HEAD
 
 	dput(mi->mi_index_dir);
 	path_put(&mi->mi_backing_dir_path);
@@ -114,12 +202,28 @@ void incfs_free_mount_info(struct mount_info *mi)
 	kfree(mi->mi_log.rl_ring_buf);
 	kfree(mi->log_xattr);
 	kfree(mi->pending_read_xattr);
+=======
+	flush_delayed_work(&mi->mi_zstd_cleanup_work);
+
+	dput(mi->mi_index_dir);
+	dput(mi->mi_incomplete_dir);
+	path_put(&mi->mi_backing_dir_path);
+	mutex_destroy(&mi->mi_dir_struct_mutex);
+	mutex_destroy(&mi->mi_zstd_workspace_mutex);
+	put_cred(mi->mi_owner);
+	kfree(mi->mi_log.rl_ring_buf);
+	for (i = 0; i < ARRAY_SIZE(mi->pseudo_file_xattr); ++i)
+		kfree(mi->pseudo_file_xattr[i].data);
+	kfree(mi->mi_per_uid_read_timeouts);
+	incfs_free_sysfs_node(mi->mi_sysfs_node);
+>>>>>>> origin/android16-base
 	kfree(mi);
 }
 
 static void data_file_segment_init(struct data_file_segment *segment)
 {
 	init_waitqueue_head(&segment->new_data_arrival_wq);
+<<<<<<< HEAD
 	mutex_init(&segment->blockmap_mutex);
 	INIT_LIST_HEAD(&segment->reads_list_head);
 }
@@ -127,6 +231,95 @@ static void data_file_segment_init(struct data_file_segment *segment)
 static void data_file_segment_destroy(struct data_file_segment *segment)
 {
 	mutex_destroy(&segment->blockmap_mutex);
+=======
+	init_rwsem(&segment->rwsem);
+	INIT_LIST_HEAD(&segment->reads_list_head);
+}
+
+char *file_id_to_str(incfs_uuid_t id)
+{
+	char *result = kmalloc(1 + sizeof(id.bytes) * 2, GFP_NOFS);
+	char *end;
+
+	if (!result)
+		return NULL;
+
+	end = bin2hex(result, id.bytes, sizeof(id.bytes));
+	*end = 0;
+	return result;
+}
+
+struct dentry *incfs_lookup_dentry(struct dentry *parent, const char *name)
+{
+	struct inode *inode;
+	struct dentry *result = NULL;
+
+	if (!parent)
+		return ERR_PTR(-EFAULT);
+
+	inode = d_inode(parent);
+	inode_lock_nested(inode, I_MUTEX_PARENT);
+	result = lookup_one_len(name, parent, strlen(name));
+	inode_unlock(inode);
+
+	if (IS_ERR(result))
+		pr_warn("%s err:%ld\n", __func__, PTR_ERR(result));
+
+	return result;
+}
+
+static struct data_file *handle_mapped_file(struct mount_info *mi,
+					    struct data_file *df)
+{
+	char *file_id_str;
+	struct dentry *index_file_dentry;
+	struct path path;
+	struct file *bf;
+	struct data_file *result = NULL;
+	const struct cred *old_cred;
+
+	file_id_str = file_id_to_str(df->df_id);
+	if (!file_id_str)
+		return ERR_PTR(-ENOENT);
+
+	index_file_dentry = incfs_lookup_dentry(mi->mi_index_dir,
+						file_id_str);
+	kfree(file_id_str);
+	if (!index_file_dentry)
+		return ERR_PTR(-ENOENT);
+	if (IS_ERR(index_file_dentry))
+		return (struct data_file *)index_file_dentry;
+	if (!d_really_is_positive(index_file_dentry)) {
+		result = ERR_PTR(-ENOENT);
+		goto out;
+	}
+
+	path = (struct path) {
+		.mnt = mi->mi_backing_dir_path.mnt,
+		.dentry = index_file_dentry
+	};
+
+	old_cred = override_creds(mi->mi_owner);
+	bf = dentry_open(&path, O_RDWR | O_NOATIME | O_LARGEFILE,
+			 current_cred());
+	revert_creds(old_cred);
+
+	if (IS_ERR(bf)) {
+		result = (struct data_file *)bf;
+		goto out;
+	}
+
+	result = incfs_open_data_file(mi, bf);
+	fput(bf);
+	if (IS_ERR(result))
+		goto out;
+
+	result->df_mapped_offset = df->df_metadata_off;
+
+out:
+	dput(index_file_dentry);
+	return result;
+>>>>>>> origin/android16-base
 }
 
 struct data_file *incfs_open_data_file(struct mount_info *mi, struct file *bf)
@@ -154,17 +347,27 @@ struct data_file *incfs_open_data_file(struct mount_info *mi, struct file *bf)
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	mutex_init(&df->df_enable_verity);
+
+>>>>>>> origin/android16-base
 	df->df_backing_file_context = bfc;
 	df->df_mount_info = mi;
 	for (i = 0; i < ARRAY_SIZE(df->df_segments); i++)
 		data_file_segment_init(&df->df_segments[i]);
 
+<<<<<<< HEAD
 	error = mutex_lock_interruptible(&bfc->bc_mutex);
 	if (error)
 		goto out;
 	error = incfs_read_file_header(bfc, &df->df_metadata_off, &df->df_id,
 				       &size, &df->df_header_flags);
 	mutex_unlock(&bfc->bc_mutex);
+=======
+	error = incfs_read_file_header(bfc, &df->df_metadata_off, &df->df_id,
+				       &size, &df->df_header_flags);
+>>>>>>> origin/android16-base
 
 	if (error)
 		goto out;
@@ -173,6 +376,16 @@ struct data_file *incfs_open_data_file(struct mount_info *mi, struct file *bf)
 	if (size > 0)
 		df->df_data_block_count = get_blocks_count_for_size(size);
 
+<<<<<<< HEAD
+=======
+	if (df->df_header_flags & INCFS_FILE_MAPPED) {
+		struct data_file *mapped_df = handle_mapped_file(mi, df);
+
+		incfs_free_data_file(df);
+		return mapped_df;
+	}
+
+>>>>>>> origin/android16-base
 	md_records = incfs_scan_metadata_chain(df);
 	if (md_records < 0)
 		error = md_records;
@@ -190,16 +403,51 @@ out:
 
 void incfs_free_data_file(struct data_file *df)
 {
+<<<<<<< HEAD
 	int i;
+=======
+	u32 data_blocks_written, hash_blocks_written;
+>>>>>>> origin/android16-base
 
 	if (!df)
 		return;
 
+<<<<<<< HEAD
 	incfs_free_mtree(df->df_hash_tree);
 	for (i = 0; i < ARRAY_SIZE(df->df_segments); i++)
 		data_file_segment_destroy(&df->df_segments[i]);
 	incfs_free_bfc(df->df_backing_file_context);
 	kfree(df->df_signature);
+=======
+	data_blocks_written = atomic_read(&df->df_data_blocks_written);
+	hash_blocks_written = atomic_read(&df->df_hash_blocks_written);
+
+	if (data_blocks_written != df->df_initial_data_blocks_written ||
+	    hash_blocks_written != df->df_initial_hash_blocks_written) {
+		struct backing_file_context *bfc = df->df_backing_file_context;
+		int error = -1;
+
+		if (bfc && !mutex_lock_interruptible(&bfc->bc_mutex)) {
+			error = incfs_write_status_to_backing_file(
+						df->df_backing_file_context,
+						df->df_status_offset,
+						data_blocks_written,
+						hash_blocks_written);
+			mutex_unlock(&bfc->bc_mutex);
+		}
+
+		if (error)
+			/* Nothing can be done, just warn */
+			pr_warn("incfs: failed to write status to backing file\n");
+	}
+
+	incfs_free_mtree(df->df_hash_tree);
+	incfs_free_bfc(df->df_backing_file_context);
+	kfree(df->df_signature);
+	kfree(df->df_verity_file_digest.data);
+	kfree(df->df_verity_signature);
+	mutex_destroy(&df->df_enable_verity);
+>>>>>>> origin/android16-base
 	kfree(df);
 }
 
@@ -252,6 +500,7 @@ void incfs_free_dir_file(struct dir_file *dir)
 	kfree(dir);
 }
 
+<<<<<<< HEAD
 static ssize_t decompress(struct mem_range src, struct mem_range dst)
 {
 	int result = LZ4_decompress_safe(src.data, dst.data, src.len, dst.len);
@@ -262,6 +511,75 @@ static ssize_t decompress(struct mem_range src, struct mem_range dst)
 	return result;
 }
 
+=======
+static ssize_t zstd_decompress_safe(struct mount_info *mi,
+				    struct mem_range src, struct mem_range dst)
+{
+	ssize_t result;
+	ZSTD_inBuffer inbuf = {.src = src.data,	.size = src.len};
+	ZSTD_outBuffer outbuf = {.dst = dst.data, .size = dst.len};
+
+	result = mutex_lock_interruptible(&mi->mi_zstd_workspace_mutex);
+	if (result)
+		return result;
+
+	if (!mi->mi_zstd_stream) {
+		unsigned int workspace_size = ZSTD_DStreamWorkspaceBound(
+						INCFS_DATA_FILE_BLOCK_SIZE);
+		void *workspace = kvmalloc(workspace_size, GFP_NOFS);
+		ZSTD_DStream *stream;
+
+		if (!workspace) {
+			result = -ENOMEM;
+			goto out;
+		}
+
+		stream = ZSTD_initDStream(INCFS_DATA_FILE_BLOCK_SIZE, workspace,
+				  workspace_size);
+		if (!stream) {
+			kvfree(workspace);
+			result = -EIO;
+			goto out;
+		}
+
+		mi->mi_zstd_workspace = workspace;
+		mi->mi_zstd_stream = stream;
+	}
+
+	result = ZSTD_decompressStream(mi->mi_zstd_stream, &outbuf, &inbuf) ?
+		-EBADMSG : outbuf.pos;
+
+	mod_delayed_work(system_wq, &mi->mi_zstd_cleanup_work,
+			 msecs_to_jiffies(5000));
+
+out:
+	mutex_unlock(&mi->mi_zstd_workspace_mutex);
+	return result;
+}
+
+static ssize_t decompress(struct mount_info *mi,
+			  struct mem_range src, struct mem_range dst, int alg)
+{
+	int result;
+
+	switch (alg) {
+	case INCFS_BLOCK_COMPRESSED_LZ4:
+		result = LZ4_decompress_safe(src.data, dst.data, src.len,
+					     dst.len);
+		if (result < 0)
+			return -EBADMSG;
+		return result;
+
+	case INCFS_BLOCK_COMPRESSED_ZSTD:
+		return zstd_decompress_safe(mi, src, dst);
+
+	default:
+		WARN_ON(true);
+		return -EOPNOTSUPP;
+	}
+}
+
+>>>>>>> origin/android16-base
 static void log_read_one_record(struct read_log *rl, struct read_log_state *rs)
 {
 	union log_record *record =
@@ -276,10 +594,34 @@ static void log_read_one_record(struct read_log *rl, struct read_log_state *rs)
 
 	case SAME_FILE:
 		rs->base_record.block_index =
+<<<<<<< HEAD
 			record->same_file_record.block_index;
 		rs->base_record.absolute_ts_us +=
 			record->same_file_record.relative_ts_us;
 		record_size = sizeof(record->same_file_record);
+=======
+			record->same_file.block_index;
+		rs->base_record.absolute_ts_us +=
+			record->same_file.relative_ts_us;
+		rs->base_record.uid = record->same_file.uid;
+		record_size = sizeof(record->same_file);
+		break;
+
+	case SAME_FILE_CLOSE_BLOCK:
+		rs->base_record.block_index +=
+			record->same_file_close_block.block_index_delta;
+		rs->base_record.absolute_ts_us +=
+			record->same_file_close_block.relative_ts_us;
+		record_size = sizeof(record->same_file_close_block);
+		break;
+
+	case SAME_FILE_CLOSE_BLOCK_SHORT:
+		rs->base_record.block_index +=
+			record->same_file_close_block_short.block_index_delta;
+		rs->base_record.absolute_ts_us +=
+		   record->same_file_close_block_short.relative_ts_tens_us * 10;
+		record_size = sizeof(record->same_file_close_block_short);
+>>>>>>> origin/android16-base
 		break;
 
 	case SAME_FILE_NEXT_BLOCK:
@@ -292,7 +634,11 @@ static void log_read_one_record(struct read_log *rl, struct read_log_state *rs)
 	case SAME_FILE_NEXT_BLOCK_SHORT:
 		++rs->base_record.block_index;
 		rs->base_record.absolute_ts_us +=
+<<<<<<< HEAD
 			record->same_file_next_block_short.relative_ts_us;
+=======
+		    record->same_file_next_block_short.relative_ts_tens_us * 10;
+>>>>>>> origin/android16-base
 		record_size = sizeof(record->same_file_next_block_short);
 		break;
 	}
@@ -314,6 +660,14 @@ static void log_block_read(struct mount_info *mi, incfs_uuid_t *id,
 	s64 relative_us;
 	union log_record record;
 	size_t record_size;
+<<<<<<< HEAD
+=======
+	uid_t uid = current_uid().val;
+	int block_delta;
+	bool same_file, same_uid;
+	bool next_block, close_block, very_close_block;
+	bool close_time, very_close_time, very_very_close_time;
+>>>>>>> origin/android16-base
 
 	/*
 	 * This may read the old value, but it's OK to delay the logging start
@@ -334,6 +688,7 @@ static void log_block_read(struct mount_info *mi, incfs_uuid_t *id,
 	tail = &log->rl_tail;
 	relative_us = now_us - head->base_record.absolute_ts_us;
 
+<<<<<<< HEAD
 	if (memcmp(id, &head->base_record.file_id, sizeof(incfs_uuid_t)) ||
 	    relative_us >= 1ll << 32) {
 		record.full_record = (struct full_record){
@@ -353,11 +708,35 @@ static void log_block_read(struct mount_info *mi, incfs_uuid_t *id,
 		};
 		record_size = sizeof(struct same_file_record);
 	} else if (relative_us >= 1 << 14) {
+=======
+	same_file = !memcmp(id, &head->base_record.file_id,
+			    sizeof(incfs_uuid_t));
+	same_uid = uid == head->base_record.uid;
+
+	block_delta = block_index - head->base_record.block_index;
+	next_block = block_delta == 1;
+	very_close_block = block_delta >= S8_MIN && block_delta <= S8_MAX;
+	close_block = block_delta >= S16_MIN && block_delta <= S16_MAX;
+
+	very_very_close_time = relative_us < (1 << 5) * 10;
+	very_close_time = relative_us < (1 << 13);
+	close_time = relative_us < (1 << 16);
+
+	if (same_file && same_uid && next_block && very_very_close_time) {
+		record.same_file_next_block_short =
+			(struct same_file_next_block_short){
+				.type = SAME_FILE_NEXT_BLOCK_SHORT,
+				.relative_ts_tens_us = div_s64(relative_us, 10),
+			};
+		record_size = sizeof(struct same_file_next_block_short);
+	} else if (same_file && same_uid && next_block && very_close_time) {
+>>>>>>> origin/android16-base
 		record.same_file_next_block = (struct same_file_next_block){
 			.type = SAME_FILE_NEXT_BLOCK,
 			.relative_ts_us = relative_us,
 		};
 		record_size = sizeof(struct same_file_next_block);
+<<<<<<< HEAD
 	} else {
 		record.same_file_next_block_short =
 			(struct same_file_next_block_short){
@@ -365,6 +744,42 @@ static void log_block_read(struct mount_info *mi, incfs_uuid_t *id,
 				.relative_ts_us = relative_us,
 			};
 		record_size = sizeof(struct same_file_next_block_short);
+=======
+	} else if (same_file && same_uid && very_close_block &&
+		   very_very_close_time) {
+		record.same_file_close_block_short =
+			(struct same_file_close_block_short){
+				.type = SAME_FILE_CLOSE_BLOCK_SHORT,
+				.relative_ts_tens_us = div_s64(relative_us, 10),
+				.block_index_delta = block_delta,
+			};
+		record_size = sizeof(struct same_file_close_block_short);
+	} else if (same_file && same_uid && close_block && very_close_time) {
+		record.same_file_close_block = (struct same_file_close_block){
+				.type = SAME_FILE_CLOSE_BLOCK,
+				.relative_ts_us = relative_us,
+				.block_index_delta = block_delta,
+			};
+		record_size = sizeof(struct same_file_close_block);
+	} else if (same_file && close_time) {
+		record.same_file = (struct same_file){
+			.type = SAME_FILE,
+			.block_index = block_index,
+			.relative_ts_us = relative_us,
+			.uid = uid,
+		};
+		record_size = sizeof(struct same_file);
+	} else {
+		record.full_record = (struct full_record){
+			.type = FULL,
+			.block_index = block_index,
+			.file_id = *id,
+			.absolute_ts_us = now_us,
+			.uid = uid,
+		};
+		head->base_record.file_id = *id;
+		record_size = sizeof(struct full_record);
+>>>>>>> origin/android16-base
 	}
 
 	head->base_record.block_index = block_index;
@@ -405,7 +820,15 @@ static int validate_hash_tree(struct backing_file_context *bfc, struct file *f,
 	int hash_per_block;
 	pgoff_t file_pages;
 
+<<<<<<< HEAD
 	tree = df->df_hash_tree;
+=======
+	/*
+	 * Memory barrier to make sure tree is fully present if added via enable
+	 * verity
+	 */
+	tree = smp_load_acquire(&df->df_hash_tree);
+>>>>>>> origin/android16-base
 	sig = df->df_signature;
 	if (!tree || !sig)
 		return 0;
@@ -462,7 +885,11 @@ static int validate_hash_tree(struct backing_file_context *bfc, struct file *f,
 			int i;
 			bool zero = true;
 
+<<<<<<< HEAD
 			pr_debug("incfs: Hash mismatch lvl:%d blk:%d\n",
+=======
+			pr_warn("incfs: Hash mismatch lvl:%d blk:%d\n",
+>>>>>>> origin/android16-base
 				lvl, block_index);
 			for (i = 0; i < digest_size; i++)
 				if (stored_digest[i]) {
@@ -471,7 +898,11 @@ static int validate_hash_tree(struct backing_file_context *bfc, struct file *f,
 				}
 
 			if (zero)
+<<<<<<< HEAD
 				pr_debug("incfs: Note saved_digest all zero - did you forget to load the hashes?\n");
+=======
+				pr_debug("Note saved_digest all zero - did you forget to load the hashes?\n");
+>>>>>>> origin/android16-base
 			return -EBADMSG;
 		}
 
@@ -496,7 +927,11 @@ static int validate_hash_tree(struct backing_file_context *bfc, struct file *f,
 		return res;
 
 	if (memcmp(stored_digest, calculated_digest, digest_size)) {
+<<<<<<< HEAD
 		pr_debug("incfs: Leaf hash mismatch blk:%d\n", block_index);
+=======
+		pr_debug("Leaf hash mismatch blk:%d\n", block_index);
+>>>>>>> origin/android16-base
 		return -EBADMSG;
 	}
 
@@ -528,9 +963,13 @@ static void convert_data_file_block(struct incfs_blockmap_entry *bme,
 	res_block->db_backing_file_data_offset |=
 		le32_to_cpu(bme->me_data_offset_lo);
 	res_block->db_stored_size = le16_to_cpu(bme->me_data_size);
+<<<<<<< HEAD
 	res_block->db_comp_alg = (flags & INCFS_BLOCK_COMPRESSED_LZ4) ?
 					 COMPRESSION_LZ4 :
 					 COMPRESSION_NONE;
+=======
+	res_block->db_comp_alg = flags & INCFS_BLOCK_COMPRESSED_MASK;
+>>>>>>> origin/android16-base
 }
 
 static int get_data_file_block(struct data_file *df, int index,
@@ -580,6 +1019,7 @@ static int copy_one_range(struct incfs_filled_range *range, void __user *buffer,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int update_file_header_flags(struct data_file *df, u32 bits_to_reset,
 				    u32 bits_to_set)
 {
@@ -610,6 +1050,11 @@ static int update_file_header_flags(struct data_file *df, u32 bits_to_reset,
 
 #define READ_BLOCKMAP_ENTRIES 512
 int incfs_get_filled_blocks(struct data_file *df,
+=======
+#define READ_BLOCKMAP_ENTRIES 512
+int incfs_get_filled_blocks(struct data_file *df,
+			    struct incfs_file_data *fd,
+>>>>>>> origin/android16-base
 			    struct incfs_get_filled_blocks_args *arg)
 {
 	int error = 0;
@@ -623,6 +1068,11 @@ int incfs_get_filled_blocks(struct data_file *df,
 	int i = READ_BLOCKMAP_ENTRIES - 1;
 	int entries_read = 0;
 	struct incfs_blockmap_entry *bme;
+<<<<<<< HEAD
+=======
+	int data_blocks_filled = 0;
+	int hash_blocks_filled = 0;
+>>>>>>> origin/android16-base
 
 	*size_out = 0;
 	if (end_index > df->df_total_block_count)
@@ -630,7 +1080,12 @@ int incfs_get_filled_blocks(struct data_file *df,
 	arg->total_blocks_out = df->df_total_block_count;
 	arg->data_blocks_out = df->df_data_block_count;
 
+<<<<<<< HEAD
 	if (df->df_header_flags & INCFS_FILE_COMPLETE) {
+=======
+	if (atomic_read(&df->df_data_blocks_written) ==
+	    df->df_data_block_count) {
+>>>>>>> origin/android16-base
 		pr_debug("File marked full, fast get_filled_blocks");
 		if (arg->start_index > end_index) {
 			arg->index_out = arg->start_index;
@@ -683,6 +1138,16 @@ int incfs_get_filled_blocks(struct data_file *df,
 
 		convert_data_file_block(bme + i, &dfb);
 
+<<<<<<< HEAD
+=======
+		if (is_data_block_present(&dfb)) {
+			if (arg->index_out >= df->df_data_block_count)
+				++hash_blocks_filled;
+			else
+				++data_blocks_filled;
+		}
+
+>>>>>>> origin/android16-base
 		if (is_data_block_present(&dfb) == in_range)
 			continue;
 
@@ -712,6 +1177,7 @@ int incfs_get_filled_blocks(struct data_file *df,
 			arg->index_out = range.begin;
 	}
 
+<<<<<<< HEAD
 	if (!error && in_range && arg->start_index == 0 &&
 	    end_index == df->df_total_block_count &&
 	    *size_out == sizeof(struct incfs_filled_range)) {
@@ -719,6 +1185,30 @@ int incfs_get_filled_blocks(struct data_file *df,
 			update_file_header_flags(df, 0, INCFS_FILE_COMPLETE);
 		/* Log failure only, since it's just a failed optimization */
 		pr_debug("Marked file full with result %d", result);
+=======
+	if (arg->start_index == 0) {
+		fd->fd_get_block_pos = 0;
+		fd->fd_filled_data_blocks = 0;
+		fd->fd_filled_hash_blocks = 0;
+	}
+
+	if (arg->start_index == fd->fd_get_block_pos) {
+		fd->fd_get_block_pos = arg->index_out + 1;
+		fd->fd_filled_data_blocks += data_blocks_filled;
+		fd->fd_filled_hash_blocks += hash_blocks_filled;
+	}
+
+	if (fd->fd_get_block_pos == df->df_total_block_count + 1) {
+		if (fd->fd_filled_data_blocks >
+		   atomic_read(&df->df_data_blocks_written))
+			atomic_set(&df->df_data_blocks_written,
+				   fd->fd_filled_data_blocks);
+
+		if (fd->fd_filled_hash_blocks >
+		   atomic_read(&df->df_hash_blocks_written))
+			atomic_set(&df->df_hash_blocks_written,
+				   fd->fd_filled_hash_blocks);
+>>>>>>> origin/android16-base
 	}
 
 	kfree(bme);
@@ -756,20 +1246,45 @@ static struct pending_read *add_pending_read(struct data_file *df,
 	result->file_id = df->df_id;
 	result->block_index = block_index;
 	result->timestamp_us = ktime_to_us(ktime_get());
+<<<<<<< HEAD
 
 	mutex_lock(&mi->mi_pending_reads_mutex);
+=======
+	result->uid = current_uid().val;
+
+	spin_lock(&mi->pending_read_lock);
+>>>>>>> origin/android16-base
 
 	result->serial_number = ++mi->mi_last_pending_read_number;
 	mi->mi_pending_reads_count++;
 
+<<<<<<< HEAD
 	list_add(&result->mi_reads_list, &mi->mi_reads_list_head);
 	list_add(&result->segment_reads_list, &segment->reads_list_head);
 	mutex_unlock(&mi->mi_pending_reads_mutex);
+=======
+	list_add_rcu(&result->mi_reads_list, &mi->mi_reads_list_head);
+	list_add_rcu(&result->segment_reads_list, &segment->reads_list_head);
+
+	spin_unlock(&mi->pending_read_lock);
+>>>>>>> origin/android16-base
 
 	wake_up_all(&mi->mi_pending_reads_notif_wq);
 	return result;
 }
 
+<<<<<<< HEAD
+=======
+static void free_pending_read_entry(struct rcu_head *entry)
+{
+	struct pending_read *read;
+
+	read = container_of(entry, struct pending_read, rcu);
+
+	kfree(read);
+}
+
+>>>>>>> origin/android16-base
 /* Notifies a given data file that pending read is completed. */
 static void remove_pending_read(struct data_file *df, struct pending_read *read)
 {
@@ -783,6 +1298,7 @@ static void remove_pending_read(struct data_file *df, struct pending_read *read)
 
 	mi = df->df_mount_info;
 
+<<<<<<< HEAD
 	mutex_lock(&mi->mi_pending_reads_mutex);
 	list_del(&read->mi_reads_list);
 	list_del(&read->segment_reads_list);
@@ -791,6 +1307,19 @@ static void remove_pending_read(struct data_file *df, struct pending_read *read)
 	mutex_unlock(&mi->mi_pending_reads_mutex);
 
 	kfree(read);
+=======
+	spin_lock(&mi->pending_read_lock);
+
+	list_del_rcu(&read->mi_reads_list);
+	list_del_rcu(&read->segment_reads_list);
+
+	mi->mi_pending_reads_count--;
+
+	spin_unlock(&mi->pending_read_lock);
+
+	/* Don't free. Wait for readers */
+	call_rcu(&read->rcu, free_pending_read_entry);
+>>>>>>> origin/android16-base
 }
 
 static void notify_pending_reads(struct mount_info *mi,
@@ -800,12 +1329,18 @@ static void notify_pending_reads(struct mount_info *mi,
 	struct pending_read *entry = NULL;
 
 	/* Notify pending reads waiting for this block. */
+<<<<<<< HEAD
 	mutex_lock(&mi->mi_pending_reads_mutex);
 	list_for_each_entry(entry, &segment->reads_list_head,
+=======
+	rcu_read_lock();
+	list_for_each_entry_rcu(entry, &segment->reads_list_head,
+>>>>>>> origin/android16-base
 						segment_reads_list) {
 		if (entry->block_index == index)
 			set_read_done(entry);
 	}
+<<<<<<< HEAD
 	mutex_unlock(&mi->mi_pending_reads_mutex);
 	wake_up_all(&segment->new_data_arrival_wq);
 }
@@ -813,13 +1348,33 @@ static void notify_pending_reads(struct mount_info *mi,
 static int wait_for_data_block(struct data_file *df, int block_index,
 			       int timeout_ms,
 			       struct data_file_block *res_block)
+=======
+	rcu_read_unlock();
+	wake_up_all(&segment->new_data_arrival_wq);
+
+	atomic_inc(&mi->mi_blocks_written);
+	wake_up_all(&mi->mi_blocks_written_notif_wq);
+}
+
+static int wait_for_data_block(struct data_file *df, int block_index,
+			       struct data_file_block *res_block,
+			       struct incfs_read_data_file_timeouts *timeouts,
+			       unsigned int *delayed_min_us)
+>>>>>>> origin/android16-base
 {
 	struct data_file_block block = {};
 	struct data_file_segment *segment = NULL;
 	struct pending_read *read = NULL;
 	struct mount_info *mi = NULL;
+<<<<<<< HEAD
 	int error = 0;
 	int wait_res = 0;
+=======
+	int error;
+	int wait_res = 0;
+	unsigned int delayed_pending_us = 0;
+	bool delayed_pending = false;
+>>>>>>> origin/android16-base
 
 	if (!df || !res_block)
 		return -EFAULT;
@@ -827,28 +1382,44 @@ static int wait_for_data_block(struct data_file *df, int block_index,
 	if (block_index < 0 || block_index >= df->df_data_block_count)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (df->df_blockmap_off <= 0)
 		return -ENODATA;
 
 	segment = get_file_segment(df, block_index);
 	error = mutex_lock_interruptible(&segment->blockmap_mutex);
+=======
+	if (df->df_blockmap_off <= 0 || !df->df_mount_info)
+		return -ENODATA;
+
+	mi = df->df_mount_info;
+	segment = get_file_segment(df, block_index);
+
+	error = down_read_killable(&segment->rwsem);
+>>>>>>> origin/android16-base
 	if (error)
 		return error;
 
 	/* Look up the given block */
 	error = get_data_file_block(df, block_index, &block);
 
+<<<<<<< HEAD
 	/* If it's not found, create a pending read */
 	if (!error && !is_data_block_present(&block) && timeout_ms != 0)
 		read = add_pending_read(df, block_index);
 
 	mutex_unlock(&segment->blockmap_mutex);
+=======
+	up_read(&segment->rwsem);
+
+>>>>>>> origin/android16-base
 	if (error)
 		return error;
 
 	/* If the block was found, just return it. No need to wait. */
 	if (is_data_block_present(&block)) {
 		*res_block = block;
+<<<<<<< HEAD
 		return 0;
 	}
 
@@ -871,6 +1442,39 @@ static int wait_for_data_block(struct data_file *df, int block_index,
 	/* Woke up, the pending read is no longer needed. */
 	remove_pending_read(df, read);
 	read = NULL;
+=======
+		if (timeouts && timeouts->min_time_us) {
+			*delayed_min_us = timeouts->min_time_us;
+			goto out;
+		}
+		return 0;
+	} else {
+		/* If it's not found, create a pending read */
+		if (timeouts && timeouts->max_pending_time_us) {
+			read = add_pending_read(df, block_index);
+			if (!read)
+				return -ENOMEM;
+		} else {
+			log_block_read(mi, &df->df_id, block_index);
+			return -ETIME;
+		}
+	}
+
+	/* Rest of function only applies if timeouts != NULL */
+	if (!timeouts) {
+		pr_warn("incfs: timeouts unexpectedly NULL\n");
+		return -EFSCORRUPTED;
+	}
+
+	/* Wait for notifications about block's arrival */
+	wait_res =
+		wait_event_interruptible_timeout(segment->new_data_arrival_wq,
+			(is_read_done(read)),
+			usecs_to_jiffies(timeouts->max_pending_time_us));
+
+	/* Woke up, the pending read is no longer needed. */
+	remove_pending_read(df, read);
+>>>>>>> origin/android16-base
 
 	if (wait_res == 0) {
 		/* Wait has timed out */
@@ -885,12 +1489,27 @@ static int wait_for_data_block(struct data_file *df, int block_index,
 		return wait_res;
 	}
 
+<<<<<<< HEAD
 	error = mutex_lock_interruptible(&segment->blockmap_mutex);
+=======
+	delayed_pending = true;
+	delayed_pending_us = timeouts->max_pending_time_us -
+				jiffies_to_usecs(wait_res);
+	if (timeouts->min_pending_time_us > delayed_pending_us)
+		*delayed_min_us = timeouts->min_pending_time_us -
+					     delayed_pending_us;
+
+	error = down_read_killable(&segment->rwsem);
+>>>>>>> origin/android16-base
 	if (error)
 		return error;
 
 	/*
+<<<<<<< HEAD
 	 * Re-read block's info now, it has just arrived and
+=======
+	 * Re-read blocks info now, it has just arrived and
+>>>>>>> origin/android16-base
 	 * should be available.
 	 */
 	error = get_data_file_block(df, block_index, &block);
@@ -899,6 +1518,7 @@ static int wait_for_data_block(struct data_file *df, int block_index,
 			*res_block = block;
 		else {
 			/*
+<<<<<<< HEAD
 			 * Somehow wait finished successfully bug block still
 			 * can't be found. It's not normal.
 			 */
@@ -914,6 +1534,61 @@ static int wait_for_data_block(struct data_file *df, int block_index,
 ssize_t incfs_read_data_file_block(struct mem_range dst, struct file *f,
 				   int index, int timeout_ms,
 				   struct mem_range tmp)
+=======
+			 * Somehow wait finished successfully but block still
+			 * can't be found. It's not normal.
+			 */
+			pr_warn("incfs: Wait succeeded but block not found.\n");
+			error = -ENODATA;
+		}
+	}
+	up_read(&segment->rwsem);
+
+out:
+	if (error)
+		return error;
+
+	if (delayed_pending) {
+		mi->mi_reads_delayed_pending++;
+		mi->mi_reads_delayed_pending_us +=
+			delayed_pending_us;
+	}
+
+	if (delayed_min_us && *delayed_min_us) {
+		mi->mi_reads_delayed_min++;
+		mi->mi_reads_delayed_min_us += *delayed_min_us;
+	}
+
+	return 0;
+}
+
+static int incfs_update_sysfs_error(struct file *file, int index, int result,
+				struct mount_info *mi, struct data_file *df)
+{
+	int error;
+
+	if (result >= 0)
+		return 0;
+
+	error = mutex_lock_interruptible(&mi->mi_le_mutex);
+	if (error)
+		return error;
+
+	mi->mi_le_file_id = df->df_id;
+	mi->mi_le_time_us = ktime_to_us(ktime_get());
+	mi->mi_le_page = index;
+	mi->mi_le_errno = result;
+	mi->mi_le_uid = current_uid().val;
+	mutex_unlock(&mi->mi_le_mutex);
+
+	return 0;
+}
+
+ssize_t incfs_read_data_file_block(struct mem_range dst, struct file *f,
+			int index, struct mem_range tmp,
+			struct incfs_read_data_file_timeouts *timeouts,
+			unsigned int *delayed_min_us)
+>>>>>>> origin/android16-base
 {
 	loff_t pos;
 	ssize_t result;
@@ -923,7 +1598,11 @@ ssize_t incfs_read_data_file_block(struct mem_range dst, struct file *f,
 	struct data_file_block block = {};
 	struct data_file *df = get_incfs_data_file(f);
 
+<<<<<<< HEAD
 	if (!dst.data || !df)
+=======
+	if (!dst.data || !df || !tmp.data)
+>>>>>>> origin/android16-base
 		return -EFAULT;
 
 	if (tmp.len < 2 * INCFS_DATA_FILE_BLOCK_SIZE)
@@ -932,7 +1611,12 @@ ssize_t incfs_read_data_file_block(struct mem_range dst, struct file *f,
 	mi = df->df_mount_info;
 	bfc = df->df_backing_file_context;
 
+<<<<<<< HEAD
 	result = wait_for_data_block(df, index, timeout_ms, &block);
+=======
+	result = wait_for_data_block(df, index, &block, timeouts,
+				     delayed_min_us);
+>>>>>>> origin/android16-base
 	if (result < 0)
 		goto out;
 
@@ -949,7 +1633,12 @@ ssize_t incfs_read_data_file_block(struct mem_range dst, struct file *f,
 		result = incfs_kread(bfc, tmp.data, bytes_to_read, pos);
 		if (result == bytes_to_read) {
 			result =
+<<<<<<< HEAD
 				decompress(range(tmp.data, bytes_to_read), dst);
+=======
+				decompress(mi, range(tmp.data, bytes_to_read),
+					   dst, block.db_comp_alg);
+>>>>>>> origin/android16-base
 			if (result < 0) {
 				const char *name =
 				    bfc->bc_file->f_path.dentry->d_name.name;
@@ -974,11 +1663,28 @@ ssize_t incfs_read_data_file_block(struct mem_range dst, struct file *f,
 		log_block_read(mi, &df->df_id, index);
 
 out:
+<<<<<<< HEAD
+=======
+	if (result == -ETIME)
+		mi->mi_reads_failed_timed_out++;
+	else if (result == -EBADMSG)
+		mi->mi_reads_failed_hash_verification++;
+	else if (result < 0)
+		mi->mi_reads_failed_other++;
+
+	incfs_update_sysfs_error(f, index, result, mi, df);
+
+>>>>>>> origin/android16-base
 	return result;
 }
 
 int incfs_process_new_data_block(struct data_file *df,
+<<<<<<< HEAD
 				 struct incfs_fill_block *block, u8 *data)
+=======
+				 struct incfs_fill_block *block, u8 *data,
+				 bool *complete)
+>>>>>>> origin/android16-base
 {
 	struct mount_info *mi = NULL;
 	struct backing_file_context *bfc = NULL;
@@ -999,14 +1705,27 @@ int incfs_process_new_data_block(struct data_file *df,
 	segment = get_file_segment(df, block->block_index);
 	if (!segment)
 		return -EFAULT;
+<<<<<<< HEAD
 	if (block->compression == COMPRESSION_LZ4)
 		flags |= INCFS_BLOCK_COMPRESSED_LZ4;
 
 	error = mutex_lock_interruptible(&segment->blockmap_mutex);
+=======
+
+	if (block->compression == COMPRESSION_LZ4)
+		flags |= INCFS_BLOCK_COMPRESSED_LZ4;
+	else if (block->compression == COMPRESSION_ZSTD)
+		flags |= INCFS_BLOCK_COMPRESSED_ZSTD;
+	else if (block->compression)
+		return -EINVAL;
+
+	error = down_read_killable(&segment->rwsem);
+>>>>>>> origin/android16-base
 	if (error)
 		return error;
 
 	error = get_data_file_block(df, block->block_index, &existing_block);
+<<<<<<< HEAD
 	if (error)
 		goto unlock;
 	if (is_data_block_present(&existing_block)) {
@@ -1026,6 +1745,51 @@ int incfs_process_new_data_block(struct data_file *df,
 
 unlock:
 	mutex_unlock(&segment->blockmap_mutex);
+=======
+
+	up_read(&segment->rwsem);
+
+	if (error)
+		return error;
+	if (is_data_block_present(&existing_block))
+		/* Block is already present, nothing to do here */
+		return 0;
+
+	error = down_write_killable(&segment->rwsem);
+	if (error)
+		return error;
+
+	/* Recheck inside write lock */
+	error = get_data_file_block(df, block->block_index, &existing_block);
+	if (error)
+		goto out_up_write;
+
+	if (is_data_block_present(&existing_block))
+		goto out_up_write;
+
+	error = mutex_lock_interruptible(&bfc->bc_mutex);
+	if (error)
+		goto out_up_write;
+
+	error = incfs_write_data_block_to_backing_file(bfc,
+			range(data, block->data_len), block->block_index,
+			df->df_blockmap_off, flags);
+	if (error)
+		goto out_mutex_unlock;
+
+	if (atomic_inc_return(&df->df_data_blocks_written)
+			>= df->df_data_block_count)
+		*complete = true;
+
+out_mutex_unlock:
+	mutex_unlock(&bfc->bc_mutex);
+	if (!error)
+		notify_pending_reads(mi, segment, block->block_index);
+
+out_up_write:
+	up_write(&segment->rwsem);
+
+>>>>>>> origin/android16-base
 	if (error)
 		pr_debug("%d error: %d\n", block->block_index, error);
 	return error;
@@ -1101,6 +1865,12 @@ int incfs_process_new_hash_block(struct data_file *df,
 			hash_area_base, df->df_blockmap_off, df->df_size);
 		mutex_unlock(&bfc->bc_mutex);
 	}
+<<<<<<< HEAD
+=======
+	if (!error)
+		atomic_inc(&df->df_hash_blocks_written);
+
+>>>>>>> origin/android16-base
 	return error;
 }
 
@@ -1123,6 +1893,7 @@ static int process_blockmap_md(struct incfs_blockmap *bm,
 	return error;
 }
 
+<<<<<<< HEAD
 static int process_file_attr_md(struct incfs_file_attr *fa,
 				struct metadata_handler *handler)
 {
@@ -1142,6 +1913,8 @@ static int process_file_attr_md(struct incfs_file_attr *fa,
 	return 0;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int process_file_signature_md(struct incfs_file_signature *sg,
 				struct metadata_handler *handler)
 {
@@ -1217,13 +1990,65 @@ out:
 	return error;
 }
 
+<<<<<<< HEAD
 int incfs_scan_metadata_chain(struct data_file *df)
+=======
+static int process_status_md(struct incfs_status *is,
+			     struct metadata_handler *handler)
+{
+	struct data_file *df = handler->context;
+
+	df->df_initial_data_blocks_written =
+		le32_to_cpu(is->is_data_blocks_written);
+	atomic_set(&df->df_data_blocks_written,
+		   df->df_initial_data_blocks_written);
+
+	df->df_initial_hash_blocks_written =
+		le32_to_cpu(is->is_hash_blocks_written);
+	atomic_set(&df->df_hash_blocks_written,
+		   df->df_initial_hash_blocks_written);
+
+	df->df_status_offset = handler->md_record_offset;
+	return 0;
+}
+
+static int process_file_verity_signature_md(
+		struct incfs_file_verity_signature *vs,
+		struct metadata_handler *handler)
+{
+	struct data_file *df = handler->context;
+	struct incfs_df_verity_signature *verity_signature;
+
+	if (!df)
+		return -EFAULT;
+
+	verity_signature = kzalloc(sizeof(*verity_signature), GFP_NOFS);
+	if (!verity_signature)
+		return -ENOMEM;
+
+	verity_signature->offset = le64_to_cpu(vs->vs_offset);
+	verity_signature->size = le32_to_cpu(vs->vs_size);
+	if (verity_signature->size > FS_VERITY_MAX_SIGNATURE_SIZE) {
+		kfree(verity_signature);
+		return -EFAULT;
+	}
+
+	df->df_verity_signature = verity_signature;
+	return 0;
+}
+
+static int incfs_scan_metadata_chain(struct data_file *df)
+>>>>>>> origin/android16-base
 {
 	struct metadata_handler *handler = NULL;
 	int result = 0;
 	int records_count = 0;
 	int error = 0;
 	struct backing_file_context *bfc = NULL;
+<<<<<<< HEAD
+=======
+	int nondata_block_count;
+>>>>>>> origin/android16-base
 
 	if (!df || !df->df_backing_file_context)
 		return -EFAULT;
@@ -1234,6 +2059,7 @@ int incfs_scan_metadata_chain(struct data_file *df)
 	if (!handler)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	/* No writing to the backing file while it's being scanned. */
 	error = mutex_lock_interruptible(&bfc->bc_mutex);
 	if (error)
@@ -1248,6 +2074,15 @@ int incfs_scan_metadata_chain(struct data_file *df)
 
 	pr_debug("incfs: Starting reading incfs-metadata records at offset %lld\n",
 		 handler->md_record_offset);
+=======
+	handler->md_record_offset = df->df_metadata_off;
+	handler->context = df;
+	handler->handle_blockmap = process_blockmap_md;
+	handler->handle_signature = process_file_signature_md;
+	handler->handle_status = process_status_md;
+	handler->handle_verity_signature = process_file_verity_signature_md;
+
+>>>>>>> origin/android16-base
 	while (handler->md_record_offset > 0) {
 		error = incfs_read_next_metadata_record(bfc, handler);
 		if (error) {
@@ -1259,6 +2094,7 @@ int incfs_scan_metadata_chain(struct data_file *df)
 		records_count++;
 	}
 	if (error) {
+<<<<<<< HEAD
 		pr_debug("incfs: Error %d after reading %d incfs-metadata records.\n",
 			 -error, records_count);
 		result = error;
@@ -1269,10 +2105,21 @@ int incfs_scan_metadata_chain(struct data_file *df)
 	}
 	mutex_unlock(&bfc->bc_mutex);
 
+=======
+		pr_warn("incfs: Error %d after reading %d incfs-metadata records.\n",
+			 -error, records_count);
+		result = error;
+	} else
+		result = records_count;
+
+	nondata_block_count = df->df_total_block_count -
+		df->df_data_block_count;
+>>>>>>> origin/android16-base
 	if (df->df_hash_tree) {
 		int hash_block_count = get_blocks_count_for_size(
 			df->df_hash_tree->hash_tree_area_size);
 
+<<<<<<< HEAD
 		if (df->df_data_block_count + hash_block_count !=
 		    df->df_total_block_count)
 			result = -EINVAL;
@@ -1280,6 +2127,22 @@ int incfs_scan_metadata_chain(struct data_file *df)
 		result = -EINVAL;
 
 out:
+=======
+		/*
+		 * Files that were created with a hash tree have the hash tree
+		 * included in the block map, i.e. nondata_block_count ==
+		 * hash_block_count.  Files whose hash tree was added by
+		 * FS_IOC_ENABLE_VERITY will still have the original block
+		 * count, i.e. nondata_block_count == 0.
+		 */
+		if (nondata_block_count != hash_block_count &&
+		    nondata_block_count != 0)
+			result = -EINVAL;
+	} else if (nondata_block_count != 0) {
+		result = -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	kfree(handler);
 	return result;
 }
@@ -1292,16 +2155,28 @@ bool incfs_fresh_pending_reads_exist(struct mount_info *mi, int last_number)
 {
 	bool result = false;
 
+<<<<<<< HEAD
 	mutex_lock(&mi->mi_pending_reads_mutex);
 	result = (mi->mi_last_pending_read_number > last_number) &&
 		 (mi->mi_pending_reads_count > 0);
 	mutex_unlock(&mi->mi_pending_reads_mutex);
+=======
+	spin_lock(&mi->pending_read_lock);
+	result = (mi->mi_last_pending_read_number > last_number) &&
+		(mi->mi_pending_reads_count > 0);
+	spin_unlock(&mi->pending_read_lock);
+>>>>>>> origin/android16-base
 	return result;
 }
 
 int incfs_collect_pending_reads(struct mount_info *mi, int sn_lowerbound,
 				struct incfs_pending_read_info *reads,
+<<<<<<< HEAD
 				int reads_size)
+=======
+				struct incfs_pending_read_info2 *reads2,
+				int reads_size, int *new_max_sn)
+>>>>>>> origin/android16-base
 {
 	int reported_reads = 0;
 	struct pending_read *entry = NULL;
@@ -1312,6 +2187,7 @@ int incfs_collect_pending_reads(struct mount_info *mi, int sn_lowerbound,
 	if (reads_size <= 0)
 		return 0;
 
+<<<<<<< HEAD
 	mutex_lock(&mi->mi_pending_reads_mutex);
 
 	if (mi->mi_last_pending_read_number <= sn_lowerbound
@@ -1327,14 +2203,50 @@ int incfs_collect_pending_reads(struct mount_info *mi, int sn_lowerbound,
 		reads[reported_reads].serial_number = entry->serial_number;
 		reads[reported_reads].timestamp_us = entry->timestamp_us;
 		/* reads[reported_reads].kind = INCFS_READ_KIND_PENDING; */
+=======
+	if (!incfs_fresh_pending_reads_exist(mi, sn_lowerbound))
+		return 0;
+
+	rcu_read_lock();
+
+	list_for_each_entry_rcu(entry, &mi->mi_reads_list_head, mi_reads_list) {
+		if (entry->serial_number <= sn_lowerbound)
+			continue;
+
+		if (reads) {
+			reads[reported_reads].file_id = entry->file_id;
+			reads[reported_reads].block_index = entry->block_index;
+			reads[reported_reads].serial_number =
+				entry->serial_number;
+			reads[reported_reads].timestamp_us =
+				entry->timestamp_us;
+		}
+
+		if (reads2) {
+			reads2[reported_reads].file_id = entry->file_id;
+			reads2[reported_reads].block_index = entry->block_index;
+			reads2[reported_reads].serial_number =
+				entry->serial_number;
+			reads2[reported_reads].timestamp_us =
+				entry->timestamp_us;
+			reads2[reported_reads].uid = entry->uid;
+		}
+
+		if (entry->serial_number > *new_max_sn)
+			*new_max_sn = entry->serial_number;
+>>>>>>> origin/android16-base
 
 		reported_reads++;
 		if (reported_reads >= reads_size)
 			break;
 	}
 
+<<<<<<< HEAD
 unlock:
 	mutex_unlock(&mi->mi_pending_reads_mutex);
+=======
+	rcu_read_unlock();
+>>>>>>> origin/android16-base
 
 	return reported_reads;
 }
@@ -1370,8 +2282,14 @@ int incfs_get_uncollected_logs_count(struct mount_info *mi,
 }
 
 int incfs_collect_logged_reads(struct mount_info *mi,
+<<<<<<< HEAD
 			       struct read_log_state *reader_state,
 			       struct incfs_pending_read_info *reads,
+=======
+			       struct read_log_state *state,
+			       struct incfs_pending_read_info *reads,
+			       struct incfs_pending_read_info2 *reads2,
+>>>>>>> origin/android16-base
 			       int reads_size)
 {
 	int dst_idx;
@@ -1382,15 +2300,24 @@ int incfs_collect_logged_reads(struct mount_info *mi,
 	head = &log->rl_head;
 	tail = &log->rl_tail;
 
+<<<<<<< HEAD
 	if (reader_state->generation_id != head->generation_id) {
 		pr_debug("read ptr is wrong generation: %u/%u",
 			 reader_state->generation_id, head->generation_id);
 
 		*reader_state = (struct read_log_state){
+=======
+	if (state->generation_id != head->generation_id) {
+		pr_debug("read ptr is wrong generation: %u/%u",
+			 state->generation_id, head->generation_id);
+
+		*state = (struct read_log_state){
+>>>>>>> origin/android16-base
 			.generation_id = head->generation_id,
 		};
 	}
 
+<<<<<<< HEAD
 	if (reader_state->current_record_no < tail->current_record_no) {
 		pr_debug("read ptr is behind, moving: %u/%u -> %u/%u\n",
 			 (u32)reader_state->next_offset,
@@ -1412,15 +2339,53 @@ int incfs_collect_logged_reads(struct mount_info *mi,
 			.serial_number = reader_state->current_record_no,
 			.timestamp_us = reader_state->base_record.absolute_ts_us
 		};
+=======
+	if (state->current_record_no < tail->current_record_no) {
+		pr_debug("read ptr is behind, moving: %u/%u -> %u/%u\n",
+			 (u32)state->next_offset,
+			 (u32)state->current_pass_no,
+			 (u32)tail->next_offset, (u32)tail->current_pass_no);
+
+		*state = *tail;
+	}
+
+	for (dst_idx = 0; dst_idx < reads_size; dst_idx++) {
+		if (state->current_record_no == head->current_record_no)
+			break;
+
+		log_read_one_record(log, state);
+
+		if (reads)
+			reads[dst_idx] = (struct incfs_pending_read_info) {
+				.file_id = state->base_record.file_id,
+				.block_index = state->base_record.block_index,
+				.serial_number = state->current_record_no,
+				.timestamp_us =
+					state->base_record.absolute_ts_us,
+			};
+
+		if (reads2)
+			reads2[dst_idx] = (struct incfs_pending_read_info2) {
+				.file_id = state->base_record.file_id,
+				.block_index = state->base_record.block_index,
+				.serial_number = state->current_record_no,
+				.timestamp_us =
+					state->base_record.absolute_ts_us,
+				.uid = state->base_record.uid,
+			};
+>>>>>>> origin/android16-base
 	}
 
 	spin_unlock(&log->rl_lock);
 	return dst_idx;
 }
 
+<<<<<<< HEAD
 bool incfs_equal_ranges(struct mem_range lhs, struct mem_range rhs)
 {
 	if (lhs.len != rhs.len)
 		return false;
 	return memcmp(lhs.data, rhs.data, lhs.len) == 0;
 }
+=======
+>>>>>>> origin/android16-base

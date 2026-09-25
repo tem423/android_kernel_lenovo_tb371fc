@@ -126,9 +126,15 @@ int led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trig)
 			flags);
 		cancel_work_sync(&led_cdev->set_brightness_work);
 		led_stop_software_blink(led_cdev);
+<<<<<<< HEAD
 		if (led_cdev->trigger->deactivate)
 			led_cdev->trigger->deactivate(led_cdev);
 		device_remove_groups(led_cdev->dev, led_cdev->trigger->groups);
+=======
+		device_remove_groups(led_cdev->dev, led_cdev->trigger->groups);
+		if (led_cdev->trigger->deactivate)
+			led_cdev->trigger->deactivate(led_cdev);
+>>>>>>> origin/android16-base
 		led_cdev->trigger = NULL;
 		led_cdev->trigger_data = NULL;
 		led_cdev->activated = false;
@@ -318,14 +324,25 @@ void led_trigger_event(struct led_trigger *trig,
 			enum led_brightness brightness)
 {
 	struct led_classdev *led_cdev;
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 
 	if (!trig)
 		return;
 
+<<<<<<< HEAD
 	read_lock(&trig->leddev_list_lock);
 	list_for_each_entry(led_cdev, &trig->led_cdevs, trig_list)
 		led_set_brightness(led_cdev, brightness);
 	read_unlock(&trig->leddev_list_lock);
+=======
+	read_lock_irqsave(&trig->leddev_list_lock, flags);
+	list_for_each_entry(led_cdev, &trig->led_cdevs, trig_list)
+		led_set_brightness(led_cdev, brightness);
+	read_unlock_irqrestore(&trig->leddev_list_lock, flags);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(led_trigger_event);
 
@@ -336,11 +353,19 @@ static void led_trigger_blink_setup(struct led_trigger *trig,
 			     int invert)
 {
 	struct led_classdev *led_cdev;
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 
 	if (!trig)
 		return;
 
+<<<<<<< HEAD
 	read_lock(&trig->leddev_list_lock);
+=======
+	read_lock_irqsave(&trig->leddev_list_lock, flags);
+>>>>>>> origin/android16-base
 	list_for_each_entry(led_cdev, &trig->led_cdevs, trig_list) {
 		if (oneshot)
 			led_blink_set_oneshot(led_cdev, delay_on, delay_off,
@@ -348,7 +373,11 @@ static void led_trigger_blink_setup(struct led_trigger *trig,
 		else
 			led_blink_set(led_cdev, delay_on, delay_off);
 	}
+<<<<<<< HEAD
 	read_unlock(&trig->leddev_list_lock);
+=======
+	read_unlock_irqrestore(&trig->leddev_list_lock, flags);
+>>>>>>> origin/android16-base
 }
 
 void led_trigger_blink(struct led_trigger *trig,

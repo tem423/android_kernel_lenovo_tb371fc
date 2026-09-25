@@ -325,7 +325,11 @@ struct etmv4_save_state {
 	u64	trcacvr[ETM_MAX_SINGLE_ADDR_CMP];
 	u64	trcacatr[ETM_MAX_SINGLE_ADDR_CMP];
 	u64	trccidcvr[ETMv4_MAX_CTXID_CMP];
+<<<<<<< HEAD
 	u32	trcvmidcvr[ETM_MAX_VMID_CMP];
+=======
+	u64	trcvmidcvr[ETM_MAX_VMID_CMP];
+>>>>>>> origin/android16-base
 	u32	trccidcctlr0;
 	u32	trccidcctlr1;
 	u32	trcvmidcctlr0;
@@ -426,7 +430,11 @@ struct etmv4_drvdata {
 	u8				ctxid_size;
 	u8				vmid_size;
 	u8				ccsize;
+<<<<<<< HEAD
 	u8				ccitmin;
+=======
+	u16				ccitmin;
+>>>>>>> origin/android16-base
 	u8				s_ex_level;
 	u8				ns_ex_level;
 	u8				q_support;

@@ -370,6 +370,7 @@ static void __packet_set_status(struct packet_sock *po, void *frame, int status)
 {
 	union tpacket_uhdr h;
 
+<<<<<<< HEAD
 	h.raw = frame;
 	switch (po->tp_version) {
 	case TPACKET_V1:
@@ -382,6 +383,22 @@ static void __packet_set_status(struct packet_sock *po, void *frame, int status)
 		break;
 	case TPACKET_V3:
 		h.h3->tp_status = status;
+=======
+	/* WRITE_ONCE() are paired with READ_ONCE() in __packet_get_status */
+
+	h.raw = frame;
+	switch (po->tp_version) {
+	case TPACKET_V1:
+		WRITE_ONCE(h.h1->tp_status, status);
+		flush_dcache_page(pgv_to_page(&h.h1->tp_status));
+		break;
+	case TPACKET_V2:
+		WRITE_ONCE(h.h2->tp_status, status);
+		flush_dcache_page(pgv_to_page(&h.h2->tp_status));
+		break;
+	case TPACKET_V3:
+		WRITE_ONCE(h.h3->tp_status, status);
+>>>>>>> origin/android16-base
 		flush_dcache_page(pgv_to_page(&h.h3->tp_status));
 		break;
 	default:
@@ -398,10 +415,16 @@ static int __packet_get_status(struct packet_sock *po, void *frame)
 
 	smp_rmb();
 
+<<<<<<< HEAD
+=======
+	/* READ_ONCE() are paired with WRITE_ONCE() in __packet_set_status */
+
+>>>>>>> origin/android16-base
 	h.raw = frame;
 	switch (po->tp_version) {
 	case TPACKET_V1:
 		flush_dcache_page(pgv_to_page(&h.h1->tp_status));
+<<<<<<< HEAD
 		return h.h1->tp_status;
 	case TPACKET_V2:
 		flush_dcache_page(pgv_to_page(&h.h2->tp_status));
@@ -409,6 +432,15 @@ static int __packet_get_status(struct packet_sock *po, void *frame)
 	case TPACKET_V3:
 		flush_dcache_page(pgv_to_page(&h.h3->tp_status));
 		return h.h3->tp_status;
+=======
+		return READ_ONCE(h.h1->tp_status);
+	case TPACKET_V2:
+		flush_dcache_page(pgv_to_page(&h.h2->tp_status));
+		return READ_ONCE(h.h2->tp_status);
+	case TPACKET_V3:
+		flush_dcache_page(pgv_to_page(&h.h3->tp_status));
+		return READ_ONCE(h.h3->tp_status);
+>>>>>>> origin/android16-base
 	default:
 		WARN(1, "TPACKET version not supported.\n");
 		BUG();
@@ -495,6 +527,64 @@ static void *packet_current_frame(struct packet_sock *po,
 	return packet_lookup_frame(po, rb, rb->head, status);
 }
 
+<<<<<<< HEAD
+=======
+static u16 vlan_get_tci(struct sk_buff *skb, struct net_device *dev)
+{
+	u8 *skb_orig_data = skb->data;
+	int skb_orig_len = skb->len;
+	struct vlan_hdr vhdr, *vh;
+	unsigned int header_len;
+
+	if (!dev)
+		return 0;
+
+	/* In the SOCK_DGRAM scenario, skb data starts at the network
+	 * protocol, which is after the VLAN headers. The outer VLAN
+	 * header is at the hard_header_len offset in non-variable
+	 * length link layer headers. If it's a VLAN device, the
+	 * min_header_len should be used to exclude the VLAN header
+	 * size.
+	 */
+	if (dev->min_header_len == dev->hard_header_len)
+		header_len = dev->hard_header_len;
+	else if (is_vlan_dev(dev))
+		header_len = dev->min_header_len;
+	else
+		return 0;
+
+	skb_push(skb, skb->data - skb_mac_header(skb));
+	vh = skb_header_pointer(skb, header_len, sizeof(vhdr), &vhdr);
+	if (skb_orig_data != skb->data) {
+		skb->data = skb_orig_data;
+		skb->len = skb_orig_len;
+	}
+	if (unlikely(!vh))
+		return 0;
+
+	return ntohs(vh->h_vlan_TCI);
+}
+
+static __be16 vlan_get_protocol_dgram(struct sk_buff *skb)
+{
+	__be16 proto = skb->protocol;
+
+	if (unlikely(eth_type_vlan(proto))) {
+		u8 *skb_orig_data = skb->data;
+		int skb_orig_len = skb->len;
+
+		skb_push(skb, skb->data - skb_mac_header(skb));
+		proto = __vlan_get_protocol(skb, proto, NULL);
+		if (skb_orig_data != skb->data) {
+			skb->data = skb_orig_data;
+			skb->len = skb_orig_len;
+		}
+	}
+
+	return proto;
+}
+
+>>>>>>> origin/android16-base
 static void prb_del_retire_blk_timer(struct tpacket_kbdq_core *pkc)
 {
 	del_timer_sync(&pkc->retire_blk_timer);
@@ -970,10 +1060,22 @@ static void prb_clear_rxhash(struct tpacket_kbdq_core *pkc,
 static void prb_fill_vlan_info(struct tpacket_kbdq_core *pkc,
 			struct tpacket3_hdr *ppd)
 {
+<<<<<<< HEAD
+=======
+	struct packet_sock *po = container_of(pkc, struct packet_sock, rx_ring.prb_bdqc);
+
+>>>>>>> origin/android16-base
 	if (skb_vlan_tag_present(pkc->skb)) {
 		ppd->hv1.tp_vlan_tci = skb_vlan_tag_get(pkc->skb);
 		ppd->hv1.tp_vlan_tpid = ntohs(pkc->skb->vlan_proto);
 		ppd->tp_status = TP_STATUS_VLAN_VALID | TP_STATUS_VLAN_TPID_VALID;
+<<<<<<< HEAD
+=======
+	} else if (unlikely(po->sk.sk_type == SOCK_DGRAM && eth_type_vlan(pkc->skb->protocol))) {
+		ppd->hv1.tp_vlan_tci = vlan_get_tci(pkc->skb, pkc->skb->dev);
+		ppd->hv1.tp_vlan_tpid = ntohs(pkc->skb->protocol);
+		ppd->tp_status = TP_STATUS_VLAN_VALID | TP_STATUS_VLAN_TPID_VALID;
+>>>>>>> origin/android16-base
 	} else {
 		ppd->hv1.tp_vlan_tci = 0;
 		ppd->hv1.tp_vlan_tpid = 0;
@@ -1716,6 +1818,10 @@ static int fanout_add(struct sock *sk, u16 id, u16 type_flags)
 		match->prot_hook.dev = po->prot_hook.dev;
 		match->prot_hook.func = packet_rcv_fanout;
 		match->prot_hook.af_packet_priv = match;
+<<<<<<< HEAD
+=======
+		match->prot_hook.af_packet_net = read_pnet(&match->net);
+>>>>>>> origin/android16-base
 		match->prot_hook.id_match = match_fanout_group;
 		list_add(&match->list, &fanout_list);
 	}
@@ -1729,7 +1835,14 @@ static int fanout_add(struct sock *sk, u16 id, u16 type_flags)
 		err = -ENOSPC;
 		if (refcount_read(&match->sk_ref) < PACKET_FANOUT_MAX) {
 			__dev_remove_pack(&po->prot_hook);
+<<<<<<< HEAD
 			po->fanout = match;
+=======
+
+			/* Paired with packet_setsockopt(PACKET_FANOUT_DATA) */
+			WRITE_ONCE(po->fanout, match);
+
+>>>>>>> origin/android16-base
 			po->rollover = rollover;
 			rollover = NULL;
 			refcount_set(&match->sk_ref, refcount_read(&match->sk_ref) + 1);
@@ -1842,7 +1955,11 @@ static int packet_rcv_spkt(struct sk_buff *skb, struct net_device *dev,
 	 */
 
 	spkt->spkt_family = dev->type;
+<<<<<<< HEAD
 	strlcpy(spkt->spkt_device, dev->name, sizeof(spkt->spkt_device));
+=======
+	strscpy(spkt->spkt_device, dev->name, sizeof(spkt->spkt_device));
+>>>>>>> origin/android16-base
 	spkt->spkt_protocol = skb->protocol;
 
 	/*
@@ -1951,7 +2068,11 @@ retry:
 		goto retry;
 	}
 
+<<<<<<< HEAD
 	if (!dev_validate_header(dev, skb->data, len)) {
+=======
+	if (!dev_validate_header(dev, skb->data, len) || !skb->len) {
+>>>>>>> origin/android16-base
 		err = -EINVAL;
 		goto out_unlock;
 	}
@@ -1974,7 +2095,11 @@ retry:
 	skb->mark = sk->sk_mark;
 	skb->tstamp = sockc.transmit_time;
 
+<<<<<<< HEAD
 	sock_tx_timestamp(sk, sockc.tsflags, &skb_shinfo(skb)->tx_flags);
+=======
+	skb_setup_tx_timestamp(skb, sockc.tsflags);
+>>>>>>> origin/android16-base
 
 	if (unlikely(extra_len == 4))
 		skb->no_fcs = 1;
@@ -2101,7 +2226,11 @@ static int packet_rcv(struct sk_buff *skb, struct net_device *dev,
 	sll = &PACKET_SKB_CB(skb)->sa.ll;
 	sll->sll_hatype = dev->type;
 	sll->sll_pkttype = skb->pkt_type;
+<<<<<<< HEAD
 	if (unlikely(po->origdev))
+=======
+	if (unlikely(packet_sock_flag(po, PACKET_SOCK_ORIGDEV)))
+>>>>>>> origin/android16-base
 		sll->sll_ifindex = orig_dev->ifindex;
 	else
 		sll->sll_ifindex = dev->ifindex;
@@ -2205,8 +2334,12 @@ static int tpacket_rcv(struct sk_buff *skb, struct net_device *dev,
 	if (skb->ip_summed == CHECKSUM_PARTIAL)
 		status |= TP_STATUS_CSUMNOTREADY;
 	else if (skb->pkt_type != PACKET_OUTGOING &&
+<<<<<<< HEAD
 		 (skb->ip_summed == CHECKSUM_COMPLETE ||
 		  skb_csum_unnecessary(skb)))
+=======
+		 skb_csum_unnecessary(skb))
+>>>>>>> origin/android16-base
 		status |= TP_STATUS_CSUM_VALID;
 
 	if (snaplen > res)
@@ -2242,8 +2375,16 @@ static int tpacket_rcv(struct sk_buff *skb, struct net_device *dev,
 					copy_skb = skb_get(skb);
 					skb_head = skb->data;
 				}
+<<<<<<< HEAD
 				if (copy_skb)
 					skb_set_owner_r(copy_skb, sk);
+=======
+				if (copy_skb) {
+					memset(&PACKET_SKB_CB(copy_skb)->sa.ll, 0,
+					       sizeof(PACKET_SKB_CB(copy_skb)->sa.ll));
+					skb_set_owner_r(copy_skb, sk);
+				}
+>>>>>>> origin/android16-base
 			}
 			snaplen = po->rx_ring.frame_size - macoff;
 			if ((int)snaplen < 0) {
@@ -2334,6 +2475,13 @@ static int tpacket_rcv(struct sk_buff *skb, struct net_device *dev,
 			h.h2->tp_vlan_tci = skb_vlan_tag_get(skb);
 			h.h2->tp_vlan_tpid = ntohs(skb->vlan_proto);
 			status |= TP_STATUS_VLAN_VALID | TP_STATUS_VLAN_TPID_VALID;
+<<<<<<< HEAD
+=======
+		} else if (unlikely(sk->sk_type == SOCK_DGRAM && eth_type_vlan(skb->protocol))) {
+			h.h2->tp_vlan_tci = vlan_get_tci(skb, skb->dev);
+			h.h2->tp_vlan_tpid = ntohs(skb->protocol);
+			status |= TP_STATUS_VLAN_VALID | TP_STATUS_VLAN_TPID_VALID;
+>>>>>>> origin/android16-base
 		} else {
 			h.h2->tp_vlan_tci = 0;
 			h.h2->tp_vlan_tpid = 0;
@@ -2363,9 +2511,16 @@ static int tpacket_rcv(struct sk_buff *skb, struct net_device *dev,
 	sll->sll_halen = dev_parse_header(skb, sll->sll_addr);
 	sll->sll_family = AF_PACKET;
 	sll->sll_hatype = dev->type;
+<<<<<<< HEAD
 	sll->sll_protocol = skb->protocol;
 	sll->sll_pkttype = skb->pkt_type;
 	if (unlikely(po->origdev))
+=======
+	sll->sll_protocol = (sk->sk_type == SOCK_DGRAM) ?
+		vlan_get_protocol_dgram(skb) : skb->protocol;
+	sll->sll_pkttype = skb->pkt_type;
+	if (unlikely(packet_sock_flag(po, PACKET_SOCK_ORIGDEV)))
+>>>>>>> origin/android16-base
 		sll->sll_ifindex = orig_dev->ifindex;
 	else
 		sll->sll_ifindex = dev->ifindex;
@@ -2431,8 +2586,12 @@ static void tpacket_destruct_skb(struct sk_buff *skb)
 		ts = __packet_set_timestamp(po, ph, skb);
 		__packet_set_status(po, ph, TP_STATUS_AVAILABLE | ts);
 
+<<<<<<< HEAD
 		if (!packet_read_pending(&po->tx_ring))
 			complete(&po->skb_completion);
+=======
+		complete(&po->skb_completion);
+>>>>>>> origin/android16-base
 	}
 
 	sock_wfree(skb);
@@ -2494,7 +2653,11 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
 	skb->priority = po->sk.sk_priority;
 	skb->mark = po->sk.sk_mark;
 	skb->tstamp = sockc->transmit_time;
+<<<<<<< HEAD
 	sock_tx_timestamp(&po->sk, sockc->tsflags, &skb_shinfo(skb)->tx_flags);
+=======
+	skb_setup_tx_timestamp(skb, sockc->tsflags);
+>>>>>>> origin/android16-base
 	skb_zcopy_set_nouarg(skb, ph.raw);
 
 	skb_reserve(skb, hlen);
@@ -2656,7 +2819,11 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
 	}
 	if (likely(saddr == NULL)) {
 		dev	= packet_cached_dev_get(po);
+<<<<<<< HEAD
 		proto	= po->num;
+=======
+		proto	= READ_ONCE(po->num);
+>>>>>>> origin/android16-base
 	} else {
 		err = -EINVAL;
 		if (msg->msg_namelen < sizeof(struct sockaddr_ll))
@@ -2784,8 +2951,14 @@ tpacket_error:
 
 		status = TP_STATUS_SEND_REQUEST;
 		err = po->xmit(skb);
+<<<<<<< HEAD
 		if (unlikely(err > 0)) {
 			err = net_xmit_errno(err);
+=======
+		if (unlikely(err != 0)) {
+			if (err > 0)
+				err = net_xmit_errno(err);
+>>>>>>> origin/android16-base
 			if (err && __packet_get_status(po, ph) ==
 				   TP_STATUS_AVAILABLE) {
 				/* skb was destructed already */
@@ -2869,7 +3042,11 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 
 	if (likely(saddr == NULL)) {
 		dev	= packet_cached_dev_get(po);
+<<<<<<< HEAD
 		proto	= po->num;
+=======
+		proto	= READ_ONCE(po->num);
+>>>>>>> origin/android16-base
 	} else {
 		err = -EINVAL;
 		if (msg->msg_namelen < sizeof(struct sockaddr_ll))
@@ -2958,7 +3135,11 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 		goto out_free;
 	}
 
+<<<<<<< HEAD
 	sock_tx_timestamp(sk, sockc.tsflags, &skb_shinfo(skb)->tx_flags);
+=======
+	skb_setup_tx_timestamp(skb, sockc.tsflags);
+>>>>>>> origin/android16-base
 
 	if (!vnet_hdr.gso_type && (len > dev->mtu + reserve + extra_len) &&
 	    !packet_extra_vlan_len_allowed(dev, skb)) {
@@ -2986,8 +3167,17 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 		skb->no_fcs = 1;
 
 	err = po->xmit(skb);
+<<<<<<< HEAD
 	if (err > 0 && (err = net_xmit_errno(err)) != 0)
 		goto out_unlock;
+=======
+	if (unlikely(err != 0)) {
+		if (err > 0)
+			err = net_xmit_errno(err);
+		if (err)
+			goto out_unlock;
+	}
+>>>>>>> origin/android16-base
 
 	dev_put(dev);
 
@@ -3106,6 +3296,12 @@ static int packet_do_bind(struct sock *sk, const char *name, int ifindex,
 
 	lock_sock(sk);
 	spin_lock(&po->bind_lock);
+<<<<<<< HEAD
+=======
+	if (!proto)
+		proto = po->num;
+
+>>>>>>> origin/android16-base
 	rcu_read_lock();
 
 	if (po->fanout) {
@@ -3141,7 +3337,11 @@ static int packet_do_bind(struct sock *sk, const char *name, int ifindex,
 			/* prevents packet_notifier() from calling
 			 * register_prot_hook()
 			 */
+<<<<<<< HEAD
 			po->num = 0;
+=======
+			WRITE_ONCE(po->num, 0);
+>>>>>>> origin/android16-base
 			__unregister_prot_hook(sk, true);
 			rcu_read_lock();
 			dev_curr = po->prot_hook.dev;
@@ -3151,17 +3351,29 @@ static int packet_do_bind(struct sock *sk, const char *name, int ifindex,
 		}
 
 		BUG_ON(po->running);
+<<<<<<< HEAD
 		po->num = proto;
+=======
+		WRITE_ONCE(po->num, proto);
+>>>>>>> origin/android16-base
 		po->prot_hook.type = proto;
 
 		if (unlikely(unlisted)) {
 			dev_put(dev);
 			po->prot_hook.dev = NULL;
+<<<<<<< HEAD
 			po->ifindex = -1;
 			packet_cached_dev_reset(po);
 		} else {
 			po->prot_hook.dev = dev;
 			po->ifindex = dev ? dev->ifindex : 0;
+=======
+			WRITE_ONCE(po->ifindex, -1);
+			packet_cached_dev_reset(po);
+		} else {
+			po->prot_hook.dev = dev;
+			WRITE_ONCE(po->ifindex, dev ? dev->ifindex : 0);
+>>>>>>> origin/android16-base
 			packet_cached_dev_assign(po, dev);
 		}
 	}
@@ -3208,7 +3420,11 @@ static int packet_bind_spkt(struct socket *sock, struct sockaddr *uaddr,
 	memcpy(name, uaddr->sa_data, sizeof(uaddr->sa_data));
 	name[sizeof(uaddr->sa_data)] = 0;
 
+<<<<<<< HEAD
 	return packet_do_bind(sk, name, 0, pkt_sk(sk)->num);
+=======
+	return packet_do_bind(sk, name, 0, 0);
+>>>>>>> origin/android16-base
 }
 
 static int packet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
@@ -3225,8 +3441,12 @@ static int packet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len
 	if (sll->sll_family != AF_PACKET)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	return packet_do_bind(sk, NULL, sll->sll_ifindex,
 			      sll->sll_protocol ? : pkt_sk(sk)->num);
+=======
+	return packet_do_bind(sk, NULL, sll->sll_ifindex, sll->sll_protocol);
+>>>>>>> origin/android16-base
 }
 
 static struct proto packet_proto = {
@@ -3294,6 +3514,10 @@ static int packet_create(struct net *net, struct socket *sock, int protocol,
 		po->prot_hook.func = packet_rcv_spkt;
 
 	po->prot_hook.af_packet_priv = sk;
+<<<<<<< HEAD
+=======
+	po->prot_hook.af_packet_net = sock_net(sk);
+>>>>>>> origin/android16-base
 
 	if (proto) {
 		po->prot_hook.type = proto;
@@ -3395,12 +3619,22 @@ static int packet_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
 		/* Original length was stored in sockaddr_ll fields */
 		origlen = PACKET_SKB_CB(skb)->sa.origlen;
 		sll->sll_family = AF_PACKET;
+<<<<<<< HEAD
 		sll->sll_protocol = skb->protocol;
+=======
+		sll->sll_protocol = (sock->type == SOCK_DGRAM) ?
+			vlan_get_protocol_dgram(skb) : skb->protocol;
+>>>>>>> origin/android16-base
 	}
 
 	sock_recv_ts_and_drops(msg, sk, skb);
 
 	if (msg->msg_name) {
+<<<<<<< HEAD
+=======
+		const size_t max_len = min(sizeof(skb->cb),
+					   sizeof(struct sockaddr_storage));
+>>>>>>> origin/android16-base
 		int copy_len;
 
 		/* If the address length field is there to be filled
@@ -3423,18 +3657,33 @@ static int packet_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
 				msg->msg_namelen = sizeof(struct sockaddr_ll);
 			}
 		}
+<<<<<<< HEAD
 		memcpy(msg->msg_name, &PACKET_SKB_CB(skb)->sa, copy_len);
 	}
 
 	if (pkt_sk(sk)->auxdata) {
+=======
+		if (WARN_ON_ONCE(copy_len > max_len)) {
+			copy_len = max_len;
+			msg->msg_namelen = copy_len;
+		}
+		memcpy(msg->msg_name, &PACKET_SKB_CB(skb)->sa, copy_len);
+	}
+
+	if (packet_sock_flag(pkt_sk(sk), PACKET_SOCK_AUXDATA)) {
+>>>>>>> origin/android16-base
 		struct tpacket_auxdata aux;
 
 		aux.tp_status = TP_STATUS_USER;
 		if (skb->ip_summed == CHECKSUM_PARTIAL)
 			aux.tp_status |= TP_STATUS_CSUMNOTREADY;
 		else if (skb->pkt_type != PACKET_OUTGOING &&
+<<<<<<< HEAD
 			 (skb->ip_summed == CHECKSUM_COMPLETE ||
 			  skb_csum_unnecessary(skb)))
+=======
+			 skb_csum_unnecessary(skb))
+>>>>>>> origin/android16-base
 			aux.tp_status |= TP_STATUS_CSUM_VALID;
 
 		aux.tp_len = origlen;
@@ -3445,6 +3694,24 @@ static int packet_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
 			aux.tp_vlan_tci = skb_vlan_tag_get(skb);
 			aux.tp_vlan_tpid = ntohs(skb->vlan_proto);
 			aux.tp_status |= TP_STATUS_VLAN_VALID | TP_STATUS_VLAN_TPID_VALID;
+<<<<<<< HEAD
+=======
+		} else if (unlikely(sock->type == SOCK_DGRAM && eth_type_vlan(skb->protocol))) {
+			struct sockaddr_ll *sll = &PACKET_SKB_CB(skb)->sa.ll;
+			struct net_device *dev;
+
+			rcu_read_lock();
+			dev = dev_get_by_index_rcu(sock_net(sk), sll->sll_ifindex);
+			if (dev) {
+				aux.tp_vlan_tci = vlan_get_tci(skb, dev);
+				aux.tp_vlan_tpid = ntohs(skb->protocol);
+				aux.tp_status |= TP_STATUS_VLAN_VALID | TP_STATUS_VLAN_TPID_VALID;
+			} else {
+				aux.tp_vlan_tci = 0;
+				aux.tp_vlan_tpid = 0;
+			}
+			rcu_read_unlock();
+>>>>>>> origin/android16-base
 		} else {
 			aux.tp_vlan_tci = 0;
 			aux.tp_vlan_tpid = 0;
@@ -3476,9 +3743,15 @@ static int packet_getname_spkt(struct socket *sock, struct sockaddr *uaddr,
 	uaddr->sa_family = AF_PACKET;
 	memset(uaddr->sa_data, 0, sizeof(uaddr->sa_data));
 	rcu_read_lock();
+<<<<<<< HEAD
 	dev = dev_get_by_index_rcu(sock_net(sk), pkt_sk(sk)->ifindex);
 	if (dev)
 		strlcpy(uaddr->sa_data, dev->name, sizeof(uaddr->sa_data));
+=======
+	dev = dev_get_by_index_rcu(sock_net(sk), READ_ONCE(pkt_sk(sk)->ifindex));
+	if (dev)
+		strscpy(uaddr->sa_data, dev->name, sizeof(uaddr->sa_data));
+>>>>>>> origin/android16-base
 	rcu_read_unlock();
 
 	return sizeof(*uaddr);
@@ -3491,16 +3764,30 @@ static int packet_getname(struct socket *sock, struct sockaddr *uaddr,
 	struct sock *sk = sock->sk;
 	struct packet_sock *po = pkt_sk(sk);
 	DECLARE_SOCKADDR(struct sockaddr_ll *, sll, uaddr);
+<<<<<<< HEAD
+=======
+	int ifindex;
+>>>>>>> origin/android16-base
 
 	if (peer)
 		return -EOPNOTSUPP;
 
+<<<<<<< HEAD
 	sll->sll_family = AF_PACKET;
 	sll->sll_ifindex = po->ifindex;
 	sll->sll_protocol = po->num;
 	sll->sll_pkttype = 0;
 	rcu_read_lock();
 	dev = dev_get_by_index_rcu(sock_net(sk), po->ifindex);
+=======
+	ifindex = READ_ONCE(po->ifindex);
+	sll->sll_family = AF_PACKET;
+	sll->sll_ifindex = ifindex;
+	sll->sll_protocol = READ_ONCE(po->num);
+	sll->sll_pkttype = 0;
+	rcu_read_lock();
+	dev = dev_get_by_index_rcu(sock_net(sk), ifindex);
+>>>>>>> origin/android16-base
 	if (dev) {
 		sll->sll_hatype = dev->type;
 		sll->sll_halen = dev->addr_len;
@@ -3808,9 +4095,13 @@ packet_setsockopt(struct socket *sock, int level, int optname, char __user *optv
 		if (copy_from_user(&val, optval, sizeof(val)))
 			return -EFAULT;
 
+<<<<<<< HEAD
 		lock_sock(sk);
 		po->auxdata = !!val;
 		release_sock(sk);
+=======
+		packet_sock_flag_set(po, PACKET_SOCK_AUXDATA, val);
+>>>>>>> origin/android16-base
 		return 0;
 	}
 	case PACKET_ORIGDEV:
@@ -3822,9 +4113,13 @@ packet_setsockopt(struct socket *sock, int level, int optname, char __user *optv
 		if (copy_from_user(&val, optval, sizeof(val)))
 			return -EFAULT;
 
+<<<<<<< HEAD
 		lock_sock(sk);
 		po->origdev = !!val;
 		release_sock(sk);
+=======
+		packet_sock_flag_set(po, PACKET_SOCK_ORIGDEV, val);
+>>>>>>> origin/android16-base
 		return 0;
 	}
 	case PACKET_VNET_HDR:
@@ -3873,7 +4168,12 @@ packet_setsockopt(struct socket *sock, int level, int optname, char __user *optv
 	}
 	case PACKET_FANOUT_DATA:
 	{
+<<<<<<< HEAD
 		if (!po->fanout)
+=======
+		/* Paired with the WRITE_ONCE() in fanout_add() */
+		if (!READ_ONCE(po->fanout))
+>>>>>>> origin/android16-base
 			return -EINVAL;
 
 		return fanout_set_data(po, optval, optlen);
@@ -3953,10 +4253,17 @@ static int packet_getsockopt(struct socket *sock, int level, int optname,
 
 		break;
 	case PACKET_AUXDATA:
+<<<<<<< HEAD
 		val = po->auxdata;
 		break;
 	case PACKET_ORIGDEV:
 		val = po->origdev;
+=======
+		val = packet_sock_flag(po, PACKET_SOCK_AUXDATA);
+		break;
+	case PACKET_ORIGDEV:
+		val = packet_sock_flag(po, PACKET_SOCK_ORIGDEV);
+>>>>>>> origin/android16-base
 		break;
 	case PACKET_VNET_HDR:
 		val = po->has_vnet_hdr;
@@ -4079,7 +4386,11 @@ static int packet_notifier(struct notifier_block *this,
 				}
 				if (msg == NETDEV_UNREGISTER) {
 					packet_cached_dev_reset(po);
+<<<<<<< HEAD
 					po->ifindex = -1;
+=======
+					WRITE_ONCE(po->ifindex, -1);
+>>>>>>> origin/android16-base
 					if (po->prot_hook.dev)
 						dev_put(po->prot_hook.dev);
 					po->prot_hook.dev = NULL;
@@ -4192,7 +4503,11 @@ static void packet_mm_open(struct vm_area_struct *vma)
 	struct sock *sk = sock->sk;
 
 	if (sk)
+<<<<<<< HEAD
 		atomic_inc(&pkt_sk(sk)->mapped);
+=======
+		atomic_long_inc(&pkt_sk(sk)->mapped);
+>>>>>>> origin/android16-base
 }
 
 static void packet_mm_close(struct vm_area_struct *vma)
@@ -4202,7 +4517,11 @@ static void packet_mm_close(struct vm_area_struct *vma)
 	struct sock *sk = sock->sk;
 
 	if (sk)
+<<<<<<< HEAD
 		atomic_dec(&pkt_sk(sk)->mapped);
+=======
+		atomic_long_dec(&pkt_sk(sk)->mapped);
+>>>>>>> origin/android16-base
 }
 
 static const struct vm_operations_struct packet_mmap_ops = {
@@ -4297,7 +4616,11 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 
 	err = -EBUSY;
 	if (!closing) {
+<<<<<<< HEAD
 		if (atomic_read(&po->mapped))
+=======
+		if (atomic_long_read(&po->mapped))
+>>>>>>> origin/android16-base
 			goto out;
 		if (packet_read_pending(rb))
 			goto out;
@@ -4391,7 +4714,11 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 	was_running = po->running;
 	num = po->num;
 	if (was_running) {
+<<<<<<< HEAD
 		po->num = 0;
+=======
+		WRITE_ONCE(po->num, 0);
+>>>>>>> origin/android16-base
 		__unregister_prot_hook(sk, false);
 	}
 	spin_unlock(&po->bind_lock);
@@ -4400,7 +4727,11 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 
 	err = -EBUSY;
 	mutex_lock(&po->pg_vec_lock);
+<<<<<<< HEAD
 	if (closing || atomic_read(&po->mapped) == 0) {
+=======
+	if (closing || atomic_long_read(&po->mapped) == 0) {
+>>>>>>> origin/android16-base
 		err = 0;
 		spin_lock_bh(&rb_queue->lock);
 		swap(rb->pg_vec, pg_vec);
@@ -4418,15 +4749,25 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 		po->prot_hook.func = (po->rx_ring.pg_vec) ?
 						tpacket_rcv : packet_rcv;
 		skb_queue_purge(rb_queue);
+<<<<<<< HEAD
 		if (atomic_read(&po->mapped))
 			pr_err("packet_mmap: vma is busy: %d\n",
 			       atomic_read(&po->mapped));
+=======
+		if (atomic_long_read(&po->mapped))
+			pr_err("packet_mmap: vma is busy: %ld\n",
+			       atomic_long_read(&po->mapped));
+>>>>>>> origin/android16-base
 	}
 	mutex_unlock(&po->pg_vec_lock);
 
 	spin_lock(&po->bind_lock);
 	if (was_running) {
+<<<<<<< HEAD
 		po->num = num;
+=======
+		WRITE_ONCE(po->num, num);
+>>>>>>> origin/android16-base
 		register_prot_hook(sk);
 	}
 	spin_unlock(&po->bind_lock);
@@ -4498,7 +4839,11 @@ static int packet_mmap(struct file *file, struct socket *sock,
 		}
 	}
 
+<<<<<<< HEAD
 	atomic_inc(&po->mapped);
+=======
+	atomic_long_inc(&po->mapped);
+>>>>>>> origin/android16-base
 	vma->vm_ops = &packet_mmap_ops;
 	err = 0;
 
@@ -4598,8 +4943,13 @@ static int packet_seq_show(struct seq_file *seq, void *v)
 			   s,
 			   refcount_read(&s->sk_refcnt),
 			   s->sk_type,
+<<<<<<< HEAD
 			   ntohs(po->num),
 			   po->ifindex,
+=======
+			   ntohs(READ_ONCE(po->num)),
+			   READ_ONCE(po->ifindex),
+>>>>>>> origin/android16-base
 			   po->running,
 			   atomic_read(&s->sk_rmem_alloc),
 			   from_kuid_munged(seq_user_ns(seq), sock_i_uid(s)),

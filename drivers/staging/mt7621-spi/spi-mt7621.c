@@ -452,9 +452,16 @@ static int mt7621_spi_probe(struct platform_device *pdev)
 	if (status)
 		return status;
 
+<<<<<<< HEAD
 	master = spi_alloc_master(&pdev->dev, sizeof(*rs));
 	if (master == NULL) {
 		dev_info(&pdev->dev, "master allocation failed\n");
+=======
+	master = devm_spi_alloc_master(&pdev->dev, sizeof(*rs));
+	if (master == NULL) {
+		dev_info(&pdev->dev, "master allocation failed\n");
+		clk_disable_unprepare(clk);
+>>>>>>> origin/android16-base
 		return -ENOMEM;
 	}
 
@@ -480,12 +487,24 @@ static int mt7621_spi_probe(struct platform_device *pdev)
 	ret = device_reset(&pdev->dev);
 	if (ret) {
 		dev_err(&pdev->dev, "SPI reset failed!\n");
+<<<<<<< HEAD
+=======
+		clk_disable_unprepare(clk);
+>>>>>>> origin/android16-base
 		return ret;
 	}
 
 	mt7621_spi_reset(rs, 0);
 
+<<<<<<< HEAD
 	return spi_register_master(master);
+=======
+	ret = spi_register_master(master);
+	if (ret)
+		clk_disable_unprepare(clk);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int mt7621_spi_remove(struct platform_device *pdev)
@@ -496,8 +515,13 @@ static int mt7621_spi_remove(struct platform_device *pdev)
 	master = dev_get_drvdata(&pdev->dev);
 	rs = spi_master_get_devdata(master);
 
+<<<<<<< HEAD
 	clk_disable(rs->clk);
 	spi_unregister_master(master);
+=======
+	spi_unregister_master(master);
+	clk_disable_unprepare(rs->clk);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

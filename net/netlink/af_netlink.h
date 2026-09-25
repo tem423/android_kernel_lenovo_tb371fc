@@ -4,7 +4,10 @@
 
 #include <linux/rhashtable.h>
 #include <linux/atomic.h>
+<<<<<<< HEAD
 #include <linux/workqueue.h>
+=======
+>>>>>>> origin/android16-base
 #include <net/sock.h>
 
 /* flags */
@@ -45,7 +48,10 @@ struct netlink_sock {
 
 	struct rhash_head	node;
 	struct rcu_head		rcu;
+<<<<<<< HEAD
 	struct work_struct	work;
+=======
+>>>>>>> origin/android16-base
 };
 
 static inline struct netlink_sock *nlk_sk(struct sock *sk)

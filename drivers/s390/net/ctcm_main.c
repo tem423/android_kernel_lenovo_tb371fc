@@ -867,6 +867,7 @@ done:
 /**
  * Start transmission of a packet.
  * Called from generic network device layer.
+<<<<<<< HEAD
  *
  *  skb		Pointer to buffer containing the packet.
  *  dev		Pointer to interface struct.
@@ -877,6 +878,11 @@ done:
  */
 /* first merge version - leaving both functions separated */
 static int ctcm_tx(struct sk_buff *skb, struct net_device *dev)
+=======
+ */
+/* first merge version - leaving both functions separated */
+static netdev_tx_t ctcm_tx(struct sk_buff *skb, struct net_device *dev)
+>>>>>>> origin/android16-base
 {
 	struct ctcm_priv *priv = dev->ml_priv;
 
@@ -919,7 +925,11 @@ static int ctcm_tx(struct sk_buff *skb, struct net_device *dev)
 }
 
 /* unmerged MPC variant of ctcm_tx */
+<<<<<<< HEAD
 static int ctcmpc_tx(struct sk_buff *skb, struct net_device *dev)
+=======
+static netdev_tx_t ctcmpc_tx(struct sk_buff *skb, struct net_device *dev)
+>>>>>>> origin/android16-base
 {
 	int len = 0;
 	struct ctcm_priv *priv = dev->ml_priv;

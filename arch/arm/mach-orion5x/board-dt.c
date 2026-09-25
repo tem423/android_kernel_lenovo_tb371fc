@@ -63,6 +63,12 @@ static void __init orion5x_dt_init(void)
 	if (of_machine_is_compatible("maxtor,shared-storage-2"))
 		mss2_init();
 
+<<<<<<< HEAD
+=======
+	if (of_machine_is_compatible("lacie,d2-network"))
+		d2net_init();
+
+>>>>>>> origin/android16-base
 	of_platform_default_populate(NULL, orion5x_auxdata_lookup, NULL);
 }
 

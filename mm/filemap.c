@@ -1399,7 +1399,11 @@ EXPORT_SYMBOL_GPL(__lock_page_killable);
 int __sched __lock_page_or_retry(struct page *page, struct mm_struct *mm,
 			 unsigned int flags)
 {
+<<<<<<< HEAD
 	if (flags & FAULT_FLAG_ALLOW_RETRY) {
+=======
+	if (fault_flag_allow_retry_first(flags)) {
+>>>>>>> origin/android16-base
 		/*
 		 * CAUTION! In this case, mmap_sem is not released
 		 * even though return 0.
@@ -2480,6 +2484,7 @@ EXPORT_SYMBOL(generic_file_read_iter);
 
 #ifdef CONFIG_MMU
 #define MMAP_LOTSAMISS  (100)
+<<<<<<< HEAD
 static struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 					     struct file *fpin)
 {
@@ -2501,6 +2506,8 @@ static struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 	return fpin;
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * lock_page_maybe_drop_mmap - lock the page, possibly dropping the mmap_sem
  * @vmf - the vm_fault for this fault.
@@ -2561,12 +2568,20 @@ static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
 	pgoff_t offset = vmf->pgoff;
 
 	/* If we don't want any read-ahead, don't bother */
+<<<<<<< HEAD
 	if (vmf->vma_flags & VM_RAND_READ)
+=======
+	if (vmf->vma->vm_flags & VM_RAND_READ)
+>>>>>>> origin/android16-base
 		return fpin;
 	if (!ra->ra_pages)
 		return fpin;
 
+<<<<<<< HEAD
 	if (vmf->vma_flags & VM_SEQ_READ) {
+=======
+	if (vmf->vma->vm_flags & VM_SEQ_READ) {
+>>>>>>> origin/android16-base
 		fpin = maybe_unlock_mmap_for_io(vmf, fpin);
 		page_cache_sync_readahead(mapping, ra, file, offset,
 					  ra->ra_pages);
@@ -2610,7 +2625,11 @@ static struct file *do_async_mmap_readahead(struct vm_fault *vmf,
 	pgoff_t offset = vmf->pgoff;
 
 	/* If we don't want any read-ahead, don't bother */
+<<<<<<< HEAD
 	if (vmf->vma_flags & VM_RAND_READ)
+=======
+	if (vmf->vma->vm_flags & VM_RAND_READ || !ra->ra_pages)
+>>>>>>> origin/android16-base
 		return fpin;
 	if (ra->mmap_miss > 0)
 		ra->mmap_miss--;
@@ -2633,9 +2652,13 @@ static struct file *do_async_mmap_readahead(struct vm_fault *vmf,
  * it in the page cache, and handles the special cases reasonably without
  * having a lot of duplicated code.
  *
+<<<<<<< HEAD
  * If FAULT_FLAG_SPECULATIVE is set, this function runs with elevated vma
  * refcount and with mmap lock not held.
  * Otherwise, vma->vm_mm->mmap_sem must be held on entry.
+=======
+ * vma->vm_mm->mmap_sem must be held on entry.
+>>>>>>> origin/android16-base
  *
  * If our return value has VM_FAULT_RETRY set, it's because
  * lock_page_or_retry() returned 0.
@@ -2660,6 +2683,7 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	struct page *page;
 	vm_fault_t ret = 0;
 
+<<<<<<< HEAD
 	if (vmf->flags & FAULT_FLAG_SPECULATIVE) {
 		page = find_get_page(mapping, offset);
 		if (unlikely(!page))
@@ -2706,6 +2730,8 @@ page_put:
 		return VM_FAULT_RETRY;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	max_off = DIV_ROUND_UP(i_size_read(inode), PAGE_SIZE);
 	if (unlikely(offset >= max_off))
 		return VM_FAULT_SIGBUS;
@@ -3339,7 +3365,11 @@ ssize_t generic_perform_write(struct file *file,
 		unsigned long offset;	/* Offset into pagecache page */
 		unsigned long bytes;	/* Bytes to write to page */
 		size_t copied;		/* Bytes copied from user */
+<<<<<<< HEAD
 		void *fsdata;
+=======
+		void *fsdata = NULL;
+>>>>>>> origin/android16-base
 
 		offset = (pos & (PAGE_SIZE - 1));
 		bytes = min_t(unsigned long, PAGE_SIZE - offset,

@@ -70,10 +70,16 @@ EXPORT_SYMBOL_GPL(nf_conntrack_hash);
 
 struct conntrack_gc_work {
 	struct delayed_work	dwork;
+<<<<<<< HEAD
 	u32			last_bucket;
 	bool			exiting;
 	bool			early_drop;
 	long			next_gc_run;
+=======
+	u32			next_bucket;
+	bool			exiting;
+	bool			early_drop;
+>>>>>>> origin/android16-base
 };
 
 static __read_mostly struct kmem_cache *nf_conntrack_cachep;
@@ -81,12 +87,17 @@ static __read_mostly spinlock_t nf_conntrack_locks_all_lock;
 static __read_mostly DEFINE_SPINLOCK(nf_conntrack_locks_all_lock);
 static __read_mostly bool nf_conntrack_locks_all;
 
+<<<<<<< HEAD
 /* every gc cycle scans at most 1/GC_MAX_BUCKETS_DIV part of table */
 #define GC_MAX_BUCKETS_DIV	128u
 /* upper bound of full table scan */
 #define GC_MAX_SCAN_JIFFIES	(16u * HZ)
 /* desired ratio of entries found to be expired */
 #define GC_EVICT_RATIO	50u
+=======
+#define GC_SCAN_INTERVAL	(120u * HZ)
+#define GC_SCAN_MAX_DURATION	msecs_to_jiffies(10)
+>>>>>>> origin/android16-base
 
 static struct conntrack_gc_work conntrack_gc_work;
 
@@ -630,8 +641,18 @@ bool nf_ct_delete(struct nf_conn *ct, u32 portid, int report)
 		return false;
 
 	tstamp = nf_conn_tstamp_find(ct);
+<<<<<<< HEAD
 	if (tstamp && tstamp->stop == 0)
 		tstamp->stop = ktime_get_real_ns();
+=======
+	if (tstamp) {
+		s32 timeout = ct->timeout - nfct_time_stamp;
+
+		tstamp->stop = ktime_get_real_ns();
+		if (timeout < 0)
+			tstamp->stop -= jiffies_to_nsecs(-timeout);
+	}
+>>>>>>> origin/android16-base
 
 	if (nf_conntrack_event_report(IPCT_DESTROY, ct,
 				    portid, report) < 0) {
@@ -1063,7 +1084,12 @@ nf_conntrack_tuple_taken(const struct nf_conntrack_tuple *tuple,
 			 * Let nf_ct_resolve_clash() deal with this later.
 			 */
 			if (nf_ct_tuple_equal(&ignored_conntrack->tuplehash[IP_CT_DIR_ORIGINAL].tuple,
+<<<<<<< HEAD
 					      &ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple))
+=======
+					      &ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple) &&
+					      nf_ct_zone_equal(ct, zone, IP_CT_DIR_ORIGINAL))
+>>>>>>> origin/android16-base
 				continue;
 
 			NF_CT_STAT_INC_ATOMIC(net, found);
@@ -1192,6 +1218,7 @@ static void nf_ct_offload_timeout(struct nf_conn *ct)
 
 static void gc_worker(struct work_struct *work)
 {
+<<<<<<< HEAD
 	unsigned int min_interval = max(HZ / GC_MAX_BUCKETS_DIV, 1u);
 	unsigned int i, goal, buckets = 0, expired_count = 0;
 	unsigned int nf_conntrack_max95 = 0;
@@ -1203,6 +1230,15 @@ static void gc_worker(struct work_struct *work)
 
 	goal = nf_conntrack_htable_size / GC_MAX_BUCKETS_DIV;
 	i = gc_work->last_bucket;
+=======
+	unsigned long end_time = jiffies + GC_SCAN_MAX_DURATION;
+	unsigned int i, hashsz, nf_conntrack_max95 = 0;
+	unsigned long next_run = GC_SCAN_INTERVAL;
+	struct conntrack_gc_work *gc_work;
+	gc_work = container_of(work, struct conntrack_gc_work, dwork.work);
+
+	i = gc_work->next_bucket;
+>>>>>>> origin/android16-base
 	if (gc_work->early_drop)
 		nf_conntrack_max95 = nf_conntrack_max / 100u * 95u;
 
@@ -1210,6 +1246,7 @@ static void gc_worker(struct work_struct *work)
 		struct nf_conntrack_tuple_hash *h;
 		struct hlist_nulls_head *ct_hash;
 		struct hlist_nulls_node *n;
+<<<<<<< HEAD
 		unsigned int hashsz;
 		struct nf_conn *tmp;
 
@@ -1219,13 +1256,27 @@ static void gc_worker(struct work_struct *work)
 		nf_conntrack_get_ht(&ct_hash, &hashsz);
 		if (i >= hashsz)
 			i = 0;
+=======
+		struct nf_conn *tmp;
+
+		rcu_read_lock();
+
+		nf_conntrack_get_ht(&ct_hash, &hashsz);
+		if (i >= hashsz) {
+			rcu_read_unlock();
+			break;
+		}
+>>>>>>> origin/android16-base
 
 		hlist_nulls_for_each_entry_rcu(h, n, &ct_hash[i], hnnode) {
 			struct net *net;
 
 			tmp = nf_ct_tuplehash_to_ctrack(h);
 
+<<<<<<< HEAD
 			scanned++;
+=======
+>>>>>>> origin/android16-base
 			if (test_bit(IPS_OFFLOAD_BIT, &tmp->status)) {
 				nf_ct_offload_timeout(tmp);
 				continue;
@@ -1233,7 +1284,10 @@ static void gc_worker(struct work_struct *work)
 
 			if (nf_ct_is_expired(tmp)) {
 				nf_ct_gc_expired(tmp);
+<<<<<<< HEAD
 				expired_count++;
+=======
+>>>>>>> origin/android16-base
 				continue;
 			}
 
@@ -1265,7 +1319,18 @@ static void gc_worker(struct work_struct *work)
 		 */
 		rcu_read_unlock();
 		cond_resched();
+<<<<<<< HEAD
 	} while (++buckets < goal);
+=======
+		i++;
+
+		if (time_after(jiffies, end_time) && i < hashsz) {
+			gc_work->next_bucket = i;
+			next_run = 0;
+			break;
+		}
+	} while (i < hashsz);
+>>>>>>> origin/android16-base
 
 	if (gc_work->exiting)
 		return;
@@ -1276,6 +1341,7 @@ static void gc_worker(struct work_struct *work)
 	 *
 	 * This worker is only here to reap expired entries when system went
 	 * idle after a busy period.
+<<<<<<< HEAD
 	 *
 	 * The heuristics below are supposed to balance conflicting goals:
 	 *
@@ -1303,13 +1369,23 @@ static void gc_worker(struct work_struct *work)
 	next_run = gc_work->next_gc_run;
 	gc_work->last_bucket = i;
 	gc_work->early_drop = false;
+=======
+	 */
+	if (next_run) {
+		gc_work->early_drop = false;
+		gc_work->next_bucket = 0;
+	}
+>>>>>>> origin/android16-base
 	queue_delayed_work(system_power_efficient_wq, &gc_work->dwork, next_run);
 }
 
 static void conntrack_gc_work_init(struct conntrack_gc_work *gc_work)
 {
 	INIT_DEFERRABLE_WORK(&gc_work->dwork, gc_worker);
+<<<<<<< HEAD
 	gc_work->next_gc_run = HZ;
+=======
+>>>>>>> origin/android16-base
 	gc_work->exiting = false;
 }
 

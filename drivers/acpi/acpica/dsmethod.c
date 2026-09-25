@@ -517,7 +517,11 @@ acpi_ds_call_control_method(struct acpi_thread_state *thread,
 	info = ACPI_ALLOCATE_ZEROED(sizeof(struct acpi_evaluate_info));
 	if (!info) {
 		status = AE_NO_MEMORY;
+<<<<<<< HEAD
 		goto cleanup;
+=======
+		goto pop_walk_state;
+>>>>>>> origin/android16-base
 	}
 
 	info->parameters = &this_walk_state->operands[0];
@@ -529,7 +533,11 @@ acpi_ds_call_control_method(struct acpi_thread_state *thread,
 
 	ACPI_FREE(info);
 	if (ACPI_FAILURE(status)) {
+<<<<<<< HEAD
 		goto cleanup;
+=======
+		goto pop_walk_state;
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -561,6 +569,15 @@ acpi_ds_call_control_method(struct acpi_thread_state *thread,
 
 	return_ACPI_STATUS(status);
 
+<<<<<<< HEAD
+=======
+pop_walk_state:
+
+	/* On error, pop the walk state to be deleted from thread */
+
+	acpi_ds_pop_walk_state(thread);
+
+>>>>>>> origin/android16-base
 cleanup:
 
 	/* On error, we must terminate the method properly */

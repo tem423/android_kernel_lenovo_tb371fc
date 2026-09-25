@@ -1,17 +1,24 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
+<<<<<<< HEAD
  * This is included by init/main.c to check for architecture-dependent bugs.
  *
  * Copyright (C) 2007  Maciej W. Rozycki
  *
  * Needs:
  *	void check_bugs(void);
+=======
+ * Copyright (C) 2007  Maciej W. Rozycki
+>>>>>>> origin/android16-base
  */
 #ifndef _ASM_BUGS_H
 #define _ASM_BUGS_H
 
 #include <linux/bug.h>
+<<<<<<< HEAD
 #include <linux/delay.h>
+=======
+>>>>>>> origin/android16-base
 #include <linux/smp.h>
 
 #include <asm/cpu.h>
@@ -31,6 +38,7 @@ static inline void check_bugs_early(void)
 #endif
 }
 
+<<<<<<< HEAD
 static inline void check_bugs(void)
 {
 	unsigned int cpu = smp_processor_id();
@@ -42,6 +50,8 @@ static inline void check_bugs(void)
 #endif
 }
 
+=======
+>>>>>>> origin/android16-base
 static inline int r4k_daddiu_bug(void)
 {
 #ifdef CONFIG_64BIT

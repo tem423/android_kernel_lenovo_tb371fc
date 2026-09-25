@@ -60,8 +60,11 @@ static const struct {
 	__s32 y;
 }  hid_hat_to_axis[] = {{ 0, 0}, { 0,-1}, { 1,-1}, { 1, 0}, { 1, 1}, { 0, 1}, {-1, 1}, {-1, 0}, {-1,-1}};
 
+<<<<<<< HEAD
 bool lenovo_i2c_kb_registed = false;
 
+=======
+>>>>>>> origin/android16-base
 #define map_abs(c)	hid_map_usage(hidinput, usage, &bit, &max, EV_ABS, (c))
 #define map_rel(c)	hid_map_usage(hidinput, usage, &bit, &max, EV_REL, (c))
 #define map_key(c)	hid_map_usage(hidinput, usage, &bit, &max, EV_KEY, (c))
@@ -333,6 +336,14 @@ static const struct hid_device_id hid_battery_quirks[] = {
 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_ASUSTEK,
 		USB_DEVICE_ID_ASUSTEK_T100CHI_KEYBOARD),
 	  HID_BATTERY_QUIRK_IGNORE },
+<<<<<<< HEAD
+=======
+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_LOGITECH,
+		USB_DEVICE_ID_LOGITECH_DINOVO_EDGE_KBD),
+	  HID_BATTERY_QUIRK_IGNORE },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ELAN, USB_DEVICE_ID_ASUS_UX550_TOUCHSCREEN),
+	  HID_BATTERY_QUIRK_IGNORE },
+>>>>>>> origin/android16-base
 	{}
 };
 
@@ -424,8 +435,11 @@ static int hidinput_get_battery_property(struct power_supply *psy,
 
 		if (dev->battery_status == HID_BATTERY_UNKNOWN)
 			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
+<<<<<<< HEAD
 		else if (dev->battery_capacity == 100)
 			val->intval = POWER_SUPPLY_STATUS_FULL;
+=======
+>>>>>>> origin/android16-base
 		else
 			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
 		break;
@@ -1036,6 +1050,11 @@ static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_fiel
 		case 0x28b: map_key_clear(KEY_FORWARDMAIL);	break;
 		case 0x28c: map_key_clear(KEY_SEND);		break;
 
+<<<<<<< HEAD
+=======
+		case 0x2a2: map_key_clear(KEY_ALL_APPLICATIONS);	break;
+
+>>>>>>> origin/android16-base
 		case 0x2c7: map_key_clear(KEY_KBDINPUTASSIST_PREV);		break;
 		case 0x2c8: map_key_clear(KEY_KBDINPUTASSIST_NEXT);		break;
 		case 0x2c9: map_key_clear(KEY_KBDINPUTASSIST_PREVGROUP);		break;
@@ -1245,6 +1264,15 @@ void hidinput_hid_event(struct hid_device *hid, struct hid_field *field, struct 
 
 	input = field->hidinput->input;
 
+<<<<<<< HEAD
+=======
+	if (usage->type == EV_ABS &&
+	    (((*quirks & HID_QUIRK_X_INVERT) && usage->code == ABS_X) ||
+	     ((*quirks & HID_QUIRK_Y_INVERT) && usage->code == ABS_Y))) {
+		value = field->logical_maximum - value;
+	}
+
+>>>>>>> origin/android16-base
 	if (usage->hat_min < usage->hat_max || usage->hat_dir) {
 		int hat_dir = usage->hat_dir;
 		if (!hat_dir)
@@ -1748,9 +1776,12 @@ int hidinput_connect(struct hid_device *hid, unsigned int force)
 	INIT_LIST_HEAD(&hid->inputs);
 	INIT_WORK(&hid->led_work, hidinput_led_worker);
 
+<<<<<<< HEAD
 	if((hid->vendor == 0x17EF) && (hid->product == 0x6127)) {
 		hid->quirks &= ~HID_QUIRK_INPUT_PER_APP;
 	}
+=======
+>>>>>>> origin/android16-base
 	hid->status &= ~HID_STAT_DUP_DETECTED;
 
 	if (!force) {
@@ -1820,10 +1851,13 @@ int hidinput_connect(struct hid_device *hid, unsigned int force)
 		if (input_register_device(hidinput->input))
 			goto out_unwind;
 		hidinput->registered = true;
+<<<<<<< HEAD
 		/* Lenovo 1-wire keyboard */
 		if((hid->vendor == 0x17EF) && (hid->product == 0x6127) && (hid->bus == BUS_I2C)) {
 			lenovo_i2c_kb_registed = true;
 		}
+=======
+>>>>>>> origin/android16-base
 	}
 
 	if (list_empty(&hid->inputs)) {
@@ -1853,6 +1887,7 @@ void hidinput_disconnect(struct hid_device *hid)
 
 	list_for_each_entry_safe(hidinput, next, &hid->inputs, list) {
 		list_del(&hidinput->list);
+<<<<<<< HEAD
 		if (hidinput->registered) {
 			/* Lenovo 1-wire keyboard */
 			if((hid->vendor == 0x17EF) && (hid->product == 0x6127) && (hid->bus == BUS_I2C)) {
@@ -1862,6 +1897,12 @@ void hidinput_disconnect(struct hid_device *hid)
 		} else {
 			input_free_device(hidinput->input);
 		}
+=======
+		if (hidinput->registered)
+			input_unregister_device(hidinput->input);
+		else
+			input_free_device(hidinput->input);
+>>>>>>> origin/android16-base
 		kfree(hidinput->name);
 		kfree(hidinput);
 	}

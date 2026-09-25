@@ -1659,7 +1659,11 @@ static struct dvb_usb_device_properties cxusb_bluebird_lgz201_properties = {
 
 	.size_of_priv     = sizeof(struct cxusb_state),
 
+<<<<<<< HEAD
 	.num_adapters = 2,
+=======
+	.num_adapters = 1,
+>>>>>>> origin/android16-base
 	.adapter = {
 		{
 		.num_frontends = 1,

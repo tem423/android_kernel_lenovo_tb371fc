@@ -31,6 +31,10 @@
 #include <linux/module.h>
 #include <linux/input.h>
 #include <linux/serio.h>
+<<<<<<< HEAD
+=======
+#include <asm/unaligned.h>
+>>>>>>> origin/android16-base
 
 #define DRIVER_DESC	"SpaceTec SpaceBall 2003/3003/4000 FLX driver"
 
@@ -87,9 +91,21 @@ static void spaceball_process_packet(struct spaceball* spaceball)
 
 		case 'D':					/* Ball data */
 			if (spaceball->idx != 15) return;
+<<<<<<< HEAD
 			for (i = 0; i < 6; i++)
 				input_report_abs(dev, spaceball_axes[i],
 					(__s16)((data[2 * i + 3] << 8) | data[2 * i + 2]));
+=======
+			/*
+			 * Skip first three bytes; read six axes worth of data.
+			 * Axis values are signed 16-bit big-endian.
+			 */
+			data += 3;
+			for (i = 0; i < ARRAY_SIZE(spaceball_axes); i++) {
+				input_report_abs(dev, spaceball_axes[i],
+					(__s16)get_unaligned_be16(&data[i * 2]));
+			}
+>>>>>>> origin/android16-base
 			break;
 
 		case 'K':					/* Button data */

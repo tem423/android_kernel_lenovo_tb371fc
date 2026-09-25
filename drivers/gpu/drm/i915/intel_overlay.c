@@ -929,6 +929,12 @@ static int check_overlay_dst(struct intel_overlay *overlay,
 	const struct intel_crtc_state *pipe_config =
 		overlay->crtc->config;
 
+<<<<<<< HEAD
+=======
+	if (rec->dst_height == 0 || rec->dst_width == 0)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	if (rec->dst_x < pipe_config->pipe_src_w &&
 	    rec->dst_x + rec->dst_width <= pipe_config->pipe_src_w &&
 	    rec->dst_y < pipe_config->pipe_src_h &&

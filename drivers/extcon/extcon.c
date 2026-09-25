@@ -204,6 +204,17 @@ static const struct __extcon_info {
  * @attr_name:		"name" sysfs entry
  * @attr_state:		"state" sysfs entry
  * @attrs:		the array pointing to attr_name and attr_state for attr_g
+<<<<<<< HEAD
+=======
+ * @usb_propval:	the array of USB connector properties
+ * @chg_propval:	the array of charger connector properties
+ * @jack_propval:	the array of jack connector properties
+ * @disp_propval:	the array of display connector properties
+ * @usb_bits:		the bit array of the USB connector property capabilities
+ * @chg_bits:		the bit array of the charger connector property capabilities
+ * @jack_bits:		the bit array of the jack connector property capabilities
+ * @disp_bits:		the bit array of the display connector property capabilities
+>>>>>>> origin/android16-base
  */
 struct extcon_cable {
 	struct extcon_dev *edev;
@@ -1303,6 +1314,7 @@ int extcon_dev_register(struct extcon_dev *edev)
 		edev->dev.type = &edev->extcon_dev_type;
 	}
 
+<<<<<<< HEAD
 	ret = device_register(&edev->dev);
 	if (ret) {
 		put_device(&edev->dev);
@@ -1319,6 +1331,19 @@ int extcon_dev_register(struct extcon_dev *edev)
 
 	edev->bnh = devm_kzalloc(&edev->dev,
 			sizeof(*edev->bnh) * edev->max_supported, GFP_KERNEL);
+=======
+	spin_lock_init(&edev->lock);
+	if (edev->max_supported) {
+		edev->nh = kcalloc(edev->max_supported, sizeof(*edev->nh),
+				GFP_KERNEL);
+		if (!edev->nh) {
+			ret = -ENOMEM;
+			goto err_alloc_nh;
+		}
+	}
+
+	edev->bnh = kzalloc(sizeof(*edev->bnh) * edev->max_supported, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!edev->bnh) {
 		ret = -ENOMEM;
 		goto err_dev;
@@ -1334,14 +1359,33 @@ int extcon_dev_register(struct extcon_dev *edev)
 	dev_set_drvdata(&edev->dev, edev);
 	edev->state = 0;
 
+<<<<<<< HEAD
+=======
+	ret = device_register(&edev->dev);
+	if (ret) {
+		put_device(&edev->dev);
+		goto err_reg;
+	}
+
+>>>>>>> origin/android16-base
 	mutex_lock(&extcon_dev_list_lock);
 	list_add(&edev->entry, &extcon_dev_list);
 	mutex_unlock(&extcon_dev_list_lock);
 
 	return 0;
 
+<<<<<<< HEAD
 err_dev:
 	if (edev->max_supported)
+=======
+err_reg:
+	kfree(edev->bnh);
+err_dev:
+	if (edev->max_supported)
+		kfree(edev->nh);
+err_alloc_nh:
+	if (edev->max_supported)
+>>>>>>> origin/android16-base
 		kfree(edev->extcon_dev_type.groups);
 err_alloc_groups:
 	if (edev->max_supported && edev->mutually_exclusive) {
@@ -1401,7 +1445,13 @@ void extcon_dev_unregister(struct extcon_dev *edev)
 	if (edev->max_supported) {
 		kfree(edev->extcon_dev_type.groups);
 		kfree(edev->cables);
+<<<<<<< HEAD
 	}
+=======
+		kfree(edev->nh);
+	}
+	kfree(edev->bnh);
+>>>>>>> origin/android16-base
 
 	put_device(&edev->dev);
 }

@@ -42,17 +42,24 @@ struct qlcnic_dcb {
 	unsigned long			state;
 };
 
+<<<<<<< HEAD
 static inline void qlcnic_clear_dcb_ops(struct qlcnic_dcb *dcb)
 {
 	kfree(dcb);
 }
 
+=======
+>>>>>>> origin/android16-base
 static inline int qlcnic_dcb_get_hw_capability(struct qlcnic_dcb *dcb)
 {
 	if (dcb && dcb->ops->get_hw_capability)
 		return dcb->ops->get_hw_capability(dcb);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return -EOPNOTSUPP;
+>>>>>>> origin/android16-base
 }
 
 static inline void qlcnic_dcb_free(struct qlcnic_dcb *dcb)
@@ -66,7 +73,11 @@ static inline int qlcnic_dcb_attach(struct qlcnic_dcb *dcb)
 	if (dcb && dcb->ops->attach)
 		return dcb->ops->attach(dcb);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return -EOPNOTSUPP;
+>>>>>>> origin/android16-base
 }
 
 static inline int
@@ -75,7 +86,11 @@ qlcnic_dcb_query_hw_capability(struct qlcnic_dcb *dcb, char *buf)
 	if (dcb && dcb->ops->query_hw_capability)
 		return dcb->ops->query_hw_capability(dcb, buf);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return -EOPNOTSUPP;
+>>>>>>> origin/android16-base
 }
 
 static inline void qlcnic_dcb_get_info(struct qlcnic_dcb *dcb)
@@ -90,7 +105,11 @@ qlcnic_dcb_query_cee_param(struct qlcnic_dcb *dcb, char *buf, u8 type)
 	if (dcb && dcb->ops->query_cee_param)
 		return dcb->ops->query_cee_param(dcb, buf, type);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return -EOPNOTSUPP;
+>>>>>>> origin/android16-base
 }
 
 static inline int qlcnic_dcb_get_cee_cfg(struct qlcnic_dcb *dcb)
@@ -98,7 +117,11 @@ static inline int qlcnic_dcb_get_cee_cfg(struct qlcnic_dcb *dcb)
 	if (dcb && dcb->ops->get_cee_cfg)
 		return dcb->ops->get_cee_cfg(dcb);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return -EOPNOTSUPP;
+>>>>>>> origin/android16-base
 }
 
 static inline void qlcnic_dcb_aen_handler(struct qlcnic_dcb *dcb, void *msg)
@@ -113,9 +136,15 @@ static inline void qlcnic_dcb_init_dcbnl_ops(struct qlcnic_dcb *dcb)
 		dcb->ops->init_dcbnl_ops(dcb);
 }
 
+<<<<<<< HEAD
 static inline void qlcnic_dcb_enable(struct qlcnic_dcb *dcb)
 {
 	if (dcb && qlcnic_dcb_attach(dcb))
 		qlcnic_clear_dcb_ops(dcb);
+=======
+static inline int qlcnic_dcb_enable(struct qlcnic_dcb *dcb)
+{
+	return dcb ? qlcnic_dcb_attach(dcb) : 0;
+>>>>>>> origin/android16-base
 }
 #endif

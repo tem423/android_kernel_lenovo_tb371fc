@@ -2433,6 +2433,7 @@ static int ena_device_init(struct ena_com_dev *ena_dev, struct pci_dev *pdev,
 		goto err_mmio_read_less;
 	}
 
+<<<<<<< HEAD
 	rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(dma_width));
 	if (rc) {
 		dev_err(dev, "pci_set_dma_mask failed 0x%x\n", rc);
@@ -2443,6 +2444,11 @@ static int ena_device_init(struct ena_com_dev *ena_dev, struct pci_dev *pdev,
 	if (rc) {
 		dev_err(dev, "err_pci_set_consistent_dma_mask failed 0x%x\n",
 			rc);
+=======
+	rc = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(dma_width));
+	if (rc) {
+		dev_err(dev, "dma_set_mask_and_coherent failed %d\n", rc);
+>>>>>>> origin/android16-base
 		goto err_mmio_read_less;
 	}
 
@@ -3183,6 +3189,15 @@ static int ena_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		return rc;
 	}
 
+<<<<<<< HEAD
+=======
+	rc = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(ENA_MAX_PHYS_ADDR_SIZE_BITS));
+	if (rc) {
+		dev_err(&pdev->dev, "dma_set_mask_and_coherent failed %d\n", rc);
+		goto err_disable_device;
+	}
+
+>>>>>>> origin/android16-base
 	pci_set_master(pdev);
 
 	ena_dev = vzalloc(sizeof(*ena_dev));

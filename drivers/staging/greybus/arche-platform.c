@@ -664,6 +664,7 @@ static const struct of_device_id arche_platform_of_match[] = {
 	{ .compatible = "google,arche-platform", },
 	{ },
 };
+<<<<<<< HEAD
 
 static const struct of_device_id arche_combined_id[] = {
 	/* Use PID/VID of SVC device */
@@ -672,6 +673,9 @@ static const struct of_device_id arche_combined_id[] = {
 	{ },
 };
 MODULE_DEVICE_TABLE(of, arche_combined_id);
+=======
+MODULE_DEVICE_TABLE(of, arche_platform_of_match);
+>>>>>>> origin/android16-base
 
 static struct platform_driver arche_platform_device_driver = {
 	.probe		= arche_platform_probe,

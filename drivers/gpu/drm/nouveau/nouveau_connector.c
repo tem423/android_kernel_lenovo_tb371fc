@@ -521,6 +521,22 @@ nouveau_connector_set_encoder(struct drm_connector *connector,
 	}
 }
 
+<<<<<<< HEAD
+=======
+static void
+nouveau_connector_set_edid(struct nouveau_connector *nv_connector,
+			   struct edid *edid)
+{
+	if (nv_connector->edid != edid) {
+		struct edid *old_edid = nv_connector->edid;
+
+		drm_connector_update_edid_property(&nv_connector->base, edid);
+		kfree(old_edid);
+		nv_connector->edid = edid;
+	}
+}
+
+>>>>>>> origin/android16-base
 static enum drm_connector_status
 nouveau_connector_detect(struct drm_connector *connector, bool force)
 {
@@ -534,6 +550,7 @@ nouveau_connector_detect(struct drm_connector *connector, bool force)
 	int ret;
 	enum drm_connector_status conn_status = connector_status_disconnected;
 
+<<<<<<< HEAD
 	/* Cleanup the previous EDID block. */
 	if (nv_connector->edid) {
 		drm_connector_update_edid_property(connector, NULL);
@@ -541,6 +558,8 @@ nouveau_connector_detect(struct drm_connector *connector, bool force)
 		nv_connector->edid = NULL;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	/* Outputs are only polled while runtime active, so resuming the
 	 * device here is unnecessary (and would deadlock upon runtime suspend
 	 * because it waits for polling to finish). We do however, want to
@@ -553,12 +572,17 @@ nouveau_connector_detect(struct drm_connector *connector, bool force)
 		ret = pm_runtime_get_sync(dev->dev);
 		if (ret < 0 && ret != -EACCES) {
 			pm_runtime_put_autosuspend(dev->dev);
+<<<<<<< HEAD
+=======
+			nouveau_connector_set_edid(nv_connector, NULL);
+>>>>>>> origin/android16-base
 			return conn_status;
 		}
 	}
 
 	nv_encoder = nouveau_connector_ddc_detect(connector);
 	if (nv_encoder && (i2c = nv_encoder->i2c) != NULL) {
+<<<<<<< HEAD
 		if ((vga_switcheroo_handler_flags() &
 		     VGA_SWITCHEROO_CAN_SWITCH_DDC) &&
 		    nv_connector->type == DCB_CONNECTOR_LVDS)
@@ -569,6 +593,18 @@ nouveau_connector_detect(struct drm_connector *connector, bool force)
 
 		drm_connector_update_edid_property(connector,
 							nv_connector->edid);
+=======
+		struct edid *new_edid;
+
+		if ((vga_switcheroo_handler_flags() &
+		     VGA_SWITCHEROO_CAN_SWITCH_DDC) &&
+		    nv_connector->type == DCB_CONNECTOR_LVDS)
+			new_edid = drm_get_edid_switcheroo(connector, i2c);
+		else
+			new_edid = drm_get_edid(connector, i2c);
+
+		nouveau_connector_set_edid(nv_connector, new_edid);
+>>>>>>> origin/android16-base
 		if (!nv_connector->edid) {
 			NV_ERROR(drm, "DDC responded, but no EDID for %s\n",
 				 connector->name);
@@ -601,6 +637,11 @@ nouveau_connector_detect(struct drm_connector *connector, bool force)
 		nouveau_connector_set_encoder(connector, nv_encoder);
 		conn_status = connector_status_connected;
 		goto out;
+<<<<<<< HEAD
+=======
+	} else {
+		nouveau_connector_set_edid(nv_connector, NULL);
+>>>>>>> origin/android16-base
 	}
 
 	nv_encoder = nouveau_connector_of_detect(connector);
@@ -643,6 +684,7 @@ nouveau_connector_detect_lvds(struct drm_connector *connector, bool force)
 	struct nouveau_drm *drm = nouveau_drm(dev);
 	struct nouveau_connector *nv_connector = nouveau_connector(connector);
 	struct nouveau_encoder *nv_encoder = NULL;
+<<<<<<< HEAD
 	enum drm_connector_status status = connector_status_disconnected;
 
 	/* Cleanup the previous EDID block. */
@@ -655,12 +697,27 @@ nouveau_connector_detect_lvds(struct drm_connector *connector, bool force)
 	nv_encoder = find_encoder(connector, DCB_OUTPUT_LVDS);
 	if (!nv_encoder)
 		return connector_status_disconnected;
+=======
+	struct edid *edid = NULL;
+	enum drm_connector_status status = connector_status_disconnected;
+
+	nv_encoder = find_encoder(connector, DCB_OUTPUT_LVDS);
+	if (!nv_encoder)
+		goto out;
+>>>>>>> origin/android16-base
 
 	/* Try retrieving EDID via DDC */
 	if (!drm->vbios.fp_no_ddc) {
 		status = nouveau_connector_detect(connector, force);
+<<<<<<< HEAD
 		if (status == connector_status_connected)
 			goto out;
+=======
+		if (status == connector_status_connected) {
+			edid = nv_connector->edid;
+			goto out;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	/* On some laptops (Sony, i'm looking at you) there appears to
@@ -673,7 +730,12 @@ nouveau_connector_detect_lvds(struct drm_connector *connector, bool force)
 	 * valid - it's not (rh#613284)
 	 */
 	if (nv_encoder->dcb->lvdsconf.use_acpi_for_edid) {
+<<<<<<< HEAD
 		if ((nv_connector->edid = nouveau_acpi_edid(dev, connector))) {
+=======
+		edid = nouveau_acpi_edid(dev, connector);
+		if (edid) {
+>>>>>>> origin/android16-base
 			status = connector_status_connected;
 			goto out;
 		}
@@ -693,12 +755,19 @@ nouveau_connector_detect_lvds(struct drm_connector *connector, bool force)
 	 * stored for the panel stored in them.
 	 */
 	if (!drm->vbios.fp_no_ddc) {
+<<<<<<< HEAD
 		struct edid *edid =
 			(struct edid *)nouveau_bios_embedded_edid(dev);
 		if (edid) {
 			nv_connector->edid =
 					kmemdup(edid, EDID_LENGTH, GFP_KERNEL);
 			if (nv_connector->edid)
+=======
+		edid = (struct edid *)nouveau_bios_embedded_edid(dev);
+		if (edid) {
+			edid = kmemdup(edid, EDID_LENGTH, GFP_KERNEL);
+			if (edid)
+>>>>>>> origin/android16-base
 				status = connector_status_connected;
 		}
 	}
@@ -711,8 +780,14 @@ out:
 		status = connector_status_unknown;
 #endif
 
+<<<<<<< HEAD
 	drm_connector_update_edid_property(connector, nv_connector->edid);
 	nouveau_connector_set_encoder(connector, nv_encoder);
+=======
+	nouveau_connector_set_edid(nv_connector, edid);
+	if (nv_encoder)
+		nouveau_connector_set_encoder(connector, nv_encoder);
+>>>>>>> origin/android16-base
 	return status;
 }
 
@@ -929,6 +1004,12 @@ nouveau_connector_get_modes(struct drm_connector *connector)
 		struct drm_display_mode *mode;
 
 		mode = drm_mode_duplicate(dev, nv_connector->native_mode);
+<<<<<<< HEAD
+=======
+		if (!mode)
+			return 0;
+
+>>>>>>> origin/android16-base
 		drm_mode_probed_add(connector, mode);
 		ret = 1;
 	}
@@ -937,7 +1018,11 @@ nouveau_connector_get_modes(struct drm_connector *connector)
 	 * "native" mode as some VBIOS tables require us to use the
 	 * pixel clock as part of the lookup...
 	 */
+<<<<<<< HEAD
 	if (connector->connector_type == DRM_MODE_CONNECTOR_LVDS)
+=======
+	if (connector->connector_type == DRM_MODE_CONNECTOR_LVDS && nv_connector->native_mode)
+>>>>>>> origin/android16-base
 		nouveau_connector_detect_depth(connector);
 
 	if (nv_encoder->dcb->type == DCB_OUTPUT_TV)

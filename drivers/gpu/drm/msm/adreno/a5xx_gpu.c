@@ -173,7 +173,11 @@ static void a5xx_submit_in_rb(struct msm_gpu *gpu, struct msm_gem_submit *submit
 			 * since we've already mapped it once in
 			 * submit_reloc()
 			 */
+<<<<<<< HEAD
 			if (WARN_ON(!ptr))
+=======
+			if (WARN_ON(IS_ERR_OR_NULL(ptr)))
+>>>>>>> origin/android16-base
 				return;
 
 			for (i = 0; i < dwords; i++) {
@@ -681,8 +685,11 @@ static int a5xx_hw_init(struct msm_gpu *gpu)
 	if (adreno_gpu->info->quirks & ADRENO_QUIRK_TWO_PASS_USE_WFI)
 		gpu_rmw(gpu, REG_A5XX_PC_DBG_ECO_CNTL, 0, (1 << 8));
 
+<<<<<<< HEAD
 	gpu_write(gpu, REG_A5XX_PC_DBG_ECO_CNTL, 0xc0200100);
 
+=======
+>>>>>>> origin/android16-base
 	/* Enable USE_RETENTION_FLOPS */
 	gpu_write(gpu, REG_A5XX_CP_CHICKEN_DBG, 0x02000000);
 
@@ -1196,8 +1203,13 @@ static int a5xx_pm_suspend(struct msm_gpu *gpu)
 
 static int a5xx_get_timestamp(struct msm_gpu *gpu, uint64_t *value)
 {
+<<<<<<< HEAD
 	*value = gpu_read64(gpu, REG_A5XX_RBBM_PERFCTR_CP_0_LO,
 		REG_A5XX_RBBM_PERFCTR_CP_0_HI);
+=======
+	*value = gpu_read64(gpu, REG_A5XX_RBBM_ALWAYSON_COUNTER_LO,
+		REG_A5XX_RBBM_ALWAYSON_COUNTER_HI);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

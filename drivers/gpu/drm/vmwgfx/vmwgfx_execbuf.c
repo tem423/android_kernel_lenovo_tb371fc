@@ -1834,7 +1834,11 @@ static int vmw_cmd_tex_state(struct vmw_private *dev_priv,
 	} *cmd;
 
 	SVGA3dTextureState *last_state = (SVGA3dTextureState *)
+<<<<<<< HEAD
 	  ((unsigned long) header + header->size + sizeof(header));
+=======
+	  ((unsigned long) header + header->size + sizeof(*header));
+>>>>>>> origin/android16-base
 	SVGA3dTextureState *cur_state = (SVGA3dTextureState *)
 		((unsigned long) header + sizeof(struct vmw_tex_state_cmd));
 	struct vmw_resource_val_node *ctx_node;
@@ -3873,20 +3877,32 @@ int vmw_execbuf_fence_commands(struct drm_file *file_priv,
  * object so we wait for it immediately, and then unreference the
  * user-space reference.
  */
+<<<<<<< HEAD
 void
+=======
+int
+>>>>>>> origin/android16-base
 vmw_execbuf_copy_fence_user(struct vmw_private *dev_priv,
 			    struct vmw_fpriv *vmw_fp,
 			    int ret,
 			    struct drm_vmw_fence_rep __user *user_fence_rep,
 			    struct vmw_fence_obj *fence,
 			    uint32_t fence_handle,
+<<<<<<< HEAD
 			    int32_t out_fence_fd,
 			    struct sync_file *sync_file)
+=======
+			    int32_t out_fence_fd)
+>>>>>>> origin/android16-base
 {
 	struct drm_vmw_fence_rep fence_rep;
 
 	if (user_fence_rep == NULL)
+<<<<<<< HEAD
 		return;
+=======
+		return 0;
+>>>>>>> origin/android16-base
 
 	memset(&fence_rep, 0, sizeof(fence_rep));
 
@@ -3914,6 +3930,7 @@ vmw_execbuf_copy_fence_user(struct vmw_private *dev_priv,
 	 * and unreference the handle.
 	 */
 	if (unlikely(ret != 0) && (fence_rep.error == 0)) {
+<<<<<<< HEAD
 		if (sync_file)
 			fput(sync_file->file);
 
@@ -3922,12 +3939,19 @@ vmw_execbuf_copy_fence_user(struct vmw_private *dev_priv,
 			fence_rep.fd = -1;
 		}
 
+=======
+>>>>>>> origin/android16-base
 		ttm_ref_object_base_unref(vmw_fp->tfile,
 					  fence_handle, TTM_REF_USAGE);
 		DRM_ERROR("Fence copy error. Syncing.\n");
 		(void) vmw_fence_obj_wait(fence, false, false,
 					  VMW_FENCE_WAIT_TIMEOUT);
 	}
+<<<<<<< HEAD
+=======
+
+	return ret ? -EFAULT : 0;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -4287,16 +4311,33 @@ int vmw_execbuf_process(struct drm_file *file_priv,
 
 			(void) vmw_fence_obj_wait(fence, false, false,
 						  VMW_FENCE_WAIT_TIMEOUT);
+<<<<<<< HEAD
+=======
+		}
+	}
+
+	ret = vmw_execbuf_copy_fence_user(dev_priv, vmw_fpriv(file_priv), ret,
+				    user_fence_rep, fence, handle, out_fence_fd);
+
+	if (sync_file) {
+		if (ret) {
+			/* usercopy of fence failed, put the file object */
+			fput(sync_file->file);
+			put_unused_fd(out_fence_fd);
+>>>>>>> origin/android16-base
 		} else {
 			/* Link the fence with the FD created earlier */
 			fd_install(out_fence_fd, sync_file->file);
 		}
 	}
 
+<<<<<<< HEAD
 	vmw_execbuf_copy_fence_user(dev_priv, vmw_fpriv(file_priv), ret,
 				    user_fence_rep, fence, handle,
 				    out_fence_fd, sync_file);
 
+=======
+>>>>>>> origin/android16-base
 	/* Don't unreference when handing fence out */
 	if (unlikely(out_fence != NULL)) {
 		*out_fence = fence;
@@ -4315,7 +4356,11 @@ int vmw_execbuf_process(struct drm_file *file_priv,
 	 */
 	vmw_resource_list_unreference(sw_context, &resource_list);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return ret;
+>>>>>>> origin/android16-base
 
 out_unlock_binding:
 	mutex_unlock(&dev_priv->binding_mutex);

@@ -249,7 +249,11 @@ TRACE_EVENT(regcache_drop_region,
 #endif /* _TRACE_REGMAP_H */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/base/regmap
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

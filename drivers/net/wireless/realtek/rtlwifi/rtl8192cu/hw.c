@@ -1020,6 +1020,10 @@ int rtl92cu_hw_init(struct ieee80211_hw *hw)
 	_InitPABias(hw);
 	rtl92c_dm_init(hw);
 exit:
+<<<<<<< HEAD
+=======
+	local_irq_disable();
+>>>>>>> origin/android16-base
 	local_irq_restore(flags);
 	return err;
 }

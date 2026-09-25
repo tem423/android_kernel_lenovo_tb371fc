@@ -146,8 +146,13 @@ static bool tipc_disc_addr_trial_msg(struct tipc_discoverer *d,
 {
 	struct net *net = d->net;
 	struct tipc_net *tn = tipc_net(net);
+<<<<<<< HEAD
 	bool trial = time_before(jiffies, tn->addr_trial_end);
 	u32 self = tipc_own_addr(net);
+=======
+	u32 self = tipc_own_addr(net);
+	bool trial = time_before(jiffies, tn->addr_trial_end) && !self;
+>>>>>>> origin/android16-base
 
 	if (mtyp == DSC_TRIAL_FAIL_MSG) {
 		if (!trial)
@@ -208,7 +213,14 @@ void tipc_disc_rcv(struct net *net, struct sk_buff *skb,
 	u32 self;
 	int err;
 
+<<<<<<< HEAD
 	skb_linearize(skb);
+=======
+	if (skb_linearize(skb)) {
+		kfree_skb(skb);
+		return;
+	}
+>>>>>>> origin/android16-base
 	hdr = buf_msg(skb);
 
 	if (caps & TIPC_NODE_ID128)

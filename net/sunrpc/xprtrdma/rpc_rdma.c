@@ -72,7 +72,11 @@ static unsigned int rpcrdma_max_call_header_size(unsigned int maxsegs)
 
 	/* Maximum Read list size */
 	maxsegs += 2;	/* segment for head and tail buffers */
+<<<<<<< HEAD
 	size = maxsegs * rpcrdma_readchunk_maxsz * sizeof(__be32);
+=======
+	size += maxsegs * rpcrdma_readchunk_maxsz * sizeof(__be32);
+>>>>>>> origin/android16-base
 
 	/* Minimal Read chunk size */
 	size += sizeof(__be32);	/* segment count */
@@ -98,7 +102,11 @@ static unsigned int rpcrdma_max_reply_header_size(unsigned int maxsegs)
 
 	/* Maximum Write list size */
 	maxsegs += 2;	/* segment for head and tail buffers */
+<<<<<<< HEAD
 	size = sizeof(__be32);		/* segment count */
+=======
+	size += sizeof(__be32);		/* segment count */
+>>>>>>> origin/android16-base
 	size += maxsegs * rpcrdma_segment_maxsz * sizeof(__be32);
 	size += sizeof(__be32);	/* list discriminator */
 
@@ -980,6 +988,10 @@ static bool
 rpcrdma_is_bcall(struct rpcrdma_xprt *r_xprt, struct rpcrdma_rep *rep)
 #if defined(CONFIG_SUNRPC_BACKCHANNEL)
 {
+<<<<<<< HEAD
+=======
+	struct rpc_xprt *xprt = &r_xprt->rx_xprt;
+>>>>>>> origin/android16-base
 	struct xdr_stream *xdr = &rep->rr_stream;
 	__be32 *p;
 
@@ -1003,6 +1015,13 @@ rpcrdma_is_bcall(struct rpcrdma_xprt *r_xprt, struct rpcrdma_rep *rep)
 	if (*p != cpu_to_be32(RPC_CALL))
 		return false;
 
+<<<<<<< HEAD
+=======
+	/* No bc service. */
+	if (xprt->bc_serv == NULL)
+		return false;
+
+>>>>>>> origin/android16-base
 	/* Now that we are sure this is a backchannel call,
 	 * advance to the RPC header.
 	 */

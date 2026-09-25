@@ -272,7 +272,10 @@ static int ip6_tnl_create2(struct net_device *dev)
 
 	strcpy(t->parms.name, dev->name);
 
+<<<<<<< HEAD
 	dev_hold(dev);
+=======
+>>>>>>> origin/android16-base
 	ip6_tnl_link(ip6n, t);
 	return 0;
 
@@ -405,7 +408,11 @@ __u16 ip6_tnl_parse_tlv_enc_lim(struct sk_buff *skb, __u8 *raw)
 	const struct ipv6hdr *ipv6h = (const struct ipv6hdr *)raw;
 	unsigned int nhoff = raw - skb->data;
 	unsigned int off = nhoff + sizeof(*ipv6h);
+<<<<<<< HEAD
 	u8 next, nexthdr = ipv6h->nexthdr;
+=======
+	u8 nexthdr = ipv6h->nexthdr;
+>>>>>>> origin/android16-base
 
 	while (ipv6_ext_hdr(nexthdr) && nexthdr != NEXTHDR_NONE) {
 		struct ipv6_opt_hdr *hdr;
@@ -416,15 +423,19 @@ __u16 ip6_tnl_parse_tlv_enc_lim(struct sk_buff *skb, __u8 *raw)
 
 		hdr = (struct ipv6_opt_hdr *)(skb->data + off);
 		if (nexthdr == NEXTHDR_FRAGMENT) {
+<<<<<<< HEAD
 			struct frag_hdr *frag_hdr = (struct frag_hdr *) hdr;
 			if (frag_hdr->frag_off)
 				break;
+=======
+>>>>>>> origin/android16-base
 			optlen = 8;
 		} else if (nexthdr == NEXTHDR_AUTH) {
 			optlen = (hdr->hdrlen + 2) << 2;
 		} else {
 			optlen = ipv6_optlen(hdr);
 		}
+<<<<<<< HEAD
 		/* cache hdr->nexthdr, since pskb_may_pull() might
 		 * invalidate hdr
 		 */
@@ -436,6 +447,22 @@ __u16 ip6_tnl_parse_tlv_enc_lim(struct sk_buff *skb, __u8 *raw)
 			if (!pskb_may_pull(skb, off + optlen))
 				break;
 
+=======
+
+		if (!pskb_may_pull(skb, off + optlen))
+			break;
+
+		hdr = (struct ipv6_opt_hdr *)(skb->data + off);
+		if (nexthdr == NEXTHDR_FRAGMENT) {
+			struct frag_hdr *frag_hdr = (struct frag_hdr *)hdr;
+
+			if (frag_hdr->frag_off)
+				break;
+		}
+		if (nexthdr == NEXTHDR_DEST) {
+			u16 i = 2;
+
+>>>>>>> origin/android16-base
 			while (1) {
 				struct ipv6_tlv_tnl_enc_lim *tel;
 
@@ -455,7 +482,11 @@ __u16 ip6_tnl_parse_tlv_enc_lim(struct sk_buff *skb, __u8 *raw)
 					i++;
 			}
 		}
+<<<<<<< HEAD
 		nexthdr = next;
+=======
+		nexthdr = hdr->nexthdr;
+>>>>>>> origin/android16-base
 		off += optlen;
 	}
 	return 0;
@@ -1006,14 +1037,24 @@ int ip6_tnl_xmit_ctl(struct ip6_tnl *t,
 
 		if (unlikely(!ipv6_chk_addr_and_flags(net, laddr, ldev, false,
 						      0, IFA_F_TENTATIVE)))
+<<<<<<< HEAD
 			pr_warn("%s xmit: Local address not yet configured!\n",
 				p->name);
+=======
+			pr_warn_ratelimited("%s xmit: Local address not yet configured!\n",
+					    p->name);
+>>>>>>> origin/android16-base
 		else if (!(p->flags & IP6_TNL_F_ALLOW_LOCAL_REMOTE) &&
 			 !ipv6_addr_is_multicast(raddr) &&
 			 unlikely(ipv6_chk_addr_and_flags(net, raddr, ldev,
 							  true, 0, IFA_F_TENTATIVE)))
+<<<<<<< HEAD
 			pr_warn("%s xmit: Routing loop! Remote address found on this node!\n",
 				p->name);
+=======
+			pr_warn_ratelimited("%s xmit: Routing loop! Remote address found on this node!\n",
+					    p->name);
+>>>>>>> origin/android16-base
 		else
 			ret = 1;
 		rcu_read_unlock();
@@ -1207,8 +1248,13 @@ route_lookup:
 	 */
 	max_headroom = LL_RESERVED_SPACE(dst->dev) + sizeof(struct ipv6hdr)
 			+ dst->header_len + t->hlen;
+<<<<<<< HEAD
 	if (max_headroom > dev->needed_headroom)
 		dev->needed_headroom = max_headroom;
+=======
+	if (max_headroom > READ_ONCE(dev->needed_headroom))
+		WRITE_ONCE(dev->needed_headroom, max_headroom);
+>>>>>>> origin/android16-base
 
 	err = ip6_tnl_encap(skb, t, &proto, fl6);
 	if (err)
@@ -1436,6 +1482,10 @@ static void ip6_tnl_link_config(struct ip6_tnl *t)
 	struct __ip6_tnl_parm *p = &t->parms;
 	struct flowi6 *fl6 = &t->fl.u.ip6;
 	int t_hlen;
+<<<<<<< HEAD
+=======
+	int mtu;
+>>>>>>> origin/android16-base
 
 	memcpy(dev->dev_addr, &p->laddr, sizeof(struct in6_addr));
 	memcpy(dev->broadcast, &p->raddr, sizeof(struct in6_addr));
@@ -1478,12 +1528,22 @@ static void ip6_tnl_link_config(struct ip6_tnl *t)
 			dev->hard_header_len = rt->dst.dev->hard_header_len +
 				t_hlen;
 
+<<<<<<< HEAD
 			dev->mtu = rt->dst.dev->mtu - t_hlen;
 			if (!(t->parms.flags & IP6_TNL_F_IGN_ENCAP_LIMIT))
 				dev->mtu -= 8;
 
 			if (dev->mtu < IPV6_MIN_MTU)
 				dev->mtu = IPV6_MIN_MTU;
+=======
+			mtu = rt->dst.dev->mtu - t_hlen;
+			if (!(t->parms.flags & IP6_TNL_F_IGN_ENCAP_LIMIT))
+				mtu -= 8;
+
+			if (mtu < IPV6_MIN_MTU)
+				mtu = IPV6_MIN_MTU;
+			WRITE_ONCE(dev->mtu, mtu);
+>>>>>>> origin/android16-base
 		}
 		ip6_rt_put(rt);
 	}
@@ -1866,6 +1926,10 @@ ip6_tnl_dev_init_gen(struct net_device *dev)
 	dev->min_mtu = ETH_MIN_MTU;
 	dev->max_mtu = IP6_MAX_MTU - dev->hard_header_len;
 
+<<<<<<< HEAD
+=======
+	dev_hold(dev);
+>>>>>>> origin/android16-base
 	return 0;
 
 destroy_dst:
@@ -1909,7 +1973,10 @@ static int __net_init ip6_fb_tnl_dev_init(struct net_device *dev)
 	struct ip6_tnl_net *ip6n = net_generic(net, ip6_tnl_net_id);
 
 	t->parms.proto = IPPROTO_IPV6;
+<<<<<<< HEAD
 	dev_hold(dev);
+=======
+>>>>>>> origin/android16-base
 
 	rcu_assign_pointer(ip6n->tnls_wc[0], t);
 	return 0;
@@ -2222,6 +2289,19 @@ static void __net_exit ip6_tnl_destroy_tunnels(struct net *net, struct list_head
 			t = rtnl_dereference(t->next);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	t = rtnl_dereference(ip6n->tnls_wc[0]);
+	while (t) {
+		/* If dev is in the same netns, it has already
+		 * been added to the list by the previous loop.
+		 */
+		if (!net_eq(dev_net(t->dev), net))
+			unregister_netdevice_queue(t->dev, list);
+		t = rtnl_dereference(t->next);
+	}
+>>>>>>> origin/android16-base
 }
 
 static int __net_init ip6_tnl_init_net(struct net *net)

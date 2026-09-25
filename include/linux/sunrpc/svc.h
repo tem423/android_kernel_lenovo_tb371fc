@@ -271,6 +271,10 @@ struct svc_rqst {
 #define	RQ_VICTIM	(5)			/* about to be shut down */
 #define	RQ_BUSY		(6)			/* request is busy */
 #define	RQ_DATA		(7)			/* request has data */
+<<<<<<< HEAD
+=======
+#define RQ_AUTHERR	(8)			/* Request status is auth error */
+>>>>>>> origin/android16-base
 	unsigned long		rq_flags;	/* flags field */
 	ktime_t			rq_qtime;	/* enqueue time */
 
@@ -504,6 +508,10 @@ unsigned int	   svc_fill_write_vector(struct svc_rqst *rqstp,
 char		  *svc_fill_symlink_pathname(struct svc_rqst *rqstp,
 					     struct kvec *first, void *p,
 					     size_t total);
+<<<<<<< HEAD
+=======
+__be32		   svc_return_autherr(struct svc_rqst *rqstp, __be32 auth_err);
+>>>>>>> origin/android16-base
 
 #define	RPC_MAX_ADDRBUFLEN	(63U)
 

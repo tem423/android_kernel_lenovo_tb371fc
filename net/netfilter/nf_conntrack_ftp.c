@@ -383,7 +383,11 @@ static int help(struct sk_buff *skb,
 	int ret;
 	u32 seq;
 	int dir = CTINFO2DIR(ctinfo);
+<<<<<<< HEAD
 	unsigned int uninitialized_var(matchlen), uninitialized_var(matchoff);
+=======
+	unsigned int matchlen, matchoff;
+>>>>>>> origin/android16-base
 	struct nf_ct_ftp_master *ct_ftp_info = nfct_help_data(ct);
 	struct nf_conntrack_expect *exp;
 	union nf_inet_addr *daddr;

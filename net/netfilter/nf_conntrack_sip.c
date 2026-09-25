@@ -471,7 +471,11 @@ static int ct_sip_walk_headers(const struct nf_conn *ct, const char *dptr,
 				return ret;
 			if (ret == 0)
 				break;
+<<<<<<< HEAD
 			dataoff += *matchoff;
+=======
+			dataoff = *matchoff;
+>>>>>>> origin/android16-base
 		}
 		*in_header = 0;
 	}
@@ -483,7 +487,11 @@ static int ct_sip_walk_headers(const struct nf_conn *ct, const char *dptr,
 			break;
 		if (ret == 0)
 			return ret;
+<<<<<<< HEAD
 		dataoff += *matchoff;
+=======
+		dataoff = *matchoff;
+>>>>>>> origin/android16-base
 	}
 
 	if (in_header)
@@ -605,7 +613,11 @@ int ct_sip_parse_numerical_param(const struct nf_conn *ct, const char *dptr,
 	start += strlen(name);
 	*val = simple_strtoul(start, &end, 0);
 	if (start == end)
+<<<<<<< HEAD
 		return 0;
+=======
+		return -1;
+>>>>>>> origin/android16-base
 	if (matchoff && matchlen) {
 		*matchoff = start - dptr;
 		*matchlen = end - start;

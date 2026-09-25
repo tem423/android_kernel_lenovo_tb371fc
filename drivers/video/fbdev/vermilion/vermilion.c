@@ -291,8 +291,15 @@ static int vmlfb_get_gpu(struct vml_par *par)
 
 	mutex_unlock(&vml_mutex);
 
+<<<<<<< HEAD
 	if (pci_enable_device(par->gpu) < 0)
 		return -ENODEV;
+=======
+	if (pci_enable_device(par->gpu) < 0) {
+		pci_dev_put(par->gpu);
+		return -ENODEV;
+	}
+>>>>>>> origin/android16-base
 
 	return 0;
 }

@@ -12,12 +12,15 @@
 
 /* register to configure DMA scheduling */
 #define DSI_DMA_SCHEDULE_CTRL 0x100
+<<<<<<< HEAD
 #define DSI_DMA_SCHEDULE_CTRL2 0x0104
 
 /* offset addresses of MDP INTF base register, to be mapped for debug feature */
 #define MDP_INTF_TEAR_OFFSET 0x280
 #define MDP_INTF_TEAR_LINE_COUNT_OFFSET 0x30
 #define MDP_INTF_LINE_COUNT_OFFSET 0xB0
+=======
+>>>>>>> origin/android16-base
 
 /* MDP INTF registers to be mapped*/
 #define MDP_INTF1_TEAR_LINE_COUNT 0xAE6BAB0
@@ -57,7 +60,10 @@ void dsi_ctrl_hw_22_schedule_dma_cmd(struct dsi_ctrl_hw *ctrl, int line_no)
 	reg |= (line_no & 0xffff);
 
 	DSI_W32(ctrl, DSI_DMA_SCHEDULE_CTRL, reg);
+<<<<<<< HEAD
 	ctrl->reset_trig_ctrl = true;
+=======
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -188,6 +194,7 @@ u32 dsi_ctrl_hw_22_log_line_count(struct dsi_ctrl_hw *ctrl, bool cmd_mode)
 
 	u32 reg = 0;
 
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(ctrl->mdp_intf_base))
 		return reg;
 
@@ -270,3 +277,12 @@ void dsi_ctrl_hw_22_reset_trigger_controls(struct dsi_ctrl_hw *ctrl,
 	DSI_W32(ctrl, DSI_DMA_SCHEDULE_CTRL, 0x0);
 	ctrl->reset_trig_ctrl = false;
 }
+=======
+	if (cmd_mode && ctrl->te_rd_ptr_reg)
+		reg = readl_relaxed(ctrl->te_rd_ptr_reg);
+	else if (ctrl->line_count_reg)
+		reg = readl_relaxed(ctrl->line_count_reg);
+
+	return reg;
+}
+>>>>>>> origin/android16-base

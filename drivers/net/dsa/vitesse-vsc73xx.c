@@ -38,7 +38,11 @@
 #define VSC73XX_BLOCK_ANALYZER	0x2 /* Only subblock 0 */
 #define VSC73XX_BLOCK_MII	0x3 /* Subblocks 0 and 1 */
 #define VSC73XX_BLOCK_MEMINIT	0x3 /* Only subblock 2 */
+<<<<<<< HEAD
 #define VSC73XX_BLOCK_CAPTURE	0x4 /* Only subblock 2 */
+=======
+#define VSC73XX_BLOCK_CAPTURE	0x4 /* Subblocks 0-4, 6, 7 */
+>>>>>>> origin/android16-base
 #define VSC73XX_BLOCK_ARBITER	0x5 /* Only subblock 0 */
 #define VSC73XX_BLOCK_SYSTEM	0x7 /* Only subblock 0 */
 
@@ -385,13 +389,26 @@ static int vsc73xx_is_addr_valid(u8 block, u8 subblock)
 		break;
 
 	case VSC73XX_BLOCK_MII:
+<<<<<<< HEAD
 	case VSC73XX_BLOCK_CAPTURE:
+=======
+>>>>>>> origin/android16-base
 	case VSC73XX_BLOCK_ARBITER:
 		switch (subblock) {
 		case 0 ... 1:
 			return 1;
 		}
 		break;
+<<<<<<< HEAD
+=======
+	case VSC73XX_BLOCK_CAPTURE:
+		switch (subblock) {
+		case 0 ... 4:
+		case 6 ... 7:
+			return 1;
+		}
+		break;
+>>>>>>> origin/android16-base
 	}
 
 	return 0;
@@ -649,7 +666,11 @@ static int vsc73xx_phy_write(struct dsa_switch *ds, int phy, int regnum,
 		return 0;
 	}
 
+<<<<<<< HEAD
 	cmd = (phy << 21) | (regnum << 16);
+=======
+	cmd = (phy << 21) | (regnum << 16) | val;
+>>>>>>> origin/android16-base
 	ret = vsc73xx_write(vsc, VSC73XX_BLOCK_MII, 0, 1, cmd);
 	if (ret)
 		return ret;
@@ -1227,6 +1248,11 @@ static int vsc73xx_gpio_probe(struct vsc73xx *vsc)
 
 	vsc->gc.label = devm_kasprintf(vsc->dev, GFP_KERNEL, "VSC%04x",
 				       vsc->chipid);
+<<<<<<< HEAD
+=======
+	if (!vsc->gc.label)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 	vsc->gc.ngpio = 4;
 	vsc->gc.owner = THIS_MODULE;
 	vsc->gc.parent = vsc->dev;

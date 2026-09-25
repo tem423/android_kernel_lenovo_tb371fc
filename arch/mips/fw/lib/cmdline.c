@@ -51,7 +51,11 @@ char *fw_getenv(char *envname)
 {
 	char *result = NULL;
 
+<<<<<<< HEAD
 	if (_fw_envp != NULL) {
+=======
+	if (_fw_envp != NULL && fw_envp(0) != NULL) {
+>>>>>>> origin/android16-base
 		/*
 		 * Return a pointer to the given environment variable.
 		 * YAMON uses "name", "value" pairs, while U-Boot uses

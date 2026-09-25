@@ -132,6 +132,10 @@ static void xhci_debugfs_regset(struct xhci_hcd *xhci, u32 base,
 	regset->regs = regs;
 	regset->nregs = nregs;
 	regset->base = hcd->regs + base;
+<<<<<<< HEAD
+=======
+	regset->dev = hcd->self.controller;
+>>>>>>> origin/android16-base
 
 	debugfs_create_regset32((const char *)rgs->name, 0444, parent, regset);
 }

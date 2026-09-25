@@ -47,7 +47,11 @@ TRACE_EVENT(vfio_ccw_io_fctl,
 /* This part must be outside protection */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/s390/cio
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE vfio_ccw_trace
 

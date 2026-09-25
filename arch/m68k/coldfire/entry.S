@@ -92,6 +92,11 @@ ENTRY(system_call)
 	jbsr	syscall_trace_enter
 	RESTORE_SWITCH_STACK
 	addql	#4,%sp
+<<<<<<< HEAD
+=======
+	addql	#1,%d0
+	jeq	ret_from_exception
+>>>>>>> origin/android16-base
 	movel	%d3,%a0
 	jbsr	%a0@
 	movel	%d0,%sp@(PT_OFF_D0)		/* save the return value */

@@ -30,7 +30,11 @@ static void seqiv_aead_encrypt_complete2(struct aead_request *req, int err)
 	struct aead_request *subreq = aead_request_ctx(req);
 	struct crypto_aead *geniv;
 
+<<<<<<< HEAD
 	if (err == -EINPROGRESS)
+=======
+	if (err == -EINPROGRESS || err == -EBUSY)
+>>>>>>> origin/android16-base
 		return;
 
 	if (err)

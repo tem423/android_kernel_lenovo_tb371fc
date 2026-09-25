@@ -1112,7 +1112,11 @@ static long rxrpc_read(const struct key *key,
 		default: /* we have a ticket we can't encode */
 			pr_err("Unsupported key token type (%u)\n",
 			       token->security_index);
+<<<<<<< HEAD
 			continue;
+=======
+			return -ENOPKG;
+>>>>>>> origin/android16-base
 		}
 
 		_debug("token[%u]: toksize=%u", ntoks, toksize);
@@ -1227,7 +1231,13 @@ static long rxrpc_read(const struct key *key,
 			break;
 
 		default:
+<<<<<<< HEAD
 			break;
+=======
+			pr_err("Unsupported key token type (%u)\n",
+			       token->security_index);
+			return -ENOPKG;
+>>>>>>> origin/android16-base
 		}
 
 		ASSERTCMP((unsigned long)xdr - (unsigned long)oldxdr, ==,

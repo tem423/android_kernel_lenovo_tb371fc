@@ -227,11 +227,21 @@ static int arfs_create_groups(struct mlx5e_flow_table *ft,
 
 	ft->g = kcalloc(MLX5E_ARFS_NUM_GROUPS,
 			sizeof(*ft->g), GFP_KERNEL);
+<<<<<<< HEAD
 	in = kvzalloc(inlen, GFP_KERNEL);
 	if  (!in || !ft->g) {
 		kvfree(ft->g);
 		kvfree(in);
 		return -ENOMEM;
+=======
+	if (!ft->g)
+		return -ENOMEM;
+
+	in = kvzalloc(inlen, GFP_KERNEL);
+	if (!in) {
+		err = -ENOMEM;
+		goto err_free_g;
+>>>>>>> origin/android16-base
 	}
 
 	mc = MLX5_ADDR_OF(create_flow_group_in, in, match_criteria);
@@ -251,7 +261,11 @@ static int arfs_create_groups(struct mlx5e_flow_table *ft,
 		break;
 	default:
 		err = -EINVAL;
+<<<<<<< HEAD
 		goto out;
+=======
+		goto err_free_in;
+>>>>>>> origin/android16-base
 	}
 
 	switch (type) {
@@ -273,7 +287,11 @@ static int arfs_create_groups(struct mlx5e_flow_table *ft,
 		break;
 	default:
 		err = -EINVAL;
+<<<<<<< HEAD
 		goto out;
+=======
+		goto err_free_in;
+>>>>>>> origin/android16-base
 	}
 
 	MLX5_SET_CFG(in, match_criteria_enable, MLX5_MATCH_OUTER_HEADERS);
@@ -282,7 +300,11 @@ static int arfs_create_groups(struct mlx5e_flow_table *ft,
 	MLX5_SET_CFG(in, end_flow_index, ix - 1);
 	ft->g[ft->num_groups] = mlx5_create_flow_group(ft->t, in);
 	if (IS_ERR(ft->g[ft->num_groups]))
+<<<<<<< HEAD
 		goto err;
+=======
+		goto err_clean_group;
+>>>>>>> origin/android16-base
 	ft->num_groups++;
 
 	memset(in, 0, inlen);
@@ -291,18 +313,33 @@ static int arfs_create_groups(struct mlx5e_flow_table *ft,
 	MLX5_SET_CFG(in, end_flow_index, ix - 1);
 	ft->g[ft->num_groups] = mlx5_create_flow_group(ft->t, in);
 	if (IS_ERR(ft->g[ft->num_groups]))
+<<<<<<< HEAD
 		goto err;
+=======
+		goto err_clean_group;
+>>>>>>> origin/android16-base
 	ft->num_groups++;
 
 	kvfree(in);
 	return 0;
 
+<<<<<<< HEAD
 err:
 	err = PTR_ERR(ft->g[ft->num_groups]);
 	ft->g[ft->num_groups] = NULL;
 out:
 	kvfree(in);
 
+=======
+err_clean_group:
+	err = PTR_ERR(ft->g[ft->num_groups]);
+	ft->g[ft->num_groups] = NULL;
+err_free_in:
+	kvfree(in);
+err_free_g:
+	kfree(ft->g);
+	ft->g = NULL;
+>>>>>>> origin/android16-base
 	return err;
 }
 

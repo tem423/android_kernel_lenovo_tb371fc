@@ -922,7 +922,11 @@ struct ipa3_ep_context {
 	unsigned long gsi_chan_hdl;
 	unsigned long gsi_evt_ring_hdl;
 	struct ipa_gsi_ep_mem_info gsi_mem_info;
+<<<<<<< HEAD
 	union __packed gsi_channel_scratch chan_scratch;
+=======
+	union gsi_channel_scratch chan_scratch;
+>>>>>>> origin/android16-base
 	struct gsi_chan_xfer_notify xfer_notify;
 	bool xfer_notify_valid;
 	struct ipa_ep_cfg cfg;
@@ -977,9 +981,15 @@ struct ipa_request_gsi_channel_params {
 	bool skip_ep_cfg;
 	bool keep_ipa_awake;
 	struct gsi_evt_ring_props evt_ring_params;
+<<<<<<< HEAD
 	union __packed gsi_evt_scratch evt_scratch;
 	struct gsi_chan_props chan_params;
 	union __packed gsi_channel_scratch chan_scratch;
+=======
+	union gsi_evt_scratch evt_scratch;
+	struct gsi_chan_props chan_params;
+	union gsi_channel_scratch chan_scratch;
+>>>>>>> origin/android16-base
 };
 
 enum ipa3_sys_pipe_policy {
@@ -1383,6 +1393,10 @@ struct ipa3_stats {
 	u32 rx_page_drop_cnt;
 	u32 zero_len_frag_pkt_cnt;
 	struct ipa3_page_recycle_stats page_recycle_stats[2];
+<<<<<<< HEAD
+=======
+	u64 lower_order;
+>>>>>>> origin/android16-base
 };
 
 /* offset for each stats */
@@ -2778,7 +2792,11 @@ bool ipa3_has_open_aggr_frame(enum ipa_client_type client);
 
 int ipa3_mhi_resume_channels_internal(enum ipa_client_type client,
 		bool LPTransitionRejected, bool brstmode_enabled,
+<<<<<<< HEAD
 		union __packed gsi_channel_scratch ch_scratch, u8 index);
+=======
+		union gsi_channel_scratch ch_scratch, u8 index);
+>>>>>>> origin/android16-base
 
 int ipa3_mhi_destroy_channel(enum ipa_client_type client);
 

@@ -49,7 +49,11 @@ void p1275_cmd_direct(unsigned long *args)
 	local_irq_restore(flags);
 }
 
+<<<<<<< HEAD
 void prom_cif_init(void *cif_handler, void *cif_stack)
+=======
+void prom_cif_init(void *cif_handler)
+>>>>>>> origin/android16-base
 {
 	p1275buf.prom_cif_handler = (void (*)(long *))cif_handler;
 }

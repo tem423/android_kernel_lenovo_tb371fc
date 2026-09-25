@@ -2120,10 +2120,19 @@ static int stfsm_probe(struct platform_device *pdev)
 		(long long)fsm->mtd.size, (long long)(fsm->mtd.size >> 20),
 		fsm->mtd.erasesize, (fsm->mtd.erasesize >> 10));
 
+<<<<<<< HEAD
 	return mtd_device_register(&fsm->mtd, NULL, 0);
 
 err_clk_unprepare:
 	clk_disable_unprepare(fsm->clk);
+=======
+	ret = mtd_device_register(&fsm->mtd, NULL, 0);
+	if (ret) {
+err_clk_unprepare:
+		clk_disable_unprepare(fsm->clk);
+	}
+
+>>>>>>> origin/android16-base
 	return ret;
 }
 

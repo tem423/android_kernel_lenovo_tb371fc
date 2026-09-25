@@ -385,7 +385,12 @@ static int bnep_rx_frame(struct bnep_session *s, struct sk_buff *skb)
 
 	case BNEP_COMPRESSED_DST_ONLY:
 		__skb_put_data(nskb, skb_mac_header(skb), ETH_ALEN);
+<<<<<<< HEAD
 		__skb_put_data(nskb, s->eh.h_source, ETH_ALEN + 2);
+=======
+		__skb_put_data(nskb, s->eh.h_source, ETH_ALEN);
+		put_unaligned(s->eh.h_proto, (__be16 *)__skb_put(nskb, 2));
+>>>>>>> origin/android16-base
 		break;
 
 	case BNEP_GENERAL:
@@ -743,8 +748,12 @@ static int __init bnep_init(void)
 	if (flt[0])
 		BT_INFO("BNEP filters: %s", flt);
 
+<<<<<<< HEAD
 	bnep_sock_init();
 	return 0;
+=======
+	return bnep_sock_init();
+>>>>>>> origin/android16-base
 }
 
 static void __exit bnep_exit(void)

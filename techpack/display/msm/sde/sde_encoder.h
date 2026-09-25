@@ -373,6 +373,7 @@ void sde_encoder_needs_hw_reset(struct drm_encoder *enc);
 void sde_encoder_uidle_enable(struct drm_encoder *drm_enc, bool enable);
 
 /**
+<<<<<<< HEAD
  * sde_encoder_vid_wait_for_active - wait Vactive region for some mark region
  * @drm_enc:    Pointer to drm encoder structure
  * @Return:     non zero value if wait timeout occurred
@@ -380,6 +381,8 @@ void sde_encoder_uidle_enable(struct drm_encoder *drm_enc, bool enable);
 int sde_encoder_vid_wait_for_active(struct drm_encoder *enc);
 
 /**
+=======
+>>>>>>> origin/android16-base
  * sde_encoder_virt_reset - delay encoder virt reset
  * @drm_enc:	Pointer to drm encoder structure
  */
@@ -406,6 +409,7 @@ static inline struct sde_kms *sde_encoder_get_kms(struct drm_encoder *drm_enc)
 	return to_sde_kms(priv->kms);
 }
 
+<<<<<<< HEAD
 bool get_sde_encoder_virt_prepare_kickoff(struct drm_connector *connector);
 
 bool get_sde_encoder_virt_ready_kickoff(struct drm_connector *connector);
@@ -414,4 +418,6 @@ void set_sde_encoder_virt_prepare_kickoff(struct drm_connector *connector,bool e
 
 void set_sde_encoder_virt_ready_kickoff(struct drm_connector *connector,bool enable);
 
+=======
+>>>>>>> origin/android16-base
 #endif /* __SDE_ENCODER_H__ */

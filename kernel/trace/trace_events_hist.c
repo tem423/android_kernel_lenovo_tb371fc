@@ -15,6 +15,10 @@
 
 #include "tracing_map.h"
 #include "trace.h"
+<<<<<<< HEAD
+=======
+#include "trace_dynevent.h"
+>>>>>>> origin/android16-base
 
 #define SYNTH_SYSTEM		"synthetic"
 #define SYNTH_FIELDS_MAX	16
@@ -280,17 +284,41 @@ struct hist_trigger_data {
 	struct action_data		*actions[HIST_ACTIONS_MAX];
 	unsigned int			n_actions;
 
+<<<<<<< HEAD
 	struct hist_field               *synth_var_refs[SYNTH_FIELDS_MAX];
 	unsigned int                    n_synth_var_refs;
+=======
+>>>>>>> origin/android16-base
 	struct field_var		*field_vars[SYNTH_FIELDS_MAX];
 	unsigned int			n_field_vars;
 	unsigned int			n_field_var_str;
 	struct field_var_hist		*field_var_hists[SYNTH_FIELDS_MAX];
 	unsigned int			n_field_var_hists;
 
+<<<<<<< HEAD
 	struct field_var		*max_vars[SYNTH_FIELDS_MAX];
 	unsigned int			n_max_vars;
 	unsigned int			n_max_var_str;
+=======
+	struct field_var		*save_vars[SYNTH_FIELDS_MAX];
+	unsigned int			n_save_vars;
+	unsigned int			n_save_var_str;
+};
+
+static int synth_event_create(int argc, const char **argv);
+static int synth_event_show(struct seq_file *m, struct dyn_event *ev);
+static int synth_event_release(struct dyn_event *ev);
+static bool synth_event_is_busy(struct dyn_event *ev);
+static bool synth_event_match(const char *system, const char *event,
+			      struct dyn_event *ev);
+
+static struct dyn_event_operations synth_event_ops = {
+	.create = synth_event_create,
+	.show = synth_event_show,
+	.is_busy = synth_event_is_busy,
+	.free = synth_event_release,
+	.match = synth_event_match,
+>>>>>>> origin/android16-base
 };
 
 struct synth_field {
@@ -302,7 +330,11 @@ struct synth_field {
 };
 
 struct synth_event {
+<<<<<<< HEAD
 	struct list_head			list;
+=======
+	struct dyn_event			devent;
+>>>>>>> origin/android16-base
 	int					ref;
 	char					*name;
 	struct synth_field			**fields;
@@ -313,10 +345,40 @@ struct synth_event {
 	struct tracepoint			*tp;
 };
 
+<<<<<<< HEAD
+=======
+static bool is_synth_event(struct dyn_event *ev)
+{
+	return ev->ops == &synth_event_ops;
+}
+
+static struct synth_event *to_synth_event(struct dyn_event *ev)
+{
+	return container_of(ev, struct synth_event, devent);
+}
+
+static bool synth_event_is_busy(struct dyn_event *ev)
+{
+	struct synth_event *event = to_synth_event(ev);
+
+	return event->ref != 0;
+}
+
+static bool synth_event_match(const char *system, const char *event,
+			      struct dyn_event *ev)
+{
+	struct synth_event *sev = to_synth_event(ev);
+
+	return strcmp(sev->name, event) == 0 &&
+		(!system || strcmp(system, SYNTH_SYSTEM) == 0);
+}
+
+>>>>>>> origin/android16-base
 struct action_data;
 
 typedef void (*action_fn_t) (struct hist_trigger_data *hist_data,
 			     struct tracing_map_elt *elt, void *rec,
+<<<<<<< HEAD
 			     struct ring_buffer_event *rbe,
 			     struct action_data *data, u64 *var_ref_vals);
 
@@ -345,6 +407,79 @@ struct action_data {
 };
 
 
+=======
+			     struct ring_buffer_event *rbe, void *key,
+			     struct action_data *data, u64 *var_ref_vals);
+
+typedef bool (*check_track_val_fn_t) (u64 track_val, u64 var_val);
+
+enum handler_id {
+	HANDLER_ONMATCH = 1,
+	HANDLER_ONMAX,
+};
+
+enum action_id {
+	ACTION_SAVE = 1,
+	ACTION_TRACE,
+};
+
+struct action_data {
+	enum handler_id		handler;
+	enum action_id		action;
+	char			*action_name;
+	action_fn_t		fn;
+
+	unsigned int		n_params;
+	char			*params[SYNTH_FIELDS_MAX];
+
+	/*
+	 * When a histogram trigger is hit, the values of any
+	 * references to variables, including variables being passed
+	 * as parameters to synthetic events, are collected into a
+	 * var_ref_vals array.  This var_ref_idx is the index of the
+	 * first param in the array to be passed to the synthetic
+	 * event invocation.
+	 */
+	unsigned int		var_ref_idx;
+	struct synth_event	*synth_event;
+
+	union {
+		struct {
+			char			*event;
+			char			*event_system;
+		} match_data;
+
+		struct {
+			/*
+			 * var_str contains the $-unstripped variable
+			 * name referenced by var_ref, and used when
+			 * printing the action.  Because var_ref
+			 * creation is deferred to create_actions(),
+			 * we need a per-action way to save it until
+			 * then, thus var_str.
+			 */
+			char			*var_str;
+
+			/*
+			 * var_ref refers to the variable being
+			 * tracked e.g onmax($var).
+			 */
+			struct hist_field	*var_ref;
+
+			/*
+			 * track_var contains the 'invisible' tracking
+			 * variable created to keep the current
+			 * e.g. max value.
+			 */
+			struct hist_field	*track_var;
+
+			check_track_val_fn_t	check_val;
+			action_fn_t		save_data;
+		} track_data;
+	};
+};
+
+>>>>>>> origin/android16-base
 static char last_hist_cmd[MAX_FILTER_STR_VAL];
 static char hist_err_str[MAX_FILTER_STR_VAL];
 
@@ -403,9 +538,12 @@ static bool have_hist_err(void)
 	return false;
 }
 
+<<<<<<< HEAD
 static LIST_HEAD(synth_event_list);
 static DEFINE_MUTEX(synth_event_mutex);
 
+=======
+>>>>>>> origin/android16-base
 struct synth_trace_event {
 	struct trace_entry	ent;
 	u64			fields[];
@@ -447,7 +585,11 @@ static int synth_event_define_fields(struct trace_event_call *call)
 
 static bool synth_field_signed(char *type)
 {
+<<<<<<< HEAD
 	if (strncmp(type, "u", 1) == 0)
+=======
+	if (str_has_prefix(type, "u"))
+>>>>>>> origin/android16-base
 		return false;
 	if (strcmp(type, "gfp_t") == 0)
 		return false;
@@ -760,6 +902,7 @@ static void free_synth_field(struct synth_field *field)
 	kfree(field);
 }
 
+<<<<<<< HEAD
 static struct synth_field *parse_synth_field(int argc, char **argv,
 					     int *consumed)
 {
@@ -768,6 +911,14 @@ static struct synth_field *parse_synth_field(int argc, char **argv,
 	char *field_type = argv[0], *field_name;
 	int len, ret = 0;
 	char *array;
+=======
+static struct synth_field *parse_synth_field(int argc, const char **argv,
+					     int *consumed)
+{
+	struct synth_field *field;
+	const char *prefix = NULL, *field_type = argv[0], *field_name, *array;
+	int len, ret = 0;
+>>>>>>> origin/android16-base
 
 	if (field_type[0] == ';')
 		field_type++;
@@ -784,20 +935,47 @@ static struct synth_field *parse_synth_field(int argc, char **argv,
 		*consumed = 2;
 	}
 
+<<<<<<< HEAD
 	len = strlen(field_name);
 	if (field_name[len - 1] == ';')
 		field_name[len - 1] = '\0';
 
+=======
+>>>>>>> origin/android16-base
 	field = kzalloc(sizeof(*field), GFP_KERNEL);
 	if (!field)
 		return ERR_PTR(-ENOMEM);
 
+<<<<<<< HEAD
 	len = strlen(field_type) + 1;
 	array = strchr(field_name, '[');
 	if (array)
 		len += strlen(array);
 	if (prefix)
 		len += strlen(prefix);
+=======
+	len = strlen(field_name);
+	array = strchr(field_name, '[');
+	if (array)
+		len -= strlen(array);
+	else if (field_name[len - 1] == ';')
+		len--;
+
+	field->name = kmemdup_nul(field_name, len, GFP_KERNEL);
+	if (!field->name) {
+		ret = -ENOMEM;
+		goto free;
+	}
+
+	if (field_type[0] == ';')
+		field_type++;
+	len = strlen(field_type) + 1;
+	if (array)
+		len += strlen(array);
+	if (prefix)
+		len += strlen(prefix);
+
+>>>>>>> origin/android16-base
 	field->type = kzalloc(len, GFP_KERNEL);
 	if (!field->type) {
 		ret = -ENOMEM;
@@ -808,7 +986,12 @@ static struct synth_field *parse_synth_field(int argc, char **argv,
 	strcat(field->type, field_type);
 	if (array) {
 		strcat(field->type, array);
+<<<<<<< HEAD
 		*array = '\0';
+=======
+		if (field->type[len - 1] == ';')
+			field->type[len - 1] = '\0';
+>>>>>>> origin/android16-base
 	}
 
 	field->size = synth_field_size(field->type);
@@ -822,11 +1005,14 @@ static struct synth_field *parse_synth_field(int argc, char **argv,
 
 	field->is_signed = synth_field_signed(field->type);
 
+<<<<<<< HEAD
 	field->name = kstrdup(field_name, GFP_KERNEL);
 	if (!field->name) {
 		ret = -ENOMEM;
 		goto free;
 	}
+=======
+>>>>>>> origin/android16-base
  out:
 	return field;
  free:
@@ -890,9 +1076,19 @@ static inline void trace_synth(struct synth_event *event, u64 *var_ref_vals,
 
 static struct synth_event *find_synth_event(const char *name)
 {
+<<<<<<< HEAD
 	struct synth_event *event;
 
 	list_for_each_entry(event, &synth_event_list, list) {
+=======
+	struct dyn_event *pos;
+	struct synth_event *event;
+
+	for_each_dyn_event(pos) {
+		if (!is_synth_event(pos))
+			continue;
+		event = to_synth_event(pos);
+>>>>>>> origin/android16-base
 		if (strcmp(event->name, name) == 0)
 			return event;
 	}
@@ -934,7 +1130,11 @@ static int register_synth_event(struct synth_event *event)
 	call->data = event;
 	call->tp = event->tp;
 
+<<<<<<< HEAD
 	ret = trace_add_event_call_nolock(call);
+=======
+	ret = trace_add_event_call(call);
+>>>>>>> origin/android16-base
 	if (ret) {
 		pr_warn("Failed to register synthetic event: %s\n",
 			trace_event_name(call));
@@ -958,7 +1158,11 @@ static int unregister_synth_event(struct synth_event *event)
 	struct trace_event_call *call = &event->call;
 	int ret;
 
+<<<<<<< HEAD
 	ret = trace_remove_event_call_nolock(call);
+=======
+	ret = trace_remove_event_call(call);
+>>>>>>> origin/android16-base
 
 	return ret;
 }
@@ -981,7 +1185,11 @@ static void free_synth_event(struct synth_event *event)
 	kfree(event);
 }
 
+<<<<<<< HEAD
 static struct synth_event *alloc_synth_event(char *event_name, int n_fields,
+=======
+static struct synth_event *alloc_synth_event(const char *name, int n_fields,
+>>>>>>> origin/android16-base
 					     struct synth_field **fields)
 {
 	struct synth_event *event;
@@ -993,7 +1201,11 @@ static struct synth_event *alloc_synth_event(char *event_name, int n_fields,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	event->name = kstrdup(event_name, GFP_KERNEL);
+=======
+	event->name = kstrdup(name, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!event->name) {
 		kfree(event);
 		event = ERR_PTR(-ENOMEM);
@@ -1007,6 +1219,11 @@ static struct synth_event *alloc_synth_event(char *event_name, int n_fields,
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	dyn_event_init(&event->devent, &synth_event_ops);
+
+>>>>>>> origin/android16-base
 	for (i = 0; i < n_fields; i++)
 		event->fields[i] = fields[i];
 
@@ -1017,12 +1234,21 @@ static struct synth_event *alloc_synth_event(char *event_name, int n_fields,
 
 static void action_trace(struct hist_trigger_data *hist_data,
 			 struct tracing_map_elt *elt, void *rec,
+<<<<<<< HEAD
 			 struct ring_buffer_event *rbe,
 			 struct action_data *data, u64 *var_ref_vals)
 {
 	struct synth_event *event = data->onmatch.synth_event;
 
 	trace_synth(event, var_ref_vals, data->onmatch.var_ref_idx);
+=======
+			 struct ring_buffer_event *rbe, void *key,
+			 struct action_data *data, u64 *var_ref_vals)
+{
+	struct synth_event *event = data->synth_event;
+
+	trace_synth(event, var_ref_vals, data->var_ref_idx);
+>>>>>>> origin/android16-base
 }
 
 struct hist_var_data {
@@ -1030,6 +1256,7 @@ struct hist_var_data {
 	struct hist_trigger_data *hist_data;
 };
 
+<<<<<<< HEAD
 static void add_or_delete_synth_event(struct synth_event *event, int delete)
 {
 	if (delete)
@@ -1052,6 +1279,13 @@ static int create_synth_event(int argc, char **argv)
 
 	mutex_lock(&event_mutex);
 	mutex_lock(&synth_event_mutex);
+=======
+static int __create_synth_event(int argc, const char *name, const char **argv)
+{
+	struct synth_field *field, *fields[SYNTH_FIELDS_MAX];
+	struct synth_event *event = NULL;
+	int i, consumed = 0, n_fields = 0, ret = 0;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Argument syntax:
@@ -1059,6 +1293,7 @@ static int create_synth_event(int argc, char **argv)
 	 *  - Remove synthetic event: !<event_name> field[;field] ...
 	 *      where 'field' = type field_name
 	 */
+<<<<<<< HEAD
 	if (argc < 1) {
 		ret = -EINVAL;
 		goto out;
@@ -1095,6 +1330,21 @@ static int create_synth_event(int argc, char **argv)
 	}
 
 	for (i = 1; i < argc - 1; i++) {
+=======
+
+	if (name[0] == '\0' || argc < 1)
+		return -EINVAL;
+
+	mutex_lock(&event_mutex);
+
+	event = find_synth_event(name);
+	if (event) {
+		ret = -EEXIST;
+		goto out;
+	}
+
+	for (i = 0; i < argc - 1; i++) {
+>>>>>>> origin/android16-base
 		if (strcmp(argv[i], ";") == 0)
 			continue;
 		if (n_fields == SYNTH_FIELDS_MAX) {
@@ -1122,6 +1372,7 @@ static int create_synth_event(int argc, char **argv)
 		event = NULL;
 		goto err;
 	}
+<<<<<<< HEAD
  out:
 	if (event) {
 		if (delete_event) {
@@ -1133,10 +1384,19 @@ static int create_synth_event(int argc, char **argv)
 		}
 	}
 	mutex_unlock(&synth_event_mutex);
+=======
+	ret = register_synth_event(event);
+	if (!ret)
+		dyn_event_add(&event->devent);
+	else
+		free_synth_event(event);
+ out:
+>>>>>>> origin/android16-base
 	mutex_unlock(&event_mutex);
 
 	return ret;
  err:
+<<<<<<< HEAD
 	mutex_unlock(&synth_event_mutex);
 	mutex_unlock(&event_mutex);
 
@@ -1196,6 +1456,83 @@ static int synth_events_seq_show(struct seq_file *m, void *v)
 {
 	struct synth_field *field;
 	struct synth_event *event = v;
+=======
+	for (i = 0; i < n_fields; i++)
+		free_synth_field(fields[i]);
+
+	goto out;
+}
+
+static int create_or_delete_synth_event(int argc, char **argv)
+{
+	const char *name = argv[0];
+	struct synth_event *event = NULL;
+	int ret;
+
+	/* trace_run_command() ensures argc != 0 */
+	if (name[0] == '!') {
+		mutex_lock(&event_mutex);
+		event = find_synth_event(name + 1);
+		if (event) {
+			if (event->ref)
+				ret = -EBUSY;
+			else {
+				ret = unregister_synth_event(event);
+				if (!ret) {
+					dyn_event_remove(&event->devent);
+					free_synth_event(event);
+				}
+			}
+		} else
+			ret = -ENOENT;
+		mutex_unlock(&event_mutex);
+		return ret;
+	}
+
+	ret = __create_synth_event(argc - 1, name, (const char **)argv + 1);
+	return ret == -ECANCELED ? -EINVAL : ret;
+}
+
+static int synth_event_create(int argc, const char **argv)
+{
+	const char *name = argv[0];
+	int len;
+
+	if (name[0] != 's' || name[1] != ':')
+		return -ECANCELED;
+	name += 2;
+
+	/* This interface accepts group name prefix */
+	if (strchr(name, '/')) {
+		len = sizeof(SYNTH_SYSTEM "/") - 1;
+		if (strncmp(name, SYNTH_SYSTEM "/", len))
+			return -EINVAL;
+		name += len;
+	}
+	return __create_synth_event(argc - 1, name, argv + 1);
+}
+
+static int synth_event_release(struct dyn_event *ev)
+{
+	struct synth_event *event = to_synth_event(ev);
+	int ret;
+
+	if (event->ref)
+		return -EBUSY;
+
+	ret = unregister_synth_event(event);
+	if (ret)
+		return ret;
+
+	dyn_event_remove(ev);
+	free_synth_event(event);
+	return 0;
+}
+
+static int __synth_event_show(struct seq_file *m, struct synth_event *event)
+{
+	struct synth_field *field;
+>>>>>>> origin/android16-base
 	unsigned int i;
 
 	seq_printf(m, "%s\t", event->name);
@@ -1213,11 +1550,38 @@ static int synth_events_seq_show(struct seq_file *m, void *v)
 	return 0;
 }
 
+<<<<<<< HEAD
 static const struct seq_operations synth_events_seq_op = {
 	.start  = synth_events_seq_start,
 	.next   = synth_events_seq_next,
 	.stop   = synth_events_seq_stop,
 	.show   = synth_events_seq_show
+=======
+static int synth_event_show(struct seq_file *m, struct dyn_event *ev)
+{
+	struct synth_event *event = to_synth_event(ev);
+
+	seq_printf(m, "s:%s/", event->class.system);
+
+	return __synth_event_show(m, event);
+}
+
+static int synth_events_seq_show(struct seq_file *m, void *v)
+{
+	struct dyn_event *ev = v;
+
+	if (!is_synth_event(ev))
+		return 0;
+
+	return __synth_event_show(m, to_synth_event(ev));
+}
+
+static const struct seq_operations synth_events_seq_op = {
+	.start	= dyn_event_seq_start,
+	.next	= dyn_event_seq_next,
+	.stop	= dyn_event_seq_stop,
+	.show	= synth_events_seq_show,
+>>>>>>> origin/android16-base
 };
 
 static int synth_events_open(struct inode *inode, struct file *file)
@@ -1225,7 +1589,11 @@ static int synth_events_open(struct inode *inode, struct file *file)
 	int ret;
 
 	if ((file->f_mode & FMODE_WRITE) && (file->f_flags & O_TRUNC)) {
+<<<<<<< HEAD
 		ret = release_all_synth_events();
+=======
+		ret = dyn_events_release_all(&synth_event_ops);
+>>>>>>> origin/android16-base
 		if (ret < 0)
 			return ret;
 	}
@@ -1238,7 +1606,11 @@ static ssize_t synth_events_write(struct file *file,
 				  size_t count, loff_t *ppos)
 {
 	return trace_parse_run_command(file, buffer, count, ppos,
+<<<<<<< HEAD
 				       create_synth_event);
+=======
+				       create_or_delete_synth_event);
+>>>>>>> origin/android16-base
 }
 
 static const struct file_operations synth_events_fops = {
@@ -1291,6 +1663,7 @@ check_field_for_var_ref(struct hist_field *hist_field,
 			struct hist_trigger_data *var_data,
 			unsigned int var_idx)
 {
+<<<<<<< HEAD
 	struct hist_field *found = NULL;
 
 	if (hist_field && hist_field->flags & HIST_FIELD_FL_VAR_REF) {
@@ -1334,6 +1707,15 @@ check_field_for_var_refs(struct hist_trigger_data *hist_data,
 	}
 
 	return found;
+=======
+	WARN_ON(!(hist_field && hist_field->flags & HIST_FIELD_FL_VAR_REF));
+
+	if (hist_field && hist_field->var.idx == var_idx &&
+	    hist_field->var.hist_data == var_data)
+		return hist_field;
+
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -1352,6 +1734,7 @@ static struct hist_field *find_var_ref(struct hist_trigger_data *hist_data,
 				       struct hist_trigger_data *var_data,
 				       unsigned int var_idx)
 {
+<<<<<<< HEAD
 	struct hist_field *hist_field, *found = NULL;
 	unsigned int i;
 
@@ -1372,6 +1755,18 @@ static struct hist_field *find_var_ref(struct hist_trigger_data *hist_data,
 	}
 
 	return found;
+=======
+	struct hist_field *hist_field;
+	unsigned int i;
+
+	for (i = 0; i < hist_data->n_var_refs; i++) {
+		hist_field = hist_data->var_refs[i];
+		if (check_field_for_var_ref(hist_field, var_data, var_idx))
+			return hist_field;
+	}
+
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -1643,9 +2038,15 @@ find_match_var(struct hist_trigger_data *hist_data, char *var_name)
 	for (i = 0; i < hist_data->n_actions; i++) {
 		struct action_data *data = hist_data->actions[i];
 
+<<<<<<< HEAD
 		if (data->fn == action_trace) {
 			char *system = data->onmatch.match_event_system;
 			char *event_name = data->onmatch.match_event;
+=======
+		if (data->handler == HANDLER_ONMATCH) {
+			char *system = data->match_data.event_system;
+			char *event_name = data->match_data.event;
+>>>>>>> origin/android16-base
 
 			file = find_var_file(tr, system, event_name, var_name);
 			if (!file)
@@ -1764,6 +2165,12 @@ static const char *hist_field_name(struct hist_field *field,
 {
 	const char *field_name = "";
 
+<<<<<<< HEAD
+=======
+	if (WARN_ON_ONCE(!field))
+		return field_name;
+
+>>>>>>> origin/android16-base
 	if (level > 1)
 		return field_name;
 
@@ -1773,7 +2180,11 @@ static const char *hist_field_name(struct hist_field *field,
 		 field->flags & HIST_FIELD_FL_ALIAS)
 		field_name = hist_field_name(field->operands[0], ++level);
 	else if (field->flags & HIST_FIELD_FL_CPU)
+<<<<<<< HEAD
 		field_name = "cpu";
+=======
+		field_name = "common_cpu";
+>>>>>>> origin/android16-base
 	else if (field->flags & HIST_FIELD_FL_EXPR ||
 		 field->flags & HIST_FIELD_FL_VAR_REF) {
 		if (field->system) {
@@ -1883,8 +2294,13 @@ static int parse_action(char *str, struct hist_trigger_attrs *attrs)
 	if (attrs->n_actions >= HIST_ACTIONS_MAX)
 		return ret;
 
+<<<<<<< HEAD
 	if ((strncmp(str, "onmatch(", strlen("onmatch(")) == 0) ||
 	    (strncmp(str, "onmax(", strlen("onmax(")) == 0)) {
+=======
+	if ((str_has_prefix(str, "onmatch(")) ||
+	    (str_has_prefix(str, "onmax("))) {
+>>>>>>> origin/android16-base
 		attrs->action_str[attrs->n_actions] = kstrdup(str, GFP_KERNEL);
 		if (!attrs->action_str[attrs->n_actions]) {
 			ret = -ENOMEM;
@@ -1901,34 +2317,57 @@ static int parse_assignment(char *str, struct hist_trigger_attrs *attrs)
 {
 	int ret = 0;
 
+<<<<<<< HEAD
 	if ((strncmp(str, "key=", strlen("key=")) == 0) ||
 	    (strncmp(str, "keys=", strlen("keys=")) == 0)) {
+=======
+	if ((str_has_prefix(str, "key=")) ||
+	    (str_has_prefix(str, "keys="))) {
+>>>>>>> origin/android16-base
 		attrs->keys_str = kstrdup(str, GFP_KERNEL);
 		if (!attrs->keys_str) {
 			ret = -ENOMEM;
 			goto out;
 		}
+<<<<<<< HEAD
 	} else if ((strncmp(str, "val=", strlen("val=")) == 0) ||
 		 (strncmp(str, "vals=", strlen("vals=")) == 0) ||
 		 (strncmp(str, "values=", strlen("values=")) == 0)) {
+=======
+	} else if ((str_has_prefix(str, "val=")) ||
+		   (str_has_prefix(str, "vals=")) ||
+		   (str_has_prefix(str, "values="))) {
+>>>>>>> origin/android16-base
 		attrs->vals_str = kstrdup(str, GFP_KERNEL);
 		if (!attrs->vals_str) {
 			ret = -ENOMEM;
 			goto out;
 		}
+<<<<<<< HEAD
 	} else if (strncmp(str, "sort=", strlen("sort=")) == 0) {
+=======
+	} else if (str_has_prefix(str, "sort=")) {
+>>>>>>> origin/android16-base
 		attrs->sort_key_str = kstrdup(str, GFP_KERNEL);
 		if (!attrs->sort_key_str) {
 			ret = -ENOMEM;
 			goto out;
 		}
+<<<<<<< HEAD
 	} else if (strncmp(str, "name=", strlen("name=")) == 0) {
+=======
+	} else if (str_has_prefix(str, "name=")) {
+>>>>>>> origin/android16-base
 		attrs->name = kstrdup(str, GFP_KERNEL);
 		if (!attrs->name) {
 			ret = -ENOMEM;
 			goto out;
 		}
+<<<<<<< HEAD
 	} else if (strncmp(str, "clock=", strlen("clock=")) == 0) {
+=======
+	} else if (str_has_prefix(str, "clock=")) {
+>>>>>>> origin/android16-base
 		strsep(&str, "=");
 		if (!str) {
 			ret = -EINVAL;
@@ -1941,7 +2380,11 @@ static int parse_assignment(char *str, struct hist_trigger_attrs *attrs)
 			ret = -ENOMEM;
 			goto out;
 		}
+<<<<<<< HEAD
 	} else if (strncmp(str, "size=", strlen("size=")) == 0) {
+=======
+	} else if (str_has_prefix(str, "size=")) {
+>>>>>>> origin/android16-base
 		int map_bits = parse_map_size(str);
 
 		if (map_bits < 0) {
@@ -2078,7 +2521,11 @@ static int hist_trigger_elt_data_alloc(struct tracing_map_elt *elt)
 		}
 	}
 
+<<<<<<< HEAD
 	n_str = hist_data->n_field_var_str + hist_data->n_max_var_str;
+=======
+	n_str = hist_data->n_field_var_str + hist_data->n_save_var_str;
+>>>>>>> origin/android16-base
 
 	size = STR_VAR_LEN_MAX;
 
@@ -2211,6 +2658,16 @@ static int contains_operator(char *str)
 
 	switch (*op) {
 	case '-':
+<<<<<<< HEAD
+=======
+		/*
+		 * Unfortunately, the modifier ".sym-offset"
+		 * can confuse things.
+		 */
+		if (op - str >= 4 && !strncmp(op - 4, ".sym-offset", 11))
+			return FIELD_OP_NONE;
+
+>>>>>>> origin/android16-base
 		if (*str == '-')
 			field_op = FIELD_OP_UNARY_MINUS;
 		else
@@ -2307,6 +2764,11 @@ static struct hist_field *create_hist_field(struct hist_trigger_data *hist_data,
 		unsigned long fl = flags & ~HIST_FIELD_FL_LOG2;
 		hist_field->fn = hist_field_log2;
 		hist_field->operands[0] = create_hist_field(hist_data, field, fl, NULL);
+<<<<<<< HEAD
+=======
+		if (!hist_field->operands[0])
+			goto free;
+>>>>>>> origin/android16-base
 		hist_field->size = hist_field->operands[0]->size;
 		hist_field->type = kstrdup(hist_field->operands[0]->type, GFP_KERNEL);
 		if (!hist_field->type)
@@ -2335,7 +2797,13 @@ static struct hist_field *create_hist_field(struct hist_trigger_data *hist_data,
 	if (WARN_ON_ONCE(!field))
 		goto out;
 
+<<<<<<< HEAD
 	if (is_string_field(field)) {
+=======
+	/* Pointers to strings are just pointers and dangerous to dereference */
+	if (is_string_field(field) &&
+	    (field->filter_type != FILTER_PTR_STRING)) {
+>>>>>>> origin/android16-base
 		flags |= HIST_FIELD_FL_STRING;
 
 		hist_field->size = MAX_FILTER_STR_VAL;
@@ -2447,8 +2915,16 @@ static int init_var_ref(struct hist_field *ref_field,
 	return err;
  free:
 	kfree(ref_field->system);
+<<<<<<< HEAD
 	kfree(ref_field->event_name);
 	kfree(ref_field->name);
+=======
+	ref_field->system = NULL;
+	kfree(ref_field->event_name);
+	ref_field->event_name = NULL;
+	kfree(ref_field->name);
+	ref_field->name = NULL;
+>>>>>>> origin/android16-base
 
 	goto out;
 }
@@ -2618,14 +3094,33 @@ parse_field(struct hist_trigger_data *hist_data, struct trace_event_file *file,
 		hist_data->enable_timestamps = true;
 		if (*flags & HIST_FIELD_FL_TIMESTAMP_USECS)
 			hist_data->attrs->ts_in_usecs = true;
+<<<<<<< HEAD
 	} else if (strcmp(field_name, "cpu") == 0)
+=======
+	} else if (strcmp(field_name, "common_cpu") == 0)
+>>>>>>> origin/android16-base
 		*flags |= HIST_FIELD_FL_CPU;
 	else {
 		field = trace_find_event_field(file->event_call, field_name);
 		if (!field || !field->size) {
+<<<<<<< HEAD
 			hist_err("Couldn't find field: ", field_name);
 			field = ERR_PTR(-EINVAL);
 			goto out;
+=======
+			/*
+			 * For backward compatibility, if field_name
+			 * was "cpu", then we treat this the same as
+			 * common_cpu. This also works for "CPU".
+			 */
+			if (field && field->filter_type == FILTER_CPU) {
+				*flags |= HIST_FIELD_FL_CPU;
+			} else {
+				hist_err("Couldn't find field: ", field_name);
+				field = ERR_PTR(-EINVAL);
+				goto out;
+			}
+>>>>>>> origin/android16-base
 		}
 	}
  out:
@@ -2772,6 +3267,15 @@ static struct hist_field *parse_unary(struct hist_trigger_data *hist_data,
 		ret = PTR_ERR(operand1);
 		goto free;
 	}
+<<<<<<< HEAD
+=======
+	if (operand1->flags & HIST_FIELD_FL_STRING) {
+		/* String type can not be the operand of unary operator. */
+		destroy_hist_field(operand1, 0);
+		ret = -EINVAL;
+		goto free;
+	}
+>>>>>>> origin/android16-base
 
 	expr->flags |= operand1->flags &
 		(HIST_FIELD_FL_TIMESTAMP | HIST_FIELD_FL_TIMESTAMP_USECS);
@@ -2872,6 +3376,13 @@ static struct hist_field *parse_expr(struct hist_trigger_data *hist_data,
 		operand1 = NULL;
 		goto free;
 	}
+<<<<<<< HEAD
+=======
+	if (operand1->flags & HIST_FIELD_FL_STRING) {
+		ret = -EINVAL;
+		goto free;
+	}
+>>>>>>> origin/android16-base
 
 	/* rest of string could be another expression e.g. b+c in a+b+c */
 	operand_flags = 0;
@@ -2881,6 +3392,13 @@ static struct hist_field *parse_expr(struct hist_trigger_data *hist_data,
 		operand2 = NULL;
 		goto free;
 	}
+<<<<<<< HEAD
+=======
+	if (operand2->flags & HIST_FIELD_FL_STRING) {
+		ret = -EINVAL;
+		goto free;
+	}
+>>>>>>> origin/android16-base
 
 	ret = check_expr_operands(operand1, operand2);
 	if (ret)
@@ -2902,6 +3420,13 @@ static struct hist_field *parse_expr(struct hist_trigger_data *hist_data,
 
 	expr->operands[0] = operand1;
 	expr->operands[1] = operand2;
+<<<<<<< HEAD
+=======
+
+	/* The operand sizes should be the same, so just pick one */
+	expr->size = operand1->size;
+
+>>>>>>> origin/android16-base
 	expr->operator = field_op;
 	expr->name = expr_str(expr, 0);
 	expr->type = kstrdup(operand1->type, GFP_KERNEL);
@@ -3079,7 +3604,11 @@ create_field_var_hist(struct hist_trigger_data *target_hist_data,
 	int ret;
 
 	if (target_hist_data->n_field_var_hists >= SYNTH_FIELDS_MAX) {
+<<<<<<< HEAD
 		hist_err_event("onmatch: Too many field variables defined: ",
+=======
+		hist_err_event("trace action: Too many field variables defined: ",
+>>>>>>> origin/android16-base
 			       subsys_name, event_name, field_name);
 		return ERR_PTR(-EINVAL);
 	}
@@ -3087,7 +3616,11 @@ create_field_var_hist(struct hist_trigger_data *target_hist_data,
 	file = event_file(tr, subsys_name, event_name);
 
 	if (IS_ERR(file)) {
+<<<<<<< HEAD
 		hist_err_event("onmatch: Event file not found: ",
+=======
+		hist_err_event("trace action: Event file not found: ",
+>>>>>>> origin/android16-base
 			       subsys_name, event_name, field_name);
 		ret = PTR_ERR(file);
 		return ERR_PTR(ret);
@@ -3101,7 +3634,11 @@ create_field_var_hist(struct hist_trigger_data *target_hist_data,
 	 */
 	hist_data = find_compatible_hist(target_hist_data, file);
 	if (!hist_data) {
+<<<<<<< HEAD
 		hist_err_event("onmatch: Matching event histogram not found: ",
+=======
+		hist_err_event("trace action: Matching event histogram not found: ",
+>>>>>>> origin/android16-base
 			       subsys_name, event_name, field_name);
 		return ERR_PTR(-EINVAL);
 	}
@@ -3163,7 +3700,11 @@ create_field_var_hist(struct hist_trigger_data *target_hist_data,
 		kfree(cmd);
 		kfree(var_hist->cmd);
 		kfree(var_hist);
+<<<<<<< HEAD
 		hist_err_event("onmatch: Couldn't create histogram for field: ",
+=======
+		hist_err_event("trace action: Couldn't create histogram for field: ",
+>>>>>>> origin/android16-base
 			       subsys_name, event_name, field_name);
 		return ERR_PTR(ret);
 	}
@@ -3176,7 +3717,11 @@ create_field_var_hist(struct hist_trigger_data *target_hist_data,
 	if (IS_ERR_OR_NULL(event_var)) {
 		kfree(var_hist->cmd);
 		kfree(var_hist);
+<<<<<<< HEAD
 		hist_err_event("onmatch: Couldn't find synthetic variable: ",
+=======
+		hist_err_event("trace action: Couldn't find synthetic variable: ",
+>>>>>>> origin/android16-base
 			       subsys_name, event_name, field_name);
 		return ERR_PTR(-EINVAL);
 	}
@@ -3254,6 +3799,7 @@ static void update_field_vars(struct hist_trigger_data *hist_data,
 			    hist_data->n_field_vars, 0);
 }
 
+<<<<<<< HEAD
 static void update_max_vars(struct hist_trigger_data *hist_data,
 			    struct tracing_map_elt *elt,
 			    struct ring_buffer_event *rbe,
@@ -3261,6 +3807,15 @@ static void update_max_vars(struct hist_trigger_data *hist_data,
 {
 	__update_field_vars(elt, rbe, rec, hist_data->max_vars,
 			    hist_data->n_max_vars, hist_data->n_field_var_str);
+=======
+static void save_track_data_vars(struct hist_trigger_data *hist_data,
+				 struct tracing_map_elt *elt, void *rec,
+				 struct ring_buffer_event *rbe, void *key,
+				 struct action_data *data, u64 *var_ref_vals)
+{
+	__update_field_vars(elt, rbe, rec, hist_data->save_vars,
+			    hist_data->n_save_vars, hist_data->n_field_var_str);
+>>>>>>> origin/android16-base
 }
 
 static struct hist_field *create_var(struct hist_trigger_data *hist_data,
@@ -3395,6 +3950,7 @@ create_target_field_var(struct hist_trigger_data *target_hist_data,
 	return create_field_var(target_hist_data, file, var_name);
 }
 
+<<<<<<< HEAD
 static void onmax_print(struct seq_file *m,
 			struct hist_trigger_data *hist_data,
 			struct tracing_map_elt *elt,
@@ -3407,6 +3963,73 @@ static void onmax_print(struct seq_file *m,
 	for (i = 0; i < hist_data->n_max_vars; i++) {
 		struct hist_field *save_val = hist_data->max_vars[i]->val;
 		struct hist_field *save_var = hist_data->max_vars[i]->var;
+=======
+static bool check_track_val_max(u64 track_val, u64 var_val)
+{
+	if (var_val <= track_val)
+		return false;
+
+	return true;
+}
+
+static u64 get_track_val(struct hist_trigger_data *hist_data,
+			 struct tracing_map_elt *elt,
+			 struct action_data *data)
+{
+	unsigned int track_var_idx = data->track_data.track_var->var.idx;
+	u64 track_val;
+
+	track_val = tracing_map_read_var(elt, track_var_idx);
+
+	return track_val;
+}
+
+static void save_track_val(struct hist_trigger_data *hist_data,
+			   struct tracing_map_elt *elt,
+			   struct action_data *data, u64 var_val)
+{
+	unsigned int track_var_idx = data->track_data.track_var->var.idx;
+
+	tracing_map_set_var(elt, track_var_idx, var_val);
+}
+
+static void save_track_data(struct hist_trigger_data *hist_data,
+			    struct tracing_map_elt *elt, void *rec,
+			    struct ring_buffer_event *rbe, void *key,
+			    struct action_data *data, u64 *var_ref_vals)
+{
+	if (data->track_data.save_data)
+		data->track_data.save_data(hist_data, elt, rec, rbe, key, data, var_ref_vals);
+}
+
+static bool check_track_val(struct tracing_map_elt *elt,
+			    struct action_data *data,
+			    u64 var_val)
+{
+	struct hist_trigger_data *hist_data;
+	u64 track_val;
+
+	hist_data = data->track_data.track_var->hist_data;
+	track_val = get_track_val(hist_data, elt, data);
+
+	return data->track_data.check_val(track_val, var_val);
+}
+
+static void track_data_print(struct seq_file *m,
+			     struct hist_trigger_data *hist_data,
+			     struct tracing_map_elt *elt,
+			     struct action_data *data)
+{
+	u64 track_val = get_track_val(hist_data, elt, data);
+	unsigned int i, save_var_idx;
+
+	if (data->handler == HANDLER_ONMAX)
+		seq_printf(m, "\n\tmax: %10llu", track_val);
+
+	for (i = 0; i < hist_data->n_save_vars; i++) {
+		struct hist_field *save_val = hist_data->save_vars[i]->val;
+		struct hist_field *save_var = hist_data->save_vars[i]->var;
+>>>>>>> origin/android16-base
 		u64 val;
 
 		save_var_idx = save_var->var.idx;
@@ -3421,6 +4044,7 @@ static void onmax_print(struct seq_file *m,
 	}
 }
 
+<<<<<<< HEAD
 static void onmax_save(struct hist_trigger_data *hist_data,
 		       struct tracing_map_elt *elt, void *rec,
 		       struct ring_buffer_event *rbe,
@@ -3451,10 +4075,33 @@ static void onmax_destroy(struct action_data *data)
 
 	kfree(data->onmax.var_str);
 	kfree(data->onmax.fn_name);
+=======
+static void ontrack_action(struct hist_trigger_data *hist_data,
+			   struct tracing_map_elt *elt, void *rec,
+			   struct ring_buffer_event *rbe, void *key,
+			   struct action_data *data, u64 *var_ref_vals)
+{
+	u64 var_val = var_ref_vals[data->track_data.var_ref->var_ref_idx];
+
+	if (check_track_val(elt, data, var_val)) {
+		save_track_val(hist_data, elt, data, var_val);
+		save_track_data(hist_data, elt, rec, rbe, key, data, var_ref_vals);
+	}
+}
+
+static void action_data_destroy(struct action_data *data)
+{
+	unsigned int i;
+
+	lockdep_assert_held(&event_mutex);
+
+	kfree(data->action_name);
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < data->n_params; i++)
 		kfree(data->params[i]);
 
+<<<<<<< HEAD
 	kfree(data);
 }
 
@@ -3479,6 +4126,45 @@ static int onmax_create(struct hist_trigger_data *hist_data,
 	var_field = find_target_event_var(hist_data, NULL, NULL, onmax_var_str);
 	if (!var_field) {
 		hist_err("onmax: Couldn't find onmax variable: ", onmax_var_str);
+=======
+	if (data->synth_event)
+		data->synth_event->ref--;
+
+	kfree(data);
+}
+
+static void track_data_destroy(struct hist_trigger_data *hist_data,
+			       struct action_data *data)
+{
+	destroy_hist_field(data->track_data.track_var, 0);
+
+	kfree(data->track_data.var_str);
+
+	action_data_destroy(data);
+}
+
+static int action_create(struct hist_trigger_data *hist_data,
+			 struct action_data *data);
+
+static int track_data_create(struct hist_trigger_data *hist_data,
+			     struct action_data *data)
+{
+	struct hist_field *var_field, *ref_field, *track_var = NULL;
+	struct trace_event_file *file = hist_data->event_file;
+	char *track_data_var_str;
+	int ret = 0;
+
+	track_data_var_str = data->track_data.var_str;
+	if (track_data_var_str[0] != '$') {
+		hist_err("For onmax(x), x must be a variable: ", track_data_var_str);
+		return -EINVAL;
+	}
+	track_data_var_str++;
+
+	var_field = find_target_event_var(hist_data, NULL, NULL, track_data_var_str);
+	if (!var_field) {
+		hist_err("Couldn't find onmax variable: ", track_data_var_str);
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 
@@ -3486,6 +4172,7 @@ static int onmax_create(struct hist_trigger_data *hist_data,
 	if (!ref_field)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	data->onmax.var = ref_field;
 
 	data->fn = onmax_save;
@@ -3519,6 +4206,20 @@ static int onmax_create(struct hist_trigger_data *hist_data,
 
 		kfree(param);
 	}
+=======
+	data->track_data.var_ref = ref_field;
+
+	if (data->handler == HANDLER_ONMAX)
+		track_var = create_var(hist_data, file, "__max", sizeof(u64), "u64");
+	if (IS_ERR(track_var)) {
+		hist_err("Couldn't create onmax variable: ", "__max");
+		ret = PTR_ERR(track_var);
+		goto out;
+	}
+	data->track_data.track_var = track_var;
+
+	ret = action_create(hist_data, data);
+>>>>>>> origin/android16-base
  out:
 	return ret;
 }
@@ -3529,11 +4230,22 @@ static int parse_action_params(char *params, struct action_data *data)
 	int ret = 0;
 
 	while (params) {
+<<<<<<< HEAD
 		if (data->n_params >= SYNTH_FIELDS_MAX)
 			goto out;
 
 		param = strsep(&params, ",");
 		if (!param) {
+=======
+		if (data->n_params >= SYNTH_FIELDS_MAX) {
+			hist_err("Too many action params", "");
+			goto out;
+		}
+
+		param = strsep(&params, ",");
+		if (!param) {
+			hist_err("No action param found", "");
+>>>>>>> origin/android16-base
 			ret = -EINVAL;
 			goto out;
 		}
@@ -3557,28 +4269,124 @@ static int parse_action_params(char *params, struct action_data *data)
 	return ret;
 }
 
+<<<<<<< HEAD
 static struct action_data *onmax_parse(char *str)
 {
 	char *onmax_fn_name, *onmax_var_str;
 	struct action_data *data;
 	int ret = -EINVAL;
+=======
+static int action_parse(char *str, struct action_data *data,
+			enum handler_id handler)
+{
+	char *action_name;
+	int ret = 0;
+
+	strsep(&str, ".");
+	if (!str) {
+		hist_err("action parsing: No action found", "");
+		ret = -EINVAL;
+		goto out;
+	}
+
+	action_name = strsep(&str, "(");
+	if (!action_name || !str) {
+		hist_err("action parsing: No action found", "");
+		ret = -EINVAL;
+		goto out;
+	}
+
+	if (str_has_prefix(action_name, "save")) {
+		char *params = strsep(&str, ")");
+
+		if (!params) {
+			hist_err("action parsing: No params found for %s", "save");
+			ret = -EINVAL;
+			goto out;
+		}
+
+		ret = parse_action_params(params, data);
+		if (ret)
+			goto out;
+
+		if (handler == HANDLER_ONMAX)
+			data->track_data.check_val = check_track_val_max;
+		else {
+			hist_err("action parsing: Handler doesn't support action: ", action_name);
+			ret = -EINVAL;
+			goto out;
+		}
+
+		data->track_data.save_data = save_track_data_vars;
+		data->fn = ontrack_action;
+		data->action = ACTION_SAVE;
+	} else {
+		char *params = strsep(&str, ")");
+
+		if (params) {
+			ret = parse_action_params(params, data);
+			if (ret)
+				goto out;
+		}
+
+		if (handler == HANDLER_ONMAX)
+			data->track_data.check_val = check_track_val_max;
+
+		if (handler != HANDLER_ONMATCH) {
+			data->track_data.save_data = action_trace;
+			data->fn = ontrack_action;
+		} else
+			data->fn = action_trace;
+
+		data->action = ACTION_TRACE;
+	}
+
+	data->action_name = kstrdup(action_name, GFP_KERNEL);
+	if (!data->action_name) {
+		ret = -ENOMEM;
+		goto out;
+	}
+
+	data->handler = handler;
+ out:
+	return ret;
+}
+
+static struct action_data *track_data_parse(struct hist_trigger_data *hist_data,
+					    char *str, enum handler_id handler)
+{
+	struct action_data *data;
+	int ret = -EINVAL;
+	char *var_str;
+>>>>>>> origin/android16-base
 
 	data = kzalloc(sizeof(*data), GFP_KERNEL);
 	if (!data)
 		return ERR_PTR(-ENOMEM);
 
+<<<<<<< HEAD
 	onmax_var_str = strsep(&str, ")");
 	if (!onmax_var_str || !str) {
+=======
+	var_str = strsep(&str, ")");
+	if (!var_str || !str) {
+>>>>>>> origin/android16-base
 		ret = -EINVAL;
 		goto free;
 	}
 
+<<<<<<< HEAD
 	data->onmax.var_str = kstrdup(onmax_var_str, GFP_KERNEL);
 	if (!data->onmax.var_str) {
+=======
+	data->track_data.var_str = kstrdup(var_str, GFP_KERNEL);
+	if (!data->track_data.var_str) {
+>>>>>>> origin/android16-base
 		ret = -ENOMEM;
 		goto free;
 	}
 
+<<<<<<< HEAD
 	strsep(&str, ".");
 	if (!str)
 		goto free;
@@ -3610,12 +4418,22 @@ static struct action_data *onmax_parse(char *str)
 	return data;
  free:
 	onmax_destroy(data);
+=======
+	ret = action_parse(str, data, handler);
+	if (ret)
+		goto free;
+ out:
+	return data;
+ free:
+	track_data_destroy(hist_data, data);
+>>>>>>> origin/android16-base
 	data = ERR_PTR(ret);
 	goto out;
 }
 
 static void onmatch_destroy(struct action_data *data)
 {
+<<<<<<< HEAD
 	unsigned int i;
 
 	mutex_lock(&synth_event_mutex);
@@ -3633,6 +4451,12 @@ static void onmatch_destroy(struct action_data *data)
 	kfree(data);
 
 	mutex_unlock(&synth_event_mutex);
+=======
+	kfree(data->match_data.event);
+	kfree(data->match_data.event_system);
+
+	action_data_destroy(data);
+>>>>>>> origin/android16-base
 }
 
 static void destroy_field_var(struct field_var *field_var)
@@ -3664,6 +4488,7 @@ static void save_field_var(struct hist_trigger_data *hist_data,
 }
 
 
+<<<<<<< HEAD
 static void destroy_synth_var_refs(struct hist_trigger_data *hist_data)
 {
 	unsigned int i;
@@ -3678,6 +4503,8 @@ static void save_synth_var_ref(struct hist_trigger_data *hist_data,
 	hist_data->synth_var_refs[hist_data->n_synth_var_refs++] = var_ref;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int check_synth_field(struct synth_event *event,
 			     struct hist_field *hist_field,
 			     unsigned int field_pos)
@@ -3696,8 +4523,14 @@ static int check_synth_field(struct synth_event *event,
 }
 
 static struct hist_field *
+<<<<<<< HEAD
 onmatch_find_var(struct hist_trigger_data *hist_data, struct action_data *data,
 		 char *system, char *event, char *var)
+=======
+trace_action_find_var(struct hist_trigger_data *hist_data,
+		      struct action_data *data,
+		      char *system, char *event, char *var)
+>>>>>>> origin/android16-base
 {
 	struct hist_field *hist_field;
 
@@ -3705,24 +4538,40 @@ onmatch_find_var(struct hist_trigger_data *hist_data, struct action_data *data,
 
 	hist_field = find_target_event_var(hist_data, system, event, var);
 	if (!hist_field) {
+<<<<<<< HEAD
 		if (!system) {
 			system = data->onmatch.match_event_system;
 			event = data->onmatch.match_event;
+=======
+		if (!system && data->handler == HANDLER_ONMATCH) {
+			system = data->match_data.event_system;
+			event = data->match_data.event;
+>>>>>>> origin/android16-base
 		}
 
 		hist_field = find_event_var(hist_data, system, event, var);
 	}
 
 	if (!hist_field)
+<<<<<<< HEAD
 		hist_err_event("onmatch: Couldn't find onmatch param: $", system, event, var);
+=======
+		hist_err_event("trace action: Couldn't find param: $", system, event, var);
+>>>>>>> origin/android16-base
 
 	return hist_field;
 }
 
 static struct hist_field *
+<<<<<<< HEAD
 onmatch_create_field_var(struct hist_trigger_data *hist_data,
 			 struct action_data *data, char *system,
 			 char *event, char *var)
+=======
+trace_action_create_field_var(struct hist_trigger_data *hist_data,
+			      struct action_data *data, char *system,
+			      char *event, char *var)
+>>>>>>> origin/android16-base
 {
 	struct hist_field *hist_field = NULL;
 	struct field_var *field_var;
@@ -3745,11 +4594,21 @@ onmatch_create_field_var(struct hist_trigger_data *hist_data,
 		 * looking for fields on the onmatch(system.event.xxx)
 		 * event.
 		 */
+<<<<<<< HEAD
 		if (!system) {
 			system = data->onmatch.match_event_system;
 			event = data->onmatch.match_event;
 		}
 
+=======
+		if (!system && data->handler == HANDLER_ONMATCH) {
+			system = data->match_data.event_system;
+			event = data->match_data.event;
+		}
+
+		if (!event)
+			goto free;
+>>>>>>> origin/android16-base
 		/*
 		 * At this point, we're looking at a field on another
 		 * event.  Because we can't modify a hist trigger on
@@ -3769,9 +4628,14 @@ onmatch_create_field_var(struct hist_trigger_data *hist_data,
 	goto out;
 }
 
+<<<<<<< HEAD
 static int onmatch_create(struct hist_trigger_data *hist_data,
 			  struct trace_event_file *file,
 			  struct action_data *data)
+=======
+static int trace_action_create(struct hist_trigger_data *hist_data,
+			       struct action_data *data)
+>>>>>>> origin/android16-base
 {
 	char *event_name, *param, *system = NULL;
 	struct hist_field *hist_field, *var_ref;
@@ -3780,6 +4644,7 @@ static int onmatch_create(struct hist_trigger_data *hist_data,
 	struct synth_event *event;
 	int ret = 0;
 
+<<<<<<< HEAD
 	mutex_lock(&synth_event_mutex);
 	event = find_synth_event(data->onmatch.synth_event_name);
 	if (!event) {
@@ -3789,6 +4654,17 @@ static int onmatch_create(struct hist_trigger_data *hist_data,
 	}
 	event->ref++;
 	mutex_unlock(&synth_event_mutex);
+=======
+	lockdep_assert_held(&event_mutex);
+
+	event = find_synth_event(data->action_name);
+	if (!event) {
+		hist_err("trace action: Couldn't find synthetic event: ", data->action_name);
+		return -EINVAL;
+	}
+
+	event->ref++;
+>>>>>>> origin/android16-base
 
 	var_ref_idx = hist_data->n_var_refs;
 
@@ -3815,6 +4691,7 @@ static int onmatch_create(struct hist_trigger_data *hist_data,
 		}
 
 		if (param[0] == '$')
+<<<<<<< HEAD
 			hist_field = onmatch_find_var(hist_data, data, system,
 						      event_name, param);
 		else
@@ -3822,6 +4699,17 @@ static int onmatch_create(struct hist_trigger_data *hist_data,
 							      system,
 							      event_name,
 							      param);
+=======
+			hist_field = trace_action_find_var(hist_data, data,
+							   system, event_name,
+							   param);
+		else
+			hist_field = trace_action_create_field_var(hist_data,
+								   data,
+								   system,
+								   event_name,
+								   param);
+>>>>>>> origin/android16-base
 
 		if (!hist_field) {
 			kfree(p);
@@ -3838,13 +4726,20 @@ static int onmatch_create(struct hist_trigger_data *hist_data,
 				goto err;
 			}
 
+<<<<<<< HEAD
 			save_synth_var_ref(hist_data, var_ref);
+=======
+>>>>>>> origin/android16-base
 			field_pos++;
 			kfree(p);
 			continue;
 		}
 
+<<<<<<< HEAD
 		hist_err_event("onmatch: Param type doesn't match synthetic event field type: ",
+=======
+		hist_err_event("trace action: Param type doesn't match synthetic event field type: ",
+>>>>>>> origin/android16-base
 			       system, event_name, param);
 		kfree(p);
 		ret = -EINVAL;
@@ -3852,11 +4747,16 @@ static int onmatch_create(struct hist_trigger_data *hist_data,
 	}
 
 	if (field_pos != event->n_fields) {
+<<<<<<< HEAD
 		hist_err("onmatch: Param count doesn't match synthetic event field count: ", event->name);
+=======
+		hist_err("trace action: Param count doesn't match synthetic event field count: ", event->name);
+>>>>>>> origin/android16-base
 		ret = -EINVAL;
 		goto err;
 	}
 
+<<<<<<< HEAD
 	data->fn = action_trace;
 	data->onmatch.synth_event = event;
 	data->onmatch.var_ref_idx = var_ref_idx;
@@ -3866,14 +4766,77 @@ static int onmatch_create(struct hist_trigger_data *hist_data,
 	mutex_lock(&synth_event_mutex);
 	event->ref--;
 	mutex_unlock(&synth_event_mutex);
+=======
+	data->synth_event = event;
+	data->var_ref_idx = var_ref_idx;
+ out:
+	return ret;
+ err:
+	event->ref--;
+>>>>>>> origin/android16-base
 
 	goto out;
+}
+
+<<<<<<< HEAD
+static struct action_data *onmatch_parse(struct trace_array *tr, char *str)
+{
+	char *match_event, *match_event_system;
+	char *synth_event_name, *params;
+=======
+static int action_create(struct hist_trigger_data *hist_data,
+			 struct action_data *data)
+{
+	struct field_var *field_var;
+	unsigned int i;
+	char *param;
+	int ret = 0;
+
+	if (data->action == ACTION_TRACE)
+		return trace_action_create(hist_data, data);
+
+	if (data->action == ACTION_SAVE) {
+		if (hist_data->n_save_vars) {
+			ret = -EEXIST;
+			hist_err("save action: Can't have more than one save() action per hist", "");
+			goto out;
+		}
+
+		for (i = 0; i < data->n_params; i++) {
+			param = kstrdup(data->params[i], GFP_KERNEL);
+			if (!param) {
+				ret = -ENOMEM;
+				goto out;
+			}
+
+			field_var = create_target_field_var(hist_data, NULL, NULL, param);
+			if (IS_ERR(field_var)) {
+				hist_err("save action: Couldn't create field variable: ", param);
+				ret = PTR_ERR(field_var);
+				kfree(param);
+				goto out;
+			}
+
+			hist_data->save_vars[hist_data->n_save_vars++] = field_var;
+			if (field_var->val->flags & HIST_FIELD_FL_STRING)
+				hist_data->n_save_var_str++;
+			kfree(param);
+		}
+	}
+ out:
+	return ret;
+}
+
+static int onmatch_create(struct hist_trigger_data *hist_data,
+			  struct action_data *data)
+{
+	return action_create(hist_data, data);
 }
 
 static struct action_data *onmatch_parse(struct trace_array *tr, char *str)
 {
 	char *match_event, *match_event_system;
-	char *synth_event_name, *params;
+>>>>>>> origin/android16-base
 	struct action_data *data;
 	int ret = -EINVAL;
 
@@ -3899,18 +4862,29 @@ static struct action_data *onmatch_parse(struct trace_array *tr, char *str)
 		goto free;
 	}
 
+<<<<<<< HEAD
 	data->onmatch.match_event = kstrdup(match_event, GFP_KERNEL);
 	if (!data->onmatch.match_event) {
+=======
+	data->match_data.event = kstrdup(match_event, GFP_KERNEL);
+	if (!data->match_data.event) {
+>>>>>>> origin/android16-base
 		ret = -ENOMEM;
 		goto free;
 	}
 
+<<<<<<< HEAD
 	data->onmatch.match_event_system = kstrdup(match_event_system, GFP_KERNEL);
 	if (!data->onmatch.match_event_system) {
+=======
+	data->match_data.event_system = kstrdup(match_event_system, GFP_KERNEL);
+	if (!data->match_data.event_system) {
+>>>>>>> origin/android16-base
 		ret = -ENOMEM;
 		goto free;
 	}
 
+<<<<<<< HEAD
 	strsep(&str, ".");
 	if (!str) {
 		hist_err("onmatch: Missing . after onmatch(): ", str);
@@ -3936,6 +4910,9 @@ static struct action_data *onmatch_parse(struct trace_array *tr, char *str)
 	}
 
 	ret = parse_action_params(params, data);
+=======
+	ret = action_parse(str, data, HANDLER_ONMATCH);
+>>>>>>> origin/android16-base
 	if (ret)
 		goto free;
  out:
@@ -4225,6 +5202,11 @@ static int parse_var_defs(struct hist_trigger_data *hist_data)
 
 			s = kstrdup(field_str, GFP_KERNEL);
 			if (!s) {
+<<<<<<< HEAD
+=======
+				kfree(hist_data->attrs->var_defs.name[n_vars]);
+				hist_data->attrs->var_defs.name[n_vars] = NULL;
+>>>>>>> origin/android16-base
 				ret = -ENOMEM;
 				goto free;
 			}
@@ -4374,10 +5356,17 @@ static void destroy_actions(struct hist_trigger_data *hist_data)
 	for (i = 0; i < hist_data->n_actions; i++) {
 		struct action_data *data = hist_data->actions[i];
 
+<<<<<<< HEAD
 		if (data->fn == action_trace)
 			onmatch_destroy(data);
 		else if (data->fn == onmax_save)
 			onmax_destroy(data);
+=======
+		if (data->handler == HANDLER_ONMATCH)
+			onmatch_destroy(data);
+		else if (data->handler == HANDLER_ONMAX)
+			track_data_destroy(hist_data, data);
+>>>>>>> origin/android16-base
 		else
 			kfree(data);
 	}
@@ -4390,28 +5379,48 @@ static int parse_actions(struct hist_trigger_data *hist_data)
 	unsigned int i;
 	int ret = 0;
 	char *str;
+<<<<<<< HEAD
+=======
+	int len;
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < hist_data->attrs->n_actions; i++) {
 		str = hist_data->attrs->action_str[i];
 
+<<<<<<< HEAD
 		if (strncmp(str, "onmatch(", strlen("onmatch(")) == 0) {
 			char *action_str = str + strlen("onmatch(");
+=======
+		if ((len = str_has_prefix(str, "onmatch("))) {
+			char *action_str = str + len;
+>>>>>>> origin/android16-base
 
 			data = onmatch_parse(tr, action_str);
 			if (IS_ERR(data)) {
 				ret = PTR_ERR(data);
 				break;
 			}
+<<<<<<< HEAD
 			data->fn = action_trace;
 		} else if (strncmp(str, "onmax(", strlen("onmax(")) == 0) {
 			char *action_str = str + strlen("onmax(");
 
 			data = onmax_parse(action_str);
+=======
+		} else if ((len = str_has_prefix(str, "onmax("))) {
+			char *action_str = str + len;
+
+			data = track_data_parse(hist_data, action_str,
+						HANDLER_ONMAX);
+>>>>>>> origin/android16-base
 			if (IS_ERR(data)) {
 				ret = PTR_ERR(data);
 				break;
 			}
+<<<<<<< HEAD
 			data->fn = onmax_save;
+=======
+>>>>>>> origin/android16-base
 		} else {
 			ret = -EINVAL;
 			break;
@@ -4423,8 +5432,12 @@ static int parse_actions(struct hist_trigger_data *hist_data)
 	return ret;
 }
 
+<<<<<<< HEAD
 static int create_actions(struct hist_trigger_data *hist_data,
 			  struct trace_event_file *file)
+=======
+static int create_actions(struct hist_trigger_data *hist_data)
+>>>>>>> origin/android16-base
 {
 	struct action_data *data;
 	unsigned int i;
@@ -4433,6 +5446,7 @@ static int create_actions(struct hist_trigger_data *hist_data,
 	for (i = 0; i < hist_data->attrs->n_actions; i++) {
 		data = hist_data->actions[i];
 
+<<<<<<< HEAD
 		if (data->fn == action_trace) {
 			ret = onmatch_create(hist_data, file, data);
 			if (ret)
@@ -4441,6 +5455,19 @@ static int create_actions(struct hist_trigger_data *hist_data,
 			ret = onmax_create(hist_data, data);
 			if (ret)
 				return ret;
+=======
+		if (data->handler == HANDLER_ONMATCH) {
+			ret = onmatch_create(hist_data, data);
+			if (ret)
+				break;
+		} else if (data->handler == HANDLER_ONMAX) {
+			ret = track_data_create(hist_data, data);
+			if (ret)
+				break;
+		} else {
+			ret = -EINVAL;
+			break;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -4456,6 +5483,7 @@ static void print_actions(struct seq_file *m,
 	for (i = 0; i < hist_data->n_actions; i++) {
 		struct action_data *data = hist_data->actions[i];
 
+<<<<<<< HEAD
 		if (data->fn == onmax_save)
 			onmax_print(m, hist_data, elt, data);
 	}
@@ -4476,6 +5504,45 @@ static void print_onmax_spec(struct seq_file *m,
 		if (i < hist_data->n_max_vars - 1)
 			seq_puts(m, ",");
 	}
+=======
+		if (data->handler == HANDLER_ONMAX)
+			track_data_print(m, hist_data, elt, data);
+	}
+}
+
+static void print_action_spec(struct seq_file *m,
+			      struct hist_trigger_data *hist_data,
+			      struct action_data *data)
+{
+	unsigned int i;
+
+	if (data->action == ACTION_SAVE) {
+		for (i = 0; i < hist_data->n_save_vars; i++) {
+			seq_printf(m, "%s", hist_data->save_vars[i]->var->var.name);
+			if (i < hist_data->n_save_vars - 1)
+				seq_puts(m, ",");
+		}
+	} else if (data->action == ACTION_TRACE) {
+		for (i = 0; i < data->n_params; i++) {
+			if (i)
+				seq_puts(m, ",");
+			seq_printf(m, "%s", data->params[i]);
+		}
+	}
+}
+
+static void print_track_data_spec(struct seq_file *m,
+				  struct hist_trigger_data *hist_data,
+				  struct action_data *data)
+{
+	if (data->handler == HANDLER_ONMAX)
+		seq_puts(m, ":onmax(");
+	seq_printf(m, "%s", data->track_data.var_str);
+	seq_printf(m, ").%s(", data->action_name);
+
+	print_action_spec(m, hist_data, data);
+
+>>>>>>> origin/android16-base
 	seq_puts(m, ")");
 }
 
@@ -4483,6 +5550,7 @@ static void print_onmatch_spec(struct seq_file *m,
 			       struct hist_trigger_data *hist_data,
 			       struct action_data *data)
 {
+<<<<<<< HEAD
 	unsigned int i;
 
 	seq_printf(m, ":onmatch(%s.%s).", data->onmatch.match_event_system,
@@ -4495,6 +5563,14 @@ static void print_onmatch_spec(struct seq_file *m,
 			seq_puts(m, ",");
 		seq_printf(m, "%s", data->params[i]);
 	}
+=======
+	seq_printf(m, ":onmatch(%s.%s).", data->match_data.event_system,
+		   data->match_data.event);
+
+	seq_printf(m, "%s(", data->action_name);
+
+	print_action_spec(m, hist_data, data);
+>>>>>>> origin/android16-base
 
 	seq_puts(m, ")");
 }
@@ -4511,7 +5587,13 @@ static bool actions_match(struct hist_trigger_data *hist_data,
 		struct action_data *data = hist_data->actions[i];
 		struct action_data *data_test = hist_data_test->actions[i];
 
+<<<<<<< HEAD
 		if (data->fn != data_test->fn)
+=======
+		if (data->handler != data_test->handler)
+			return false;
+		if (data->action != data_test->action)
+>>>>>>> origin/android16-base
 			return false;
 
 		if (data->n_params != data_test->n_params)
@@ -4522,6 +5604,7 @@ static bool actions_match(struct hist_trigger_data *hist_data,
 				return false;
 		}
 
+<<<<<<< HEAD
 		if (data->fn == action_trace) {
 			if (strcmp(data->onmatch.synth_event_name,
 				   data_test->onmatch.synth_event_name) != 0)
@@ -4538,6 +5621,21 @@ static bool actions_match(struct hist_trigger_data *hist_data,
 				return false;
 			if (strcmp(data->onmax.fn_name,
 				   data_test->onmax.fn_name) != 0)
+=======
+		if (strcmp(data->action_name, data_test->action_name) != 0)
+			return false;
+
+		if (data->handler == HANDLER_ONMATCH) {
+			if (strcmp(data->match_data.event_system,
+				   data_test->match_data.event_system) != 0)
+				return false;
+			if (strcmp(data->match_data.event,
+				   data_test->match_data.event) != 0)
+				return false;
+		} else if (data->handler == HANDLER_ONMAX) {
+			if (strcmp(data->track_data.var_str,
+				   data_test->track_data.var_str) != 0)
+>>>>>>> origin/android16-base
 				return false;
 		}
 	}
@@ -4554,10 +5652,17 @@ static void print_actions_spec(struct seq_file *m,
 	for (i = 0; i < hist_data->n_actions; i++) {
 		struct action_data *data = hist_data->actions[i];
 
+<<<<<<< HEAD
 		if (data->fn == action_trace)
 			print_onmatch_spec(m, hist_data, data);
 		else if (data->fn == onmax_save)
 			print_onmax_spec(m, hist_data, data);
+=======
+		if (data->handler == HANDLER_ONMATCH)
+			print_onmatch_spec(m, hist_data, data);
+		else if (data->handler == HANDLER_ONMAX)
+			print_track_data_spec(m, hist_data, data);
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -4583,7 +5688,10 @@ static void destroy_hist_data(struct hist_trigger_data *hist_data)
 	destroy_actions(hist_data);
 	destroy_field_vars(hist_data);
 	destroy_field_var_hists(hist_data);
+<<<<<<< HEAD
 	destroy_synth_var_refs(hist_data);
+=======
+>>>>>>> origin/android16-base
 
 	kfree(hist_data);
 }
@@ -4604,7 +5712,11 @@ static int create_tracing_map_fields(struct hist_trigger_data *hist_data)
 
 			if (hist_field->flags & HIST_FIELD_FL_STACKTRACE)
 				cmp_fn = tracing_map_cmp_none;
+<<<<<<< HEAD
 			else if (!field)
+=======
+			else if (!field || hist_field->flags & HIST_FIELD_FL_CPU)
+>>>>>>> origin/android16-base
 				cmp_fn = tracing_map_cmp_num(hist_field->size,
 							     hist_field->is_signed);
 			else if (is_string_field(field))
@@ -4735,8 +5847,11 @@ static inline void add_to_key(char *compound_key, void *key,
 		field = key_field->field;
 		if (field->filter_type == FILTER_DYN_STRING)
 			size = *(u32 *)(rec + field->offset) >> 16;
+<<<<<<< HEAD
 		else if (field->filter_type == FILTER_PTR_STRING)
 			size = strlen(key);
+=======
+>>>>>>> origin/android16-base
 		else if (field->filter_type == FILTER_STATIC_STRING)
 			size = field->size;
 
@@ -4752,14 +5867,23 @@ static inline void add_to_key(char *compound_key, void *key,
 static void
 hist_trigger_actions(struct hist_trigger_data *hist_data,
 		     struct tracing_map_elt *elt, void *rec,
+<<<<<<< HEAD
 		     struct ring_buffer_event *rbe, u64 *var_ref_vals)
+=======
+		     struct ring_buffer_event *rbe, void *key,
+		     u64 *var_ref_vals)
+>>>>>>> origin/android16-base
 {
 	struct action_data *data;
 	unsigned int i;
 
 	for (i = 0; i < hist_data->n_actions; i++) {
 		data = hist_data->actions[i];
+<<<<<<< HEAD
 		data->fn(hist_data, elt, rec, rbe, data, var_ref_vals);
+=======
+		data->fn(hist_data, elt, rec, rbe, key, data, var_ref_vals);
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -4820,7 +5944,11 @@ static void event_hist_trigger(struct event_trigger_data *data, void *rec,
 	hist_trigger_elt_update(hist_data, elt, rec, rbe, var_ref_vals);
 
 	if (resolve_var_refs(hist_data, key, var_ref_vals, true))
+<<<<<<< HEAD
 		hist_trigger_actions(hist_data, elt, rec, rbe, var_ref_vals);
+=======
+		hist_trigger_actions(hist_data, elt, rec, rbe, key, var_ref_vals);
+>>>>>>> origin/android16-base
 }
 
 static void hist_trigger_stacktrace_print(struct seq_file *m,
@@ -5041,7 +6169,11 @@ static void hist_field_print(struct seq_file *m, struct hist_field *hist_field)
 		seq_printf(m, "%s=", hist_field->var.name);
 
 	if (hist_field->flags & HIST_FIELD_FL_CPU)
+<<<<<<< HEAD
 		seq_puts(m, "cpu");
+=======
+		seq_puts(m, "common_cpu");
+>>>>>>> origin/android16-base
 	else if (field_name) {
 		if (hist_field->flags & HIST_FIELD_FL_VAR_REF ||
 		    hist_field->flags & HIST_FIELD_FL_ALIAS)
@@ -5583,6 +6715,11 @@ static void hist_unreg_all(struct trace_event_file *file)
 	struct synth_event *se;
 	const char *se_name;
 
+<<<<<<< HEAD
+=======
+	lockdep_assert_held(&event_mutex);
+
+>>>>>>> origin/android16-base
 	if (hist_file_check_refs(file))
 		return;
 
@@ -5592,12 +6729,18 @@ static void hist_unreg_all(struct trace_event_file *file)
 			list_del_rcu(&test->list);
 			trace_event_trigger_enable_disable(file, 0);
 
+<<<<<<< HEAD
 			mutex_lock(&synth_event_mutex);
+=======
+>>>>>>> origin/android16-base
 			se_name = trace_event_name(file->event_call);
 			se = find_synth_event(se_name);
 			if (se)
 				se->ref--;
+<<<<<<< HEAD
 			mutex_unlock(&synth_event_mutex);
+=======
+>>>>>>> origin/android16-base
 
 			update_cond_flag(file);
 			if (hist_data->enable_timestamps)
@@ -5623,6 +6766,11 @@ static int event_hist_trigger_func(struct event_command *cmd_ops,
 	char *trigger, *p;
 	int ret = 0;
 
+<<<<<<< HEAD
+=======
+	lockdep_assert_held(&event_mutex);
+
+>>>>>>> origin/android16-base
 	if (glob && strlen(glob)) {
 		last_cmd_set(param);
 		hist_err_clear();
@@ -5713,14 +6861,20 @@ static int event_hist_trigger_func(struct event_command *cmd_ops,
 		}
 
 		cmd_ops->unreg(glob+1, trigger_ops, trigger_data, file);
+<<<<<<< HEAD
 
 		mutex_lock(&synth_event_mutex);
+=======
+>>>>>>> origin/android16-base
 		se_name = trace_event_name(file->event_call);
 		se = find_synth_event(se_name);
 		if (se)
 			se->ref--;
+<<<<<<< HEAD
 		mutex_unlock(&synth_event_mutex);
 
+=======
+>>>>>>> origin/android16-base
 		ret = 0;
 		goto out_free;
 	}
@@ -5741,6 +6895,7 @@ static int event_hist_trigger_func(struct event_command *cmd_ops,
 	if (get_named_trigger_data(trigger_data))
 		goto enable;
 
+<<<<<<< HEAD
 	if (has_hist_vars(hist_data))
 		save_hist_vars(hist_data);
 
@@ -5748,6 +6903,18 @@ static int event_hist_trigger_func(struct event_command *cmd_ops,
 	if (ret)
 		goto out_unreg;
 
+=======
+	ret = create_actions(hist_data);
+	if (ret)
+		goto out_unreg;
+
+	if (has_hist_vars(hist_data) || hist_data->n_var_refs) {
+		ret = save_hist_vars(hist_data);
+		if (ret)
+			goto out_unreg;
+	}
+
+>>>>>>> origin/android16-base
 	ret = tracing_map_init(hist_data->map);
 	if (ret)
 		goto out_unreg;
@@ -5756,17 +6923,27 @@ enable:
 	if (ret)
 		goto out_unreg;
 
+<<<<<<< HEAD
 	mutex_lock(&synth_event_mutex);
+=======
+>>>>>>> origin/android16-base
 	se_name = trace_event_name(file->event_call);
 	se = find_synth_event(se_name);
 	if (se)
 		se->ref++;
+<<<<<<< HEAD
 	mutex_unlock(&synth_event_mutex);
 
 	/* Just return zero, not the number of registered triggers */
 	ret = 0;
  out:
 	if (ret == 0)
+=======
+	/* Just return zero, not the number of registered triggers */
+	ret = 0;
+ out:
+	if (ret == 0 && glob[0])
+>>>>>>> origin/android16-base
 		hist_err_clear();
 
 	return ret;
@@ -5945,6 +7122,15 @@ static __init int trace_events_hist_init(void)
 	struct dentry *d_tracer;
 	int err = 0;
 
+<<<<<<< HEAD
+=======
+	err = dyn_event_register(&synth_event_ops);
+	if (err) {
+		pr_warn("Could not register synth_event_ops\n");
+		return err;
+	}
+
+>>>>>>> origin/android16-base
 	d_tracer = tracing_init_dentry();
 	if (IS_ERR(d_tracer)) {
 		err = PTR_ERR(d_tracer);

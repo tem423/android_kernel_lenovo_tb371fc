@@ -22,17 +22,25 @@
 #include <linux/pagemap.h>
 #include <linux/swap.h>
 
+<<<<<<< HEAD
 #ifdef CONFIG_HAVE_RCU_TABLE_FREE
 
 #define tlb_remove_entry(tlb, entry)	tlb_remove_table(tlb, entry)
+=======
+>>>>>>> origin/android16-base
 static inline void __tlb_remove_table(void *_table)
 {
 	free_page_and_swap_cache((struct page *)_table);
 }
+<<<<<<< HEAD
 #else
 #define tlb_remove_entry(tlb, entry)	tlb_remove_page(tlb, entry)
 #endif /* CONFIG_HAVE_RCU_TABLE_FREE */
 
+=======
+
+#define tlb_flush tlb_flush
+>>>>>>> origin/android16-base
 static void tlb_flush(struct mmu_gather *tlb);
 
 #include <asm-generic/tlb.h>
@@ -40,6 +48,7 @@ static void tlb_flush(struct mmu_gather *tlb);
 static inline void tlb_flush(struct mmu_gather *tlb)
 {
 	struct vm_area_struct vma = TLB_FLUSH_VMA(tlb->mm, 0);
+<<<<<<< HEAD
 
 	/*
 	 * The ASID allocator will either invalidate the ASID or mark
@@ -54,22 +63,51 @@ static inline void tlb_flush(struct mmu_gather *tlb)
 	 * TLBI is sufficient here.
 	 */
 	__flush_tlb_range(&vma, tlb->start, tlb->end, true);
+=======
+	bool last_level = !tlb->freed_tables;
+	unsigned long stride = tlb_get_unmap_size(tlb);
+
+	/*
+	 * If we're tearing down the address space then we only care about
+	 * invalidating the walk-cache, since the ASID allocator won't
+	 * reallocate our ASID without invalidating the entire TLB.
+	 */
+	if (tlb->fullmm) {
+		if (!last_level)
+			flush_tlb_mm(tlb->mm);
+		return;
+	}
+
+	__flush_tlb_range(&vma, tlb->start, tlb->end, stride, last_level);
+>>>>>>> origin/android16-base
 }
 
 static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte,
 				  unsigned long addr)
 {
+<<<<<<< HEAD
 	__flush_tlb_pgtable(tlb->mm, addr);
 	pgtable_page_dtor(pte);
 	tlb_remove_entry(tlb, pte);
+=======
+	pgtable_page_dtor(pte);
+	tlb_remove_table(tlb, pte);
+>>>>>>> origin/android16-base
 }
 
 #if CONFIG_PGTABLE_LEVELS > 2
 static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmdp,
 				  unsigned long addr)
 {
+<<<<<<< HEAD
 	__flush_tlb_pgtable(tlb->mm, addr);
 	tlb_remove_entry(tlb, virt_to_page(pmdp));
+=======
+	struct page *page = virt_to_page(pmdp);
+
+	pgtable_pmd_page_dtor(page);
+	tlb_remove_table(tlb, page);
+>>>>>>> origin/android16-base
 }
 #endif
 
@@ -77,8 +115,12 @@ static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmdp,
 static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pudp,
 				  unsigned long addr)
 {
+<<<<<<< HEAD
 	__flush_tlb_pgtable(tlb->mm, addr);
 	tlb_remove_entry(tlb, virt_to_page(pudp));
+=======
+	tlb_remove_table(tlb, virt_to_page(pudp));
+>>>>>>> origin/android16-base
 }
 #endif
 

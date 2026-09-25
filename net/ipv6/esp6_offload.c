@@ -272,6 +272,12 @@ static int esp6_xmit(struct xfrm_state *x, struct sk_buff *skb,  netdev_features
 
 	secpath_reset(skb);
 
+<<<<<<< HEAD
+=======
+	if (skb_needs_linearize(skb, skb->dev->features) &&
+	    __skb_linearize(skb))
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 	return 0;
 }
 

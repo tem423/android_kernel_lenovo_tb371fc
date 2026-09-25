@@ -431,9 +431,18 @@ static void scsi_device_dev_release_usercontext(struct work_struct *work)
 	struct list_head *this, *tmp;
 	struct scsi_vpd *vpd_pg80 = NULL, *vpd_pg83 = NULL;
 	unsigned long flags;
+<<<<<<< HEAD
 
 	sdev = container_of(work, struct scsi_device, ew.work);
 
+=======
+	struct module *mod;
+
+	sdev = container_of(work, struct scsi_device, ew.work);
+
+	mod = sdev->host->hostt->module;
+
+>>>>>>> origin/android16-base
 	scsi_dh_release_device(sdev);
 
 	parent = sdev->sdev_gendev.parent;
@@ -474,11 +483,23 @@ static void scsi_device_dev_release_usercontext(struct work_struct *work)
 
 	if (parent)
 		put_device(parent);
+<<<<<<< HEAD
+=======
+	module_put(mod);
+>>>>>>> origin/android16-base
 }
 
 static void scsi_device_dev_release(struct device *dev)
 {
 	struct scsi_device *sdp = to_scsi_device(dev);
+<<<<<<< HEAD
+=======
+
+	/* Set module pointer as NULL in case of module unloading */
+	if (!try_module_get(sdp->host->hostt->module))
+		sdp->host->hostt->module = NULL;
+
+>>>>>>> origin/android16-base
 	execute_in_process_context(scsi_device_dev_release_usercontext,
 				   &sdp->ew);
 }

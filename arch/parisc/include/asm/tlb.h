@@ -2,6 +2,7 @@
 #ifndef _PARISC_TLB_H
 #define _PARISC_TLB_H
 
+<<<<<<< HEAD
 #define tlb_flush(tlb)			\
 do {	if ((tlb)->fullmm)		\
 		flush_tlb_mm((tlb)->mm);\
@@ -20,6 +21,8 @@ do {	if (!(tlb)->fullmm)	\
 #define __tlb_remove_tlb_entry(tlb, pte, address) \
 	do { } while (0)
 
+=======
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 #define __pmd_free_tlb(tlb, pmd, addr)	pmd_free((tlb)->mm, pmd)

@@ -963,13 +963,27 @@ static void delayed_work(struct work_struct *work)
 	struct ceph_mon_client *monc =
 		container_of(work, struct ceph_mon_client, delayed_work.work);
 
+<<<<<<< HEAD
 	dout("monc delayed_work\n");
 	mutex_lock(&monc->mutex);
+=======
+	mutex_lock(&monc->mutex);
+	dout("%s mon%d\n", __func__, monc->cur_mon);
+	if (monc->cur_mon < 0) {
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	if (monc->hunting) {
 		dout("%s continuing hunt\n", __func__);
 		reopen_session(monc);
 	} else {
 		int is_auth = ceph_auth_is_authenticated(monc->auth);
+<<<<<<< HEAD
+=======
+
+		dout("%s is_authed %d\n", __func__, is_auth);
+>>>>>>> origin/android16-base
 		if (ceph_con_keepalive_expired(&monc->con,
 					       CEPH_MONC_PING_TIMEOUT)) {
 			dout("monc keepalive timeout\n");
@@ -994,6 +1008,11 @@ static void delayed_work(struct work_struct *work)
 		}
 	}
 	__schedule_delayed(monc);
+<<<<<<< HEAD
+=======
+
+out:
+>>>>>>> origin/android16-base
 	mutex_unlock(&monc->mutex);
 }
 
@@ -1106,6 +1125,7 @@ EXPORT_SYMBOL(ceph_monc_init);
 void ceph_monc_stop(struct ceph_mon_client *monc)
 {
 	dout("stop\n");
+<<<<<<< HEAD
 	cancel_delayed_work_sync(&monc->delayed_work);
 
 	mutex_lock(&monc->mutex);
@@ -1113,6 +1133,17 @@ void ceph_monc_stop(struct ceph_mon_client *monc)
 	monc->cur_mon = -1;
 	mutex_unlock(&monc->mutex);
 
+=======
+
+	mutex_lock(&monc->mutex);
+	__close_session(monc);
+	monc->hunting = false;
+	monc->cur_mon = -1;
+	mutex_unlock(&monc->mutex);
+
+	cancel_delayed_work_sync(&monc->delayed_work);
+
+>>>>>>> origin/android16-base
 	/*
 	 * flush msgr queue before we destroy ourselves to ensure that:
 	 *  - any work that references our embedded con is finished.

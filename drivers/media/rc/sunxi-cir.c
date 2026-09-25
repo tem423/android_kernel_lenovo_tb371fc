@@ -129,6 +129,11 @@ static irqreturn_t sunxi_ir_irq(int irqno, void *dev_id)
 	} else if (status & REG_RXINT_RPEI_EN) {
 		ir_raw_event_set_idle(ir->rc, true);
 		ir_raw_event_handle(ir->rc);
+<<<<<<< HEAD
+=======
+	} else {
+		ir_raw_event_handle(ir->rc);
+>>>>>>> origin/android16-base
 	}
 
 	spin_unlock(&ir->ir_lock);

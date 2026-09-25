@@ -27,6 +27,7 @@ struct multicore_worker {
 
 struct crypt_queue {
 	struct ptr_ring ring;
+<<<<<<< HEAD
 	union {
 		struct {
 			struct multicore_worker __percpu *worker;
@@ -34,10 +35,21 @@ struct crypt_queue {
 		};
 		struct work_struct work;
 	};
+=======
+	struct multicore_worker __percpu *worker;
+	int last_cpu;
+};
+
+struct prev_queue {
+	struct sk_buff *head, *tail, *peeked;
+	struct { struct sk_buff *next, *prev; } empty; // Match first 2 members of struct sk_buff.
+	atomic_t count;
+>>>>>>> origin/android16-base
 };
 
 struct wg_device {
 	struct net_device *dev;
+<<<<<<< HEAD
 	struct crypt_queue encrypt_queue, decrypt_queue;
 	struct sock __rcu *sock4, *sock6;
 	struct net __rcu *creating_net;
@@ -47,12 +59,23 @@ struct wg_device {
 	struct sk_buff_head incoming_handshakes;
 	int incoming_handshake_cpu;
 	struct multicore_worker __percpu *incoming_handshakes_worker;
+=======
+	struct crypt_queue encrypt_queue, decrypt_queue, handshake_queue;
+	struct sock __rcu *sock4, *sock6;
+	struct net __rcu *creating_net;
+	struct noise_static_identity static_identity;
+	struct workqueue_struct *packet_crypt_wq,*handshake_receive_wq, *handshake_send_wq;
+>>>>>>> origin/android16-base
 	struct cookie_checker cookie_checker;
 	struct pubkey_hashtable *peer_hashtable;
 	struct index_hashtable *index_hashtable;
 	struct allowedips peer_allowedips;
 	struct mutex device_update_lock, socket_update_lock;
 	struct list_head device_list, peer_list;
+<<<<<<< HEAD
+=======
+	atomic_t handshake_queue_len;
+>>>>>>> origin/android16-base
 	unsigned int num_peers, device_update_gen;
 	u32 fwmark;
 	u16 incoming_port;

@@ -383,8 +383,16 @@ static int afs_dir_iterate_block(struct dir_context *ctx,
 		}
 
 		/* skip if starts before the current position */
+<<<<<<< HEAD
 		if (offset < curr)
 			continue;
+=======
+		if (offset < curr) {
+			if (next > curr)
+				ctx->pos = blkoff + next * sizeof(union afs_xdr_dirent);
+			continue;
+		}
+>>>>>>> origin/android16-base
 
 		/* found the next entry */
 		if (!dir_emit(ctx, dire->u.name, nlen,
@@ -884,7 +892,11 @@ static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
 static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
 {
 	struct afs_vnode *vnode, *dir;
+<<<<<<< HEAD
 	struct afs_fid uninitialized_var(fid);
+=======
+	struct afs_fid fid;
+>>>>>>> origin/android16-base
 	struct dentry *parent;
 	struct inode *inode;
 	struct key *key;

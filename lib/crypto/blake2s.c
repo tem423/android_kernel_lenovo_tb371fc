@@ -15,6 +15,7 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/bug.h>
+<<<<<<< HEAD
 #include <asm/unaligned.h>
 
 bool blake2s_selftest(void);
@@ -51,12 +52,19 @@ void blake2s_update(struct blake2s_state *state, const u8 *in, size_t inlen)
 	}
 	memcpy(state->buf + state->buflen, in, inlen);
 	state->buflen += inlen;
+=======
+
+void blake2s_update(struct blake2s_state *state, const u8 *in, size_t inlen)
+{
+	__blake2s_update(state, in, inlen, false);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(blake2s_update);
 
 void blake2s_final(struct blake2s_state *state, u8 *out)
 {
 	WARN_ON(IS_ENABLED(DEBUG) && !out);
+<<<<<<< HEAD
 	blake2s_set_lastblock(state);
 	memset(state->buf + state->buflen, 0,
 	       BLAKE2S_BLOCK_SIZE - state->buflen); /* Padding */
@@ -66,6 +74,9 @@ void blake2s_final(struct blake2s_state *state, u8 *out)
 		blake2s_compress_generic(state, state->buf, 1, state->buflen);
 	cpu_to_le32_array(state->h, ARRAY_SIZE(state->h));
 	memcpy(out, state->h, state->outlen);
+=======
+	__blake2s_final(state, out, false);
+>>>>>>> origin/android16-base
 	memzero_explicit(state, sizeof(*state));
 }
 EXPORT_SYMBOL(blake2s_final);

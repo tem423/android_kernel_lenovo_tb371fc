@@ -422,12 +422,20 @@ static int scsiback_gnttab_data_map_batch(struct gnttab_map_grant_ref *map,
 		return 0;
 
 	err = gnttab_map_refs(map, NULL, pg, cnt);
+<<<<<<< HEAD
 	BUG_ON(err);
+=======
+>>>>>>> origin/android16-base
 	for (i = 0; i < cnt; i++) {
 		if (unlikely(map[i].status != GNTST_okay)) {
 			pr_err("invalid buffer -- could not remap it\n");
 			map[i].handle = SCSIBACK_INVALID_HANDLE;
+<<<<<<< HEAD
 			err = -ENOMEM;
+=======
+			if (!err)
+				err = -ENOMEM;
+>>>>>>> origin/android16-base
 		} else {
 			get_page(pg[i]);
 		}

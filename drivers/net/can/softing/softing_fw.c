@@ -576,6 +576,7 @@ int softing_startstop(struct net_device *dev, int up)
 		if (ret < 0)
 			goto failed;
 	}
+<<<<<<< HEAD
 	/* enable_error_frame */
 	/*
 	 * Error reporting is switched off at the moment since
@@ -583,11 +584,25 @@ int softing_startstop(struct net_device *dev, int up)
 	 * This should be enabled sooner or later
 	 *
 	if (error_reporting) {
+=======
+
+	/* enable_error_frame
+	 *
+	 * Error reporting is switched off at the moment since
+	 * the receiving of them is not yet 100% verified
+	 * This should be enabled sooner or later
+	 */
+	if (0 && error_reporting) {
+>>>>>>> origin/android16-base
 		ret = softing_fct_cmd(card, 51, "enable_error_frame");
 		if (ret < 0)
 			goto failed;
 	}
+<<<<<<< HEAD
 	*/
+=======
+
+>>>>>>> origin/android16-base
 	/* initialize interface */
 	iowrite16(1, &card->dpram[DPRAM_FCT_PARAM + 2]);
 	iowrite16(1, &card->dpram[DPRAM_FCT_PARAM + 4]);

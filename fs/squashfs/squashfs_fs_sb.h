@@ -76,6 +76,11 @@ struct squashfs_sb_info {
 	long long				bytes_used;
 	unsigned int				inodes;
 	unsigned int				fragments;
+<<<<<<< HEAD
 	int					xattr_ids;
+=======
+	unsigned int				xattr_ids;
+	unsigned int				ids;
+>>>>>>> origin/android16-base
 };
 #endif

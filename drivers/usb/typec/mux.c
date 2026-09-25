@@ -137,7 +137,15 @@ typec_switch_register(struct device *parent,
 	sw->dev.class = &typec_mux_class;
 	sw->dev.type = &typec_switch_dev_type;
 	sw->dev.driver_data = desc->drvdata;
+<<<<<<< HEAD
 	dev_set_name(&sw->dev, "%s-switch", dev_name(parent));
+=======
+	ret = dev_set_name(&sw->dev, "%s-switch", dev_name(parent));
+	if (ret) {
+		put_device(&sw->dev);
+		return ERR_PTR(ret);
+	}
+>>>>>>> origin/android16-base
 
 	ret = device_add(&sw->dev);
 	if (ret) {
@@ -189,6 +197,10 @@ static void *typec_mux_match(struct device_connection *con, int ep, void *data)
 	bool match;
 	int nval;
 	u16 *val;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 	int i;
 
 	if (!con->fwnode) {
@@ -223,10 +235,17 @@ static void *typec_mux_match(struct device_connection *con, int ep, void *data)
 	if (!val)
 		return ERR_PTR(-ENOMEM);
 
+<<<<<<< HEAD
 	nval = fwnode_property_read_u16_array(con->fwnode, "svid", val, nval);
 	if (nval < 0) {
 		kfree(val);
 		return ERR_PTR(nval);
+=======
+	ret = fwnode_property_read_u16_array(con->fwnode, "svid", val, nval);
+	if (ret < 0) {
+		kfree(val);
+		return ERR_PTR(ret);
+>>>>>>> origin/android16-base
 	}
 
 	for (i = 0; i < nval; i++) {
@@ -243,7 +262,11 @@ find_mux:
 	dev = class_find_device(&typec_mux_class, NULL, con->fwnode,
 				mux_fwnode_match);
 
+<<<<<<< HEAD
 	return dev ? to_typec_switch(dev) : ERR_PTR(-EPROBE_DEFER);
+=======
+	return dev ? to_typec_mux(dev) : ERR_PTR(-EPROBE_DEFER);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -326,7 +349,15 @@ typec_mux_register(struct device *parent, const struct typec_mux_desc *desc)
 	mux->dev.class = &typec_mux_class;
 	mux->dev.type = &typec_mux_dev_type;
 	mux->dev.driver_data = desc->drvdata;
+<<<<<<< HEAD
 	dev_set_name(&mux->dev, "%s-mux", dev_name(parent));
+=======
+	ret = dev_set_name(&mux->dev, "%s-mux", dev_name(parent));
+	if (ret) {
+		put_device(&mux->dev);
+		return ERR_PTR(ret);
+	}
+>>>>>>> origin/android16-base
 
 	ret = device_add(&mux->dev);
 	if (ret) {

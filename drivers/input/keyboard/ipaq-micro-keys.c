@@ -108,6 +108,12 @@ static int micro_key_probe(struct platform_device *pdev)
 	keys->codes = devm_kmemdup(&pdev->dev, micro_keycodes,
 			   keys->input->keycodesize * keys->input->keycodemax,
 			   GFP_KERNEL);
+<<<<<<< HEAD
+=======
+	if (!keys->codes)
+		return -ENOMEM;
+
+>>>>>>> origin/android16-base
 	keys->input->keycode = keys->codes;
 
 	__set_bit(EV_KEY, keys->input->evbit);

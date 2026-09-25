@@ -301,7 +301,11 @@ static int xhci_plat_probe(struct platform_device *pdev)
 			*priv = *priv_match;
 	}
 
+<<<<<<< HEAD
 	device_wakeup_enable(hcd->self.controller);
+=======
+	device_set_wakeup_capable(&pdev->dev, true);
+>>>>>>> origin/android16-base
 
 	xhci->clk = clk;
 	xhci->reg_clk = reg_clk;

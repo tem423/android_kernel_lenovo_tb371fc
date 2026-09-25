@@ -201,6 +201,11 @@ init_cryptoloop(void)
 
 	if (rc)
 		printk(KERN_ERR "cryptoloop: loop_register_transfer failed\n");
+<<<<<<< HEAD
+=======
+	else
+		pr_warn("the cryptoloop driver has been deprecated and will be removed in in Linux 5.16\n");
+>>>>>>> origin/android16-base
 	return rc;
 }
 

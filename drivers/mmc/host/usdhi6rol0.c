@@ -1749,8 +1749,15 @@ static int usdhi6_probe(struct platform_device *pdev)
 	irq_cd = platform_get_irq_byname(pdev, "card detect");
 	irq_sd = platform_get_irq_byname(pdev, "data");
 	irq_sdio = platform_get_irq_byname(pdev, "SDIO");
+<<<<<<< HEAD
 	if (irq_sd < 0 || irq_sdio < 0)
 		return -ENODEV;
+=======
+	if (irq_sd < 0)
+		return irq_sd;
+	if (irq_sdio < 0)
+		return irq_sdio;
+>>>>>>> origin/android16-base
 
 	mmc = mmc_alloc_host(sizeof(struct usdhi6_host), dev);
 	if (!mmc)
@@ -1809,6 +1816,10 @@ static int usdhi6_probe(struct platform_device *pdev)
 
 	version = usdhi6_read(host, USDHI6_VERSION);
 	if ((version & 0xfff) != 0xa0d) {
+<<<<<<< HEAD
+=======
+		ret = -EPERM;
+>>>>>>> origin/android16-base
 		dev_err(dev, "Version not recognized %x\n", version);
 		goto e_clk_off;
 	}
@@ -1866,10 +1877,19 @@ static int usdhi6_probe(struct platform_device *pdev)
 
 	ret = mmc_add_host(mmc);
 	if (ret < 0)
+<<<<<<< HEAD
 		goto e_clk_off;
 
 	return 0;
 
+=======
+		goto e_release_dma;
+
+	return 0;
+
+e_release_dma:
+	usdhi6_dma_release(host);
+>>>>>>> origin/android16-base
 e_clk_off:
 	clk_disable_unprepare(host->clk);
 e_free_mmc:

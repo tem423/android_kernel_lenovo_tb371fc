@@ -642,16 +642,32 @@ static int rtsx_usb_probe(struct usb_interface *intf,
 
 	ucr->pusb_dev = usb_dev;
 
+<<<<<<< HEAD
 	ucr->iobuf = usb_alloc_coherent(ucr->pusb_dev, IOBUF_SIZE,
 			GFP_KERNEL, &ucr->iobuf_dma);
 	if (!ucr->iobuf)
 		return -ENOMEM;
 
+=======
+	ucr->cmd_buf = kmalloc(IOBUF_SIZE, GFP_KERNEL);
+	if (!ucr->cmd_buf)
+		return -ENOMEM;
+
+	ucr->rsp_buf = kmalloc(IOBUF_SIZE, GFP_KERNEL);
+	if (!ucr->rsp_buf) {
+		ret = -ENOMEM;
+		goto out_free_cmd_buf;
+	}
+
+>>>>>>> origin/android16-base
 	usb_set_intfdata(intf, ucr);
 
 	ucr->vendor_id = id->idVendor;
 	ucr->product_id = id->idProduct;
+<<<<<<< HEAD
 	ucr->cmd_buf = ucr->rsp_buf = ucr->iobuf;
+=======
+>>>>>>> origin/android16-base
 
 	mutex_init(&ucr->dev_mutex);
 
@@ -678,8 +694,17 @@ static int rtsx_usb_probe(struct usb_interface *intf,
 	return 0;
 
 out_init_fail:
+<<<<<<< HEAD
 	usb_free_coherent(ucr->pusb_dev, IOBUF_SIZE, ucr->iobuf,
 			ucr->iobuf_dma);
+=======
+	usb_set_intfdata(ucr->pusb_intf, NULL);
+	kfree(ucr->rsp_buf);
+	ucr->rsp_buf = NULL;
+out_free_cmd_buf:
+	kfree(ucr->cmd_buf);
+	ucr->cmd_buf = NULL;
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -692,8 +717,17 @@ static void rtsx_usb_disconnect(struct usb_interface *intf)
 	mfd_remove_devices(&intf->dev);
 
 	usb_set_intfdata(ucr->pusb_intf, NULL);
+<<<<<<< HEAD
 	usb_free_coherent(ucr->pusb_dev, IOBUF_SIZE, ucr->iobuf,
 			ucr->iobuf_dma);
+=======
+
+	kfree(ucr->cmd_buf);
+	ucr->cmd_buf = NULL;
+
+	kfree(ucr->rsp_buf);
+	ucr->rsp_buf = NULL;
+>>>>>>> origin/android16-base
 }
 
 #ifdef CONFIG_PM

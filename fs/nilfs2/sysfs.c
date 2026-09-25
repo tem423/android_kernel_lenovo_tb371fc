@@ -64,11 +64,17 @@ static const struct sysfs_ops nilfs_##name##_attr_ops = { \
 #define NILFS_DEV_INT_GROUP_TYPE(name, parent_name) \
 static void nilfs_##name##_attr_release(struct kobject *kobj) \
 { \
+<<<<<<< HEAD
 	struct nilfs_sysfs_##parent_name##_subgroups *subgroups; \
 	struct the_nilfs *nilfs = container_of(kobj->parent, \
 						struct the_nilfs, \
 						ns_##parent_name##_kobj); \
 	subgroups = nilfs->ns_##parent_name##_subgroups; \
+=======
+	struct nilfs_sysfs_##parent_name##_subgroups *subgroups = container_of(kobj, \
+						struct nilfs_sysfs_##parent_name##_subgroups, \
+						sg_##name##_kobj); \
+>>>>>>> origin/android16-base
 	complete(&subgroups->sg_##name##_kobj_unregister); \
 } \
 static struct kobj_type nilfs_##name##_ktype = { \
@@ -94,12 +100,21 @@ static int nilfs_sysfs_create_##name##_group(struct the_nilfs *nilfs) \
 	err = kobject_init_and_add(kobj, &nilfs_##name##_ktype, parent, \
 				    #name); \
 	if (err) \
+<<<<<<< HEAD
 		return err; \
 	return 0; \
 } \
 static void nilfs_sysfs_delete_##name##_group(struct the_nilfs *nilfs) \
 { \
 	kobject_del(&nilfs->ns_##parent_name##_subgroups->sg_##name##_kobj); \
+=======
+		kobject_put(kobj); \
+	return err; \
+} \
+static void nilfs_sysfs_delete_##name##_group(struct the_nilfs *nilfs) \
+{ \
+	kobject_put(&nilfs->ns_##parent_name##_subgroups->sg_##name##_kobj); \
+>>>>>>> origin/android16-base
 }
 
 /************************************************************************
@@ -110,7 +125,11 @@ static ssize_t
 nilfs_snapshot_inodes_count_show(struct nilfs_snapshot_attr *attr,
 				 struct nilfs_root *root, char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n",
+=======
+	return sysfs_emit(buf, "%llu\n",
+>>>>>>> origin/android16-base
 			(unsigned long long)atomic64_read(&root->inodes_count));
 }
 
@@ -118,7 +137,11 @@ static ssize_t
 nilfs_snapshot_blocks_count_show(struct nilfs_snapshot_attr *attr,
 				 struct nilfs_root *root, char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n",
+=======
+	return sysfs_emit(buf, "%llu\n",
+>>>>>>> origin/android16-base
 			(unsigned long long)atomic64_read(&root->blocks_count));
 }
 
@@ -131,7 +154,11 @@ static ssize_t
 nilfs_snapshot_README_show(struct nilfs_snapshot_attr *attr,
 			    struct nilfs_root *root, char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, snapshot_readme_str);
+=======
+	return sysfs_emit(buf, snapshot_readme_str);
+>>>>>>> origin/android16-base
 }
 
 NILFS_SNAPSHOT_RO_ATTR(inodes_count);
@@ -210,14 +237,24 @@ int nilfs_sysfs_create_snapshot_group(struct nilfs_root *root)
 	}
 
 	if (err)
+<<<<<<< HEAD
 		return err;
 
 	return 0;
+=======
+		kobject_put(&root->snapshot_kobj);
+
+	return err;
+>>>>>>> origin/android16-base
 }
 
 void nilfs_sysfs_delete_snapshot_group(struct nilfs_root *root)
 {
+<<<<<<< HEAD
 	kobject_del(&root->snapshot_kobj);
+=======
+	kobject_put(&root->snapshot_kobj);
+>>>>>>> origin/android16-base
 }
 
 /************************************************************************
@@ -232,7 +269,11 @@ static ssize_t
 nilfs_mounted_snapshots_README_show(struct nilfs_mounted_snapshots_attr *attr,
 				    struct the_nilfs *nilfs, char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, mounted_snapshots_readme_str);
+=======
+	return sysfs_emit(buf, mounted_snapshots_readme_str);
+>>>>>>> origin/android16-base
 }
 
 NILFS_MOUNTED_SNAPSHOTS_RO_ATTR(README);
@@ -263,14 +304,23 @@ nilfs_checkpoints_checkpoints_number_show(struct nilfs_checkpoints_attr *attr,
 	err = nilfs_cpfile_get_stat(nilfs->ns_cpfile, &cpstat);
 	up_read(&nilfs->ns_segctor_sem);
 	if (err < 0) {
+<<<<<<< HEAD
 		nilfs_msg(nilfs->ns_sb, KERN_ERR,
 			  "unable to get checkpoint stat: err=%d", err);
+=======
+		nilfs_err(nilfs->ns_sb, "unable to get checkpoint stat: err=%d",
+			  err);
+>>>>>>> origin/android16-base
 		return err;
 	}
 
 	ncheckpoints = cpstat.cs_ncps;
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", ncheckpoints);
+=======
+	return sysfs_emit(buf, "%llu\n", ncheckpoints);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -286,14 +336,23 @@ nilfs_checkpoints_snapshots_number_show(struct nilfs_checkpoints_attr *attr,
 	err = nilfs_cpfile_get_stat(nilfs->ns_cpfile, &cpstat);
 	up_read(&nilfs->ns_segctor_sem);
 	if (err < 0) {
+<<<<<<< HEAD
 		nilfs_msg(nilfs->ns_sb, KERN_ERR,
 			  "unable to get checkpoint stat: err=%d", err);
+=======
+		nilfs_err(nilfs->ns_sb, "unable to get checkpoint stat: err=%d",
+			  err);
+>>>>>>> origin/android16-base
 		return err;
 	}
 
 	nsnapshots = cpstat.cs_nsss;
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", nsnapshots);
+=======
+	return sysfs_emit(buf, "%llu\n", nsnapshots);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -307,7 +366,11 @@ nilfs_checkpoints_last_seg_checkpoint_show(struct nilfs_checkpoints_attr *attr,
 	last_cno = nilfs->ns_last_cno;
 	spin_unlock(&nilfs->ns_last_segment_lock);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", last_cno);
+=======
+	return sysfs_emit(buf, "%llu\n", last_cno);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -321,7 +384,11 @@ nilfs_checkpoints_next_checkpoint_show(struct nilfs_checkpoints_attr *attr,
 	cno = nilfs->ns_cno;
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", cno);
+=======
+	return sysfs_emit(buf, "%llu\n", cno);
+>>>>>>> origin/android16-base
 }
 
 static const char checkpoints_readme_str[] =
@@ -337,7 +404,11 @@ static ssize_t
 nilfs_checkpoints_README_show(struct nilfs_checkpoints_attr *attr,
 				struct the_nilfs *nilfs, char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, checkpoints_readme_str);
+=======
+	return sysfs_emit(buf, checkpoints_readme_str);
+>>>>>>> origin/android16-base
 }
 
 NILFS_CHECKPOINTS_RO_ATTR(checkpoints_number);
@@ -368,7 +439,11 @@ nilfs_segments_segments_number_show(struct nilfs_segments_attr *attr,
 				     struct the_nilfs *nilfs,
 				     char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%lu\n", nilfs->ns_nsegments);
+=======
+	return sysfs_emit(buf, "%lu\n", nilfs->ns_nsegments);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -376,7 +451,11 @@ nilfs_segments_blocks_per_segment_show(struct nilfs_segments_attr *attr,
 					struct the_nilfs *nilfs,
 					char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%lu\n", nilfs->ns_blocks_per_segment);
+=======
+	return sysfs_emit(buf, "%lu\n", nilfs->ns_blocks_per_segment);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -390,7 +469,11 @@ nilfs_segments_clean_segments_show(struct nilfs_segments_attr *attr,
 	ncleansegs = nilfs_sufile_get_ncleansegs(nilfs->ns_sufile);
 	up_read(&NILFS_MDT(nilfs->ns_dat)->mi_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%lu\n", ncleansegs);
+=======
+	return sysfs_emit(buf, "%lu\n", ncleansegs);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -405,12 +488,21 @@ nilfs_segments_dirty_segments_show(struct nilfs_segments_attr *attr,
 	err = nilfs_sufile_get_stat(nilfs->ns_sufile, &sustat);
 	up_read(&nilfs->ns_segctor_sem);
 	if (err < 0) {
+<<<<<<< HEAD
 		nilfs_msg(nilfs->ns_sb, KERN_ERR,
 			  "unable to get segment stat: err=%d", err);
 		return err;
 	}
 
 	return snprintf(buf, PAGE_SIZE, "%llu\n", sustat.ss_ndirtysegs);
+=======
+		nilfs_err(nilfs->ns_sb, "unable to get segment stat: err=%d",
+			  err);
+		return err;
+	}
+
+	return sysfs_emit(buf, "%llu\n", sustat.ss_ndirtysegs);
+>>>>>>> origin/android16-base
 }
 
 static const char segments_readme_str[] =
@@ -426,7 +518,11 @@ nilfs_segments_README_show(struct nilfs_segments_attr *attr,
 			    struct the_nilfs *nilfs,
 			    char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, segments_readme_str);
+=======
+	return sysfs_emit(buf, segments_readme_str);
+>>>>>>> origin/android16-base
 }
 
 NILFS_SEGMENTS_RO_ATTR(segments_number);
@@ -463,7 +559,11 @@ nilfs_segctor_last_pseg_block_show(struct nilfs_segctor_attr *attr,
 	last_pseg = nilfs->ns_last_pseg;
 	spin_unlock(&nilfs->ns_last_segment_lock);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n",
+=======
+	return sysfs_emit(buf, "%llu\n",
+>>>>>>> origin/android16-base
 			(unsigned long long)last_pseg);
 }
 
@@ -478,7 +578,11 @@ nilfs_segctor_last_seg_sequence_show(struct nilfs_segctor_attr *attr,
 	last_seq = nilfs->ns_last_seq;
 	spin_unlock(&nilfs->ns_last_segment_lock);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", last_seq);
+=======
+	return sysfs_emit(buf, "%llu\n", last_seq);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -492,7 +596,11 @@ nilfs_segctor_last_seg_checkpoint_show(struct nilfs_segctor_attr *attr,
 	last_cno = nilfs->ns_last_cno;
 	spin_unlock(&nilfs->ns_last_segment_lock);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", last_cno);
+=======
+	return sysfs_emit(buf, "%llu\n", last_cno);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -506,7 +614,11 @@ nilfs_segctor_current_seg_sequence_show(struct nilfs_segctor_attr *attr,
 	seg_seq = nilfs->ns_seg_seq;
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", seg_seq);
+=======
+	return sysfs_emit(buf, "%llu\n", seg_seq);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -520,7 +632,11 @@ nilfs_segctor_current_last_full_seg_show(struct nilfs_segctor_attr *attr,
 	segnum = nilfs->ns_segnum;
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", segnum);
+=======
+	return sysfs_emit(buf, "%llu\n", segnum);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -534,7 +650,11 @@ nilfs_segctor_next_full_seg_show(struct nilfs_segctor_attr *attr,
 	nextnum = nilfs->ns_nextnum;
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", nextnum);
+=======
+	return sysfs_emit(buf, "%llu\n", nextnum);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -548,7 +668,11 @@ nilfs_segctor_next_pseg_offset_show(struct nilfs_segctor_attr *attr,
 	pseg_offset = nilfs->ns_pseg_offset;
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%lu\n", pseg_offset);
+=======
+	return sysfs_emit(buf, "%lu\n", pseg_offset);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -562,7 +686,11 @@ nilfs_segctor_next_checkpoint_show(struct nilfs_segctor_attr *attr,
 	cno = nilfs->ns_cno;
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", cno);
+=======
+	return sysfs_emit(buf, "%llu\n", cno);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -590,7 +718,11 @@ nilfs_segctor_last_seg_write_time_secs_show(struct nilfs_segctor_attr *attr,
 	ctime = nilfs->ns_ctime;
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", ctime);
+=======
+	return sysfs_emit(buf, "%llu\n", ctime);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -618,7 +750,11 @@ nilfs_segctor_last_nongc_write_time_secs_show(struct nilfs_segctor_attr *attr,
 	nongc_ctime = nilfs->ns_nongc_ctime;
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", nongc_ctime);
+=======
+	return sysfs_emit(buf, "%llu\n", nongc_ctime);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -632,7 +768,11 @@ nilfs_segctor_dirty_data_blocks_count_show(struct nilfs_segctor_attr *attr,
 	ndirtyblks = atomic_read(&nilfs->ns_ndirtyblks);
 	up_read(&nilfs->ns_segctor_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%u\n", ndirtyblks);
+=======
+	return sysfs_emit(buf, "%u\n", ndirtyblks);
+>>>>>>> origin/android16-base
 }
 
 static const char segctor_readme_str[] =
@@ -669,7 +809,11 @@ static ssize_t
 nilfs_segctor_README_show(struct nilfs_segctor_attr *attr,
 			  struct the_nilfs *nilfs, char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, segctor_readme_str);
+=======
+	return sysfs_emit(buf, segctor_readme_str);
+>>>>>>> origin/android16-base
 }
 
 NILFS_SEGCTOR_RO_ATTR(last_pseg_block);
@@ -738,7 +882,11 @@ nilfs_superblock_sb_write_time_secs_show(struct nilfs_superblock_attr *attr,
 	sbwtime = nilfs->ns_sbwtime;
 	up_read(&nilfs->ns_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n", sbwtime);
+=======
+	return sysfs_emit(buf, "%llu\n", sbwtime);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -752,7 +900,11 @@ nilfs_superblock_sb_write_count_show(struct nilfs_superblock_attr *attr,
 	sbwcount = nilfs->ns_sbwcount;
 	up_read(&nilfs->ns_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%u\n", sbwcount);
+=======
+	return sysfs_emit(buf, "%u\n", sbwcount);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -766,7 +918,11 @@ nilfs_superblock_sb_update_frequency_show(struct nilfs_superblock_attr *attr,
 	sb_update_freq = nilfs->ns_sb_update_freq;
 	up_read(&nilfs->ns_sem);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%u\n", sb_update_freq);
+=======
+	return sysfs_emit(buf, "%u\n", sb_update_freq);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -779,15 +935,25 @@ nilfs_superblock_sb_update_frequency_store(struct nilfs_superblock_attr *attr,
 
 	err = kstrtouint(skip_spaces(buf), 0, &val);
 	if (err) {
+<<<<<<< HEAD
 		nilfs_msg(nilfs->ns_sb, KERN_ERR,
 			  "unable to convert string: err=%d", err);
+=======
+		nilfs_err(nilfs->ns_sb, "unable to convert string: err=%d",
+			  err);
+>>>>>>> origin/android16-base
 		return err;
 	}
 
 	if (val < NILFS_SB_FREQ) {
 		val = NILFS_SB_FREQ;
+<<<<<<< HEAD
 		nilfs_msg(nilfs->ns_sb, KERN_WARNING,
 			  "superblock update frequency cannot be lesser than 10 seconds");
+=======
+		nilfs_warn(nilfs->ns_sb,
+			   "superblock update frequency cannot be lesser than 10 seconds");
+>>>>>>> origin/android16-base
 	}
 
 	down_write(&nilfs->ns_sem);
@@ -814,7 +980,11 @@ static ssize_t
 nilfs_superblock_README_show(struct nilfs_superblock_attr *attr,
 				struct the_nilfs *nilfs, char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, sb_readme_str);
+=======
+	return sysfs_emit(buf, sb_readme_str);
+>>>>>>> origin/android16-base
 }
 
 NILFS_SUPERBLOCK_RO_ATTR(sb_write_time);
@@ -845,11 +1015,25 @@ ssize_t nilfs_dev_revision_show(struct nilfs_dev_attr *attr,
 				struct the_nilfs *nilfs,
 				char *buf)
 {
+<<<<<<< HEAD
 	struct nilfs_super_block **sbp = nilfs->ns_sbp;
 	u32 major = le32_to_cpu(sbp[0]->s_rev_level);
 	u16 minor = le16_to_cpu(sbp[0]->s_minor_rev_level);
 
 	return snprintf(buf, PAGE_SIZE, "%d.%d\n", major, minor);
+=======
+	struct nilfs_super_block *raw_sb;
+	u32 major;
+	u16 minor;
+
+	down_read(&nilfs->ns_sem);
+	raw_sb = nilfs->ns_sbp[0];
+	major = le32_to_cpu(raw_sb->s_rev_level);
+	minor = le16_to_cpu(raw_sb->s_minor_rev_level);
+	up_read(&nilfs->ns_sem);
+
+	return sysfs_emit(buf, "%d.%d\n", major, minor);
+>>>>>>> origin/android16-base
 }
 
 static
@@ -857,7 +1041,11 @@ ssize_t nilfs_dev_blocksize_show(struct nilfs_dev_attr *attr,
 				 struct the_nilfs *nilfs,
 				 char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%u\n", nilfs->ns_blocksize);
+=======
+	return sysfs_emit(buf, "%u\n", nilfs->ns_blocksize);
+>>>>>>> origin/android16-base
 }
 
 static
@@ -865,10 +1053,22 @@ ssize_t nilfs_dev_device_size_show(struct nilfs_dev_attr *attr,
 				    struct the_nilfs *nilfs,
 				    char *buf)
 {
+<<<<<<< HEAD
 	struct nilfs_super_block **sbp = nilfs->ns_sbp;
 	u64 dev_size = le64_to_cpu(sbp[0]->s_dev_size);
 
 	return snprintf(buf, PAGE_SIZE, "%llu\n", dev_size);
+=======
+	struct nilfs_super_block *raw_sb;
+	u64 dev_size;
+
+	down_read(&nilfs->ns_sem);
+	raw_sb = nilfs->ns_sbp[0];
+	dev_size = le64_to_cpu(raw_sb->s_dev_size);
+	up_read(&nilfs->ns_sem);
+
+	return sysfs_emit(buf, "%llu\n", dev_size);
+>>>>>>> origin/android16-base
 }
 
 static
@@ -879,7 +1079,11 @@ ssize_t nilfs_dev_free_blocks_show(struct nilfs_dev_attr *attr,
 	sector_t free_blocks = 0;
 
 	nilfs_count_free_blocks(nilfs, &free_blocks);
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%llu\n",
+=======
+	return sysfs_emit(buf, "%llu\n",
+>>>>>>> origin/android16-base
 			(unsigned long long)free_blocks);
 }
 
@@ -888,9 +1092,21 @@ ssize_t nilfs_dev_uuid_show(struct nilfs_dev_attr *attr,
 			    struct the_nilfs *nilfs,
 			    char *buf)
 {
+<<<<<<< HEAD
 	struct nilfs_super_block **sbp = nilfs->ns_sbp;
 
 	return snprintf(buf, PAGE_SIZE, "%pUb\n", sbp[0]->s_uuid);
+=======
+	struct nilfs_super_block *raw_sb;
+	ssize_t len;
+
+	down_read(&nilfs->ns_sem);
+	raw_sb = nilfs->ns_sbp[0];
+	len = sysfs_emit(buf, "%pUb\n", raw_sb->s_uuid);
+	up_read(&nilfs->ns_sem);
+
+	return len;
+>>>>>>> origin/android16-base
 }
 
 static
@@ -898,10 +1114,23 @@ ssize_t nilfs_dev_volume_name_show(struct nilfs_dev_attr *attr,
 				    struct the_nilfs *nilfs,
 				    char *buf)
 {
+<<<<<<< HEAD
 	struct nilfs_super_block **sbp = nilfs->ns_sbp;
 
 	return scnprintf(buf, sizeof(sbp[0]->s_volume_name), "%s\n",
 			 sbp[0]->s_volume_name);
+=======
+	struct nilfs_super_block *raw_sb;
+	ssize_t len;
+
+	down_read(&nilfs->ns_sem);
+	raw_sb = nilfs->ns_sbp[0];
+	len = scnprintf(buf, sizeof(raw_sb->s_volume_name), "%s\n",
+			raw_sb->s_volume_name);
+	up_read(&nilfs->ns_sem);
+
+	return len;
+>>>>>>> origin/android16-base
 }
 
 static const char dev_readme_str[] =
@@ -918,7 +1147,11 @@ static ssize_t nilfs_dev_README_show(struct nilfs_dev_attr *attr,
 				     struct the_nilfs *nilfs,
 				     char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, dev_readme_str);
+=======
+	return sysfs_emit(buf, dev_readme_str);
+>>>>>>> origin/android16-base
 }
 
 NILFS_DEV_RO_ATTR(revision);
@@ -990,8 +1223,12 @@ int nilfs_sysfs_create_device_group(struct super_block *sb)
 	nilfs->ns_dev_subgroups = kzalloc(devgrp_size, GFP_KERNEL);
 	if (unlikely(!nilfs->ns_dev_subgroups)) {
 		err = -ENOMEM;
+<<<<<<< HEAD
 		nilfs_msg(sb, KERN_ERR,
 			  "unable to allocate memory for device group");
+=======
+		nilfs_err(sb, "unable to allocate memory for device group");
+>>>>>>> origin/android16-base
 		goto failed_create_device_group;
 	}
 
@@ -1000,7 +1237,11 @@ int nilfs_sysfs_create_device_group(struct super_block *sb)
 	err = kobject_init_and_add(&nilfs->ns_dev_kobj, &nilfs_dev_ktype, NULL,
 				    "%s", sb->s_id);
 	if (err)
+<<<<<<< HEAD
 		goto free_dev_subgroups;
+=======
+		goto cleanup_dev_kobject;
+>>>>>>> origin/android16-base
 
 	err = nilfs_sysfs_create_mounted_snapshots_group(nilfs);
 	if (err)
@@ -1037,9 +1278,13 @@ delete_mounted_snapshots_group:
 	nilfs_sysfs_delete_mounted_snapshots_group(nilfs);
 
 cleanup_dev_kobject:
+<<<<<<< HEAD
 	kobject_del(&nilfs->ns_dev_kobj);
 
 free_dev_subgroups:
+=======
+	kobject_put(&nilfs->ns_dev_kobj);
+>>>>>>> origin/android16-base
 	kfree(nilfs->ns_dev_subgroups);
 
 failed_create_device_group:
@@ -1054,6 +1299,10 @@ void nilfs_sysfs_delete_device_group(struct the_nilfs *nilfs)
 	nilfs_sysfs_delete_superblock_group(nilfs);
 	nilfs_sysfs_delete_segctor_group(nilfs);
 	kobject_del(&nilfs->ns_dev_kobj);
+<<<<<<< HEAD
+=======
+	kobject_put(&nilfs->ns_dev_kobj);
+>>>>>>> origin/android16-base
 	kfree(nilfs->ns_dev_subgroups);
 }
 
@@ -1064,7 +1313,11 @@ void nilfs_sysfs_delete_device_group(struct the_nilfs *nilfs)
 static ssize_t nilfs_feature_revision_show(struct kobject *kobj,
 					    struct attribute *attr, char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%d.%d\n",
+=======
+	return sysfs_emit(buf, "%d.%d\n",
+>>>>>>> origin/android16-base
 			NILFS_CURRENT_REV, NILFS_MINOR_REV);
 }
 
@@ -1077,7 +1330,11 @@ static ssize_t nilfs_feature_README_show(struct kobject *kobj,
 					 struct attribute *attr,
 					 char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, features_readme_str);
+=======
+	return sysfs_emit(buf, features_readme_str);
+>>>>>>> origin/android16-base
 }
 
 NILFS_FEATURE_RO_ATTR(revision);
@@ -1101,15 +1358,23 @@ int __init nilfs_sysfs_init(void)
 	nilfs_kset = kset_create_and_add(NILFS_ROOT_GROUP_NAME, NULL, fs_kobj);
 	if (!nilfs_kset) {
 		err = -ENOMEM;
+<<<<<<< HEAD
 		nilfs_msg(NULL, KERN_ERR,
 			  "unable to create sysfs entry: err=%d", err);
+=======
+		nilfs_err(NULL, "unable to create sysfs entry: err=%d", err);
+>>>>>>> origin/android16-base
 		goto failed_sysfs_init;
 	}
 
 	err = sysfs_create_group(&nilfs_kset->kobj, &nilfs_feature_attr_group);
 	if (unlikely(err)) {
+<<<<<<< HEAD
 		nilfs_msg(NULL, KERN_ERR,
 			  "unable to create feature group: err=%d", err);
+=======
+		nilfs_err(NULL, "unable to create feature group: err=%d", err);
+>>>>>>> origin/android16-base
 		goto cleanup_sysfs_init;
 	}
 

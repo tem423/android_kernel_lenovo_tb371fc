@@ -103,7 +103,15 @@ struct bmg160_data {
 	struct iio_trigger *dready_trig;
 	struct iio_trigger *motion_trig;
 	struct mutex mutex;
+<<<<<<< HEAD
 	s16 buffer[8];
+=======
+	/* Ensure naturally aligned timestamp */
+	struct {
+		s16 chans[3];
+		s64 timestamp __aligned(8);
+	} scan;
+>>>>>>> origin/android16-base
 	u32 dps_range;
 	int ev_enable_state;
 	int slope_thres;
@@ -872,12 +880,20 @@ static irqreturn_t bmg160_trigger_handler(int irq, void *p)
 
 	mutex_lock(&data->mutex);
 	ret = regmap_bulk_read(data->regmap, BMG160_REG_XOUT_L,
+<<<<<<< HEAD
 			       data->buffer, AXIS_MAX * 2);
+=======
+			       data->scan.chans, AXIS_MAX * 2);
+>>>>>>> origin/android16-base
 	mutex_unlock(&data->mutex);
 	if (ret < 0)
 		goto err;
 
+<<<<<<< HEAD
 	iio_push_to_buffers_with_timestamp(indio_dev, data->buffer,
+=======
+	iio_push_to_buffers_with_timestamp(indio_dev, &data->scan,
+>>>>>>> origin/android16-base
 					   pf->timestamp);
 err:
 	iio_trigger_notify_done(indio_dev->trig);

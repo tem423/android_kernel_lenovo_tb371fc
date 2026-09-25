@@ -139,12 +139,20 @@
 		fman@400000 {
 			ethernet@e6000 {
 				phy-handle = <&phy_rgmii_0>;
+<<<<<<< HEAD
 				phy-connection-type = "rgmii";
+=======
+				phy-connection-type = "rgmii-id";
+>>>>>>> origin/android16-base
 			};
 
 			ethernet@e8000 {
 				phy-handle = <&phy_rgmii_1>;
+<<<<<<< HEAD
 				phy-connection-type = "rgmii";
+=======
+				phy-connection-type = "rgmii-id";
+>>>>>>> origin/android16-base
 			};
 
 			mdio0: mdio@fc000 {

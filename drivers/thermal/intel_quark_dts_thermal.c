@@ -440,12 +440,16 @@ MODULE_DEVICE_TABLE(x86cpu, qrk_thermal_ids);
 
 static int __init intel_quark_thermal_init(void)
 {
+<<<<<<< HEAD
 	int err = 0;
 
+=======
+>>>>>>> origin/android16-base
 	if (!x86_match_cpu(qrk_thermal_ids) || !iosf_mbi_available())
 		return -ENODEV;
 
 	soc_dts = alloc_soc_dts();
+<<<<<<< HEAD
 	if (IS_ERR(soc_dts)) {
 		err = PTR_ERR(soc_dts);
 		goto err_free;
@@ -456,6 +460,12 @@ static int __init intel_quark_thermal_init(void)
 err_free:
 	free_soc_dts(soc_dts);
 	return err;
+=======
+	if (IS_ERR(soc_dts))
+		return PTR_ERR(soc_dts);
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static void __exit intel_quark_thermal_exit(void)

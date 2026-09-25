@@ -397,7 +397,11 @@ static inline bool qdisc_restart(struct Qdisc *q, int *packets)
 
 void __qdisc_run(struct Qdisc *q)
 {
+<<<<<<< HEAD
 	int quota = dev_tx_weight;
+=======
+	int quota = READ_ONCE(dev_tx_weight);
+>>>>>>> origin/android16-base
 	int packets;
 
 	while (qdisc_restart(q, &packets)) {
@@ -918,7 +922,11 @@ struct Qdisc *qdisc_create_dflt(struct netdev_queue *dev_queue,
 	if (!ops->init || ops->init(sch, NULL, extack) == 0)
 		return sch;
 
+<<<<<<< HEAD
 	qdisc_destroy(sch);
+=======
+	qdisc_put(sch);
+>>>>>>> origin/android16-base
 	return NULL;
 }
 EXPORT_SYMBOL(qdisc_create_dflt);
@@ -958,11 +966,23 @@ void qdisc_free(struct Qdisc *qdisc)
 	kfree((char *) qdisc - qdisc->padded);
 }
 
+<<<<<<< HEAD
 void qdisc_destroy(struct Qdisc *qdisc)
+=======
+static void qdisc_free_cb(struct rcu_head *head)
+{
+	struct Qdisc *q = container_of(head, struct Qdisc, rcu);
+
+	qdisc_free(q);
+}
+
+static void qdisc_destroy(struct Qdisc *qdisc)
+>>>>>>> origin/android16-base
 {
 	const struct Qdisc_ops *ops;
 	struct sk_buff *skb, *tmp;
 
+<<<<<<< HEAD
 	if (!qdisc)
 		return;
 	ops = qdisc->ops;
@@ -971,6 +991,10 @@ void qdisc_destroy(struct Qdisc *qdisc)
 	    !refcount_dec_and_test(&qdisc->refcnt))
 		return;
 
+=======
+	ops = qdisc->ops;
+
+>>>>>>> origin/android16-base
 #ifdef CONFIG_NET_SCHED
 	qdisc_hash_del(qdisc);
 
@@ -995,9 +1019,43 @@ void qdisc_destroy(struct Qdisc *qdisc)
 		kfree_skb_list(skb);
 	}
 
+<<<<<<< HEAD
 	qdisc_free(qdisc);
 }
 EXPORT_SYMBOL(qdisc_destroy);
+=======
+	call_rcu(&qdisc->rcu, qdisc_free_cb);
+}
+
+void qdisc_put(struct Qdisc *qdisc)
+{
+	if (!qdisc)
+		return;
+
+	if (qdisc->flags & TCQ_F_BUILTIN ||
+	    !refcount_dec_and_test(&qdisc->refcnt))
+		return;
+
+	qdisc_destroy(qdisc);
+}
+EXPORT_SYMBOL(qdisc_put);
+
+/* Version of qdisc_put() that is called with rtnl mutex unlocked.
+ * Intended to be used as optimization, this function only takes rtnl lock if
+ * qdisc reference counter reached zero.
+ */
+
+void qdisc_put_unlocked(struct Qdisc *qdisc)
+{
+	if (qdisc->flags & TCQ_F_BUILTIN ||
+	    !refcount_dec_and_rtnl_lock(&qdisc->refcnt))
+		return;
+
+	qdisc_destroy(qdisc);
+	rtnl_unlock();
+}
+EXPORT_SYMBOL(qdisc_put_unlocked);
+>>>>>>> origin/android16-base
 
 /* Attach toplevel qdisc to device queue. */
 struct Qdisc *dev_graft_qdisc(struct netdev_queue *dev_queue,
@@ -1309,7 +1367,11 @@ static void shutdown_scheduler_queue(struct net_device *dev,
 		rcu_assign_pointer(dev_queue->qdisc, qdisc_default);
 		dev_queue->qdisc_sleeping = qdisc_default;
 
+<<<<<<< HEAD
 		qdisc_destroy(qdisc);
+=======
+		qdisc_put(qdisc);
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -1318,7 +1380,11 @@ void dev_shutdown(struct net_device *dev)
 	netdev_for_each_tx_queue(dev, shutdown_scheduler_queue, &noop_qdisc);
 	if (dev_ingress_queue(dev))
 		shutdown_scheduler_queue(dev, dev_ingress_queue(dev), &noop_qdisc);
+<<<<<<< HEAD
 	qdisc_destroy(dev->qdisc);
+=======
+	qdisc_put(dev->qdisc);
+>>>>>>> origin/android16-base
 	dev->qdisc = &noop_qdisc;
 
 	WARN_ON(timer_pending(&dev->watchdog_timer));
@@ -1330,6 +1396,10 @@ void psched_ratecfg_precompute(struct psched_ratecfg *r,
 {
 	memset(r, 0, sizeof(*r));
 	r->overhead = conf->overhead;
+<<<<<<< HEAD
+=======
+	r->mpu = conf->mpu;
+>>>>>>> origin/android16-base
 	r->rate_bytes_ps = max_t(u64, conf->rate, rate64);
 	r->linklayer = (conf->linklayer & TC_LINKLAYER_MASK);
 	r->mult = 1;

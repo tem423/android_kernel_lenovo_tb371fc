@@ -138,7 +138,11 @@ static int reconfig_codec(struct hda_codec *codec)
 			   "The codec is being used, can't reconfigure.\n");
 		goto error;
 	}
+<<<<<<< HEAD
 	err = snd_hda_codec_configure(codec);
+=======
+	err = device_reprobe(hda_codec_dev(codec));
+>>>>>>> origin/android16-base
 	if (err < 0)
 		goto error;
 	err = snd_card_register(codec->card);

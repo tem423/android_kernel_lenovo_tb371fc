@@ -305,6 +305,11 @@ static int mipi_dsi_remove_device_fn(struct device *dev, void *priv)
 {
 	struct mipi_dsi_device *dsi = to_mipi_dsi_device(dev);
 
+<<<<<<< HEAD
+=======
+	if (dsi->attached)
+		mipi_dsi_detach(dsi);
+>>>>>>> origin/android16-base
 	mipi_dsi_device_unregister(dsi);
 
 	return 0;
@@ -327,11 +332,25 @@ EXPORT_SYMBOL(mipi_dsi_host_unregister);
 int mipi_dsi_attach(struct mipi_dsi_device *dsi)
 {
 	const struct mipi_dsi_host_ops *ops = dsi->host->ops;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 
 	if (!ops || !ops->attach)
 		return -ENOSYS;
 
+<<<<<<< HEAD
 	return ops->attach(dsi->host, dsi);
+=======
+	ret = ops->attach(dsi->host, dsi);
+	if (ret)
+		return ret;
+
+	dsi->attached = true;
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(mipi_dsi_attach);
 
@@ -343,9 +362,20 @@ int mipi_dsi_detach(struct mipi_dsi_device *dsi)
 {
 	const struct mipi_dsi_host_ops *ops = dsi->host->ops;
 
+<<<<<<< HEAD
 	if (!ops || !ops->detach)
 		return -ENOSYS;
 
+=======
+	if (WARN_ON(!dsi->attached))
+		return -EINVAL;
+
+	if (!ops || !ops->detach)
+		return -ENOSYS;
+
+	dsi->attached = false;
+
+>>>>>>> origin/android16-base
 	return ops->detach(dsi->host, dsi);
 }
 EXPORT_SYMBOL(mipi_dsi_detach);
@@ -1096,6 +1126,61 @@ int mipi_dsi_dcs_get_display_brightness(struct mipi_dsi_device *dsi,
 }
 EXPORT_SYMBOL(mipi_dsi_dcs_get_display_brightness);
 
+<<<<<<< HEAD
+=======
+/**
+ * mipi_dsi_dcs_set_display_brightness_large() - sets the 16-bit brightness value
+ *    of the display
+ * @dsi: DSI peripheral device
+ * @brightness: brightness value
+ *
+ * Return: 0 on success or a negative error code on failure.
+ */
+int mipi_dsi_dcs_set_display_brightness_large(struct mipi_dsi_device *dsi,
+					     u16 brightness)
+{
+	u8 payload[2] = { brightness >> 8, brightness & 0xff };
+	ssize_t err;
+
+	err = mipi_dsi_dcs_write(dsi, MIPI_DCS_SET_DISPLAY_BRIGHTNESS,
+				 payload, sizeof(payload));
+	if (err < 0)
+		return err;
+
+	return 0;
+}
+EXPORT_SYMBOL(mipi_dsi_dcs_set_display_brightness_large);
+
+/**
+ * mipi_dsi_dcs_get_display_brightness_large() - gets the current 16-bit
+ *    brightness value of the display
+ * @dsi: DSI peripheral device
+ * @brightness: brightness value
+ *
+ * Return: 0 on success or a negative error code on failure.
+ */
+int mipi_dsi_dcs_get_display_brightness_large(struct mipi_dsi_device *dsi,
+					     u16 *brightness)
+{
+	u8 brightness_be[2];
+	ssize_t err;
+
+	err = mipi_dsi_dcs_read(dsi, MIPI_DCS_GET_DISPLAY_BRIGHTNESS,
+				brightness_be, sizeof(brightness_be));
+	if (err <= 0) {
+		if (err == 0)
+			err = -ENODATA;
+
+		return err;
+	}
+
+	*brightness = (brightness_be[0] << 8) | brightness_be[1];
+
+	return 0;
+}
+EXPORT_SYMBOL(mipi_dsi_dcs_get_display_brightness_large);
+
+>>>>>>> origin/android16-base
 static int mipi_dsi_drv_probe(struct device *dev)
 {
 	struct mipi_dsi_driver *drv = to_mipi_dsi_driver(dev->driver);
@@ -1165,6 +1250,7 @@ postcore_initcall(mipi_dsi_bus_init);
 MODULE_AUTHOR("Andrzej Hajda <a.hajda@samsung.com>");
 MODULE_DESCRIPTION("MIPI DSI Bus");
 MODULE_LICENSE("GPL and additional rights");
+<<<<<<< HEAD
 int mipi_dsi_dcs_set_display_brightness_big_endian(struct mipi_dsi_device *dsi,
 					u16 brightness)
 {
@@ -1178,3 +1264,5 @@ int mipi_dsi_dcs_set_display_brightness_big_endian(struct mipi_dsi_device *dsi,
 
 	return 0;
 }
+=======
+>>>>>>> origin/android16-base

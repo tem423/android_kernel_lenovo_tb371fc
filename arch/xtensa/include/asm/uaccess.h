@@ -291,7 +291,11 @@ strncpy_from_user(char *dst, const char *src, long count)
 	return -EFAULT;
 }
 #else
+<<<<<<< HEAD
 long strncpy_from_user(char *dst, const char *src, long count);
+=======
+long strncpy_from_user(char *dst, const char __user *src, long count);
+>>>>>>> origin/android16-base
 #endif
 
 /*

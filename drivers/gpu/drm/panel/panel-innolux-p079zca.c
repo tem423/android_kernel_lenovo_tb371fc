@@ -512,6 +512,10 @@ static void innolux_panel_del(struct innolux_panel *innolux)
 static int innolux_panel_probe(struct mipi_dsi_device *dsi)
 {
 	const struct panel_desc *desc;
+<<<<<<< HEAD
+=======
+	struct innolux_panel *innolux;
+>>>>>>> origin/android16-base
 	int err;
 
 	desc = of_device_get_match_data(&dsi->dev);
@@ -523,7 +527,18 @@ static int innolux_panel_probe(struct mipi_dsi_device *dsi)
 	if (err < 0)
 		return err;
 
+<<<<<<< HEAD
 	return mipi_dsi_attach(dsi);
+=======
+	err = mipi_dsi_attach(dsi);
+	if (err < 0) {
+		innolux = mipi_dsi_get_drvdata(dsi);
+		innolux_panel_del(innolux);
+		return err;
+	}
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static int innolux_panel_remove(struct mipi_dsi_device *dsi)

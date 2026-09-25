@@ -277,12 +277,24 @@ static struct irq_chip mtk_eint_irq_chip = {
 
 static unsigned int mtk_eint_hw_init(struct mtk_eint *eint)
 {
+<<<<<<< HEAD
 	void __iomem *reg = eint->base + eint->regs->dom_en;
 	unsigned int i;
 
 	for (i = 0; i < eint->hw->ap_num; i += 32) {
 		writel(0xffffffff, reg);
 		reg += 4;
+=======
+	void __iomem *dom_en = eint->base + eint->regs->dom_en;
+	void __iomem *mask_set = eint->base + eint->regs->mask_set;
+	unsigned int i;
+
+	for (i = 0; i < eint->hw->ap_num; i += 32) {
+		writel(0xffffffff, dom_en);
+		writel(0xffffffff, mask_set);
+		dom_en += 4;
+		mask_set += 4;
+>>>>>>> origin/android16-base
 	}
 
 	return 0;

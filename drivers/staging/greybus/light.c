@@ -102,15 +102,26 @@ static struct led_classdev *get_channel_cdev(struct gb_channel *channel)
 static struct gb_channel *get_channel_from_mode(struct gb_light *light,
 						u32 mode)
 {
+<<<<<<< HEAD
 	struct gb_channel *channel = NULL;
+=======
+	struct gb_channel *channel;
+>>>>>>> origin/android16-base
 	int i;
 
 	for (i = 0; i < light->channels_count; i++) {
 		channel = &light->channels[i];
+<<<<<<< HEAD
 		if (channel && channel->mode == mode)
 			break;
 	}
 	return channel;
+=======
+		if (channel->mode == mode)
+			return channel;
+	}
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 static int __gb_lights_flash_intensity_set(struct gb_channel *channel,
@@ -149,6 +160,12 @@ static int __gb_lights_flash_brightness_set(struct gb_channel *channel)
 		channel = get_channel_from_mode(channel->light,
 						GB_CHANNEL_MODE_TORCH);
 
+<<<<<<< HEAD
+=======
+	if (!channel)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	/* For not flash we need to convert brightness to intensity */
 	intensity = channel->intensity_uA.min +
 			(channel->intensity_uA.step * channel->led->brightness);
@@ -552,7 +569,14 @@ static int gb_lights_light_v4l2_register(struct gb_light *light)
 	}
 
 	channel_flash = get_channel_from_mode(light, GB_CHANNEL_MODE_FLASH);
+<<<<<<< HEAD
 	WARN_ON(!channel_flash);
+=======
+	if (!channel_flash) {
+		dev_err(dev, "failed to get flash channel from mode\n");
+		return -EINVAL;
+	}
+>>>>>>> origin/android16-base
 
 	fled = &channel_flash->fled;
 

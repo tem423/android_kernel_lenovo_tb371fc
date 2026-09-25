@@ -693,16 +693,31 @@ static ssize_t w1_seq_show(struct device *device,
 		if (sl->reg_num.id == reg_num->id)
 			seq = i;
 
+<<<<<<< HEAD
 		w1_write_8(sl->master, W1_42_CHAIN);
 		w1_write_8(sl->master, W1_42_CHAIN_DONE);
 		w1_write_8(sl->master, W1_42_CHAIN_DONE_INV);
 		w1_read_block(sl->master, &ack, sizeof(ack));
+=======
+		if (w1_reset_bus(sl->master))
+			goto error;
+
+		/* Put the device into chain DONE state */
+		w1_write_8(sl->master, W1_MATCH_ROM);
+		w1_write_block(sl->master, (u8 *)&rn, 8);
+		w1_write_8(sl->master, W1_42_CHAIN);
+		w1_write_8(sl->master, W1_42_CHAIN_DONE);
+		w1_write_8(sl->master, W1_42_CHAIN_DONE_INV);
+>>>>>>> origin/android16-base
 
 		/* check for acknowledgment */
 		ack = w1_read_8(sl->master);
 		if (ack != W1_42_SUCCESS_CONFIRM_BYTE)
 			goto error;
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 	}
 
 	/* Exit from CHAIN state */

@@ -628,6 +628,10 @@ struct sock *__vsock_create(struct net *net,
 		vsk->trusted = psk->trusted;
 		vsk->owner = get_cred(psk->owner);
 		vsk->connect_timeout = psk->connect_timeout;
+<<<<<<< HEAD
+=======
+		security_sk_clone(parent, sk);
+>>>>>>> origin/android16-base
 	} else {
 		vsk->trusted = ns_capable_noaudit(&init_user_ns, CAP_NET_ADMIN);
 		vsk->owner = get_current_cred();
@@ -816,10 +820,19 @@ static int vsock_shutdown(struct socket *sock, int mode)
 	 */
 
 	sk = sock->sk;
+<<<<<<< HEAD
 	if (sock->state == SS_UNCONNECTED) {
 		err = -ENOTCONN;
 		if (sk->sk_type == SOCK_STREAM)
 			return err;
+=======
+
+	lock_sock(sk);
+	if (sock->state == SS_UNCONNECTED) {
+		err = -ENOTCONN;
+		if (sk->sk_type == SOCK_STREAM)
+			goto out;
+>>>>>>> origin/android16-base
 	} else {
 		sock->state = SS_DISCONNECTING;
 		err = 0;
@@ -828,10 +841,15 @@ static int vsock_shutdown(struct socket *sock, int mode)
 	/* Receive and send shutdowns are treated alike. */
 	mode = mode & (RCV_SHUTDOWN | SEND_SHUTDOWN);
 	if (mode) {
+<<<<<<< HEAD
 		lock_sock(sk);
 		sk->sk_shutdown |= mode;
 		sk->sk_state_change(sk);
 		release_sock(sk);
+=======
+		sk->sk_shutdown |= mode;
+		sk->sk_state_change(sk);
+>>>>>>> origin/android16-base
 
 		if (sk->sk_type == SOCK_STREAM) {
 			sock_reset_flag(sk, SOCK_DONE);
@@ -839,6 +857,11 @@ static int vsock_shutdown(struct socket *sock, int mode)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+out:
+	release_sock(sk);
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -1107,7 +1130,10 @@ static void vsock_connect_timeout(struct work_struct *work)
 {
 	struct sock *sk;
 	struct vsock_sock *vsk;
+<<<<<<< HEAD
 	int cancel = 0;
+=======
+>>>>>>> origin/android16-base
 
 	vsk = container_of(work, struct vsock_sock, connect_work.work);
 	sk = sk_vsock(vsk);
@@ -1116,6 +1142,7 @@ static void vsock_connect_timeout(struct work_struct *work)
 	if (sk->sk_state == TCP_SYN_SENT &&
 	    (sk->sk_shutdown != SHUTDOWN_MASK)) {
 		sk->sk_state = TCP_CLOSE;
+<<<<<<< HEAD
 		sk->sk_err = ETIMEDOUT;
 		sk->sk_error_report(sk);
 		cancel = 1;
@@ -1123,6 +1150,14 @@ static void vsock_connect_timeout(struct work_struct *work)
 	release_sock(sk);
 	if (cancel)
 		vsock_transport_cancel_pkt(vsk);
+=======
+		sk->sk_socket->state = SS_UNCONNECTED;
+		sk->sk_err = ETIMEDOUT;
+		sk->sk_error_report(sk);
+		vsock_transport_cancel_pkt(vsk);
+	}
+	release_sock(sk);
+>>>>>>> origin/android16-base
 
 	sock_put(sk);
 }
@@ -1159,6 +1194,11 @@ static int vsock_stream_connect(struct socket *sock, struct sockaddr *addr,
 		 * non-blocking call.
 		 */
 		err = -EALREADY;
+<<<<<<< HEAD
+=======
+		if (flags & O_NONBLOCK)
+			goto out;
+>>>>>>> origin/android16-base
 		break;
 	default:
 		if ((sk->sk_state == TCP_LISTEN) ||
@@ -1213,7 +1253,18 @@ static int vsock_stream_connect(struct socket *sock, struct sockaddr *addr,
 			 * timeout fires.
 			 */
 			sock_hold(sk);
+<<<<<<< HEAD
 			schedule_delayed_work(&vsk->connect_work, timeout);
+=======
+
+			/* If the timeout function is already scheduled,
+			 * reschedule it, then ungrab the socket refcount to
+			 * keep it balanced.
+			 */
+			if (mod_delayed_work(system_wq, &vsk->connect_work,
+					     timeout))
+				sock_put(sk);
+>>>>>>> origin/android16-base
 
 			/* Skip ahead to preserve error code set above. */
 			goto out_wait;
@@ -1225,11 +1276,20 @@ static int vsock_stream_connect(struct socket *sock, struct sockaddr *addr,
 
 		if (signal_pending(current)) {
 			err = sock_intr_errno(timeout);
+<<<<<<< HEAD
 			sk->sk_state = TCP_CLOSE;
 			sock->state = SS_UNCONNECTED;
 			vsock_transport_cancel_pkt(vsk);
 			goto out_wait;
 		} else if (timeout == 0) {
+=======
+			sk->sk_state = sk->sk_state == TCP_ESTABLISHED ? TCP_CLOSING : TCP_CLOSE;
+			sock->state = SS_UNCONNECTED;
+			vsock_transport_cancel_pkt(vsk);
+			vsock_remove_connected(vsk);
+			goto out_wait;
+		} else if ((sk->sk_state != TCP_ESTABLISHED) && (timeout == 0)) {
+>>>>>>> origin/android16-base
 			err = -ETIMEDOUT;
 			sk->sk_state = TCP_CLOSE;
 			sock->state = SS_UNCONNECTED;

@@ -113,8 +113,15 @@ static irqreturn_t uio_dmem_genirq_handler(int irq, struct uio_info *dev_info)
 	 * remember the state so we can allow user space to enable it later.
 	 */
 
+<<<<<<< HEAD
 	if (!test_and_set_bit(0, &priv->flags))
 		disable_irq_nosync(irq);
+=======
+	spin_lock(&priv->lock);
+	if (!test_and_set_bit(0, &priv->flags))
+		disable_irq_nosync(irq);
+	spin_unlock(&priv->lock);
+>>>>>>> origin/android16-base
 
 	return IRQ_HANDLED;
 }
@@ -128,13 +135,19 @@ static int uio_dmem_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
 	 * in the interrupt controller, but keep track of the
 	 * state to prevent per-irq depth damage.
 	 *
+<<<<<<< HEAD
 	 * Serialize this operation to support multiple tasks.
+=======
+	 * Serialize this operation to support multiple tasks and concurrency
+	 * with irq handler on SMP systems.
+>>>>>>> origin/android16-base
 	 */
 
 	spin_lock_irqsave(&priv->lock, flags);
 	if (irq_on) {
 		if (test_and_clear_bit(0, &priv->flags))
 			enable_irq(dev_info->irq);
+<<<<<<< HEAD
 		spin_unlock_irqrestore(&priv->lock, flags);
 	} else {
 		if (!test_and_set_bit(0, &priv->flags)) {
@@ -142,6 +155,13 @@ static int uio_dmem_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
 			disable_irq(dev_info->irq);
 		}
 	}
+=======
+	} else {
+		if (!test_and_set_bit(0, &priv->flags))
+			disable_irq_nosync(dev_info->irq);
+	}
+	spin_unlock_irqrestore(&priv->lock, flags);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

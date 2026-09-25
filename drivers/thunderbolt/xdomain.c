@@ -774,6 +774,10 @@ static void enumerate_services(struct tb_xdomain *xd)
 
 		id = ida_simple_get(&xd->service_ids, 0, 0, GFP_KERNEL);
 		if (id < 0) {
+<<<<<<< HEAD
+=======
+			kfree(svc->key);
+>>>>>>> origin/android16-base
 			kfree(svc);
 			break;
 		}

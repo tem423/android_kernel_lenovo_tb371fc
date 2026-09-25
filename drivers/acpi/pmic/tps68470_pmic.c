@@ -376,10 +376,15 @@ static int tps68470_pmic_opregion_probe(struct platform_device *pdev)
 	struct tps68470_pmic_opregion *opregion;
 	acpi_status status;
 
+<<<<<<< HEAD
 	if (!dev || !tps68470_regmap) {
 		dev_warn(dev, "dev or regmap is NULL\n");
 		return -EINVAL;
 	}
+=======
+	if (!tps68470_regmap)
+		return dev_err_probe(dev, -EINVAL, "regmap is missing\n");
+>>>>>>> origin/android16-base
 
 	if (!handle) {
 		dev_warn(dev, "acpi handle is NULL\n");

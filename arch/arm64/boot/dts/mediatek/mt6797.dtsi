@@ -101,7 +101,11 @@
 		};
 	};
 
+<<<<<<< HEAD
 	clk26m: oscillator@0 {
+=======
+	clk26m: oscillator-26m {
+>>>>>>> origin/android16-base
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <26000000>;

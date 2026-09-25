@@ -96,6 +96,10 @@ orinoco_cs_probe(struct pcmcia_device *link)
 {
 	struct orinoco_private *priv;
 	struct orinoco_pccard *card;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 
 	priv = alloc_orinocodev(sizeof(*card), &link->dev,
 				orinoco_cs_hard_reset, NULL);
@@ -107,8 +111,21 @@ orinoco_cs_probe(struct pcmcia_device *link)
 	card->p_dev = link;
 	link->priv = priv;
 
+<<<<<<< HEAD
 	return orinoco_cs_config(link);
 }				/* orinoco_cs_attach */
+=======
+	ret = orinoco_cs_config(link);
+	if (ret)
+		goto err_free_orinocodev;
+
+	return 0;
+
+err_free_orinocodev:
+	free_orinocodev(priv);
+	return ret;
+}
+>>>>>>> origin/android16-base
 
 static void orinoco_cs_detach(struct pcmcia_device *link)
 {

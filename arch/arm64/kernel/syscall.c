@@ -102,8 +102,13 @@ static void el0_svc_common(struct pt_regs *regs, int scno, int sc_nr,
 	regs->syscallno = scno;
 
 	cortex_a76_erratum_1463225_svc_handler();
+<<<<<<< HEAD
 	local_daif_restore(DAIF_PROCCTX);
 	user_exit();
+=======
+	user_exit_irqoff();
+	local_daif_restore(DAIF_PROCCTX);
+>>>>>>> origin/android16-base
 
 	if (has_syscall_work(flags)) {
 		/* set default errno for user-issued syscall(-1) */

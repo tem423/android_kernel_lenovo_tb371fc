@@ -393,7 +393,11 @@ int ntb_transport_register_client_dev(char *device_name)
 
 		rc = device_register(dev);
 		if (rc) {
+<<<<<<< HEAD
 			kfree(client_dev);
+=======
+			put_device(dev);
+>>>>>>> origin/android16-base
 			goto err;
 		}
 
@@ -746,7 +750,11 @@ static int ntb_set_mw(struct ntb_transport_ctx *nt, int num_mw,
 	return 0;
 }
 
+<<<<<<< HEAD
 static void ntb_qp_link_down_reset(struct ntb_transport_qp *qp)
+=======
+static void ntb_qp_link_context_reset(struct ntb_transport_qp *qp)
+>>>>>>> origin/android16-base
 {
 	qp->link_is_up = false;
 	qp->active = false;
@@ -769,6 +777,16 @@ static void ntb_qp_link_down_reset(struct ntb_transport_qp *qp)
 	qp->tx_async = 0;
 }
 
+<<<<<<< HEAD
+=======
+static void ntb_qp_link_down_reset(struct ntb_transport_qp *qp)
+{
+	ntb_qp_link_context_reset(qp);
+	if (qp->remote_rx_info)
+		qp->remote_rx_info->entry = qp->rx_max_entry - 1;
+}
+
+>>>>>>> origin/android16-base
 static void ntb_qp_link_cleanup(struct ntb_transport_qp *qp)
 {
 	struct ntb_transport_ctx *nt = qp->transport;
@@ -993,7 +1011,11 @@ static int ntb_transport_init_queue(struct ntb_transport_ctx *nt,
 	qp->ndev = nt->ndev;
 	qp->client_ready = false;
 	qp->event_handler = NULL;
+<<<<<<< HEAD
 	ntb_qp_link_down_reset(qp);
+=======
+	ntb_qp_link_context_reset(qp);
+>>>>>>> origin/android16-base
 
 	if (mw_num < qp_count % mw_count)
 		num_qps_mw = qp_count / mw_count + 1;
@@ -2046,9 +2068,19 @@ int ntb_transport_tx_enqueue(struct ntb_transport_qp *qp, void *cb, void *data,
 	struct ntb_queue_entry *entry;
 	int rc;
 
+<<<<<<< HEAD
 	if (!qp || !qp->link_is_up || !len)
 		return -EINVAL;
 
+=======
+	if (!qp || !len)
+		return -EINVAL;
+
+	/* If the qp link is down already, just ignore. */
+	if (!qp->link_is_up)
+		return 0;
+
+>>>>>>> origin/android16-base
 	entry = ntb_list_rm(&qp->ntb_tx_free_q_lock, &qp->tx_free_q);
 	if (!entry) {
 		qp->tx_err_no_buf++;
@@ -2188,7 +2220,11 @@ unsigned int ntb_transport_tx_free_entry(struct ntb_transport_qp *qp)
 	unsigned int head = qp->tx_index;
 	unsigned int tail = qp->remote_rx_info->entry;
 
+<<<<<<< HEAD
 	return tail > head ? tail - head : qp->tx_max_entry + tail - head;
+=======
+	return tail >= head ? tail - head : qp->tx_max_entry + tail - head;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(ntb_transport_tx_free_entry);
 

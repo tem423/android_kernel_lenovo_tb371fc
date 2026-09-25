@@ -347,7 +347,11 @@ static ssize_t write_unlock_fs(struct file *file, char *buf, size_t size)
 static ssize_t write_filehandle(struct file *file, char *buf, size_t size)
 {
 	char *dname, *path;
+<<<<<<< HEAD
 	int uninitialized_var(maxsize);
+=======
+	int maxsize;
+>>>>>>> origin/android16-base
 	char *mesg = buf;
 	int len;
 	struct auth_domain *dom;
@@ -788,7 +792,14 @@ out_close:
 		svc_xprt_put(xprt);
 	}
 out_err:
+<<<<<<< HEAD
 	nfsd_destroy(net);
+=======
+	if (!list_empty(&nn->nfsd_serv->sv_permsocks))
+		nn->nfsd_serv->sv_nrthreads--;
+	 else
+		nfsd_destroy(net);
+>>>>>>> origin/android16-base
 	return err;
 }
 

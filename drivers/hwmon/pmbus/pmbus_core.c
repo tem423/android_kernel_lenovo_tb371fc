@@ -1337,7 +1337,11 @@ static const struct pmbus_limit_attr vin_limit_attrs[] = {
 		.reg = PMBUS_VIN_UV_FAULT_LIMIT,
 		.attr = "lcrit",
 		.alarm = "lcrit_alarm",
+<<<<<<< HEAD
 		.sbit = PB_VOLTAGE_UV_FAULT,
+=======
+		.sbit = PB_VOLTAGE_UV_FAULT | PB_VOLTAGE_VIN_OFF,
+>>>>>>> origin/android16-base
 	}, {
 		.reg = PMBUS_VIN_OV_WARN_LIMIT,
 		.attr = "max",
@@ -2074,10 +2078,21 @@ static int pmbus_regulator_is_enabled(struct regulator_dev *rdev)
 {
 	struct device *dev = rdev_get_dev(rdev);
 	struct i2c_client *client = to_i2c_client(dev->parent);
+<<<<<<< HEAD
 	u8 page = rdev_get_id(rdev);
 	int ret;
 
 	ret = pmbus_read_byte_data(client, page, PMBUS_OPERATION);
+=======
+	struct pmbus_data *data = i2c_get_clientdata(client);
+	u8 page = rdev_get_id(rdev);
+	int ret;
+
+	mutex_lock(&data->update_lock);
+	ret = pmbus_read_byte_data(client, page, PMBUS_OPERATION);
+	mutex_unlock(&data->update_lock);
+
+>>>>>>> origin/android16-base
 	if (ret < 0)
 		return ret;
 
@@ -2088,11 +2103,25 @@ static int _pmbus_regulator_on_off(struct regulator_dev *rdev, bool enable)
 {
 	struct device *dev = rdev_get_dev(rdev);
 	struct i2c_client *client = to_i2c_client(dev->parent);
+<<<<<<< HEAD
 	u8 page = rdev_get_id(rdev);
 
 	return pmbus_update_byte_data(client, page, PMBUS_OPERATION,
 				      PB_OPERATION_CONTROL_ON,
 				      enable ? PB_OPERATION_CONTROL_ON : 0);
+=======
+	struct pmbus_data *data = i2c_get_clientdata(client);
+	u8 page = rdev_get_id(rdev);
+	int ret;
+
+	mutex_lock(&data->update_lock);
+	ret = pmbus_update_byte_data(client, page, PMBUS_OPERATION,
+				     PB_OPERATION_CONTROL_ON,
+				     enable ? PB_OPERATION_CONTROL_ON : 0);
+	mutex_unlock(&data->update_lock);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int pmbus_regulator_enable(struct regulator_dev *rdev)

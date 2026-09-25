@@ -50,7 +50,11 @@ DECLARE_EVENT_CLASS(s390_class_schib,
 		__entry->devno = schib->pmcw.dev;
 		__entry->schib = *schib;
 		__entry->pmcw_ena = schib->pmcw.ena;
+<<<<<<< HEAD
 		__entry->pmcw_st = schib->pmcw.ena;
+=======
+		__entry->pmcw_st = schib->pmcw.st;
+>>>>>>> origin/android16-base
 		__entry->pmcw_dnv = schib->pmcw.dnv;
 		__entry->pmcw_dev = schib->pmcw.dev;
 		__entry->pmcw_lpm = schib->pmcw.lpm;
@@ -418,7 +422,11 @@ TRACE_EVENT(s390_cio_stcrw,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/s390/cio
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

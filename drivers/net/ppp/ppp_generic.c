@@ -73,6 +73,12 @@
 #define MPHDRLEN	6	/* multilink protocol header length */
 #define MPHDRLEN_SSN	4	/* ditto with short sequence numbers */
 
+<<<<<<< HEAD
+=======
+#define PPP_PROTO_LEN	2
+#define PPP_LCP_HDRLEN	4
+
+>>>>>>> origin/android16-base
 /*
  * An instance of /dev/ppp can be associated with either a ppp
  * interface unit or a ppp channel.  In both cases, file->private_data
@@ -287,7 +293,11 @@ static struct channel *ppp_find_channel(struct ppp_net *pn, int unit);
 static int ppp_connect_channel(struct channel *pch, int unit);
 static int ppp_disconnect_channel(struct channel *pch);
 static void ppp_destroy_channel(struct channel *pch);
+<<<<<<< HEAD
 static int unit_get(struct idr *p, void *ptr);
+=======
+static int unit_get(struct idr *p, void *ptr, int min);
+>>>>>>> origin/android16-base
 static int unit_set(struct idr *p, void *ptr, int n);
 static void unit_put(struct idr *p, int n);
 static void *unit_find(struct idr *p, int n);
@@ -493,6 +503,18 @@ static ssize_t ppp_read(struct file *file, char __user *buf,
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static bool ppp_check_packet(struct sk_buff *skb, size_t count)
+{
+	/* LCP packets must include LCP header which 4 bytes long:
+	 * 1-byte code, 1-byte identifier, and 2-byte length.
+	 */
+	return get_unaligned_be16(skb->data) != PPP_LCP ||
+		count >= PPP_PROTO_LEN + PPP_LCP_HDRLEN;
+}
+
+>>>>>>> origin/android16-base
 static ssize_t ppp_write(struct file *file, const char __user *buf,
 			 size_t count, loff_t *ppos)
 {
@@ -502,6 +524,12 @@ static ssize_t ppp_write(struct file *file, const char __user *buf,
 
 	if (!pf)
 		return -ENXIO;
+<<<<<<< HEAD
+=======
+	/* All PPP packets should start with the 2-byte protocol */
+	if (count < PPP_PROTO_LEN)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	ret = -ENOMEM;
 	skb = alloc_skb(count + pf->hdrlen, GFP_KERNEL);
 	if (!skb)
@@ -512,6 +540,14 @@ static ssize_t ppp_write(struct file *file, const char __user *buf,
 		kfree_skb(skb);
 		goto out;
 	}
+<<<<<<< HEAD
+=======
+	ret = -EINVAL;
+	if (unlikely(!ppp_check_packet(skb, count))) {
+		kfree_skb(skb);
+		goto out;
+	}
+>>>>>>> origin/android16-base
 
 	switch (pf->kind) {
 	case INTERFACE:
@@ -963,9 +999,26 @@ static int ppp_unit_register(struct ppp *ppp, int unit, bool ifname_is_set)
 	mutex_lock(&pn->all_ppp_mutex);
 
 	if (unit < 0) {
+<<<<<<< HEAD
 		ret = unit_get(&pn->units_idr, ppp);
 		if (ret < 0)
 			goto err;
+=======
+		ret = unit_get(&pn->units_idr, ppp, 0);
+		if (ret < 0)
+			goto err;
+		if (!ifname_is_set) {
+			while (1) {
+				snprintf(ppp->dev->name, IFNAMSIZ, "ppp%i", ret);
+				if (!__dev_get_by_name(ppp->ppp_net, ppp->dev->name))
+					break;
+				unit_put(&pn->units_idr, ret);
+				ret = unit_get(&pn->units_idr, ppp, ret + 1);
+				if (ret < 0)
+					goto err;
+			}
+		}
+>>>>>>> origin/android16-base
 	} else {
 		/* Caller asked for a specific unit number. Fail with -EEXIST
 		 * if unavailable. For backward compatibility, return -EEXIST
@@ -1114,7 +1167,11 @@ static int ppp_nl_newlink(struct net *src_net, struct net_device *dev,
 	 * the PPP unit identifer as suffix (i.e. ppp<unit_id>). This allows
 	 * userspace to infer the device name using to the PPPIOCGUNIT ioctl.
 	 */
+<<<<<<< HEAD
 	if (!tb[IFLA_IFNAME])
+=======
+	if (!tb[IFLA_IFNAME] || !nla_len(tb[IFLA_IFNAME]) || !*(char *)nla_data(tb[IFLA_IFNAME]))
+>>>>>>> origin/android16-base
 		conf.ifname_is_set = false;
 
 	err = ppp_dev_configure(src_net, dev, &conf);
@@ -1512,6 +1569,11 @@ ppp_send_frame(struct ppp *ppp, struct sk_buff *skb)
 	int len;
 	unsigned char *cp;
 
+<<<<<<< HEAD
+=======
+	skb->dev = ppp->dev;
+
+>>>>>>> origin/android16-base
 	if (proto < 0x8000) {
 #ifdef CONFIG_PPP_FILTER
 		/* check if we should pass this packet */
@@ -1539,7 +1601,11 @@ ppp_send_frame(struct ppp *ppp, struct sk_buff *skb)
 	}
 
 	++ppp->stats64.tx_packets;
+<<<<<<< HEAD
 	ppp->stats64.tx_bytes += skb->len - 2;
+=======
+	ppp->stats64.tx_bytes += skb->len - PPP_PROTO_LEN;
+>>>>>>> origin/android16-base
 
 	switch (proto) {
 	case PPP_IP:
@@ -3300,9 +3366,15 @@ static int unit_set(struct idr *p, void *ptr, int n)
 }
 
 /* get new free unit number and associate pointer with it */
+<<<<<<< HEAD
 static int unit_get(struct idr *p, void *ptr)
 {
 	return idr_alloc(p, ptr, 0, 0, GFP_KERNEL);
+=======
+static int unit_get(struct idr *p, void *ptr, int min)
+{
+	return idr_alloc(p, ptr, min, 0, GFP_KERNEL);
+>>>>>>> origin/android16-base
 }
 
 /* put unit number back to a pool */

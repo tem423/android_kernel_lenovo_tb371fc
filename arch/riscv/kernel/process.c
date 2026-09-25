@@ -104,6 +104,11 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
 {
 	struct pt_regs *childregs = task_pt_regs(p);
 
+<<<<<<< HEAD
+=======
+	memset(&p->thread.s, 0, sizeof(p->thread.s));
+
+>>>>>>> origin/android16-base
 	/* p->thread holds context to be restored by __switch_to() */
 	if (unlikely(p->flags & PF_KTHREAD)) {
 		/* Kernel thread */

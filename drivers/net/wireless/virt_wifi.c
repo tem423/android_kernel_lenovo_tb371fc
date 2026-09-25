@@ -12,6 +12,10 @@
 #include <net/cfg80211.h>
 #include <net/rtnetlink.h>
 #include <linux/etherdevice.h>
+<<<<<<< HEAD
+=======
+#include <linux/math64.h>
+>>>>>>> origin/android16-base
 #include <linux/module.h>
 
 #include <net/cfg80211.h>
@@ -178,11 +182,19 @@ static void virt_wifi_scan_result(struct work_struct *work)
 			     scan_result.work);
 	struct wiphy *wiphy = priv_to_wiphy(priv);
 	struct cfg80211_scan_info scan_info = { .aborted = false };
+<<<<<<< HEAD
 
 	informed_bss = cfg80211_inform_bss(wiphy, &channel_5ghz,
 					   CFG80211_BSS_FTYPE_PRESP,
 					   fake_router_bssid,
 					   ktime_get_boot_ns(),
+=======
+	u64 tsf = div_u64(ktime_get_boot_ns(), 1000);
+
+	informed_bss = cfg80211_inform_bss(wiphy, &channel_5ghz,
+					   CFG80211_BSS_FTYPE_PRESP,
+					   fake_router_bssid, tsf,
+>>>>>>> origin/android16-base
 					   WLAN_CAPABILITY_ESS, 0,
 					   (void *)&ssid, sizeof(ssid),
 					   DBM_TO_MBM(-50), GFP_KERNEL);
@@ -478,7 +490,10 @@ static void virt_wifi_net_device_destructor(struct net_device *dev)
 	 */
 	kfree(dev->ieee80211_ptr);
 	dev->ieee80211_ptr = NULL;
+<<<<<<< HEAD
 	free_netdev(dev);
+=======
+>>>>>>> origin/android16-base
 }
 
 /* No lock interaction. */
@@ -486,7 +501,11 @@ static void virt_wifi_setup(struct net_device *dev)
 {
 	ether_setup(dev);
 	dev->netdev_ops = &virt_wifi_ops;
+<<<<<<< HEAD
 	dev->priv_destructor = virt_wifi_net_device_destructor;
+=======
+	dev->needs_free_netdev  = true;
+>>>>>>> origin/android16-base
 }
 
 /* Called in a RCU read critical section from netif_receive_skb */
@@ -572,10 +591,18 @@ static int virt_wifi_newlink(struct net *src_net, struct net_device *dev,
 		goto unregister_netdev;
 	}
 
+<<<<<<< HEAD
+=======
+	dev->priv_destructor = virt_wifi_net_device_destructor;
+>>>>>>> origin/android16-base
 	priv->being_deleted = false;
 	priv->is_connected = false;
 	priv->is_up = false;
 	INIT_DELAYED_WORK(&priv->connect, virt_wifi_connect_complete);
+<<<<<<< HEAD
+=======
+	__module_get(THIS_MODULE);
+>>>>>>> origin/android16-base
 
 	return 0;
 unregister_netdev:
@@ -606,6 +633,10 @@ static void virt_wifi_dellink(struct net_device *dev,
 	netdev_upper_dev_unlink(priv->lowerdev, dev);
 
 	unregister_netdevice_queue(dev, head);
+<<<<<<< HEAD
+=======
+	module_put(THIS_MODULE);
+>>>>>>> origin/android16-base
 
 	/* Deleting the wiphy is handled in the module destructor. */
 }
@@ -618,6 +649,45 @@ static struct rtnl_link_ops virt_wifi_link_ops = {
 	.priv_size	= sizeof(struct virt_wifi_netdev_priv),
 };
 
+<<<<<<< HEAD
+=======
+static bool netif_is_virt_wifi_dev(const struct net_device *dev)
+{
+	return rcu_access_pointer(dev->rx_handler) == virt_wifi_rx_handler;
+}
+
+static int virt_wifi_event(struct notifier_block *this, unsigned long event,
+			   void *ptr)
+{
+	struct net_device *lower_dev = netdev_notifier_info_to_dev(ptr);
+	struct virt_wifi_netdev_priv *priv;
+	struct net_device *upper_dev;
+	LIST_HEAD(list_kill);
+
+	if (!netif_is_virt_wifi_dev(lower_dev))
+		return NOTIFY_DONE;
+
+	switch (event) {
+	case NETDEV_UNREGISTER:
+		priv = rtnl_dereference(lower_dev->rx_handler_data);
+		if (!priv)
+			return NOTIFY_DONE;
+
+		upper_dev = priv->upperdev;
+
+		upper_dev->rtnl_link_ops->dellink(upper_dev, &list_kill);
+		unregister_netdevice_many(&list_kill);
+		break;
+	}
+
+	return NOTIFY_DONE;
+}
+
+static struct notifier_block virt_wifi_notifier = {
+	.notifier_call = virt_wifi_event,
+};
+
+>>>>>>> origin/android16-base
 /* Acquires and releases the rtnl lock. */
 static int __init virt_wifi_init_module(void)
 {
@@ -626,6 +696,7 @@ static int __init virt_wifi_init_module(void)
 	/* Guaranteed to be locallly-administered and not multicast. */
 	eth_random_addr(fake_router_bssid);
 
+<<<<<<< HEAD
 	common_wiphy = virt_wifi_make_wiphy();
 	if (!common_wiphy)
 		return -ENOMEM;
@@ -634,6 +705,27 @@ static int __init virt_wifi_init_module(void)
 	if (err)
 		virt_wifi_destroy_wiphy(common_wiphy);
 
+=======
+	err = register_netdevice_notifier(&virt_wifi_notifier);
+	if (err)
+		return err;
+
+	err = -ENOMEM;
+	common_wiphy = virt_wifi_make_wiphy();
+	if (!common_wiphy)
+		goto notifier;
+
+	err = rtnl_link_register(&virt_wifi_link_ops);
+	if (err)
+		goto destroy_wiphy;
+
+	return 0;
+
+destroy_wiphy:
+	virt_wifi_destroy_wiphy(common_wiphy);
+notifier:
+	unregister_netdevice_notifier(&virt_wifi_notifier);
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -643,6 +735,10 @@ static void __exit virt_wifi_cleanup_module(void)
 	/* Will delete any devices that depend on the wiphy. */
 	rtnl_link_unregister(&virt_wifi_link_ops);
 	virt_wifi_destroy_wiphy(common_wiphy);
+<<<<<<< HEAD
+=======
+	unregister_netdevice_notifier(&virt_wifi_notifier);
+>>>>>>> origin/android16-base
 }
 
 int virt_wifi_register_network_simulation

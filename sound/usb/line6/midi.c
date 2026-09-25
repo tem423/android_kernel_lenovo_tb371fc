@@ -48,7 +48,12 @@ static void line6_midi_transmit(struct snd_rawmidi_substream *substream)
 	int req, done;
 
 	for (;;) {
+<<<<<<< HEAD
 		req = min(line6_midibuf_bytes_free(mb), line6->max_packet_size);
+=======
+		req = min3(line6_midibuf_bytes_free(mb), line6->max_packet_size,
+			   LINE6_FALLBACK_MAXPACKETSIZE);
+>>>>>>> origin/android16-base
 		done = snd_rawmidi_transmit_peek(substream, chunk, req);
 
 		if (done == 0)
@@ -60,7 +65,12 @@ static void line6_midi_transmit(struct snd_rawmidi_substream *substream)
 
 	for (;;) {
 		done = line6_midibuf_read(mb, chunk,
+<<<<<<< HEAD
 					  LINE6_FALLBACK_MAXPACKETSIZE);
+=======
+					  LINE6_FALLBACK_MAXPACKETSIZE,
+					  LINE6_MIDIBUF_READ_TX);
+>>>>>>> origin/android16-base
 
 		if (done == 0)
 			break;

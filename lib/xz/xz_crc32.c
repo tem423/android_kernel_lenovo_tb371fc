@@ -29,7 +29,11 @@ STATIC_RW_DATA uint32_t xz_crc32_table[256];
 
 XZ_EXTERN void xz_crc32_init(void)
 {
+<<<<<<< HEAD
 	const uint32_t poly = CRC32_POLY_LE;
+=======
+	const uint32_t poly = 0xEDB88320;
+>>>>>>> origin/android16-base
 
 	uint32_t i;
 	uint32_t j;

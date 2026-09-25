@@ -38,6 +38,7 @@ static struct usb_serial_driver vendor##_device = {		\
 	{ USB_DEVICE(0x0a21, 0x8001) }	/* MMT-7305WW */
 DEVICE(carelink, CARELINK_IDS);
 
+<<<<<<< HEAD
 /* ZIO Motherboard USB driver */
 #define ZIO_IDS()			\
 	{ USB_DEVICE(0x1CBE, 0x0103) }
@@ -48,6 +49,8 @@ DEVICE(zio, ZIO_IDS);
 	{ USB_DEVICE(0x1404, 0xcddc) }
 DEVICE(funsoft, FUNSOFT_IDS);
 
+=======
+>>>>>>> origin/android16-base
 /* Infineon Flashloader driver */
 #define FLASHLOADER_IDS()		\
 	{ USB_DEVICE_INTERFACE_CLASS(0x058b, 0x0041, USB_CLASS_CDC_DATA) }, \
@@ -55,6 +58,14 @@ DEVICE(funsoft, FUNSOFT_IDS);
 	{ USB_DEVICE(0x8087, 0x0801) }
 DEVICE(flashloader, FLASHLOADER_IDS);
 
+<<<<<<< HEAD
+=======
+/* Funsoft Serial USB driver */
+#define FUNSOFT_IDS()			\
+	{ USB_DEVICE(0x1404, 0xcddc) }
+DEVICE(funsoft, FUNSOFT_IDS);
+
+>>>>>>> origin/android16-base
 /* Google Serial USB SubClass */
 #define GOOGLE_IDS()						\
 	{ USB_VENDOR_AND_INTERFACE_INFO(0x18d1,			\
@@ -63,16 +74,32 @@ DEVICE(flashloader, FLASHLOADER_IDS);
 					0x01) }
 DEVICE(google, GOOGLE_IDS);
 
+<<<<<<< HEAD
+=======
+/* HP4x (48/49) Generic Serial driver */
+#define HP4X_IDS()			\
+	{ USB_DEVICE(0x03f0, 0x0121) }
+DEVICE(hp4x, HP4X_IDS);
+
+/* KAUFMANN RKS+CAN VCP */
+#define KAUFMANN_IDS()			\
+	{ USB_DEVICE(0x16d0, 0x0870) }
+DEVICE(kaufmann, KAUFMANN_IDS);
+
+>>>>>>> origin/android16-base
 /* Libtransistor USB console */
 #define LIBTRANSISTOR_IDS()			\
 	{ USB_DEVICE(0x1209, 0x8b00) }
 DEVICE(libtransistor, LIBTRANSISTOR_IDS);
 
+<<<<<<< HEAD
 /* ViVOpay USB Serial Driver */
 #define VIVOPAY_IDS()			\
 	{ USB_DEVICE(0x1d5f, 0x1004) }	/* ViVOpay 8800 */
 DEVICE(vivopay, VIVOPAY_IDS);
 
+=======
+>>>>>>> origin/android16-base
 /* Motorola USB Phone driver */
 #define MOTO_IDS()			\
 	{ USB_DEVICE(0x05c6, 0x3197) },	/* unknown Motorola phone */	\
@@ -91,15 +118,30 @@ DEVICE(moto_modem, MOTO_IDS);
 	{ USB_DEVICE(0x0cad, 0x9016) }	/* TPG2200 */
 DEVICE(motorola_tetra, MOTOROLA_TETRA_IDS);
 
+<<<<<<< HEAD
+=======
+/* Nokia mobile phone driver */
+#define NOKIA_IDS()			\
+	{ USB_DEVICE(0x0421, 0x069a) }	/* Nokia 130 (RM-1035) */
+DEVICE(nokia, NOKIA_IDS);
+
+>>>>>>> origin/android16-base
 /* Novatel Wireless GPS driver */
 #define NOVATEL_IDS()			\
 	{ USB_DEVICE(0x09d7, 0x0100) }	/* NovAtel FlexPack GPS */
 DEVICE_N(novatel_gps, NOVATEL_IDS, 3);
 
+<<<<<<< HEAD
 /* HP4x (48/49) Generic Serial driver */
 #define HP4X_IDS()			\
 	{ USB_DEVICE(0x03f0, 0x0121) }
 DEVICE(hp4x, HP4X_IDS);
+=======
+/* Siemens USB/MPI adapter */
+#define SIEMENS_IDS()			\
+	{ USB_DEVICE(0x908, 0x0004) }
+DEVICE(siemens_mpi, SIEMENS_IDS);
+>>>>>>> origin/android16-base
 
 /* Suunto ANT+ USB Driver */
 #define SUUNTO_IDS()			\
@@ -107,14 +149,27 @@ DEVICE(hp4x, HP4X_IDS);
 	{ USB_DEVICE(0x0fcf, 0x1009) } /* Dynastream ANT USB-m Stick */
 DEVICE(suunto, SUUNTO_IDS);
 
+<<<<<<< HEAD
 /* Siemens USB/MPI adapter */
 #define SIEMENS_IDS()			\
 	{ USB_DEVICE(0x908, 0x0004) }
 DEVICE(siemens_mpi, SIEMENS_IDS);
+=======
+/* ViVOpay USB Serial Driver */
+#define VIVOPAY_IDS()			\
+	{ USB_DEVICE(0x1d5f, 0x1004) }	/* ViVOpay 8800 */
+DEVICE(vivopay, VIVOPAY_IDS);
+
+/* ZIO Motherboard USB driver */
+#define ZIO_IDS()			\
+	{ USB_DEVICE(0x1CBE, 0x0103) }
+DEVICE(zio, ZIO_IDS);
+>>>>>>> origin/android16-base
 
 /* All of the above structures mushed into two lists */
 static struct usb_serial_driver * const serial_drivers[] = {
 	&carelink_device,
+<<<<<<< HEAD
 	&zio_device,
 	&funsoft_device,
 	&flashloader_device,
@@ -127,11 +182,28 @@ static struct usb_serial_driver * const serial_drivers[] = {
 	&hp4x_device,
 	&suunto_device,
 	&siemens_mpi_device,
+=======
+	&flashloader_device,
+	&funsoft_device,
+	&google_device,
+	&hp4x_device,
+	&kaufmann_device,
+	&libtransistor_device,
+	&moto_modem_device,
+	&motorola_tetra_device,
+	&nokia_device,
+	&novatel_gps_device,
+	&siemens_mpi_device,
+	&suunto_device,
+	&vivopay_device,
+	&zio_device,
+>>>>>>> origin/android16-base
 	NULL
 };
 
 static const struct usb_device_id id_table[] = {
 	CARELINK_IDS(),
+<<<<<<< HEAD
 	ZIO_IDS(),
 	FUNSOFT_IDS(),
 	FLASHLOADER_IDS(),
@@ -144,6 +216,22 @@ static const struct usb_device_id id_table[] = {
 	HP4X_IDS(),
 	SUUNTO_IDS(),
 	SIEMENS_IDS(),
+=======
+	FLASHLOADER_IDS(),
+	FUNSOFT_IDS(),
+	GOOGLE_IDS(),
+	HP4X_IDS(),
+	KAUFMANN_IDS(),
+	LIBTRANSISTOR_IDS(),
+	MOTO_IDS(),
+	MOTOROLA_TETRA_IDS(),
+	NOKIA_IDS(),
+	NOVATEL_IDS(),
+	SIEMENS_IDS(),
+	SUUNTO_IDS(),
+	VIVOPAY_IDS(),
+	ZIO_IDS(),
+>>>>>>> origin/android16-base
 	{ },
 };
 MODULE_DEVICE_TABLE(usb, id_table);

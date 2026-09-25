@@ -21,6 +21,7 @@
 
 #include "ms5611.h"
 
+<<<<<<< HEAD
 static int ms5611_i2c_reset(struct device *dev)
 {
 	struct ms5611_state *st = iio_priv(dev_to_iio_dev(dev));
@@ -32,6 +33,17 @@ static int ms5611_i2c_read_prom_word(struct device *dev, int index, u16 *word)
 {
 	int ret;
 	struct ms5611_state *st = iio_priv(dev_to_iio_dev(dev));
+=======
+static int ms5611_i2c_reset(struct ms5611_state *st)
+{
+	return i2c_smbus_write_byte(st->client, MS5611_RESET);
+}
+
+static int ms5611_i2c_read_prom_word(struct ms5611_state *st, int index,
+				     u16 *word)
+{
+	int ret;
+>>>>>>> origin/android16-base
 
 	ret = i2c_smbus_read_word_swapped(st->client,
 			MS5611_READ_PROM_WORD + (index << 1));
@@ -58,11 +70,18 @@ static int ms5611_i2c_read_adc(struct ms5611_state *st, s32 *val)
 	return 0;
 }
 
+<<<<<<< HEAD
 static int ms5611_i2c_read_adc_temp_and_pressure(struct device *dev,
 						 s32 *temp, s32 *pressure)
 {
 	int ret;
 	struct ms5611_state *st = iio_priv(dev_to_iio_dev(dev));
+=======
+static int ms5611_i2c_read_adc_temp_and_pressure(struct ms5611_state *st,
+						 s32 *temp, s32 *pressure)
+{
+	int ret;
+>>>>>>> origin/android16-base
 	const struct ms5611_osr *osr = st->temp_osr;
 
 	ret = i2c_smbus_write_byte(st->client, osr->cmd);

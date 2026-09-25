@@ -35,7 +35,11 @@ static inline int fimc_isp_video_device_register(struct fimc_isp *isp,
 	return 0;
 }
 
+<<<<<<< HEAD
 void fimc_isp_video_device_unregister(struct fimc_isp *isp,
+=======
+static inline void fimc_isp_video_device_unregister(struct fimc_isp *isp,
+>>>>>>> origin/android16-base
 				enum v4l2_buf_type type)
 {
 }

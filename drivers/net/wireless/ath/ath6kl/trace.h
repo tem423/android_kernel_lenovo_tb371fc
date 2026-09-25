@@ -325,7 +325,11 @@ TRACE_EVENT(ath6kl_log_dbg_dump,
 
 /* we don't want to use include/trace/events */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/wireless/ath/ath6kl
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace
 

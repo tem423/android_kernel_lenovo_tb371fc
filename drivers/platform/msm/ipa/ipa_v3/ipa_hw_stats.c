@@ -2248,7 +2248,11 @@ static ssize_t ipa_debugfs_enable_disable_drop_stats(struct file *file,
 	ssize_t ret;
 
 	mutex_lock(&ipa3_ctx->lock);
+<<<<<<< HEAD
 	if (count >= sizeof(dbg_buff)) {
+=======
+	if (sizeof(dbg_buff) < count + 1) {
+>>>>>>> origin/android16-base
 		ret = -EFAULT;
 		goto bail;
 	}

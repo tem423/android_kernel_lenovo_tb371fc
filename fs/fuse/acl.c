@@ -19,6 +19,12 @@ struct posix_acl *fuse_get_acl(struct inode *inode, int type)
 	void *value = NULL;
 	struct posix_acl *acl;
 
+<<<<<<< HEAD
+=======
+	if (fuse_is_bad(inode))
+		return ERR_PTR(-EIO);
+
+>>>>>>> origin/android16-base
 	if (!fc->posix_acl || fc->no_getxattr)
 		return NULL;
 
@@ -53,6 +59,12 @@ int fuse_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 	const char *name;
 	int ret;
 
+<<<<<<< HEAD
+=======
+	if (fuse_is_bad(inode))
+		return -EIO;
+
+>>>>>>> origin/android16-base
 	if (!fc->posix_acl || fc->no_setxattr)
 		return -EOPNOTSUPP;
 

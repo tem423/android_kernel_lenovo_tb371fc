@@ -123,9 +123,12 @@ struct stm32_usart_info stm32h7_info = {
 /* Dummy bits */
 #define USART_SR_DUMMY_RX	BIT(16)
 
+<<<<<<< HEAD
 /* USART_ICR (F7) */
 #define USART_CR_TC		BIT(6)
 
+=======
+>>>>>>> origin/android16-base
 /* USART_DR */
 #define USART_DR_MASK		GENMASK(8, 0)
 

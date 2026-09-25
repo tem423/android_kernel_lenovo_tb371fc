@@ -40,7 +40,11 @@ struct tcp_fastopen_metrics {
 
 struct tcp_metrics_block {
 	struct tcp_metrics_block __rcu	*tcpm_next;
+<<<<<<< HEAD
 	possible_net_t			tcpm_net;
+=======
+	struct net			*tcpm_net;
+>>>>>>> origin/android16-base
 	struct inetpeer_addr		tcpm_saddr;
 	struct inetpeer_addr		tcpm_daddr;
 	unsigned long			tcpm_stamp;
@@ -51,14 +55,22 @@ struct tcp_metrics_block {
 	struct rcu_head			rcu_head;
 };
 
+<<<<<<< HEAD
 static inline struct net *tm_net(struct tcp_metrics_block *tm)
 {
 	return read_pnet(&tm->tcpm_net);
+=======
+static inline struct net *tm_net(const struct tcp_metrics_block *tm)
+{
+	/* Paired with the WRITE_ONCE() in tcpm_new() */
+	return READ_ONCE(tm->tcpm_net);
+>>>>>>> origin/android16-base
 }
 
 static bool tcp_metric_locked(struct tcp_metrics_block *tm,
 			      enum tcp_metric_index idx)
 {
+<<<<<<< HEAD
 	return tm->tcpm_lock & (1 << idx);
 }
 
@@ -66,19 +78,39 @@ static u32 tcp_metric_get(struct tcp_metrics_block *tm,
 			  enum tcp_metric_index idx)
 {
 	return tm->tcpm_vals[idx];
+=======
+	/* Paired with WRITE_ONCE() in tcpm_suck_dst() */
+	return READ_ONCE(tm->tcpm_lock) & (1 << idx);
+}
+
+static u32 tcp_metric_get(const struct tcp_metrics_block *tm,
+			  enum tcp_metric_index idx)
+{
+	/* Paired with WRITE_ONCE() in tcp_metric_set() */
+	return READ_ONCE(tm->tcpm_vals[idx]);
+>>>>>>> origin/android16-base
 }
 
 static void tcp_metric_set(struct tcp_metrics_block *tm,
 			   enum tcp_metric_index idx,
 			   u32 val)
 {
+<<<<<<< HEAD
 	tm->tcpm_vals[idx] = val;
+=======
+	/* Paired with READ_ONCE() in tcp_metric_get() */
+	WRITE_ONCE(tm->tcpm_vals[idx], val);
+>>>>>>> origin/android16-base
 }
 
 static bool addr_same(const struct inetpeer_addr *a,
 		      const struct inetpeer_addr *b)
 {
+<<<<<<< HEAD
 	return inetpeer_addr_cmp(a, b) == 0;
+=======
+	return (a->family == b->family) && !inetpeer_addr_cmp(a, b);
+>>>>>>> origin/android16-base
 }
 
 struct tcpm_hash_bucket {
@@ -89,6 +121,10 @@ static struct tcpm_hash_bucket	*tcp_metrics_hash __read_mostly;
 static unsigned int		tcp_metrics_hash_log __read_mostly;
 
 static DEFINE_SPINLOCK(tcp_metrics_lock);
+<<<<<<< HEAD
+=======
+static DEFINE_SEQLOCK(fastopen_seqlock);
+>>>>>>> origin/android16-base
 
 static void tcpm_suck_dst(struct tcp_metrics_block *tm,
 			  const struct dst_entry *dst,
@@ -97,7 +133,11 @@ static void tcpm_suck_dst(struct tcp_metrics_block *tm,
 	u32 msval;
 	u32 val;
 
+<<<<<<< HEAD
 	tm->tcpm_stamp = jiffies;
+=======
+	WRITE_ONCE(tm->tcpm_stamp, jiffies);
+>>>>>>> origin/android16-base
 
 	val = 0;
 	if (dst_metric_locked(dst, RTAX_RTT))
@@ -110,6 +150,7 @@ static void tcpm_suck_dst(struct tcp_metrics_block *tm,
 		val |= 1 << TCP_METRIC_CWND;
 	if (dst_metric_locked(dst, RTAX_REORDERING))
 		val |= 1 << TCP_METRIC_REORDERING;
+<<<<<<< HEAD
 	tm->tcpm_lock = val;
 
 	msval = dst_metric_raw(dst, RTAX_RTT);
@@ -121,19 +162,53 @@ static void tcpm_suck_dst(struct tcp_metrics_block *tm,
 	tm->tcpm_vals[TCP_METRIC_CWND] = dst_metric_raw(dst, RTAX_CWND);
 	tm->tcpm_vals[TCP_METRIC_REORDERING] = dst_metric_raw(dst, RTAX_REORDERING);
 	if (fastopen_clear) {
+=======
+	/* Paired with READ_ONCE() in tcp_metric_locked() */
+	WRITE_ONCE(tm->tcpm_lock, val);
+
+	msval = dst_metric_raw(dst, RTAX_RTT);
+	tcp_metric_set(tm, TCP_METRIC_RTT, msval * USEC_PER_MSEC);
+
+	msval = dst_metric_raw(dst, RTAX_RTTVAR);
+	tcp_metric_set(tm, TCP_METRIC_RTTVAR, msval * USEC_PER_MSEC);
+	tcp_metric_set(tm, TCP_METRIC_SSTHRESH,
+		       dst_metric_raw(dst, RTAX_SSTHRESH));
+	tcp_metric_set(tm, TCP_METRIC_CWND,
+		       dst_metric_raw(dst, RTAX_CWND));
+	tcp_metric_set(tm, TCP_METRIC_REORDERING,
+		       dst_metric_raw(dst, RTAX_REORDERING));
+	if (fastopen_clear) {
+		write_seqlock(&fastopen_seqlock);
+>>>>>>> origin/android16-base
 		tm->tcpm_fastopen.mss = 0;
 		tm->tcpm_fastopen.syn_loss = 0;
 		tm->tcpm_fastopen.try_exp = 0;
 		tm->tcpm_fastopen.cookie.exp = false;
 		tm->tcpm_fastopen.cookie.len = 0;
+<<<<<<< HEAD
+=======
+		write_sequnlock(&fastopen_seqlock);
+>>>>>>> origin/android16-base
 	}
 }
 
 #define TCP_METRICS_TIMEOUT		(60 * 60 * HZ)
 
+<<<<<<< HEAD
 static void tcpm_check_stamp(struct tcp_metrics_block *tm, struct dst_entry *dst)
 {
 	if (tm && unlikely(time_after(jiffies, tm->tcpm_stamp + TCP_METRICS_TIMEOUT)))
+=======
+static void tcpm_check_stamp(struct tcp_metrics_block *tm,
+			     const struct dst_entry *dst)
+{
+	unsigned long limit;
+
+	if (!tm)
+		return;
+	limit = READ_ONCE(tm->tcpm_stamp) + TCP_METRICS_TIMEOUT;
+	if (unlikely(time_after(jiffies, limit)))
+>>>>>>> origin/android16-base
 		tcpm_suck_dst(tm, dst, false);
 }
 
@@ -174,11 +249,17 @@ static struct tcp_metrics_block *tcpm_new(struct dst_entry *dst,
 		oldest = deref_locked(tcp_metrics_hash[hash].chain);
 		for (tm = deref_locked(oldest->tcpm_next); tm;
 		     tm = deref_locked(tm->tcpm_next)) {
+<<<<<<< HEAD
 			if (time_before(tm->tcpm_stamp, oldest->tcpm_stamp))
+=======
+			if (time_before(READ_ONCE(tm->tcpm_stamp),
+					READ_ONCE(oldest->tcpm_stamp)))
+>>>>>>> origin/android16-base
 				oldest = tm;
 		}
 		tm = oldest;
 	} else {
+<<<<<<< HEAD
 		tm = kmalloc(sizeof(*tm), GFP_ATOMIC);
 		if (!tm)
 			goto out_unlock;
@@ -188,6 +269,19 @@ static struct tcp_metrics_block *tcpm_new(struct dst_entry *dst,
 	tm->tcpm_daddr = *daddr;
 
 	tcpm_suck_dst(tm, dst, true);
+=======
+		tm = kzalloc(sizeof(*tm), GFP_ATOMIC);
+		if (!tm)
+			goto out_unlock;
+	}
+	/* Paired with the READ_ONCE() in tm_net() */
+	WRITE_ONCE(tm->tcpm_net, net);
+
+	tm->tcpm_saddr = *saddr;
+	tm->tcpm_daddr = *daddr;
+
+	tcpm_suck_dst(tm, dst, reclaim);
+>>>>>>> origin/android16-base
 
 	if (likely(!reclaim)) {
 		tm->tcpm_next = tcp_metrics_hash[hash].chain;
@@ -329,7 +423,11 @@ void tcp_update_metrics(struct sock *sk)
 	int m;
 
 	sk_dst_confirm(sk);
+<<<<<<< HEAD
 	if (net->ipv4.sysctl_tcp_nometrics_save || !dst)
+=======
+	if (READ_ONCE(net->ipv4.sysctl_tcp_nometrics_save) || !dst)
+>>>>>>> origin/android16-base
 		return;
 
 	rcu_read_lock();
@@ -425,12 +523,21 @@ void tcp_update_metrics(struct sock *sk)
 		if (!tcp_metric_locked(tm, TCP_METRIC_REORDERING)) {
 			val = tcp_metric_get(tm, TCP_METRIC_REORDERING);
 			if (val < tp->reordering &&
+<<<<<<< HEAD
 			    tp->reordering != net->ipv4.sysctl_tcp_reordering)
+=======
+			    tp->reordering !=
+			    READ_ONCE(net->ipv4.sysctl_tcp_reordering))
+>>>>>>> origin/android16-base
 				tcp_metric_set(tm, TCP_METRIC_REORDERING,
 					       tp->reordering);
 		}
 	}
+<<<<<<< HEAD
 	tm->tcpm_stamp = jiffies;
+=======
+	WRITE_ONCE(tm->tcpm_stamp, jiffies);
+>>>>>>> origin/android16-base
 out_unlock:
 	rcu_read_unlock();
 }
@@ -445,11 +552,22 @@ void tcp_init_metrics(struct sock *sk)
 	u32 val, crtt = 0; /* cached RTT scaled by 8 */
 
 	sk_dst_confirm(sk);
+<<<<<<< HEAD
+=======
+	/* ssthresh may have been reduced unnecessarily during.
+	 * 3WHS. Restore it back to its initial default.
+	 */
+	tp->snd_ssthresh = TCP_INFINITE_SSTHRESH;
+>>>>>>> origin/android16-base
 	if (!dst)
 		goto reset;
 
 	rcu_read_lock();
+<<<<<<< HEAD
 	tm = tcp_get_metrics(sk, dst, true);
+=======
+	tm = tcp_get_metrics(sk, dst, false);
+>>>>>>> origin/android16-base
 	if (!tm) {
 		rcu_read_unlock();
 		goto reset;
@@ -463,11 +581,14 @@ void tcp_init_metrics(struct sock *sk)
 		tp->snd_ssthresh = val;
 		if (tp->snd_ssthresh > tp->snd_cwnd_clamp)
 			tp->snd_ssthresh = tp->snd_cwnd_clamp;
+<<<<<<< HEAD
 	} else {
 		/* ssthresh may have been reduced unnecessarily during.
 		 * 3WHS. Restore it back to its initial default.
 		 */
 		tp->snd_ssthresh = TCP_INFINITE_SSTHRESH;
+=======
+>>>>>>> origin/android16-base
 	}
 	val = tcp_metric_get(tm, TCP_METRIC_REORDERING);
 	if (val && tp->reordering != val)
@@ -543,8 +664,11 @@ bool tcp_peer_is_proven(struct request_sock *req, struct dst_entry *dst)
 	return ret;
 }
 
+<<<<<<< HEAD
 static DEFINE_SEQLOCK(fastopen_seqlock);
 
+=======
+>>>>>>> origin/android16-base
 void tcp_fastopen_cache_get(struct sock *sk, u16 *mss,
 			    struct tcp_fastopen_cookie *cookie)
 {
@@ -606,6 +730,10 @@ static const struct nla_policy tcp_metrics_nl_policy[TCP_METRICS_ATTR_MAX + 1] =
 	[TCP_METRICS_ATTR_ADDR_IPV4]	= { .type = NLA_U32, },
 	[TCP_METRICS_ATTR_ADDR_IPV6]	= { .type = NLA_BINARY,
 					    .len = sizeof(struct in6_addr), },
+<<<<<<< HEAD
+=======
+	[TCP_METRICS_ATTR_SADDR_IPV4]	= { .type = NLA_U32, },
+>>>>>>> origin/android16-base
 	/* Following attributes are not received for GET/DEL,
 	 * we keep them for reference
 	 */
@@ -651,7 +779,11 @@ static int tcp_metrics_fill_info(struct sk_buff *msg,
 	}
 
 	if (nla_put_msecs(msg, TCP_METRICS_ATTR_AGE,
+<<<<<<< HEAD
 			  jiffies - tm->tcpm_stamp,
+=======
+			  jiffies - READ_ONCE(tm->tcpm_stamp),
+>>>>>>> origin/android16-base
 			  TCP_METRICS_ATTR_PAD) < 0)
 		goto nla_put_failure;
 
@@ -662,7 +794,11 @@ static int tcp_metrics_fill_info(struct sk_buff *msg,
 		if (!nest)
 			goto nla_put_failure;
 		for (i = 0; i < TCP_METRIC_MAX_KERNEL + 1; i++) {
+<<<<<<< HEAD
 			u32 val = tm->tcpm_vals[i];
+=======
+			u32 val = tcp_metric_get(tm, i);
+>>>>>>> origin/android16-base
 
 			if (!val)
 				continue;
@@ -894,7 +1030,11 @@ static void tcp_metrics_flush_all(struct net *net)
 			match = net ? net_eq(tm_net(tm), net) :
 				!refcount_read(&tm_net(tm)->count);
 			if (match) {
+<<<<<<< HEAD
 				*pp = tm->tcpm_next;
+=======
+				rcu_assign_pointer(*pp, tm->tcpm_next);
+>>>>>>> origin/android16-base
 				kfree_rcu(tm, rcu_head);
 			} else {
 				pp = &tm->tcpm_next;
@@ -935,7 +1075,11 @@ static int tcp_metrics_nl_cmd_del(struct sk_buff *skb, struct genl_info *info)
 		if (addr_same(&tm->tcpm_daddr, &daddr) &&
 		    (!src || addr_same(&tm->tcpm_saddr, &saddr)) &&
 		    net_eq(tm_net(tm), net)) {
+<<<<<<< HEAD
 			*pp = tm->tcpm_next;
+=======
+			rcu_assign_pointer(*pp, tm->tcpm_next);
+>>>>>>> origin/android16-base
 			kfree_rcu(tm, rcu_head);
 			found = true;
 		} else {

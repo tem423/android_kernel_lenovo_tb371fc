@@ -419,7 +419,11 @@ nvkm_dp_train(struct nvkm_dp *dp, u32 dataKBps)
 	return ret;
 }
 
+<<<<<<< HEAD
 static void
+=======
+void
+>>>>>>> origin/android16-base
 nvkm_dp_disable(struct nvkm_outp *outp, struct nvkm_ior *ior)
 {
 	struct nvkm_dp *dp = nvkm_dp(outp);

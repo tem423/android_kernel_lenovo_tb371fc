@@ -168,6 +168,17 @@ static int __qcom_mdt_load(struct device *dev, const struct firmware *fw,
 			break;
 		}
 
+<<<<<<< HEAD
+=======
+		if (phdr->p_filesz > phdr->p_memsz) {
+			dev_err(dev,
+				"refusing to load segment %d with p_filesz > p_memsz\n",
+				i);
+			ret = -EINVAL;
+			break;
+		}
+
+>>>>>>> origin/android16-base
 		ptr = mem_region + offset;
 
 		if (phdr->p_filesz) {
@@ -179,6 +190,18 @@ static int __qcom_mdt_load(struct device *dev, const struct firmware *fw,
 				break;
 			}
 
+<<<<<<< HEAD
+=======
+			if (seg_fw->size != phdr->p_filesz) {
+				dev_err(dev,
+					"failed to load segment %d from truncated file %s\n",
+					i, fw_name);
+				release_firmware(seg_fw);
+				ret = -EINVAL;
+				break;
+			}
+
+>>>>>>> origin/android16-base
 			release_firmware(seg_fw);
 		}
 

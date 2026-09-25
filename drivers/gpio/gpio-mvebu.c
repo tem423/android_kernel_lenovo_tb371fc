@@ -650,9 +650,14 @@ static void mvebu_pwm_get_state(struct pwm_chip *chip,
 
 	spin_lock_irqsave(&mvpwm->lock, flags);
 
+<<<<<<< HEAD
 	val = (unsigned long long)
 		readl_relaxed(mvebu_pwmreg_blink_on_duration(mvpwm));
 	val *= NSEC_PER_SEC;
+=======
+	u = readl_relaxed(mvebu_pwmreg_blink_on_duration(mvpwm));
+	val = (unsigned long long) u * NSEC_PER_SEC;
+>>>>>>> origin/android16-base
 	do_div(val, mvpwm->clk_rate);
 	if (val > UINT_MAX)
 		state->duty_cycle = UINT_MAX;
@@ -661,6 +666,7 @@ static void mvebu_pwm_get_state(struct pwm_chip *chip,
 	else
 		state->duty_cycle = 1;
 
+<<<<<<< HEAD
 	val = (unsigned long long)
 		readl_relaxed(mvebu_pwmreg_blink_off_duration(mvpwm));
 	val *= NSEC_PER_SEC;
@@ -676,6 +682,19 @@ static void mvebu_pwm_get_state(struct pwm_chip *chip,
 		else
 			state->period = 1;
 	}
+=======
+	val = (unsigned long long) u; /* on duration */
+	/* period = on + off duration */
+	val += readl_relaxed(mvebu_pwmreg_blink_off_duration(mvpwm));
+	val *= NSEC_PER_SEC;
+	do_div(val, mvpwm->clk_rate);
+	if (val > UINT_MAX)
+		state->period = UINT_MAX;
+	else if (val)
+		state->period = val;
+	else
+		state->period = 1;
+>>>>>>> origin/android16-base
 
 	regmap_read(mvchip->regs, GPIO_BLINK_EN_OFF + mvchip->offset, &u);
 	if (u)
@@ -695,6 +714,12 @@ static int mvebu_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 	unsigned long flags;
 	unsigned int on, off;
 
+<<<<<<< HEAD
+=======
+	if (state->polarity != PWM_POLARITY_NORMAL)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	val = (unsigned long long) mvpwm->clk_rate * state->duty_cycle;
 	do_div(val, NSEC_PER_SEC);
 	if (val > UINT_MAX)
@@ -1191,6 +1216,16 @@ static int mvebu_gpio_probe(struct platform_device *pdev)
 
 	devm_gpiochip_add_data(&pdev->dev, &mvchip->chip, mvchip);
 
+<<<<<<< HEAD
+=======
+	/* Some MVEBU SoCs have simple PWM support for GPIO lines */
+	if (IS_ENABLED(CONFIG_PWM)) {
+		err = mvebu_pwm_probe(pdev, mvchip, id);
+		if (err)
+			return err;
+	}
+
+>>>>>>> origin/android16-base
 	/* Some gpio controllers do not provide irq support */
 	if (!have_irqs)
 		return 0;
@@ -1200,7 +1235,12 @@ static int mvebu_gpio_probe(struct platform_device *pdev)
 	if (!mvchip->domain) {
 		dev_err(&pdev->dev, "couldn't allocate irq domain %s (DT).\n",
 			mvchip->chip.label);
+<<<<<<< HEAD
 		return -ENODEV;
+=======
+		err = -ENODEV;
+		goto err_pwm;
+>>>>>>> origin/android16-base
 	}
 
 	err = irq_alloc_domain_generic_chips(
@@ -1248,14 +1288,22 @@ static int mvebu_gpio_probe(struct platform_device *pdev)
 						 mvchip);
 	}
 
+<<<<<<< HEAD
 	/* Some MVEBU SoCs have simple PWM support for GPIO lines */
 	if (IS_ENABLED(CONFIG_PWM))
 		return mvebu_pwm_probe(pdev, mvchip, id);
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 
 err_domain:
 	irq_domain_remove(mvchip->domain);
+<<<<<<< HEAD
+=======
+err_pwm:
+	pwmchip_remove(&mvchip->mvpwm->chip);
+>>>>>>> origin/android16-base
 
 	return err;
 }

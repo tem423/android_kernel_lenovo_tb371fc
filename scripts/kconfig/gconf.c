@@ -1485,7 +1485,10 @@ int main(int ac, char *av[])
 
 	conf_parse(name);
 	fixup_rootmenu(&rootmenu);
+<<<<<<< HEAD
 	conf_read(NULL);
+=======
+>>>>>>> origin/android16-base
 
 	/* Load the interface and connect signals */
 	init_main_window(glade_file);
@@ -1493,6 +1496,11 @@ int main(int ac, char *av[])
 	init_left_tree();
 	init_right_tree();
 
+<<<<<<< HEAD
+=======
+	conf_read(NULL);
+
+>>>>>>> origin/android16-base
 	switch (view_mode) {
 	case SINGLE_VIEW:
 		display_tree_part();

@@ -351,11 +351,23 @@ static irqreturn_t da7219_aad_irq_thread(int irq, void *data)
 	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
 	u8 events[DA7219_AAD_IRQ_REG_MAX];
 	u8 statusa;
+<<<<<<< HEAD
 	int i, report = 0, mask = 0;
 
 	/* Read current IRQ events */
 	regmap_bulk_read(da7219->regmap, DA7219_ACCDET_IRQ_EVENT_A,
 			 events, DA7219_AAD_IRQ_REG_MAX);
+=======
+	int i, ret, report = 0, mask = 0;
+
+	/* Read current IRQ events */
+	ret = regmap_bulk_read(da7219->regmap, DA7219_ACCDET_IRQ_EVENT_A,
+			       events, DA7219_AAD_IRQ_REG_MAX);
+	if (ret) {
+		dev_warn_ratelimited(component->dev, "Failed to read IRQ events: %d\n", ret);
+		return IRQ_NONE;
+	}
+>>>>>>> origin/android16-base
 
 	if (!events[DA7219_AAD_IRQ_REG_A] && !events[DA7219_AAD_IRQ_REG_B])
 		return IRQ_NONE;
@@ -630,8 +642,15 @@ static struct da7219_aad_pdata *da7219_aad_fw_to_pdata(struct snd_soc_component 
 		return NULL;
 
 	aad_pdata = devm_kzalloc(dev, sizeof(*aad_pdata), GFP_KERNEL);
+<<<<<<< HEAD
 	if (!aad_pdata)
 		return NULL;
+=======
+	if (!aad_pdata) {
+		fwnode_handle_put(aad_np);
+		return NULL;
+	}
+>>>>>>> origin/android16-base
 
 	aad_pdata->irq = i2c->irq;
 
@@ -655,7 +674,11 @@ static struct da7219_aad_pdata *da7219_aad_fw_to_pdata(struct snd_soc_component 
 		aad_pdata->mic_det_thr =
 			da7219_aad_fw_mic_det_thr(component, fw_val32);
 	else
+<<<<<<< HEAD
 		aad_pdata->mic_det_thr = DA7219_AAD_MIC_DET_THR_500_OHMS;
+=======
+		aad_pdata->mic_det_thr = DA7219_AAD_MIC_DET_THR_200_OHMS;
+>>>>>>> origin/android16-base
 
 	if (fwnode_property_read_u32(aad_np, "dlg,jack-ins-deb", &fw_val32) >= 0)
 		aad_pdata->jack_ins_deb =
@@ -706,6 +729,11 @@ static struct da7219_aad_pdata *da7219_aad_fw_to_pdata(struct snd_soc_component 
 	else
 		aad_pdata->adc_1bit_rpt = DA7219_AAD_ADC_1BIT_RPT_1;
 
+<<<<<<< HEAD
+=======
+	fwnode_handle_put(aad_np);
+
+>>>>>>> origin/android16-base
 	return aad_pdata;
 }
 
@@ -859,6 +887,11 @@ void da7219_aad_suspend(struct snd_soc_component *component)
 			}
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	synchronize_irq(da7219_aad->irq);
+>>>>>>> origin/android16-base
 }
 
 void da7219_aad_resume(struct snd_soc_component *component)

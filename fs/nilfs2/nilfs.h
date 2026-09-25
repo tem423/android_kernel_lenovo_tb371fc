@@ -28,7 +28,11 @@
  * @i_xattr: <TODO>
  * @i_dir_start_lookup: page index of last successful search
  * @i_cno: checkpoint number for GC inode
+<<<<<<< HEAD
  * @i_btnode_cache: cached pages of b-tree nodes
+=======
+ * @i_assoc_inode: associated inode (B-tree node cache holder or back pointer)
+>>>>>>> origin/android16-base
  * @i_dirty: list for connecting dirty files
  * @xattr_sem: semaphore for extended attributes processing
  * @i_bh: buffer contains disk inode
@@ -43,7 +47,11 @@ struct nilfs_inode_info {
 	__u64 i_xattr;	/* sector_t ??? */
 	__u32 i_dir_start_lookup;
 	__u64 i_cno;		/* check point number for GC inode */
+<<<<<<< HEAD
 	struct address_space i_btnode_cache;
+=======
+	struct inode *i_assoc_inode;
+>>>>>>> origin/android16-base
 	struct list_head i_dirty;	/* List for connecting dirty files */
 
 #ifdef CONFIG_NILFS_XATTR
@@ -75,6 +83,7 @@ NILFS_BMAP_I(const struct nilfs_bmap *bmap)
 	return container_of(bmap, struct nilfs_inode_info, i_bmap_data);
 }
 
+<<<<<<< HEAD
 static inline struct inode *NILFS_BTNC_I(struct address_space *btnc)
 {
 	struct nilfs_inode_info *ii =
@@ -82,6 +91,8 @@ static inline struct inode *NILFS_BTNC_I(struct address_space *btnc)
 	return &ii->vfs_inode;
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Dynamic state flags of NILFS on-memory inode (i_state)
  */
@@ -98,6 +109,11 @@ enum {
 	NILFS_I_INODE_SYNC,		/* dsync is not allowed for inode */
 	NILFS_I_BMAP,			/* has bmap and btnode_cache */
 	NILFS_I_GCINODE,		/* inode for GC, on memory only */
+<<<<<<< HEAD
+=======
+	NILFS_I_BTNC,			/* inode for btree node cache */
+	NILFS_I_SHADOW,			/* inode for shadowed page cache */
+>>>>>>> origin/android16-base
 };
 
 /*
@@ -121,9 +137,21 @@ enum {
 #define NILFS_FIRST_INO(sb) (((struct the_nilfs *)sb->s_fs_info)->ns_first_ino)
 
 #define NILFS_MDT_INODE(sb, ino) \
+<<<<<<< HEAD
 	((ino) < NILFS_FIRST_INO(sb) && (NILFS_MDT_INO_BITS & BIT(ino)))
 #define NILFS_VALID_INODE(sb, ino) \
 	((ino) >= NILFS_FIRST_INO(sb) || (NILFS_SYS_INO_BITS & BIT(ino)))
+=======
+	((ino) < NILFS_USER_INO && (NILFS_MDT_INO_BITS & BIT(ino)))
+#define NILFS_VALID_INODE(sb, ino) \
+	((ino) >= NILFS_FIRST_INO(sb) ||				\
+	 ((ino) < NILFS_USER_INO && (NILFS_SYS_INO_BITS & BIT(ino))))
+
+#define NILFS_PRIVATE_INODE(ino) ({					\
+	ino_t __ino = (ino);						\
+	((__ino) < NILFS_USER_INO && (__ino) != NILFS_ROOT_INO &&	\
+	 (__ino) != NILFS_SKETCH_INO); })
+>>>>>>> origin/android16-base
 
 /**
  * struct nilfs_transaction_info: context information for synchronization
@@ -203,6 +231,12 @@ static inline int nilfs_acl_chmod(struct inode *inode)
 
 static inline int nilfs_init_acl(struct inode *inode, struct inode *dir)
 {
+<<<<<<< HEAD
+=======
+	if (S_ISLNK(inode->i_mode))
+		return 0;
+
+>>>>>>> origin/android16-base
 	inode->i_mode &= ~current_umask();
 	return 0;
 }
@@ -229,7 +263,11 @@ static inline __u32 nilfs_mask_flags(umode_t mode, __u32 flags)
 
 /* dir.c */
 extern int nilfs_add_link(struct dentry *, struct inode *);
+<<<<<<< HEAD
 extern ino_t nilfs_inode_by_name(struct inode *, const struct qstr *);
+=======
+int nilfs_inode_by_name(struct inode *dir, const struct qstr *qstr, ino_t *ino);
+>>>>>>> origin/android16-base
 extern int nilfs_make_empty(struct inode *, struct inode *);
 extern struct nilfs_dir_entry *
 nilfs_find_entry(struct inode *, const struct qstr *, struct page **);
@@ -265,6 +303,12 @@ struct inode *nilfs_iget(struct super_block *sb, struct nilfs_root *root,
 			 unsigned long ino);
 extern struct inode *nilfs_iget_for_gc(struct super_block *sb,
 				       unsigned long ino, __u64 cno);
+<<<<<<< HEAD
+=======
+int nilfs_attach_btree_node_cache(struct inode *inode);
+void nilfs_detach_btree_node_cache(struct inode *inode);
+struct inode *nilfs_iget_for_shadow(struct inode *inode);
+>>>>>>> origin/android16-base
 extern void nilfs_update_inode(struct inode *, struct buffer_head *, int);
 extern void nilfs_truncate(struct inode *);
 extern void nilfs_evict_inode(struct inode *);
@@ -320,6 +364,18 @@ void __nilfs_error(struct super_block *sb, const char *function,
 
 #endif /* CONFIG_PRINTK */
 
+<<<<<<< HEAD
+=======
+#define nilfs_crit(sb, fmt, ...)					\
+	nilfs_msg(sb, KERN_CRIT, fmt, ##__VA_ARGS__)
+#define nilfs_err(sb, fmt, ...)						\
+	nilfs_msg(sb, KERN_ERR, fmt, ##__VA_ARGS__)
+#define nilfs_warn(sb, fmt, ...)					\
+	nilfs_msg(sb, KERN_WARNING, fmt, ##__VA_ARGS__)
+#define nilfs_info(sb, fmt, ...)					\
+	nilfs_msg(sb, KERN_INFO, fmt, ##__VA_ARGS__)
+
+>>>>>>> origin/android16-base
 extern struct nilfs_super_block *
 nilfs_read_super_block(struct super_block *, u64, int, struct buffer_head **);
 extern int nilfs_store_magic_and_option(struct super_block *,

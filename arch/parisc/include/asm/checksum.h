@@ -42,11 +42,16 @@ extern __wsum csum_partial_copy_from_user(const void __user *src,
 static inline __sum16 ip_fast_csum(const void *iph, unsigned int ihl)
 {
 	unsigned int sum;
+<<<<<<< HEAD
+=======
+	unsigned long t0, t1, t2;
+>>>>>>> origin/android16-base
 
 	__asm__ __volatile__ (
 "	ldws,ma		4(%1), %0\n"
 "	addib,<=	-4, %2, 2f\n"
 "\n"
+<<<<<<< HEAD
 "	ldws		4(%1), %%r20\n"
 "	ldws		8(%1), %%r21\n"
 "	add		%0, %%r20, %0\n"
@@ -67,6 +72,28 @@ static inline __sum16 ip_fast_csum(const void *iph, unsigned int ihl)
 	: "=r" (sum), "=r" (iph), "=r" (ihl)
 	: "1" (iph), "2" (ihl)
 	: "r19", "r20", "r21", "memory");
+=======
+"	ldws		4(%1), %4\n"
+"	ldws		8(%1), %5\n"
+"	add		%0, %4, %0\n"
+"	ldws,ma		12(%1), %3\n"
+"	addc		%0, %5, %0\n"
+"	addc		%0, %3, %0\n"
+"1:	ldws,ma		4(%1), %3\n"
+"	addib,>		-1, %2, 1b\n"
+"	addc		%0, %3, %0\n"
+"\n"
+"	extru		%0, 31, 16, %4\n"
+"	extru		%0, 15, 16, %5\n"
+"	addc		%4, %5, %0\n"
+"	extru		%0, 15, 16, %5\n"
+"	add		%0, %5, %0\n"
+"	subi		-1, %0, %0\n"
+"2:\n"
+	: "=r" (sum), "=r" (iph), "=r" (ihl), "=r" (t0), "=r" (t1), "=r" (t2)
+	: "1" (iph), "2" (ihl)
+	: "memory");
+>>>>>>> origin/android16-base
 
 	return (__force __sum16)sum;
 }
@@ -126,6 +153,13 @@ static __inline__ __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
 					  __u32 len, __u8 proto,
 					  __wsum sum)
 {
+<<<<<<< HEAD
+=======
+	unsigned long t0, t1, t2, t3;
+
+	len += proto;	/* add 16-bit proto + len */
+
+>>>>>>> origin/android16-base
 	__asm__ __volatile__ (
 
 #if BITS_PER_LONG > 32
@@ -136,6 +170,7 @@ static __inline__ __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
 	** Try to keep 4 registers with "live" values ahead of the ALU.
 	*/
 
+<<<<<<< HEAD
 "	ldd,ma		8(%1), %%r19\n"	/* get 1st saddr word */
 "	ldd,ma		8(%2), %%r20\n"	/* get 1st daddr word */
 "	add		%8, %3, %3\n"/* add 16-bit proto + len */
@@ -150,6 +185,22 @@ static __inline__ __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
 "	depdi		0, 31, 32, %0\n"	/* clear upper half */
 "	add		%%r19, %0, %0\n"	/* fold into 32-bits */
 "	addc		0, %0, %0\n"		/* add carry */
+=======
+"	depdi		0, 31, 32, %0\n"/* clear upper half of incoming checksum */
+"	ldd,ma		8(%1), %4\n"	/* get 1st saddr word */
+"	ldd,ma		8(%2), %5\n"	/* get 1st daddr word */
+"	add		%4, %0, %0\n"
+"	ldd,ma		8(%1), %6\n"	/* 2nd saddr */
+"	ldd,ma		8(%2), %7\n"	/* 2nd daddr */
+"	add,dc		%5, %0, %0\n"
+"	add,dc		%6, %0, %0\n"
+"	add,dc		%7, %0, %0\n"
+"	add,dc		%3, %0, %0\n"  /* fold in proto+len | carry bit */
+"	extrd,u		%0, 31, 32, %4\n"/* copy upper half down */
+"	depdi		0, 31, 32, %0\n"/* clear upper half */
+"	add,dc		%4, %0, %0\n"	/* fold into 32-bits, plus carry */
+"	addc		0, %0, %0\n"	/* add final carry */
+>>>>>>> origin/android16-base
 
 #else
 
@@ -158,6 +209,7 @@ static __inline__ __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
 	** Insn stream is serialized on the carry bit here too.
 	** result from the previous operation (eg r0 + x)
 	*/
+<<<<<<< HEAD
 
 "	ldw,ma		4(%1), %%r19\n"	/* get 1st saddr word */
 "	ldw,ma		4(%2), %%r20\n"	/* get 1st daddr word */
@@ -182,6 +234,32 @@ static __inline__ __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
 	: "=r" (sum), "=r" (saddr), "=r" (daddr), "=r" (len)
 	: "0" (sum), "1" (saddr), "2" (daddr), "3" (len), "r" (proto)
 	: "r19", "r20", "r21", "r22", "memory");
+=======
+"	ldw,ma		4(%1), %4\n"	/* get 1st saddr word */
+"	ldw,ma		4(%2), %5\n"	/* get 1st daddr word */
+"	add		%4, %0, %0\n"
+"	ldw,ma		4(%1), %6\n"	/* 2nd saddr */
+"	addc		%5, %0, %0\n"
+"	ldw,ma		4(%2), %7\n"	/* 2nd daddr */
+"	addc		%6, %0, %0\n"
+"	ldw,ma		4(%1), %4\n"	/* 3rd saddr */
+"	addc		%7, %0, %0\n"
+"	ldw,ma		4(%2), %5\n"	/* 3rd daddr */
+"	addc		%4, %0, %0\n"
+"	ldw,ma		4(%1), %6\n"	/* 4th saddr */
+"	addc		%5, %0, %0\n"
+"	ldw,ma		4(%2), %7\n"	/* 4th daddr */
+"	addc		%6, %0, %0\n"
+"	addc		%7, %0, %0\n"
+"	addc		%3, %0, %0\n"	/* fold in proto+len */
+"	addc		0, %0, %0\n"	/* add carry */
+
+#endif
+	: "=r" (sum), "=r" (saddr), "=r" (daddr), "=r" (len),
+	  "=r" (t0), "=r" (t1), "=r" (t2), "=r" (t3)
+	: "0" (sum), "1" (saddr), "2" (daddr), "3" (len)
+	: "memory");
+>>>>>>> origin/android16-base
 	return csum_fold(sum);
 }
 

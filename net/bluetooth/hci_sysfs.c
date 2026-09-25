@@ -33,7 +33,11 @@ void hci_conn_init_sysfs(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
 
+<<<<<<< HEAD
 	BT_DBG("conn %p", conn);
+=======
+	bt_dev_dbg(hdev, "conn %p", conn);
+>>>>>>> origin/android16-base
 
 	conn->dev.type = &bt_link;
 	conn->dev.class = bt_class;
@@ -46,6 +50,7 @@ void hci_conn_add_sysfs(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
 
+<<<<<<< HEAD
 	BT_DBG("conn %p", conn);
 
 	dev_set_name(&conn->dev, "%s:%d", hdev->name, conn->handle);
@@ -56,14 +61,37 @@ void hci_conn_add_sysfs(struct hci_conn *conn)
 	}
 
 	hci_dev_hold(hdev);
+=======
+	bt_dev_dbg(hdev, "conn %p", conn);
+
+	if (device_is_registered(&conn->dev))
+		return;
+
+	dev_set_name(&conn->dev, "%s:%d", hdev->name, conn->handle);
+
+	if (device_add(&conn->dev) < 0)
+		bt_dev_err(hdev, "failed to register connection device");
+>>>>>>> origin/android16-base
 }
 
 void hci_conn_del_sysfs(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
 
+<<<<<<< HEAD
 	if (!device_is_registered(&conn->dev))
 		return;
+=======
+	bt_dev_dbg(hdev, "conn %p", conn);
+
+	if (!device_is_registered(&conn->dev)) {
+		/* If device_add() has *not* succeeded, use *only* put_device()
+		 * to drop the reference count.
+		 */
+		put_device(&conn->dev);
+		return;
+	}
+>>>>>>> origin/android16-base
 
 	while (1) {
 		struct device *dev;
@@ -75,14 +103,24 @@ void hci_conn_del_sysfs(struct hci_conn *conn)
 		put_device(dev);
 	}
 
+<<<<<<< HEAD
 	device_del(&conn->dev);
 
 	hci_dev_put(hdev);
+=======
+	device_unregister(&conn->dev);
+>>>>>>> origin/android16-base
 }
 
 static void bt_host_release(struct device *dev)
 {
 	struct hci_dev *hdev = to_hci_dev(dev);
+<<<<<<< HEAD
+=======
+
+	if (hci_dev_test_flag(hdev, HCI_UNREGISTER))
+		hci_cleanup_dev(hdev);
+>>>>>>> origin/android16-base
 	kfree(hdev);
 	module_put(THIS_MODULE);
 }

@@ -76,8 +76,13 @@ struct key_type cifs_spnego_key_type = {
  * strlen(";sec=ntlmsspi") */
 #define MAX_MECH_STR_LEN	13
 
+<<<<<<< HEAD
 /* strlen of "host=" */
 #define HOST_KEY_LEN		5
+=======
+/* strlen of ";host=" */
+#define HOST_KEY_LEN		6
+>>>>>>> origin/android16-base
 
 /* strlen of ";ip4=" or ";ip6=" */
 #define IP_KEY_LEN		5

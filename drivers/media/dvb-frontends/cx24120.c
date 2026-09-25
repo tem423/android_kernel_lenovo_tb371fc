@@ -313,7 +313,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(cx24120_attach);
+=======
+EXPORT_SYMBOL_GPL(cx24120_attach);
+>>>>>>> origin/android16-base
 
 static int cx24120_test_rom(struct cx24120_state *state)
 {
@@ -980,7 +984,13 @@ static void cx24120_set_clock_ratios(struct dvb_frontend *fe)
 	cmd.arg[8] = (clock_ratios_table[idx].rate >> 8) & 0xff;
 	cmd.arg[9] = (clock_ratios_table[idx].rate >> 0) & 0xff;
 
+<<<<<<< HEAD
 	cx24120_message_send(state, &cmd);
+=======
+	ret = cx24120_message_send(state, &cmd);
+	if (ret != 0)
+		return;
+>>>>>>> origin/android16-base
 
 	/* Calculate ber window rates for stat work */
 	cx24120_calculate_ber_window(state, clock_ratios_table[idx].rate);

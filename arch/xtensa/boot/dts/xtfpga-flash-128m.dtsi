@@ -8,6 +8,7 @@
 			reg = <0x00000000 0x08000000>;
 			bank-width = <2>;
 			device-width = <2>;
+<<<<<<< HEAD
 			partition@0x0 {
 				label = "data";
 				reg = <0x00000000 0x06000000>;
@@ -21,6 +22,21 @@
 				reg = <0x06800000 0x017e0000>;
 			};
 			partition@0x7fe0000 {
+=======
+			partition@0 {
+				label = "data";
+				reg = <0x00000000 0x06000000>;
+			};
+			partition@6000000 {
+				label = "boot loader area";
+				reg = <0x06000000 0x00800000>;
+			};
+			partition@6800000 {
+				label = "kernel image";
+				reg = <0x06800000 0x017e0000>;
+			};
+			partition@7fe0000 {
+>>>>>>> origin/android16-base
 				label = "boot environment";
 				reg = <0x07fe0000 0x00020000>;
 			};

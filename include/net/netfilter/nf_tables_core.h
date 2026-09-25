@@ -21,13 +21,22 @@ void nf_tables_core_module_exit(void);
 
 struct nft_cmp_fast_expr {
 	u32			data;
+<<<<<<< HEAD
 	enum nft_registers	sreg:8;
+=======
+	u32			mask;
+	u8			sreg;
+>>>>>>> origin/android16-base
 	u8			len;
 };
 
 struct nft_immediate_expr {
 	struct nft_data		data;
+<<<<<<< HEAD
 	enum nft_registers	dreg:8;
+=======
+	u8			dreg;
+>>>>>>> origin/android16-base
 	u8			dlen;
 };
 
@@ -47,14 +56,22 @@ struct nft_payload {
 	enum nft_payload_bases	base:8;
 	u8			offset;
 	u8			len;
+<<<<<<< HEAD
 	enum nft_registers	dreg:8;
+=======
+	u8			dreg;
+>>>>>>> origin/android16-base
 };
 
 struct nft_payload_set {
 	enum nft_payload_bases	base:8;
 	u8			offset;
 	u8			len;
+<<<<<<< HEAD
 	enum nft_registers	sreg:8;
+=======
+	u8			sreg;
+>>>>>>> origin/android16-base
 	u8			csum_type;
 	u8			csum_offset;
 	u8			csum_flags;

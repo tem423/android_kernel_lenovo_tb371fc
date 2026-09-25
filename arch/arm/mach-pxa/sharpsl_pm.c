@@ -224,8 +224,11 @@ void sharpsl_battery_kick(void)
 {
 	schedule_delayed_work(&sharpsl_bat, msecs_to_jiffies(125));
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(sharpsl_battery_kick);
 
+=======
+>>>>>>> origin/android16-base
 
 static void sharpsl_battery_thread(struct work_struct *private_)
 {

@@ -164,7 +164,11 @@ static int scmi_base_implementation_list_get(const struct scmi_handle *handle,
 			break;
 
 		loop_num_ret = le32_to_cpu(*num_ret);
+<<<<<<< HEAD
 		if (tot_num_ret + loop_num_ret > MAX_PROTOCOLS_IMP) {
+=======
+		if (loop_num_ret > MAX_PROTOCOLS_IMP - tot_num_ret) {
+>>>>>>> origin/android16-base
 			dev_err(dev, "No. of Protocol > MAX_PROTOCOLS_IMP");
 			break;
 		}

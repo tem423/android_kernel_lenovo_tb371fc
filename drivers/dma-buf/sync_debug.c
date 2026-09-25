@@ -119,12 +119,20 @@ static void sync_print_obj(struct seq_file *s, struct sync_timeline *obj)
 
 	seq_printf(s, "%s: %d\n", obj->name, obj->value);
 
+<<<<<<< HEAD
 	spin_lock_irq(&obj->lock);
+=======
+	spin_lock(&obj->lock); /* Caller already disabled IRQ. */
+>>>>>>> origin/android16-base
 	list_for_each(pos, &obj->pt_list) {
 		struct sync_pt *pt = container_of(pos, struct sync_pt, link);
 		sync_print_fence(s, &pt->base, false);
 	}
+<<<<<<< HEAD
 	spin_unlock_irq(&obj->lock);
+=======
+	spin_unlock(&obj->lock);
+>>>>>>> origin/android16-base
 }
 
 static void sync_print_sync_file(struct seq_file *s,

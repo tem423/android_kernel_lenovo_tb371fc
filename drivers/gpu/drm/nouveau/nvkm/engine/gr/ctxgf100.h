@@ -121,6 +121,10 @@ void gk104_grctx_generate_r418800(struct gf100_gr *);
 
 extern const struct gf100_grctx_func gk110_grctx;
 void gk110_grctx_generate_r419eb0(struct gf100_gr *);
+<<<<<<< HEAD
+=======
+void gk110_grctx_generate_r419f78(struct gf100_gr *);
+>>>>>>> origin/android16-base
 
 extern const struct gf100_grctx_func gk110b_grctx;
 extern const struct gf100_grctx_func gk208_grctx;

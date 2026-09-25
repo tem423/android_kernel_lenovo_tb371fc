@@ -318,6 +318,7 @@ static int tw686x_probe(struct pci_dev *pci_dev,
 
 	spin_lock_init(&dev->lock);
 
+<<<<<<< HEAD
 	err = request_irq(pci_dev->irq, tw686x_irq, IRQF_SHARED,
 			  dev->name, dev);
 	if (err < 0) {
@@ -325,6 +326,8 @@ static int tw686x_probe(struct pci_dev *pci_dev,
 		goto iounmap;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	timer_setup(&dev->dma_delay_timer, tw686x_dma_delay, 0);
 
 	/*
@@ -336,18 +339,35 @@ static int tw686x_probe(struct pci_dev *pci_dev,
 	err = tw686x_video_init(dev);
 	if (err) {
 		dev_err(&pci_dev->dev, "can't register video\n");
+<<<<<<< HEAD
 		goto free_irq;
+=======
+		goto iounmap;
+>>>>>>> origin/android16-base
 	}
 
 	err = tw686x_audio_init(dev);
 	if (err)
 		dev_warn(&pci_dev->dev, "can't register audio\n");
 
+<<<<<<< HEAD
 	pci_set_drvdata(pci_dev, dev);
 	return 0;
 
 free_irq:
 	free_irq(pci_dev->irq, dev);
+=======
+	err = request_irq(pci_dev->irq, tw686x_irq, IRQF_SHARED,
+			  dev->name, dev);
+	if (err < 0) {
+		dev_err(&pci_dev->dev, "unable to request interrupt\n");
+		goto iounmap;
+	}
+
+	pci_set_drvdata(pci_dev, dev);
+	return 0;
+
+>>>>>>> origin/android16-base
 iounmap:
 	pci_iounmap(pci_dev, dev->mmio);
 free_region:

@@ -387,8 +387,18 @@ static int qfq_change_agg(struct Qdisc *sch, struct qfq_class *cl, u32 weight,
 			   u32 lmax)
 {
 	struct qfq_sched *q = qdisc_priv(sch);
+<<<<<<< HEAD
 	struct qfq_aggregate *new_agg = qfq_find_agg(q, lmax, weight);
 
+=======
+	struct qfq_aggregate *new_agg;
+
+	/* 'lmax' can range from [QFQ_MIN_LMAX, pktlen + stab overhead] */
+	if (lmax > (1UL << QFQ_MTU_SHIFT))
+		return -EINVAL;
+
+	new_agg = qfq_find_agg(q, lmax, weight);
+>>>>>>> origin/android16-base
 	if (new_agg == NULL) { /* create new aggregate */
 		new_agg = kzalloc(sizeof(*new_agg), GFP_ATOMIC);
 		if (new_agg == NULL)
@@ -433,6 +443,7 @@ static int qfq_change_class(struct Qdisc *sch, u32 classid, u32 parentid,
 	} else
 		weight = 1;
 
+<<<<<<< HEAD
 	if (tb[TCA_QFQ_LMAX]) {
 		lmax = nla_get_u32(tb[TCA_QFQ_LMAX]);
 		if (lmax < QFQ_MIN_LMAX || lmax > (1UL << QFQ_MTU_SHIFT)) {
@@ -442,6 +453,18 @@ static int qfq_change_class(struct Qdisc *sch, u32 classid, u32 parentid,
 	} else
 		lmax = psched_mtu(qdisc_dev(sch));
 
+=======
+	if (tb[TCA_QFQ_LMAX])
+		lmax = nla_get_u32(tb[TCA_QFQ_LMAX]);
+	else
+		lmax = psched_mtu(qdisc_dev(sch));
+
+	if (lmax < QFQ_MIN_LMAX || lmax > (1UL << QFQ_MTU_SHIFT)) {
+		pr_notice("qfq: invalid max length %u\n", lmax);
+		return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	inv_w = ONE_FP / weight;
 	weight = ONE_FP / inv_w;
 
@@ -497,11 +520,14 @@ static int qfq_change_class(struct Qdisc *sch, u32 classid, u32 parentid,
 
 	if (cl->qdisc != &noop_qdisc)
 		qdisc_hash_add(cl->qdisc, true);
+<<<<<<< HEAD
 	sch_tree_lock(sch);
 	qdisc_class_hash_insert(&q->clhash, &cl->common);
 	sch_tree_unlock(sch);
 
 	qdisc_class_hash_grow(sch, &q->clhash);
+=======
+>>>>>>> origin/android16-base
 
 set_change_agg:
 	sch_tree_lock(sch);
@@ -519,14 +545,26 @@ set_change_agg:
 	}
 	if (existing)
 		qfq_deact_rm_from_agg(q, cl);
+<<<<<<< HEAD
 	qfq_add_to_agg(q, new_agg, cl);
 	sch_tree_unlock(sch);
+=======
+	else
+		qdisc_class_hash_insert(&q->clhash, &cl->common);
+	qfq_add_to_agg(q, new_agg, cl);
+	sch_tree_unlock(sch);
+	qdisc_class_hash_grow(sch, &q->clhash);
+>>>>>>> origin/android16-base
 
 	*arg = (unsigned long)cl;
 	return 0;
 
 destroy_class:
+<<<<<<< HEAD
 	qdisc_destroy(cl->qdisc);
+=======
+	qdisc_put(cl->qdisc);
+>>>>>>> origin/android16-base
 	kfree(cl);
 	return err;
 }
@@ -537,7 +575,11 @@ static void qfq_destroy_class(struct Qdisc *sch, struct qfq_class *cl)
 
 	qfq_rm_from_agg(q, cl);
 	gen_kill_estimator(&cl->rate_est);
+<<<<<<< HEAD
 	qdisc_destroy(cl->qdisc);
+=======
+	qdisc_put(cl->qdisc);
+>>>>>>> origin/android16-base
 	kfree(cl);
 }
 
@@ -984,10 +1026,20 @@ static void qfq_update_eligible(struct qfq_sched *q)
 }
 
 /* Dequeue head packet of the head class in the DRR queue of the aggregate. */
+<<<<<<< HEAD
 static void agg_dequeue(struct qfq_aggregate *agg,
 			struct qfq_class *cl, unsigned int len)
 {
 	qdisc_dequeue_peeked(cl->qdisc);
+=======
+static struct sk_buff *agg_dequeue(struct qfq_aggregate *agg,
+				   struct qfq_class *cl, unsigned int len)
+{
+	struct sk_buff *skb = qdisc_dequeue_peeked(cl->qdisc);
+
+	if (!skb)
+		return NULL;
+>>>>>>> origin/android16-base
 
 	cl->deficit -= (int) len;
 
@@ -997,6 +1049,11 @@ static void agg_dequeue(struct qfq_aggregate *agg,
 		cl->deficit += agg->lmax;
 		list_move_tail(&cl->alist, &agg->active);
 	}
+<<<<<<< HEAD
+=======
+
+	return skb;
+>>>>>>> origin/android16-base
 }
 
 static inline struct sk_buff *qfq_peek_skb(struct qfq_aggregate *agg,
@@ -1142,11 +1199,26 @@ static struct sk_buff *qfq_dequeue(struct Qdisc *sch)
 	if (!skb)
 		return NULL;
 
+<<<<<<< HEAD
 	qdisc_qstats_backlog_dec(sch, skb);
 	sch->q.qlen--;
 	qdisc_bstats_update(sch, skb);
 
 	agg_dequeue(in_serv_agg, cl, len);
+=======
+	sch->q.qlen--;
+
+	skb = agg_dequeue(in_serv_agg, cl, len);
+
+	if (!skb) {
+		sch->q.qlen++;
+		return NULL;
+	}
+
+	qdisc_qstats_backlog_dec(sch, skb);
+	qdisc_bstats_update(sch, skb);
+
+>>>>>>> origin/android16-base
 	/* If lmax is lowered, through qfq_change_class, for a class
 	 * owning pending packets with larger size than the new value
 	 * of lmax, then the following condition may hold.
@@ -1432,10 +1504,15 @@ static int qfq_init_qdisc(struct Qdisc *sch, struct nlattr *opt,
 	if (err < 0)
 		return err;
 
+<<<<<<< HEAD
 	if (qdisc_dev(sch)->tx_queue_len + 1 > QFQ_MAX_AGG_CLASSES)
 		max_classes = QFQ_MAX_AGG_CLASSES;
 	else
 		max_classes = qdisc_dev(sch)->tx_queue_len + 1;
+=======
+	max_classes = min_t(u64, (u64)qdisc_dev(sch)->tx_queue_len + 1,
+			    QFQ_MAX_AGG_CLASSES);
+>>>>>>> origin/android16-base
 	/* max_cl_shift = floor(log_2(max_classes)) */
 	max_cl_shift = __fls(max_classes);
 	q->max_agg_classes = 1<<max_cl_shift;

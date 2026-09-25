@@ -155,6 +155,7 @@ static irqreturn_t omap_mpu_timer1_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
+<<<<<<< HEAD
 static struct irqaction omap_mpu_timer1_irq = {
 	.name		= "mpu_timer1",
 	.flags		= IRQF_TIMER | IRQF_IRQPOLL,
@@ -164,6 +165,13 @@ static struct irqaction omap_mpu_timer1_irq = {
 static __init void omap_init_mpu_timer(unsigned long rate)
 {
 	setup_irq(INT_TIMER1, &omap_mpu_timer1_irq);
+=======
+static __init void omap_init_mpu_timer(unsigned long rate)
+{
+	if (request_irq(INT_TIMER1, omap_mpu_timer1_interrupt,
+			IRQF_TIMER | IRQF_IRQPOLL, "mpu_timer1", NULL))
+		pr_err("Failed to request irq %d (mpu_timer1)\n", INT_TIMER1);
+>>>>>>> origin/android16-base
 	omap_mpu_timer_start(0, (rate / HZ) - 1, 1);
 
 	clockevent_mpu_timer1.cpumask = cpumask_of(0);

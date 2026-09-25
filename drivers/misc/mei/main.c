@@ -271,7 +271,11 @@ static ssize_t mei_write(struct file *file, const char __user *ubuf,
 	}
 
 	if (!mei_cl_is_connected(cl)) {
+<<<<<<< HEAD
 		cl_err(dev, cl, "is not connected");
+=======
+		cl_dbg(dev, cl, "is not connected");
+>>>>>>> origin/android16-base
 		rets = -ENODEV;
 		goto out;
 	}

@@ -73,7 +73,11 @@ TRACE_EVENT(timer_start,
 		__entry->flags		= flags;
 	),
 
+<<<<<<< HEAD
 	TP_printk("timer=%p function=%pf expires=%lu [timeout=%ld] cpu=%u idx=%u flags=%s",
+=======
+	TP_printk("timer=%p function=%ps expires=%lu [timeout=%ld] cpu=%u idx=%u flags=%s",
+>>>>>>> origin/android16-base
 		  __entry->timer, __entry->function, __entry->expires,
 		  (long)__entry->expires - __entry->now,
 		  __entry->flags & TIMER_CPUMASK,
@@ -89,23 +93,42 @@ TRACE_EVENT(timer_start,
  */
 TRACE_EVENT(timer_expire_entry,
 
+<<<<<<< HEAD
 	TP_PROTO(struct timer_list *timer),
 
 	TP_ARGS(timer),
+=======
+	TP_PROTO(struct timer_list *timer, unsigned long baseclk),
+
+	TP_ARGS(timer, baseclk),
+>>>>>>> origin/android16-base
 
 	TP_STRUCT__entry(
 		__field( void *,	timer	)
 		__field( unsigned long,	now	)
 		__field( void *,	function)
+<<<<<<< HEAD
+=======
+		__field( unsigned long,	baseclk	)
+>>>>>>> origin/android16-base
 	),
 
 	TP_fast_assign(
 		__entry->timer		= timer;
 		__entry->now		= jiffies;
 		__entry->function	= timer->function;
+<<<<<<< HEAD
 	),
 
 	TP_printk("timer=%p function=%pf now=%lu", __entry->timer, __entry->function,__entry->now)
+=======
+		__entry->baseclk	= baseclk;
+	),
+
+	TP_printk("timer=%p function=%ps now=%lu baseclk=%lu",
+		  __entry->timer, __entry->function, __entry->now,
+		  __entry->baseclk)
+>>>>>>> origin/android16-base
 );
 
 /**
@@ -210,7 +233,11 @@ TRACE_EVENT(hrtimer_start,
 		__entry->mode		= mode;
 	),
 
+<<<<<<< HEAD
 	TP_printk("hrtimer=%p function=%pf expires=%llu softexpires=%llu "
+=======
+	TP_printk("hrtimer=%p function=%ps expires=%llu softexpires=%llu "
+>>>>>>> origin/android16-base
 		  "mode=%s", __entry->hrtimer, __entry->function,
 		  (unsigned long long) __entry->expires,
 		  (unsigned long long) __entry->softexpires,
@@ -243,7 +270,12 @@ TRACE_EVENT(hrtimer_expire_entry,
 		__entry->function	= hrtimer->function;
 	),
 
+<<<<<<< HEAD
 	TP_printk("hrtimer=%p function=%pf now=%llu", __entry->hrtimer, __entry->function,
+=======
+	TP_printk("hrtimer=%p function=%ps now=%llu",
+		  __entry->hrtimer, __entry->function,
+>>>>>>> origin/android16-base
 		  (unsigned long long) __entry->now)
 );
 
@@ -362,7 +394,12 @@ TRACE_EVENT(itimer_expire,
 		tick_dep_name(POSIX_TIMER)		\
 		tick_dep_name(PERF_EVENTS)		\
 		tick_dep_name(SCHED)			\
+<<<<<<< HEAD
 		tick_dep_name_end(CLOCK_UNSTABLE)
+=======
+		tick_dep_name(CLOCK_UNSTABLE)		\
+		tick_dep_name_end(RCU)
+>>>>>>> origin/android16-base
 
 #undef tick_dep_name
 #undef tick_dep_mask_name

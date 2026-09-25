@@ -58,6 +58,7 @@ static notrace long s390_kernel_write_odd(void *dst, const void *src, size_t siz
  */
 void notrace s390_kernel_write(void *dst, const void *src, size_t size)
 {
+<<<<<<< HEAD
 	long copied;
 
 	while (size) {
@@ -65,6 +66,21 @@ void notrace s390_kernel_write(void *dst, const void *src, size_t size)
 		dst += copied;
 		src += copied;
 		size -= copied;
+=======
+	unsigned long flags;
+	long copied;
+
+	flags = arch_local_save_flags();
+	if (!(flags & PSW_MASK_DAT)) {
+		memcpy(dst, src, size);
+	} else {
+		while (size) {
+			copied = s390_kernel_write_odd(dst, src, size);
+			dst += copied;
+			src += copied;
+			size -= copied;
+		}
+>>>>>>> origin/android16-base
 	}
 }
 

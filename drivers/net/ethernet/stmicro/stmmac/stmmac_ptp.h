@@ -66,7 +66,11 @@
 #define	PTP_TCR_TSENMACADDR	BIT(18)
 
 /* SSIR defines */
+<<<<<<< HEAD
 #define	PTP_SSIR_SSINC_MASK		0xff
+=======
+#define	PTP_SSIR_SSINC_MAX		0xff
+>>>>>>> origin/android16-base
 #define	GMAC4_PTP_SSIR_SSINC_SHIFT	16
 
 #endif	/* __STMMAC_PTP_H__ */

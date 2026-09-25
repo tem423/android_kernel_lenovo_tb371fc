@@ -197,7 +197,11 @@ struct extent_buffer {
  */
 struct extent_changeset {
 	/* How many bytes are set/cleared in this operation */
+<<<<<<< HEAD
 	unsigned int bytes_changed;
+=======
+	u64 bytes_changed;
+>>>>>>> origin/android16-base
 
 	/* Changed ranges */
 	struct ulist range_changed;

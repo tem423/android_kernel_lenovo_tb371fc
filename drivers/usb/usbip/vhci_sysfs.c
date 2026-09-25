@@ -185,6 +185,11 @@ static int vhci_port_disconnect(struct vhci_hcd *vhci_hcd, __u32 rhport)
 
 	usbip_dbg_vhci_sysfs("enter\n");
 
+<<<<<<< HEAD
+=======
+	mutex_lock(&vdev->ud.sysfs_lock);
+
+>>>>>>> origin/android16-base
 	/* lock */
 	spin_lock_irqsave(&vhci->lock, flags);
 	spin_lock(&vdev->ud.lock);
@@ -195,6 +200,10 @@ static int vhci_port_disconnect(struct vhci_hcd *vhci_hcd, __u32 rhport)
 		/* unlock */
 		spin_unlock(&vdev->ud.lock);
 		spin_unlock_irqrestore(&vhci->lock, flags);
+<<<<<<< HEAD
+=======
+		mutex_unlock(&vdev->ud.sysfs_lock);
+>>>>>>> origin/android16-base
 
 		return -EINVAL;
 	}
@@ -205,6 +214,11 @@ static int vhci_port_disconnect(struct vhci_hcd *vhci_hcd, __u32 rhport)
 
 	usbip_event_add(&vdev->ud, VDEV_EVENT_DOWN);
 
+<<<<<<< HEAD
+=======
+	mutex_unlock(&vdev->ud.sysfs_lock);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -312,6 +326,11 @@ static ssize_t attach_store(struct device *dev, struct device_attribute *attr,
 	struct vhci *vhci;
 	int err;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	struct task_struct *tcp_rx = NULL;
+	struct task_struct *tcp_tx = NULL;
+>>>>>>> origin/android16-base
 
 	/*
 	 * @rhport: port number of vhci_hcd
@@ -347,6 +366,7 @@ static ssize_t attach_store(struct device *dev, struct device_attribute *attr,
 	else
 		vdev = &vhci->vhci_hcd_hs->vdev[rhport];
 
+<<<<<<< HEAD
 	/* Extract socket from fd. */
 	socket = sockfd_lookup(sockfd, &err);
 	if (!socket)
@@ -355,6 +375,45 @@ static ssize_t attach_store(struct device *dev, struct device_attribute *attr,
 	/* now need lock until setting vdev status as used */
 
 	/* begin a lock */
+=======
+	mutex_lock(&vdev->ud.sysfs_lock);
+
+	/* Extract socket from fd. */
+	socket = sockfd_lookup(sockfd, &err);
+	if (!socket) {
+		dev_err(dev, "failed to lookup sock");
+		err = -EINVAL;
+		goto unlock_mutex;
+	}
+	if (socket->type != SOCK_STREAM) {
+		dev_err(dev, "Expecting SOCK_STREAM - found %d",
+			socket->type);
+		sockfd_put(socket);
+		err = -EINVAL;
+		goto unlock_mutex;
+	}
+
+	/* create threads before locking */
+	tcp_rx = kthread_create(vhci_rx_loop, &vdev->ud, "vhci_rx");
+	if (IS_ERR(tcp_rx)) {
+		sockfd_put(socket);
+		err = -EINVAL;
+		goto unlock_mutex;
+	}
+	tcp_tx = kthread_create(vhci_tx_loop, &vdev->ud, "vhci_tx");
+	if (IS_ERR(tcp_tx)) {
+		kthread_stop(tcp_rx);
+		sockfd_put(socket);
+		err = -EINVAL;
+		goto unlock_mutex;
+	}
+
+	/* get task structs now */
+	get_task_struct(tcp_rx);
+	get_task_struct(tcp_tx);
+
+	/* now begin lock until setting vdev status set */
+>>>>>>> origin/android16-base
 	spin_lock_irqsave(&vhci->lock, flags);
 	spin_lock(&vdev->ud.lock);
 
@@ -364,13 +423,23 @@ static ssize_t attach_store(struct device *dev, struct device_attribute *attr,
 		spin_unlock_irqrestore(&vhci->lock, flags);
 
 		sockfd_put(socket);
+<<<<<<< HEAD
+=======
+		kthread_stop_put(tcp_rx);
+		kthread_stop_put(tcp_tx);
+>>>>>>> origin/android16-base
 
 		dev_err(dev, "port %d already used\n", rhport);
 		/*
 		 * Will be retried from userspace
 		 * if there's another free port.
 		 */
+<<<<<<< HEAD
 		return -EBUSY;
+=======
+		err = -EBUSY;
+		goto unlock_mutex;
+>>>>>>> origin/android16-base
 	}
 
 	dev_info(dev, "pdev(%u) rhport(%u) sockfd(%d)\n",
@@ -382,18 +451,40 @@ static ssize_t attach_store(struct device *dev, struct device_attribute *attr,
 	vdev->speed         = speed;
 	vdev->ud.sockfd     = sockfd;
 	vdev->ud.tcp_socket = socket;
+<<<<<<< HEAD
+=======
+	vdev->ud.tcp_rx     = tcp_rx;
+	vdev->ud.tcp_tx     = tcp_tx;
+>>>>>>> origin/android16-base
 	vdev->ud.status     = VDEV_ST_NOTASSIGNED;
 
 	spin_unlock(&vdev->ud.lock);
 	spin_unlock_irqrestore(&vhci->lock, flags);
 	/* end the lock */
 
+<<<<<<< HEAD
 	vdev->ud.tcp_rx = kthread_get_run(vhci_rx_loop, &vdev->ud, "vhci_rx");
 	vdev->ud.tcp_tx = kthread_get_run(vhci_tx_loop, &vdev->ud, "vhci_tx");
 
 	rh_port_connect(vdev, speed);
 
 	return count;
+=======
+	wake_up_process(vdev->ud.tcp_rx);
+	wake_up_process(vdev->ud.tcp_tx);
+
+	rh_port_connect(vdev, speed);
+
+	dev_info(dev, "Device attached\n");
+
+	mutex_unlock(&vdev->ud.sysfs_lock);
+
+	return count;
+
+unlock_mutex:
+	mutex_unlock(&vdev->ud.sysfs_lock);
+	return err;
+>>>>>>> origin/android16-base
 }
 static DEVICE_ATTR_WO(attach);
 

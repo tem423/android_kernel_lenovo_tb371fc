@@ -30,10 +30,17 @@
 	status = "okay";
 };
 
+<<<<<<< HEAD
 &nand {
 	status = "okay";
 
 	nandcs@0 {
+=======
+&nand_controller {
+	status = "okay";
+
+	nand@0 {
+>>>>>>> origin/android16-base
 		compatible = "brcm,nandcs";
 		reg = <0>;
 		nand-ecc-strength = <4>;

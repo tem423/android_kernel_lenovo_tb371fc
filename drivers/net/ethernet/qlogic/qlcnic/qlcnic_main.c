@@ -2508,6 +2508,10 @@ qlcnic_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		qlcnic_sriov_vf_register_map(ahw);
 		break;
 	default:
+<<<<<<< HEAD
+=======
+		err = -EINVAL;
+>>>>>>> origin/android16-base
 		goto err_out_free_hw_res;
 	}
 
@@ -2637,7 +2641,17 @@ qlcnic_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 			 "Device does not support MSI interrupts\n");
 
 	if (qlcnic_82xx_check(adapter)) {
+<<<<<<< HEAD
 		qlcnic_dcb_enable(adapter->dcb);
+=======
+		err = qlcnic_dcb_enable(adapter->dcb);
+		if (err) {
+			qlcnic_dcb_free(adapter->dcb);
+			dev_err(&pdev->dev, "Failed to enable DCB\n");
+			goto err_out_free_hw;
+		}
+
+>>>>>>> origin/android16-base
 		qlcnic_dcb_get_info(adapter->dcb);
 		err = qlcnic_setup_intr(adapter);
 
@@ -2707,6 +2721,10 @@ err_out_free_hw_res:
 	kfree(ahw);
 
 err_out_free_res:
+<<<<<<< HEAD
+=======
+	pci_disable_pcie_error_reporting(pdev);
+>>>>>>> origin/android16-base
 	pci_release_regions(pdev);
 
 err_out_disable_pdev:

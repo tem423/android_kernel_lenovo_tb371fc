@@ -21,6 +21,10 @@
 MODULE_DESCRIPTION("SHA1 secure hash using ARMv8 Crypto Extensions");
 MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
 MODULE_LICENSE("GPL v2");
+<<<<<<< HEAD
+=======
+MODULE_ALIAS_CRYPTO("sha1");
+>>>>>>> origin/android16-base
 
 struct sha1_ce_state {
 	struct sha1_state	sst;

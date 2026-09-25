@@ -75,6 +75,7 @@ EXPORT_SYMBOL_GPL(rtl8723_phy_set_bb_reg);
 
 u32 rtl8723_phy_calculate_bit_shift(u32 bitmask)
 {
+<<<<<<< HEAD
 	u32 i;
 
 	for (i = 0; i <= 31; i++) {
@@ -82,6 +83,11 @@ u32 rtl8723_phy_calculate_bit_shift(u32 bitmask)
 			break;
 	}
 	return i;
+=======
+	u32 i = ffs(bitmask);
+
+	return i ? i - 1 : 32;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(rtl8723_phy_calculate_bit_shift);
 

@@ -692,6 +692,12 @@ static bool pn533_target_type_a_is_valid(struct pn533_target_type_a *type_a,
 	if (PN533_TYPE_A_SEL_CASCADE(type_a->sel_res) != 0)
 		return false;
 
+<<<<<<< HEAD
+=======
+	if (type_a->nfcid_len > NFC_NFCID1_MAXSIZE)
+		return false;
+
+>>>>>>> origin/android16-base
 	return true;
 }
 
@@ -1302,6 +1308,11 @@ static int pn533_poll_dep_complete(struct pn533 *dev, void *arg,
 	if (IS_ERR(resp))
 		return PTR_ERR(resp);
 
+<<<<<<< HEAD
+=======
+	memset(&nfc_target, 0, sizeof(struct nfc_target));
+
+>>>>>>> origin/android16-base
 	rsp = (struct pn533_cmd_jump_dep_response *)resp->data;
 
 	rc = rsp->status & PN533_CMD_RET_MASK;
@@ -1783,6 +1794,11 @@ static int pn533_in_dep_link_up_complete(struct pn533 *dev, void *arg,
 
 		dev_dbg(dev->dev, "Creating new target\n");
 
+<<<<<<< HEAD
+=======
+		memset(&nfc_target, 0, sizeof(struct nfc_target));
+
+>>>>>>> origin/android16-base
 		nfc_target.supported_protocols = NFC_PROTO_NFC_DEP_MASK;
 		nfc_target.nfcid1_len = 10;
 		memcpy(nfc_target.nfcid1, rsp->nfcid3t, nfc_target.nfcid1_len);
@@ -2081,7 +2097,11 @@ static int pn533_fill_fragment_skbs(struct pn533 *dev, struct sk_buff *skb)
 		frag = pn533_alloc_skb(dev, frag_size);
 		if (!frag) {
 			skb_queue_purge(&dev->fragment_skb);
+<<<<<<< HEAD
 			break;
+=======
+			return -ENOMEM;
+>>>>>>> origin/android16-base
 		}
 
 		if (!dev->tgt_mode) {
@@ -2151,7 +2171,11 @@ static int pn533_transceive(struct nfc_dev *nfc_dev,
 		/* jumbo frame ? */
 		if (skb->len > PN533_CMD_DATAEXCH_DATA_MAXLEN) {
 			rc = pn533_fill_fragment_skbs(dev, skb);
+<<<<<<< HEAD
 			if (rc <= 0)
+=======
+			if (rc < 0)
+>>>>>>> origin/android16-base
 				goto error;
 
 			skb = skb_dequeue(&dev->fragment_skb);
@@ -2223,7 +2247,11 @@ static int pn533_tm_send(struct nfc_dev *nfc_dev, struct sk_buff *skb)
 	/* let's split in multiple chunks if size's too big */
 	if (skb->len > PN533_CMD_DATAEXCH_DATA_MAXLEN) {
 		rc = pn533_fill_fragment_skbs(dev, skb);
+<<<<<<< HEAD
 		if (rc <= 0)
+=======
+		if (rc < 0)
+>>>>>>> origin/android16-base
 			goto error;
 
 		/* get the first skb */

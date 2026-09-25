@@ -312,9 +312,14 @@ static void tlan_remove_one(struct pci_dev *pdev)
 	pci_release_regions(pdev);
 #endif
 
+<<<<<<< HEAD
 	free_netdev(dev);
 
 	cancel_work_sync(&priv->tlan_tqueue);
+=======
+	cancel_work_sync(&priv->tlan_tqueue);
+	free_netdev(dev);
+>>>>>>> origin/android16-base
 }
 
 static void tlan_start(struct net_device *dev)
@@ -671,7 +676,10 @@ module_exit(tlan_exit);
 static void  __init tlan_eisa_probe(void)
 {
 	long	ioaddr;
+<<<<<<< HEAD
 	int	rc = -ENODEV;
+=======
+>>>>>>> origin/android16-base
 	int	irq;
 	u16	device_id;
 
@@ -736,8 +744,12 @@ static void  __init tlan_eisa_probe(void)
 
 
 		/* Setup the newly found eisa adapter */
+<<<<<<< HEAD
 		rc = tlan_probe1(NULL, ioaddr, irq,
 				 12, NULL);
+=======
+		tlan_probe1(NULL, ioaddr, irq, 12, NULL);
+>>>>>>> origin/android16-base
 		continue;
 
 out:

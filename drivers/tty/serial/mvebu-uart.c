@@ -72,6 +72,10 @@
 #define  BRDV_BAUD_MASK         0x3FF
 
 #define UART_OSAMP		0x14
+<<<<<<< HEAD
+=======
+#define  OSAMP_DEFAULT_DIVISOR	16
+>>>>>>> origin/android16-base
 
 #define MVEBU_NR_UARTS		2
 
@@ -162,7 +166,11 @@ static unsigned int mvebu_uart_tx_empty(struct uart_port *port)
 	st = readl(port->membase + UART_STAT);
 	spin_unlock_irqrestore(&port->lock, flags);
 
+<<<<<<< HEAD
 	return (st & STAT_TX_FIFO_EMP) ? TIOCSER_TEMT : 0;
+=======
+	return (st & STAT_TX_EMP) ? TIOCSER_TEMT : 0;
+>>>>>>> origin/android16-base
 }
 
 static unsigned int mvebu_uart_get_mctrl(struct uart_port *port)
@@ -236,6 +244,10 @@ static void mvebu_uart_rx_chars(struct uart_port *port, unsigned int status)
 	struct tty_port *tport = &port->state->port;
 	unsigned char ch = 0;
 	char flag = 0;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 
 	do {
 		if (status & STAT_RX_RDY(port)) {
@@ -248,6 +260,19 @@ static void mvebu_uart_rx_chars(struct uart_port *port, unsigned int status)
 				port->icount.parity++;
 		}
 
+<<<<<<< HEAD
+=======
+		/*
+		 * For UART2, error bits are not cleared on buffer read.
+		 * This causes interrupt loop and system hang.
+		 */
+		if (IS_EXTENDED(port) && (status & STAT_BRK_ERR)) {
+			ret = readl(port->membase + UART_STAT);
+			ret |= STAT_BRK_ERR;
+			writel(ret, port->membase + UART_STAT);
+		}
+
+>>>>>>> origin/android16-base
 		if (status & STAT_BRK_DET) {
 			port->icount.brk++;
 			status &= ~(STAT_FRM_ERR | STAT_PAR_ERR);
@@ -441,6 +466,7 @@ static void mvebu_uart_shutdown(struct uart_port *port)
 	}
 }
 
+<<<<<<< HEAD
 static int mvebu_uart_baud_rate_set(struct uart_port *port, unsigned int baud)
 {
 	struct mvebu_uart *mvuart = to_mvuart(port);
@@ -464,6 +490,36 @@ static int mvebu_uart_baud_rate_set(struct uart_port *port, unsigned int baud)
 	writel(brdv, port->membase + UART_BRDV);
 
 	return 0;
+=======
+static unsigned int mvebu_uart_baud_rate_set(struct uart_port *port, unsigned int baud)
+{
+	struct mvebu_uart *mvuart = to_mvuart(port);
+	unsigned int d_divisor, m_divisor;
+	u32 brdv;
+
+	if (IS_ERR(mvuart->clk))
+		return 0;
+
+	/*
+	 * The baudrate is derived from the UART clock thanks to two divisors:
+	 *   > D ("baud generator"): can divide the clock from 2 to 2^10 - 1.
+	 *   > M ("fractional divisor"): allows a better accuracy for
+	 *     baudrates higher than 230400.
+	 *
+	 * As the derivation of M is rather complicated, the code sticks to its
+	 * default value (x16) when all the prescalers are zeroed, and only
+	 * makes use of D to configure the desired baudrate.
+	 */
+	m_divisor = OSAMP_DEFAULT_DIVISOR;
+	d_divisor = DIV_ROUND_CLOSEST(port->uartclk, baud * m_divisor);
+
+	brdv = readl(port->membase + UART_BRDV);
+	brdv &= ~BRDV_BAUD_MASK;
+	brdv |= d_divisor;
+	writel(brdv, port->membase + UART_BRDV);
+
+	return DIV_ROUND_CLOSEST(port->uartclk, d_divisor * m_divisor);
+>>>>>>> origin/android16-base
 }
 
 static void mvebu_uart_set_termios(struct uart_port *port,
@@ -471,7 +527,11 @@ static void mvebu_uart_set_termios(struct uart_port *port,
 				   struct ktermios *old)
 {
 	unsigned long flags;
+<<<<<<< HEAD
 	unsigned int baud;
+=======
+	unsigned int baud, min_baud, max_baud;
+>>>>>>> origin/android16-base
 
 	spin_lock_irqsave(&port->lock, flags);
 
@@ -490,11 +550,16 @@ static void mvebu_uart_set_termios(struct uart_port *port,
 		port->ignore_status_mask |= STAT_RX_RDY(port) | STAT_BRK_ERR;
 
 	/*
+<<<<<<< HEAD
+=======
+	 * Maximal divisor is 1023 * 16 when using default (x16) scheme.
+>>>>>>> origin/android16-base
 	 * Maximum achievable frequency with simple baudrate divisor is 230400.
 	 * Since the error per bit frame would be of more than 15%, achieving
 	 * higher frequencies would require to implement the fractional divisor
 	 * feature.
 	 */
+<<<<<<< HEAD
 	baud = uart_get_baud_rate(port, termios, old, 0, 230400);
 	if (mvebu_uart_baud_rate_set(port, baud)) {
 		/* No clock available, baudrate cannot be changed */
@@ -504,6 +569,17 @@ static void mvebu_uart_set_termios(struct uart_port *port,
 		tty_termios_encode_baud_rate(termios, baud, baud);
 		uart_update_timeout(port, termios->c_cflag, baud);
 	}
+=======
+	min_baud = DIV_ROUND_UP(port->uartclk, 1023 * 16);
+	max_baud = 230400;
+
+	baud = uart_get_baud_rate(port, termios, old, min_baud, max_baud);
+	baud = mvebu_uart_baud_rate_set(port, baud);
+
+	/* In case baudrate cannot be changed, report previous old value */
+	if (baud == 0 && old)
+		baud = tty_termios_baud_rate(old);
+>>>>>>> origin/android16-base
 
 	/* Only the following flag changes are supported */
 	if (old) {
@@ -514,6 +590,14 @@ static void mvebu_uart_set_termios(struct uart_port *port,
 		termios->c_cflag |= CS8;
 	}
 
+<<<<<<< HEAD
+=======
+	if (baud != 0) {
+		tty_termios_encode_baud_rate(termios, baud, baud);
+		uart_update_timeout(port, termios->c_cflag, baud);
+	}
+
+>>>>>>> origin/android16-base
 	spin_unlock_irqrestore(&port->lock, flags);
 }
 
@@ -637,6 +721,17 @@ static void wait_for_xmitr(struct uart_port *port)
 				  (val & STAT_TX_RDY(port)), 1, 10000);
 }
 
+<<<<<<< HEAD
+=======
+static void wait_for_xmite(struct uart_port *port)
+{
+	u32 val;
+
+	readl_poll_timeout_atomic(port->membase + UART_STAT, val,
+				  (val & STAT_TX_EMP), 1, 10000);
+}
+
+>>>>>>> origin/android16-base
 static void mvebu_uart_console_putchar(struct uart_port *port, int ch)
 {
 	wait_for_xmitr(port);
@@ -664,7 +759,11 @@ static void mvebu_uart_console_write(struct console *co, const char *s,
 
 	uart_console_write(port, s, count, mvebu_uart_console_putchar);
 
+<<<<<<< HEAD
 	wait_for_xmitr(port);
+=======
+	wait_for_xmite(port);
+>>>>>>> origin/android16-base
 
 	if (ier)
 		writel(ier, port->membase + UART_CTRL(port));
@@ -799,9 +898,12 @@ static int mvebu_uart_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	if (!match)
 		return -ENODEV;
 
+=======
+>>>>>>> origin/android16-base
 	/* Assume that all UART ports have a DT alias or none has */
 	id = of_alias_get_id(pdev->dev.of_node, "serial");
 	if (!pdev->dev.of_node || id < 0)

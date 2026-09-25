@@ -1353,6 +1353,7 @@ sunvnet_start_xmit_common(struct sk_buff *skb, struct net_device *dev,
 		if (vio_version_after_eq(&port->vio, 1, 3))
 			localmtu -= VLAN_HLEN;
 
+<<<<<<< HEAD
 		if (skb->protocol == htons(ETH_P_IP)) {
 			struct flowi4 fl4;
 			struct rtable *rt = NULL;
@@ -1374,6 +1375,14 @@ sunvnet_start_xmit_common(struct sk_buff *skb, struct net_device *dev,
 #if IS_ENABLED(CONFIG_IPV6)
 		else if (skb->protocol == htons(ETH_P_IPV6))
 			icmpv6_send(skb, ICMPV6_PKT_TOOBIG, 0, localmtu);
+=======
+		if (skb->protocol == htons(ETH_P_IP))
+			icmp_ndo_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
+				      htonl(localmtu));
+#if IS_ENABLED(CONFIG_IPV6)
+		else if (skb->protocol == htons(ETH_P_IPV6))
+			icmpv6_ndo_send(skb, ICMPV6_PKT_TOOBIG, 0, localmtu);
+>>>>>>> origin/android16-base
 #endif
 		goto out_dropped;
 	}

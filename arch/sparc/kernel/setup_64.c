@@ -690,7 +690,10 @@ void __init setup_arch(char **cmdline_p)
 
 	paging_init();
 	init_sparc64_elf_hwcap();
+<<<<<<< HEAD
 	smp_fill_in_cpu_possible_map();
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Once the OF device tree and MDESC have been setup and nr_cpus has
 	 * been parsed, we know the list of possible cpus.  Therefore we can

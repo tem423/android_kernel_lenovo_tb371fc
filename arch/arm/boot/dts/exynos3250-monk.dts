@@ -188,7 +188,11 @@
 	s2mps14_pmic@66 {
 		compatible = "samsung,s2mps14-pmic";
 		interrupt-parent = <&gpx0>;
+<<<<<<< HEAD
 		interrupts = <7 IRQ_TYPE_NONE>;
+=======
+		interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
+>>>>>>> origin/android16-base
 		reg = <0x66>;
 		wakeup-source;
 

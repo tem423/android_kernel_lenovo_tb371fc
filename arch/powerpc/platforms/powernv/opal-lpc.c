@@ -400,6 +400,10 @@ void __init opal_lpc_init(void)
 		if (!of_get_property(np, "primary", NULL))
 			continue;
 		opal_lpc_chip_id = of_get_ibm_chip_id(np);
+<<<<<<< HEAD
+=======
+		of_node_put(np);
+>>>>>>> origin/android16-base
 		break;
 	}
 	if (opal_lpc_chip_id < 0)

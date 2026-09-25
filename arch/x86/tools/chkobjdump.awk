@@ -10,6 +10,10 @@ BEGIN {
 
 /^GNU objdump/ {
 	verstr = ""
+<<<<<<< HEAD
+=======
+	gsub(/\(.*\)/, "");
+>>>>>>> origin/android16-base
 	for (i = 3; i <= NF; i++)
 		if (match($(i), "^[0-9]")) {
 			verstr = $(i);

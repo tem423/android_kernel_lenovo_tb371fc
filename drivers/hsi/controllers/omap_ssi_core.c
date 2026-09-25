@@ -389,7 +389,11 @@ static int ssi_add_controller(struct hsi_controller *ssi,
 
 	err = ida_simple_get(&platform_omap_ssi_ida, 0, 0, GFP_KERNEL);
 	if (err < 0)
+<<<<<<< HEAD
 		goto out_err;
+=======
+		return err;
+>>>>>>> origin/android16-base
 	ssi->id = err;
 
 	ssi->owner = THIS_MODULE;
@@ -538,8 +542,15 @@ static int ssi_probe(struct platform_device *pd)
 	platform_set_drvdata(pd, ssi);
 
 	err = ssi_add_controller(ssi, pd);
+<<<<<<< HEAD
 	if (err < 0)
 		goto out1;
+=======
+	if (err < 0) {
+		hsi_put_controller(ssi);
+		goto out1;
+	}
+>>>>>>> origin/android16-base
 
 	pm_runtime_enable(&pd->dev);
 
@@ -560,6 +571,10 @@ static int ssi_probe(struct platform_device *pd)
 		if (!childpdev) {
 			err = -ENODEV;
 			dev_err(&pd->dev, "failed to create ssi controller port\n");
+<<<<<<< HEAD
+=======
+			of_node_put(child);
+>>>>>>> origin/android16-base
 			goto out3;
 		}
 	}
@@ -571,9 +586,15 @@ out3:
 	device_for_each_child(&pd->dev, NULL, ssi_remove_ports);
 out2:
 	ssi_remove_controller(ssi);
+<<<<<<< HEAD
 out1:
 	platform_set_drvdata(pd, NULL);
 	pm_runtime_disable(&pd->dev);
+=======
+	pm_runtime_disable(&pd->dev);
+out1:
+	platform_set_drvdata(pd, NULL);
+>>>>>>> origin/android16-base
 
 	return err;
 }
@@ -664,7 +685,17 @@ static int __init ssi_init(void) {
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	return platform_driver_register(&ssi_port_pdriver);
+=======
+	ret = platform_driver_register(&ssi_port_pdriver);
+	if (ret) {
+		platform_driver_unregister(&ssi_pdriver);
+		return ret;
+	}
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 module_init(ssi_init);
 

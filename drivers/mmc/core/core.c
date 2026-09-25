@@ -52,6 +52,7 @@
 #include "sd_ops.h"
 #include "sdio_ops.h"
 
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 #include "../host/sdhci-msm.h"
@@ -60,6 +61,8 @@
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
 
+=======
+>>>>>>> origin/android16-base
 /* The max erase timeout, used when host->max_busy_timeout isn't specified */
 #define MMC_ERASE_TIMEOUT_MS	(60 * 1000) /* 60 s */
 
@@ -341,8 +344,12 @@ static bool mmc_is_valid_state_for_clk_scaling(struct mmc_host *host)
 	 * this mode.
 	 */
 	if (!card || (mmc_card_mmc(card) &&
+<<<<<<< HEAD
 			(card->part_curr == EXT_CSD_PART_CONFIG_ACC_RPMB ||
 			mmc_card_doing_bkops(card))))
+=======
+			(card->part_curr == EXT_CSD_PART_CONFIG_ACC_RPMB)))
+>>>>>>> origin/android16-base
 		return false;
 
 	if (mmc_send_status(card, &status)) {
@@ -544,6 +551,7 @@ static int mmc_devfreq_set_target(struct device *dev,
 
 	pr_debug("%s: target freq = %lu (%s)\n", mmc_hostname(host),
 		*freq, current->comm);
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 	{
@@ -555,6 +563,9 @@ static int mmc_devfreq_set_target(struct device *dev,
 	}
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+=======
+
+>>>>>>> origin/android16-base
 	spin_lock_irqsave(&clk_scaling->lock, flags);
 	if (clk_scaling->curr_freq == *freq ||
 		clk_scaling->skip_clk_scale_freq_update) {
@@ -1238,6 +1249,7 @@ static int mmc_mrq_prep(struct mmc_host *host, struct mmc_request *mrq)
 int mmc_start_request(struct mmc_host *host, struct mmc_request *mrq)
 {
 	int err;
+<<<<<<< HEAD
 	#ifdef CONFIG_MMC_SDHCI_MSM_BH201
 	struct sdhci_host * host_sdhci = mmc_priv(host);
 	init_completion(&mrq->cmd_completion);
@@ -1250,6 +1262,12 @@ int mmc_start_request(struct mmc_host *host, struct mmc_request *mrq)
 	}
 	//Add by ZhaoZiqiang for timeout controller register setting debug end
 	#endif
+=======
+
+	init_completion(&mrq->cmd_completion);
+
+	mmc_retune_hold(host);
+>>>>>>> origin/android16-base
 
 	if (mmc_card_removed(host->card))
 		return -ENOMEDIUM;
@@ -1481,22 +1499,43 @@ int mmc_cqe_recovery(struct mmc_host *host)
 	host->cqe_ops->cqe_recovery_start(host);
 
 	memset(&cmd, 0, sizeof(cmd));
+<<<<<<< HEAD
 	cmd.opcode       = MMC_STOP_TRANSMISSION,
 	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC,
 	cmd.flags       &= ~MMC_RSP_CRC; /* Ignore CRC */
 	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT,
 	mmc_wait_for_cmd(host, &cmd, 0);
+=======
+	cmd.opcode       = MMC_STOP_TRANSMISSION;
+	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC;
+	cmd.flags       &= ~MMC_RSP_CRC; /* Ignore CRC */
+	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT;
+	mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
+
+	mmc_poll_for_busy(host->card, MMC_CQE_RECOVERY_TIMEOUT, true, true);
+>>>>>>> origin/android16-base
 
 	memset(&cmd, 0, sizeof(cmd));
 	cmd.opcode       = MMC_CMDQ_TASK_MGMT;
 	cmd.arg          = 1; /* Discard entire queue */
 	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC;
 	cmd.flags       &= ~MMC_RSP_CRC; /* Ignore CRC */
+<<<<<<< HEAD
 	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT,
 	err = mmc_wait_for_cmd(host, &cmd, 0);
 
 	host->cqe_ops->cqe_recovery_finish(host);
 
+=======
+	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT;
+	err = mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
+
+	host->cqe_ops->cqe_recovery_finish(host);
+
+	if (err)
+		err = mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
+
+>>>>>>> origin/android16-base
 	mmc_retune_release(host);
 
 	return err;
@@ -1929,11 +1968,22 @@ int mmc_execute_tuning(struct mmc_card *card)
 
 	err = host->ops->execute_tuning(host, opcode);
 
+<<<<<<< HEAD
 	if (err)
 		pr_err("%s: tuning execution failed: %d\n",
 			mmc_hostname(host), err);
 	else
 		mmc_retune_enable(host);
+=======
+	if (err) {
+		pr_err("%s: tuning execution failed: %d\n",
+			mmc_hostname(host), err);
+	} else {
+		host->retune_now = 0;
+		host->need_retune = 0;
+		mmc_retune_enable(host);
+	}
+>>>>>>> origin/android16-base
 
 	return err;
 }
@@ -2407,7 +2457,17 @@ u32 mmc_select_voltage(struct mmc_host *host, u32 ocr)
 		mmc_power_cycle(host, ocr);
 	} else {
 		bit = fls(ocr) - 1;
+<<<<<<< HEAD
 		ocr &= 3 << bit;
+=======
+		/*
+		 * The bit variable represents the highest voltage bit set in
+		 * the OCR register.
+		 * To keep a range of 2 values (e.g. 3.2V/3.3V and 3.3V/3.4V),
+		 * we must shift the mask '3' with (bit - 1).
+		 */
+		ocr &= 3 << (bit - 1);
+>>>>>>> origin/android16-base
 		if (bit != host->ios.vdd)
 			dev_warn(mmc_dev(host), "exceeding card's volts\n");
 	}
@@ -2490,7 +2550,11 @@ int mmc_set_uhs_voltage(struct mmc_host *host, u32 ocr)
 
 	err = mmc_wait_for_cmd(host, &cmd, 0);
 	if (err)
+<<<<<<< HEAD
 		return err;
+=======
+		goto power_cycle;
+>>>>>>> origin/android16-base
 
 	if (!mmc_host_is_spi(host) && (cmd.resp[0] & R1_ERROR))
 		return -EIO;
@@ -2739,10 +2803,18 @@ int mmc_resume_bus(struct mmc_host *host)
 		}
 		if (host->card->ext_csd.cmdq_en && !host->cqe_enabled) {
 			err = host->cqe_ops->cqe_enable(host, host->card);
+<<<<<<< HEAD
 			host->cqe_enabled = true;
 			if (err)
 				pr_err("%s: %s: cqe enable failed: %d\n",
 				       mmc_hostname(host), __func__, err);
+=======
+			if (err)
+				pr_err("%s: %s: cqe enable failed: %d\n",
+				       mmc_hostname(host), __func__, err);
+			else
+				host->cqe_enabled = true;
+>>>>>>> origin/android16-base
 		}
 	}
 

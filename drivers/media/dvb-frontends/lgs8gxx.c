@@ -1053,7 +1053,11 @@ error_out:
 	return NULL;
 
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(lgs8gxx_attach);
+=======
+EXPORT_SYMBOL_GPL(lgs8gxx_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("Legend Silicon LGS8913/LGS8GXX DMB-TH demodulator driver");
 MODULE_AUTHOR("David T. L. Wong <davidtlwong@gmail.com>");

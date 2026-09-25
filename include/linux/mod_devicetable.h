@@ -299,7 +299,11 @@ struct pcmcia_device_id {
 #define INPUT_DEVICE_ID_LED_MAX		0x0f
 #define INPUT_DEVICE_ID_SND_MAX		0x07
 #define INPUT_DEVICE_ID_FF_MAX		0x7f
+<<<<<<< HEAD
 #define INPUT_DEVICE_ID_SW_MAX		0x20
+=======
+#define INPUT_DEVICE_ID_SW_MAX		0x10
+>>>>>>> origin/android16-base
 #define INPUT_DEVICE_ID_PROP_MAX	0x1f
 
 #define INPUT_DEVICE_ID_MATCH_BUS	1
@@ -660,9 +664,13 @@ struct x86_cpu_id {
 	__u16 steppings;
 };
 
+<<<<<<< HEAD
 #define X86_FEATURE_MATCH(x) \
 	{ X86_VENDOR_ANY, X86_FAMILY_ANY, X86_MODEL_ANY, x }
 
+=======
+/* Wild cards for x86_cpu_id::vendor, family, model and feature */
+>>>>>>> origin/android16-base
 #define X86_VENDOR_ANY 0xffff
 #define X86_FAMILY_ANY 0
 #define X86_MODEL_ANY  0

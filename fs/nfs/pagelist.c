@@ -987,17 +987,29 @@ static void nfs_pageio_doio(struct nfs_pageio_descriptor *desc)
 {
 	struct nfs_pgio_mirror *mirror = nfs_pgio_current_mirror(desc);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 	if (!list_empty(&mirror->pg_list)) {
 		int error = desc->pg_ops->pg_doio(desc);
 		if (error < 0)
 			desc->pg_error = error;
+<<<<<<< HEAD
 		else
 			mirror->pg_bytes_written += mirror->pg_count;
 	}
 	if (list_empty(&mirror->pg_list)) {
 		mirror->pg_count = 0;
 		mirror->pg_base = 0;
+=======
+		if (list_empty(&mirror->pg_list)) {
+			mirror->pg_bytes_written += mirror->pg_count;
+			mirror->pg_count = 0;
+			mirror->pg_base = 0;
+			mirror->pg_recoalesce = 0;
+		}
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -1095,7 +1107,10 @@ static int nfs_do_recoalesce(struct nfs_pageio_descriptor *desc)
 
 	do {
 		list_splice_init(&mirror->pg_list, &head);
+<<<<<<< HEAD
 		mirror->pg_bytes_written -= mirror->pg_count;
+=======
+>>>>>>> origin/android16-base
 		mirror->pg_count = 0;
 		mirror->pg_base = 0;
 		mirror->pg_recoalesce = 0;

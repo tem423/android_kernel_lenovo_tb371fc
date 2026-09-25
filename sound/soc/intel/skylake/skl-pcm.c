@@ -1450,6 +1450,10 @@ int skl_platform_register(struct device *dev)
 		dais = krealloc(skl->dais, sizeof(skl_fe_dai) +
 				sizeof(skl_platform_dai), GFP_KERNEL);
 		if (!dais) {
+<<<<<<< HEAD
+=======
+			kfree(skl->dais);
+>>>>>>> origin/android16-base
 			ret = -ENOMEM;
 			goto err;
 		}
@@ -1462,8 +1466,15 @@ int skl_platform_register(struct device *dev)
 
 	ret = devm_snd_soc_register_component(dev, &skl_component,
 					 skl->dais, num_dais);
+<<<<<<< HEAD
 	if (ret)
 		dev_err(dev, "soc component registration failed %d\n", ret);
+=======
+	if (ret) {
+		kfree(skl->dais);
+		dev_err(dev, "soc component registration failed %d\n", ret);
+	}
+>>>>>>> origin/android16-base
 err:
 	return ret;
 }

@@ -189,7 +189,13 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 {
 	struct rk_i2s_dev *i2s = to_info(cpu_dai);
 	unsigned int mask = 0, val = 0;
+<<<<<<< HEAD
 
+=======
+	int ret = 0;
+
+	pm_runtime_get_sync(cpu_dai->dev);
+>>>>>>> origin/android16-base
 	mask = I2S_CKR_MSS_MASK;
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBS_CFS:
@@ -202,7 +208,12 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 		i2s->is_master_mode = false;
 		break;
 	default:
+<<<<<<< HEAD
 		return -EINVAL;
+=======
+		ret = -EINVAL;
+		goto err_pm_put;
+>>>>>>> origin/android16-base
 	}
 
 	regmap_update_bits(i2s->regmap, I2S_CKR, mask, val);
@@ -216,7 +227,12 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 		val = I2S_CKR_CKP_POS;
 		break;
 	default:
+<<<<<<< HEAD
 		return -EINVAL;
+=======
+		ret = -EINVAL;
+		goto err_pm_put;
+>>>>>>> origin/android16-base
 	}
 
 	regmap_update_bits(i2s->regmap, I2S_CKR, mask, val);
@@ -232,6 +248,7 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 	case SND_SOC_DAIFMT_I2S:
 		val = I2S_TXCR_IBM_NORMAL;
 		break;
+<<<<<<< HEAD
 	case SND_SOC_DAIFMT_DSP_A: /* PCM no delay mode */
 		val = I2S_TXCR_TFS_PCM;
 		break;
@@ -240,6 +257,17 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 		break;
 	default:
 		return -EINVAL;
+=======
+	case SND_SOC_DAIFMT_DSP_A: /* PCM delay 1 bit mode */
+		val = I2S_TXCR_TFS_PCM | I2S_TXCR_PBM_MODE(1);
+		break;
+	case SND_SOC_DAIFMT_DSP_B: /* PCM no delay mode */
+		val = I2S_TXCR_TFS_PCM;
+		break;
+	default:
+		ret = -EINVAL;
+		goto err_pm_put;
+>>>>>>> origin/android16-base
 	}
 
 	regmap_update_bits(i2s->regmap, I2S_TXCR, mask, val);
@@ -255,6 +283,7 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 	case SND_SOC_DAIFMT_I2S:
 		val = I2S_RXCR_IBM_NORMAL;
 		break;
+<<<<<<< HEAD
 	case SND_SOC_DAIFMT_DSP_A: /* PCM no delay mode */
 		val = I2S_RXCR_TFS_PCM;
 		break;
@@ -263,11 +292,29 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 		break;
 	default:
 		return -EINVAL;
+=======
+	case SND_SOC_DAIFMT_DSP_A: /* PCM delay 1 bit mode */
+		val = I2S_RXCR_TFS_PCM | I2S_RXCR_PBM_MODE(1);
+		break;
+	case SND_SOC_DAIFMT_DSP_B: /* PCM no delay mode */
+		val = I2S_RXCR_TFS_PCM;
+		break;
+	default:
+		ret = -EINVAL;
+		goto err_pm_put;
+>>>>>>> origin/android16-base
 	}
 
 	regmap_update_bits(i2s->regmap, I2S_RXCR, mask, val);
 
+<<<<<<< HEAD
 	return 0;
+=======
+err_pm_put:
+	pm_runtime_put(cpu_dai->dev);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int rockchip_i2s_hw_params(struct snd_pcm_substream *substream,

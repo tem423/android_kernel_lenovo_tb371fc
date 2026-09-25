@@ -516,11 +516,16 @@ static ssize_t lio_target_nacl_info_show(struct config_item *item, char *page)
 	spin_lock_bh(&se_nacl->nacl_sess_lock);
 	se_sess = se_nacl->nacl_sess;
 	if (!se_sess) {
+<<<<<<< HEAD
 		rb += sprintf(page+rb, "No active iSCSI Session for Initiator"
+=======
+		rb += sysfs_emit_at(page, rb, "No active iSCSI Session for Initiator"
+>>>>>>> origin/android16-base
 			" Endpoint: %s\n", se_nacl->initiatorname);
 	} else {
 		sess = se_sess->fabric_sess_ptr;
 
+<<<<<<< HEAD
 		rb += sprintf(page+rb, "InitiatorName: %s\n",
 			sess->sess_ops->InitiatorName);
 		rb += sprintf(page+rb, "InitiatorAlias: %s\n",
@@ -551,26 +556,72 @@ static ssize_t lio_target_nacl_info_show(struct config_item *item, char *page)
 			break;
 		default:
 			rb += sprintf(page+rb, "ERROR: Unknown Session"
+=======
+		rb += sysfs_emit_at(page, rb, "InitiatorName: %s\n",
+			sess->sess_ops->InitiatorName);
+		rb += sysfs_emit_at(page, rb, "InitiatorAlias: %s\n",
+			sess->sess_ops->InitiatorAlias);
+
+		rb += sysfs_emit_at(page, rb,
+			      "LIO Session ID: %u   ISID: 0x%6ph  TSIH: %hu  ",
+			      sess->sid, sess->isid, sess->tsih);
+		rb += sysfs_emit_at(page, rb, "SessionType: %s\n",
+				(sess->sess_ops->SessionType) ?
+				"Discovery" : "Normal");
+		rb += sysfs_emit_at(page, rb, "Session State: ");
+		switch (sess->session_state) {
+		case TARG_SESS_STATE_FREE:
+			rb += sysfs_emit_at(page, rb, "TARG_SESS_FREE\n");
+			break;
+		case TARG_SESS_STATE_ACTIVE:
+			rb += sysfs_emit_at(page, rb, "TARG_SESS_STATE_ACTIVE\n");
+			break;
+		case TARG_SESS_STATE_LOGGED_IN:
+			rb += sysfs_emit_at(page, rb, "TARG_SESS_STATE_LOGGED_IN\n");
+			break;
+		case TARG_SESS_STATE_FAILED:
+			rb += sysfs_emit_at(page, rb, "TARG_SESS_STATE_FAILED\n");
+			break;
+		case TARG_SESS_STATE_IN_CONTINUE:
+			rb += sysfs_emit_at(page, rb, "TARG_SESS_STATE_IN_CONTINUE\n");
+			break;
+		default:
+			rb += sysfs_emit_at(page, rb, "ERROR: Unknown Session"
+>>>>>>> origin/android16-base
 					" State!\n");
 			break;
 		}
 
+<<<<<<< HEAD
 		rb += sprintf(page+rb, "---------------------[iSCSI Session"
 				" Values]-----------------------\n");
 		rb += sprintf(page+rb, "  CmdSN/WR  :  CmdSN/WC  :  ExpCmdSN"
 				"  :  MaxCmdSN  :     ITT    :     TTT\n");
 		max_cmd_sn = (u32) atomic_read(&sess->max_cmd_sn);
 		rb += sprintf(page+rb, " 0x%08x   0x%08x   0x%08x   0x%08x"
+=======
+		rb += sysfs_emit_at(page, rb, "---------------------[iSCSI Session"
+				" Values]-----------------------\n");
+		rb += sysfs_emit_at(page, rb, "  CmdSN/WR  :  CmdSN/WC  :  ExpCmdSN"
+				"  :  MaxCmdSN  :     ITT    :     TTT\n");
+		max_cmd_sn = (u32) atomic_read(&sess->max_cmd_sn);
+		rb += sysfs_emit_at(page, rb, " 0x%08x   0x%08x   0x%08x   0x%08x"
+>>>>>>> origin/android16-base
 				"   0x%08x   0x%08x\n",
 			sess->cmdsn_window,
 			(max_cmd_sn - sess->exp_cmd_sn) + 1,
 			sess->exp_cmd_sn, max_cmd_sn,
 			sess->init_task_tag, sess->targ_xfer_tag);
+<<<<<<< HEAD
 		rb += sprintf(page+rb, "----------------------[iSCSI"
+=======
+		rb += sysfs_emit_at(page, rb, "----------------------[iSCSI"
+>>>>>>> origin/android16-base
 				" Connections]-------------------------\n");
 
 		spin_lock(&sess->conn_lock);
 		list_for_each_entry(conn, &sess->sess_conn_list, conn_list) {
+<<<<<<< HEAD
 			rb += sprintf(page+rb, "CID: %hu  Connection"
 					" State: ", conn->cid);
 			switch (conn->conn_state) {
@@ -604,14 +655,56 @@ static ssize_t lio_target_nacl_info_show(struct config_item *item, char *page)
 				break;
 			default:
 				rb += sprintf(page+rb,
+=======
+			rb += sysfs_emit_at(page, rb, "CID: %hu  Connection"
+					" State: ", conn->cid);
+			switch (conn->conn_state) {
+			case TARG_CONN_STATE_FREE:
+				rb += sysfs_emit_at(page, rb,
+					"TARG_CONN_STATE_FREE\n");
+				break;
+			case TARG_CONN_STATE_XPT_UP:
+				rb += sysfs_emit_at(page, rb,
+					"TARG_CONN_STATE_XPT_UP\n");
+				break;
+			case TARG_CONN_STATE_IN_LOGIN:
+				rb += sysfs_emit_at(page, rb,
+					"TARG_CONN_STATE_IN_LOGIN\n");
+				break;
+			case TARG_CONN_STATE_LOGGED_IN:
+				rb += sysfs_emit_at(page, rb,
+					"TARG_CONN_STATE_LOGGED_IN\n");
+				break;
+			case TARG_CONN_STATE_IN_LOGOUT:
+				rb += sysfs_emit_at(page, rb,
+					"TARG_CONN_STATE_IN_LOGOUT\n");
+				break;
+			case TARG_CONN_STATE_LOGOUT_REQUESTED:
+				rb += sysfs_emit_at(page, rb,
+					"TARG_CONN_STATE_LOGOUT_REQUESTED\n");
+				break;
+			case TARG_CONN_STATE_CLEANUP_WAIT:
+				rb += sysfs_emit_at(page, rb,
+					"TARG_CONN_STATE_CLEANUP_WAIT\n");
+				break;
+			default:
+				rb += sysfs_emit_at(page, rb,
+>>>>>>> origin/android16-base
 					"ERROR: Unknown Connection State!\n");
 				break;
 			}
 
+<<<<<<< HEAD
 			rb += sprintf(page+rb, "   Address %pISc %s", &conn->login_sockaddr,
 				(conn->network_transport == ISCSI_TCP) ?
 				"TCP" : "SCTP");
 			rb += sprintf(page+rb, "  StatSN: 0x%08x\n",
+=======
+			rb += sysfs_emit_at(page, rb, "   Address %pISc %s", &conn->login_sockaddr,
+				(conn->network_transport == ISCSI_TCP) ?
+				"TCP" : "SCTP");
+			rb += sysfs_emit_at(page, rb, "  StatSN: 0x%08x\n",
+>>>>>>> origin/android16-base
 				conn->stat_sn);
 		}
 		spin_unlock(&sess->conn_lock);

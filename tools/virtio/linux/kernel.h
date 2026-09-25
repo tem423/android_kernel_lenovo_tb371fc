@@ -10,6 +10,10 @@
 #include <stdarg.h>
 
 #include <linux/compiler.h>
+<<<<<<< HEAD
+=======
+#include <linux/log2.h>
+>>>>>>> origin/android16-base
 #include <linux/types.h>
 #include <linux/printk.h>
 #include <linux/bug.h>

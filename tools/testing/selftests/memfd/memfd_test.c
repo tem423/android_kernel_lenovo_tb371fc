@@ -421,6 +421,10 @@ static void mfd_fail_write(int fd)
 			printf("mmap()+mprotect() didn't fail as expected\n");
 			abort();
 		}
+<<<<<<< HEAD
+=======
+		munmap(p, mfd_def_size);
+>>>>>>> origin/android16-base
 	}
 
 	/* verify PUNCH_HOLE fails */

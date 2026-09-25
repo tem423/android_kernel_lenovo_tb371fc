@@ -1726,7 +1726,11 @@ ssize_t ib_uverbs_open_qp(struct ib_uverbs_file *file,
 	struct ib_udata                 udata;
 	struct ib_uqp_object           *obj;
 	struct ib_xrcd		       *xrcd;
+<<<<<<< HEAD
 	struct ib_uobject	       *uninitialized_var(xrcd_uobj);
+=======
+	struct ib_uobject	       *xrcd_uobj;
+>>>>>>> origin/android16-base
 	struct ib_qp                   *qp;
 	struct ib_qp_open_attr          attr;
 	int ret;
@@ -2041,8 +2045,18 @@ static int modify_qp(struct ib_uverbs_file *file,
 		attr->path_mtu = cmd->base.path_mtu;
 	if (cmd->base.attr_mask & IB_QP_PATH_MIG_STATE)
 		attr->path_mig_state = cmd->base.path_mig_state;
+<<<<<<< HEAD
 	if (cmd->base.attr_mask & IB_QP_QKEY)
 		attr->qkey = cmd->base.qkey;
+=======
+	if (cmd->base.attr_mask & IB_QP_QKEY) {
+		if (cmd->base.qkey & IB_QP_SET_QKEY && !capable(CAP_NET_RAW)) {
+			ret = -EPERM;
+			goto release_qp;
+		}
+		attr->qkey = cmd->base.qkey;
+	}
+>>>>>>> origin/android16-base
 	if (cmd->base.attr_mask & IB_QP_RQ_PSN)
 		attr->rq_psn = cmd->base.rq_psn;
 	if (cmd->base.attr_mask & IB_QP_SQ_PSN)
@@ -3689,7 +3703,11 @@ static int __uverbs_create_xsrq(struct ib_uverbs_file *file,
 	struct ib_usrq_object           *obj;
 	struct ib_pd                    *pd;
 	struct ib_srq                   *srq;
+<<<<<<< HEAD
 	struct ib_uobject               *uninitialized_var(xrcd_uobj);
+=======
+	struct ib_uobject               *xrcd_uobj;
+>>>>>>> origin/android16-base
 	struct ib_srq_init_attr          attr;
 	int ret;
 	struct ib_device *ib_dev;

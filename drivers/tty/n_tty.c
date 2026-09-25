@@ -1408,7 +1408,11 @@ handle_newline:
 			put_tty_queue(c, ldata);
 			smp_store_release(&ldata->canon_head, ldata->read_head);
 			kill_fasync(&tty->fasync, SIGIO, POLL_IN);
+<<<<<<< HEAD
 			wake_up_interruptible_poll(&tty->read_wait, EPOLLIN);
+=======
+			wake_up_interruptible_poll(&tty->read_wait, EPOLLIN | EPOLLRDNORM);
+>>>>>>> origin/android16-base
 			return 0;
 		}
 	}
@@ -1689,7 +1693,11 @@ static void __receive_buf(struct tty_struct *tty, const unsigned char *cp,
 
 	if (read_cnt(ldata)) {
 		kill_fasync(&tty->fasync, SIGIO, POLL_IN);
+<<<<<<< HEAD
 		wake_up_interruptible_poll(&tty->read_wait, EPOLLIN);
+=======
+		wake_up_interruptible_poll(&tty->read_wait, EPOLLIN | EPOLLRDNORM);
+>>>>>>> origin/android16-base
 	}
 }
 

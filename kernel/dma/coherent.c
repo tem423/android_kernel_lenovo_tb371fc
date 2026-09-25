@@ -376,8 +376,15 @@ static int rmem_dma_device_init(struct reserved_mem *rmem, struct device *dev)
 static void rmem_dma_device_release(struct reserved_mem *rmem,
 				    struct device *dev)
 {
+<<<<<<< HEAD
 	if (dev)
 		dev->dma_mem = NULL;
+=======
+	if (dev) {
+		dev->dma_mem = NULL;
+		dev->dma_mem = NULL;
+	}
+>>>>>>> origin/android16-base
 }
 
 static const struct reserved_mem_ops rmem_dma_ops = {

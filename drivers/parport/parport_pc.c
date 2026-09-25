@@ -474,7 +474,11 @@ static size_t parport_pc_fifo_write_block_pio(struct parport *port,
 	const unsigned char *bufp = buf;
 	size_t left = length;
 	unsigned long expire = jiffies + port->physport->cad->timeout;
+<<<<<<< HEAD
 	const int fifo = FIFO(port);
+=======
+	const unsigned long fifo = FIFO(port);
+>>>>>>> origin/android16-base
 	int poll_for = 8; /* 80 usecs */
 	const struct parport_pc_private *priv = port->physport->private_data;
 	const int fifo_depth = priv->fifo_depth;
@@ -981,14 +985,19 @@ static void show_parconfig_smsc37c669(int io, int key)
 	outb(0xaa, io);
 
 	if (verbose_probing) {
+<<<<<<< HEAD
 		printk(KERN_INFO
 			"SMSC 37c669 LPT Config: cr_1=0x%02x, 4=0x%02x, "
 			"A=0x%2x, 23=0x%02x, 26=0x%02x, 27=0x%02x\n",
+=======
+		pr_info("SMSC 37c669 LPT Config: cr_1=0x%02x, 4=0x%02x, A=0x%2x, 23=0x%02x, 26=0x%02x, 27=0x%02x\n",
+>>>>>>> origin/android16-base
 			cr1, cr4, cra, cr23, cr26, cr27);
 
 		/* The documentation calls DMA and IRQ-Lines by letters, so
 		   the board maker can/will wire them
 		   appropriately/randomly...  G=reserved H=IDE-irq, */
+<<<<<<< HEAD
 		printk(KERN_INFO
 	"SMSC LPT Config: io=0x%04x, irq=%c, dma=%c, fifo threshold=%d\n",
 				cr23 * 4,
@@ -1003,6 +1012,20 @@ static void show_parconfig_smsc37c669(int io, int key)
 				(cr1 & 0x08) ? "Standard mode only (SPP)"
 					      : modes[cr4 & 0x03],
 				(cr4 & 0x40) ? "1.7" : "1.9");
+=======
+		pr_info("SMSC LPT Config: io=0x%04x, irq=%c, dma=%c, fifo threshold=%d\n",
+			cr23 * 4,
+			(cr27 & 0x0f) ? 'A' - 1 + (cr27 & 0x0f) : '-',
+			(cr26 & 0x0f) ? 'A' - 1 + (cr26 & 0x0f) : '-',
+			cra & 0x0f);
+		pr_info("SMSC LPT Config: enabled=%s power=%s\n",
+			(cr23 * 4 >= 0x100) ? "yes" : "no",
+			(cr1 & 4) ? "yes" : "no");
+		pr_info("SMSC LPT Config: Port mode=%s, EPP version =%s\n",
+			(cr1 & 0x08) ? "Standard mode only (SPP)"
+			: modes[cr4 & 0x03],
+			(cr4 & 0x40) ? "1.7" : "1.9");
+>>>>>>> origin/android16-base
 	}
 
 	/* Heuristics !  BIOS setup for this mainboard device limits
@@ -1012,7 +1035,11 @@ static void show_parconfig_smsc37c669(int io, int key)
 	if (cr23 * 4 >= 0x100) { /* if active */
 		s = find_free_superio();
 		if (s == NULL)
+<<<<<<< HEAD
 			printk(KERN_INFO "Super-IO: too many chips!\n");
+=======
+			pr_info("Super-IO: too many chips!\n");
+>>>>>>> origin/android16-base
 		else {
 			int d;
 			switch (cr23 * 4) {
@@ -1077,26 +1104,44 @@ static void show_parconfig_winbond(int io, int key)
 	outb(0xaa, io);
 
 	if (verbose_probing) {
+<<<<<<< HEAD
 		printk(KERN_INFO
     "Winbond LPT Config: cr_30=%02x 60,61=%02x%02x 70=%02x 74=%02x, f0=%02x\n",
 					cr30, cr60, cr61, cr70, cr74, crf0);
 		printk(KERN_INFO "Winbond LPT Config: active=%s, io=0x%02x%02x irq=%d, ",
 		       (cr30 & 0x01) ? "yes" : "no", cr60, cr61, cr70 & 0x0f);
+=======
+		pr_info("Winbond LPT Config: cr_30=%02x 60,61=%02x%02x 70=%02x 74=%02x, f0=%02x\n",
+			cr30, cr60, cr61, cr70, cr74, crf0);
+		pr_info("Winbond LPT Config: active=%s, io=0x%02x%02x irq=%d, ",
+			(cr30 & 0x01) ? "yes" : "no", cr60, cr61, cr70 & 0x0f);
+>>>>>>> origin/android16-base
 		if ((cr74 & 0x07) > 3)
 			pr_cont("dma=none\n");
 		else
 			pr_cont("dma=%d\n", cr74 & 0x07);
+<<<<<<< HEAD
 		printk(KERN_INFO
 		    "Winbond LPT Config: irqtype=%s, ECP fifo threshold=%d\n",
 					irqtypes[crf0>>7], (crf0>>3)&0x0f);
 		printk(KERN_INFO "Winbond LPT Config: Port mode=%s\n",
 					modes[crf0 & 0x07]);
+=======
+		pr_info("Winbond LPT Config: irqtype=%s, ECP fifo threshold=%d\n",
+			irqtypes[crf0 >> 7], (crf0 >> 3) & 0x0f);
+		pr_info("Winbond LPT Config: Port mode=%s\n",
+			modes[crf0 & 0x07]);
+>>>>>>> origin/android16-base
 	}
 
 	if (cr30 & 0x01) { /* the settings can be interrogated later ... */
 		s = find_free_superio();
 		if (s == NULL)
+<<<<<<< HEAD
 			printk(KERN_INFO "Super-IO: too many chips!\n");
+=======
+			pr_info("Super-IO: too many chips!\n");
+>>>>>>> origin/android16-base
 		else {
 			s->io = (cr60 << 8) | cr61;
 			s->irq = cr70 & 0x0f;
@@ -1150,9 +1195,14 @@ static void decode_winbond(int efer, int key, int devid, int devrev, int oldid)
 		progif = 0;
 
 	if (verbose_probing)
+<<<<<<< HEAD
 		printk(KERN_INFO "Winbond chip at EFER=0x%x key=0x%02x "
 		       "devid=%02x devrev=%02x oldid=%02x type=%s\n",
 		       efer, key, devid, devrev, oldid, type);
+=======
+		pr_info("Winbond chip at EFER=0x%x key=0x%02x devid=%02x devrev=%02x oldid=%02x type=%s\n",
+			efer, key, devid, devrev, oldid, type);
+>>>>>>> origin/android16-base
 
 	if (progif == 2)
 		show_parconfig_winbond(efer, key);
@@ -1183,9 +1233,14 @@ static void decode_smsc(int efer, int key, int devid, int devrev)
 		type = "37c666GT";
 
 	if (verbose_probing)
+<<<<<<< HEAD
 		printk(KERN_INFO "SMSC chip at EFER=0x%x "
 		       "key=0x%02x devid=%02x devrev=%02x type=%s\n",
 		       efer, key, devid, devrev, type);
+=======
+		pr_info("SMSC chip at EFER=0x%x key=0x%02x devid=%02x devrev=%02x type=%s\n",
+			efer, key, devid, devrev, type);
+>>>>>>> origin/android16-base
 
 	if (func)
 		func(efer, key);
@@ -1357,7 +1412,11 @@ static void detect_and_report_it87(void)
 	dev |= inb(0x2f);
 	if (dev == 0x8712 || dev == 0x8705 || dev == 0x8715 ||
 	    dev == 0x8716 || dev == 0x8718 || dev == 0x8726) {
+<<<<<<< HEAD
 		printk(KERN_INFO "IT%04X SuperIO detected.\n", dev);
+=======
+		pr_info("IT%04X SuperIO detected\n", dev);
+>>>>>>> origin/android16-base
 		outb(0x07, 0x2E);	/* Parallel Port */
 		outb(0x03, 0x2F);
 		outb(0xF0, 0x2E);	/* BOOT 0x80 off */
@@ -1444,8 +1503,13 @@ static int parport_SPP_supported(struct parport *pb)
 	if (user_specified)
 		/* That didn't work, but the user thinks there's a
 		 * port here. */
+<<<<<<< HEAD
 		printk(KERN_INFO "parport 0x%lx (WARNING): CTR: "
 			"wrote 0x%02x, read 0x%02x\n", pb->base, w, r);
+=======
+		pr_info("parport 0x%lx (WARNING): CTR: wrote 0x%02x, read 0x%02x\n",
+			pb->base, w, r);
+>>>>>>> origin/android16-base
 
 	/* Try the data register.  The data lines aren't tri-stated at
 	 * this stage, so we expect back what we wrote. */
@@ -1463,10 +1527,16 @@ static int parport_SPP_supported(struct parport *pb)
 	if (user_specified) {
 		/* Didn't work, but the user is convinced this is the
 		 * place. */
+<<<<<<< HEAD
 		printk(KERN_INFO "parport 0x%lx (WARNING): DATA: "
 			"wrote 0x%02x, read 0x%02x\n", pb->base, w, r);
 		printk(KERN_INFO "parport 0x%lx: You gave this address, "
 			"but there is probably no parallel port there!\n",
+=======
+		pr_info("parport 0x%lx (WARNING): DATA: wrote 0x%02x, read 0x%02x\n",
+			pb->base, w, r);
+		pr_info("parport 0x%lx: You gave this address, but there is probably no parallel port there!\n",
+>>>>>>> origin/android16-base
 			pb->base);
 	}
 
@@ -1641,7 +1711,11 @@ static int parport_ECP_supported(struct parport *pb)
 
 	if (i <= priv->fifo_depth) {
 		if (verbose_probing)
+<<<<<<< HEAD
 			printk(KERN_INFO "0x%lx: readIntrThreshold is %d\n",
+=======
+			pr_info("0x%lx: readIntrThreshold is %d\n",
+>>>>>>> origin/android16-base
 				pb->base, i);
 	} else
 		/* Number of bytes we can read if we get an interrupt. */
@@ -1656,6 +1730,7 @@ static int parport_ECP_supported(struct parport *pb)
 	switch (pword) {
 	case 0:
 		pword = 2;
+<<<<<<< HEAD
 		printk(KERN_WARNING "0x%lx: Unsupported pword size!\n",
 			pb->base);
 		break;
@@ -1668,6 +1743,17 @@ static int parport_ECP_supported(struct parport *pb)
 		printk(KERN_WARNING "0x%lx: Unknown implementation ID\n",
 			pb->base);
 		/* Assume 1 */
+=======
+		pr_warn("0x%lx: Unsupported pword size!\n", pb->base);
+		break;
+	case 2:
+		pword = 4;
+		pr_warn("0x%lx: Unsupported pword size!\n", pb->base);
+		break;
+	default:
+		pr_warn("0x%lx: Unknown implementation ID\n", pb->base);
+		/* Fall through - Assume 1 */
+>>>>>>> origin/android16-base
 	case 1:
 		pword = 1;
 	}
@@ -2106,9 +2192,15 @@ struct parport *parport_pc_probe_port(unsigned long int base,
 
 	p->size = (p->modes & PARPORT_MODE_EPP) ? 8 : 3;
 
+<<<<<<< HEAD
 	printk(KERN_INFO "%s: PC-style at 0x%lx", p->name, p->base);
 	if (p->base_hi && priv->ecr)
 		printk(KERN_CONT " (0x%lx)", p->base_hi);
+=======
+	pr_info("%s: PC-style at 0x%lx", p->name, p->base);
+	if (p->base_hi && priv->ecr)
+		pr_cont(" (0x%lx)", p->base_hi);
+>>>>>>> origin/android16-base
 	if (p->irq == PARPORT_IRQ_AUTO) {
 		p->irq = PARPORT_IRQ_NONE;
 		parport_irq_probe(p);
@@ -2119,7 +2211,11 @@ struct parport *parport_pc_probe_port(unsigned long int base,
 		p->irq = PARPORT_IRQ_NONE;
 	}
 	if (p->irq != PARPORT_IRQ_NONE) {
+<<<<<<< HEAD
 		printk(KERN_CONT ", irq %d", p->irq);
+=======
+		pr_cont(", irq %d", p->irq);
+>>>>>>> origin/android16-base
 		priv->ctr_writable |= 0x10;
 
 		if (p->dma == PARPORT_DMA_AUTO) {
@@ -2143,15 +2239,23 @@ struct parport *parport_pc_probe_port(unsigned long int base,
 		/* p->ops->ecp_read_data = parport_pc_ecp_read_block_pio; */
 #endif /* IEEE 1284 support */
 		if (p->dma != PARPORT_DMA_NONE) {
+<<<<<<< HEAD
 			printk(KERN_CONT ", dma %d", p->dma);
 			p->modes |= PARPORT_MODE_DMA;
 		} else
 			printk(KERN_CONT ", using FIFO");
+=======
+			pr_cont(", dma %d", p->dma);
+			p->modes |= PARPORT_MODE_DMA;
+		} else
+			pr_cont(", using FIFO");
+>>>>>>> origin/android16-base
 	} else
 		/* We can't use the DMA channel after all. */
 		p->dma = PARPORT_DMA_NONE;
 #endif /* Allowed to use FIFO/DMA */
 
+<<<<<<< HEAD
 	printk(KERN_CONT " [");
 
 #define printmode(x) \
@@ -2161,23 +2265,44 @@ struct parport *parport_pc_probe_port(unsigned long int base,
 			f++;\
 		} \
 	}
+=======
+	pr_cont(" [");
+
+#define printmode(x)							\
+do {									\
+	if (p->modes & PARPORT_MODE_##x)				\
+		pr_cont("%s%s", f++ ? "," : "", #x);			\
+} while (0)
+>>>>>>> origin/android16-base
 
 	{
 		int f = 0;
 		printmode(PCSPP);
 		printmode(TRISTATE);
+<<<<<<< HEAD
 		printmode(COMPAT)
+=======
+		printmode(COMPAT);
+>>>>>>> origin/android16-base
 		printmode(EPP);
 		printmode(ECP);
 		printmode(DMA);
 	}
 #undef printmode
 #ifndef CONFIG_PARPORT_1284
+<<<<<<< HEAD
 	printk(KERN_CONT "(,...)");
 #endif /* CONFIG_PARPORT_1284 */
 	printk(KERN_CONT "]\n");
 	if (probedirq != PARPORT_IRQ_NONE)
 		printk(KERN_INFO "%s: irq %d detected\n", p->name, probedirq);
+=======
+	pr_cont("(,...)");
+#endif /* CONFIG_PARPORT_1284 */
+	pr_cont("]\n");
+	if (probedirq != PARPORT_IRQ_NONE)
+		pr_info("%s: irq %d detected\n", p->name, probedirq);
+>>>>>>> origin/android16-base
 
 	/* If No ECP release the ports grabbed above. */
 	if (ECR_res && (p->modes & PARPORT_MODE_ECP) == 0) {
@@ -2192,8 +2317,12 @@ struct parport *parport_pc_probe_port(unsigned long int base,
 	if (p->irq != PARPORT_IRQ_NONE) {
 		if (request_irq(p->irq, parport_irq_handler,
 				 irqflags, p->name, p)) {
+<<<<<<< HEAD
 			printk(KERN_WARNING "%s: irq %d in use, "
 				"resorting to polled operation\n",
+=======
+			pr_warn("%s: irq %d in use, resorting to polled operation\n",
+>>>>>>> origin/android16-base
 				p->name, p->irq);
 			p->irq = PARPORT_IRQ_NONE;
 			p->dma = PARPORT_DMA_NONE;
@@ -2203,8 +2332,12 @@ struct parport *parport_pc_probe_port(unsigned long int base,
 #ifdef HAS_DMA
 		if (p->dma != PARPORT_DMA_NONE) {
 			if (request_dma(p->dma, p->name)) {
+<<<<<<< HEAD
 				printk(KERN_WARNING "%s: dma %d in use, "
 					"resorting to PIO operation\n",
+=======
+				pr_warn("%s: dma %d in use, resorting to PIO operation\n",
+>>>>>>> origin/android16-base
 					p->name, p->dma);
 				p->dma = PARPORT_DMA_NONE;
 			} else {
@@ -2214,9 +2347,13 @@ struct parport *parport_pc_probe_port(unsigned long int base,
 						       &priv->dma_handle,
 						       GFP_KERNEL);
 				if (!priv->dma_buf) {
+<<<<<<< HEAD
 					printk(KERN_WARNING "%s: "
 						"cannot get buffer for DMA, "
 						"resorting to PIO operation\n",
+=======
+					pr_warn("%s: cannot get buffer for DMA, resorting to PIO operation\n",
+>>>>>>> origin/android16-base
 						p->name);
 					free_dma(p->dma);
 					p->dma = PARPORT_DMA_NONE;
@@ -2329,7 +2466,11 @@ static int sio_ite_8872_probe(struct pci_dev *pdev, int autoirq, int autodma,
 		}
 	}
 	if (i >= 5) {
+<<<<<<< HEAD
 		printk(KERN_INFO "parport_pc: cannot find ITE8872 INTA\n");
+=======
+		pr_info("parport_pc: cannot find ITE8872 INTA\n");
+>>>>>>> origin/android16-base
 		return 0;
 	}
 
@@ -2338,6 +2479,7 @@ static int sio_ite_8872_probe(struct pci_dev *pdev, int autoirq, int autodma,
 
 	switch (type) {
 	case 0x2:
+<<<<<<< HEAD
 		printk(KERN_INFO "parport_pc: ITE8871 found (1P)\n");
 		ite8872set = 0x64200000;
 		break;
@@ -2361,6 +2503,30 @@ static int sio_ite_8872_probe(struct pci_dev *pdev, int autoirq, int autodma,
 		printk(KERN_INFO "parport_pc: unknown ITE887x\n");
 		printk(KERN_INFO "parport_pc: please mail 'lspci -nvv' "
 			"output to Rich.Liu@ite.com.tw\n");
+=======
+		pr_info("parport_pc: ITE8871 found (1P)\n");
+		ite8872set = 0x64200000;
+		break;
+	case 0xa:
+		pr_info("parport_pc: ITE8875 found (1P)\n");
+		ite8872set = 0x64200000;
+		break;
+	case 0xe:
+		pr_info("parport_pc: ITE8872 found (2S1P)\n");
+		ite8872set = 0x64e00000;
+		break;
+	case 0x6:
+		pr_info("parport_pc: ITE8873 found (1S)\n");
+		release_region(inta_addr[i], 32);
+		return 0;
+	case 0x8:
+		pr_info("parport_pc: ITE8874 found (2S)\n");
+		release_region(inta_addr[i], 32);
+		return 0;
+	default:
+		pr_info("parport_pc: unknown ITE887x\n");
+		pr_info("parport_pc: please mail 'lspci -nvv' output to Rich.Liu@ite.com.tw\n");
+>>>>>>> origin/android16-base
 		release_region(inta_addr[i], 32);
 		return 0;
 	}
@@ -2395,9 +2561,14 @@ static int sio_ite_8872_probe(struct pci_dev *pdev, int autoirq, int autodma,
 	release_region(inta_addr[i], 32);
 	if (parport_pc_probe_port(ite8872_lpt, ite8872_lpthi,
 				   irq, PARPORT_DMA_NONE, &pdev->dev, 0)) {
+<<<<<<< HEAD
 		printk(KERN_INFO
 			"parport_pc: ITE 8872 parallel port: io=0x%X",
 								ite8872_lpt);
+=======
+		pr_info("parport_pc: ITE 8872 parallel port: io=0x%X",
+			ite8872_lpt);
+>>>>>>> origin/android16-base
 		if (irq != PARPORT_IRQ_NONE)
 			pr_cont(", irq=%d", irq);
 		pr_cont("\n");
@@ -2524,7 +2695,11 @@ static int sio_via_probe(struct pci_dev *pdev, int autoirq, int autodma,
 	pci_write_config_byte(pdev, via->via_pci_superio_config_reg, tmp);
 
 	if (siofunc == VIA_FUNCTION_PARPORT_DISABLE) {
+<<<<<<< HEAD
 		printk(KERN_INFO "parport_pc: VIA parallel port disabled in BIOS\n");
+=======
+		pr_info("parport_pc: VIA parallel port disabled in BIOS\n");
+>>>>>>> origin/android16-base
 		return 0;
 	}
 
@@ -2557,9 +2732,14 @@ static int sio_via_probe(struct pci_dev *pdev, int autoirq, int autodma,
 	case 0x278:
 		port2 = 0x678; break;
 	default:
+<<<<<<< HEAD
 		printk(KERN_INFO
 			"parport_pc: Weird VIA parport base 0x%X, ignoring\n",
 									port1);
+=======
+		pr_info("parport_pc: Weird VIA parport base 0x%X, ignoring\n",
+			port1);
+>>>>>>> origin/android16-base
 		return 0;
 	}
 
@@ -2578,8 +2758,12 @@ static int sio_via_probe(struct pci_dev *pdev, int autoirq, int autodma,
 
 	/* finally, do the probe with values obtained */
 	if (parport_pc_probe_port(port1, port2, irq, dma, &pdev->dev, 0)) {
+<<<<<<< HEAD
 		printk(KERN_INFO
 			"parport_pc: VIA parallel port: io=0x%X", port1);
+=======
+		pr_info("parport_pc: VIA parallel port: io=0x%X", port1);
+>>>>>>> origin/android16-base
 		if (irq != PARPORT_IRQ_NONE)
 			pr_cont(", irq=%d", irq);
 		if (dma != PARPORT_DMA_NONE)
@@ -2588,7 +2772,11 @@ static int sio_via_probe(struct pci_dev *pdev, int autoirq, int autodma,
 		return 1;
 	}
 
+<<<<<<< HEAD
 	printk(KERN_WARNING "parport_pc: Strange, can't probe VIA parallel port: io=0x%X, irq=%d, dma=%d\n",
+=======
+	pr_warn("parport_pc: Strange, can't probe VIA parallel port: io=0x%X, irq=%d, dma=%d\n",
+>>>>>>> origin/android16-base
 		port1, irq, dma);
 	return 0;
 }
@@ -2647,6 +2835,11 @@ enum parport_pc_pci_cards {
 	netmos_9865,
 	quatech_sppxp100,
 	wch_ch382l,
+<<<<<<< HEAD
+=======
+	brainboxes_uc146,
+	brainboxes_px203,
+>>>>>>> origin/android16-base
 };
 
 
@@ -2710,6 +2903,11 @@ static struct parport_pc_pci {
 	/* netmos_9865 */               { 1, { { 0, -1 }, } },
 	/* quatech_sppxp100 */		{ 1, { { 0, 1 }, } },
 	/* wch_ch382l */		{ 1, { { 2, -1 }, } },
+<<<<<<< HEAD
+=======
+	/* brainboxes_uc146 */	{ 1, { { 3, -1 }, } },
+	/* brainboxes_px203 */	{ 1, { { 0, -1 }, } },
+>>>>>>> origin/android16-base
 };
 
 static const struct pci_device_id parport_pc_pci_tbl[] = {
@@ -2801,6 +2999,26 @@ static const struct pci_device_id parport_pc_pci_tbl[] = {
 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, quatech_sppxp100 },
 	/* WCH CH382L PCI-E single parallel port card */
 	{ 0x1c00, 0x3050, 0x1c00, 0x3050, 0, 0, wch_ch382l },
+<<<<<<< HEAD
+=======
+	/* Brainboxes IX-500/550 */
+	{ PCI_VENDOR_ID_INTASHIELD, 0x402a,
+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
+	/* Brainboxes UC-146/UC-157 */
+	{ PCI_VENDOR_ID_INTASHIELD, 0x0be1,
+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, brainboxes_uc146 },
+	{ PCI_VENDOR_ID_INTASHIELD, 0x0be2,
+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, brainboxes_uc146 },
+	/* Brainboxes PX-146/PX-257 */
+	{ PCI_VENDOR_ID_INTASHIELD, 0x401c,
+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
+	/* Brainboxes PX-203 */
+	{ PCI_VENDOR_ID_INTASHIELD, 0x4007,
+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, brainboxes_px203 },
+	/* Brainboxes PX-475 */
+	{ PCI_VENDOR_ID_INTASHIELD, 0x401f,
+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
+>>>>>>> origin/android16-base
 	{ 0, } /* terminate list */
 };
 MODULE_DEVICE_TABLE(pci, parport_pc_pci_tbl);
@@ -3110,7 +3328,11 @@ static int __init parport_parse_param(const char *s, int *val,
 		if (ep != s)
 			*val = r;
 		else {
+<<<<<<< HEAD
 			printk(KERN_ERR "parport: bad specifier `%s'\n", s);
+=======
+			pr_err("parport: bad specifier `%s'\n", s);
+>>>>>>> origin/android16-base
 			return -1;
 		}
 	}
@@ -3200,10 +3422,14 @@ static int __init parse_parport_params(void)
 				irqval[0] = val;
 				break;
 			default:
+<<<<<<< HEAD
 				printk(KERN_WARNING
 					"parport_pc: irq specified "
 					"without base address.  Use 'io=' "
 					"to specify one\n");
+=======
+				pr_warn("parport_pc: irq specified without base address.  Use 'io=' to specify one\n");
+>>>>>>> origin/android16-base
 			}
 
 		if (dma[0] && !parport_parse_dma(dma[0], &val))
@@ -3213,10 +3439,14 @@ static int __init parse_parport_params(void)
 				dmaval[0] = val;
 				break;
 			default:
+<<<<<<< HEAD
 				printk(KERN_WARNING
 					"parport_pc: dma specified "
 					"without base address.  Use 'io=' "
 					"to specify one\n");
+=======
+				pr_warn("parport_pc: dma specified without base address.  Use 'io=' to specify one\n");
+>>>>>>> origin/android16-base
 			}
 	}
 	return 0;
@@ -3255,12 +3485,20 @@ static int __init parport_setup(char *str)
 
 	val = simple_strtoul(str, &endptr, 0);
 	if (endptr == str) {
+<<<<<<< HEAD
 		printk(KERN_WARNING "parport=%s not understood\n", str);
+=======
+		pr_warn("parport=%s not understood\n", str);
+>>>>>>> origin/android16-base
 		return 1;
 	}
 
 	if (parport_setup_ptr == PARPORT_PC_MAX_PORTS) {
+<<<<<<< HEAD
 		printk(KERN_ERR "parport=%s ignored, too many ports\n", str);
+=======
+		pr_err("parport=%s ignored, too many ports\n", str);
+>>>>>>> origin/android16-base
 		return 1;
 	}
 

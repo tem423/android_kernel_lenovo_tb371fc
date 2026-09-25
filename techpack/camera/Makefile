@@ -9,10 +9,13 @@ ifeq ($(CONFIG_ARCH_LITO), y)
 include $(srctree)/techpack/camera/config/litocamera.conf
 endif
 
+<<<<<<< HEAD
 ifeq ($(CONFIG_ARCH_BENGAL), y)
 include $(srctree)/techpack/camera/config/bengalcamera.conf
 endif
 
+=======
+>>>>>>> origin/android16-base
 ifeq ($(CONFIG_ARCH_KONA), y)
 LINUXINCLUDE    += \
 		-include $(srctree)/techpack/camera/config/konacameraconf.h
@@ -23,12 +26,16 @@ LINUXINCLUDE    += \
 		-include $(srctree)/techpack/camera/config/litocameraconf.h
 endif
 
+<<<<<<< HEAD
 ifeq ($(CONFIG_ARCH_BENGAL), y)
 LINUXINCLUDE    += \
 		-include $(srctree)/techpack/camera/config/bengalcameraconf.h
 endif
 
 ifdef CONFIG_SPECTRA_CAMERA
+=======
+ifdef CONFIG_SPECTRA_CAMERA_KONA
+>>>>>>> origin/android16-base
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE     += \
                 -I$(srctree)/techpack/camera/include/uapi
@@ -38,6 +45,7 @@ USERINCLUDE     += \
 LINUXINCLUDE    += \
                 -I$(srctree)/techpack/camera/include/uapi \
                 -I$(srctree)/techpack/camera/include
+<<<<<<< HEAD
 # p113: export camera-wide include paths to the recursive drivers/* sub-makes
 CAM_DRIVER_DIRS := $(sort $(dir $(wildcard \
 		$(srctree)/techpack/camera/drivers/*/ \
@@ -47,4 +55,7 @@ export LINUXINCLUDE
 obj-y += drivers/
 else
 $(info Target not found)
+=======
+obj-y += drivers/
+>>>>>>> origin/android16-base
 endif

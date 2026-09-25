@@ -1922,7 +1922,11 @@ static int carl9170_parse_eeprom(struct ar9170 *ar)
 		WARN_ON(!(tx_streams >= 1 && tx_streams <=
 			IEEE80211_HT_MCS_TX_MAX_STREAMS));
 
+<<<<<<< HEAD
 		tx_params = (tx_streams - 1) <<
+=======
+		tx_params |= (tx_streams - 1) <<
+>>>>>>> origin/android16-base
 			    IEEE80211_HT_MCS_TX_MAX_STREAMS_SHIFT;
 
 		carl9170_band_2GHz.ht_cap.mcs.tx_params |= tx_params;

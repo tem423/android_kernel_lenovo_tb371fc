@@ -274,6 +274,7 @@ bool is_no_fault_exception(struct pt_regs *regs)
 			asi = (regs->tstate >> 24); /* saved %asi       */
 		else
 			asi = (insn >> 5);	    /* immediate asi    */
+<<<<<<< HEAD
 		if ((asi & 0xf2) == ASI_PNF) {
 			if (insn & 0x1000000) {     /* op3[5:4]=3       */
 				handle_ldf_stq(insn, regs);
@@ -282,6 +283,15 @@ bool is_no_fault_exception(struct pt_regs *regs)
 				return false;
 			}
 			handle_ld_nf(insn, regs);
+=======
+		if ((asi & 0xf6) == ASI_PNF) {
+			if (insn & 0x200000)        /* op3[2], stores   */
+				return false;
+			if (insn & 0x1000000)       /* op3[5:4]=3 (fp)  */
+				handle_ldf_stq(insn, regs);
+			else
+				handle_ld_nf(insn, regs);
+>>>>>>> origin/android16-base
 			return true;
 		}
 	}
@@ -2566,9 +2576,13 @@ void __noreturn die_if_kernel(char *str, struct pt_regs *regs)
 	}
 	if (panic_on_oops)
 		panic("Fatal exception");
+<<<<<<< HEAD
 	if (regs->tstate & TSTATE_PRIV)
 		do_exit(SIGKILL);
 	do_exit(SIGSEGV);
+=======
+	make_task_dead((regs->tstate & TSTATE_PRIV)? SIGKILL : SIGSEGV);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(die_if_kernel);
 

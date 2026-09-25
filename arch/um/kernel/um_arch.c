@@ -3,6 +3,10 @@
  * Licensed under the GPL
  */
 
+<<<<<<< HEAD
+=======
+#include <linux/cpu.h>
+>>>>>>> origin/android16-base
 #include <linux/delay.h>
 #include <linux/init.h>
 #include <linux/mm.h>
@@ -77,7 +81,11 @@ static int show_cpuinfo(struct seq_file *m, void *v)
 
 static void *c_start(struct seq_file *m, loff_t *pos)
 {
+<<<<<<< HEAD
 	return *pos < NR_CPUS ? cpu_data + *pos : NULL;
+=======
+	return *pos < nr_cpu_ids ? cpu_data + *pos : NULL;
+>>>>>>> origin/android16-base
 }
 
 static void *c_next(struct seq_file *m, void *v, loff_t *pos)
@@ -352,7 +360,11 @@ void __init setup_arch(char **cmdline_p)
 	setup_hostinfo(host_info, sizeof host_info);
 }
 
+<<<<<<< HEAD
 void __init check_bugs(void)
+=======
+void __init arch_cpu_finalize_init(void)
+>>>>>>> origin/android16-base
 {
 	arch_check_bugs();
 	os_check_bugs();

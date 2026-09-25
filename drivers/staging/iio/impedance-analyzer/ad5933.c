@@ -638,7 +638,11 @@ static void ad5933_work(struct work_struct *work)
 		struct ad5933_state, work.work);
 	struct iio_dev *indio_dev = i2c_get_clientdata(st->client);
 	__be16 buf[2];
+<<<<<<< HEAD
 	int val[2];
+=======
+	u16 val[2];
+>>>>>>> origin/android16-base
 	unsigned char status;
 	int ret;
 

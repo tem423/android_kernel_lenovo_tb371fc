@@ -3615,7 +3615,11 @@ typedef struct _ATOM_FAKE_EDID_PATCH_RECORD
 {
   UCHAR ucRecordType;
   UCHAR ucFakeEDIDLength;
+<<<<<<< HEAD
   UCHAR ucFakeEDIDString[1];    // This actually has ucFakeEdidLength elements.
+=======
+  UCHAR ucFakeEDIDString[];    // This actually has ucFakeEdidLength elements.
+>>>>>>> origin/android16-base
 } ATOM_FAKE_EDID_PATCH_RECORD;
 
 typedef struct  _ATOM_PANEL_RESOLUTION_PATCH_RECORD

@@ -5,7 +5,11 @@
  * Copyright 2007-2010	Johannes Berg <johannes@sipsolutions.net>
  * Copyright 2013-2014  Intel Mobile Communications GmbH
  * Copyright(c) 2015 - 2017 Intel Deutschland GmbH
+<<<<<<< HEAD
  * Copyright (C) 2018 Intel Corporation
+=======
+ * Copyright (C) 2018-2021 Intel Corporation
+>>>>>>> origin/android16-base
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -1322,8 +1326,12 @@ static void ieee80211_rx_reorder_ampdu(struct ieee80211_rx_data *rx,
 		goto dont_reorder;
 
 	/* not part of a BA session */
+<<<<<<< HEAD
 	if (ack_policy != IEEE80211_QOS_CTL_ACK_POLICY_BLOCKACK &&
 	    ack_policy != IEEE80211_QOS_CTL_ACK_POLICY_NORMAL)
+=======
+	if (ack_policy == IEEE80211_QOS_CTL_ACK_POLICY_NOACK)
+>>>>>>> origin/android16-base
 		goto dont_reorder;
 
 	/* new, potentially un-ordered, ampdu frame - process it */
@@ -2009,19 +2017,48 @@ ieee80211_rx_h_decrypt(struct ieee80211_rx_data *rx)
 	return result;
 }
 
+<<<<<<< HEAD
 static inline struct ieee80211_fragment_entry *
 ieee80211_reassemble_add(struct ieee80211_sub_if_data *sdata,
+=======
+void ieee80211_init_frag_cache(struct ieee80211_fragment_cache *cache)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(cache->entries); i++)
+		skb_queue_head_init(&cache->entries[i].skb_list);
+}
+
+void ieee80211_destroy_frag_cache(struct ieee80211_fragment_cache *cache)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(cache->entries); i++)
+		__skb_queue_purge(&cache->entries[i].skb_list);
+}
+
+static inline struct ieee80211_fragment_entry *
+ieee80211_reassemble_add(struct ieee80211_fragment_cache *cache,
+>>>>>>> origin/android16-base
 			 unsigned int frag, unsigned int seq, int rx_queue,
 			 struct sk_buff **skb)
 {
 	struct ieee80211_fragment_entry *entry;
 
+<<<<<<< HEAD
 	entry = &sdata->fragments[sdata->fragment_next++];
 	if (sdata->fragment_next >= IEEE80211_FRAGMENT_MAX)
 		sdata->fragment_next = 0;
 
 	if (!skb_queue_empty(&entry->skb_list))
 		__skb_queue_purge(&entry->skb_list);
+=======
+	entry = &cache->entries[cache->next++];
+	if (cache->next >= IEEE80211_FRAGMENT_MAX)
+		cache->next = 0;
+
+	__skb_queue_purge(&entry->skb_list);
+>>>>>>> origin/android16-base
 
 	__skb_queue_tail(&entry->skb_list, *skb); /* no need for locking */
 	*skb = NULL;
@@ -2036,14 +2073,22 @@ ieee80211_reassemble_add(struct ieee80211_sub_if_data *sdata,
 }
 
 static inline struct ieee80211_fragment_entry *
+<<<<<<< HEAD
 ieee80211_reassemble_find(struct ieee80211_sub_if_data *sdata,
+=======
+ieee80211_reassemble_find(struct ieee80211_fragment_cache *cache,
+>>>>>>> origin/android16-base
 			  unsigned int frag, unsigned int seq,
 			  int rx_queue, struct ieee80211_hdr *hdr)
 {
 	struct ieee80211_fragment_entry *entry;
 	int i, idx;
 
+<<<<<<< HEAD
 	idx = sdata->fragment_next;
+=======
+	idx = cache->next;
+>>>>>>> origin/android16-base
 	for (i = 0; i < IEEE80211_FRAGMENT_MAX; i++) {
 		struct ieee80211_hdr *f_hdr;
 
@@ -2051,7 +2096,11 @@ ieee80211_reassemble_find(struct ieee80211_sub_if_data *sdata,
 		if (idx < 0)
 			idx = IEEE80211_FRAGMENT_MAX - 1;
 
+<<<<<<< HEAD
 		entry = &sdata->fragments[idx];
+=======
+		entry = &cache->entries[idx];
+>>>>>>> origin/android16-base
 		if (skb_queue_empty(&entry->skb_list) || entry->seq != seq ||
 		    entry->rx_queue != rx_queue ||
 		    entry->last_frag + 1 != frag)
@@ -2078,15 +2127,36 @@ ieee80211_reassemble_find(struct ieee80211_sub_if_data *sdata,
 	return NULL;
 }
 
+<<<<<<< HEAD
 static ieee80211_rx_result debug_noinline
 ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 {
+=======
+static bool requires_sequential_pn(struct ieee80211_rx_data *rx, __le16 fc)
+{
+	return rx->key &&
+		(rx->key->conf.cipher == WLAN_CIPHER_SUITE_CCMP ||
+		 rx->key->conf.cipher == WLAN_CIPHER_SUITE_CCMP_256 ||
+		 rx->key->conf.cipher == WLAN_CIPHER_SUITE_GCMP ||
+		 rx->key->conf.cipher == WLAN_CIPHER_SUITE_GCMP_256) &&
+		ieee80211_has_protected(fc);
+}
+
+static ieee80211_rx_result debug_noinline
+ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
+{
+	struct ieee80211_fragment_cache *cache = &rx->sdata->frags;
+>>>>>>> origin/android16-base
 	struct ieee80211_hdr *hdr;
 	u16 sc;
 	__le16 fc;
 	unsigned int frag, seq;
 	struct ieee80211_fragment_entry *entry;
 	struct sk_buff *skb;
+<<<<<<< HEAD
+=======
+	struct ieee80211_rx_status *status = IEEE80211_SKB_RXCB(rx->skb);
+>>>>>>> origin/android16-base
 
 	hdr = (struct ieee80211_hdr *)rx->skb->data;
 	fc = hdr->frame_control;
@@ -2097,14 +2167,25 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 	sc = le16_to_cpu(hdr->seq_ctrl);
 	frag = sc & IEEE80211_SCTL_FRAG;
 
+<<<<<<< HEAD
 	if (is_multicast_ether_addr(hdr->addr1)) {
 		I802_DEBUG_INC(rx->local->dot11MulticastReceivedFrameCount);
 		goto out_no_led;
 	}
+=======
+	if (rx->sta)
+		cache = &rx->sta->frags;
+>>>>>>> origin/android16-base
 
 	if (likely(!ieee80211_has_morefrags(fc) && frag == 0))
 		goto out;
 
+<<<<<<< HEAD
+=======
+	if (is_multicast_ether_addr(hdr->addr1))
+		return RX_DROP_MONITOR;
+
+>>>>>>> origin/android16-base
 	I802_DEBUG_INC(rx->local->rx_handlers_fragments);
 
 	if (skb_linearize(rx->skb))
@@ -2120,6 +2201,7 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 
 	if (frag == 0) {
 		/* This is the first fragment of a new frame. */
+<<<<<<< HEAD
 		entry = ieee80211_reassemble_add(rx->sdata, frag, seq,
 						 rx->seqno_idx, &(rx->skb));
 		if (rx->key &&
@@ -2128,12 +2210,22 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 		     rx->key->conf.cipher == WLAN_CIPHER_SUITE_GCMP ||
 		     rx->key->conf.cipher == WLAN_CIPHER_SUITE_GCMP_256) &&
 		    ieee80211_has_protected(fc)) {
+=======
+		entry = ieee80211_reassemble_add(cache, frag, seq,
+						 rx->seqno_idx, &(rx->skb));
+		if (requires_sequential_pn(rx, fc)) {
+>>>>>>> origin/android16-base
 			int queue = rx->security_idx;
 
 			/* Store CCMP/GCMP PN so that we can verify that the
 			 * next fragment has a sequential PN value.
 			 */
 			entry->check_sequential_pn = true;
+<<<<<<< HEAD
+=======
+			entry->is_protected = true;
+			entry->key_color = rx->key->color;
+>>>>>>> origin/android16-base
 			memcpy(entry->last_pn,
 			       rx->key->u.ccmp.rx_pn[queue],
 			       IEEE80211_CCMP_PN_LEN);
@@ -2145,6 +2237,14 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 				     sizeof(rx->key->u.gcmp.rx_pn[queue]));
 			BUILD_BUG_ON(IEEE80211_CCMP_PN_LEN !=
 				     IEEE80211_GCMP_PN_LEN);
+<<<<<<< HEAD
+=======
+		} else if (rx->key &&
+			   (ieee80211_has_protected(fc) ||
+			    (status->flag & RX_FLAG_DECRYPTED))) {
+			entry->is_protected = true;
+			entry->key_color = rx->key->color;
+>>>>>>> origin/android16-base
 		}
 		return RX_QUEUED;
 	}
@@ -2152,7 +2252,11 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 	/* This is a fragment for a frame that should already be pending in
 	 * fragment cache. Add this fragment to the end of the pending entry.
 	 */
+<<<<<<< HEAD
 	entry = ieee80211_reassemble_find(rx->sdata, frag, seq,
+=======
+	entry = ieee80211_reassemble_find(cache, frag, seq,
+>>>>>>> origin/android16-base
 					  rx->seqno_idx, hdr);
 	if (!entry) {
 		I802_DEBUG_INC(rx->local->rx_handlers_drop_defrag);
@@ -2167,6 +2271,7 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 	if (entry->check_sequential_pn) {
 		int i;
 		u8 pn[IEEE80211_CCMP_PN_LEN], *rpn;
+<<<<<<< HEAD
 		int queue;
 
 		if (!rx->key ||
@@ -2175,17 +2280,49 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 		     rx->key->conf.cipher != WLAN_CIPHER_SUITE_GCMP &&
 		     rx->key->conf.cipher != WLAN_CIPHER_SUITE_GCMP_256))
 			return RX_DROP_UNUSABLE;
+=======
+
+		if (!requires_sequential_pn(rx, fc))
+			return RX_DROP_UNUSABLE;
+
+		/* Prevent mixed key and fragment cache attacks */
+		if (entry->key_color != rx->key->color)
+			return RX_DROP_UNUSABLE;
+
+>>>>>>> origin/android16-base
 		memcpy(pn, entry->last_pn, IEEE80211_CCMP_PN_LEN);
 		for (i = IEEE80211_CCMP_PN_LEN - 1; i >= 0; i--) {
 			pn[i]++;
 			if (pn[i])
 				break;
 		}
+<<<<<<< HEAD
 		queue = rx->security_idx;
 		rpn = rx->key->u.ccmp.rx_pn[queue];
 		if (memcmp(pn, rpn, IEEE80211_CCMP_PN_LEN))
 			return RX_DROP_UNUSABLE;
 		memcpy(entry->last_pn, pn, IEEE80211_CCMP_PN_LEN);
+=======
+
+		rpn = rx->ccm_gcm.pn;
+		if (memcmp(pn, rpn, IEEE80211_CCMP_PN_LEN))
+			return RX_DROP_UNUSABLE;
+		memcpy(entry->last_pn, pn, IEEE80211_CCMP_PN_LEN);
+	} else if (entry->is_protected &&
+		   (!rx->key ||
+		    (!ieee80211_has_protected(fc) &&
+		     !(status->flag & RX_FLAG_DECRYPTED)) ||
+		    rx->key->color != entry->key_color)) {
+		/* Drop this as a mixed key or fragment cache attack, even
+		 * if for TKIP Michael MIC should protect us, and WEP is a
+		 * lost cause anyway.
+		 */
+		return RX_DROP_UNUSABLE;
+	} else if (entry->is_protected && rx->key &&
+		   entry->key_color != rx->key->color &&
+		   (status->flag & RX_FLAG_DECRYPTED)) {
+		return RX_DROP_UNUSABLE;
+>>>>>>> origin/android16-base
 	}
 
 	skb_pull(rx->skb, ieee80211_hdrlen(fc));
@@ -2214,7 +2351,10 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 
  out:
 	ieee80211_led_rx(rx->local);
+<<<<<<< HEAD
  out_no_led:
+=======
+>>>>>>> origin/android16-base
 	if (rx->sta)
 		rx->sta->rx_stats.packets++;
 	return RX_CONTINUE;
@@ -2371,6 +2511,7 @@ static bool ieee80211_frame_allowed(struct ieee80211_rx_data *rx, __le16 fc)
 	struct ethhdr *ehdr = (struct ethhdr *) rx->skb->data;
 
 	/*
+<<<<<<< HEAD
 	 * Allow EAPOL frames to us/the PAE group address regardless
 	 * of whether the frame was encrypted or not.
 	 */
@@ -2378,6 +2519,15 @@ static bool ieee80211_frame_allowed(struct ieee80211_rx_data *rx, __le16 fc)
 	    (ether_addr_equal(ehdr->h_dest, rx->sdata->vif.addr) ||
 	     ether_addr_equal(ehdr->h_dest, pae_group_addr)))
 		return true;
+=======
+	 * Allow EAPOL frames to us/the PAE group address regardless of
+	 * whether the frame was encrypted or not, and always disallow
+	 * all other destination addresses for them.
+	 */
+	if (unlikely(ehdr->h_proto == rx->sdata->control_port_protocol))
+		return ether_addr_equal(ehdr->h_dest, rx->sdata->vif.addr) ||
+		       ether_addr_equal(ehdr->h_dest, pae_group_addr);
+>>>>>>> origin/android16-base
 
 	if (ieee80211_802_1x_port_control(rx) ||
 	    ieee80211_drop_unencrypted(rx, fc))
@@ -2401,8 +2551,33 @@ static void ieee80211_deliver_skb_to_local_stack(struct sk_buff *skb,
 		cfg80211_rx_control_port(dev, skb, noencrypt);
 		dev_kfree_skb(skb);
 	} else {
+<<<<<<< HEAD
 		memset(skb->cb, 0, sizeof(skb->cb));
 
+=======
+		struct ethhdr *ehdr = (void *)skb_mac_header(skb);
+
+		memset(skb->cb, 0, sizeof(skb->cb));
+
+		/*
+		 * 802.1X over 802.11 requires that the authenticator address
+		 * be used for EAPOL frames. However, 802.1X allows the use of
+		 * the PAE group address instead. If the interface is part of
+		 * a bridge and we pass the frame with the PAE group address,
+		 * then the bridge will forward it to the network (even if the
+		 * client was not associated yet), which isn't supposed to
+		 * happen.
+		 * To avoid that, rewrite the destination address to our own
+		 * address, so that the authenticator (e.g. hostapd) will see
+		 * the frame, but bridge won't forward it anywhere else. Note
+		 * that due to earlier filtering, the only other address can
+		 * be the PAE group address.
+		 */
+		if (unlikely(skb->protocol == sdata->control_port_protocol &&
+			     !ether_addr_equal(ehdr->h_dest, sdata->vif.addr)))
+			ether_addr_copy(ehdr->h_dest, sdata->vif.addr);
+
+>>>>>>> origin/android16-base
 		/* deliver to local stack */
 		if (rx->napi)
 			napi_gro_receive(rx->napi, skb);
@@ -2442,6 +2617,10 @@ ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
 	if ((sdata->vif.type == NL80211_IFTYPE_AP ||
 	     sdata->vif.type == NL80211_IFTYPE_AP_VLAN) &&
 	    !(sdata->flags & IEEE80211_SDATA_DONT_BRIDGE_PACKETS) &&
+<<<<<<< HEAD
+=======
+	    ehdr->h_proto != rx->sdata->control_port_protocol &&
+>>>>>>> origin/android16-base
 	    (sdata->vif.type != NL80211_IFTYPE_AP_VLAN || !sdata->u.vlan.sta)) {
 		if (is_multicast_ether_addr(ehdr->h_dest) &&
 		    ieee80211_vif_get_num_mcast_if(sdata) != 0) {
@@ -2550,7 +2729,11 @@ __ieee80211_rx_h_amsdu(struct ieee80211_rx_data *rx, u8 data_offset)
 	if (ieee80211_data_to_8023_exthdr(skb, &ethhdr,
 					  rx->sdata->vif.addr,
 					  rx->sdata->vif.type,
+<<<<<<< HEAD
 					  data_offset))
+=======
+					  data_offset, true))
+>>>>>>> origin/android16-base
 		return RX_DROP_UNUSABLE;
 
 	ieee80211_amsdu_to_8023s(skb, &frame_list, dev->dev_addr,
@@ -2607,6 +2790,26 @@ ieee80211_rx_h_amsdu(struct ieee80211_rx_data *rx)
 	if (is_multicast_ether_addr(hdr->addr1))
 		return RX_DROP_UNUSABLE;
 
+<<<<<<< HEAD
+=======
+	if (rx->key) {
+		/*
+		 * We should not receive A-MSDUs on pre-HT connections,
+		 * and HT connections cannot use old ciphers. Thus drop
+		 * them, as in those cases we couldn't even have SPP
+		 * A-MSDUs or such.
+		 */
+		switch (rx->key->conf.cipher) {
+		case WLAN_CIPHER_SUITE_WEP40:
+		case WLAN_CIPHER_SUITE_WEP104:
+		case WLAN_CIPHER_SUITE_TKIP:
+			return RX_DROP_UNUSABLE;
+		default:
+			break;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	return __ieee80211_rx_h_amsdu(rx, 0);
 }
 
@@ -2693,13 +2896,21 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 	    ether_addr_equal(sdata->vif.addr, hdr->addr3))
 		return RX_CONTINUE;
 
+<<<<<<< HEAD
 	ac = ieee80211_select_queue_80211(sdata, skb, hdr);
+=======
+	ac = ieee802_1d_to_ac[skb->priority];
+>>>>>>> origin/android16-base
 	q = sdata->vif.hw_queue[ac];
 	if (ieee80211_queue_stopped(&local->hw, q)) {
 		IEEE80211_IFSTA_MESH_CTR_INC(ifmsh, dropped_frames_congestion);
 		return RX_DROP_MONITOR;
 	}
+<<<<<<< HEAD
 	skb_set_queue_mapping(skb, q);
+=======
+	skb_set_queue_mapping(skb, ac);
+>>>>>>> origin/android16-base
 
 	if (!--mesh_hdr->ttl) {
 		if (!is_multicast_ether_addr(hdr->addr1))
@@ -3794,7 +4005,12 @@ static bool ieee80211_accept_frame(struct ieee80211_rx_data *rx)
 		if (!bssid)
 			return false;
 		if (ether_addr_equal(sdata->vif.addr, hdr->addr2) ||
+<<<<<<< HEAD
 		    ether_addr_equal(sdata->u.ibss.bssid, hdr->addr2))
+=======
+		    ether_addr_equal(sdata->u.ibss.bssid, hdr->addr2) ||
+		    !is_valid_ether_addr(hdr->addr2))
+>>>>>>> origin/android16-base
 			return false;
 		if (ieee80211_is_beacon(hdr->frame_control))
 			return true;
@@ -4003,6 +4219,11 @@ void ieee80211_check_fast_rx(struct sta_info *sta)
 
 	rcu_read_lock();
 	key = rcu_dereference(sta->ptk[sta->ptk_idx]);
+<<<<<<< HEAD
+=======
+	if (!key)
+		key = rcu_dereference(sdata->default_unicast_key);
+>>>>>>> origin/android16-base
 	if (key) {
 		switch (key->conf.cipher) {
 		case WLAN_CIPHER_SUITE_TKIP:
@@ -4536,7 +4757,11 @@ void ieee80211_rx_napi(struct ieee80211_hw *hw, struct ieee80211_sta *pubsta,
 				goto drop;
 			break;
 		case RX_ENC_VHT:
+<<<<<<< HEAD
 			if (WARN_ONCE(status->rate_idx > 9 ||
+=======
+			if (WARN_ONCE(status->rate_idx > 11 ||
+>>>>>>> origin/android16-base
 				      !status->nss ||
 				      status->nss > 8,
 				      "Rate marked as a VHT rate but data is invalid: MCS: %d, NSS: %d\n",

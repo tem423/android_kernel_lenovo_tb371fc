@@ -154,6 +154,14 @@ static int udc_pci_probe(
 	pci_set_master(pdev);
 	pci_try_set_mwi(pdev);
 
+<<<<<<< HEAD
+=======
+	dev->phys_addr = resource;
+	dev->irq = pdev->irq;
+	dev->pdev = pdev;
+	dev->dev = &pdev->dev;
+
+>>>>>>> origin/android16-base
 	/* init dma pools */
 	if (use_dma) {
 		retval = init_dma_pools(dev);
@@ -161,16 +169,25 @@ static int udc_pci_probe(
 			goto err_dma;
 	}
 
+<<<<<<< HEAD
 	dev->phys_addr = resource;
 	dev->irq = pdev->irq;
 	dev->pdev = pdev;
 	dev->dev = &pdev->dev;
 
+=======
+>>>>>>> origin/android16-base
 	/* general probing */
 	if (udc_probe(dev)) {
 		retval = -ENODEV;
 		goto err_probe;
 	}
+<<<<<<< HEAD
+=======
+
+	udc = dev;
+
+>>>>>>> origin/android16-base
 	return 0;
 
 err_probe:

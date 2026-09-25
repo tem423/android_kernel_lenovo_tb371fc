@@ -18,6 +18,10 @@ struct mmu_gather;
 
 static void tlb_flush(struct mmu_gather *tlb);
 
+<<<<<<< HEAD
+=======
+#define tlb_flush tlb_flush
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 static inline void tlb_flush(struct mmu_gather *tlb)

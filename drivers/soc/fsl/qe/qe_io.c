@@ -41,6 +41,11 @@ int par_io_init(struct device_node *np)
 	if (ret)
 		return ret;
 	par_io = ioremap(res.start, resource_size(&res));
+<<<<<<< HEAD
+=======
+	if (!par_io)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	num_ports = of_get_property(np, "num-ports", NULL);
 	if (num_ports)

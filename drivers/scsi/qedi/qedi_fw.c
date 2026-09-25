@@ -1466,7 +1466,11 @@ abort_ret:
 
 ldel_exit:
 	spin_lock_bh(&qedi_conn->tmf_work_lock);
+<<<<<<< HEAD
 	if (!qedi_cmd->list_tmf_work) {
+=======
+	if (qedi_cmd->list_tmf_work) {
+>>>>>>> origin/android16-base
 		list_del_init(&list_work->list);
 		qedi_cmd->list_tmf_work = NULL;
 		kfree(list_work);

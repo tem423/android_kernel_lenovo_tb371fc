@@ -52,6 +52,11 @@ static int tpm_bios_measurements_open(struct inode *inode,
 	if (!err) {
 		seq = file->private_data;
 		seq->private = chip;
+<<<<<<< HEAD
+=======
+	} else {
+		put_device(&chip->dev);
+>>>>>>> origin/android16-base
 	}
 
 	return err;
@@ -112,6 +117,12 @@ void tpm_bios_log_setup(struct tpm_chip *chip)
 	int log_version;
 	int rc = 0;
 
+<<<<<<< HEAD
+=======
+	if (chip->flags & TPM_CHIP_FLAG_VIRTUAL)
+		return;
+
+>>>>>>> origin/android16-base
 	rc = tpm_read_log(chip);
 	if (rc < 0)
 		return;

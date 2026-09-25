@@ -28,6 +28,7 @@ int axg_tdm_formatter_set_channel_masks(struct regmap *map,
 					struct axg_tdm_stream *ts,
 					unsigned int offset)
 {
+<<<<<<< HEAD
 	unsigned int val, ch = ts->channels;
 	unsigned long mask;
 	int i, j;
@@ -49,6 +50,34 @@ int axg_tdm_formatter_set_channel_masks(struct regmap *map,
 
 		regmap_write(map, offset, val);
 		offset += regmap_get_reg_stride(map);
+=======
+	unsigned int ch = ts->channels;
+	u32 val[AXG_TDM_NUM_LANES];
+	int i, j, k;
+
+	/*
+	 * We need to mimick the slot distribution used by the HW to keep the
+	 * channel placement consistent regardless of the number of channel
+	 * in the stream. This is why the odd algorithm below is used.
+	 */
+	memset(val, 0, sizeof(*val) * AXG_TDM_NUM_LANES);
+
+	/*
+	 * Distribute the channels of the stream over the available slots
+	 * of each TDM lane. We need to go over the 32 slots ...
+	 */
+	for (i = 0; (i < 32) && ch; i += 2) {
+		/* ... of all the lanes ... */
+		for (j = 0; j < AXG_TDM_NUM_LANES; j++) {
+			/* ... then distribute the channels in pairs */
+			for (k = 0; k < 2; k++) {
+				if ((BIT(i + k) & ts->mask[j]) && ch) {
+					val[j] |= BIT(i + k);
+					ch -= 1;
+				}
+			}
+		}
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -61,6 +90,14 @@ int axg_tdm_formatter_set_channel_masks(struct regmap *map,
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
+=======
+	for (i = 0; i < AXG_TDM_NUM_LANES; i++) {
+		regmap_write(map, offset, val[i]);
+		offset += regmap_get_reg_stride(map);
+	}
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 EXPORT_SYMBOL_GPL(axg_tdm_formatter_set_channel_masks);

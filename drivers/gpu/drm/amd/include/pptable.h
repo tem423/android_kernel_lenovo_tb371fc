@@ -78,7 +78,11 @@ typedef struct _ATOM_PPLIB_THERMALCONTROLLER
 typedef struct _ATOM_PPLIB_STATE
 {
     UCHAR ucNonClockStateIndex;
+<<<<<<< HEAD
     UCHAR ucClockStateIndices[1]; // variable-sized
+=======
+    UCHAR ucClockStateIndices[]; // variable-sized
+>>>>>>> origin/android16-base
 } ATOM_PPLIB_STATE;
 
 
@@ -473,7 +477,11 @@ typedef struct _ATOM_PPLIB_STATE_V2
       /**
       * Driver will read the first ucNumDPMLevels in this array
       */
+<<<<<<< HEAD
       UCHAR clockInfoIndex[1];
+=======
+      UCHAR clockInfoIndex[];
+>>>>>>> origin/android16-base
 } ATOM_PPLIB_STATE_V2;
 
 typedef struct _StateArray{

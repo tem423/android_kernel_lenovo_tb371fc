@@ -19,10 +19,19 @@ SYSCALL_DEFINE5(pciconfig_read, unsigned long, bus, unsigned long, dfn,
 	u16 word;
 	u32 dword;
 	long err;
+<<<<<<< HEAD
 	long cfg_ret;
 
 	if (!capable(CAP_SYS_ADMIN))
 		return -EPERM;
+=======
+	int cfg_ret;
+
+	err = -EPERM;
+	dev = NULL;
+	if (!capable(CAP_SYS_ADMIN))
+		goto error;
+>>>>>>> origin/android16-base
 
 	err = -ENODEV;
 	dev = pci_get_domain_bus_and_slot(0, bus, dfn);
@@ -45,7 +54,11 @@ SYSCALL_DEFINE5(pciconfig_read, unsigned long, bus, unsigned long, dfn,
 	}
 
 	err = -EIO;
+<<<<<<< HEAD
 	if (cfg_ret != PCIBIOS_SUCCESSFUL)
+=======
+	if (cfg_ret)
+>>>>>>> origin/android16-base
 		goto error;
 
 	switch (len) {
@@ -103,7 +116,11 @@ SYSCALL_DEFINE5(pciconfig_write, unsigned long, bus, unsigned long, dfn,
 		if (err)
 			break;
 		err = pci_user_write_config_byte(dev, off, byte);
+<<<<<<< HEAD
 		if (err != PCIBIOS_SUCCESSFUL)
+=======
+		if (err)
+>>>>>>> origin/android16-base
 			err = -EIO;
 		break;
 
@@ -112,7 +129,11 @@ SYSCALL_DEFINE5(pciconfig_write, unsigned long, bus, unsigned long, dfn,
 		if (err)
 			break;
 		err = pci_user_write_config_word(dev, off, word);
+<<<<<<< HEAD
 		if (err != PCIBIOS_SUCCESSFUL)
+=======
+		if (err)
+>>>>>>> origin/android16-base
 			err = -EIO;
 		break;
 
@@ -121,7 +142,11 @@ SYSCALL_DEFINE5(pciconfig_write, unsigned long, bus, unsigned long, dfn,
 		if (err)
 			break;
 		err = pci_user_write_config_dword(dev, off, dword);
+<<<<<<< HEAD
 		if (err != PCIBIOS_SUCCESSFUL)
+=======
+		if (err)
+>>>>>>> origin/android16-base
 			err = -EIO;
 		break;
 

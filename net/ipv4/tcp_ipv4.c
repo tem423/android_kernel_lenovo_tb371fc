@@ -110,10 +110,20 @@ static u32 tcp_v4_init_ts_off(const struct net *net, const struct sk_buff *skb)
 
 int tcp_twsk_unique(struct sock *sk, struct sock *sktw, void *twp)
 {
+<<<<<<< HEAD
 	const struct inet_timewait_sock *tw = inet_twsk(sktw);
 	const struct tcp_timewait_sock *tcptw = tcp_twsk(sktw);
 	struct tcp_sock *tp = tcp_sk(sk);
 	int reuse = sock_net(sk)->ipv4.sysctl_tcp_tw_reuse;
+=======
+	int reuse = READ_ONCE(sock_net(sk)->ipv4.sysctl_tcp_tw_reuse);
+	const struct inet_timewait_sock *tw = inet_twsk(sktw);
+	const struct tcp_timewait_sock *tcptw = tcp_twsk(sktw);
+	struct tcp_sock *tp = tcp_sk(sk);
+
+	if (tw->tw_substate == TCP_FIN_WAIT2)
+		reuse = 0;
+>>>>>>> origin/android16-base
 
 	if (reuse == 2) {
 		/* Still does not detect *everything* that goes through
@@ -157,6 +167,15 @@ int tcp_twsk_unique(struct sock *sk, struct sock *sktw, void *twp)
 	if (tcptw->tw_ts_recent_stamp &&
 	    (!twp || (reuse && time_after32(ktime_get_seconds(),
 					    tcptw->tw_ts_recent_stamp)))) {
+<<<<<<< HEAD
+=======
+		/* inet_twsk_hashdance() sets sk_refcnt after putting twsk
+		 * and releasing the bucket lock.
+		 */
+		if (unlikely(!refcount_inc_not_zero(&sktw->sk_refcnt)))
+			return 0;
+
+>>>>>>> origin/android16-base
 		/* In case of repair and re-using TIME-WAIT sockets we still
 		 * want to be sure that it is safe as above but honor the
 		 * sequence numbers and time stamps set as part of the repair
@@ -169,6 +188,7 @@ int tcp_twsk_unique(struct sock *sk, struct sock *sktw, void *twp)
 		 * without appearing to create any others.
 		 */
 		if (likely(!tp->repair)) {
+<<<<<<< HEAD
 			tp->write_seq = tcptw->tw_snd_nxt + 65535 + 2;
 			if (tp->write_seq == 0)
 				tp->write_seq = 1;
@@ -176,6 +196,17 @@ int tcp_twsk_unique(struct sock *sk, struct sock *sktw, void *twp)
 			tp->rx_opt.ts_recent_stamp = tcptw->tw_ts_recent_stamp;
 		}
 		sock_hold(sktw);
+=======
+			u32 seq = tcptw->tw_snd_nxt + 65535 + 2;
+
+			if (!seq)
+				seq = 1;
+			WRITE_ONCE(tp->write_seq, seq);
+			tp->rx_opt.ts_recent	   = tcptw->tw_ts_recent;
+			tp->rx_opt.ts_recent_stamp = tcptw->tw_ts_recent_stamp;
+		}
+
+>>>>>>> origin/android16-base
 		return 1;
 	}
 
@@ -258,7 +289,11 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 		tp->rx_opt.ts_recent	   = 0;
 		tp->rx_opt.ts_recent_stamp = 0;
 		if (likely(!tp->repair))
+<<<<<<< HEAD
 			tp->write_seq	   = 0;
+=======
+			WRITE_ONCE(tp->write_seq, 0);
+>>>>>>> origin/android16-base
 	}
 
 	inet->inet_dport = usin->sin_port;
@@ -296,10 +331,18 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 
 	if (likely(!tp->repair)) {
 		if (!tp->write_seq)
+<<<<<<< HEAD
 			tp->write_seq = secure_tcp_seq(inet->inet_saddr,
 						       inet->inet_daddr,
 						       inet->inet_sport,
 						       usin->sin_port);
+=======
+			WRITE_ONCE(tp->write_seq,
+				   secure_tcp_seq(inet->inet_saddr,
+						  inet->inet_daddr,
+						  inet->inet_sport,
+						  usin->sin_port));
+>>>>>>> origin/android16-base
 		tp->tsoffset = secure_tcp_ts_off(sock_net(sk),
 						 inet->inet_saddr,
 						 inet->inet_daddr);
@@ -325,6 +368,11 @@ failure:
 	 * if necessary.
 	 */
 	tcp_set_state(sk, TCP_CLOSE);
+<<<<<<< HEAD
+=======
+	if (!(sk->sk_userlocks & SOCK_BINDADDR_LOCK))
+		inet_reset_saddr(sk);
+>>>>>>> origin/android16-base
 	ip_rt_put(rt);
 	sk->sk_route_caps = 0;
 	inet->inet_dport = 0;
@@ -345,7 +393,11 @@ void tcp_v4_mtu_reduced(struct sock *sk)
 
 	if ((1 << sk->sk_state) & (TCPF_LISTEN | TCPF_CLOSE))
 		return;
+<<<<<<< HEAD
 	mtu = tcp_sk(sk)->mtu_info;
+=======
+	mtu = READ_ONCE(tcp_sk(sk)->mtu_info);
+>>>>>>> origin/android16-base
 	dst = inet_csk_update_pmtu(sk, mtu);
 	if (!dst)
 		return;
@@ -513,7 +565,11 @@ void tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 			if (sk->sk_state == TCP_LISTEN)
 				goto out;
 
+<<<<<<< HEAD
 			tp->mtu_info = info;
+=======
+			WRITE_ONCE(tp->mtu_info, info);
+>>>>>>> origin/android16-base
 			if (!sock_owned_by_user(sk)) {
 				tcp_v4_mtu_reduced(sk);
 			} else {
@@ -545,7 +601,11 @@ void tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 		icsk->icsk_rto = inet_csk_rto_backoff(icsk, TCP_RTO_MAX);
 
 		tcp_mstamp_refresh(tp);
+<<<<<<< HEAD
 		delta_us = (u32)(tp->tcp_mstamp - skb->skb_mstamp);
+=======
+		delta_us = (u32)(tp->tcp_mstamp - tcp_skb_timestamp_us(skb));
+>>>>>>> origin/android16-base
 		remaining = icsk->icsk_rto -
 			    usecs_to_jiffies(delta_us);
 
@@ -1369,7 +1429,11 @@ struct request_sock_ops tcp_request_sock_ops __read_mostly = {
 	.syn_ack_timeout =	tcp_syn_ack_timeout,
 };
 
+<<<<<<< HEAD
 static const struct tcp_request_sock_ops tcp_request_sock_ipv4_ops = {
+=======
+const struct tcp_request_sock_ops tcp_request_sock_ipv4_ops = {
+>>>>>>> origin/android16-base
 	.mss_clamp	=	TCP_MSS_DEFAULT,
 #ifdef CONFIG_TCP_MD5SIG
 	.req_md5_lookup	=	tcp_v4_md5_lookup,
@@ -1412,6 +1476,10 @@ struct sock *tcp_v4_syn_recv_sock(const struct sock *sk, struct sk_buff *skb,
 				  bool *own_req)
 {
 	struct inet_request_sock *ireq;
+<<<<<<< HEAD
+=======
+	bool found_dup_sk = false;
+>>>>>>> origin/android16-base
 	struct inet_sock *newinet;
 	struct tcp_sock *newtp;
 	struct sock *newsk;
@@ -1482,12 +1550,29 @@ struct sock *tcp_v4_syn_recv_sock(const struct sock *sk, struct sk_buff *skb,
 
 	if (__inet_inherit_port(sk, newsk) < 0)
 		goto put_and_exit;
+<<<<<<< HEAD
 	*own_req = inet_ehash_nolisten(newsk, req_to_sk(req_unhash));
+=======
+	*own_req = inet_ehash_nolisten(newsk, req_to_sk(req_unhash),
+				       &found_dup_sk);
+>>>>>>> origin/android16-base
 	if (likely(*own_req)) {
 		tcp_move_syn(newtp, req);
 		ireq->ireq_opt = NULL;
 	} else {
 		newinet->inet_opt = NULL;
+<<<<<<< HEAD
+=======
+
+		if (!req_unhash && found_dup_sk) {
+			/* This code path should only be executed in the
+			 * syncookie case only
+			 */
+			bh_unlock_sock(newsk);
+			sock_put(newsk);
+			newsk = NULL;
+		}
+>>>>>>> origin/android16-base
 	}
 	return newsk;
 
@@ -1530,15 +1615,27 @@ int tcp_v4_do_rcv(struct sock *sk, struct sk_buff *skb)
 	struct sock *rsk;
 
 	if (sk->sk_state == TCP_ESTABLISHED) { /* Fast path */
+<<<<<<< HEAD
 		struct dst_entry *dst = sk->sk_rx_dst;
+=======
+		struct dst_entry *dst;
+
+		dst = rcu_dereference_protected(sk->sk_rx_dst,
+						lockdep_sock_is_held(sk));
+>>>>>>> origin/android16-base
 
 		sock_rps_save_rxhash(sk, skb);
 		sk_mark_napi_id(sk, skb);
 		if (dst) {
 			if (inet_sk(sk)->rx_dst_ifindex != skb->skb_iif ||
 			    !dst->ops->check(dst, 0)) {
+<<<<<<< HEAD
 				dst_release(dst);
 				sk->sk_rx_dst = NULL;
+=======
+				RCU_INIT_POINTER(sk->sk_rx_dst, NULL);
+				dst_release(dst);
+>>>>>>> origin/android16-base
 			}
 		}
 		tcp_rcv_established(sk, skb);
@@ -1613,7 +1710,11 @@ int tcp_v4_early_demux(struct sk_buff *skb)
 		skb->sk = sk;
 		skb->destructor = sock_edemux;
 		if (sk_fullsock(sk)) {
+<<<<<<< HEAD
 			struct dst_entry *dst = READ_ONCE(sk->sk_rx_dst);
+=======
+			struct dst_entry *dst = rcu_dereference(sk->sk_rx_dst);
+>>>>>>> origin/android16-base
 
 			if (dst)
 				dst = dst_check(dst, 0);
@@ -1918,7 +2019,11 @@ void inet_sk_rx_dst_set(struct sock *sk, const struct sk_buff *skb)
 	struct dst_entry *dst = skb_dst(skb);
 
 	if (dst && dst_hold_safe(dst)) {
+<<<<<<< HEAD
 		sk->sk_rx_dst = dst;
+=======
+		rcu_assign_pointer(sk->sk_rx_dst, dst);
+>>>>>>> origin/android16-base
 		inet_sk(sk)->rx_dst_ifindex = skb->skb_iif;
 	}
 }
@@ -2174,6 +2279,10 @@ static void *tcp_get_idx(struct seq_file *seq, loff_t pos)
 static void *tcp_seek_last_pos(struct seq_file *seq)
 {
 	struct tcp_iter_state *st = seq->private;
+<<<<<<< HEAD
+=======
+	int bucket = st->bucket;
+>>>>>>> origin/android16-base
 	int offset = st->offset;
 	int orig_num = st->num;
 	void *rc = NULL;
@@ -2184,7 +2293,11 @@ static void *tcp_seek_last_pos(struct seq_file *seq)
 			break;
 		st->state = TCP_SEQ_STATE_LISTENING;
 		rc = listening_get_next(seq, NULL);
+<<<<<<< HEAD
 		while (offset-- && rc)
+=======
+		while (offset-- && rc && bucket == st->bucket)
+>>>>>>> origin/android16-base
 			rc = listening_get_next(seq, rc);
 		if (rc)
 			break;
@@ -2195,7 +2308,11 @@ static void *tcp_seek_last_pos(struct seq_file *seq)
 		if (st->bucket > tcp_hashinfo.ehash_mask)
 			break;
 		rc = established_get_first(seq);
+<<<<<<< HEAD
 		while (offset-- && rc)
+=======
+		while (offset-- && rc && bucket == st->bucket)
+>>>>>>> origin/android16-base
 			rc = established_get_next(seq, rc);
 	}
 
@@ -2344,12 +2461,20 @@ static void get_tcp4_sock(struct sock *sk, struct seq_file *f, int i)
 		 * we might find a transient negative value.
 		 */
 		rx_queue = max_t(int, READ_ONCE(tp->rcv_nxt) -
+<<<<<<< HEAD
 				      tp->copied_seq, 0);
+=======
+				      READ_ONCE(tp->copied_seq), 0);
+>>>>>>> origin/android16-base
 
 	seq_printf(f, "%4d: %08X:%04X %08X:%04X %02X %08X:%08X %02X:%08lX "
 			"%08X %5u %8d %lu %d %pK %lu %lu %u %u %d",
 		i, src, srcp, dest, destp, seq_state,
+<<<<<<< HEAD
 		tp->write_seq - tp->snd_una,
+=======
+		READ_ONCE(tp->write_seq) - tp->snd_una,
+>>>>>>> origin/android16-base
 		rx_queue,
 		timer_active,
 		jiffies_delta_to_clock_t(timer_expires - jiffies),

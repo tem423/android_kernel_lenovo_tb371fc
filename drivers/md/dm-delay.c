@@ -30,7 +30,11 @@ struct delay_c {
 	struct workqueue_struct *kdelayd_wq;
 	struct work_struct flush_expired_bios;
 	struct list_head delayed_bios;
+<<<<<<< HEAD
 	atomic_t may_delay;
+=======
+	bool may_delay;
+>>>>>>> origin/android16-base
 
 	struct delay_class read;
 	struct delay_class write;
@@ -191,7 +195,11 @@ static int delay_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	INIT_WORK(&dc->flush_expired_bios, flush_expired_bios);
 	INIT_LIST_HEAD(&dc->delayed_bios);
 	mutex_init(&dc->timer_lock);
+<<<<<<< HEAD
 	atomic_set(&dc->may_delay, 1);
+=======
+	dc->may_delay = true;
+>>>>>>> origin/android16-base
 	dc->argc = argc;
 
 	ret = delay_class_ctr(ti, &dc->read, argv);
@@ -245,7 +253,11 @@ static int delay_bio(struct delay_c *dc, struct delay_class *c, struct bio *bio)
 	struct dm_delay_info *delayed;
 	unsigned long expires = 0;
 
+<<<<<<< HEAD
 	if (!c->delay || !atomic_read(&dc->may_delay))
+=======
+	if (!c->delay)
+>>>>>>> origin/android16-base
 		return DM_MAPIO_REMAPPED;
 
 	delayed = dm_per_bio_data(bio, sizeof(struct dm_delay_info));
@@ -254,6 +266,13 @@ static int delay_bio(struct delay_c *dc, struct delay_class *c, struct bio *bio)
 	delayed->expires = expires = jiffies + msecs_to_jiffies(c->delay);
 
 	mutex_lock(&delayed_bios_lock);
+<<<<<<< HEAD
+=======
+	if (unlikely(!dc->may_delay)) {
+		mutex_unlock(&delayed_bios_lock);
+		return DM_MAPIO_REMAPPED;
+	}
+>>>>>>> origin/android16-base
 	c->ops++;
 	list_add_tail(&delayed->list, &dc->delayed_bios);
 	mutex_unlock(&delayed_bios_lock);
@@ -267,7 +286,14 @@ static void delay_presuspend(struct dm_target *ti)
 {
 	struct delay_c *dc = ti->private;
 
+<<<<<<< HEAD
 	atomic_set(&dc->may_delay, 0);
+=======
+	mutex_lock(&delayed_bios_lock);
+	dc->may_delay = false;
+	mutex_unlock(&delayed_bios_lock);
+
+>>>>>>> origin/android16-base
 	del_timer_sync(&dc->delay_timer);
 	flush_bios(flush_delayed_bios(dc, 1));
 }
@@ -276,7 +302,11 @@ static void delay_resume(struct dm_target *ti)
 {
 	struct delay_c *dc = ti->private;
 
+<<<<<<< HEAD
 	atomic_set(&dc->may_delay, 1);
+=======
+	dc->may_delay = true;
+>>>>>>> origin/android16-base
 }
 
 static int delay_map(struct dm_target *ti, struct bio *bio)

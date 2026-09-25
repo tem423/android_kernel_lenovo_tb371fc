@@ -99,7 +99,11 @@
 #define HWRST_STATUS_SPRDISK		0xc0
 
 /* Use default timeout 50 ms that converts to watchdog values */
+<<<<<<< HEAD
 #define WDG_LOAD_VAL			((50 * 1000) / 32768)
+=======
+#define WDG_LOAD_VAL			((50 * 32768) / 1000)
+>>>>>>> origin/android16-base
 #define WDG_LOAD_MASK			GENMASK(15, 0)
 #define WDG_UNLOCK_KEY			0xe551
 

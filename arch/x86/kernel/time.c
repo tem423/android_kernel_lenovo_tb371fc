@@ -26,6 +26,7 @@
 
 unsigned long profile_pc(struct pt_regs *regs)
 {
+<<<<<<< HEAD
 	unsigned long pc = instruction_pointer(regs);
 
 	if (!user_mode(regs) && in_lock_functions(pc)) {
@@ -46,6 +47,9 @@ unsigned long profile_pc(struct pt_regs *regs)
 #endif
 	}
 	return pc;
+=======
+	return instruction_pointer(regs);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(profile_pc);
 

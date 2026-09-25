@@ -609,7 +609,11 @@ static void close_connection(struct connection *con, bool and_other,
 	}
 	if (con->othercon && and_other) {
 		/* Will only re-enter once. */
+<<<<<<< HEAD
 		close_connection(con->othercon, false, true, true);
+=======
+		close_connection(con->othercon, false, tx, rx);
+>>>>>>> origin/android16-base
 	}
 	if (con->rx_page) {
 		__free_page(con->rx_page);

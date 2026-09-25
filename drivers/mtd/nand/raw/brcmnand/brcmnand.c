@@ -152,6 +152,10 @@ struct brcmnand_controller {
 	unsigned int		max_page_size;
 	const unsigned int	*page_sizes;
 	unsigned int		max_oob;
+<<<<<<< HEAD
+=======
+	u32			ecc_level_shift;
+>>>>>>> origin/android16-base
 	u32			features;
 
 	/* for low-power standby/resume only */
@@ -441,6 +445,37 @@ enum {
 	INTFC_CTLR_READY		= BIT(31),
 };
 
+<<<<<<< HEAD
+=======
+/***********************************************************************
+ * NAND ACC CONTROL bitfield
+ *
+ * Some bits have remained constant throughout hardware revision, while
+ * others have shifted around.
+ ***********************************************************************/
+
+/* Constant for all versions (where supported) */
+enum {
+	/* See BRCMNAND_HAS_CACHE_MODE */
+	ACC_CONTROL_CACHE_MODE				= BIT(22),
+
+	/* See BRCMNAND_HAS_PREFETCH */
+	ACC_CONTROL_PREFETCH				= BIT(23),
+
+	ACC_CONTROL_PAGE_HIT				= BIT(24),
+	ACC_CONTROL_WR_PREEMPT				= BIT(25),
+	ACC_CONTROL_PARTIAL_PAGE			= BIT(26),
+	ACC_CONTROL_RD_ERASED				= BIT(27),
+	ACC_CONTROL_FAST_PGM_RDIN			= BIT(28),
+	ACC_CONTROL_WR_ECC				= BIT(30),
+	ACC_CONTROL_RD_ECC				= BIT(31),
+};
+
+#define	ACC_CONTROL_ECC_SHIFT			16
+/* Only for v7.2 */
+#define	ACC_CONTROL_ECC_EXT_SHIFT		13
+
+>>>>>>> origin/android16-base
 static inline u32 nand_readreg(struct brcmnand_controller *ctrl, u32 offs)
 {
 	return brcmnand_readl(ctrl->nand_base + offs);
@@ -544,6 +579,15 @@ static int brcmnand_revision_init(struct brcmnand_controller *ctrl)
 	else if (of_property_read_bool(ctrl->dev->of_node, "brcm,nand-has-wp"))
 		ctrl->features |= BRCMNAND_HAS_WP;
 
+<<<<<<< HEAD
+=======
+	/* v7.2 has different ecc level shift in the acc register */
+	if (ctrl->nand_version == 0x0702)
+		ctrl->ecc_level_shift = ACC_CONTROL_ECC_EXT_SHIFT;
+	else
+		ctrl->ecc_level_shift = ACC_CONTROL_ECC_SHIFT;
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -589,6 +633,57 @@ static inline void brcmnand_write_fc(struct brcmnand_controller *ctrl,
 	__raw_writel(val, ctrl->nand_fc + word * 4);
 }
 
+<<<<<<< HEAD
+=======
+static void brcmnand_clear_ecc_addr(struct brcmnand_controller *ctrl)
+{
+
+	/* Clear error addresses */
+	brcmnand_write_reg(ctrl, BRCMNAND_UNCORR_ADDR, 0);
+	brcmnand_write_reg(ctrl, BRCMNAND_CORR_ADDR, 0);
+	brcmnand_write_reg(ctrl, BRCMNAND_UNCORR_EXT_ADDR, 0);
+	brcmnand_write_reg(ctrl, BRCMNAND_CORR_EXT_ADDR, 0);
+}
+
+static u64 brcmnand_get_uncorrecc_addr(struct brcmnand_controller *ctrl)
+{
+	u64 err_addr;
+
+	err_addr = brcmnand_read_reg(ctrl, BRCMNAND_UNCORR_ADDR);
+	err_addr |= ((u64)(brcmnand_read_reg(ctrl,
+					     BRCMNAND_UNCORR_EXT_ADDR)
+					     & 0xffff) << 32);
+
+	return err_addr;
+}
+
+static u64 brcmnand_get_correcc_addr(struct brcmnand_controller *ctrl)
+{
+	u64 err_addr;
+
+	err_addr = brcmnand_read_reg(ctrl, BRCMNAND_CORR_ADDR);
+	err_addr |= ((u64)(brcmnand_read_reg(ctrl,
+					     BRCMNAND_CORR_EXT_ADDR)
+					     & 0xffff) << 32);
+
+	return err_addr;
+}
+
+static void brcmnand_set_cmd_addr(struct mtd_info *mtd, u64 addr)
+{
+	struct nand_chip *chip =  mtd_to_nand(mtd);
+	struct brcmnand_host *host = nand_get_controller_data(chip);
+	struct brcmnand_controller *ctrl = host->ctrl;
+
+	brcmnand_write_reg(ctrl, BRCMNAND_CMD_EXT_ADDRESS,
+			   (host->cs << 16) | ((addr >> 32) & 0xffff));
+	(void)brcmnand_read_reg(ctrl, BRCMNAND_CMD_EXT_ADDRESS);
+	brcmnand_write_reg(ctrl, BRCMNAND_CMD_ADDRESS,
+			   lower_32_bits(addr));
+	(void)brcmnand_read_reg(ctrl, BRCMNAND_CMD_ADDRESS);
+}
+
+>>>>>>> origin/android16-base
 static inline u16 brcmnand_cs_offset(struct brcmnand_controller *ctrl, int cs,
 				     enum brcmnand_cs_reg reg)
 {
@@ -649,6 +744,7 @@ static inline int brcmnand_cmd_shift(struct brcmnand_controller *ctrl)
 	return 0;
 }
 
+<<<<<<< HEAD
 /***********************************************************************
  * NAND ACC CONTROL bitfield
  *
@@ -673,6 +769,8 @@ enum {
 	ACC_CONTROL_RD_ECC				= BIT(31),
 };
 
+=======
+>>>>>>> origin/android16-base
 static inline u32 brcmnand_spare_area_mask(struct brcmnand_controller *ctrl)
 {
 	if (ctrl->nand_version >= 0x0702)
@@ -683,18 +781,29 @@ static inline u32 brcmnand_spare_area_mask(struct brcmnand_controller *ctrl)
 		return GENMASK(5, 0);
 }
 
+<<<<<<< HEAD
 #define NAND_ACC_CONTROL_ECC_SHIFT	16
 #define NAND_ACC_CONTROL_ECC_EXT_SHIFT	13
 
+=======
+>>>>>>> origin/android16-base
 static inline u32 brcmnand_ecc_level_mask(struct brcmnand_controller *ctrl)
 {
 	u32 mask = (ctrl->nand_version >= 0x0600) ? 0x1f : 0x0f;
 
+<<<<<<< HEAD
 	mask <<= NAND_ACC_CONTROL_ECC_SHIFT;
 
 	/* v7.2 includes additional ECC levels */
 	if (ctrl->nand_version >= 0x0702)
 		mask |= 0x7 << NAND_ACC_CONTROL_ECC_EXT_SHIFT;
+=======
+	mask <<= ACC_CONTROL_ECC_SHIFT;
+
+	/* v7.2 includes additional ECC levels */
+	if (ctrl->nand_version == 0x0702)
+		mask |= 0x7 << ACC_CONTROL_ECC_EXT_SHIFT;
+>>>>>>> origin/android16-base
 
 	return mask;
 }
@@ -708,8 +817,13 @@ static void brcmnand_set_ecc_enabled(struct brcmnand_host *host, int en)
 
 	if (en) {
 		acc_control |= ecc_flags; /* enable RD/WR ECC */
+<<<<<<< HEAD
 		acc_control |= host->hwcfg.ecc_level
 			       << NAND_ACC_CONTROL_ECC_SHIFT;
+=======
+		acc_control &= ~brcmnand_ecc_level_mask(ctrl);
+		acc_control |= host->hwcfg.ecc_level << ctrl->ecc_level_shift;
+>>>>>>> origin/android16-base
 	} else {
 		acc_control &= ~ecc_flags; /* disable RD/WR ECC */
 		acc_control &= ~brcmnand_ecc_level_mask(ctrl);
@@ -788,6 +902,17 @@ static int bcmnand_ctrl_poll_status(struct brcmnand_controller *ctrl,
 		cpu_relax();
 	} while (time_after(limit, jiffies));
 
+<<<<<<< HEAD
+=======
+	/*
+	 * do a final check after time out in case the CPU was busy and the driver
+	 * did not get enough time to perform the polling to avoid false alarms
+	 */
+	val = brcmnand_read_reg(ctrl, BRCMNAND_INTFC_STATUS);
+	if ((val & mask) == expected_val)
+		return 0;
+
+>>>>>>> origin/android16-base
 	dev_warn(ctrl->dev, "timeout on status poll (expected %x got %x)\n",
 		 expected_val, val & mask);
 
@@ -1165,19 +1290,44 @@ static int write_oob_to_regs(struct brcmnand_controller *ctrl, int i,
 			     const u8 *oob, int sas, int sector_1k)
 {
 	int tbytes = sas << sector_1k;
+<<<<<<< HEAD
 	int j;
+=======
+	int j, k = 0;
+	u32 last = 0xffffffff;
+	u8 *plast = (u8 *)&last;
+>>>>>>> origin/android16-base
 
 	/* Adjust OOB values for 1K sector size */
 	if (sector_1k && (i & 0x01))
 		tbytes = max(0, tbytes - (int)ctrl->max_oob);
 	tbytes = min_t(int, tbytes, ctrl->max_oob);
 
+<<<<<<< HEAD
 	for (j = 0; j < tbytes; j += 4)
+=======
+	/*
+	 * tbytes may not be multiple of words. Make sure we don't read out of
+	 * the boundary and stop at last word.
+	 */
+	for (j = 0; (j + 3) < tbytes; j += 4)
+>>>>>>> origin/android16-base
 		oob_reg_write(ctrl, j,
 				(oob[j + 0] << 24) |
 				(oob[j + 1] << 16) |
 				(oob[j + 2] <<  8) |
 				(oob[j + 3] <<  0));
+<<<<<<< HEAD
+=======
+
+	/* handle the remaing bytes */
+	while (j < tbytes)
+		plast[k++] = oob[j++];
+
+	if (tbytes & 0x3)
+		oob_reg_write(ctrl, (tbytes & ~0x3), (__force u32)cpu_to_be32(last));
+
+>>>>>>> origin/android16-base
 	return tbytes;
 }
 
@@ -1217,10 +1367,30 @@ static void brcmnand_send_cmd(struct brcmnand_host *host, int cmd)
 {
 	struct brcmnand_controller *ctrl = host->ctrl;
 	int ret;
+<<<<<<< HEAD
 
 	dev_dbg(ctrl->dev, "send native cmd %d addr_lo 0x%x\n", cmd,
 		brcmnand_read_reg(ctrl, BRCMNAND_CMD_ADDRESS));
 	BUG_ON(ctrl->cmd_pending != 0);
+=======
+	u64 cmd_addr;
+
+	cmd_addr = brcmnand_read_reg(ctrl, BRCMNAND_CMD_ADDRESS);
+
+	dev_dbg(ctrl->dev, "send native cmd %d addr 0x%llx\n", cmd, cmd_addr);
+
+	/*
+	 * If we came here through _panic_write and there is a pending
+	 * command, try to wait for it. If it times out, rather than
+	 * hitting BUG_ON, just return so we don't crash while crashing.
+	 */
+	if (oops_in_progress) {
+		if (ctrl->cmd_pending &&
+			bcmnand_ctrl_poll_status(ctrl, NAND_CTRL_RDY, NAND_CTRL_RDY, 0))
+			return;
+	} else
+		BUG_ON(ctrl->cmd_pending != 0);
+>>>>>>> origin/android16-base
 	ctrl->cmd_pending = cmd;
 
 	ret = bcmnand_ctrl_poll_status(ctrl, NAND_CTRL_RDY, NAND_CTRL_RDY, 0);
@@ -1380,12 +1550,16 @@ static void brcmnand_cmdfunc(struct mtd_info *mtd, unsigned command,
 	if (!native_cmd)
 		return;
 
+<<<<<<< HEAD
 	brcmnand_write_reg(ctrl, BRCMNAND_CMD_EXT_ADDRESS,
 		(host->cs << 16) | ((addr >> 32) & 0xffff));
 	(void)brcmnand_read_reg(ctrl, BRCMNAND_CMD_EXT_ADDRESS);
 	brcmnand_write_reg(ctrl, BRCMNAND_CMD_ADDRESS, lower_32_bits(addr));
 	(void)brcmnand_read_reg(ctrl, BRCMNAND_CMD_ADDRESS);
 
+=======
+	brcmnand_set_cmd_addr(mtd, addr);
+>>>>>>> origin/android16-base
 	brcmnand_send_cmd(host, native_cmd);
 	brcmnand_waitfunc(mtd, chip);
 
@@ -1605,6 +1779,7 @@ static int brcmnand_read_by_pio(struct mtd_info *mtd, struct nand_chip *chip,
 	struct brcmnand_controller *ctrl = host->ctrl;
 	int i, j, ret = 0;
 
+<<<<<<< HEAD
 	/* Clear error addresses */
 	brcmnand_write_reg(ctrl, BRCMNAND_UNCORR_ADDR, 0);
 	brcmnand_write_reg(ctrl, BRCMNAND_CORR_ADDR, 0);
@@ -1619,6 +1794,12 @@ static int brcmnand_read_by_pio(struct mtd_info *mtd, struct nand_chip *chip,
 		brcmnand_write_reg(ctrl, BRCMNAND_CMD_ADDRESS,
 				   lower_32_bits(addr));
 		(void)brcmnand_read_reg(ctrl, BRCMNAND_CMD_ADDRESS);
+=======
+	brcmnand_clear_ecc_addr(ctrl);
+
+	for (i = 0; i < trans; i++, addr += FC_BYTES) {
+		brcmnand_set_cmd_addr(mtd, addr);
+>>>>>>> origin/android16-base
 		/* SPARE_AREA_READ does not use ECC, so just use PAGE_READ */
 		brcmnand_send_cmd(host, CMD_PAGE_READ);
 		brcmnand_waitfunc(mtd, chip);
@@ -1637,22 +1818,33 @@ static int brcmnand_read_by_pio(struct mtd_info *mtd, struct nand_chip *chip,
 					mtd->oobsize / trans,
 					host->hwcfg.sector_size_1k);
 
+<<<<<<< HEAD
 		if (!ret) {
 			*err_addr = brcmnand_read_reg(ctrl,
 					BRCMNAND_UNCORR_ADDR) |
 				((u64)(brcmnand_read_reg(ctrl,
 						BRCMNAND_UNCORR_EXT_ADDR)
 					& 0xffff) << 32);
+=======
+		if (ret != -EBADMSG) {
+			*err_addr = brcmnand_get_uncorrecc_addr(ctrl);
+
+>>>>>>> origin/android16-base
 			if (*err_addr)
 				ret = -EBADMSG;
 		}
 
 		if (!ret) {
+<<<<<<< HEAD
 			*err_addr = brcmnand_read_reg(ctrl,
 					BRCMNAND_CORR_ADDR) |
 				((u64)(brcmnand_read_reg(ctrl,
 						BRCMNAND_CORR_EXT_ADDR)
 					& 0xffff) << 32);
+=======
+			*err_addr = brcmnand_get_correcc_addr(ctrl);
+
+>>>>>>> origin/android16-base
 			if (*err_addr)
 				ret = -EUCLEAN;
 		}
@@ -1683,6 +1875,10 @@ static int brcmstb_nand_verify_erased_page(struct mtd_info *mtd,
 	int bitflips = 0;
 	int page = addr >> chip->page_shift;
 	int ret;
+<<<<<<< HEAD
+=======
+	void *ecc_chunk;
+>>>>>>> origin/android16-base
 
 	if (!buf) {
 		buf = chip->data_buf;
@@ -1698,7 +1894,13 @@ static int brcmstb_nand_verify_erased_page(struct mtd_info *mtd,
 		return ret;
 
 	for (i = 0; i < chip->ecc.steps; i++, oob += sas) {
+<<<<<<< HEAD
 		ret = nand_check_erased_ecc_chunk(buf, chip->ecc.size,
+=======
+		ecc_chunk = buf + chip->ecc.size * i;
+		ret = nand_check_erased_ecc_chunk(ecc_chunk,
+						  chip->ecc.size,
+>>>>>>> origin/android16-base
 						  oob, sas, NULL, 0,
 						  chip->ecc.strength);
 		if (ret < 0)
@@ -1722,7 +1924,11 @@ static int brcmnand_read(struct mtd_info *mtd, struct nand_chip *chip,
 	dev_dbg(ctrl->dev, "read %llx -> %p\n", (unsigned long long)addr, buf);
 
 try_dmaread:
+<<<<<<< HEAD
 	brcmnand_write_reg(ctrl, BRCMNAND_UNCORR_COUNT, 0);
+=======
+	brcmnand_clear_ecc_addr(ctrl);
+>>>>>>> origin/android16-base
 
 	if (has_flash_dma(ctrl) && !oob && flash_dma_buf_ok(buf)) {
 		err = brcmnand_dma_trans(host, addr, buf, trans * FC_BYTES,
@@ -1866,6 +2072,7 @@ static int brcmnand_write(struct mtd_info *mtd, struct nand_chip *chip,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	brcmnand_write_reg(ctrl, BRCMNAND_CMD_EXT_ADDRESS,
 			(host->cs << 16) | ((addr >> 32) & 0xffff));
 	(void)brcmnand_read_reg(ctrl, BRCMNAND_CMD_EXT_ADDRESS);
@@ -1875,6 +2082,11 @@ static int brcmnand_write(struct mtd_info *mtd, struct nand_chip *chip,
 		brcmnand_write_reg(ctrl, BRCMNAND_CMD_ADDRESS,
 				   lower_32_bits(addr));
 		(void)brcmnand_read_reg(ctrl, BRCMNAND_CMD_ADDRESS);
+=======
+	for (i = 0; i < trans; i++, addr += FC_BYTES) {
+		/* full address MUST be set before populating FC */
+		brcmnand_set_cmd_addr(mtd, addr);
+>>>>>>> origin/android16-base
 
 		if (buf) {
 			brcmnand_soc_data_bus_prepare(ctrl->soc, false);
@@ -2047,9 +2259,16 @@ static int brcmnand_set_cfg(struct brcmnand_host *host,
 
 	tmp = nand_readreg(ctrl, acc_control_offs);
 	tmp &= ~brcmnand_ecc_level_mask(ctrl);
+<<<<<<< HEAD
 	tmp |= cfg->ecc_level << NAND_ACC_CONTROL_ECC_SHIFT;
 	tmp &= ~brcmnand_spare_area_mask(ctrl);
 	tmp |= cfg->spare_area_size;
+=======
+	tmp |= cfg->ecc_level << ctrl->ecc_level_shift;
+	tmp &= ~brcmnand_spare_area_mask(ctrl);
+	tmp |= cfg->spare_area_size;
+
+>>>>>>> origin/android16-base
 	nand_writereg(ctrl, acc_control_offs, tmp);
 
 	brcmnand_set_sector_size_1k(host, cfg->sector_size_1k);
@@ -2239,6 +2458,15 @@ static int brcmnand_attach_chip(struct nand_chip *chip)
 
 	ret = brcmstb_choose_ecc_layout(host);
 
+<<<<<<< HEAD
+=======
+	/* If OOB is written with ECC enabled it will cause ECC errors */
+	if (is_hamming_ecc(host->ctrl, &host->hwcfg)) {
+		chip->ecc.write_oob = brcmnand_write_oob_raw;
+		chip->ecc.read_oob = brcmnand_read_oob_raw;
+	}
+
+>>>>>>> origin/android16-base
 	return ret;
 }
 

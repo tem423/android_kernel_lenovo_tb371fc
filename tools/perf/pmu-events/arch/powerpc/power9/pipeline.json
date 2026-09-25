@@ -442,7 +442,11 @@
   {,
     "EventCode": "0x4D052",
     "EventName": "PM_2FLOP_CMPL",
+<<<<<<< HEAD
     "BriefDescription": "DP vector version of fmul, fsub, fcmp, fsel, fabs, fnabs, fres ,fsqrte, fneg "
+=======
+    "BriefDescription": "DP vector version of fmul, fsub, fcmp, fsel, fabs, fnabs, fres ,fsqrte, fneg"
+>>>>>>> origin/android16-base
   },
   {,
     "EventCode": "0x1F142",

@@ -55,7 +55,11 @@ int kvm_check_cap(long cap)
 		exit(KSFT_SKIP);
 
 	ret = ioctl(kvm_fd, KVM_CHECK_EXTENSION, cap);
+<<<<<<< HEAD
 	TEST_ASSERT(ret != -1, "KVM_CHECK_EXTENSION IOCTL failed,\n"
+=======
+	TEST_ASSERT(ret >= 0, "KVM_CHECK_EXTENSION IOCTL failed,\n"
+>>>>>>> origin/android16-base
 		"  rc: %i errno: %i", ret, errno);
 
 	close(kvm_fd);

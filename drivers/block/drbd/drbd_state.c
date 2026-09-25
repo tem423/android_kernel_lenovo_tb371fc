@@ -888,7 +888,11 @@ is_valid_state(struct drbd_device *device, union drbd_state ns)
 		  ns.disk == D_OUTDATED)
 		rv = SS_CONNECTED_OUTDATES;
 
+<<<<<<< HEAD
 	else if ((ns.conn == C_VERIFY_S || ns.conn == C_VERIFY_T) &&
+=======
+	else if (nc && (ns.conn == C_VERIFY_S || ns.conn == C_VERIFY_T) &&
+>>>>>>> origin/android16-base
 		 (nc->verify_alg[0] == 0))
 		rv = SS_NO_VERIFY_ALG;
 
@@ -1549,7 +1553,11 @@ int drbd_bitmap_io_from_worker(struct drbd_device *device,
 	return rv;
 }
 
+<<<<<<< HEAD
 void notify_resource_state_change(struct sk_buff *skb,
+=======
+int notify_resource_state_change(struct sk_buff *skb,
+>>>>>>> origin/android16-base
 				  unsigned int seq,
 				  struct drbd_resource_state_change *resource_state_change,
 				  enum drbd_notification_type type)
@@ -1562,10 +1570,17 @@ void notify_resource_state_change(struct sk_buff *skb,
 		.res_susp_fen = resource_state_change->susp_fen[NEW],
 	};
 
+<<<<<<< HEAD
 	notify_resource_state(skb, seq, resource, &resource_info, type);
 }
 
 void notify_connection_state_change(struct sk_buff *skb,
+=======
+	return notify_resource_state(skb, seq, resource, &resource_info, type);
+}
+
+int notify_connection_state_change(struct sk_buff *skb,
+>>>>>>> origin/android16-base
 				    unsigned int seq,
 				    struct drbd_connection_state_change *connection_state_change,
 				    enum drbd_notification_type type)
@@ -1576,10 +1591,17 @@ void notify_connection_state_change(struct sk_buff *skb,
 		.conn_role = connection_state_change->peer_role[NEW],
 	};
 
+<<<<<<< HEAD
 	notify_connection_state(skb, seq, connection, &connection_info, type);
 }
 
 void notify_device_state_change(struct sk_buff *skb,
+=======
+	return notify_connection_state(skb, seq, connection, &connection_info, type);
+}
+
+int notify_device_state_change(struct sk_buff *skb,
+>>>>>>> origin/android16-base
 				unsigned int seq,
 				struct drbd_device_state_change *device_state_change,
 				enum drbd_notification_type type)
@@ -1589,10 +1611,17 @@ void notify_device_state_change(struct sk_buff *skb,
 		.dev_disk_state = device_state_change->disk_state[NEW],
 	};
 
+<<<<<<< HEAD
 	notify_device_state(skb, seq, device, &device_info, type);
 }
 
 void notify_peer_device_state_change(struct sk_buff *skb,
+=======
+	return notify_device_state(skb, seq, device, &device_info, type);
+}
+
+int notify_peer_device_state_change(struct sk_buff *skb,
+>>>>>>> origin/android16-base
 				     unsigned int seq,
 				     struct drbd_peer_device_state_change *p,
 				     enum drbd_notification_type type)
@@ -1606,7 +1635,11 @@ void notify_peer_device_state_change(struct sk_buff *skb,
 		.peer_resync_susp_dependency = p->resync_susp_dependency[NEW],
 	};
 
+<<<<<<< HEAD
 	notify_peer_device_state(skb, seq, peer_device, &peer_device_info, type);
+=======
+	return notify_peer_device_state(skb, seq, peer_device, &peer_device_info, type);
+>>>>>>> origin/android16-base
 }
 
 static void broadcast_state_change(struct drbd_state_change *state_change)
@@ -1614,7 +1647,11 @@ static void broadcast_state_change(struct drbd_state_change *state_change)
 	struct drbd_resource_state_change *resource_state_change = &state_change->resource[0];
 	bool resource_state_has_changed;
 	unsigned int n_device, n_connection, n_peer_device, n_peer_devices;
+<<<<<<< HEAD
 	void (*last_func)(struct sk_buff *, unsigned int, void *,
+=======
+	int (*last_func)(struct sk_buff *, unsigned int, void *,
+>>>>>>> origin/android16-base
 			  enum drbd_notification_type) = NULL;
 	void *uninitialized_var(last_arg);
 

@@ -228,12 +228,21 @@ static int bgmac_probe(struct bcma_device *core)
 		bgmac->feature_flags |= BGMAC_FEAT_CLKCTLST;
 		bgmac->feature_flags |= BGMAC_FEAT_FLW_CTRL1;
 		bgmac->feature_flags |= BGMAC_FEAT_SW_TYPE_PHY;
+<<<<<<< HEAD
 		if (ci->pkg == BCMA_PKG_ID_BCM47188 ||
 		    ci->pkg == BCMA_PKG_ID_BCM47186) {
 			bgmac->feature_flags |= BGMAC_FEAT_SW_TYPE_RGMII;
 			bgmac->feature_flags |= BGMAC_FEAT_IOST_ATTACHED;
 		}
 		if (ci->pkg == BCMA_PKG_ID_BCM5358)
+=======
+		if ((ci->id == BCMA_CHIP_ID_BCM5357 && ci->pkg == BCMA_PKG_ID_BCM47186) ||
+		    (ci->id == BCMA_CHIP_ID_BCM53572 && ci->pkg == BCMA_PKG_ID_BCM47188)) {
+			bgmac->feature_flags |= BGMAC_FEAT_SW_TYPE_RGMII;
+			bgmac->feature_flags |= BGMAC_FEAT_IOST_ATTACHED;
+		}
+		if (ci->id == BCMA_CHIP_ID_BCM5357 && ci->pkg == BCMA_PKG_ID_BCM5358)
+>>>>>>> origin/android16-base
 			bgmac->feature_flags |= BGMAC_FEAT_SW_TYPE_EPHYRMII;
 		break;
 	case BCMA_CHIP_ID_BCM53573:
@@ -323,7 +332,10 @@ static void bgmac_remove(struct bcma_device *core)
 	bcma_mdio_mii_unregister(bgmac->mii_bus);
 	bgmac_enet_remove(bgmac);
 	bcma_set_drvdata(core, NULL);
+<<<<<<< HEAD
 	kfree(bgmac);
+=======
+>>>>>>> origin/android16-base
 }
 
 static struct bcma_driver bgmac_bcma_driver = {

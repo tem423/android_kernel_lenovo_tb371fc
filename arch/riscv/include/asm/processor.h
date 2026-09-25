@@ -30,6 +30,11 @@
 
 #ifndef __ASSEMBLY__
 
+<<<<<<< HEAD
+=======
+#include <asm/barrier.h>
+
+>>>>>>> origin/android16-base
 struct task_struct;
 struct pt_regs;
 

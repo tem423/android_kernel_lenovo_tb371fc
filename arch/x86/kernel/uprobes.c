@@ -268,12 +268,22 @@ static volatile u32 good_2byte_insns[256 / 32] = {
 
 static bool is_prefix_bad(struct insn *insn)
 {
+<<<<<<< HEAD
 	int i;
 
 	for (i = 0; i < insn->prefixes.nbytes; i++) {
 		insn_attr_t attr;
 
 		attr = inat_get_opcode_attribute(insn->prefixes.bytes[i]);
+=======
+	insn_byte_t p;
+	int i;
+
+	for_each_insn_prefix(insn, i, p) {
+		insn_attr_t attr;
+
+		attr = inat_get_opcode_attribute(p);
+>>>>>>> origin/android16-base
 		switch (attr) {
 		case INAT_MAKE_PREFIX(INAT_PFX_ES):
 		case INAT_MAKE_PREFIX(INAT_PFX_CS):
@@ -728,13 +738,23 @@ static const struct uprobe_xol_ops push_xol_ops = {
 static int branch_setup_xol_ops(struct arch_uprobe *auprobe, struct insn *insn)
 {
 	u8 opc1 = OPCODE1(insn);
+<<<<<<< HEAD
+=======
+	insn_byte_t p;
+>>>>>>> origin/android16-base
 	int i;
 
 	switch (opc1) {
 	case 0xeb:	/* jmp 8 */
 	case 0xe9:	/* jmp 32 */
+<<<<<<< HEAD
 	case 0x90:	/* prefix* + nop; same as jmp with .offs = 0 */
 		break;
+=======
+		break;
+	case 0x90:	/* prefix* + nop; same as jmp with .offs = 0 */
+		goto setup;
+>>>>>>> origin/android16-base
 
 	case 0xe8:	/* call relative */
 		branch_clear_offset(auprobe, insn);
@@ -758,11 +778,20 @@ static int branch_setup_xol_ops(struct arch_uprobe *auprobe, struct insn *insn)
 	 * Intel and AMD behavior differ in 64-bit mode: Intel ignores 66 prefix.
 	 * No one uses these insns, reject any branch insns with such prefix.
 	 */
+<<<<<<< HEAD
 	for (i = 0; i < insn->prefixes.nbytes; i++) {
 		if (insn->prefixes.bytes[i] == 0x66)
 			return -ENOTSUPP;
 	}
 
+=======
+	for_each_insn_prefix(insn, i, p) {
+		if (p == 0x66)
+			return -ENOTSUPP;
+	}
+
+setup:
+>>>>>>> origin/android16-base
 	auprobe->branch.opc1 = opc1;
 	auprobe->branch.ilen = insn->length;
 	auprobe->branch.offs = insn->immediate.value;

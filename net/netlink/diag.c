@@ -93,6 +93,10 @@ static int __netlink_diag_dump(struct sk_buff *skb, struct netlink_callback *cb,
 	struct net *net = sock_net(skb->sk);
 	struct netlink_diag_req *req;
 	struct netlink_sock *nlsk;
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 	struct sock *sk;
 	int num = 2;
 	int ret = 0;
@@ -151,7 +155,11 @@ static int __netlink_diag_dump(struct sk_buff *skb, struct netlink_callback *cb,
 	num++;
 
 mc_list:
+<<<<<<< HEAD
 	read_lock(&nl_table_lock);
+=======
+	read_lock_irqsave(&nl_table_lock, flags);
+>>>>>>> origin/android16-base
 	sk_for_each_bound(sk, &tbl->mc_list) {
 		if (sk_hashed(sk))
 			continue;
@@ -166,13 +174,21 @@ mc_list:
 				 NETLINK_CB(cb->skb).portid,
 				 cb->nlh->nlmsg_seq,
 				 NLM_F_MULTI,
+<<<<<<< HEAD
 				 sock_i_ino(sk)) < 0) {
+=======
+				 __sock_i_ino(sk)) < 0) {
+>>>>>>> origin/android16-base
 			ret = 1;
 			break;
 		}
 		num++;
 	}
+<<<<<<< HEAD
 	read_unlock(&nl_table_lock);
+=======
+	read_unlock_irqrestore(&nl_table_lock, flags);
+>>>>>>> origin/android16-base
 
 done:
 	cb->args[0] = num;

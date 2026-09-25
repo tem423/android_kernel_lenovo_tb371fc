@@ -138,6 +138,12 @@ static int read_channel(struct gab *adc_bat, enum power_supply_property psp,
 			result);
 	if (ret < 0)
 		pr_err("read channel error\n");
+<<<<<<< HEAD
+=======
+	else
+		*result *= 1000;
+
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -382,7 +388,11 @@ static int gab_remove(struct platform_device *pdev)
 	}
 
 	kfree(adc_bat->psy_desc.properties);
+<<<<<<< HEAD
 	cancel_delayed_work(&adc_bat->bat_work);
+=======
+	cancel_delayed_work_sync(&adc_bat->bat_work);
+>>>>>>> origin/android16-base
 	return 0;
 }
 

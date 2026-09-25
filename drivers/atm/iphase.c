@@ -2290,6 +2290,7 @@ static int get_esi(struct atm_dev *dev)
 static int reset_sar(struct atm_dev *dev)  
 {  
 	IADEV *iadev;  
+<<<<<<< HEAD
 	int i, error = 1;  
 	unsigned int pci[64];  
 	  
@@ -2303,6 +2304,23 @@ static int reset_sar(struct atm_dev *dev)
 	  if ((error = pci_write_config_dword(iadev->pci,  
 					i*4, pci[i])) != PCIBIOS_SUCCESSFUL)  
 	    return error;  
+=======
+	int i, error;
+	unsigned int pci[64];  
+	  
+	iadev = INPH_IA_DEV(dev);  
+	for (i = 0; i < 64; i++) {
+		error = pci_read_config_dword(iadev->pci, i * 4, &pci[i]);
+		if (error != PCIBIOS_SUCCESSFUL)
+			return error;
+	}
+	writel(0, iadev->reg+IPHASE5575_EXT_RESET);  
+	for (i = 0; i < 64; i++) {
+		error = pci_write_config_dword(iadev->pci, i * 4, pci[i]);
+		if (error != PCIBIOS_SUCCESSFUL)
+			return error;
+	}
+>>>>>>> origin/android16-base
 	udelay(5);  
 	return 0;  
 }  
@@ -3301,7 +3319,11 @@ static void __exit ia_module_exit(void)
 {
 	pci_unregister_driver(&ia_driver);
 
+<<<<<<< HEAD
         del_timer(&ia_timer);
+=======
+	del_timer_sync(&ia_timer);
+>>>>>>> origin/android16-base
 }
 
 module_init(ia_module_init);

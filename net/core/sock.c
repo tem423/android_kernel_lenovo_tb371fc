@@ -404,7 +404,11 @@ int __sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb)
 	unsigned long flags;
 	struct sk_buff_head *list = &sk->sk_receive_queue;
 
+<<<<<<< HEAD
 	if (atomic_read(&sk->sk_rmem_alloc) >= sk->sk_rcvbuf) {
+=======
+	if (atomic_read(&sk->sk_rmem_alloc) >= READ_ONCE(sk->sk_rcvbuf)) {
+>>>>>>> origin/android16-base
 		atomic_inc(&sk->sk_drops);
 		trace_sock_rcvqueue_full(sk, skb);
 		return -ENOMEM;
@@ -456,7 +460,11 @@ int __sk_receive_skb(struct sock *sk, struct sk_buff *skb,
 
 	skb->dev = NULL;
 
+<<<<<<< HEAD
 	if (sk_rcvqueues_full(sk, sk->sk_rcvbuf)) {
+=======
+	if (sk_rcvqueues_full(sk, READ_ONCE(sk->sk_rcvbuf))) {
+>>>>>>> origin/android16-base
 		atomic_inc(&sk->sk_drops);
 		goto discard_and_relse;
 	}
@@ -496,7 +504,11 @@ struct dst_entry *__sk_dst_check(struct sock *sk, u32 cookie)
 
 	if (dst && dst->obsolete && dst->ops->check(dst, cookie) == NULL) {
 		sk_tx_queue_clear(sk);
+<<<<<<< HEAD
 		sk->sk_dst_pending_confirm = 0;
+=======
+		WRITE_ONCE(sk->sk_dst_pending_confirm, 0);
+>>>>>>> origin/android16-base
 		RCU_INIT_POINTER(sk->sk_dst_cache, NULL);
 		dst_release(dst);
 		return NULL;
@@ -531,7 +543,11 @@ static int sock_setbindtodevice(struct sock *sk, char __user *optval,
 
 	/* Sorry... */
 	ret = -EPERM;
+<<<<<<< HEAD
 	if (!ns_capable(net->user_ns, CAP_NET_RAW))
+=======
+	if (sk->sk_bound_dev_if && !ns_capable(net->user_ns, CAP_NET_RAW))
+>>>>>>> origin/android16-base
 		goto out;
 
 	ret = -EINVAL;
@@ -632,7 +648,12 @@ bool sk_mc_loop(struct sock *sk)
 		return false;
 	if (!sk)
 		return true;
+<<<<<<< HEAD
 	switch (sk->sk_family) {
+=======
+	/* IPV6_ADDRFORM can change sk->sk_family under us. */
+	switch (READ_ONCE(sk->sk_family)) {
+>>>>>>> origin/android16-base
 	case AF_INET:
 		return inet_sk(sk)->mc_loop;
 #if IS_ENABLED(CONFIG_IPV6)
@@ -989,7 +1010,11 @@ set_rcvbuf:
 			if (val < 0)
 				ret = -EINVAL;
 			else
+<<<<<<< HEAD
 				sk->sk_ll_usec = val;
+=======
+				WRITE_ONCE(sk->sk_ll_usec, val);
+>>>>>>> origin/android16-base
 		}
 		break;
 #endif
@@ -1057,6 +1082,19 @@ set_rcvbuf:
 }
 EXPORT_SYMBOL(sock_setsockopt);
 
+<<<<<<< HEAD
+=======
+static const struct cred *sk_get_peer_cred(struct sock *sk)
+{
+	const struct cred *cred;
+
+	spin_lock(&sk->sk_peer_lock);
+	cred = get_cred(sk->sk_peer_cred);
+	spin_unlock(&sk->sk_peer_lock);
+
+	return cred;
+}
+>>>>>>> origin/android16-base
 
 static void cred_to_ucred(struct pid *pid, const struct cred *cred,
 			  struct ucred *ucred)
@@ -1231,7 +1269,15 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 		struct ucred peercred;
 		if (len > sizeof(peercred))
 			len = sizeof(peercred);
+<<<<<<< HEAD
 		cred_to_ucred(sk->sk_peer_pid, sk->sk_peer_cred, &peercred);
+=======
+
+		spin_lock(&sk->sk_peer_lock);
+		cred_to_ucred(sk->sk_peer_pid, sk->sk_peer_cred, &peercred);
+		spin_unlock(&sk->sk_peer_lock);
+
+>>>>>>> origin/android16-base
 		if (copy_to_user(optval, &peercred, len))
 			return -EFAULT;
 		goto lenout;
@@ -1239,6 +1285,7 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 
 	case SO_PEERGROUPS:
 	{
+<<<<<<< HEAD
 		int ret, n;
 
 		if (!sk->sk_peer_cred)
@@ -1247,12 +1294,30 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 		n = sk->sk_peer_cred->group_info->ngroups;
 		if (len < n * sizeof(gid_t)) {
 			len = n * sizeof(gid_t);
+=======
+		const struct cred *cred;
+		int ret, n;
+
+		cred = sk_get_peer_cred(sk);
+		if (!cred)
+			return -ENODATA;
+
+		n = cred->group_info->ngroups;
+		if (len < n * sizeof(gid_t)) {
+			len = n * sizeof(gid_t);
+			put_cred(cred);
+>>>>>>> origin/android16-base
 			return put_user(len, optlen) ? -EFAULT : -ERANGE;
 		}
 		len = n * sizeof(gid_t);
 
+<<<<<<< HEAD
 		ret = groups_to_user((gid_t __user *)optval,
 				     sk->sk_peer_cred->group_info);
+=======
+		ret = groups_to_user((gid_t __user *)optval, cred->group_info);
+		put_cred(cred);
+>>>>>>> origin/android16-base
 		if (ret)
 			return ret;
 		goto lenout;
@@ -1302,7 +1367,11 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 		if (!sock->ops->set_peek_off)
 			return -EOPNOTSUPP;
 
+<<<<<<< HEAD
 		v.val = sk->sk_peek_off;
+=======
+		v.val = READ_ONCE(sk->sk_peek_off);
+>>>>>>> origin/android16-base
 		break;
 	case SO_NOFCS:
 		v.val = sock_flag(sk, SOCK_NOFCS);
@@ -1332,7 +1401,11 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 
 #ifdef CONFIG_NET_RX_BUSY_POLL
 	case SO_BUSY_POLL:
+<<<<<<< HEAD
 		v.val = sk->sk_ll_usec;
+=======
+		v.val = READ_ONCE(sk->sk_ll_usec);
+>>>>>>> origin/android16-base
 		break;
 #endif
 
@@ -1576,9 +1649,16 @@ static void __sk_destruct(struct rcu_head *head)
 		sk->sk_frag.page = NULL;
 	}
 
+<<<<<<< HEAD
 	if (sk->sk_peer_cred)
 		put_cred(sk->sk_peer_cred);
 	put_pid(sk->sk_peer_pid);
+=======
+	/* We do not need to acquire sk->sk_peer_lock, we are the last user. */
+	put_cred(sk->sk_peer_cred);
+	put_pid(sk->sk_peer_pid);
+
+>>>>>>> origin/android16-base
 	if (likely(sk->sk_net_refcnt))
 		put_net(sock_net(sk));
 	sk_prot_free(sk->sk_prot_creator, sk);
@@ -1777,7 +1857,10 @@ void sk_setup_caps(struct sock *sk, struct dst_entry *dst)
 {
 	u32 max_segs = 1;
 
+<<<<<<< HEAD
 	sk_dst_set(sk, dst);
+=======
+>>>>>>> origin/android16-base
 	sk->sk_route_caps = dst->dev->features | sk->sk_route_forced_caps;
 	if (sk->sk_route_caps & NETIF_F_GSO)
 		sk->sk_route_caps |= NETIF_F_GSO_SOFTWARE;
@@ -1792,6 +1875,10 @@ void sk_setup_caps(struct sock *sk, struct dst_entry *dst)
 		}
 	}
 	sk->sk_gso_max_segs = max_segs;
+<<<<<<< HEAD
+=======
+	sk_dst_set(sk, dst);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(sk_setup_caps);
 
@@ -1921,13 +2008,33 @@ kuid_t sock_i_uid(struct sock *sk)
 }
 EXPORT_SYMBOL(sock_i_uid);
 
+<<<<<<< HEAD
+=======
+unsigned long __sock_i_ino(struct sock *sk)
+{
+	unsigned long ino;
+
+	read_lock(&sk->sk_callback_lock);
+	ino = sk->sk_socket ? SOCK_INODE(sk->sk_socket)->i_ino : 0;
+	read_unlock(&sk->sk_callback_lock);
+	return ino;
+}
+EXPORT_SYMBOL(__sock_i_ino);
+
+>>>>>>> origin/android16-base
 unsigned long sock_i_ino(struct sock *sk)
 {
 	unsigned long ino;
 
+<<<<<<< HEAD
 	read_lock_bh(&sk->sk_callback_lock);
 	ino = sk->sk_socket ? SOCK_INODE(sk->sk_socket)->i_ino : 0;
 	read_unlock_bh(&sk->sk_callback_lock);
+=======
+	local_bh_disable();
+	ino = __sock_i_ino(sk);
+	local_bh_enable();
+>>>>>>> origin/android16-base
 	return ino;
 }
 EXPORT_SYMBOL(sock_i_ino);
@@ -2042,9 +2149,15 @@ static long sock_wait_for_wmem(struct sock *sk, long timeo)
 		prepare_to_wait(sk_sleep(sk), &wait, TASK_INTERRUPTIBLE);
 		if (refcount_read(&sk->sk_wmem_alloc) < sk->sk_sndbuf)
 			break;
+<<<<<<< HEAD
 		if (sk->sk_shutdown & SEND_SHUTDOWN)
 			break;
 		if (sk->sk_err)
+=======
+		if (READ_ONCE(sk->sk_shutdown) & SEND_SHUTDOWN)
+			break;
+		if (READ_ONCE(sk->sk_err))
+>>>>>>> origin/android16-base
 			break;
 		timeo = schedule_timeout(timeo);
 	}
@@ -2072,7 +2185,11 @@ struct sk_buff *sock_alloc_send_pskb(struct sock *sk, unsigned long header_len,
 			goto failure;
 
 		err = -EPIPE;
+<<<<<<< HEAD
 		if (sk->sk_shutdown & SEND_SHUTDOWN)
+=======
+		if (READ_ONCE(sk->sk_shutdown) & SEND_SHUTDOWN)
+>>>>>>> origin/android16-base
 			goto failure;
 
 		if (sk_wmem_alloc_get(sk) < sk->sk_sndbuf)
@@ -2189,9 +2306,12 @@ static void sk_leave_memory_pressure(struct sock *sk)
 	}
 }
 
+<<<<<<< HEAD
 /* On 32bit arches, an skb frag is limited to 2^15 */
 #define SKB_FRAG_PAGE_ORDER	get_order(32768)
 
+=======
+>>>>>>> origin/android16-base
 /**
  * skb_page_frag_refill - check that a page_frag contains enough room
  * @sz: minimum size of the fragment we want to get
@@ -2512,7 +2632,11 @@ void __sk_mem_reduce_allocated(struct sock *sk, int amount)
 	if (mem_cgroup_sockets_enabled && sk->sk_memcg)
 		mem_cgroup_uncharge_skmem(sk->sk_memcg, amount);
 
+<<<<<<< HEAD
 	if (sk_under_memory_pressure(sk) &&
+=======
+	if (sk_under_global_memory_pressure(sk) &&
+>>>>>>> origin/android16-base
 	    (sk_memory_allocated(sk) < sk_prot_mem_limits(sk, 0)))
 		sk_leave_memory_pressure(sk);
 }
@@ -2533,7 +2657,11 @@ EXPORT_SYMBOL(__sk_mem_reclaim);
 
 int sk_set_peek_off(struct sock *sk, int val)
 {
+<<<<<<< HEAD
 	sk->sk_peek_off = val;
+=======
+	WRITE_ONCE(sk->sk_peek_off, val);
+>>>>>>> origin/android16-base
 	return 0;
 }
 EXPORT_SYMBOL_GPL(sk_set_peek_off);
@@ -2777,6 +2905,16 @@ void sk_stop_timer(struct sock *sk, struct timer_list* timer)
 }
 EXPORT_SYMBOL(sk_stop_timer);
 
+<<<<<<< HEAD
+=======
+void sk_stop_timer_sync(struct sock *sk, struct timer_list *timer)
+{
+	if (del_timer_sync(timer))
+		__sock_put(sk);
+}
+EXPORT_SYMBOL(sk_stop_timer_sync);
+
+>>>>>>> origin/android16-base
 void sock_init_data_uid(struct socket *sock, struct sock *sk, kuid_t uid)
 {
 	sk_init_common(sk);
@@ -2825,6 +2963,11 @@ void sock_init_data_uid(struct socket *sock, struct sock *sk, kuid_t uid)
 
 	sk->sk_peer_pid 	=	NULL;
 	sk->sk_peer_cred	=	NULL;
+<<<<<<< HEAD
+=======
+	spin_lock_init(&sk->sk_peer_lock);
+
+>>>>>>> origin/android16-base
 	sk->sk_write_pending	=	0;
 	sk->sk_rcvlowat		=	1;
 	sk->sk_rcvtimeo		=	MAX_SCHEDULE_TIMEOUT;
@@ -2838,7 +2981,11 @@ void sock_init_data_uid(struct socket *sock, struct sock *sk, kuid_t uid)
 
 #ifdef CONFIG_NET_RX_BUSY_POLL
 	sk->sk_napi_id		=	0;
+<<<<<<< HEAD
 	sk->sk_ll_usec		=	sysctl_net_busy_read;
+=======
+	sk->sk_ll_usec		=	READ_ONCE(sysctl_net_busy_read);
+>>>>>>> origin/android16-base
 #endif
 
 	sk->sk_max_pacing_rate = ~0U;
@@ -3037,7 +3184,12 @@ int sock_common_getsockopt(struct socket *sock, int level, int optname,
 {
 	struct sock *sk = sock->sk;
 
+<<<<<<< HEAD
 	return sk->sk_prot->getsockopt(sk, level, optname, optval, optlen);
+=======
+	/* IPV6_ADDRFORM can change sk->sk_prot under us. */
+	return READ_ONCE(sk->sk_prot)->getsockopt(sk, level, optname, optval, optlen);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(sock_common_getsockopt);
 
@@ -3078,7 +3230,12 @@ int sock_common_setsockopt(struct socket *sock, int level, int optname,
 {
 	struct sock *sk = sock->sk;
 
+<<<<<<< HEAD
 	return sk->sk_prot->setsockopt(sk, level, optname, optval, optlen);
+=======
+	/* IPV6_ADDRFORM can change sk->sk_prot under us. */
+	return READ_ONCE(sk->sk_prot)->setsockopt(sk, level, optname, optval, optlen);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(sock_common_setsockopt);
 

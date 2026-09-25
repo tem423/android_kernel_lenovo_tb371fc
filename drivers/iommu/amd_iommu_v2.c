@@ -626,6 +626,10 @@ out_drop_state:
 	put_device_state(dev_state);
 
 out:
+<<<<<<< HEAD
+=======
+	pci_dev_put(pdev);
+>>>>>>> origin/android16-base
 	return ret;
 }
 

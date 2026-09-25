@@ -437,6 +437,14 @@ int kernel_active_single_step(void)
 }
 NOKPROBE_SYMBOL(kernel_active_single_step);
 
+<<<<<<< HEAD
+=======
+void kernel_rewind_single_step(struct pt_regs *regs)
+{
+	set_regs_spsr_ss(regs);
+}
+
+>>>>>>> origin/android16-base
 /* ptrace API */
 void user_enable_single_step(struct task_struct *task)
 {

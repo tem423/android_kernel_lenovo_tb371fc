@@ -1594,7 +1594,12 @@ blk_trace_event_print_binary(struct trace_iterator *iter, int flags,
 
 static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
 {
+<<<<<<< HEAD
 	if (!(blk_tracer_flags.val & TRACE_BLK_OPT_CLASSIC))
+=======
+	if ((iter->ent->type != TRACE_BLK) ||
+	    !(blk_tracer_flags.val & TRACE_BLK_OPT_CLASSIC))
+>>>>>>> origin/android16-base
 		return TRACE_TYPE_UNHANDLED;
 
 	return print_one_line(iter, true);
@@ -1661,6 +1666,17 @@ static int blk_trace_remove_queue(struct request_queue *q)
 	if (bt == NULL)
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	if (bt->trace_state == Blktrace_running) {
+		bt->trace_state = Blktrace_stopped;
+		spin_lock_irq(&running_trace_lock);
+		list_del_init(&bt->running_list);
+		spin_unlock_irq(&running_trace_lock);
+		relay_flush(bt->rchan);
+	}
+
+>>>>>>> origin/android16-base
 	put_probe_ref();
 	synchronize_rcu();
 	blk_trace_free(bt);

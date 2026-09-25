@@ -92,16 +92,23 @@ void nf_reject_ip6_tcphdr_put(struct sk_buff *nskb,
 			      const struct tcphdr *oth, unsigned int otcplen)
 {
 	struct tcphdr *tcph;
+<<<<<<< HEAD
 	int needs_ack;
 
 	skb_reset_transport_header(nskb);
 	tcph = skb_put(nskb, sizeof(struct tcphdr));
+=======
+
+	skb_reset_transport_header(nskb);
+	tcph = skb_put_zero(nskb, sizeof(struct tcphdr));
+>>>>>>> origin/android16-base
 	/* Truncate to length (no data) */
 	tcph->doff = sizeof(struct tcphdr)/4;
 	tcph->source = oth->dest;
 	tcph->dest = oth->source;
 
 	if (oth->ack) {
+<<<<<<< HEAD
 		needs_ack = 0;
 		tcph->seq = oth->ack_seq;
 		tcph->ack_seq = 0;
@@ -119,6 +126,16 @@ void nf_reject_ip6_tcphdr_put(struct sk_buff *nskb,
 	tcph->window = 0;
 	tcph->urg_ptr = 0;
 	tcph->check = 0;
+=======
+		tcph->seq = oth->ack_seq;
+	} else {
+		tcph->ack_seq = htonl(ntohl(oth->seq) + oth->syn + oth->fin +
+				      otcplen - (oth->doff<<2));
+		tcph->ack = 1;
+	}
+
+	tcph->rst = 1;
+>>>>>>> origin/android16-base
 
 	/* Adjust TCP checksum */
 	tcph->check = csum_ipv6_magic(&ipv6_hdr(nskb)->saddr,

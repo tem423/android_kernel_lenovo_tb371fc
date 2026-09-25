@@ -1070,7 +1070,11 @@ static int igbvf_request_msix(struct igbvf_adapter *adapter)
 			  igbvf_intr_msix_rx, 0, adapter->rx_ring->name,
 			  netdev);
 	if (err)
+<<<<<<< HEAD
 		goto out;
+=======
+		goto free_irq_tx;
+>>>>>>> origin/android16-base
 
 	adapter->rx_ring->itr_register = E1000_EITR(vector);
 	adapter->rx_ring->itr_val = adapter->current_itr;
@@ -1079,10 +1083,21 @@ static int igbvf_request_msix(struct igbvf_adapter *adapter)
 	err = request_irq(adapter->msix_entries[vector].vector,
 			  igbvf_msix_other, 0, netdev->name, netdev);
 	if (err)
+<<<<<<< HEAD
 		goto out;
 
 	igbvf_configure_msix(adapter);
 	return 0;
+=======
+		goto free_irq_rx;
+
+	igbvf_configure_msix(adapter);
+	return 0;
+free_irq_rx:
+	free_irq(adapter->msix_entries[--vector].vector, netdev);
+free_irq_tx:
+	free_irq(adapter->msix_entries[--vector].vector, netdev);
+>>>>>>> origin/android16-base
 out:
 	return err;
 }
@@ -2888,6 +2903,10 @@ static int igbvf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	return 0;
 
 err_hw_init:
+<<<<<<< HEAD
+=======
+	netif_napi_del(&adapter->rx_ring->napi);
+>>>>>>> origin/android16-base
 	kfree(adapter->tx_ring);
 	kfree(adapter->rx_ring);
 err_sw_init:

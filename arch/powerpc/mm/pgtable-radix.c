@@ -115,7 +115,11 @@ static int early_map_kernel_page(unsigned long ea, unsigned long pa,
 
 set_the_pte:
 	set_pte_at(&init_mm, ea, ptep, pfn_pte(pfn, flags));
+<<<<<<< HEAD
 	smp_wmb();
+=======
+	asm volatile("ptesync": : :"memory");
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -169,7 +173,11 @@ static int __map_kernel_page(unsigned long ea, unsigned long pa,
 
 set_the_pte:
 	set_pte_at(&init_mm, ea, ptep, pfn_pte(pfn, flags));
+<<<<<<< HEAD
 	smp_wmb();
+=======
+	asm volatile("ptesync": : :"memory");
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1041,8 +1049,13 @@ void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
 				  pte_t entry, unsigned long address, int psize)
 {
 	struct mm_struct *mm = vma->vm_mm;
+<<<<<<< HEAD
 	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_ACCESSED |
 					      _PAGE_RW | _PAGE_EXEC);
+=======
+	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_SOFT_DIRTY |
+					      _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+>>>>>>> origin/android16-base
 
 	unsigned long change = pte_val(entry) ^ pte_val(*ptep);
 	/*

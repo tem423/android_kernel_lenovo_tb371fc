@@ -1030,7 +1030,10 @@ enum {
 	SNBEP_PCI_QPI_PORT0_FILTER,
 	SNBEP_PCI_QPI_PORT1_FILTER,
 	BDX_PCI_QPI_PORT2_FILTER,
+<<<<<<< HEAD
 	HSWEP_PCI_PCU_3,
+=======
+>>>>>>> origin/android16-base
 };
 
 static int snbep_qpi_hw_config(struct intel_uncore_box *box, struct perf_event *event)
@@ -2687,14 +2690,40 @@ static struct intel_uncore_type *hswep_msr_uncores[] = {
 	NULL,
 };
 
+<<<<<<< HEAD
 void hswep_uncore_cpu_init(void)
 {
 	int pkg = boot_cpu_data.logical_proc_id;
 
+=======
+#define HSWEP_PCU_DID			0x2fc0
+#define HSWEP_PCU_CAPID4_OFFET		0x94
+#define hswep_get_chop(_cap)		(((_cap) >> 6) & 0x3)
+
+static bool hswep_has_limit_sbox(unsigned int device)
+{
+	struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, device, NULL);
+	u32 capid4;
+
+	if (!dev)
+		return false;
+
+	pci_read_config_dword(dev, HSWEP_PCU_CAPID4_OFFET, &capid4);
+	pci_dev_put(dev);
+	if (!hswep_get_chop(capid4))
+		return true;
+
+	return false;
+}
+
+void hswep_uncore_cpu_init(void)
+{
+>>>>>>> origin/android16-base
 	if (hswep_uncore_cbox.num_boxes > boot_cpu_data.x86_max_cores)
 		hswep_uncore_cbox.num_boxes = boot_cpu_data.x86_max_cores;
 
 	/* Detect 6-8 core systems with only two SBOXes */
+<<<<<<< HEAD
 	if (uncore_extra_pci_dev[pkg].dev[HSWEP_PCI_PCU_3]) {
 		u32 capid4;
 
@@ -2703,6 +2732,10 @@ void hswep_uncore_cpu_init(void)
 		if (((capid4 >> 6) & 0x3) == 0)
 			hswep_uncore_sbox.num_boxes = 2;
 	}
+=======
+	if (hswep_has_limit_sbox(HSWEP_PCU_DID))
+		hswep_uncore_sbox.num_boxes = 2;
+>>>>>>> origin/android16-base
 
 	uncore_msr_uncores = hswep_msr_uncores;
 }
@@ -2965,11 +2998,14 @@ static const struct pci_device_id hswep_uncore_pci_ids[] = {
 		.driver_data = UNCORE_PCI_DEV_DATA(UNCORE_EXTRA_PCI_DEV,
 						   SNBEP_PCI_QPI_PORT1_FILTER),
 	},
+<<<<<<< HEAD
 	{ /* PCU.3 (for Capability registers) */
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2fc0),
 		.driver_data = UNCORE_PCI_DEV_DATA(UNCORE_EXTRA_PCI_DEV,
 						   HSWEP_PCI_PCU_3),
 	},
+=======
+>>>>>>> origin/android16-base
 	{ /* end: all zeroes */ }
 };
 
@@ -3061,14 +3097,22 @@ static struct event_constraint bdx_uncore_pcu_constraints[] = {
 	EVENT_CONSTRAINT_END
 };
 
+<<<<<<< HEAD
 void bdx_uncore_cpu_init(void)
 {
 	int pkg = topology_phys_to_logical_pkg(boot_cpu_data.phys_proc_id);
 
+=======
+#define BDX_PCU_DID			0x6fc0
+
+void bdx_uncore_cpu_init(void)
+{
+>>>>>>> origin/android16-base
 	if (bdx_uncore_cbox.num_boxes > boot_cpu_data.x86_max_cores)
 		bdx_uncore_cbox.num_boxes = boot_cpu_data.x86_max_cores;
 	uncore_msr_uncores = bdx_msr_uncores;
 
+<<<<<<< HEAD
 	/* BDX-DE doesn't have SBOX */
 	if (boot_cpu_data.x86_model == 86) {
 		uncore_msr_uncores[BDX_MSR_UNCORE_SBOX] = NULL;
@@ -3082,6 +3126,12 @@ void bdx_uncore_cpu_init(void)
 		if (((capid4 >> 6) & 0x3) == 0)
 			bdx_msr_uncores[BDX_MSR_UNCORE_SBOX] = NULL;
 	}
+=======
+	/* Detect systems with no SBOXes */
+	if ((boot_cpu_data.x86_model == 86) || hswep_has_limit_sbox(BDX_PCU_DID))
+		uncore_msr_uncores[BDX_MSR_UNCORE_SBOX] = NULL;
+
+>>>>>>> origin/android16-base
 	hswep_uncore_pcu.constraints = bdx_uncore_pcu_constraints;
 }
 
@@ -3302,11 +3352,14 @@ static const struct pci_device_id bdx_uncore_pci_ids[] = {
 		.driver_data = UNCORE_PCI_DEV_DATA(UNCORE_EXTRA_PCI_DEV,
 						   BDX_PCI_QPI_PORT2_FILTER),
 	},
+<<<<<<< HEAD
 	{ /* PCU.3 (for Capability registers) */
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x6fc0),
 		.driver_data = UNCORE_PCI_DEV_DATA(UNCORE_EXTRA_PCI_DEV,
 						   HSWEP_PCI_PCU_3),
 	},
+=======
+>>>>>>> origin/android16-base
 	{ /* end: all zeroes */ }
 };
 
@@ -3425,6 +3478,12 @@ static int skx_cha_hw_config(struct intel_uncore_box *box, struct perf_event *ev
 	struct hw_perf_event_extra *reg1 = &event->hw.extra_reg;
 	struct extra_reg *er;
 	int idx = 0;
+<<<<<<< HEAD
+=======
+	/* Any of the CHA events may be filtered by Thread/Core-ID.*/
+	if (event->hw.config & SNBEP_CBO_PMON_CTL_TID_EN)
+		idx = SKX_CHA_MSR_PMON_BOX_FILTER_TID;
+>>>>>>> origin/android16-base
 
 	for (er = skx_uncore_cha_extra_regs; er->msr; er++) {
 		if (er->event != (event->hw.config & er->config_mask))
@@ -3492,6 +3551,10 @@ static struct event_constraint skx_uncore_iio_constraints[] = {
 	UNCORE_EVENT_CONSTRAINT(0xc0, 0xc),
 	UNCORE_EVENT_CONSTRAINT(0xc5, 0xc),
 	UNCORE_EVENT_CONSTRAINT(0xd4, 0xc),
+<<<<<<< HEAD
+=======
+	UNCORE_EVENT_CONSTRAINT(0xd5, 0xc),
+>>>>>>> origin/android16-base
 	EVENT_CONSTRAINT_END
 };
 

@@ -795,7 +795,11 @@ static int pxa_ssp_probe(struct snd_soc_dai *dai)
 		if (IS_ERR(priv->extclk)) {
 			ret = PTR_ERR(priv->extclk);
 			if (ret == -EPROBE_DEFER)
+<<<<<<< HEAD
 				return ret;
+=======
+				goto err_priv;
+>>>>>>> origin/android16-base
 
 			priv->extclk = NULL;
 		}

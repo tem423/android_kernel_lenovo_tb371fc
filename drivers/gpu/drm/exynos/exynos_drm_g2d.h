@@ -37,11 +37,19 @@ static inline int exynos_g2d_exec_ioctl(struct drm_device *dev, void *data,
 	return -ENODEV;
 }
 
+<<<<<<< HEAD
 int g2d_open(struct drm_device *drm_dev, struct drm_file *file)
+=======
+static inline int g2d_open(struct drm_device *drm_dev, struct drm_file *file)
+>>>>>>> origin/android16-base
 {
 	return 0;
 }
 
+<<<<<<< HEAD
 void g2d_close(struct drm_device *drm_dev, struct drm_file *file)
+=======
+static inline void g2d_close(struct drm_device *drm_dev, struct drm_file *file)
+>>>>>>> origin/android16-base
 { }
 #endif

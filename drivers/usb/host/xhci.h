@@ -226,6 +226,12 @@ struct xhci_op_regs {
 #define CMD_ETE		(1 << 14)
 /* bits 15:31 are reserved (and should be preserved on writes). */
 
+<<<<<<< HEAD
+=======
+#define XHCI_RESET_LONG_USEC		(10 * 1000 * 1000)
+#define XHCI_RESET_SHORT_USEC		(250 * 1000)
+
+>>>>>>> origin/android16-base
 /* IMAN - Interrupt Management Register */
 #define IMAN_IE		(1 << 1)
 #define IMAN_IP		(1 << 0)
@@ -991,6 +997,10 @@ struct xhci_interval_bw_table {
 	unsigned int		ss_bw_out;
 };
 
+<<<<<<< HEAD
+=======
+#define EP_CTX_PER_DEV		31
+>>>>>>> origin/android16-base
 
 struct xhci_virt_device {
 	struct usb_device		*udev;
@@ -1005,7 +1015,11 @@ struct xhci_virt_device {
 	struct xhci_container_ctx       *out_ctx;
 	/* Used for addressing devices and configuration changes */
 	struct xhci_container_ctx       *in_ctx;
+<<<<<<< HEAD
 	struct xhci_virt_ep		eps[31];
+=======
+	struct xhci_virt_ep		eps[EP_CTX_PER_DEV];
+>>>>>>> origin/android16-base
 	u8				fake_port;
 	u8				real_port;
 	struct xhci_interval_bw_table	*bw_table;
@@ -1269,7 +1283,11 @@ enum xhci_setup_dev {
 /* Set TR Dequeue Pointer command TRB fields, 6.4.3.9 */
 #define TRB_TO_STREAM_ID(p)		((((p) & (0xffff << 16)) >> 16))
 #define STREAM_ID_FOR_TRB(p)		((((p)) & 0xffff) << 16)
+<<<<<<< HEAD
 #define SCT_FOR_TRB(p)			(((p) << 1) & 0x7)
+=======
+#define SCT_FOR_TRB(p)			(((p) & 0x7) << 1)
+>>>>>>> origin/android16-base
 
 /* Link TRB specific fields */
 #define TRB_TC			(1<<1)
@@ -1513,6 +1531,10 @@ static inline const char *xhci_trb_type_string(u8 type)
 /* How much data is left before the 64KB boundary? */
 #define TRB_BUFF_LEN_UP_TO_BOUNDARY(addr)	(TRB_MAX_BUFF_SIZE - \
 					(addr & (TRB_MAX_BUFF_SIZE - 1)))
+<<<<<<< HEAD
+=======
+#define MAX_SOFT_RETRY		3
+>>>>>>> origin/android16-base
 
 struct xhci_segment {
 	union xhci_trb		*trbs;
@@ -1600,6 +1622,10 @@ struct xhci_ring {
 	 * if we own the TRB (if we are the consumer).  See section 4.9.1.
 	 */
 	u32			cycle_state;
+<<<<<<< HEAD
+=======
+	unsigned int            err_count;
+>>>>>>> origin/android16-base
 	unsigned int		stream_id;
 	unsigned int		num_segs;
 	unsigned int		num_trbs_free;
@@ -1882,6 +1908,10 @@ struct xhci_hcd {
 #define XHCI_RESET_PLL_ON_DISCONNECT	BIT_ULL(34)
 #define XHCI_SNPS_BROKEN_SUSPEND    BIT_ULL(35)
 #define XHCI_DISABLE_SPARSE	BIT_ULL(38)
+<<<<<<< HEAD
+=======
+#define XHCI_NO_SOFT_RETRY	BIT_ULL(40)
+>>>>>>> origin/android16-base
 
 	unsigned int		num_active_eps;
 	unsigned int		limit_active_eps;
@@ -2067,6 +2097,7 @@ int xhci_sec_event_ring_cleanup(struct usb_hcd *hcd, unsigned int intr_num);
 
 /* xHCI host controller glue */
 typedef void (*xhci_get_quirks_t)(struct device *, struct xhci_hcd *);
+<<<<<<< HEAD
 int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, int usec);
 int xhci_handshake_check_state(struct xhci_hcd *xhci,
 		void __iomem *ptr, u32 mask, u32 done, int usec);
@@ -2074,6 +2105,15 @@ void xhci_quiesce(struct xhci_hcd *xhci);
 int xhci_halt(struct xhci_hcd *xhci);
 int xhci_start(struct xhci_hcd *xhci);
 int xhci_reset(struct xhci_hcd *xhci);
+=======
+int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, u64 timeout_us);
+int xhci_handshake_check_state(struct xhci_hcd *xhci,
+		void __iomem *ptr, u32 mask, u32 done, u64 timeout_us);
+void xhci_quiesce(struct xhci_hcd *xhci);
+int xhci_halt(struct xhci_hcd *xhci);
+int xhci_start(struct xhci_hcd *xhci);
+int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us);
+>>>>>>> origin/android16-base
 int xhci_run(struct usb_hcd *hcd);
 int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks);
 void xhci_shutdown(struct usb_hcd *hcd);

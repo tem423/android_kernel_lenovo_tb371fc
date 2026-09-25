@@ -20,5 +20,11 @@
 typedef unsigned long cycles_t;
 
 extern cycles_t get_cycles(void);
+<<<<<<< HEAD
+=======
+#define get_cycles get_cycles
+
+#define random_get_entropy() (((unsigned long)get_cycles()) ?: random_get_entropy_fallback())
+>>>>>>> origin/android16-base
 
 #endif

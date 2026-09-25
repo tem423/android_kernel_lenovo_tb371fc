@@ -234,6 +234,10 @@ static int if_usb_probe(struct usb_interface *intf,
 
 dealloc:
 	if_usb_free(cardp);
+<<<<<<< HEAD
+=======
+	kfree(cardp);
+>>>>>>> origin/android16-base
 error:
 lbtf_deb_leave(LBTF_DEB_MAIN);
 	return -ENOMEM;
@@ -258,6 +262,10 @@ static void if_usb_disconnect(struct usb_interface *intf)
 
 	/* Unlink and free urb */
 	if_usb_free(cardp);
+<<<<<<< HEAD
+=======
+	kfree(cardp);
+>>>>>>> origin/android16-base
 
 	usb_set_intfdata(intf, NULL);
 	usb_put_dev(interface_to_usbdev(intf));
@@ -614,7 +622,11 @@ static inline void process_cmdrequest(int recvlength, uint8_t *recvbuff,
 	spin_lock_irqsave(&priv->driver_lock, flags);
 	memcpy(priv->cmd_resp_buff, recvbuff + MESSAGE_HEADER_LEN,
 	       recvlength - MESSAGE_HEADER_LEN);
+<<<<<<< HEAD
 	kfree_skb(skb);
+=======
+	dev_kfree_skb_irq(skb);
+>>>>>>> origin/android16-base
 	lbtf_cmd_response_rx(priv);
 	spin_unlock_irqrestore(&priv->driver_lock, flags);
 }

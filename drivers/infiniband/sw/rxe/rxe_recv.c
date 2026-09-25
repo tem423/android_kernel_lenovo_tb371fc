@@ -36,6 +36,7 @@
 #include "rxe.h"
 #include "rxe_loc.h"
 
+<<<<<<< HEAD
 static int check_type_state(struct rxe_dev *rxe, struct rxe_pkt_info *pkt,
 			    struct rxe_qp *qp)
 {
@@ -45,12 +46,32 @@ static int check_type_state(struct rxe_dev *rxe, struct rxe_pkt_info *pkt,
 	switch (qp_type(qp)) {
 	case IB_QPT_RC:
 		if (unlikely((pkt->opcode & IB_OPCODE_RC) != 0)) {
+=======
+/* check that QP matches packet opcode type and is in a valid state */
+static int check_type_state(struct rxe_dev *rxe, struct rxe_pkt_info *pkt,
+			    struct rxe_qp *qp)
+{
+	unsigned int pkt_type;
+
+	if (unlikely(!qp->valid))
+		goto err1;
+
+	pkt_type = pkt->opcode & 0xe0;
+
+	switch (qp_type(qp)) {
+	case IB_QPT_RC:
+		if (unlikely(pkt_type != IB_OPCODE_RC)) {
+>>>>>>> origin/android16-base
 			pr_warn_ratelimited("bad qp type\n");
 			goto err1;
 		}
 		break;
 	case IB_QPT_UC:
+<<<<<<< HEAD
 		if (unlikely(!(pkt->opcode & IB_OPCODE_UC))) {
+=======
+		if (unlikely(pkt_type != IB_OPCODE_UC)) {
+>>>>>>> origin/android16-base
 			pr_warn_ratelimited("bad qp type\n");
 			goto err1;
 		}
@@ -58,7 +79,11 @@ static int check_type_state(struct rxe_dev *rxe, struct rxe_pkt_info *pkt,
 	case IB_QPT_UD:
 	case IB_QPT_SMI:
 	case IB_QPT_GSI:
+<<<<<<< HEAD
 		if (unlikely(!(pkt->opcode & IB_OPCODE_UD))) {
+=======
+		if (unlikely(pkt_type != IB_OPCODE_UD)) {
+>>>>>>> origin/android16-base
 			pr_warn_ratelimited("bad qp type\n");
 			goto err1;
 		}

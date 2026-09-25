@@ -5230,6 +5230,7 @@ static void e1000_watchdog_task(struct work_struct *work)
 				ew32(TARC(0), tarc0);
 			}
 
+<<<<<<< HEAD
 			/* disable TSO for pcie and 10/100 speeds, to avoid
 			 * some hardware issues
 			 */
@@ -5255,6 +5256,8 @@ static void e1000_watchdog_task(struct work_struct *work)
 				}
 			}
 
+=======
+>>>>>>> origin/android16-base
 			/* enable transmits in the hardware, need to do this
 			 * after setting TARC(0)
 			 */
@@ -5877,9 +5880,15 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
 		e1000_tx_queue(tx_ring, tx_flags, count);
 		/* Make sure there is space in the ring for the next send. */
 		e1000_maybe_stop_tx(tx_ring,
+<<<<<<< HEAD
 				    (MAX_SKB_FRAGS *
 				     DIV_ROUND_UP(PAGE_SIZE,
 						  adapter->tx_fifo_limit) + 2));
+=======
+				    ((MAX_SKB_FRAGS + 1) *
+				     DIV_ROUND_UP(PAGE_SIZE,
+						  adapter->tx_fifo_limit) + 4));
+>>>>>>> origin/android16-base
 
 		if (!skb->xmit_more ||
 		    netif_xmit_stopped(netdev_get_tx_queue(netdev, 0))) {
@@ -5922,15 +5931,28 @@ static void e1000_reset_task(struct work_struct *work)
 	struct e1000_adapter *adapter;
 	adapter = container_of(work, struct e1000_adapter, reset_task);
 
+<<<<<<< HEAD
 	/* don't run the task if already down */
 	if (test_bit(__E1000_DOWN, &adapter->state))
 		return;
+=======
+	rtnl_lock();
+	/* don't run the task if already down */
+	if (test_bit(__E1000_DOWN, &adapter->state)) {
+		rtnl_unlock();
+		return;
+	}
+>>>>>>> origin/android16-base
 
 	if (!(adapter->flags & FLAG_RESTART_NOW)) {
 		e1000e_dump(adapter);
 		e_err("Reset adapter unexpectedly\n");
 	}
 	e1000e_reinit_locked(adapter);
+<<<<<<< HEAD
+=======
+	rtnl_unlock();
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -7187,6 +7209,35 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 			    NETIF_F_RXCSUM |
 			    NETIF_F_HW_CSUM);
 
+<<<<<<< HEAD
+=======
+	/* disable TSO for pcie and 10/100 speeds to avoid
+	 * some hardware issues and for i219 to fix transfer
+	 * speed being capped at 60%
+	 */
+	if (!(adapter->flags & FLAG_TSO_FORCE)) {
+		switch (adapter->link_speed) {
+		case SPEED_10:
+		case SPEED_100:
+			e_info("10/100 speed: disabling TSO\n");
+			netdev->features &= ~NETIF_F_TSO;
+			netdev->features &= ~NETIF_F_TSO6;
+			break;
+		case SPEED_1000:
+			netdev->features |= NETIF_F_TSO;
+			netdev->features |= NETIF_F_TSO6;
+			break;
+		default:
+			/* oops */
+			break;
+		}
+		if (hw->mac.type == e1000_pch_spt) {
+			netdev->features &= ~NETIF_F_TSO;
+			netdev->features &= ~NETIF_F_TSO6;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	/* Set user-changeable features (subset of all device features) */
 	netdev->hw_features = netdev->features;
 	netdev->hw_features |= NETIF_F_RXFCS;
@@ -7365,6 +7416,10 @@ err_flashmap:
 err_ioremap:
 	free_netdev(netdev);
 err_alloc_etherdev:
+<<<<<<< HEAD
+=======
+	pci_disable_pcie_error_reporting(pdev);
+>>>>>>> origin/android16-base
 	pci_release_mem_regions(pdev);
 err_pci_reg:
 err_dma:

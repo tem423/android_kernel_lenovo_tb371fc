@@ -455,6 +455,7 @@ bool pc_port_psy_initialized(struct fg_dev *fg)
 
 	return true;
 }
+<<<<<<< HEAD
 bool is_smb1398_charger_available(struct fg_dev *fg){
 	union power_supply_propval prop = {0, };
 	
@@ -468,6 +469,9 @@ bool is_smb1398_charger_available(struct fg_dev *fg){
 	}
 	return false;
 }
+=======
+
+>>>>>>> origin/android16-base
 bool is_parallel_charger_available(struct fg_dev *fg)
 {
 	if (!fg->parallel_psy)

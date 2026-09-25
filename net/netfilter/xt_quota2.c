@@ -106,6 +106,7 @@ static void quota2_log(unsigned int hooknum,
 		return;
 	}
 	pm = nlmsg_data(nlh);
+<<<<<<< HEAD
 	if (skb->tstamp == 0)
 		__net_timestamp((struct sk_buff *)skb);
 	pm->data_len = 0;
@@ -123,6 +124,18 @@ static void quota2_log(unsigned int hooknum,
 		strlcpy(pm->outdev_name, out->name, sizeof(pm->outdev_name));
 	else
 		pm->outdev_name[0] = '\0';
+=======
+	memset(pm, 0, sizeof(*pm));
+	if (skb->tstamp == 0)
+		__net_timestamp((struct sk_buff *)skb);
+	pm->hook = hooknum;
+	if (prefix != NULL)
+		strlcpy(pm->prefix, prefix, sizeof(pm->prefix));
+	if (in)
+		strlcpy(pm->indev_name, in->name, sizeof(pm->indev_name));
+	if (out)
+		strlcpy(pm->outdev_name, out->name, sizeof(pm->outdev_name));
+>>>>>>> origin/android16-base
 
 	NETLINK_CB(log_skb).dst_group = 1;
 	pr_debug("throwing 1 packets to netlink group 1\n");
@@ -162,6 +175,11 @@ static ssize_t quota_proc_write(struct file *file, const char __user *input,
 	if (copy_from_user(buf, input, size) != 0)
 		return -EFAULT;
 	buf[sizeof(buf)-1] = '\0';
+<<<<<<< HEAD
+=======
+	if (size < sizeof(buf))
+		buf[size] = '\0';
+>>>>>>> origin/android16-base
 
 	spin_lock_bh(&e->lock);
 	e->quota = simple_strtoull(buf, NULL, 0);
@@ -348,6 +366,10 @@ static struct xt_match quota_mt2_reg[] __read_mostly = {
 		.match      = quota_mt2,
 		.destroy    = quota_mt2_destroy,
 		.matchsize  = sizeof(struct xt_quota_mtinfo2),
+<<<<<<< HEAD
+=======
+		.usersize   = offsetof(struct xt_quota_mtinfo2, master),
+>>>>>>> origin/android16-base
 		.me         = THIS_MODULE,
 	},
 	{
@@ -358,6 +380,10 @@ static struct xt_match quota_mt2_reg[] __read_mostly = {
 		.match      = quota_mt2,
 		.destroy    = quota_mt2_destroy,
 		.matchsize  = sizeof(struct xt_quota_mtinfo2),
+<<<<<<< HEAD
+=======
+		.usersize   = offsetof(struct xt_quota_mtinfo2, master),
+>>>>>>> origin/android16-base
 		.me         = THIS_MODULE,
 	},
 };

@@ -184,17 +184,29 @@ static void elm_load_syndrome(struct elm_info *info,
 			switch (info->bch_type) {
 			case BCH8_ECC:
 				/* syndrome fragment 0 = ecc[9-12B] */
+<<<<<<< HEAD
 				val = cpu_to_be32(*(u32 *) &ecc[9]);
+=======
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[9]);
+>>>>>>> origin/android16-base
 				elm_write_reg(info, offset, val);
 
 				/* syndrome fragment 1 = ecc[5-8B] */
 				offset += 4;
+<<<<<<< HEAD
 				val = cpu_to_be32(*(u32 *) &ecc[5]);
+=======
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[5]);
+>>>>>>> origin/android16-base
 				elm_write_reg(info, offset, val);
 
 				/* syndrome fragment 2 = ecc[1-4B] */
 				offset += 4;
+<<<<<<< HEAD
 				val = cpu_to_be32(*(u32 *) &ecc[1]);
+=======
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[1]);
+>>>>>>> origin/android16-base
 				elm_write_reg(info, offset, val);
 
 				/* syndrome fragment 3 = ecc[0B] */
@@ -204,12 +216,17 @@ static void elm_load_syndrome(struct elm_info *info,
 				break;
 			case BCH4_ECC:
 				/* syndrome fragment 0 = ecc[20-52b] bits */
+<<<<<<< HEAD
 				val = (cpu_to_be32(*(u32 *) &ecc[3]) >> 4) |
+=======
+				val = ((__force u32)cpu_to_be32(*(u32 *)&ecc[3]) >> 4) |
+>>>>>>> origin/android16-base
 					((ecc[2] & 0xf) << 28);
 				elm_write_reg(info, offset, val);
 
 				/* syndrome fragment 1 = ecc[0-20b] bits */
 				offset += 4;
+<<<<<<< HEAD
 				val = cpu_to_be32(*(u32 *) &ecc[0]) >> 12;
 				elm_write_reg(info, offset, val);
 				break;
@@ -233,6 +250,31 @@ static void elm_load_syndrome(struct elm_info *info,
 				elm_write_reg(info, offset, val);
 				offset += 4;
 				val = cpu_to_be32(*(u32 *) &ecc[0]) >> 16;
+=======
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[0]) >> 12;
+				elm_write_reg(info, offset, val);
+				break;
+			case BCH16_ECC:
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[22]);
+				elm_write_reg(info, offset, val);
+				offset += 4;
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[18]);
+				elm_write_reg(info, offset, val);
+				offset += 4;
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[14]);
+				elm_write_reg(info, offset, val);
+				offset += 4;
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[10]);
+				elm_write_reg(info, offset, val);
+				offset += 4;
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[6]);
+				elm_write_reg(info, offset, val);
+				offset += 4;
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[2]);
+				elm_write_reg(info, offset, val);
+				offset += 4;
+				val = (__force u32)cpu_to_be32(*(u32 *)&ecc[0]) >> 16;
+>>>>>>> origin/android16-base
 				elm_write_reg(info, offset, val);
 				break;
 			default:

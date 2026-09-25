@@ -1,7 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
+<<<<<<< HEAD
 
 obj-$(CONFIG_QPNP_SMB5)			+= step-chg-jeita.o battery.o qpnp-smb5.o smb5-lib.o pmic-voter.o storm-watch.o schgm-flash.o lenovo-jeita.o
 obj-$(CONFIG_SMB1360_CHARGER_FG)	+= smb1360-charger-fg.o
+=======
+obj-$(CONFIG_SMB1360_CHARGER_FG)	+= smb1360-charger-fg.o
+obj-$(CONFIG_QPNP_SMB5)			+= step-chg-jeita.o battery.o qpnp-smb5.o smb5-lib.o pmic-voter.o storm-watch.o schgm-flash.o
+>>>>>>> origin/android16-base
 obj-$(CONFIG_SMB1390_CHARGE_PUMP_PSY)	+= smb1390-charger-psy.o pmic-voter.o
 obj-$(CONFIG_SMB1355_SLAVE_CHARGER)	+= smb1355-charger.o pmic-voter.o
 obj-$(CONFIG_SMB1351_USB_CHARGER)	+= smb1351-charger.o pmic-voter.o battery.o
@@ -16,4 +21,7 @@ obj-$(CONFIG_SMB1398_CHARGER)		+= smb1398-charger.o pmic-voter.o
 obj-$(CONFIG_QPNP_SMBLITE)		+= step-chg-jeita.o battery.o qpnp-smblite.o smblite-lib.o pmic-voter.o storm-watch.o schgm-flashlite.o
 obj-$(CONFIG_QPNP_VM_BMS)		+= qpnp-vm-bms.o batterydata-lib.o batterydata-interface.o
 obj-$(CONFIG_QPNP_LINEAR_CHARGER)	+= qpnp-linear-charger.o
+<<<<<<< HEAD
 obj-$(CONFIG_MM8013C06_BATTERY) += mm8013c06_battery.o
+=======
+>>>>>>> origin/android16-base

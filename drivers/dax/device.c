@@ -550,6 +550,10 @@ static int dax_open(struct inode *inode, struct file *filp)
 	inode->i_mapping->a_ops = &dev_dax_aops;
 	filp->f_mapping = inode->i_mapping;
 	filp->f_wb_err = filemap_sample_wb_err(filp->f_mapping);
+<<<<<<< HEAD
+=======
+	filp->f_sb_err = file_sample_sb_err(filp);
+>>>>>>> origin/android16-base
 	filp->private_data = dev_dax;
 	inode->i_flags = S_DAX;
 

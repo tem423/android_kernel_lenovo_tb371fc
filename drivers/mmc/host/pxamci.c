@@ -653,7 +653,11 @@ static int pxamci_probe(struct platform_device *pdev)
 
 	ret = pxamci_of_init(pdev, mmc);
 	if (ret)
+<<<<<<< HEAD
 		return ret;
+=======
+		goto out;
+>>>>>>> origin/android16-base
 
 	host = mmc_priv(mmc);
 	host->mmc = mmc;
@@ -677,7 +681,11 @@ static int pxamci_probe(struct platform_device *pdev)
 
 	ret = pxamci_init_ocr(host);
 	if (ret < 0)
+<<<<<<< HEAD
 		return ret;
+=======
+		goto out;
+>>>>>>> origin/android16-base
 
 	mmc->caps = 0;
 	host->cmdat = 0;

@@ -158,22 +158,38 @@ static int __init setup_test_suspend(char *value)
 	value++;
 	suspend_type = strsep(&value, ",");
 	if (!suspend_type)
+<<<<<<< HEAD
 		return 0;
+=======
+		return 1;
+>>>>>>> origin/android16-base
 
 	repeat = strsep(&value, ",");
 	if (repeat) {
 		if (kstrtou32(repeat, 0, &test_repeat_count_max))
+<<<<<<< HEAD
 			return 0;
+=======
+			return 1;
+>>>>>>> origin/android16-base
 	}
 
 	for (i = PM_SUSPEND_MIN; i < PM_SUSPEND_MAX; i++)
 		if (!strcmp(pm_labels[i], suspend_type)) {
 			test_state_label = pm_labels[i];
+<<<<<<< HEAD
 			return 0;
 		}
 
 	printk(warn_bad_state, suspend_type);
 	return 0;
+=======
+			return 1;
+		}
+
+	printk(warn_bad_state, suspend_type);
+	return 1;
+>>>>>>> origin/android16-base
 }
 __setup("test_suspend", setup_test_suspend);
 

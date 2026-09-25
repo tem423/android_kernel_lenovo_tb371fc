@@ -221,7 +221,11 @@ void del_sysfs_port_mcg_attr(struct mlx4_ib_dev *device, int port_num,
 static int add_port_entries(struct mlx4_ib_dev *device, int port_num)
 {
 	int i;
+<<<<<<< HEAD
 	char buff[11];
+=======
+	char buff[12];
+>>>>>>> origin/android16-base
 	struct mlx4_ib_iov_port *port = NULL;
 	int ret = 0 ;
 	struct ib_port_attr attr;

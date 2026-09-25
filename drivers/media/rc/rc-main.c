@@ -1875,6 +1875,11 @@ int rc_register_device(struct rc_dev *dev)
 			goto out_raw;
 	}
 
+<<<<<<< HEAD
+=======
+	dev->registered = true;
+
+>>>>>>> origin/android16-base
 	rc = device_add(&dev->dev);
 	if (rc)
 		goto out_rx_free;
@@ -1884,8 +1889,11 @@ int rc_register_device(struct rc_dev *dev)
 		 dev->device_name ?: "Unspecified device", path ?: "N/A");
 	kfree(path);
 
+<<<<<<< HEAD
 	dev->registered = true;
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * once the the input device is registered in rc_setup_rx_device,
 	 * userspace can open the input device and rc_open() will be called

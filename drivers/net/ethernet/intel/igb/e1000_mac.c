@@ -425,7 +425,11 @@ void igb_mta_set(struct e1000_hw *hw, u32 hash_value)
 static u32 igb_hash_mc_addr(struct e1000_hw *hw, u8 *mc_addr)
 {
 	u32 hash_value, hash_mask;
+<<<<<<< HEAD
 	u8 bit_shift = 0;
+=======
+	u8 bit_shift = 1;
+>>>>>>> origin/android16-base
 
 	/* Register count multiplied by bits per register */
 	hash_mask = (hw->mac.mta_reg_count * 32) - 1;
@@ -433,7 +437,11 @@ static u32 igb_hash_mc_addr(struct e1000_hw *hw, u8 *mc_addr)
 	/* For a mc_filter_type of 0, bit_shift is the number of left-shifts
 	 * where 0xFF would still fall within the hash mask.
 	 */
+<<<<<<< HEAD
 	while (hash_mask >> bit_shift != 0xFF)
+=======
+	while (hash_mask >> bit_shift != 0xFF && bit_shift < 4)
+>>>>>>> origin/android16-base
 		bit_shift++;
 
 	/* The portion of the address that is used for the hash table

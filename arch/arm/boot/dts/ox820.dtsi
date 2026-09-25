@@ -286,7 +286,11 @@
 				clocks = <&armclk>;
 			};
 
+<<<<<<< HEAD
 			gic: gic@1000 {
+=======
+			gic: interrupt-controller@1000 {
+>>>>>>> origin/android16-base
 				compatible = "arm,arm11mp-gic";
 				interrupt-controller;
 				#interrupt-cells = <3>;

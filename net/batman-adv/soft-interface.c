@@ -167,11 +167,20 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
 
 static int batadv_interface_change_mtu(struct net_device *dev, int new_mtu)
 {
+<<<<<<< HEAD
+=======
+	struct batadv_priv *bat_priv = netdev_priv(dev);
+
+>>>>>>> origin/android16-base
 	/* check ranges */
 	if (new_mtu < 68 || new_mtu > batadv_hardif_min_mtu(dev))
 		return -EINVAL;
 
 	dev->mtu = new_mtu;
+<<<<<<< HEAD
+=======
+	bat_priv->mtu_set_by_user = new_mtu;
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -367,9 +376,14 @@ send:
 				goto dropped;
 			ret = batadv_send_skb_via_gw(bat_priv, skb, vid);
 		} else if (mcast_single_orig) {
+<<<<<<< HEAD
 			ret = batadv_send_skb_unicast(bat_priv, skb,
 						      BATADV_UNICAST, 0,
 						      mcast_single_orig, vid);
+=======
+			ret = batadv_mcast_forw_send_orig(bat_priv, skb, vid,
+							  mcast_single_orig);
+>>>>>>> origin/android16-base
 		} else {
 			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
 								  skb))

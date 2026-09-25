@@ -161,9 +161,20 @@ static int dmi_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
 	return 0;
 }
 
+<<<<<<< HEAD
 static struct class dmi_class = {
 	.name = "dmi",
 	.dev_release = (void(*)(struct device *)) kfree,
+=======
+static void dmi_dev_release(struct device *dev)
+{
+	kfree(dev);
+}
+
+static struct class dmi_class = {
+	.name = "dmi",
+	.dev_release = dmi_dev_release,
+>>>>>>> origin/android16-base
 	.dev_uevent = dmi_dev_uevent,
 };
 

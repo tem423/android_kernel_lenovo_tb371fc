@@ -37,6 +37,10 @@ config NIOS2_DTB_PHYS_ADDR
 
 config NIOS2_DTB_SOURCE_BOOL
 	bool "Compile and link device tree into kernel image"
+<<<<<<< HEAD
+=======
+	depends on !COMPILE_TEST
+>>>>>>> origin/android16-base
 	default n
 	help
 	  This allows you to specify a dts (device tree source) file

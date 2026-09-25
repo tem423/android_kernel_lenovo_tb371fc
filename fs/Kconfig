@@ -133,11 +133,20 @@ endmenu
 endif # BLOCK
 
 if BLOCK
+<<<<<<< HEAD
 menu "DOS/FAT/NT Filesystems"
 
 source "fs/fat/Kconfig"
 source "fs/ntfs/Kconfig"
 source "fs/exfat/Kconfig"
+=======
+menu "DOS/FAT/EXFAT/NT Filesystems"
+
+source "fs/fat/Kconfig"
+source "fs/exfat/Kconfig"
+source "fs/ntfs/Kconfig"
+
+>>>>>>> origin/android16-base
 endmenu
 endif # BLOCK
 
@@ -259,6 +268,10 @@ source "fs/pstore/Kconfig"
 source "fs/sysv/Kconfig"
 source "fs/ufs/Kconfig"
 source "fs/exofs/Kconfig"
+<<<<<<< HEAD
+=======
+source "fs/erofs/Kconfig"
+>>>>>>> origin/android16-base
 
 endif # MISC_FILESYSTEMS
 

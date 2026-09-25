@@ -6,6 +6,7 @@
 #define tlb_end_vma(tlb, vma) do { } while (0)
 #define __tlb_remove_tlb_entry(tlb, ptep, address) do { } while (0)
 
+<<<<<<< HEAD
 #define tlb_flush(tlb)							\
 {									\
 	if (!tlb->fullmm && !tlb->need_flush_all) 			\
@@ -16,6 +17,26 @@
 
 #include <asm-generic/tlb.h>
 
+=======
+#define tlb_flush tlb_flush
+static inline void tlb_flush(struct mmu_gather *tlb);
+
+#include <asm-generic/tlb.h>
+
+static inline void tlb_flush(struct mmu_gather *tlb)
+{
+	unsigned long start = 0UL, end = TLB_FLUSH_ALL;
+	unsigned int stride_shift = tlb_get_unmap_shift(tlb);
+
+	if (!tlb->fullmm && !tlb->need_flush_all) {
+		start = tlb->start;
+		end = tlb->end;
+	}
+
+	flush_tlb_mm_range(tlb->mm, start, end, stride_shift, tlb->freed_tables);
+}
+
+>>>>>>> origin/android16-base
 /*
  * While x86 architecture in general requires an IPI to perform TLB
  * shootdown, enablement code for several hypervisors overrides

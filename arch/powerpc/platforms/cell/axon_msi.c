@@ -230,6 +230,10 @@ static int setup_msi_msg_address(struct pci_dev *dev, struct msi_msg *msg)
 	if (!prop) {
 		dev_dbg(&dev->dev,
 			"axon_msi: no msi-address-(32|64) properties found\n");
+<<<<<<< HEAD
+=======
+		of_node_put(dn);
+>>>>>>> origin/android16-base
 		return -ENOENT;
 	}
 

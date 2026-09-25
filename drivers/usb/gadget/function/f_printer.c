@@ -87,7 +87,11 @@ struct printer_dev {
 	u8			printer_cdev_open;
 	wait_queue_head_t	wait;
 	unsigned		q_len;
+<<<<<<< HEAD
 	char			*pnp_string;	/* We don't own memory! */
+=======
+	char			**pnp_string;	/* We don't own memory! */
+>>>>>>> origin/android16-base
 	struct usb_function	function;
 };
 
@@ -208,6 +212,10 @@ static inline struct usb_endpoint_descriptor *ep_desc(struct usb_gadget *gadget,
 					struct usb_endpoint_descriptor *ss)
 {
 	switch (gadget->speed) {
+<<<<<<< HEAD
+=======
+	case USB_SPEED_SUPER_PLUS:
+>>>>>>> origin/android16-base
 	case USB_SPEED_SUPER:
 		return ss;
 	case USB_SPEED_HIGH:
@@ -963,6 +971,7 @@ static int printer_func_setup(struct usb_function *f,
 			if ((wIndex>>8) != dev->interface)
 				break;
 
+<<<<<<< HEAD
 			if (!dev->pnp_string) {
 				value = 0;
 				break;
@@ -973,6 +982,18 @@ static int printer_func_setup(struct usb_function *f,
 			memcpy(buf + 2, dev->pnp_string, value);
 			DBG(dev, "1284 PNP String: %x %s\n", value,
 			    dev->pnp_string);
+=======
+			if (!*dev->pnp_string) {
+				value = 0;
+				break;
+			}
+			value = strlen(*dev->pnp_string);
+			buf[0] = (value >> 8) & 0xFF;
+			buf[1] = value & 0xFF;
+			memcpy(buf + 2, *dev->pnp_string, value);
+			DBG(dev, "1284 PNP String: %x %s\n", value,
+			    *dev->pnp_string);
+>>>>>>> origin/android16-base
 			break;
 
 		case GET_PORT_STATUS: /* Get Port Status */
@@ -1063,7 +1084,12 @@ autoconf_fail:
 	ss_ep_out_desc.bEndpointAddress = fs_ep_out_desc.bEndpointAddress;
 
 	ret = usb_assign_descriptors(f, fs_printer_function,
+<<<<<<< HEAD
 			hs_printer_function, ss_printer_function, NULL);
+=======
+			hs_printer_function, ss_printer_function,
+			ss_printer_function);
+>>>>>>> origin/android16-base
 	if (ret)
 		return ret;
 
@@ -1126,6 +1152,10 @@ fail_tx_reqs:
 		printer_req_free(dev->in_ep, req);
 	}
 
+<<<<<<< HEAD
+=======
+	usb_free_all_descriptors(f);
+>>>>>>> origin/android16-base
 	return ret;
 
 }
@@ -1433,7 +1463,11 @@ static struct usb_function *gprinter_alloc(struct usb_function_instance *fi)
 	kref_init(&dev->kref);
 	++opts->refcnt;
 	dev->minor = opts->minor;
+<<<<<<< HEAD
 	dev->pnp_string = opts->pnp_string;
+=======
+	dev->pnp_string = &opts->pnp_string;
+>>>>>>> origin/android16-base
 	dev->q_len = opts->q_len;
 	mutex_unlock(&opts->lock);
 

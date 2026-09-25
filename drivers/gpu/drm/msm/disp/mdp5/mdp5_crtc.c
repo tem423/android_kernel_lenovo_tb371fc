@@ -537,9 +537,21 @@ int mdp5_crtc_setup_pipeline(struct drm_crtc *crtc,
 		if (ret)
 			return ret;
 
+<<<<<<< HEAD
 		mdp5_mixer_release(new_crtc_state->state, old_mixer);
 		if (old_r_mixer) {
 			mdp5_mixer_release(new_crtc_state->state, old_r_mixer);
+=======
+		ret = mdp5_mixer_release(new_crtc_state->state, old_mixer);
+		if (ret)
+			return ret;
+
+		if (old_r_mixer) {
+			ret = mdp5_mixer_release(new_crtc_state->state, old_r_mixer);
+			if (ret)
+				return ret;
+
+>>>>>>> origin/android16-base
 			if (!need_right_mixer)
 				pipeline->r_mixer = NULL;
 		}
@@ -905,8 +917,15 @@ static int mdp5_crtc_cursor_set(struct drm_crtc *crtc,
 
 	ret = msm_gem_get_iova(cursor_bo, kms->aspace,
 			&mdp5_crtc->cursor.iova);
+<<<<<<< HEAD
 	if (ret)
 		return -EINVAL;
+=======
+	if (ret) {
+		drm_gem_object_put(cursor_bo);
+		return -EINVAL;
+	}
+>>>>>>> origin/android16-base
 
 	pm_runtime_get_sync(&pdev->dev);
 

@@ -1050,12 +1050,20 @@ static const struct attribute_group cooling_device_stats_attr_group = {
 
 static void cooling_device_stats_setup(struct thermal_cooling_device *cdev)
 {
+<<<<<<< HEAD
+=======
+	const struct attribute_group *stats_attr_group = NULL;
+>>>>>>> origin/android16-base
 	struct cooling_dev_stats *stats;
 	unsigned long states;
 	int var;
 
 	if (cdev->ops->get_max_state(cdev, &states))
+<<<<<<< HEAD
 		return;
+=======
+		goto out;
+>>>>>>> origin/android16-base
 
 	states++; /* Total number of states is highest state + 1 */
 
@@ -1065,7 +1073,11 @@ static void cooling_device_stats_setup(struct thermal_cooling_device *cdev)
 
 	stats = kzalloc(var, GFP_KERNEL);
 	if (!stats)
+<<<<<<< HEAD
 		return;
+=======
+		goto out;
+>>>>>>> origin/android16-base
 
 	stats->time_in_state = (ktime_t *)(stats + 1);
 	stats->trans_table = (unsigned int *)(stats->time_in_state + states);
@@ -1075,9 +1087,18 @@ static void cooling_device_stats_setup(struct thermal_cooling_device *cdev)
 
 	spin_lock_init(&stats->lock);
 
+<<<<<<< HEAD
 	/* Fill the empty slot left in cooling_device_attr_groups */
 	var = ARRAY_SIZE(cooling_device_attr_groups) - 2;
 	cooling_device_attr_groups[var] = &cooling_device_stats_attr_group;
+=======
+	stats_attr_group = &cooling_device_stats_attr_group;
+
+out:
+	/* Fill the empty slot left in cooling_device_attr_groups */
+	var = ARRAY_SIZE(cooling_device_attr_groups) - 2;
+	cooling_device_attr_groups[var] = stats_attr_group;
+>>>>>>> origin/android16-base
 }
 
 static void cooling_device_stats_destroy(struct thermal_cooling_device *cdev)

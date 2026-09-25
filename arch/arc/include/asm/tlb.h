@@ -9,6 +9,7 @@
 #ifndef _ASM_ARC_TLB_H
 #define _ASM_ARC_TLB_H
 
+<<<<<<< HEAD
 #define tlb_flush(tlb)				\
 do {						\
 	if (tlb->fullmm)			\
@@ -41,6 +42,8 @@ do {									\
 
 #define __tlb_remove_tlb_entry(tlb, ptep, address)
 
+=======
+>>>>>>> origin/android16-base
 #include <linux/pagemap.h>
 #include <asm-generic/tlb.h>
 

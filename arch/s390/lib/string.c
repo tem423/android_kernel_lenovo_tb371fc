@@ -227,6 +227,7 @@ EXPORT_SYMBOL(strcmp);
  */
 char *strrchr(const char *s, int c)
 {
+<<<<<<< HEAD
        size_t len = __strend(s) - s;
 
        if (len)
@@ -235,6 +236,15 @@ char *strrchr(const char *s, int c)
 			       return (char *) s + len;
 	       } while (--len > 0);
        return NULL;
+=======
+	ssize_t len = __strend(s) - s;
+
+	do {
+		if (s[len] == (char)c)
+			return (char *)s + len;
+	} while (--len >= 0);
+	return NULL;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(strrchr);
 

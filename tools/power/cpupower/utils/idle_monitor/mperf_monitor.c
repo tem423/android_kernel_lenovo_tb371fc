@@ -67,8 +67,13 @@ static int max_freq_mode;
  */
 static unsigned long max_frequency;
 
+<<<<<<< HEAD
 static unsigned long long tsc_at_measure_start;
 static unsigned long long tsc_at_measure_end;
+=======
+static unsigned long long *tsc_at_measure_start;
+static unsigned long long *tsc_at_measure_end;
+>>>>>>> origin/android16-base
 static unsigned long long *mperf_previous_count;
 static unsigned long long *aperf_previous_count;
 static unsigned long long *mperf_current_count;
@@ -131,7 +136,11 @@ static int mperf_get_count_percent(unsigned int id, double *percent,
 	aperf_diff = aperf_current_count[cpu] - aperf_previous_count[cpu];
 
 	if (max_freq_mode == MAX_FREQ_TSC_REF) {
+<<<<<<< HEAD
 		tsc_diff = tsc_at_measure_end - tsc_at_measure_start;
+=======
+		tsc_diff = tsc_at_measure_end[cpu] - tsc_at_measure_start[cpu];
+>>>>>>> origin/android16-base
 		*percent = 100.0 * mperf_diff / tsc_diff;
 		dprint("%s: TSC Ref - mperf_diff: %llu, tsc_diff: %llu\n",
 		       mperf_cstates[id].name, mperf_diff, tsc_diff);
@@ -168,7 +177,11 @@ static int mperf_get_count_freq(unsigned int id, unsigned long long *count,
 
 	if (max_freq_mode == MAX_FREQ_TSC_REF) {
 		/* Calculate max_freq from TSC count */
+<<<<<<< HEAD
 		tsc_diff = tsc_at_measure_end - tsc_at_measure_start;
+=======
+		tsc_diff = tsc_at_measure_end[cpu] - tsc_at_measure_start[cpu];
+>>>>>>> origin/android16-base
 		time_diff = timespec_diff_us(time_start, time_end);
 		max_frequency = tsc_diff / time_diff;
 	}
@@ -187,6 +200,7 @@ static int mperf_get_count_freq(unsigned int id, unsigned long long *count,
 static int mperf_start(void)
 {
 	int cpu;
+<<<<<<< HEAD
 	unsigned long long dbg;
 
 	clock_gettime(CLOCK_REALTIME, &time_start);
@@ -197,11 +211,22 @@ static int mperf_start(void)
 
 	mperf_get_tsc(&dbg);
 	dprint("TSC diff: %llu\n", dbg - tsc_at_measure_start);
+=======
+
+	clock_gettime(CLOCK_REALTIME, &time_start);
+
+	for (cpu = 0; cpu < cpu_count; cpu++) {
+		mperf_get_tsc(&tsc_at_measure_start[cpu]);
+		mperf_init_stats(cpu);
+	}
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
 static int mperf_stop(void)
 {
+<<<<<<< HEAD
 	unsigned long long dbg;
 	int cpu;
 
@@ -214,6 +239,16 @@ static int mperf_stop(void)
 	mperf_get_tsc(&dbg);
 	dprint("TSC diff: %llu\n", dbg - tsc_at_measure_end);
 
+=======
+	int cpu;
+
+	for (cpu = 0; cpu < cpu_count; cpu++) {
+		mperf_measure_stats(cpu);
+		mperf_get_tsc(&tsc_at_measure_end[cpu]);
+	}
+
+	clock_gettime(CLOCK_REALTIME, &time_end);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -311,7 +346,12 @@ struct cpuidle_monitor *mperf_register(void)
 	aperf_previous_count = calloc(cpu_count, sizeof(unsigned long long));
 	mperf_current_count = calloc(cpu_count, sizeof(unsigned long long));
 	aperf_current_count = calloc(cpu_count, sizeof(unsigned long long));
+<<<<<<< HEAD
 
+=======
+	tsc_at_measure_start = calloc(cpu_count, sizeof(unsigned long long));
+	tsc_at_measure_end = calloc(cpu_count, sizeof(unsigned long long));
+>>>>>>> origin/android16-base
 	mperf_monitor.name_len = strlen(mperf_monitor.name);
 	return &mperf_monitor;
 }
@@ -322,6 +362,11 @@ void mperf_unregister(void)
 	free(aperf_previous_count);
 	free(mperf_current_count);
 	free(aperf_current_count);
+<<<<<<< HEAD
+=======
+	free(tsc_at_measure_start);
+	free(tsc_at_measure_end);
+>>>>>>> origin/android16-base
 	free(is_valid);
 }
 

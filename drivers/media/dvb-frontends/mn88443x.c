@@ -204,11 +204,26 @@ struct mn88443x_priv {
 	struct regmap *regmap_t;
 };
 
+<<<<<<< HEAD
 static void mn88443x_cmn_power_on(struct mn88443x_priv *chip)
 {
 	struct regmap *r_t = chip->regmap_t;
 
 	clk_prepare_enable(chip->mclk);
+=======
+static int mn88443x_cmn_power_on(struct mn88443x_priv *chip)
+{
+	struct device *dev = &chip->client_s->dev;
+	struct regmap *r_t = chip->regmap_t;
+	int ret;
+
+	ret = clk_prepare_enable(chip->mclk);
+	if (ret) {
+		dev_err(dev, "Failed to prepare and enable mclk: %d\n",
+			ret);
+		return ret;
+	}
+>>>>>>> origin/android16-base
 
 	gpiod_set_value_cansleep(chip->reset_gpio, 1);
 	usleep_range(100, 1000);
@@ -222,6 +237,11 @@ static void mn88443x_cmn_power_on(struct mn88443x_priv *chip)
 	} else {
 		regmap_write(r_t, HIZSET3, 0x8f);
 	}
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static void mn88443x_cmn_power_off(struct mn88443x_priv *chip)
@@ -738,7 +758,14 @@ static int mn88443x_probe(struct i2c_client *client,
 	chip->fe.demodulator_priv = chip;
 	i2c_set_clientdata(client, chip);
 
+<<<<<<< HEAD
 	mn88443x_cmn_power_on(chip);
+=======
+	ret = mn88443x_cmn_power_on(chip);
+	if (ret)
+		goto err_i2c_t;
+
+>>>>>>> origin/android16-base
 	mn88443x_s_sleep(chip);
 	mn88443x_t_sleep(chip);
 
@@ -788,7 +815,11 @@ MODULE_DEVICE_TABLE(i2c, mn88443x_i2c_id);
 static struct i2c_driver mn88443x_driver = {
 	.driver = {
 		.name = "mn88443x",
+<<<<<<< HEAD
 		.of_match_table = of_match_ptr(mn88443x_of_match),
+=======
+		.of_match_table = mn88443x_of_match,
+>>>>>>> origin/android16-base
 	},
 	.probe    = mn88443x_probe,
 	.remove   = mn88443x_remove,

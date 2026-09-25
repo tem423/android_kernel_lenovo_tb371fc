@@ -26,6 +26,10 @@
 #define _HYPERV_VMBUS_H
 
 #include <linux/list.h>
+<<<<<<< HEAD
+=======
+#include <linux/bitops.h>
+>>>>>>> origin/android16-base
 #include <asm/sync_bitops.h>
 #include <asm/hyperv-tlfs.h>
 #include <linux/atomic.h>
@@ -391,6 +395,11 @@ void vmbus_device_unregister(struct hv_device *device_obj);
 int vmbus_add_channel_kobj(struct hv_device *device_obj,
 			   struct vmbus_channel *channel);
 
+<<<<<<< HEAD
+=======
+void vmbus_remove_channel_attr_group(struct vmbus_channel *channel);
+
+>>>>>>> origin/android16-base
 struct vmbus_channel *relid2channel(u32 relid);
 
 void vmbus_free_channels(void);

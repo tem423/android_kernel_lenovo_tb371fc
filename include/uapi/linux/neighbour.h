@@ -43,6 +43,10 @@ enum {
 #define NTF_PROXY	0x08	/* == ATF_PUBL */
 #define NTF_EXT_LEARNED	0x10
 #define NTF_OFFLOADED   0x20
+<<<<<<< HEAD
+=======
+#define NTF_STICKY	0x40
+>>>>>>> origin/android16-base
 #define NTF_ROUTER	0x80
 
 /*

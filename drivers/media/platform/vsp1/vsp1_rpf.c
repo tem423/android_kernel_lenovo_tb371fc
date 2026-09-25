@@ -270,8 +270,13 @@ static void rpf_configure_partition(struct vsp1_entity *entity,
 	 * 'width' need to be adjusted.
 	 */
 	if (pipe->partitions > 1) {
+<<<<<<< HEAD
 		crop.width = pipe->partition->rpf.width;
 		crop.left += pipe->partition->rpf.left;
+=======
+		crop.width = pipe->partition->rpf[rpf->entity.index].width;
+		crop.left += pipe->partition->rpf[rpf->entity.index].left;
+>>>>>>> origin/android16-base
 	}
 
 	if (pipe->interlaced) {
@@ -290,11 +295,19 @@ static void rpf_configure_partition(struct vsp1_entity *entity,
 		     + crop.left * fmtinfo->bpp[0] / 8;
 
 	if (format->num_planes > 1) {
+<<<<<<< HEAD
 		unsigned int offset;
 
 		offset = crop.top * format->plane_fmt[1].bytesperline
 		       + crop.left / fmtinfo->hsub
 		       * fmtinfo->bpp[1] / 8;
+=======
+		unsigned int bpl = format->plane_fmt[1].bytesperline;
+		unsigned int offset;
+
+		offset = crop.top / fmtinfo->vsub * bpl
+		       + crop.left / fmtinfo->hsub * fmtinfo->bpp[1] / 8;
+>>>>>>> origin/android16-base
 		mem.addr[1] += offset;
 		mem.addr[2] += offset;
 	}
@@ -326,7 +339,13 @@ static void rpf_partition(struct vsp1_entity *entity,
 			  unsigned int partition_idx,
 			  struct vsp1_partition_window *window)
 {
+<<<<<<< HEAD
 	partition->rpf = *window;
+=======
+	struct vsp1_rwpf *rpf = to_rwpf(&entity->subdev);
+
+	partition->rpf[rpf->entity.index] = *window;
+>>>>>>> origin/android16-base
 }
 
 static const struct vsp1_entity_operations rpf_entity_ops = {

@@ -23,7 +23,10 @@
 #include <linux/list.h>
 #include <linux/memblock.h>
 #include <linux/pstore_ram.h>
+<<<<<<< HEAD
 #include <asm/cacheflush.h>
+=======
+>>>>>>> origin/android16-base
 #include <linux/rslib.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
@@ -190,7 +193,11 @@ static int persistent_ram_init_ecc(struct persistent_ram_zone *prz,
 {
 	int numerr;
 	struct persistent_ram_buffer *buffer = prz->buffer;
+<<<<<<< HEAD
 	int ecc_blocks;
+=======
+	size_t ecc_blocks;
+>>>>>>> origin/android16-base
 	size_t ecc_total;
 
 	if (!ecc_info || !ecc_info->ecc_size)
@@ -277,12 +284,15 @@ static void notrace persistent_ram_update(struct persistent_ram_zone *prz,
 	struct persistent_ram_buffer *buffer = prz->buffer;
 	memcpy_toio(buffer->data + start, s, count);
 	persistent_ram_update_ecc(prz, start, count);
+<<<<<<< HEAD
 	/* TB371FC p137: the ramoops region is mapped WB; without an
 	 * explicit clean the dirty lines are lost on the warm reset that
 	 * follows a panic/hard reset (panic() does not set oops_in_progress,
 	 * so this flush is unconditional - the cost is negligible). */
 	__flush_dcache_area(buffer->data + start, count);
 	__flush_dcache_area(buffer, sizeof(struct persistent_ram_buffer));
+=======
+>>>>>>> origin/android16-base
 }
 
 static int notrace persistent_ram_update_user(struct persistent_ram_zone *prz,
@@ -433,7 +443,15 @@ static void *persistent_ram_vmap(phys_addr_t start, size_t size,
 		phys_addr_t addr = page_start + i * PAGE_SIZE;
 		pages[i] = pfn_to_page(addr >> PAGE_SHIFT);
 	}
+<<<<<<< HEAD
 	vaddr = vmap(pages, page_count, VM_MAP, prot);
+=======
+	/*
+	 * VM_IOREMAP used here to bypass this region during vread()
+	 * and kmap_atomic() (i.e. kcore) to avoid __va() failures.
+	 */
+	vaddr = vmap(pages, page_count, VM_MAP | VM_IOREMAP, prot);
+>>>>>>> origin/android16-base
 	kfree(pages);
 
 	/*
@@ -503,7 +521,11 @@ static int persistent_ram_post_init(struct persistent_ram_zone *prz, u32 sig,
 	sig ^= PERSISTENT_RAM_SIG;
 
 	if (prz->buffer->sig == sig) {
+<<<<<<< HEAD
 		if (buffer_size(prz) == 0) {
+=======
+		if (buffer_size(prz) == 0 && buffer_start(prz) == 0) {
+>>>>>>> origin/android16-base
 			pr_debug("found existing empty buffer\n");
 			return 0;
 		}

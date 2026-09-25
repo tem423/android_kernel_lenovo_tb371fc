@@ -423,7 +423,11 @@ static struct beiscsi_hba *beiscsi_hba_alloc(struct pci_dev *pcidev)
 			"beiscsi_hba_alloc - iscsi_host_alloc failed\n");
 		return NULL;
 	}
+<<<<<<< HEAD
 	shost->max_id = BE2_MAX_SESSIONS;
+=======
+	shost->max_id = BE2_MAX_SESSIONS - 1;
+>>>>>>> origin/android16-base
 	shost->max_channel = 0;
 	shost->max_cmd_len = BEISCSI_MAX_CMD_LEN;
 	shost->max_lun = BEISCSI_NUM_MAX_LUN;
@@ -2713,6 +2717,10 @@ init_wrb_hndl_failed:
 		kfree(pwrb_context->pwrb_handle_base);
 		kfree(pwrb_context->pwrb_handle_basestd);
 	}
+<<<<<<< HEAD
+=======
+	kfree(phwi_ctxt->be_wrbq);
+>>>>>>> origin/android16-base
 	return -ENOMEM;
 }
 
@@ -3039,7 +3047,10 @@ static int beiscsi_create_eqs(struct beiscsi_hba *phba,
 			goto create_eq_error;
 		}
 
+<<<<<<< HEAD
 		mem->dma = paddr;
+=======
+>>>>>>> origin/android16-base
 		mem->va = eq_vaddress;
 		ret = be_fill_queue(eq, phba->params.num_eq_entries,
 				    sizeof(struct be_eq_entry), eq_vaddress);
@@ -3049,6 +3060,10 @@ static int beiscsi_create_eqs(struct beiscsi_hba *phba,
 			goto create_eq_error;
 		}
 
+<<<<<<< HEAD
+=======
+		mem->dma = paddr;
+>>>>>>> origin/android16-base
 		ret = beiscsi_cmd_eq_create(&phba->ctrl, eq,
 					    BEISCSI_EQ_DELAY_DEF);
 		if (ret) {
@@ -3105,7 +3120,10 @@ static int beiscsi_create_cqs(struct beiscsi_hba *phba,
 			goto create_cq_error;
 		}
 
+<<<<<<< HEAD
 		mem->dma = paddr;
+=======
+>>>>>>> origin/android16-base
 		ret = be_fill_queue(cq, phba->params.num_cq_entries,
 				    sizeof(struct sol_cqe), cq_vaddress);
 		if (ret) {
@@ -3115,6 +3133,10 @@ static int beiscsi_create_cqs(struct beiscsi_hba *phba,
 			goto create_cq_error;
 		}
 
+<<<<<<< HEAD
+=======
+		mem->dma = paddr;
+>>>>>>> origin/android16-base
 		ret = beiscsi_cmd_cq_create(&phba->ctrl, cq, eq, false,
 					    false, 0);
 		if (ret) {
@@ -5336,7 +5358,11 @@ static int beiscsi_enable_port(struct beiscsi_hba *phba)
 	/* Re-enable UER. If different TPE occurs then it is recoverable. */
 	beiscsi_set_uer_feature(phba);
 
+<<<<<<< HEAD
 	phba->shost->max_id = phba->params.cxns_per_ctrl;
+=======
+	phba->shost->max_id = phba->params.cxns_per_ctrl - 1;
+>>>>>>> origin/android16-base
 	phba->shost->can_queue = phba->params.ios_per_ctrl;
 	ret = beiscsi_init_port(phba);
 	if (ret < 0) {
@@ -5764,6 +5790,10 @@ free_hba:
 	pci_disable_msix(phba->pcidev);
 	pci_dev_put(phba->pcidev);
 	iscsi_host_free(phba->shost);
+<<<<<<< HEAD
+=======
+	pci_disable_pcie_error_reporting(pcidev);
+>>>>>>> origin/android16-base
 	pci_set_drvdata(pcidev, NULL);
 disable_pci:
 	pci_release_regions(pcidev);

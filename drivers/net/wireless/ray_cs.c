@@ -282,13 +282,21 @@ static int ray_probe(struct pcmcia_device *p_dev)
 {
 	ray_dev_t *local;
 	struct net_device *dev;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 
 	dev_dbg(&p_dev->dev, "ray_attach()\n");
 
 	/* Allocate space for private device-specific data */
 	dev = alloc_etherdev(sizeof(ray_dev_t));
 	if (!dev)
+<<<<<<< HEAD
 		goto fail_alloc_dev;
+=======
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	local = netdev_priv(dev);
 	local->finder = p_dev;
@@ -325,11 +333,24 @@ static int ray_probe(struct pcmcia_device *p_dev)
 	timer_setup(&local->timer, NULL, 0);
 
 	this_device = p_dev;
+<<<<<<< HEAD
 	return ray_config(p_dev);
 
 fail_alloc_dev:
 	return -ENOMEM;
 } /* ray_attach */
+=======
+	ret = ray_config(p_dev);
+	if (ret)
+		goto err_free_dev;
+
+	return 0;
+
+err_free_dev:
+	free_netdev(dev);
+	return ret;
+}
+>>>>>>> origin/android16-base
 
 static void ray_detach(struct pcmcia_device *link)
 {
@@ -394,6 +415,11 @@ static int ray_config(struct pcmcia_device *link)
 		goto failed;
 	local->sram = ioremap(link->resource[2]->start,
 			resource_size(link->resource[2]));
+<<<<<<< HEAD
+=======
+	if (!local->sram)
+		goto failed;
+>>>>>>> origin/android16-base
 
 /*** Set up 16k window for shared memory (receive buffer) ***************/
 	link->resource[3]->flags |=
@@ -408,6 +434,11 @@ static int ray_config(struct pcmcia_device *link)
 		goto failed;
 	local->rmem = ioremap(link->resource[3]->start,
 			resource_size(link->resource[3]));
+<<<<<<< HEAD
+=======
+	if (!local->rmem)
+		goto failed;
+>>>>>>> origin/android16-base
 
 /*** Set up window for attribute memory ***********************************/
 	link->resource[4]->flags |=
@@ -422,6 +453,11 @@ static int ray_config(struct pcmcia_device *link)
 		goto failed;
 	local->amem = ioremap(link->resource[4]->start,
 			resource_size(link->resource[4]));
+<<<<<<< HEAD
+=======
+	if (!local->amem)
+		goto failed;
+>>>>>>> origin/android16-base
 
 	dev_dbg(&link->dev, "ray_config sram=%p\n", local->sram);
 	dev_dbg(&link->dev, "ray_config rmem=%p\n", local->rmem);
@@ -1645,6 +1681,7 @@ static void authenticate_timeout(struct timer_list *t)
 /*===========================================================================*/
 static int parse_addr(char *in_str, UCHAR *out)
 {
+<<<<<<< HEAD
 	int len;
 	int i, j, k;
 	int status;
@@ -1663,20 +1700,46 @@ static int parse_addr(char *in_str, UCHAR *out)
 
 	while (j > 0) {
 		if ((k = hex_to_bin(in_str[j--])) != -1)
+=======
+	int i, k;
+	int len;
+
+	if (in_str == NULL)
+		return 0;
+	len = strnlen(in_str, ADDRLEN * 2 + 1) - 1;
+	if (len < 1)
+		return 0;
+	memset(out, 0, ADDRLEN);
+
+	i = 5;
+
+	while (len > 0) {
+		if ((k = hex_to_bin(in_str[len--])) != -1)
+>>>>>>> origin/android16-base
 			out[i] = k;
 		else
 			return 0;
 
+<<<<<<< HEAD
 		if (j == 0)
 			break;
 		if ((k = hex_to_bin(in_str[j--])) != -1)
+=======
+		if (len == 0)
+			break;
+		if ((k = hex_to_bin(in_str[len--])) != -1)
+>>>>>>> origin/android16-base
 			out[i] += k << 4;
 		else
 			return 0;
 		if (!i--)
 			break;
 	}
+<<<<<<< HEAD
 	return status;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 /*===========================================================================*/

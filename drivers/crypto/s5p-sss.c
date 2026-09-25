@@ -2166,6 +2166,11 @@ static int s5p_aes_probe(struct platform_device *pdev)
 
 	variant = find_s5p_sss_version(pdev);
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+<<<<<<< HEAD
+=======
+	if (!res)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Note: HASH and PRNG uses the same registers in secss, avoid

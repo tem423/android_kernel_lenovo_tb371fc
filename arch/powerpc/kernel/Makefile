@@ -15,11 +15,20 @@ CFLAGS_prom_init.o      += -fPIC
 CFLAGS_btext.o		+= -fPIC
 endif
 
+<<<<<<< HEAD
+=======
+CFLAGS_setup_32.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
+>>>>>>> origin/android16-base
 CFLAGS_cputable.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
 CFLAGS_prom_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
 CFLAGS_btext.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
 CFLAGS_prom.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
 
+<<<<<<< HEAD
+=======
+CFLAGS_prom_init.o += $(call cc-option, -fno-stack-protector)
+
+>>>>>>> origin/android16-base
 ifdef CONFIG_FUNCTION_TRACER
 # Do not trace early boot code
 CFLAGS_REMOVE_cputable.o = $(CC_FLAGS_FTRACE)

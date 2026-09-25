@@ -379,7 +379,10 @@ int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 	struct radeon_device *rdev = dev->dev_private;
 	struct drm_radeon_gem_set_domain *args = data;
 	struct drm_gem_object *gobj;
+<<<<<<< HEAD
 	struct radeon_bo *robj;
+=======
+>>>>>>> origin/android16-base
 	int r;
 
 	/* for now if someone requests domain CPU -
@@ -392,13 +395,20 @@ int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 		up_read(&rdev->exclusive_lock);
 		return -ENOENT;
 	}
+<<<<<<< HEAD
 	robj = gem_to_radeon_bo(gobj);
+=======
+>>>>>>> origin/android16-base
 
 	r = radeon_gem_set_domain(gobj, args->read_domains, args->write_domain);
 
 	drm_gem_object_put_unlocked(gobj);
 	up_read(&rdev->exclusive_lock);
+<<<<<<< HEAD
 	r = radeon_gem_handle_lockup(robj->rdev, r);
+=======
+	r = radeon_gem_handle_lockup(rdev, r);
+>>>>>>> origin/android16-base
 	return r;
 }
 

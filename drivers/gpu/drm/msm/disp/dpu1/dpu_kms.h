@@ -41,18 +41,23 @@
  * @fmt: Pointer to format string
  */
 #define DPU_DEBUG(fmt, ...)                                                \
+<<<<<<< HEAD
 	do {                                                               \
 		if (unlikely(drm_debug & DRM_UT_KMS))                      \
 			DRM_DEBUG(fmt, ##__VA_ARGS__); \
 		else                                                       \
 			pr_debug(fmt, ##__VA_ARGS__);                      \
 	} while (0)
+=======
+	DRM_DEBUG_DRIVER(fmt, ##__VA_ARGS__)
+>>>>>>> origin/android16-base
 
 /**
  * DPU_DEBUG_DRIVER - macro for hardware driver logging
  * @fmt: Pointer to format string
  */
 #define DPU_DEBUG_DRIVER(fmt, ...)                                         \
+<<<<<<< HEAD
 	do {                                                               \
 		if (unlikely(drm_debug & DRM_UT_DRIVER))                   \
 			DRM_ERROR(fmt, ##__VA_ARGS__); \
@@ -61,6 +66,12 @@
 	} while (0)
 
 #define DPU_ERROR(fmt, ...) pr_err("[dpu error]" fmt, ##__VA_ARGS__)
+=======
+	DRM_DEBUG_DRIVER(fmt, ##__VA_ARGS__)
+
+#define DPU_ERROR(fmt, ...) pr_err("[dpu error]" fmt, ##__VA_ARGS__)
+#define DPU_ERROR_RATELIMITED(fmt, ...) pr_err_ratelimited("[dpu error]" fmt, ##__VA_ARGS__)
+>>>>>>> origin/android16-base
 
 /**
  * ktime_compare_safe - compare two ktime structures

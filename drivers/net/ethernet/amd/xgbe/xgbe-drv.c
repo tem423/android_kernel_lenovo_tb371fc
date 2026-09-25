@@ -683,10 +683,30 @@ static void xgbe_service(struct work_struct *work)
 static void xgbe_service_timer(struct timer_list *t)
 {
 	struct xgbe_prv_data *pdata = from_timer(pdata, t, service_timer);
+<<<<<<< HEAD
+=======
+	struct xgbe_channel *channel;
+	unsigned int i;
+>>>>>>> origin/android16-base
 
 	queue_work(pdata->dev_workqueue, &pdata->service_work);
 
 	mod_timer(&pdata->service_timer, jiffies + HZ);
+<<<<<<< HEAD
+=======
+
+	if (!pdata->tx_usecs)
+		return;
+
+	for (i = 0; i < pdata->channel_count; i++) {
+		channel = pdata->channel[i];
+		if (!channel->tx_ring || channel->tx_timer_active)
+			break;
+		channel->tx_timer_active = 1;
+		mod_timer(&channel->tx_timer,
+			  jiffies + usecs_to_jiffies(pdata->tx_usecs));
+	}
+>>>>>>> origin/android16-base
 }
 
 static void xgbe_init_timers(struct xgbe_prv_data *pdata)
@@ -722,7 +742,13 @@ static void xgbe_stop_timers(struct xgbe_prv_data *pdata)
 		if (!channel->tx_ring)
 			break;
 
+<<<<<<< HEAD
 		del_timer_sync(&channel->tx_timer);
+=======
+		/* Deactivate the Tx timer */
+		del_timer_sync(&channel->tx_timer);
+		channel->tx_timer_active = 0;
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -1138,6 +1164,12 @@ static void xgbe_free_irqs(struct xgbe_prv_data *pdata)
 
 	devm_free_irq(pdata->dev, pdata->dev_irq, pdata);
 
+<<<<<<< HEAD
+=======
+	tasklet_kill(&pdata->tasklet_dev);
+	tasklet_kill(&pdata->tasklet_ecc);
+
+>>>>>>> origin/android16-base
 	if (pdata->vdata->ecc_support && (pdata->dev_irq != pdata->ecc_irq))
 		devm_free_irq(pdata->dev, pdata->ecc_irq, pdata);
 
@@ -1444,6 +1476,10 @@ static void xgbe_stop(struct xgbe_prv_data *pdata)
 		return;
 
 	netif_tx_stop_all_queues(netdev);
+<<<<<<< HEAD
+=======
+	netif_carrier_off(pdata->netdev);
+>>>>>>> origin/android16-base
 
 	xgbe_stop_timers(pdata);
 	flush_workqueue(pdata->dev_workqueue);
@@ -2765,6 +2801,17 @@ read_again:
 			buf2_len = xgbe_rx_buf2_len(rdata, packet, len);
 			len += buf2_len;
 
+<<<<<<< HEAD
+=======
+			if (buf2_len > rdata->rx.buf.dma_len) {
+				/* Hardware inconsistency within the descriptors
+				 * that has resulted in a length underflow.
+				 */
+				error = 1;
+				goto skip_data;
+			}
+
+>>>>>>> origin/android16-base
 			if (!skb) {
 				skb = xgbe_create_skb(pdata, napi, rdata,
 						      buf1_len);
@@ -2794,8 +2841,15 @@ skip_data:
 		if (!last || context_next)
 			goto read_again;
 
+<<<<<<< HEAD
 		if (!skb)
 			goto next_packet;
+=======
+		if (!skb || error) {
+			dev_kfree_skb(skb);
+			goto next_packet;
+		}
+>>>>>>> origin/android16-base
 
 		/* Be sure we don't exceed the configured MTU */
 		max_len = netdev->mtu + ETH_HLEN;

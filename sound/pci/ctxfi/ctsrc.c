@@ -594,6 +594,7 @@ int src_mgr_destroy(struct src_mgr *src_mgr)
 
 /* SRCIMP resource manager operations */
 
+<<<<<<< HEAD
 static int srcimp_master(struct rsc *rsc)
 {
 	rsc->conj = 0;
@@ -604,6 +605,17 @@ static int srcimp_next_conj(struct rsc *rsc)
 {
 	rsc->conj++;
 	return container_of(rsc, struct srcimp, rsc)->idx[rsc->conj];
+=======
+static void srcimp_master(struct rsc *rsc)
+{
+	rsc->conj = 0;
+	rsc->idx = container_of(rsc, struct srcimp, rsc)->idx[0];
+}
+
+static void srcimp_next_conj(struct rsc *rsc)
+{
+	rsc->conj++;
+>>>>>>> origin/android16-base
 }
 
 static int srcimp_index(const struct rsc *rsc)

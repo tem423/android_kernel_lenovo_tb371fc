@@ -158,6 +158,10 @@ static inline struct zcrypt_queue *zcrypt_pick_queue(struct zcrypt_card *zc,
 {
 	if (!zq || !try_module_get(zq->queue->ap_dev.drv->driver.owner))
 		return NULL;
+<<<<<<< HEAD
+=======
+	zcrypt_card_get(zc);
+>>>>>>> origin/android16-base
 	zcrypt_queue_get(zq);
 	get_device(&zq->queue->ap_dev.device);
 	atomic_add(weight, &zc->load);
@@ -177,6 +181,10 @@ static inline void zcrypt_drop_queue(struct zcrypt_card *zc,
 	atomic_sub(weight, &zq->load);
 	put_device(&zq->queue->ap_dev.device);
 	zcrypt_queue_put(zq);
+<<<<<<< HEAD
+=======
+	zcrypt_card_put(zc);
+>>>>>>> origin/android16-base
 	module_put(mod);
 }
 

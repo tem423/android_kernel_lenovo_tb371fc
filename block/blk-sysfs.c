@@ -896,7 +896,11 @@ int blk_register_queue(struct gendisk *disk)
 	if (WARN_ON(!q))
 		return -ENXIO;
 
+<<<<<<< HEAD
 	WARN_ONCE(test_bit(QUEUE_FLAG_REGISTERED, &q->queue_flags),
+=======
+	WARN_ONCE(blk_queue_registered(q),
+>>>>>>> origin/android16-base
 		  "%s is registering an already registered queue\n",
 		  kobject_name(&dev->kobj));
 	queue_flag_set_unlocked(QUEUE_FLAG_REGISTERED, q);
@@ -973,7 +977,11 @@ void blk_unregister_queue(struct gendisk *disk)
 		return;
 
 	/* Return early if disk->queue was never registered. */
+<<<<<<< HEAD
 	if (!test_bit(QUEUE_FLAG_REGISTERED, &q->queue_flags))
+=======
+	if (!blk_queue_registered(q))
+>>>>>>> origin/android16-base
 		return;
 
 	/*
@@ -993,8 +1001,11 @@ void blk_unregister_queue(struct gendisk *disk)
 		blk_mq_unregister_dev(disk_to_dev(disk), q);
 	mutex_unlock(&q->sysfs_lock);
 
+<<<<<<< HEAD
 	kobject_uevent(&q->kobj, KOBJ_REMOVE);
 	kobject_del(&q->kobj);
+=======
+>>>>>>> origin/android16-base
 	blk_trace_remove_sysfs(disk_to_dev(disk));
 
 	mutex_lock(&q->sysfs_lock);
@@ -1002,5 +1013,12 @@ void blk_unregister_queue(struct gendisk *disk)
 		elv_unregister_queue(q);
 	mutex_unlock(&q->sysfs_lock);
 
+<<<<<<< HEAD
+=======
+	/* Now that we've deleted all child objects, we can delete the queue. */
+	kobject_uevent(&q->kobj, KOBJ_REMOVE);
+	kobject_del(&q->kobj);
+
+>>>>>>> origin/android16-base
 	kobject_put(&disk_to_dev(disk)->kobj);
 }

@@ -335,7 +335,14 @@ int phy_ethtool_ksettings_set(struct phy_device *phydev,
 
 	phydev->autoneg = autoneg;
 
+<<<<<<< HEAD
 	phydev->speed = speed;
+=======
+	if (autoneg == AUTONEG_DISABLE) {
+		phydev->speed = speed;
+		phydev->duplex = duplex;
+	}
+>>>>>>> origin/android16-base
 
 	phydev->advertising = advertising;
 
@@ -344,8 +351,11 @@ int phy_ethtool_ksettings_set(struct phy_device *phydev,
 	else
 		phydev->advertising &= ~ADVERTISED_Autoneg;
 
+<<<<<<< HEAD
 	phydev->duplex = duplex;
 
+=======
+>>>>>>> origin/android16-base
 	phydev->mdix_ctrl = cmd->base.eth_tp_mdix_ctrl;
 
 	/* Restart the PHY */

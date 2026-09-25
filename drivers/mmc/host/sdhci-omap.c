@@ -690,7 +690,12 @@ static void sdhci_omap_set_power(struct sdhci_host *host, unsigned char mode,
 {
 	struct mmc_host *mmc = host->mmc;
 
+<<<<<<< HEAD
 	mmc_regulator_set_ocr(mmc, mmc->supply.vmmc, vdd);
+=======
+	if (!IS_ERR(mmc->supply.vmmc))
+		mmc_regulator_set_ocr(mmc, mmc->supply.vmmc, vdd);
+>>>>>>> origin/android16-base
 }
 
 static int sdhci_omap_enable_dma(struct sdhci_host *host)

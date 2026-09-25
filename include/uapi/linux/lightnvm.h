@@ -21,7 +21,11 @@
 #define _UAPI_LINUX_LIGHTNVM_H
 
 #ifdef __KERNEL__
+<<<<<<< HEAD
 #include <linux/kernel.h>
+=======
+#include <linux/const.h>
+>>>>>>> origin/android16-base
 #include <linux/ioctl.h>
 #else /* __KERNEL__ */
 #include <stdio.h>

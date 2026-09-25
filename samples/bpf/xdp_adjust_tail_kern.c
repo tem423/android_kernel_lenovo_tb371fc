@@ -54,6 +54,10 @@ static __always_inline void swap_mac(void *data, struct ethhdr *orig_eth)
 
 static __always_inline __u16 csum_fold_helper(__u32 csum)
 {
+<<<<<<< HEAD
+=======
+	csum = (csum & 0xffff) + (csum >> 16);
+>>>>>>> origin/android16-base
 	return ~((csum & 0xffff) + (csum >> 16));
 }
 

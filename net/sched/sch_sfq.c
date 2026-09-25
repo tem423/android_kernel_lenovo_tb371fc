@@ -353,7 +353,11 @@ sfq_enqueue(struct sk_buff *skb, struct Qdisc *sch, struct sk_buff **to_free)
 	unsigned int hash, dropped;
 	sfq_index x, qlen;
 	struct sfq_slot *slot;
+<<<<<<< HEAD
 	int uninitialized_var(ret);
+=======
+	int ret;
+>>>>>>> origin/android16-base
 	struct sk_buff *head;
 	int delta;
 
@@ -651,7 +655,11 @@ static int sfq_change(struct Qdisc *sch, struct nlattr *opt)
 	}
 
 	if (ctl_v1 && !red_check_params(ctl_v1->qth_min, ctl_v1->qth_max,
+<<<<<<< HEAD
 					ctl_v1->Wlog))
+=======
+					ctl_v1->Wlog, ctl_v1->Scell_log, NULL))
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	if (ctl_v1 && ctl_v1->qth_min) {
 		p = kmalloc(sizeof(*p), GFP_KERNEL);

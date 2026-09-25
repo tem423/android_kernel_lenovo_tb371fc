@@ -581,7 +581,11 @@ static int mal_probe(struct platform_device *ofdev)
 		printk(KERN_ERR "%pOF: Support for 405EZ not enabled!\n",
 				ofdev->dev.of_node);
 		err = -ENODEV;
+<<<<<<< HEAD
 		goto fail;
+=======
+		goto fail_unmap;
+>>>>>>> origin/android16-base
 #endif
 	}
 

@@ -42,7 +42,12 @@ extern void paging_init(void);
  * ZERO_PAGE is a global shared page that is always zero: used
  * for zero-mapped memory areas etc..
  */
+<<<<<<< HEAD
 #define ZERO_PAGE(vaddr)	(virt_to_page(0))
+=======
+extern void *empty_zero_page;
+#define ZERO_PAGE(vaddr)	(virt_to_page(empty_zero_page))
+>>>>>>> origin/android16-base
 
 /*
  * No page table caches to initialise.

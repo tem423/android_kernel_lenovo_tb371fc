@@ -41,6 +41,7 @@ struct f_hidg {
 	unsigned char			bInterfaceSubClass;
 	unsigned char			bInterfaceProtocol;
 	unsigned char			protocol;
+<<<<<<< HEAD
 	unsigned short			report_desc_length;
 	char				*report_desc;
 	unsigned short			report_length;
@@ -50,6 +51,31 @@ struct f_hidg {
 	spinlock_t			read_spinlock;
 	wait_queue_head_t		read_queue;
 	unsigned int			qlen;
+=======
+	unsigned char			idle;
+	unsigned short			report_desc_length;
+	char				*report_desc;
+	unsigned short			report_length;
+	/*
+	 * use_out_ep - if true, the OUT Endpoint (interrupt out method)
+	 *              will be used to receive reports from the host
+	 *              using functions with the "intout" suffix.
+	 *              Otherwise, the OUT Endpoint will not be configured
+	 *              and the SETUP/SET_REPORT method ("ssreport" suffix)
+	 *              will be used to receive reports.
+	 */
+	bool				use_out_ep;
+
+	/* recv report */
+	spinlock_t			read_spinlock;
+	wait_queue_head_t		read_queue;
+	/* recv report - interrupt out only (use_out_ep == 1) */
+	struct list_head		completed_out_req;
+	unsigned int			qlen;
+	/* recv report - setup set_report only (use_out_ep == 0) */
+	char				*set_report_buf;
+	unsigned int			set_report_length;
+>>>>>>> origin/android16-base
 
 	/* send report */
 	spinlock_t			write_spinlock;
@@ -57,7 +83,11 @@ struct f_hidg {
 	wait_queue_head_t		write_queue;
 	struct usb_request		*req;
 
+<<<<<<< HEAD
 	int				minor;
+=======
+	struct device			dev;
+>>>>>>> origin/android16-base
 	struct cdev			cdev;
 	struct usb_function		func;
 
@@ -72,6 +102,18 @@ static inline struct f_hidg *func_to_hidg(struct usb_function *f)
 	return container_of(f, struct f_hidg, func);
 }
 
+<<<<<<< HEAD
+=======
+static void hidg_release(struct device *dev)
+{
+	struct f_hidg *hidg = container_of(dev, struct f_hidg, dev);
+
+	kfree(hidg->report_desc);
+	kfree(hidg->set_report_buf);
+	kfree(hidg);
+}
+
+>>>>>>> origin/android16-base
 /*-------------------------------------------------------------------------*/
 /*                           Static descriptors                            */
 
@@ -80,7 +122,11 @@ static struct usb_interface_descriptor hidg_interface_desc = {
 	.bDescriptorType	= USB_DT_INTERFACE,
 	/* .bInterfaceNumber	= DYNAMIC */
 	.bAlternateSetting	= 0,
+<<<<<<< HEAD
 	.bNumEndpoints		= 2,
+=======
+	/* .bNumEndpoints	= DYNAMIC (depends on use_out_ep) */
+>>>>>>> origin/android16-base
 	.bInterfaceClass	= USB_CLASS_HID,
 	/* .bInterfaceSubClass	= DYNAMIC */
 	/* .bInterfaceProtocol	= DYNAMIC */
@@ -90,7 +136,11 @@ static struct usb_interface_descriptor hidg_interface_desc = {
 static struct hid_descriptor hidg_desc = {
 	.bLength			= sizeof hidg_desc,
 	.bDescriptorType		= HID_DT_HID,
+<<<<<<< HEAD
 	.bcdHID				= 0x0101,
+=======
+	.bcdHID				= cpu_to_le16(0x0101),
+>>>>>>> origin/android16-base
 	.bCountryCode			= 0x00,
 	.bNumDescriptors		= 0x1,
 	/*.desc[0].bDescriptorType	= DYNAMIC */
@@ -141,7 +191,11 @@ static struct usb_ss_ep_comp_descriptor hidg_ss_out_comp_desc = {
 	/* .wBytesPerInterval   = DYNAMIC */
 };
 
+<<<<<<< HEAD
 static struct usb_descriptor_header *hidg_ss_descriptors[] = {
+=======
+static struct usb_descriptor_header *hidg_ss_descriptors_intout[] = {
+>>>>>>> origin/android16-base
 	(struct usb_descriptor_header *)&hidg_interface_desc,
 	(struct usb_descriptor_header *)&hidg_desc,
 	(struct usb_descriptor_header *)&hidg_ss_in_ep_desc,
@@ -151,6 +205,17 @@ static struct usb_descriptor_header *hidg_ss_descriptors[] = {
 	NULL,
 };
 
+<<<<<<< HEAD
+=======
+static struct usb_descriptor_header *hidg_ss_descriptors_ssreport[] = {
+	(struct usb_descriptor_header *)&hidg_interface_desc,
+	(struct usb_descriptor_header *)&hidg_desc,
+	(struct usb_descriptor_header *)&hidg_ss_in_ep_desc,
+	(struct usb_descriptor_header *)&hidg_ss_in_comp_desc,
+	NULL,
+};
+
+>>>>>>> origin/android16-base
 /* High-Speed Support */
 
 static struct usb_endpoint_descriptor hidg_hs_in_ep_desc = {
@@ -177,7 +242,11 @@ static struct usb_endpoint_descriptor hidg_hs_out_ep_desc = {
 				      */
 };
 
+<<<<<<< HEAD
 static struct usb_descriptor_header *hidg_hs_descriptors[] = {
+=======
+static struct usb_descriptor_header *hidg_hs_descriptors_intout[] = {
+>>>>>>> origin/android16-base
 	(struct usb_descriptor_header *)&hidg_interface_desc,
 	(struct usb_descriptor_header *)&hidg_desc,
 	(struct usb_descriptor_header *)&hidg_hs_in_ep_desc,
@@ -185,6 +254,16 @@ static struct usb_descriptor_header *hidg_hs_descriptors[] = {
 	NULL,
 };
 
+<<<<<<< HEAD
+=======
+static struct usb_descriptor_header *hidg_hs_descriptors_ssreport[] = {
+	(struct usb_descriptor_header *)&hidg_interface_desc,
+	(struct usb_descriptor_header *)&hidg_desc,
+	(struct usb_descriptor_header *)&hidg_hs_in_ep_desc,
+	NULL,
+};
+
+>>>>>>> origin/android16-base
 /* Full-Speed Support */
 
 static struct usb_endpoint_descriptor hidg_fs_in_ep_desc = {
@@ -211,7 +290,11 @@ static struct usb_endpoint_descriptor hidg_fs_out_ep_desc = {
 				       */
 };
 
+<<<<<<< HEAD
 static struct usb_descriptor_header *hidg_fs_descriptors[] = {
+=======
+static struct usb_descriptor_header *hidg_fs_descriptors_intout[] = {
+>>>>>>> origin/android16-base
 	(struct usb_descriptor_header *)&hidg_interface_desc,
 	(struct usb_descriptor_header *)&hidg_desc,
 	(struct usb_descriptor_header *)&hidg_fs_in_ep_desc,
@@ -219,6 +302,16 @@ static struct usb_descriptor_header *hidg_fs_descriptors[] = {
 	NULL,
 };
 
+<<<<<<< HEAD
+=======
+static struct usb_descriptor_header *hidg_fs_descriptors_ssreport[] = {
+	(struct usb_descriptor_header *)&hidg_interface_desc,
+	(struct usb_descriptor_header *)&hidg_desc,
+	(struct usb_descriptor_header *)&hidg_fs_in_ep_desc,
+	NULL,
+};
+
+>>>>>>> origin/android16-base
 /*-------------------------------------------------------------------------*/
 /*                                 Strings                                 */
 
@@ -242,8 +335,13 @@ static struct usb_gadget_strings *ct_func_strings[] = {
 /*-------------------------------------------------------------------------*/
 /*                              Char Device                                */
 
+<<<<<<< HEAD
 static ssize_t f_hidg_read(struct file *file, char __user *buffer,
 			size_t count, loff_t *ptr)
+=======
+static ssize_t f_hidg_intout_read(struct file *file, char __user *buffer,
+				  size_t count, loff_t *ptr)
+>>>>>>> origin/android16-base
 {
 	struct f_hidg *hidg = file->private_data;
 	struct f_hidg_req_list *list;
@@ -259,15 +357,26 @@ static ssize_t f_hidg_read(struct file *file, char __user *buffer,
 
 	spin_lock_irqsave(&hidg->read_spinlock, flags);
 
+<<<<<<< HEAD
 #define READ_COND (!list_empty(&hidg->completed_out_req) || !hidg->bound)
 
 	/* wait for at least one buffer to complete */
 	while (!READ_COND) {
+=======
+#define READ_COND_INTOUT (!list_empty(&hidg->completed_out_req) || !hidg->bound)
+
+	/* wait for at least one buffer to complete */
+	while (!READ_COND_INTOUT) {
+>>>>>>> origin/android16-base
 		spin_unlock_irqrestore(&hidg->read_spinlock, flags);
 		if (file->f_flags & O_NONBLOCK)
 			return -EAGAIN;
 
+<<<<<<< HEAD
 		if (wait_event_interruptible(hidg->read_queue, READ_COND))
+=======
+		if (wait_event_interruptible(hidg->read_queue, READ_COND_INTOUT))
+>>>>>>> origin/android16-base
 			return -ERESTARTSYS;
 
 		spin_lock_irqsave(&hidg->read_spinlock, flags);
@@ -327,6 +436,63 @@ static ssize_t f_hidg_read(struct file *file, char __user *buffer,
 	return count;
 }
 
+<<<<<<< HEAD
+=======
+#define READ_COND_SSREPORT (hidg->set_report_buf != NULL)
+
+static ssize_t f_hidg_ssreport_read(struct file *file, char __user *buffer,
+				    size_t count, loff_t *ptr)
+{
+	struct f_hidg *hidg = file->private_data;
+	char *tmp_buf = NULL;
+	unsigned long flags;
+
+	if (!count)
+		return 0;
+
+	spin_lock_irqsave(&hidg->read_spinlock, flags);
+
+	while (!READ_COND_SSREPORT) {
+		spin_unlock_irqrestore(&hidg->read_spinlock, flags);
+		if (file->f_flags & O_NONBLOCK)
+			return -EAGAIN;
+
+		if (wait_event_interruptible(hidg->read_queue, READ_COND_SSREPORT))
+			return -ERESTARTSYS;
+
+		spin_lock_irqsave(&hidg->read_spinlock, flags);
+	}
+
+	count = min_t(unsigned int, count, hidg->set_report_length);
+	tmp_buf = hidg->set_report_buf;
+	hidg->set_report_buf = NULL;
+
+	spin_unlock_irqrestore(&hidg->read_spinlock, flags);
+
+	if (tmp_buf != NULL) {
+		count -= copy_to_user(buffer, tmp_buf, count);
+		kfree(tmp_buf);
+	} else {
+		count = -ENOMEM;
+	}
+
+	wake_up(&hidg->read_queue);
+
+	return count;
+}
+
+static ssize_t f_hidg_read(struct file *file, char __user *buffer,
+			   size_t count, loff_t *ptr)
+{
+	struct f_hidg *hidg = file->private_data;
+
+	if (hidg->use_out_ep)
+		return f_hidg_intout_read(file, buffer, count, ptr);
+	else
+		return f_hidg_ssreport_read(file, buffer, count, ptr);
+}
+
+>>>>>>> origin/android16-base
 static void f_hidg_req_complete(struct usb_ep *ep, struct usb_request *req)
 {
 	struct f_hidg *hidg = (struct f_hidg *)ep->driver_data;
@@ -356,6 +522,14 @@ static ssize_t f_hidg_write(struct file *file, const char __user *buffer,
 
 	spin_lock_irqsave(&hidg->write_spinlock, flags);
 
+<<<<<<< HEAD
+=======
+	if (!hidg->req) {
+		spin_unlock_irqrestore(&hidg->write_spinlock, flags);
+		return -ESHUTDOWN;
+	}
+
+>>>>>>> origin/android16-base
 #define WRITE_COND (!hidg->write_pending || !hidg->bound)
 try_again:
 	/* write queue */
@@ -381,8 +555,19 @@ try_again:
 	count  = min_t(unsigned, count, hidg->report_length);
 
 	spin_unlock_irqrestore(&hidg->write_spinlock, flags);
+<<<<<<< HEAD
 	status = copy_from_user(req->buf, buffer, count);
 
+=======
+
+	if (!req) {
+		ERROR(hidg->func.config->cdev, "hidg->req is NULL\n");
+		status = -ESHUTDOWN;
+		goto release_write_pending;
+	}
+
+	status = copy_from_user(req->buf, buffer, count);
+>>>>>>> origin/android16-base
 	if (status != 0) {
 		ERROR(hidg->func.config->cdev,
 			"copy_from_user error\n");
@@ -410,6 +595,7 @@ try_again:
 
 	spin_unlock_irqrestore(&hidg->write_spinlock, flags);
 
+<<<<<<< HEAD
 	status = usb_ep_queue(hidg->in_ep, req, GFP_ATOMIC);
 	if (status < 0) {
 		ERROR(hidg->func.config->cdev,
@@ -419,6 +605,20 @@ try_again:
 		status = count;
 	}
 
+=======
+	if (!hidg->in_ep->enabled) {
+		ERROR(hidg->func.config->cdev, "in_ep is disabled\n");
+		status = -ESHUTDOWN;
+		goto release_write_pending;
+	}
+
+	status = usb_ep_queue(hidg->in_ep, req, GFP_ATOMIC);
+	if (status < 0)
+		goto release_write_pending;
+	else
+		status = count;
+
+>>>>>>> origin/android16-base
 	return status;
 release_write_pending:
 	spin_lock_irqsave(&hidg->write_spinlock, flags);
@@ -444,21 +644,40 @@ static __poll_t f_hidg_poll(struct file *file, poll_table *wait)
 	if (WRITE_COND)
 		ret |= EPOLLOUT | EPOLLWRNORM;
 
+<<<<<<< HEAD
 	if (READ_COND)
 		ret |= EPOLLIN | EPOLLRDNORM;
+=======
+	if (hidg->use_out_ep) {
+		if (READ_COND_INTOUT)
+			ret |= EPOLLIN | EPOLLRDNORM;
+	} else {
+		if (READ_COND_SSREPORT)
+			ret |= EPOLLIN | EPOLLRDNORM;
+	}
+>>>>>>> origin/android16-base
 
 	return ret;
 }
 
 #undef WRITE_COND
+<<<<<<< HEAD
 #undef READ_COND
+=======
+#undef READ_COND_SSREPORT
+#undef READ_COND_INTOUT
+>>>>>>> origin/android16-base
 
 static void hidg_destroy(struct kref *kref)
 {
 	struct f_hidg *hidg = container_of(kref, struct f_hidg, kref);
 
+<<<<<<< HEAD
 	kfree(hidg->report_desc);
 	kfree(hidg);
+=======
+	put_device(&hidg->dev);
+>>>>>>> origin/android16-base
 }
 
 static int f_hidg_release(struct inode *inode, struct file *fd)
@@ -491,7 +710,11 @@ static inline struct usb_request *hidg_alloc_ep_req(struct usb_ep *ep,
 	return alloc_ep_req(ep, length);
 }
 
+<<<<<<< HEAD
 static void hidg_set_report_complete(struct usb_ep *ep, struct usb_request *req)
+=======
+static void hidg_intout_complete(struct usb_ep *ep, struct usb_request *req)
+>>>>>>> origin/android16-base
 {
 	struct f_hidg *hidg = (struct f_hidg *) req->context;
 	struct usb_composite_dev *cdev = hidg->func.config->cdev;
@@ -541,6 +764,40 @@ free_req:
 	}
 }
 
+<<<<<<< HEAD
+=======
+static void hidg_ssreport_complete(struct usb_ep *ep, struct usb_request *req)
+{
+	struct f_hidg *hidg = (struct f_hidg *)req->context;
+	struct usb_composite_dev *cdev = hidg->func.config->cdev;
+	char *new_buf = NULL;
+	unsigned long flags;
+
+	if (req->status != 0 || req->buf == NULL || req->actual == 0) {
+		ERROR(cdev,
+		      "%s FAILED: status=%d, buf=%p, actual=%d\n",
+		      __func__, req->status, req->buf, req->actual);
+		return;
+	}
+
+	spin_lock_irqsave(&hidg->read_spinlock, flags);
+
+	new_buf = krealloc(hidg->set_report_buf, req->actual, GFP_ATOMIC);
+	if (new_buf == NULL) {
+		spin_unlock_irqrestore(&hidg->read_spinlock, flags);
+		return;
+	}
+	hidg->set_report_buf = new_buf;
+
+	hidg->set_report_length = req->actual;
+	memcpy(hidg->set_report_buf, req->buf, req->actual);
+
+	spin_unlock_irqrestore(&hidg->read_spinlock, flags);
+
+	wake_up(&hidg->read_queue);
+}
+
+>>>>>>> origin/android16-base
 static int hidg_setup(struct usb_function *f,
 		const struct usb_ctrlrequest *ctrl)
 {
@@ -577,11 +834,29 @@ static int hidg_setup(struct usb_function *f,
 		goto respond;
 		break;
 
+<<<<<<< HEAD
 	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8
 		  | HID_REQ_SET_REPORT):
 		VDBG(cdev, "set_report | wLength=%d\n", ctrl->wLength);
 		req->context = hidg;
 		req->complete = hidg_set_report_complete;
+=======
+	case ((USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8
+		  | HID_REQ_GET_IDLE):
+		VDBG(cdev, "get_idle\n");
+		length = min_t(unsigned int, length, 1);
+		((u8 *) req->buf)[0] = hidg->idle;
+		goto respond;
+		break;
+
+	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8
+		  | HID_REQ_SET_REPORT):
+		VDBG(cdev, "set_report | wLength=%d\n", ctrl->wLength);
+		if (hidg->use_out_ep)
+			goto stall;
+		req->complete = hidg_ssreport_complete;
+		req->context  = hidg;
+>>>>>>> origin/android16-base
 		goto respond;
 		break;
 
@@ -602,6 +877,17 @@ static int hidg_setup(struct usb_function *f,
 		goto stall;
 		break;
 
+<<<<<<< HEAD
+=======
+	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8
+		  | HID_REQ_SET_IDLE):
+		VDBG(cdev, "set_idle\n");
+		length = 0;
+		hidg->idle = value >> 8;
+		goto respond;
+		break;
+
+>>>>>>> origin/android16-base
 	case ((USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_INTERFACE) << 8
 		  | USB_REQ_GET_DESCRIPTOR):
 		switch (value >> 8) {
@@ -662,6 +948,7 @@ static void hidg_disable(struct usb_function *f)
 	unsigned long flags;
 
 	usb_ep_disable(hidg->in_ep);
+<<<<<<< HEAD
 	usb_ep_disable(hidg->out_ep);
 
 	spin_lock_irqsave(&hidg->read_spinlock, flags);
@@ -671,6 +958,20 @@ static void hidg_disable(struct usb_function *f)
 		kfree(list);
 	}
 	spin_unlock_irqrestore(&hidg->read_spinlock, flags);
+=======
+
+	if (hidg->out_ep) {
+		usb_ep_disable(hidg->out_ep);
+
+		spin_lock_irqsave(&hidg->read_spinlock, flags);
+		list_for_each_entry_safe(list, next, &hidg->completed_out_req, list) {
+			free_ep_req(hidg->out_ep, list->req);
+			list_del(&list->list);
+			kfree(list);
+		}
+		spin_unlock_irqrestore(&hidg->read_spinlock, flags);
+	}
+>>>>>>> origin/android16-base
 
 	spin_lock_irqsave(&hidg->write_spinlock, flags);
 	if (!hidg->write_pending) {
@@ -716,8 +1017,12 @@ static int hidg_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 		}
 	}
 
+<<<<<<< HEAD
 
 	if (hidg->out_ep != NULL) {
+=======
+	if (hidg->use_out_ep && hidg->out_ep != NULL) {
+>>>>>>> origin/android16-base
 		/* restart endpoint */
 		usb_ep_disable(hidg->out_ep);
 
@@ -742,7 +1047,11 @@ static int hidg_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 					hidg_alloc_ep_req(hidg->out_ep,
 							  hidg->report_length);
 			if (req) {
+<<<<<<< HEAD
 				req->complete = hidg_set_report_complete;
+=======
+				req->complete = hidg_intout_complete;
+>>>>>>> origin/android16-base
 				req->context  = hidg;
 				status = usb_ep_queue(hidg->out_ep, req,
 						      GFP_ATOMIC);
@@ -768,7 +1077,12 @@ static int hidg_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 	}
 	return 0;
 disable_out_ep:
+<<<<<<< HEAD
 	usb_ep_disable(hidg->out_ep);
+=======
+	if (hidg->out_ep)
+		usb_ep_disable(hidg->out_ep);
+>>>>>>> origin/android16-base
 free_req_in:
 	if (req_in)
 		free_ep_req(hidg->in_ep, req_in);
@@ -796,9 +1110,13 @@ static int hidg_bind(struct usb_configuration *c, struct usb_function *f)
 	struct usb_ep		*ep;
 	struct f_hidg		*hidg = func_to_hidg(f);
 	struct usb_string	*us;
+<<<<<<< HEAD
 	struct device		*device;
 	int			status;
 	dev_t			dev;
+=======
+	int			status;
+>>>>>>> origin/android16-base
 
 	/* maybe allocate device-global string IDs, and patch descriptors */
 	us = usb_gstrings_attach(c->cdev, ct_func_strings,
@@ -820,15 +1138,34 @@ static int hidg_bind(struct usb_configuration *c, struct usb_function *f)
 		goto fail;
 	hidg->in_ep = ep;
 
+<<<<<<< HEAD
 	ep = usb_ep_autoconfig(c->cdev->gadget, &hidg_fs_out_ep_desc);
 	if (!ep)
 		goto fail;
 	hidg->out_ep = ep;
+=======
+	hidg->out_ep = NULL;
+	if (hidg->use_out_ep) {
+		ep = usb_ep_autoconfig(c->cdev->gadget, &hidg_fs_out_ep_desc);
+		if (!ep)
+			goto fail;
+		hidg->out_ep = ep;
+	}
+
+	/* used only if use_out_ep == 1 */
+	hidg->set_report_buf = NULL;
+>>>>>>> origin/android16-base
 
 	/* set descriptor dynamic values */
 	hidg_interface_desc.bInterfaceSubClass = hidg->bInterfaceSubClass;
 	hidg_interface_desc.bInterfaceProtocol = hidg->bInterfaceProtocol;
+<<<<<<< HEAD
 	hidg->protocol = HID_REPORT_PROTOCOL;
+=======
+	hidg_interface_desc.bNumEndpoints = hidg->use_out_ep ? 2 : 1;
+	hidg->protocol = HID_REPORT_PROTOCOL;
+	hidg->idle = 1;
+>>>>>>> origin/android16-base
 	hidg_ss_in_ep_desc.wMaxPacketSize = cpu_to_le16(hidg->report_length);
 	hidg_ss_in_comp_desc.wBytesPerInterval =
 				cpu_to_le16(hidg->report_length);
@@ -857,8 +1194,24 @@ static int hidg_bind(struct usb_configuration *c, struct usb_function *f)
 	hidg_ss_out_ep_desc.bEndpointAddress =
 		hidg_fs_out_ep_desc.bEndpointAddress;
 
+<<<<<<< HEAD
 	status = usb_assign_descriptors(f, hidg_fs_descriptors,
 			hidg_hs_descriptors, hidg_ss_descriptors, NULL);
+=======
+	if (hidg->use_out_ep)
+		status = usb_assign_descriptors(f,
+			hidg_fs_descriptors_intout,
+			hidg_hs_descriptors_intout,
+			hidg_ss_descriptors_intout,
+			hidg_ss_descriptors_intout);
+	else
+		status = usb_assign_descriptors(f,
+			hidg_fs_descriptors_ssreport,
+			hidg_hs_descriptors_ssreport,
+			hidg_ss_descriptors_ssreport,
+			hidg_ss_descriptors_ssreport);
+
+>>>>>>> origin/android16-base
 	if (status)
 		goto fail;
 
@@ -873,6 +1226,7 @@ static int hidg_bind(struct usb_configuration *c, struct usb_function *f)
 
 	/* create char device */
 	cdev_init(&hidg->cdev, &f_hidg_fops);
+<<<<<<< HEAD
 	dev = MKDEV(major, hidg->minor);
 	status = cdev_add(&hidg->cdev, dev, 1);
 	if (status)
@@ -888,6 +1242,13 @@ static int hidg_bind(struct usb_configuration *c, struct usb_function *f)
 	return 0;
 del:
 	cdev_del(&hidg->cdev);
+=======
+	status = cdev_device_add(&hidg->cdev, &hidg->dev);
+	if (status)
+		goto fail_free_descs;
+
+	return 0;
+>>>>>>> origin/android16-base
 fail_free_descs:
 	usb_free_all_descriptors(f);
 fail:
@@ -974,6 +1335,10 @@ CONFIGFS_ATTR(f_hid_opts_, name)
 
 F_HID_OPT(subclass, 8, 255);
 F_HID_OPT(protocol, 8, 255);
+<<<<<<< HEAD
+=======
+F_HID_OPT(no_out_endpoint, 8, 1);
+>>>>>>> origin/android16-base
 F_HID_OPT(report_length, 16, 65535);
 
 static ssize_t f_hid_opts_report_desc_show(struct config_item *item, char *page)
@@ -1033,6 +1398,10 @@ CONFIGFS_ATTR_RO(f_hid_opts_, dev);
 static struct configfs_attribute *hid_attrs[] = {
 	&f_hid_opts_attr_subclass,
 	&f_hid_opts_attr_protocol,
+<<<<<<< HEAD
+=======
+	&f_hid_opts_attr_no_out_endpoint,
+>>>>>>> origin/android16-base
 	&f_hid_opts_attr_report_length,
 	&f_hid_opts_attr_report_desc,
 	&f_hid_opts_attr_dev,
@@ -1130,8 +1499,12 @@ static void hidg_unbind(struct usb_configuration *c, struct usb_function *f)
 	wake_up(&hidg->read_queue);
 	wake_up(&hidg->write_queue);
 
+<<<<<<< HEAD
 	device_destroy(hidg_class, MKDEV(major, hidg->minor));
 	cdev_del(&hidg->cdev);
+=======
+	cdev_device_del(&hidg->cdev, &hidg->dev);
+>>>>>>> origin/android16-base
 
 	usb_free_all_descriptors(f);
 }
@@ -1140,6 +1513,10 @@ static struct usb_function *hidg_alloc(struct usb_function_instance *fi)
 {
 	struct f_hidg *hidg;
 	struct f_hid_opts *opts;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 
 	/* allocate and initialize one new instance */
 	hidg = kzalloc(sizeof(*hidg), GFP_KERNEL);
@@ -1151,7 +1528,21 @@ static struct usb_function *hidg_alloc(struct usb_function_instance *fi)
 	mutex_lock(&opts->lock);
 	++opts->refcnt;
 
+<<<<<<< HEAD
 	hidg->minor = opts->minor;
+=======
+	device_initialize(&hidg->dev);
+	hidg->dev.release = hidg_release;
+	hidg->dev.class = hidg_class;
+	hidg->dev.devt = MKDEV(major, opts->minor);
+	ret = dev_set_name(&hidg->dev, "hidg%d", opts->minor);
+	if (ret) {
+		--opts->refcnt;
+		mutex_unlock(&opts->lock);
+		return ERR_PTR(ret);
+	}
+
+>>>>>>> origin/android16-base
 	hidg->bInterfaceSubClass = opts->subclass;
 	hidg->bInterfaceProtocol = opts->protocol;
 	hidg->report_length = opts->report_length;
@@ -1161,11 +1552,20 @@ static struct usb_function *hidg_alloc(struct usb_function_instance *fi)
 					    opts->report_desc_length,
 					    GFP_KERNEL);
 		if (!hidg->report_desc) {
+<<<<<<< HEAD
 			kfree(hidg);
+=======
+			put_device(&hidg->dev);
+			--opts->refcnt;
+>>>>>>> origin/android16-base
 			mutex_unlock(&opts->lock);
 			return ERR_PTR(-ENOMEM);
 		}
 	}
+<<<<<<< HEAD
+=======
+	hidg->use_out_ep = !opts->no_out_endpoint;
+>>>>>>> origin/android16-base
 
 	mutex_unlock(&opts->lock);
 

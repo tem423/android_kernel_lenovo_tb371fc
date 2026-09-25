@@ -3029,7 +3029,11 @@ video_usercopy(struct file *file, unsigned int cmd, unsigned long arg,
 	       v4l2_kioctl func)
 {
 	char	sbuf[128];
+<<<<<<< HEAD
 	void    *mbuf = NULL;
+=======
+	void    *mbuf = NULL, *array_buf = NULL;
+>>>>>>> origin/android16-base
 	void	*parg = (void *)arg;
 	long	err  = -EINVAL;
 	bool	has_array_args;
@@ -3088,6 +3092,7 @@ video_usercopy(struct file *file, unsigned int cmd, unsigned long arg,
 	has_array_args = err;
 
 	if (has_array_args) {
+<<<<<<< HEAD
 		/*
 		 * When adding new types of array args, make sure that the
 		 * parent argument to ioctl (which contains the pointer to the
@@ -3102,6 +3107,16 @@ video_usercopy(struct file *file, unsigned int cmd, unsigned long arg,
 		if (copy_from_user(mbuf, user_ptr, array_size))
 			goto out_array_args;
 		*kernel_ptr = mbuf;
+=======
+		array_buf = kvmalloc(array_size, GFP_KERNEL);
+		err = -ENOMEM;
+		if (array_buf == NULL)
+			goto out_array_args;
+		err = -EFAULT;
+		if (copy_from_user(array_buf, user_ptr, array_size))
+			goto out_array_args;
+		*kernel_ptr = array_buf;
+>>>>>>> origin/android16-base
 	}
 
 	/* Handles IOCTL */
@@ -3120,7 +3135,11 @@ video_usercopy(struct file *file, unsigned int cmd, unsigned long arg,
 
 	if (has_array_args) {
 		*kernel_ptr = (void __force *)user_ptr;
+<<<<<<< HEAD
 		if (copy_to_user(user_ptr, mbuf, array_size))
+=======
+		if (copy_to_user(user_ptr, array_buf, array_size))
+>>>>>>> origin/android16-base
 			err = -EFAULT;
 		goto out_array_args;
 	}
@@ -3142,6 +3161,10 @@ out_array_args:
 	}
 
 out:
+<<<<<<< HEAD
+=======
+	kvfree(array_buf);
+>>>>>>> origin/android16-base
 	kvfree(mbuf);
 	return err;
 }

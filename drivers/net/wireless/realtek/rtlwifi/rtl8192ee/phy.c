@@ -38,7 +38,10 @@ static u32 _rtl92ee_phy_rf_serial_read(struct ieee80211_hw *hw,
 static void _rtl92ee_phy_rf_serial_write(struct ieee80211_hw *hw,
 					 enum radio_path rfpath, u32 offset,
 					 u32 data);
+<<<<<<< HEAD
 static u32 _rtl92ee_phy_calculate_bit_shift(u32 bitmask);
+=======
+>>>>>>> origin/android16-base
 static bool _rtl92ee_phy_bb8192ee_config_parafile(struct ieee80211_hw *hw);
 static bool _rtl92ee_phy_config_mac_with_headerfile(struct ieee80211_hw *hw);
 static bool phy_config_bb_with_hdr_file(struct ieee80211_hw *hw,
@@ -68,7 +71,11 @@ u32 rtl92ee_phy_query_bb_reg(struct ieee80211_hw *hw, u32 regaddr, u32 bitmask)
 	RT_TRACE(rtlpriv, COMP_RF, DBG_TRACE,
 		 "regaddr(%#x), bitmask(%#x)\n", regaddr, bitmask);
 	originalvalue = rtl_read_dword(rtlpriv, regaddr);
+<<<<<<< HEAD
 	bitshift = _rtl92ee_phy_calculate_bit_shift(bitmask);
+=======
+	bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 	returnvalue = (originalvalue & bitmask) >> bitshift;
 
 	RT_TRACE(rtlpriv, COMP_RF, DBG_TRACE,
@@ -90,7 +97,11 @@ void rtl92ee_phy_set_bb_reg(struct ieee80211_hw *hw, u32 regaddr,
 
 	if (bitmask != MASKDWORD) {
 		originalvalue = rtl_read_dword(rtlpriv, regaddr);
+<<<<<<< HEAD
 		bitshift = _rtl92ee_phy_calculate_bit_shift(bitmask);
+=======
+		bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 		data = ((originalvalue & (~bitmask)) | (data << bitshift));
 	}
 
@@ -115,7 +126,11 @@ u32 rtl92ee_phy_query_rf_reg(struct ieee80211_hw *hw,
 	spin_lock_irqsave(&rtlpriv->locks.rf_lock, flags);
 
 	original_value = _rtl92ee_phy_rf_serial_read(hw , rfpath, regaddr);
+<<<<<<< HEAD
 	bitshift = _rtl92ee_phy_calculate_bit_shift(bitmask);
+=======
+	bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 	readback_value = (original_value & bitmask) >> bitshift;
 
 	spin_unlock_irqrestore(&rtlpriv->locks.rf_lock, flags);
@@ -143,7 +158,11 @@ void rtl92ee_phy_set_rf_reg(struct ieee80211_hw *hw,
 
 	if (bitmask != RFREG_OFFSET_MASK) {
 		original_value = _rtl92ee_phy_rf_serial_read(hw, rfpath, addr);
+<<<<<<< HEAD
 		bitshift = _rtl92ee_phy_calculate_bit_shift(bitmask);
+=======
+		bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 		data = (original_value & (~bitmask)) | (data << bitshift);
 	}
 
@@ -226,6 +245,7 @@ static void _rtl92ee_phy_rf_serial_write(struct ieee80211_hw *hw,
 		 pphyreg->rf3wire_offset, data_and_addr);
 }
 
+<<<<<<< HEAD
 static u32 _rtl92ee_phy_calculate_bit_shift(u32 bitmask)
 {
 	u32 i;
@@ -237,6 +257,8 @@ static u32 _rtl92ee_phy_calculate_bit_shift(u32 bitmask)
 	return i;
 }
 
+=======
+>>>>>>> origin/android16-base
 bool rtl92ee_phy_mac_config(struct ieee80211_hw *hw)
 {
 	return _rtl92ee_phy_config_mac_with_headerfile(hw);

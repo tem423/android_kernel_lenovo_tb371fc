@@ -127,8 +127,15 @@ static int __control_devkmsg(char *str)
 
 static int __init control_devkmsg(char *str)
 {
+<<<<<<< HEAD
 	if (__control_devkmsg(str) < 0)
 		return 1;
+=======
+	if (__control_devkmsg(str) < 0) {
+		pr_warn("printk.devkmsg: bad option string '%s'\n", str);
+		return 1;
+	}
+>>>>>>> origin/android16-base
 
 	/*
 	 * Set sysctl string accordingly:
@@ -147,7 +154,11 @@ static int __init control_devkmsg(char *str)
 	 */
 	devkmsg_log |= DEVKMSG_LOG_MASK_LOCK;
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 __setup("printk.devkmsg=", control_devkmsg);
 
@@ -660,8 +671,13 @@ int dmesg_restrict = IS_ENABLED(CONFIG_SECURITY_DMESG_RESTRICT);
 
 static int syslog_action_restricted(int type)
 {
+<<<<<<< HEAD
 	/* V27O: keep shell dmesg readable for diagnostics
 	 * (ZUI init otherwise sets dmesg_restrict=1 at boot). */
+=======
+	if (dmesg_restrict)
+		return 1;
+>>>>>>> origin/android16-base
 	/*
 	 * Unless restricted, we allow "read all" and "get buffer size"
 	 * for everybody.
@@ -672,8 +688,11 @@ static int syslog_action_restricted(int type)
 
 static int check_syslog_permissions(int type, int source)
 {
+<<<<<<< HEAD
 	/* V27O: unrestricted dmesg for peripherals diagnostics */
 	return 0;
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * If this is from /proc/kmsg and we've already opened it, then we've
 	 * already done the capabilities checks at open time.
@@ -1510,8 +1529,12 @@ int do_syslog(int type, char __user *buf, int len, int source)
 		break;
 	/* Read/clear last kernel messages */
 	case SYSLOG_ACTION_READ_CLEAR:
+<<<<<<< HEAD
 		/* V27O: never clear (diagnostics) */
 		break;
+=======
+		clear = true;
+>>>>>>> origin/android16-base
 		/* FALL THRU */
 	/* Read last kernel messages */
 	case SYSLOG_ACTION_READ_ALL:
@@ -1525,7 +1548,11 @@ int do_syslog(int type, char __user *buf, int len, int source)
 		break;
 	/* Clear ring buffer */
 	case SYSLOG_ACTION_CLEAR:
+<<<<<<< HEAD
 		/* V27O: never clear (diagnostics) */
+=======
+		syslog_clear();
+>>>>>>> origin/android16-base
 		break;
 	/* Disable logging to console */
 	case SYSLOG_ACTION_CONSOLE_OFF:
@@ -1735,6 +1762,15 @@ static int console_trylock_spinning(void)
 	 */
 	mutex_acquire(&console_lock_dep_map, 0, 1, _THIS_IP_);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Update @console_may_schedule for trylock because the previous
+	 * owner may have been schedulable.
+	 */
+	console_may_schedule = 0;
+
+>>>>>>> origin/android16-base
 	return 1;
 }
 
@@ -2153,8 +2189,20 @@ static int __init console_setup(char *str)
 	char *s, *options, *brl_options = NULL;
 	int idx;
 
+<<<<<<< HEAD
 	if (str[0] == 0)
 		return 1;
+=======
+	/*
+	 * console="" or console=null have been suggested as a way to
+	 * disable console output. Use ttynull that has been created
+	 * for exacly this purpose.
+	 */
+	if (str[0] == 0 || strcmp(str, "null") == 0) {
+		__add_preferred_console("ttynull", 0, NULL, NULL);
+		return 1;
+	}
+>>>>>>> origin/android16-base
 
 	if (_braille_console_setup(&str, &brl_options))
 		return 1;
@@ -3347,5 +3395,8 @@ void kmsg_dump_rewind(struct kmsg_dumper *dumper)
 EXPORT_SYMBOL_GPL(kmsg_dump_rewind);
 
 #endif
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> origin/android16-base

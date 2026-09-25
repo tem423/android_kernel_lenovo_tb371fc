@@ -279,11 +279,18 @@ void rmi_unregister_function(struct rmi_function *fn)
 
 	device_del(&fn->dev);
 	of_node_put(fn->dev.of_node);
+<<<<<<< HEAD
 	put_device(&fn->dev);
+=======
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < fn->num_of_irqs; i++)
 		irq_dispose_mapping(fn->irq[i]);
 
+<<<<<<< HEAD
+=======
+	put_device(&fn->dev);
+>>>>>>> origin/android16-base
 }
 
 /**

@@ -173,6 +173,11 @@ extern unsigned int instruction_size(unsigned int insn);
 #define instruction_size(insn)	(4)
 #endif
 
+<<<<<<< HEAD
+=======
+void select_idle_routine(void);
+
+>>>>>>> origin/android16-base
 #endif /* __ASSEMBLY__ */
 
 #ifdef CONFIG_SUPERH32

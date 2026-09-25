@@ -121,6 +121,12 @@ static void brcmstb_l2_intc_irq_handle(struct irq_desc *desc)
 		generic_handle_irq(irq_linear_revmap(b->domain, irq));
 	} while (status);
 out:
+<<<<<<< HEAD
+=======
+	/* Don't ack parent before all device writes are done */
+	wmb();
+
+>>>>>>> origin/android16-base
 	chained_irq_exit(chip, desc);
 }
 
@@ -169,6 +175,10 @@ static int __init brcmstb_l2_intc_of_init(struct device_node *np,
 					  *init_params)
 {
 	unsigned int clr = IRQ_NOREQUEST | IRQ_NOPROBE | IRQ_NOAUTOEN;
+<<<<<<< HEAD
+=======
+	unsigned int set = 0;
+>>>>>>> origin/android16-base
 	struct brcmstb_l2_intc_data *data;
 	struct irq_chip_type *ct;
 	int ret;
@@ -216,9 +226,18 @@ static int __init brcmstb_l2_intc_of_init(struct device_node *np,
 	if (IS_ENABLED(CONFIG_MIPS) && IS_ENABLED(CONFIG_CPU_BIG_ENDIAN))
 		flags |= IRQ_GC_BE_IO;
 
+<<<<<<< HEAD
 	/* Allocate a single Generic IRQ chip for this node */
 	ret = irq_alloc_domain_generic_chips(data->domain, 32, 1,
 			np->full_name, init_params->handler, clr, 0, flags);
+=======
+	if (init_params->handler == handle_level_irq)
+		set |= IRQ_LEVEL;
+
+	/* Allocate a single Generic IRQ chip for this node */
+	ret = irq_alloc_domain_generic_chips(data->domain, 32, 1,
+			np->full_name, init_params->handler, clr, set, flags);
+>>>>>>> origin/android16-base
 	if (ret) {
 		pr_err("failed to allocate generic irq chip\n");
 		goto out_free_domain;

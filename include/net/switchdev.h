@@ -155,7 +155,12 @@ struct switchdev_notifier_fdb_info {
 	struct switchdev_notifier_info info; /* must be first */
 	const unsigned char *addr;
 	u16 vid;
+<<<<<<< HEAD
 	bool added_by_user;
+=======
+	u8 added_by_user:1,
+	   offloaded:1;
+>>>>>>> origin/android16-base
 };
 
 static inline struct net_device *

@@ -37,7 +37,11 @@
  * (the optimize attribute silently ignores these options).
  */
 
+<<<<<<< HEAD
 #define ATOMIC_OP(op, asm_op)						\
+=======
+#define ATOMIC_OP(op, asm_op, constraint)				\
+>>>>>>> origin/android16-base
 __LL_SC_INLINE void							\
 __LL_SC_PREFIX(atomic_##op(int i, atomic_t *v))				\
 {									\
@@ -51,11 +55,19 @@ __LL_SC_PREFIX(atomic_##op(int i, atomic_t *v))				\
 "	stxr	%w1, %w0, %2\n"						\
 "	cbnz	%w1, 1b"						\
 	: "=&r" (result), "=&r" (tmp), "+Q" (v->counter)		\
+<<<<<<< HEAD
 	: "Ir" (i));							\
 }									\
 __LL_SC_EXPORT(atomic_##op);
 
 #define ATOMIC_OP_RETURN(name, mb, acq, rel, cl, op, asm_op)		\
+=======
+	: #constraint "r" (i));						\
+}									\
+__LL_SC_EXPORT(atomic_##op);
+
+#define ATOMIC_OP_RETURN(name, mb, acq, rel, cl, op, asm_op, constraint)\
+>>>>>>> origin/android16-base
 __LL_SC_INLINE int							\
 __LL_SC_PREFIX(atomic_##op##_return##name(int i, atomic_t *v))		\
 {									\
@@ -70,14 +82,22 @@ __LL_SC_PREFIX(atomic_##op##_return##name(int i, atomic_t *v))		\
 "	cbnz	%w1, 1b\n"						\
 "	" #mb								\
 	: "=&r" (result), "=&r" (tmp), "+Q" (v->counter)		\
+<<<<<<< HEAD
 	: "Ir" (i)							\
+=======
+	: #constraint "r" (i)						\
+>>>>>>> origin/android16-base
 	: cl);								\
 									\
 	return result;							\
 }									\
 __LL_SC_EXPORT(atomic_##op##_return##name);
 
+<<<<<<< HEAD
 #define ATOMIC_FETCH_OP(name, mb, acq, rel, cl, op, asm_op)		\
+=======
+#define ATOMIC_FETCH_OP(name, mb, acq, rel, cl, op, asm_op, constraint)	\
+>>>>>>> origin/android16-base
 __LL_SC_INLINE int							\
 __LL_SC_PREFIX(atomic_fetch_##op##name(int i, atomic_t *v))		\
 {									\
@@ -92,7 +112,11 @@ __LL_SC_PREFIX(atomic_fetch_##op##name(int i, atomic_t *v))		\
 "	cbnz	%w2, 1b\n"						\
 "	" #mb								\
 	: "=&r" (result), "=&r" (val), "=&r" (tmp), "+Q" (v->counter)	\
+<<<<<<< HEAD
 	: "Ir" (i)							\
+=======
+	: #constraint "r" (i)						\
+>>>>>>> origin/android16-base
 	: cl);								\
 									\
 	return result;							\
@@ -110,8 +134,13 @@ __LL_SC_EXPORT(atomic_fetch_##op##name);
 	ATOMIC_FETCH_OP (_acquire,        , a,  , "memory", __VA_ARGS__)\
 	ATOMIC_FETCH_OP (_release,        ,  , l, "memory", __VA_ARGS__)
 
+<<<<<<< HEAD
 ATOMIC_OPS(add, add)
 ATOMIC_OPS(sub, sub)
+=======
+ATOMIC_OPS(add, add, I)
+ATOMIC_OPS(sub, sub, J)
+>>>>>>> origin/android16-base
 
 #undef ATOMIC_OPS
 #define ATOMIC_OPS(...)							\
@@ -121,17 +150,28 @@ ATOMIC_OPS(sub, sub)
 	ATOMIC_FETCH_OP (_acquire,        , a,  , "memory", __VA_ARGS__)\
 	ATOMIC_FETCH_OP (_release,        ,  , l, "memory", __VA_ARGS__)
 
+<<<<<<< HEAD
 ATOMIC_OPS(and, and)
 ATOMIC_OPS(andnot, bic)
 ATOMIC_OPS(or, orr)
 ATOMIC_OPS(xor, eor)
+=======
+ATOMIC_OPS(and, and, )
+ATOMIC_OPS(andnot, bic, )
+ATOMIC_OPS(or, orr, )
+ATOMIC_OPS(xor, eor, )
+>>>>>>> origin/android16-base
 
 #undef ATOMIC_OPS
 #undef ATOMIC_FETCH_OP
 #undef ATOMIC_OP_RETURN
 #undef ATOMIC_OP
 
+<<<<<<< HEAD
 #define ATOMIC64_OP(op, asm_op)						\
+=======
+#define ATOMIC64_OP(op, asm_op, constraint)				\
+>>>>>>> origin/android16-base
 __LL_SC_INLINE void							\
 __LL_SC_PREFIX(atomic64_##op(long i, atomic64_t *v))			\
 {									\
@@ -145,11 +185,19 @@ __LL_SC_PREFIX(atomic64_##op(long i, atomic64_t *v))			\
 "	stxr	%w1, %0, %2\n"						\
 "	cbnz	%w1, 1b"						\
 	: "=&r" (result), "=&r" (tmp), "+Q" (v->counter)		\
+<<<<<<< HEAD
 	: "Ir" (i));							\
 }									\
 __LL_SC_EXPORT(atomic64_##op);
 
 #define ATOMIC64_OP_RETURN(name, mb, acq, rel, cl, op, asm_op)		\
+=======
+	: #constraint "r" (i));						\
+}									\
+__LL_SC_EXPORT(atomic64_##op);
+
+#define ATOMIC64_OP_RETURN(name, mb, acq, rel, cl, op, asm_op, constraint)\
+>>>>>>> origin/android16-base
 __LL_SC_INLINE long							\
 __LL_SC_PREFIX(atomic64_##op##_return##name(long i, atomic64_t *v))	\
 {									\
@@ -164,14 +212,22 @@ __LL_SC_PREFIX(atomic64_##op##_return##name(long i, atomic64_t *v))	\
 "	cbnz	%w1, 1b\n"						\
 "	" #mb								\
 	: "=&r" (result), "=&r" (tmp), "+Q" (v->counter)		\
+<<<<<<< HEAD
 	: "Ir" (i)							\
+=======
+	: #constraint "r" (i)						\
+>>>>>>> origin/android16-base
 	: cl);								\
 									\
 	return result;							\
 }									\
 __LL_SC_EXPORT(atomic64_##op##_return##name);
 
+<<<<<<< HEAD
 #define ATOMIC64_FETCH_OP(name, mb, acq, rel, cl, op, asm_op)		\
+=======
+#define ATOMIC64_FETCH_OP(name, mb, acq, rel, cl, op, asm_op, constraint)\
+>>>>>>> origin/android16-base
 __LL_SC_INLINE long							\
 __LL_SC_PREFIX(atomic64_fetch_##op##name(long i, atomic64_t *v))	\
 {									\
@@ -186,7 +242,11 @@ __LL_SC_PREFIX(atomic64_fetch_##op##name(long i, atomic64_t *v))	\
 "	cbnz	%w2, 1b\n"						\
 "	" #mb								\
 	: "=&r" (result), "=&r" (val), "=&r" (tmp), "+Q" (v->counter)	\
+<<<<<<< HEAD
 	: "Ir" (i)							\
+=======
+	: #constraint "r" (i)						\
+>>>>>>> origin/android16-base
 	: cl);								\
 									\
 	return result;							\
@@ -204,8 +264,13 @@ __LL_SC_EXPORT(atomic64_fetch_##op##name);
 	ATOMIC64_FETCH_OP (_acquire,, a,  , "memory", __VA_ARGS__)	\
 	ATOMIC64_FETCH_OP (_release,,  , l, "memory", __VA_ARGS__)
 
+<<<<<<< HEAD
 ATOMIC64_OPS(add, add)
 ATOMIC64_OPS(sub, sub)
+=======
+ATOMIC64_OPS(add, add, I)
+ATOMIC64_OPS(sub, sub, J)
+>>>>>>> origin/android16-base
 
 #undef ATOMIC64_OPS
 #define ATOMIC64_OPS(...)						\
@@ -215,10 +280,17 @@ ATOMIC64_OPS(sub, sub)
 	ATOMIC64_FETCH_OP (_acquire,, a,  , "memory", __VA_ARGS__)	\
 	ATOMIC64_FETCH_OP (_release,,  , l, "memory", __VA_ARGS__)
 
+<<<<<<< HEAD
 ATOMIC64_OPS(and, and)
 ATOMIC64_OPS(andnot, bic)
 ATOMIC64_OPS(or, orr)
 ATOMIC64_OPS(xor, eor)
+=======
+ATOMIC64_OPS(and, and, L)
+ATOMIC64_OPS(andnot, bic, )
+ATOMIC64_OPS(or, orr, L)
+ATOMIC64_OPS(xor, eor, L)
+>>>>>>> origin/android16-base
 
 #undef ATOMIC64_OPS
 #undef ATOMIC64_FETCH_OP
@@ -248,7 +320,11 @@ __LL_SC_PREFIX(atomic64_dec_if_positive(atomic64_t *v))
 }
 __LL_SC_EXPORT(atomic64_dec_if_positive);
 
+<<<<<<< HEAD
 #define __CMPXCHG_CASE(w, sz, name, mb, acq, rel, cl)			\
+=======
+#define __CMPXCHG_CASE(w, sz, name, mb, acq, rel, cl, constraint)	\
+>>>>>>> origin/android16-base
 __LL_SC_INLINE unsigned long						\
 __LL_SC_PREFIX(__cmpxchg_case_##name(volatile void *ptr,		\
 				     unsigned long old,			\
@@ -267,13 +343,18 @@ __LL_SC_PREFIX(__cmpxchg_case_##name(volatile void *ptr,		\
 	"2:"								\
 	: [tmp] "=&r" (tmp), [oldval] "=&r" (oldval),			\
 	  [v] "+Q" (*(unsigned long *)ptr)				\
+<<<<<<< HEAD
 	: [old] "Lr" (old), [new] "r" (new)				\
+=======
+	: [old] #constraint "r" (old), [new] "r" (new)				\
+>>>>>>> origin/android16-base
 	: cl);								\
 									\
 	return oldval;							\
 }									\
 __LL_SC_EXPORT(__cmpxchg_case_##name);
 
+<<<<<<< HEAD
 __CMPXCHG_CASE(w, b,     1,        ,  ,  ,         )
 __CMPXCHG_CASE(w, h,     2,        ,  ,  ,         )
 __CMPXCHG_CASE(w,  ,     4,        ,  ,  ,         )
@@ -290,6 +371,29 @@ __CMPXCHG_CASE(w, b,  mb_1, dmb ish,  , l, "memory")
 __CMPXCHG_CASE(w, h,  mb_2, dmb ish,  , l, "memory")
 __CMPXCHG_CASE(w,  ,  mb_4, dmb ish,  , l, "memory")
 __CMPXCHG_CASE( ,  ,  mb_8, dmb ish,  , l, "memory")
+=======
+/*
+ * Earlier versions of GCC (no later than 8.1.0) appear to incorrectly
+ * handle the 'K' constraint for the value 4294967295 - thus we use no
+ * constraint for 32 bit operations.
+ */
+__CMPXCHG_CASE(w, b,     1,        ,  ,  ,         , )
+__CMPXCHG_CASE(w, h,     2,        ,  ,  ,         , )
+__CMPXCHG_CASE(w,  ,     4,        ,  ,  ,         , )
+__CMPXCHG_CASE( ,  ,     8,        ,  ,  ,         , L)
+__CMPXCHG_CASE(w, b, acq_1,        , a,  , "memory", )
+__CMPXCHG_CASE(w, h, acq_2,        , a,  , "memory", )
+__CMPXCHG_CASE(w,  , acq_4,        , a,  , "memory", )
+__CMPXCHG_CASE( ,  , acq_8,        , a,  , "memory", L)
+__CMPXCHG_CASE(w, b, rel_1,        ,  , l, "memory", )
+__CMPXCHG_CASE(w, h, rel_2,        ,  , l, "memory", )
+__CMPXCHG_CASE(w,  , rel_4,        ,  , l, "memory", )
+__CMPXCHG_CASE( ,  , rel_8,        ,  , l, "memory", L)
+__CMPXCHG_CASE(w, b,  mb_1, dmb ish,  , l, "memory", )
+__CMPXCHG_CASE(w, h,  mb_2, dmb ish,  , l, "memory", )
+__CMPXCHG_CASE(w,  ,  mb_4, dmb ish,  , l, "memory", )
+__CMPXCHG_CASE( ,  ,  mb_8, dmb ish,  , l, "memory", L)
+>>>>>>> origin/android16-base
 
 #undef __CMPXCHG_CASE
 
@@ -314,7 +418,11 @@ __LL_SC_PREFIX(__cmpxchg_double##name(unsigned long old1,		\
 	"	cbnz	%w0, 1b\n"					\
 	"	" #mb "\n"						\
 	"2:"								\
+<<<<<<< HEAD
 	: "=&r" (tmp), "=&r" (ret), "+Q" (*(unsigned long *)ptr)	\
+=======
+	: "=&r" (tmp), "=&r" (ret), "+Q" (*(__uint128_t *)ptr)		\
+>>>>>>> origin/android16-base
 	: "r" (old1), "r" (old2), "r" (new1), "r" (new2)		\
 	: cl);								\
 									\

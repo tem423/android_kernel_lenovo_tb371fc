@@ -17,8 +17,11 @@
 #include <net/netfilter/nf_nat_l3proto.h>
 #include <net/netfilter/nf_nat_l4proto.h>
 
+<<<<<<< HEAD
 static u16 udp_port_rover;
 
+=======
+>>>>>>> origin/android16-base
 static void
 udp_unique_tuple(const struct nf_nat_l3proto *l3proto,
 		 struct nf_conntrack_tuple *tuple,
@@ -26,8 +29,12 @@ udp_unique_tuple(const struct nf_nat_l3proto *l3proto,
 		 enum nf_nat_manip_type maniptype,
 		 const struct nf_conn *ct)
 {
+<<<<<<< HEAD
 	nf_nat_l4proto_unique_tuple(l3proto, tuple, range, maniptype, ct,
 				    &udp_port_rover);
+=======
+	nf_nat_l4proto_unique_tuple(l3proto, tuple, range, maniptype, ct);
+>>>>>>> origin/android16-base
 }
 
 static void
@@ -78,8 +85,11 @@ static bool udp_manip_pkt(struct sk_buff *skb,
 }
 
 #ifdef CONFIG_NF_NAT_PROTO_UDPLITE
+<<<<<<< HEAD
 static u16 udplite_port_rover;
 
+=======
+>>>>>>> origin/android16-base
 static bool udplite_manip_pkt(struct sk_buff *skb,
 			      const struct nf_nat_l3proto *l3proto,
 			      unsigned int iphdroff, unsigned int hdroff,
@@ -103,8 +113,12 @@ udplite_unique_tuple(const struct nf_nat_l3proto *l3proto,
 		     enum nf_nat_manip_type maniptype,
 		     const struct nf_conn *ct)
 {
+<<<<<<< HEAD
 	nf_nat_l4proto_unique_tuple(l3proto, tuple, range, maniptype, ct,
 				    &udplite_port_rover);
+=======
+	nf_nat_l4proto_unique_tuple(l3proto, tuple, range, maniptype, ct);
+>>>>>>> origin/android16-base
 }
 
 const struct nf_nat_l4proto nf_nat_l4proto_udplite = {

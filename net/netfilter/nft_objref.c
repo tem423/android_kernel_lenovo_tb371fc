@@ -43,8 +43,15 @@ static int nft_objref_init(const struct nft_ctx *ctx,
 	if (IS_ERR(obj))
 		return -ENOENT;
 
+<<<<<<< HEAD
 	nft_objref_priv(expr) = obj;
 	obj->use++;
+=======
+	if (!nft_use_inc(&obj->use))
+		return -EMFILE;
+
+	nft_objref_priv(expr) = obj;
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -73,7 +80,11 @@ static void nft_objref_deactivate(const struct nft_ctx *ctx,
 	if (phase == NFT_TRANS_COMMIT)
 		return;
 
+<<<<<<< HEAD
 	obj->use--;
+=======
+	nft_use_dec(&obj->use);
+>>>>>>> origin/android16-base
 }
 
 static void nft_objref_activate(const struct nft_ctx *ctx,
@@ -81,7 +92,11 @@ static void nft_objref_activate(const struct nft_ctx *ctx,
 {
 	struct nft_object *obj = nft_objref_priv(expr);
 
+<<<<<<< HEAD
 	obj->use++;
+=======
+	nft_use_inc_restore(&obj->use);
+>>>>>>> origin/android16-base
 }
 
 static struct nft_expr_type nft_objref_type;
@@ -97,7 +112,11 @@ static const struct nft_expr_ops nft_objref_ops = {
 
 struct nft_objref_map {
 	struct nft_set		*set;
+<<<<<<< HEAD
 	enum nft_registers	sreg:8;
+=======
+	u8			sreg;
+>>>>>>> origin/android16-base
 	struct nft_set_binding	binding;
 };
 
@@ -139,8 +158,13 @@ static int nft_objref_map_init(const struct nft_ctx *ctx,
 	if (!(set->flags & NFT_SET_OBJECT))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	priv->sreg = nft_parse_register(tb[NFTA_OBJREF_SET_SREG]);
 	err = nft_validate_register_load(priv->sreg, set->klen);
+=======
+	err = nft_parse_register_load(tb[NFTA_OBJREF_SET_SREG], &priv->sreg,
+				      set->klen);
+>>>>>>> origin/android16-base
 	if (err < 0)
 		return err;
 
@@ -182,7 +206,11 @@ static void nft_objref_map_activate(const struct nft_ctx *ctx,
 {
 	struct nft_objref_map *priv = nft_expr_priv(expr);
 
+<<<<<<< HEAD
 	priv->set->use++;
+=======
+	nf_tables_activate_set(ctx, priv->set);
+>>>>>>> origin/android16-base
 }
 
 static void nft_objref_map_destroy(const struct nft_ctx *ctx,

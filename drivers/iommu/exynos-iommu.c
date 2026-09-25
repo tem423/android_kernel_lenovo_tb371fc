@@ -640,7 +640,11 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
 
 	ret = iommu_device_register(&data->iommu);
 	if (ret)
+<<<<<<< HEAD
 		return ret;
+=======
+		goto err_iommu_register;
+>>>>>>> origin/android16-base
 
 	platform_set_drvdata(pdev, data);
 
@@ -667,6 +671,13 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
 	pm_runtime_enable(dev);
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+err_iommu_register:
+	iommu_device_sysfs_remove(&data->iommu);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int __maybe_unused exynos_sysmmu_suspend(struct device *dev)

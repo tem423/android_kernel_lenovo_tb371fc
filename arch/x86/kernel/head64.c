@@ -383,6 +383,11 @@ static void __init clear_bss(void)
 {
 	memset(__bss_start, 0,
 	       (unsigned long) __bss_stop - (unsigned long) __bss_start);
+<<<<<<< HEAD
+=======
+	memset(__brk_base, 0,
+	       (unsigned long) __brk_limit - (unsigned long) __brk_base);
+>>>>>>> origin/android16-base
 }
 
 static unsigned long get_cmd_line_ptr(void)

@@ -1417,6 +1417,7 @@ static int pxa168_eth_probe(struct platform_device *pdev)
 
 	printk(KERN_NOTICE "PXA168 10/100 Ethernet Driver\n");
 
+<<<<<<< HEAD
 	clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(clk)) {
 		dev_err(&pdev->dev, "Fast Ethernet failed to get clock\n");
@@ -1429,6 +1430,17 @@ static int pxa168_eth_probe(struct platform_device *pdev)
 		err = -ENOMEM;
 		goto err_clk;
 	}
+=======
+	clk = devm_clk_get_enabled(&pdev->dev, NULL);
+	if (IS_ERR(clk)) {
+		dev_err(&pdev->dev, "Fast Ethernet failed to get and enable clock\n");
+		return -ENODEV;
+	}
+
+	dev = alloc_etherdev(sizeof(struct pxa168_eth_private));
+	if (!dev)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	platform_set_drvdata(pdev, dev);
 	pep = netdev_priv(dev);
@@ -1541,8 +1553,11 @@ err_free_mdio:
 	mdiobus_free(pep->smi_bus);
 err_netdev:
 	free_netdev(dev);
+<<<<<<< HEAD
 err_clk:
 	clk_disable_unprepare(clk);
+=======
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -1564,8 +1579,13 @@ static int pxa168_eth_remove(struct platform_device *pdev)
 
 	mdiobus_unregister(pep->smi_bus);
 	mdiobus_free(pep->smi_bus);
+<<<<<<< HEAD
 	unregister_netdev(dev);
 	cancel_work_sync(&pep->tx_timeout_task);
+=======
+	cancel_work_sync(&pep->tx_timeout_task);
+	unregister_netdev(dev);
+>>>>>>> origin/android16-base
 	free_netdev(dev);
 	return 0;
 }

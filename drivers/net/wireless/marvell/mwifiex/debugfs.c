@@ -265,8 +265,16 @@ mwifiex_histogram_read(struct file *file, char __user *ubuf,
 	if (!p)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	if (!priv || !priv->hist_data)
 		return -EFAULT;
+=======
+	if (!priv || !priv->hist_data) {
+		ret = -EFAULT;
+		goto free_and_exit;
+	}
+
+>>>>>>> origin/android16-base
 	phist_data = priv->hist_data;
 
 	p += sprintf(p, "\n"
@@ -321,6 +329,11 @@ mwifiex_histogram_read(struct file *file, char __user *ubuf,
 	ret = simple_read_from_buffer(ubuf, count, ppos, (char *)page,
 				      (unsigned long)p - page);
 
+<<<<<<< HEAD
+=======
+free_and_exit:
+	free_page(page);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -972,9 +985,12 @@ mwifiex_dev_debugfs_init(struct mwifiex_private *priv)
 	priv->dfs_dev_dir = debugfs_create_dir(priv->netdev->name,
 					       mwifiex_dfs_dir);
 
+<<<<<<< HEAD
 	if (!priv->dfs_dev_dir)
 		return;
 
+=======
+>>>>>>> origin/android16-base
 	MWIFIEX_DFS_ADD_FILE(info);
 	MWIFIEX_DFS_ADD_FILE(debug);
 	MWIFIEX_DFS_ADD_FILE(getlog);

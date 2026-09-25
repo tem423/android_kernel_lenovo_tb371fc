@@ -472,11 +472,20 @@ int fmc_send_cmd(struct fmdev *fmdev, u8 fm_op, u16 type, void *payload,
 			   jiffies_to_msecs(FM_DRV_TX_TIMEOUT) / 1000);
 		return -ETIMEDOUT;
 	}
+<<<<<<< HEAD
 	if (!fmdev->resp_skb) {
 		fmerr("Response SKB is missing\n");
 		return -EFAULT;
 	}
 	spin_lock_irqsave(&fmdev->resp_skb_lock, flags);
+=======
+	spin_lock_irqsave(&fmdev->resp_skb_lock, flags);
+	if (!fmdev->resp_skb) {
+		spin_unlock_irqrestore(&fmdev->resp_skb_lock, flags);
+		fmerr("Response SKB is missing\n");
+		return -EFAULT;
+	}
+>>>>>>> origin/android16-base
 	skb = fmdev->resp_skb;
 	fmdev->resp_skb = NULL;
 	spin_unlock_irqrestore(&fmdev->resp_skb_lock, flags);

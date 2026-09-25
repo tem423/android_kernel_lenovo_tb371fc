@@ -8,10 +8,16 @@
 
 #include <uapi/linux/incrementalfs.h>
 
+<<<<<<< HEAD
 #include "vfs.h"
 
 #define INCFS_NODE_FEATURES "features"
 
+=======
+#include "sysfs.h"
+#include "vfs.h"
+
+>>>>>>> origin/android16-base
 static struct file_system_type incfs_fs_type = {
 	.owner = THIS_MODULE,
 	.name = INCFS_NAME,
@@ -20,6 +26,7 @@ static struct file_system_type incfs_fs_type = {
 	.fs_flags = 0
 };
 
+<<<<<<< HEAD
 static struct kobject *sysfs_root, *featurefs_root;
 
 static ssize_t corefs_show(struct kobject *kobj,
@@ -84,24 +91,38 @@ static void cleanup_sysfs(void)
 	}
 }
 
+=======
+>>>>>>> origin/android16-base
 static int __init init_incfs_module(void)
 {
 	int err = 0;
 
+<<<<<<< HEAD
 	err = init_sysfs();
+=======
+	err = incfs_init_sysfs();
+>>>>>>> origin/android16-base
 	if (err)
 		return err;
 
 	err = register_filesystem(&incfs_fs_type);
 	if (err)
+<<<<<<< HEAD
 		cleanup_sysfs();
+=======
+		incfs_cleanup_sysfs();
+>>>>>>> origin/android16-base
 
 	return err;
 }
 
 static void __exit cleanup_incfs_module(void)
 {
+<<<<<<< HEAD
 	cleanup_sysfs();
+=======
+	incfs_cleanup_sysfs();
+>>>>>>> origin/android16-base
 	unregister_filesystem(&incfs_fs_type);
 }
 

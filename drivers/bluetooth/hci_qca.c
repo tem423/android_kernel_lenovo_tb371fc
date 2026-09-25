@@ -810,7 +810,11 @@ static int qca_enqueue(struct hci_uart *hu, struct sk_buff *skb)
 	default:
 		BT_ERR("Illegal tx state: %d (losing packet)",
 		       qca->tx_ibs_state);
+<<<<<<< HEAD
 		kfree_skb(skb);
+=======
+		dev_kfree_skb_irq(skb);
+>>>>>>> origin/android16-base
 		break;
 	}
 

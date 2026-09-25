@@ -6,12 +6,16 @@
 
 #include <drm/drm_atomic_helper.h>
 #include <drm/drm_atomic.h>
+<<<<<<< HEAD
 #include <drm/drm_notifier_mi.h>
+=======
+>>>>>>> origin/android16-base
 
 #include "msm_kms.h"
 #include "sde_connector.h"
 #include "dsi_drm.h"
 #include "sde_trace.h"
+<<<<<<< HEAD
 #include <drm/drm_bridge.h>
 #include <linux/pm_wakeup.h>
 #include "msm_drv.h"
@@ -19,6 +23,9 @@
 #include "dsi_defs.h"
 #include "sde_encoder.h"
 #include "dsi_mi_feature.h"
+=======
+#include "sde_dbg.h"
+>>>>>>> origin/android16-base
 
 #define to_dsi_bridge(x)     container_of((x), struct dsi_bridge, base)
 #define to_dsi_state(x)      container_of((x), struct dsi_connector_state, base)
@@ -35,6 +42,7 @@ static struct dsi_display_mode_priv_info default_priv_info = {
 	.dsc_enabled = false,
 };
 
+<<<<<<< HEAD
 #define WAIT_RESUME_TIMEOUT 200
 
 struct dsi_bridge *gbridge;
@@ -42,6 +50,8 @@ static struct delayed_work prim_panel_work;
 static atomic_t prim_panel_is_on;
 static struct wakeup_source *prim_panel_wakelock;
 
+=======
+>>>>>>> origin/android16-base
 static void convert_to_dsi_mode(const struct drm_display_mode *drm_mode,
 				struct dsi_display_mode *dsi_mode)
 {
@@ -179,9 +189,12 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 {
 	int rc = 0;
 	struct dsi_bridge *c_bridge = to_dsi_bridge(bridge);
+<<<<<<< HEAD
 	struct mi_drm_notifier notify_data;
 	struct dsi_panel_mi_cfg *mi_cfg = NULL;
 	int power_mode = 0;
+=======
+>>>>>>> origin/android16-base
 
 	if (!bridge) {
 		DSI_ERR("Invalid params\n");
@@ -196,8 +209,11 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 	if (bridge->encoder->crtc->state->active_changed)
 		atomic_set(&c_bridge->display->panel->esd_recovery_pending, 0);
 
+<<<<<<< HEAD
 	mi_cfg = &c_bridge->display->panel->mi_cfg;
 
+=======
+>>>>>>> origin/android16-base
 	/* By this point mode should have been validated through mode_fixup */
 	rc = dsi_display_set_mode(c_bridge->display,
 			&(c_bridge->dsi_mode), 0x0);
@@ -207,6 +223,7 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 		return;
 	}
 
+<<<<<<< HEAD
 	if (c_bridge->display->is_prim_display && atomic_read(&prim_panel_is_on) && !mi_cfg->fod_dimlayer_enabled) {
 		cancel_delayed_work_sync(&prim_panel_work);
 		__pm_relax(prim_panel_wakelock);
@@ -230,6 +247,8 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 	notify_data.id = MSM_DRM_PRIMARY_DISPLAY;
 	mi_drm_notifier_call_chain(MI_DRM_EARLY_EVENT_BLANK, &notify_data);
 
+=======
+>>>>>>> origin/android16-base
 	if (c_bridge->dsi_mode.dsi_mode_flags &
 		(DSI_MODE_FLAG_SEAMLESS | DSI_MODE_FLAG_VRR |
 		 DSI_MODE_FLAG_DYN_CLK)) {
@@ -254,16 +273,22 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 				c_bridge->id, rc);
 		(void)dsi_display_unprepare(c_bridge->display);
 	}
+<<<<<<< HEAD
 
 	mi_drm_notifier_call_chain(MI_DRM_EVENT_BLANK, &notify_data);
+=======
+>>>>>>> origin/android16-base
 	SDE_ATRACE_END("dsi_display_enable");
 
 	rc = dsi_display_splash_res_cleanup(c_bridge->display);
 	if (rc)
 		DSI_ERR("Continuous splash pipeline cleanup failed, rc=%d\n",
 									rc);
+<<<<<<< HEAD
 	if (c_bridge->display->is_prim_display)
 		atomic_set(&prim_panel_is_on, true);
+=======
+>>>>>>> origin/android16-base
 }
 
 static void dsi_bridge_enable(struct drm_bridge *bridge)
@@ -296,12 +321,15 @@ static void dsi_bridge_enable(struct drm_bridge *bridge)
 			sde_connector_schedule_status_work(display->drm_conn,
 				true);
 	}
+<<<<<<< HEAD
 
 	rc = dsi_display_esd_irq_ctrl(c_bridge->display, true);
 	if (rc) {
 		DSI_ERR("[%d] DSI display enable esd irq failed, rc=%d\n",
 				c_bridge->id, rc);
 	}
+=======
+>>>>>>> origin/android16-base
 }
 
 static void dsi_bridge_disable(struct drm_bridge *bridge)
@@ -309,15 +337,19 @@ static void dsi_bridge_disable(struct drm_bridge *bridge)
 	int rc = 0;
 	int private_flags;
 	struct dsi_display *display;
+<<<<<<< HEAD
 	struct mi_drm_notifier notify_data;
 	struct dsi_panel_mi_cfg *mi_cfg = NULL;
 	int power_mode = 0;
+=======
+>>>>>>> origin/android16-base
 	struct dsi_bridge *c_bridge = to_dsi_bridge(bridge);
 
 	if (!bridge) {
 		DSI_ERR("Invalid params\n");
 		return;
 	}
+<<<<<<< HEAD
 
 	mi_cfg = &c_bridge->display->panel->mi_cfg;
 
@@ -331,16 +363,21 @@ static void dsi_bridge_disable(struct drm_bridge *bridge)
 	notify_data.id = MSM_DRM_PRIMARY_DISPLAY;
 	mi_drm_notifier_call_chain(MI_DRM_PRE_EVENT_BLANK, &notify_data);
 
+=======
+>>>>>>> origin/android16-base
 	display = c_bridge->display;
 	private_flags =
 		bridge->encoder->crtc->state->adjusted_mode.private_flags;
 
+<<<<<<< HEAD
 	rc = dsi_display_esd_irq_ctrl(c_bridge->display, false);
 	if (rc) {
 		DSI_ERR("[%d] DSI display disable esd irq failed, rc=%d\n",
 				c_bridge->id, rc);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (display && display->drm_conn) {
 		display->poms_pending =
 			private_flags & MSM_MODE_FLAG_SEAMLESS_POMS;
@@ -359,15 +396,19 @@ static void dsi_bridge_post_disable(struct drm_bridge *bridge)
 {
 	int rc = 0;
 	struct dsi_bridge *c_bridge = to_dsi_bridge(bridge);
+<<<<<<< HEAD
 	struct mi_drm_notifier notify_data;
 	struct dsi_panel_mi_cfg *mi_cfg = NULL;
 	int power_mode = 0;
+=======
+>>>>>>> origin/android16-base
 
 	if (!bridge) {
 		DSI_ERR("Invalid params\n");
 		return;
 	}
 
+<<<<<<< HEAD
 	mi_cfg = &c_bridge->display->panel->mi_cfg;
 
 	if (mi_cfg->fod_dimlayer_enabled) {
@@ -380,6 +421,8 @@ static void dsi_bridge_post_disable(struct drm_bridge *bridge)
 	notify_data.id = MSM_DRM_PRIMARY_DISPLAY;
 	mi_drm_notifier_call_chain(MI_DRM_EARLY_EVENT_BLANK, &notify_data);
 
+=======
+>>>>>>> origin/android16-base
 	SDE_ATRACE_BEGIN("dsi_bridge_post_disable");
 	SDE_ATRACE_BEGIN("dsi_display_disable");
 	rc = dsi_display_disable(c_bridge->display);
@@ -398,6 +441,7 @@ static void dsi_bridge_post_disable(struct drm_bridge *bridge)
 		SDE_ATRACE_END("dsi_bridge_post_disable");
 		return;
 	}
+<<<<<<< HEAD
 
 	mi_drm_notifier_call_chain(MI_DRM_EVENT_BLANK, &notify_data);
 	SDE_ATRACE_END("dsi_bridge_post_disable");
@@ -417,6 +461,11 @@ static void prim_panel_off_delayed_work(struct work_struct *work)
 	mutex_unlock(&gbridge->base.lock);
 } // git
 
+=======
+	SDE_ATRACE_END("dsi_bridge_post_disable");
+}
+
+>>>>>>> origin/android16-base
 static void dsi_bridge_mode_set(struct drm_bridge *bridge,
 				struct drm_display_mode *mode,
 				struct drm_display_mode *adjusted_mode)
@@ -531,8 +580,12 @@ static bool dsi_bridge_mode_fixup(struct drm_bridge *bridge,
 			(!(dsi_mode.dsi_mode_flags & DSI_MODE_FLAG_POMS)) &&
 			(!(dsi_mode.dsi_mode_flags & DSI_MODE_FLAG_DYN_CLK)) &&
 			(!crtc_state->active_changed ||
+<<<<<<< HEAD
 			 display->is_cont_splash_enabled) &&
 			 display->config.panel_mode == DSI_OP_CMD_MODE) {
+=======
+			 display->is_cont_splash_enabled)) {
+>>>>>>> origin/android16-base
 			dsi_mode.dsi_mode_flags |= DSI_MODE_FLAG_DMS;
 
 			SDE_EVT32(SDE_EVTLOG_FUNC_CASE2,
@@ -962,6 +1015,7 @@ int dsi_connector_get_modes(struct drm_connector *connector, void *data,
 
 	for (i = 0; i < count; i++) {
 		struct drm_display_mode *m;
+<<<<<<< HEAD
 		u32 mode_rr = modes[i].timing.refresh_rate;
 
 		/* TB371FC: DFPS-VFP (vfp 26 / vtotal 2050 @ 120Hz base) can only
@@ -975,6 +1029,8 @@ int dsi_connector_get_modes(struct drm_connector *connector, void *data,
 		 * unreachable entry as plain 120Hz. */
 		if (mode_rr != 60 && mode_rr != 30 && mode_rr != 120)
 			modes[i].timing.refresh_rate = 120;
+=======
+>>>>>>> origin/android16-base
 
 		memset(&drm_mode, 0x0, sizeof(drm_mode));
 		dsi_convert_to_drm_mode(&modes[i], &drm_mode);
@@ -1176,6 +1232,7 @@ struct dsi_bridge *dsi_drm_bridge_init(struct dsi_display *display,
 	}
 
 	encoder->bridge = &bridge->base;
+<<<<<<< HEAD
 
 	encoder->bridge->is_dsi_drm_bridge = true;
 	mutex_init(&encoder->bridge->lock);
@@ -1188,6 +1245,8 @@ struct dsi_bridge *dsi_drm_bridge_init(struct dsi_display *display,
 		INIT_DELAYED_WORK(&prim_panel_work, prim_panel_off_delayed_work);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	return bridge;
 error_free_bridge:
 	kfree(bridge);
@@ -1200,6 +1259,7 @@ void dsi_drm_bridge_cleanup(struct dsi_bridge *bridge)
 	if (bridge && bridge->base.encoder)
 		bridge->base.encoder->bridge = NULL;
 
+<<<<<<< HEAD
 	if (bridge == gbridge) {
 		atomic_set(&prim_panel_is_on, false);
 		cancel_delayed_work_sync(&prim_panel_work);
@@ -1207,5 +1267,7 @@ void dsi_drm_bridge_cleanup(struct dsi_bridge *bridge)
 		wakeup_source_destroy(prim_panel_wakelock);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	kfree(bridge);
 }

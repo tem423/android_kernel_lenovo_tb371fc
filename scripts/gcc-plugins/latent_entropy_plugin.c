@@ -86,6 +86,7 @@ static struct plugin_info latent_entropy_plugin_info = {
 	.help		= "disable\tturn off latent entropy instrumentation\n",
 };
 
+<<<<<<< HEAD
 static unsigned HOST_WIDE_INT seed;
 /*
  * get_random_seed() (this is a GCC function) generates the seed.
@@ -105,6 +106,33 @@ static unsigned HOST_WIDE_INT get_random_const(void)
 	}
 
 	return ret;
+=======
+static unsigned HOST_WIDE_INT deterministic_seed;
+static unsigned HOST_WIDE_INT rnd_buf[32];
+static size_t rnd_idx = ARRAY_SIZE(rnd_buf);
+static int urandom_fd = -1;
+
+static unsigned HOST_WIDE_INT get_random_const(void)
+{
+	if (deterministic_seed) {
+		unsigned HOST_WIDE_INT w = deterministic_seed;
+		w ^= w << 13;
+		w ^= w >> 7;
+		w ^= w << 17;
+		deterministic_seed = w;
+		return deterministic_seed;
+	}
+
+	if (urandom_fd < 0) {
+		urandom_fd = open("/dev/urandom", O_RDONLY);
+		gcc_assert(urandom_fd >= 0);
+	}
+	if (rnd_idx >= ARRAY_SIZE(rnd_buf)) {
+		gcc_assert(read(urandom_fd, rnd_buf, sizeof(rnd_buf)) == sizeof(rnd_buf));
+		rnd_idx = 0;
+	}
+	return rnd_buf[rnd_idx++];
+>>>>>>> origin/android16-base
 }
 
 static tree tree_get_random_const(tree type)
@@ -549,8 +577,11 @@ static void latent_entropy_start_unit(void *gcc_data __unused,
 	tree type, id;
 	int quals;
 
+<<<<<<< HEAD
 	seed = get_random_seed(false);
 
+=======
+>>>>>>> origin/android16-base
 	if (in_lto_p)
 		return;
 
@@ -585,6 +616,15 @@ __visible int plugin_init(struct plugin_name_args *plugin_info,
 	const struct plugin_argument * const argv = plugin_info->argv;
 	int i;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Call get_random_seed() with noinit=true, so that this returns
+	 * 0 in the case where no seed has been passed via -frandom-seed.
+	 */
+	deterministic_seed = get_random_seed(true);
+
+>>>>>>> origin/android16-base
 	static const struct ggc_root_tab gt_ggc_r_gt_latent_entropy[] = {
 		{
 			.base = &latent_entropy_decl,

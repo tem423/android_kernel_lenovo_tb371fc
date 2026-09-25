@@ -129,7 +129,11 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
 
 	if (op != VIA_BITBLT_FILL) {
 		tmp = src_mem ? 0 : src_addr;
+<<<<<<< HEAD
 		if (dst_addr & 0xE0000007) {
+=======
+		if (tmp & 0xE0000007) {
+>>>>>>> origin/android16-base
 			printk(KERN_WARNING "hw_bitblt_1: Unsupported source "
 				"address %X\n", tmp);
 			return -EINVAL;
@@ -274,7 +278,11 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
 		writel(tmp, engine + 0x18);
 
 		tmp = src_mem ? 0 : src_addr;
+<<<<<<< HEAD
 		if (dst_addr & 0xE0000007) {
+=======
+		if (tmp & 0xE0000007) {
+>>>>>>> origin/android16-base
 			printk(KERN_WARNING "hw_bitblt_2: Unsupported source "
 				"address %X\n", tmp);
 			return -EINVAL;

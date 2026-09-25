@@ -427,7 +427,12 @@ struct trf7970a {
 	enum trf7970a_state		state;
 	struct device			*dev;
 	struct spi_device		*spi;
+<<<<<<< HEAD
 	struct regulator		*regulator;
+=======
+	struct regulator		*vin_regulator;
+	struct regulator		*vddio_regulator;
+>>>>>>> origin/android16-base
 	struct nfc_digital_dev		*ddev;
 	u32				quirks;
 	bool				is_initiator;
@@ -1886,7 +1891,11 @@ static int trf7970a_power_up(struct trf7970a *trf)
 	if (trf->state != TRF7970A_ST_PWR_OFF)
 		return 0;
 
+<<<<<<< HEAD
 	ret = regulator_enable(trf->regulator);
+=======
+	ret = regulator_enable(trf->vin_regulator);
+>>>>>>> origin/android16-base
 	if (ret) {
 		dev_err(trf->dev, "%s - Can't enable VIN: %d\n", __func__, ret);
 		return ret;
@@ -1929,7 +1938,11 @@ static int trf7970a_power_down(struct trf7970a *trf)
 	if (trf->en2_gpiod && !(trf->quirks & TRF7970A_QUIRK_EN2_MUST_STAY_LOW))
 		gpiod_set_value_cansleep(trf->en2_gpiod, 0);
 
+<<<<<<< HEAD
 	ret = regulator_disable(trf->regulator);
+=======
+	ret = regulator_disable(trf->vin_regulator);
+>>>>>>> origin/android16-base
 	if (ret)
 		dev_err(trf->dev, "%s - Can't disable VIN: %d\n", __func__,
 			ret);
@@ -2068,19 +2081,30 @@ static int trf7970a_probe(struct spi_device *spi)
 	mutex_init(&trf->lock);
 	INIT_DELAYED_WORK(&trf->timeout_work, trf7970a_timeout_work_handler);
 
+<<<<<<< HEAD
 	trf->regulator = devm_regulator_get(&spi->dev, "vin");
 	if (IS_ERR(trf->regulator)) {
 		ret = PTR_ERR(trf->regulator);
+=======
+	trf->vin_regulator = devm_regulator_get(&spi->dev, "vin");
+	if (IS_ERR(trf->vin_regulator)) {
+		ret = PTR_ERR(trf->vin_regulator);
+>>>>>>> origin/android16-base
 		dev_err(trf->dev, "Can't get VIN regulator: %d\n", ret);
 		goto err_destroy_lock;
 	}
 
+<<<<<<< HEAD
 	ret = regulator_enable(trf->regulator);
+=======
+	ret = regulator_enable(trf->vin_regulator);
+>>>>>>> origin/android16-base
 	if (ret) {
 		dev_err(trf->dev, "Can't enable VIN: %d\n", ret);
 		goto err_destroy_lock;
 	}
 
+<<<<<<< HEAD
 	uvolts = regulator_get_voltage(trf->regulator);
 	if (uvolts > 4000000)
 		trf->chip_status_ctrl = TRF7970A_CHIP_STATUS_VRS5_3;
@@ -2099,6 +2123,26 @@ static int trf7970a_probe(struct spi_device *spi)
 	}
 
 	if (regulator_get_voltage(trf->regulator) == 1800000) {
+=======
+	uvolts = regulator_get_voltage(trf->vin_regulator);
+	if (uvolts > 4000000)
+		trf->chip_status_ctrl = TRF7970A_CHIP_STATUS_VRS5_3;
+
+	trf->vddio_regulator = devm_regulator_get(&spi->dev, "vdd-io");
+	if (IS_ERR(trf->vddio_regulator)) {
+		ret = PTR_ERR(trf->vddio_regulator);
+		dev_err(trf->dev, "Can't get VDD_IO regulator: %d\n", ret);
+		goto err_disable_vin_regulator;
+	}
+
+	ret = regulator_enable(trf->vddio_regulator);
+	if (ret) {
+		dev_err(trf->dev, "Can't enable VDD_IO: %d\n", ret);
+		goto err_disable_vin_regulator;
+	}
+
+	if (regulator_get_voltage(trf->vddio_regulator) == 1800000) {
+>>>>>>> origin/android16-base
 		trf->io_ctrl = TRF7970A_REG_IO_CTRL_IO_LOW;
 		dev_dbg(trf->dev, "trf7970a config vdd_io to 1.8V\n");
 	}
@@ -2111,7 +2155,11 @@ static int trf7970a_probe(struct spi_device *spi)
 	if (!trf->ddev) {
 		dev_err(trf->dev, "Can't allocate NFC digital device\n");
 		ret = -ENOMEM;
+<<<<<<< HEAD
 		goto err_disable_regulator;
+=======
+		goto err_disable_vddio_regulator;
+>>>>>>> origin/android16-base
 	}
 
 	nfc_digital_set_parent_dev(trf->ddev, trf->dev);
@@ -2140,8 +2188,15 @@ err_shutdown:
 	trf7970a_shutdown(trf);
 err_free_ddev:
 	nfc_digital_free_device(trf->ddev);
+<<<<<<< HEAD
 err_disable_regulator:
 	regulator_disable(trf->regulator);
+=======
+err_disable_vddio_regulator:
+	regulator_disable(trf->vddio_regulator);
+err_disable_vin_regulator:
+	regulator_disable(trf->vin_regulator);
+>>>>>>> origin/android16-base
 err_destroy_lock:
 	mutex_destroy(&trf->lock);
 	return ret;
@@ -2160,7 +2215,12 @@ static int trf7970a_remove(struct spi_device *spi)
 	nfc_digital_unregister_device(trf->ddev);
 	nfc_digital_free_device(trf->ddev);
 
+<<<<<<< HEAD
 	regulator_disable(trf->regulator);
+=======
+	regulator_disable(trf->vddio_regulator);
+	regulator_disable(trf->vin_regulator);
+>>>>>>> origin/android16-base
 
 	mutex_destroy(&trf->lock);
 

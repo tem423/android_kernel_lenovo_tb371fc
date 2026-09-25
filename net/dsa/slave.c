@@ -598,6 +598,7 @@ static int dsa_slave_get_sset_count(struct net_device *dev, int sset)
 	struct dsa_switch *ds = dp->ds;
 
 	if (sset == ETH_SS_STATS) {
+<<<<<<< HEAD
 		int count;
 
 		count = 4;
@@ -605,6 +606,17 @@ static int dsa_slave_get_sset_count(struct net_device *dev, int sset)
 			count += ds->ops->get_sset_count(ds, dp->index, sset);
 
 		return count;
+=======
+		int count = 0;
+
+		if (ds->ops->get_sset_count) {
+			count = ds->ops->get_sset_count(ds, dp->index, sset);
+			if (count < 0)
+				return count;
+		}
+
+		return count + 4;
+>>>>>>> origin/android16-base
 	}
 
 	return -EOPNOTSUPP;
@@ -1224,6 +1236,7 @@ static int dsa_slave_phy_setup(struct net_device *slave_dev)
 		 * use the switch internal MDIO bus instead
 		 */
 		ret = dsa_slave_phy_connect(slave_dev, dp->index);
+<<<<<<< HEAD
 		if (ret) {
 			netdev_err(slave_dev,
 				   "failed to connect to port %d: %d\n",
@@ -1231,6 +1244,13 @@ static int dsa_slave_phy_setup(struct net_device *slave_dev)
 			phylink_destroy(dp->pl);
 			return ret;
 		}
+=======
+	}
+	if (ret) {
+		netdev_err(slave_dev, "failed to connect to PHY: %pe\n",
+			   ERR_PTR(ret));
+		phylink_destroy(dp->pl);
+>>>>>>> origin/android16-base
 	}
 
 	return ret;
@@ -1337,6 +1357,14 @@ int dsa_slave_create(struct dsa_port *port)
 		free_netdev(slave_dev);
 		return -ENOMEM;
 	}
+<<<<<<< HEAD
+=======
+
+	ret = gro_cells_init(&p->gcells, slave_dev);
+	if (ret)
+		goto out_free;
+
+>>>>>>> origin/android16-base
 	p->dp = port;
 	INIT_LIST_HEAD(&p->mall_tc_list);
 	p->xmit = cpu_dp->tag_ops->xmit;
@@ -1347,7 +1375,11 @@ int dsa_slave_create(struct dsa_port *port)
 	ret = dsa_slave_phy_setup(slave_dev);
 	if (ret) {
 		netdev_err(master, "error %d setting up slave phy\n", ret);
+<<<<<<< HEAD
 		goto out_free;
+=======
+		goto out_gcells;
+>>>>>>> origin/android16-base
 	}
 
 	dsa_slave_notify(slave_dev, DSA_PORT_REGISTER);
@@ -1366,6 +1398,11 @@ out_phy:
 	phylink_disconnect_phy(p->dp->pl);
 	rtnl_unlock();
 	phylink_destroy(p->dp->pl);
+<<<<<<< HEAD
+=======
+out_gcells:
+	gro_cells_destroy(&p->gcells);
+>>>>>>> origin/android16-base
 out_free:
 	free_percpu(p->stats64);
 	free_netdev(slave_dev);
@@ -1386,6 +1423,10 @@ void dsa_slave_destroy(struct net_device *slave_dev)
 	dsa_slave_notify(slave_dev, DSA_PORT_UNREGISTER);
 	unregister_netdev(slave_dev);
 	phylink_destroy(dp->pl);
+<<<<<<< HEAD
+=======
+	gro_cells_destroy(&p->gcells);
+>>>>>>> origin/android16-base
 	free_percpu(p->stats64);
 	free_netdev(slave_dev);
 }
@@ -1456,6 +1497,10 @@ static void dsa_slave_switchdev_event_work(struct work_struct *work)
 			netdev_dbg(dev, "fdb add failed err=%d\n", err);
 			break;
 		}
+<<<<<<< HEAD
+=======
+		fdb_info->offloaded = true;
+>>>>>>> origin/android16-base
 		call_switchdev_notifiers(SWITCHDEV_FDB_OFFLOADED, dev,
 					 &fdb_info->info);
 		break;

@@ -42,10 +42,13 @@
 
 #include <linux/platform_data/i2c-hid.h>
 
+<<<<<<< HEAD
 #include <linux/bootinfo.h>
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
 
+=======
+>>>>>>> origin/android16-base
 #include "../hid-ids.h"
 #include "i2c-hid.h"
 
@@ -57,9 +60,13 @@
 #define I2C_HID_QUIRK_BOGUS_IRQ			BIT(4)
 #define I2C_HID_QUIRK_RESET_ON_RESUME		BIT(5)
 #define I2C_HID_QUIRK_BAD_INPUT_SIZE		BIT(6)
+<<<<<<< HEAD
 #define I2C_HID_QUIRK_WAKE_UP_SYS		BIT(7)
 #define I2C_HID_QUIRK_SHOULD_SKIP_SET_PWR	BIT(8)
 #define I2C_HID_QUIRK_SET_PWR_ON_SHUTDOWN	BIT(9)
+=======
+
+>>>>>>> origin/android16-base
 
 /* flags */
 #define I2C_HID_STARTED		0
@@ -67,10 +74,16 @@
 
 #define I2C_HID_PWR_ON		0x00
 #define I2C_HID_PWR_SLEEP	0x01
+<<<<<<< HEAD
 #define I2C_HID_PWR_SHUTDOWN	0x02
 
 /* debug option */
 static bool debug = 0;
+=======
+
+/* debug option */
+static bool debug;
+>>>>>>> origin/android16-base
 module_param(debug, bool, 0444);
 MODULE_PARM_DESC(debug, "print a lot of debug information");
 
@@ -80,6 +93,7 @@ do {									  \
 		dev_printk(KERN_DEBUG, &(ihid)->client->dev, fmt, ##arg); \
 } while (0)
 
+<<<<<<< HEAD
 static int kb_connect = 0;
 static char versions_info[64] = "Not detected";
 static char kb_status = 0;
@@ -108,6 +122,8 @@ extern int hidinput_connect(struct hid_device *hid, unsigned int force);
 static unsigned char g_screen_on = 0;
 /* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 end */
 
+=======
+>>>>>>> origin/android16-base
 struct i2c_hid_desc {
 	__le16 wHIDDescLength;
 	__le16 bcdVersion;
@@ -225,10 +241,13 @@ static const struct i2c_hid_quirks {
 		 I2C_HID_QUIRK_RESET_ON_RESUME },
 	{ USB_VENDOR_ID_ITE, I2C_DEVICE_ID_ITE_LENOVO_LEGION_Y720,
 		I2C_HID_QUIRK_BAD_INPUT_SIZE },
+<<<<<<< HEAD
 		{ VID_KB_LENOVO, PID_KB_LENOVO,
 		 I2C_HID_QUIRK_SET_PWR_ON_SHUTDOWN | I2C_HID_QUIRK_NO_RUNTIME_PM | I2C_HID_QUIRK_SET_PWR_WAKEUP_DEV | I2C_HID_QUIRK_WAKE_UP_SYS},
 	{ VID_KB_LENOVO_TP, PID_KB_LENOVO_TP,
 		 I2C_HID_QUIRK_NO_RUNTIME_PM | I2C_HID_QUIRK_WAKE_UP_SYS | I2C_HID_QUIRK_SHOULD_SKIP_SET_PWR},
+=======
+>>>>>>> origin/android16-base
 	{ 0, 0 }
 };
 
@@ -456,10 +475,13 @@ static int i2c_hid_set_power(struct i2c_client *client, int power_state)
 		/* Device was already activated */
 		if (!ret)
 			goto set_pwr_exit;
+<<<<<<< HEAD
 	    /* vendor required to sleep 10ms to send next command */
 		if (ihid->hid->vendor == VID_KB_LENOVO && ihid->hid->product == PID_KB_LENOVO)
 			msleep(10);
 			
+=======
+>>>>>>> origin/android16-base
 	}
 
 	if (ihid->quirks & I2C_HID_QUIRK_DELAY_AFTER_SLEEP &&
@@ -534,12 +556,16 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 	int ret;
 	u32 ret_size;
 	int size = le16_to_cpu(ihid->hdesc.wMaxInputLength);
+<<<<<<< HEAD
     static bool hw_info_registed = false;
 	static char last_tpd_status = 0;
 	static bool first_tpd_status_reported = false;
 	static char last_kbd_status = 0;
 	static bool first_kbd_status_reported = false;
 	
+=======
+
+>>>>>>> origin/android16-base
 	if (size > ihid->bufsize)
 		size = ihid->bufsize;
 
@@ -582,6 +608,7 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 
 	i2c_hid_dbg(ihid, "input: %*ph\n", ret_size, ihid->inbuf);
 
+<<<<<<< HEAD
 	if(ihid->inbuf[2] == 0x06 && ihid->hid->vendor == VID_KB_LENOVO && ihid->hid->product == PID_KB_LENOVO)
 	{
 		int i = 0, max_try = 50;
@@ -675,6 +702,12 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 	
     if (test_bit(I2C_HID_STARTED, &ihid->flags))
 		hid_input_report(ihid->hid, HID_INPUT_REPORT, ihid->inbuf + 2, ret_size - 2, 1);
+=======
+	if (test_bit(I2C_HID_STARTED, &ihid->flags))
+		hid_input_report(ihid->hid, HID_INPUT_REPORT, ihid->inbuf + 2,
+				ret_size - 2, 1);
+
+>>>>>>> origin/android16-base
 	return;
 }
 
@@ -907,6 +940,7 @@ static int i2c_hid_parse(struct hid_device *hid)
 		}
 	}
 
+<<<<<<< HEAD
 
 
 	if (ihid->pdata.preset_descriptors && (rdesc[0] != 0x05 || rdesc[1] != 0x01)) {
@@ -914,6 +948,9 @@ static int i2c_hid_parse(struct hid_device *hid)
 		memcpy(rdesc, ihid->pdata.hid_report_descriptor, ihid->pdata.hid_report_descriptor_len);
 		rsize = ihid->pdata.hid_report_descriptor_len;
 	}
+=======
+	i2c_hid_dbg(ihid, "Report Descriptor: %*ph\n", rsize, rdesc);
+>>>>>>> origin/android16-base
 
 	ret = hid_parse_report(hid, rdesc, rsize);
 	if (!use_override)
@@ -1033,6 +1070,7 @@ static int i2c_hid_init_irq(struct i2c_client *client)
 
 		return ret;
 	}
+<<<<<<< HEAD
 	
 i2c_hid_dbg(ihid, "hid dev init wakeup .\n");
 	ret = device_init_wakeup(&client->dev, true);
@@ -1040,6 +1078,8 @@ i2c_hid_dbg(ihid, "hid dev init wakeup .\n");
 	{
 		i2c_hid_dbg(ihid,"hid device_init_wakeup failed: %d\n", client->irq);
 	}
+=======
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -1067,10 +1107,13 @@ static int i2c_hid_fetch_hid_descriptor(struct i2c_hid *ihid)
 		}
 	}
 
+<<<<<<< HEAD
 if (ihid->pdata.preset_descriptors && le16_to_cpu(hdesc->wHIDDescLength) != 0x001E) {
 		dev_err(&client->dev, "Wrong HID descriptor, will use preset\n");
 		memcpy(ihid->hdesc_buffer, ihid->pdata.hid_descriptor, ihid->pdata.hid_descriptor_len);
 	}
+=======
+>>>>>>> origin/android16-base
 	/* Validate the length of HID descriptor, the 4 first bytes:
 	 * bytes 0-1 -> length
 	 * bytes 2-3 -> bcdVersion (has to be 1.00) */
@@ -1089,8 +1132,12 @@ if (ihid->pdata.preset_descriptors && le16_to_cpu(hdesc->wHIDDescLength) != 0x00
 			dsize);
 		return -ENODEV;
 	}
+<<<<<<< HEAD
 	//i2c_hid_dbg(ihid, "HID Descriptor: %*ph\n", dsize, ihid->hdesc_buffer);
 	dev_printk(KERN_DEBUG, &(ihid)->client->dev, "HID Descriptor: %*ph\n", dsize, ihid->hdesc_buffer);
+=======
+	i2c_hid_dbg(ihid, "HID Descriptor: %*ph\n", dsize, ihid->hdesc_buffer);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1169,6 +1216,7 @@ static int i2c_hid_of_probe(struct i2c_client *client,
 	u32 val;
 	int ret;
 
+<<<<<<< HEAD
     ret = of_get_named_gpio(dev->of_node, "kb,output-gpio", 0);
 	if (ret < 0) {
 		dev_err(&client->dev, "Invalid output-gpio in dt: %d", ret);
@@ -1178,6 +1226,8 @@ static int i2c_hid_of_probe(struct i2c_client *client,
 		dev_err(&client->dev, "Got output-gpio1 in dt: %d", ret);
 	}
 	
+=======
+>>>>>>> origin/android16-base
 	ret = of_property_read_u32(dev->of_node, "hid-descr-addr", &val);
 	if (ret) {
 		dev_err(&client->dev, "HID register address not provided\n");
@@ -1190,6 +1240,7 @@ static int i2c_hid_of_probe(struct i2c_client *client,
 	}
 	pdata->hid_descriptor_address = val;
 
+<<<<<<< HEAD
 pdata->hid_descriptor = (u8*)of_get_property(dev->of_node, "hid-descr-preset", &(pdata->hid_descriptor_len));
 	pdata->hid_report_descriptor = (u8*)of_get_property(dev->of_node, "hid-report-descr-preset", &(pdata->hid_report_descriptor_len));
 	if (!pdata->hid_report_descriptor || !pdata->hid_descriptor) {
@@ -1202,6 +1253,8 @@ pdata->hid_descriptor = (u8*)of_get_property(dev->of_node, "hid-descr-preset", &
 		dev_printk(KERN_DEBUG, &client->dev, "Preset HID Report Descriptor: %*ph\n", pdata->hid_report_descriptor_len, pdata->hid_report_descriptor);
 	}
 	
+=======
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1228,6 +1281,7 @@ static void i2c_hid_fwnode_probe(struct i2c_client *client,
 		pdata->post_power_delay_ms = val;
 }
 
+<<<<<<< HEAD
 static ssize_t hid_show_version(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -1255,6 +1309,8 @@ static ssize_t hid_show_status(struct device *dev,
 static DEVICE_ATTR(version, 0444, hid_show_version, NULL);
 static DEVICE_ATTR(kb_status, 0444, hid_show_status, NULL);
 
+=======
+>>>>>>> origin/android16-base
 static int i2c_hid_probe(struct i2c_client *client,
 			 const struct i2c_device_id *dev_id)
 {
@@ -1373,10 +1429,13 @@ static int i2c_hid_probe(struct i2c_client *client,
 
 	snprintf(hid->name, sizeof(hid->name), "%s %04X:%04X",
 		 client->name, (u16)hid->vendor, (u16)hid->product);
+<<<<<<< HEAD
 		 
 		 if (hid->vendor == VID_KB_LENOVO && hid->product == PID_KB_LENOVO) {
 		snprintf(hid->name, sizeof(hid->name), "Lenovo Keyboard Pack for Tab P12 Pro");
 	}
+=======
+>>>>>>> origin/android16-base
 	strlcpy(hid->phys, dev_name(&client->dev), sizeof(hid->phys));
 
 	ihid->quirks = i2c_hid_lookup_quirk(hid->vendor, hid->product);
@@ -1390,6 +1449,7 @@ static int i2c_hid_probe(struct i2c_client *client,
 
 	if (!(ihid->quirks & I2C_HID_QUIRK_NO_RUNTIME_PM))
 		pm_runtime_put(&client->dev);
+<<<<<<< HEAD
     /* Set the keyboard to disconnect by default and register wakeup device*/
 	if (/*lenovo_i2c_kb_registed && kb_connect == 0
 		&& */hid->vendor == VID_KB_LENOVO && hid->product == PID_KB_LENOVO) {
@@ -1418,6 +1478,9 @@ static int i2c_hid_probe(struct i2c_client *client,
 		}
 	}
 	
+=======
+
+>>>>>>> origin/android16-base
 	return 0;
 
 err_mem_free:
@@ -1447,8 +1510,11 @@ static int i2c_hid_remove(struct i2c_client *client)
 	pm_runtime_disable(&client->dev);
 	pm_runtime_set_suspended(&client->dev);
 	pm_runtime_put_noidle(&client->dev);
+<<<<<<< HEAD
 	device_remove_file(&hid->dev, &dev_attr_version);
 	device_remove_file(&hid->dev, &dev_attr_kb_status);
+=======
+>>>>>>> origin/android16-base
 
 	hid = ihid->hid;
 	hid_destroy_device(hid);
@@ -1468,12 +1534,16 @@ static void i2c_hid_shutdown(struct i2c_client *client)
 {
 	struct i2c_hid *ihid = i2c_get_clientdata(client);
 
+<<<<<<< HEAD
 	if (!(ihid->quirks & I2C_HID_QUIRK_SHOULD_SKIP_SET_PWR)) {
 		if (!(ihid->quirks & I2C_HID_QUIRK_SET_PWR_ON_SHUTDOWN))
 			i2c_hid_set_power(client, I2C_HID_PWR_SLEEP);
 		else
 			i2c_hid_set_power(client, I2C_HID_PWR_SHUTDOWN);
 	}
+=======
+	i2c_hid_set_power(client, I2C_HID_PWR_SLEEP);
+>>>>>>> origin/android16-base
 	free_irq(client->irq, ihid);
 }
 
@@ -1502,12 +1572,18 @@ static int i2c_hid_suspend(struct device *dev)
 
 	if (!pm_runtime_suspended(dev)) {
 		/* Save some power */
+<<<<<<< HEAD
 		if (!(ihid->quirks & I2C_HID_QUIRK_SHOULD_SKIP_SET_PWR))
 			i2c_hid_set_power(client, I2C_HID_PWR_SLEEP);
 
 		if (!(ihid->quirks & I2C_HID_QUIRK_WAKE_UP_SYS)) {
 			disable_irq(client->irq);
 		}
+=======
+		i2c_hid_set_power(client, I2C_HID_PWR_SLEEP);
+
+		disable_irq(client->irq);
+>>>>>>> origin/android16-base
 	}
 
 	if (device_may_wakeup(&client->dev)) {
@@ -1555,6 +1631,7 @@ static int i2c_hid_resume(struct device *dev)
 	pm_runtime_set_active(dev);
 	pm_runtime_enable(dev);
 
+<<<<<<< HEAD
 	if (!(ihid->quirks & I2C_HID_QUIRK_WAKE_UP_SYS)) {
 		enable_irq(client->irq);
 	}
@@ -1563,6 +1640,9 @@ static int i2c_hid_resume(struct device *dev)
 		i2c_hid_get_input(ihid);
 		pm_wakeup_event(&client->dev, 2000);
 	}
+=======
+	enable_irq(client->irq);
+>>>>>>> origin/android16-base
 
 	/* Instead of resetting device, simply powers the device on. This
 	 * solves "incomplete reports" on Raydium devices 2386:3118 and
@@ -1574,10 +1654,15 @@ static int i2c_hid_resume(struct device *dev)
 	 */
 	if (ihid->quirks & I2C_HID_QUIRK_RESET_ON_RESUME)
 		ret = i2c_hid_hwreset(client);
+<<<<<<< HEAD
 	else {
 		if (!(ihid->quirks & I2C_HID_QUIRK_SHOULD_SKIP_SET_PWR))
 			ret = i2c_hid_set_power(client, I2C_HID_PWR_ON);
 	}
+=======
+	else
+		ret = i2c_hid_set_power(client, I2C_HID_PWR_ON);
+>>>>>>> origin/android16-base
 
 	if (ret)
 		return ret;
@@ -1609,6 +1694,7 @@ static int i2c_hid_runtime_resume(struct device *dev)
 	i2c_hid_set_power(client, I2C_HID_PWR_ON);
 	return 0;
 }
+<<<<<<< HEAD
 
 /*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
 static int kb_i2c_hid_resume(void)
@@ -1709,6 +1795,8 @@ void kb_hid_resume(void)
 	/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 end */
 	return;
 }
+=======
+>>>>>>> origin/android16-base
 #endif
 
 static const struct dev_pm_ops i2c_hid_pm = {
@@ -1724,6 +1812,10 @@ static const struct i2c_device_id i2c_hid_id_table[] = {
 };
 MODULE_DEVICE_TABLE(i2c, i2c_hid_id_table);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 static struct i2c_driver i2c_hid_driver = {
 	.driver = {
 		.name	= "i2c_hid",

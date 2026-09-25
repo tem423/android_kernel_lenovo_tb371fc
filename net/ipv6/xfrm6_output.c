@@ -142,11 +142,31 @@ static int __xfrm6_output_finish(struct net *net, struct sock *sk, struct sk_buf
 	return x->outer_mode->afinfo->output_finish(sk, skb);
 }
 
+<<<<<<< HEAD
+=======
+static int xfrm6_noneed_fragment(struct sk_buff *skb)
+{
+	struct frag_hdr *fh;
+	u8 prevhdr = ipv6_hdr(skb)->nexthdr;
+
+	if (prevhdr != NEXTHDR_FRAGMENT)
+		return 0;
+	fh = (struct frag_hdr *)(skb->data + sizeof(struct ipv6hdr));
+	if (fh->nexthdr == NEXTHDR_ESP || fh->nexthdr == NEXTHDR_AUTH)
+		return 1;
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static int __xfrm6_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 {
 	struct dst_entry *dst = skb_dst(skb);
 	struct xfrm_state *x = dst->xfrm;
+<<<<<<< HEAD
 	int mtu;
+=======
+	unsigned int mtu;
+>>>>>>> origin/android16-base
 	bool toobig;
 
 #ifdef CONFIG_NETFILTER
@@ -170,6 +190,12 @@ static int __xfrm6_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 		xfrm6_local_rxpmtu(skb, mtu);
 		kfree_skb(skb);
 		return -EMSGSIZE;
+<<<<<<< HEAD
+=======
+	} else if (toobig && xfrm6_noneed_fragment(skb)) {
+		skb->ignore_df = 1;
+		goto skip_frag;
+>>>>>>> origin/android16-base
 	} else if (!skb->ignore_df && toobig && skb->sk) {
 		xfrm_local_error(skb, mtu);
 		kfree_skb(skb);

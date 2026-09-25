@@ -409,8 +409,13 @@ static int slim_device_alloc_laddr(struct slim_device *sbdev,
 		if (ret < 0)
 			goto err;
 	} else if (report_present) {
+<<<<<<< HEAD
 		ret = ida_simple_get(&ctrl->laddr_ida,
 				     0, SLIM_LA_MANAGER - 1, GFP_KERNEL);
+=======
+		ret = ida_alloc_max(&ctrl->laddr_ida,
+				    SLIM_LA_MANAGER - 1, GFP_KERNEL);
+>>>>>>> origin/android16-base
 		if (ret < 0)
 			goto err;
 

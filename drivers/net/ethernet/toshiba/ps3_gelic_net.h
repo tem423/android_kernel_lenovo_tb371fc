@@ -32,8 +32,14 @@
 #define GELIC_NET_RX_DESCRIPTORS        128 /* num of descriptors */
 #define GELIC_NET_TX_DESCRIPTORS        128 /* num of descriptors */
 
+<<<<<<< HEAD
 #define GELIC_NET_MAX_MTU               VLAN_ETH_FRAME_LEN
 #define GELIC_NET_MIN_MTU               VLAN_ETH_ZLEN
+=======
+#define GELIC_NET_MAX_FRAME             2312
+#define GELIC_NET_MAX_MTU               2294
+#define GELIC_NET_MIN_MTU               64
+>>>>>>> origin/android16-base
 #define GELIC_NET_RXBUF_ALIGN           128
 #define GELIC_CARD_RX_CSUM_DEFAULT      1 /* hw chksum */
 #define GELIC_NET_WATCHDOG_TIMEOUT      5*HZ

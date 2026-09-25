@@ -52,7 +52,11 @@ obj-$(CONFIG_UML_NET) += net.o
 obj-$(CONFIG_MCONSOLE) += mconsole.o
 obj-$(CONFIG_MMAPPER) += mmapper_kern.o 
 obj-$(CONFIG_BLK_DEV_UBD) += ubd.o 
+<<<<<<< HEAD
 obj-$(CONFIG_HOSTAUDIO) += hostaudio.o
+=======
+obj-$(CONFIG_UML_SOUND) += hostaudio.o
+>>>>>>> origin/android16-base
 obj-$(CONFIG_NULL_CHAN) += null.o 
 obj-$(CONFIG_PORT_CHAN) += port.o
 obj-$(CONFIG_PTY_CHAN) += pty.o

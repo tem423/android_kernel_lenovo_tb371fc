@@ -822,8 +822,16 @@ static ssize_t gfs2_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 		current->backing_dev_info = inode_to_bdi(inode);
 		buffered = iomap_file_buffered_write(iocb, from, &gfs2_iomap_ops);
 		current->backing_dev_info = NULL;
+<<<<<<< HEAD
 		if (unlikely(buffered <= 0))
 			goto out_unlock;
+=======
+		if (unlikely(buffered <= 0)) {
+			if (!ret)
+				ret = buffered;
+			goto out_unlock;
+		}
+>>>>>>> origin/android16-base
 
 		/*
 		 * We need to ensure that the page cache pages are written to

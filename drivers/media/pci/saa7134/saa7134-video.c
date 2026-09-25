@@ -2213,6 +2213,10 @@ int saa7134_video_init1(struct saa7134_dev *dev)
 
 void saa7134_video_fini(struct saa7134_dev *dev)
 {
+<<<<<<< HEAD
+=======
+	del_timer_sync(&dev->video_q.timeout);
+>>>>>>> origin/android16-base
 	/* free stuff */
 	vb2_queue_release(&dev->video_vbq);
 	saa7134_pgtable_free(dev->pci, &dev->video_q.pt);

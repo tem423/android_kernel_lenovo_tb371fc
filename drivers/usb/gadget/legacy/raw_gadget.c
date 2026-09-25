@@ -624,12 +624,20 @@ static int raw_process_ep0_io(struct raw_dev *dev, struct usb_raw_ep_io *io,
 	if (WARN_ON(in && dev->ep0_out_pending)) {
 		ret = -ENODEV;
 		dev->state = STATE_DEV_FAILED;
+<<<<<<< HEAD
 		goto out_done;
+=======
+		goto out_unlock;
+>>>>>>> origin/android16-base
 	}
 	if (WARN_ON(!in && dev->ep0_in_pending)) {
 		ret = -ENODEV;
 		dev->state = STATE_DEV_FAILED;
+<<<<<<< HEAD
 		goto out_done;
+=======
+		goto out_unlock;
+>>>>>>> origin/android16-base
 	}
 
 	dev->req->buf = data;
@@ -644,7 +652,11 @@ static int raw_process_ep0_io(struct raw_dev *dev, struct usb_raw_ep_io *io,
 				"fail, usb_ep_queue returned %d\n", ret);
 		spin_lock_irqsave(&dev->lock, flags);
 		dev->state = STATE_DEV_FAILED;
+<<<<<<< HEAD
 		goto out_done;
+=======
+		goto out_queue_failed;
+>>>>>>> origin/android16-base
 	}
 
 	ret = wait_for_completion_interruptible(&dev->ep0_done);
@@ -653,6 +665,7 @@ static int raw_process_ep0_io(struct raw_dev *dev, struct usb_raw_ep_io *io,
 		usb_ep_dequeue(dev->gadget->ep0, dev->req);
 		wait_for_completion(&dev->ep0_done);
 		spin_lock_irqsave(&dev->lock, flags);
+<<<<<<< HEAD
 		goto out_done;
 	}
 
@@ -660,6 +673,18 @@ static int raw_process_ep0_io(struct raw_dev *dev, struct usb_raw_ep_io *io,
 	ret = dev->ep0_status;
 
 out_done:
+=======
+		if (dev->ep0_status == -ECONNRESET)
+			dev->ep0_status = -EINTR;
+		goto out_interrupted;
+	}
+
+	spin_lock_irqsave(&dev->lock, flags);
+
+out_interrupted:
+	ret = dev->ep0_status;
+out_queue_failed:
+>>>>>>> origin/android16-base
 	dev->ep0_urb_queued = false;
 out_unlock:
 	spin_unlock_irqrestore(&dev->lock, flags);
@@ -1000,7 +1025,11 @@ static int raw_process_ep_io(struct raw_dev *dev, struct usb_raw_ep_io *io,
 		ret = -EBUSY;
 		goto out_unlock;
 	}
+<<<<<<< HEAD
 	if ((in && !ep->ep->caps.dir_in) || (!in && ep->ep->caps.dir_in)) {
+=======
+	if (in != usb_endpoint_dir_in(ep->ep->desc)) {
+>>>>>>> origin/android16-base
 		dev_dbg(&dev->gadget->dev, "fail, wrong direction\n");
 		ret = -EINVAL;
 		goto out_unlock;
@@ -1021,7 +1050,11 @@ static int raw_process_ep_io(struct raw_dev *dev, struct usb_raw_ep_io *io,
 				"fail, usb_ep_queue returned %d\n", ret);
 		spin_lock_irqsave(&dev->lock, flags);
 		dev->state = STATE_DEV_FAILED;
+<<<<<<< HEAD
 		goto out_done;
+=======
+		goto out_queue_failed;
+>>>>>>> origin/android16-base
 	}
 
 	ret = wait_for_completion_interruptible(&done);
@@ -1030,6 +1063,7 @@ static int raw_process_ep_io(struct raw_dev *dev, struct usb_raw_ep_io *io,
 		usb_ep_dequeue(ep->ep, ep->req);
 		wait_for_completion(&done);
 		spin_lock_irqsave(&dev->lock, flags);
+<<<<<<< HEAD
 		goto out_done;
 	}
 
@@ -1037,6 +1071,18 @@ static int raw_process_ep_io(struct raw_dev *dev, struct usb_raw_ep_io *io,
 	ret = ep->status;
 
 out_done:
+=======
+		if (ep->status == -ECONNRESET)
+			ep->status = -EINTR;
+		goto out_interrupted;
+	}
+
+	spin_lock_irqsave(&dev->lock, flags);
+
+out_interrupted:
+	ret = ep->status;
+out_queue_failed:
+>>>>>>> origin/android16-base
 	ep->urb_queued = false;
 out_unlock:
 	spin_unlock_irqrestore(&dev->lock, flags);

@@ -2280,18 +2280,30 @@ static int __init sxgbe_cmdline_opt(char *str)
 	char *opt;
 
 	if (!str || !*str)
+<<<<<<< HEAD
 		return -EINVAL;
+=======
+		return 1;
+>>>>>>> origin/android16-base
 	while ((opt = strsep(&str, ",")) != NULL) {
 		if (!strncmp(opt, "eee_timer:", 10)) {
 			if (kstrtoint(opt + 10, 0, &eee_timer))
 				goto err;
 		}
 	}
+<<<<<<< HEAD
 	return 0;
 
 err:
 	pr_err("%s: ERROR broken module parameter conversion\n", __func__);
 	return -EINVAL;
+=======
+	return 1;
+
+err:
+	pr_err("%s: ERROR broken module parameter conversion\n", __func__);
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 __setup("sxgbeeth=", sxgbe_cmdline_opt);

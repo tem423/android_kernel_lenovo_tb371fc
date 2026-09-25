@@ -297,7 +297,12 @@ int lirc_prog_query(const union bpf_attr *attr, union bpf_attr __user *uattr)
 	}
 
 	if (attr->query.prog_cnt != 0 && prog_ids && cnt)
+<<<<<<< HEAD
 		ret = bpf_prog_array_copy_to_user(progs, prog_ids, cnt);
+=======
+		ret = bpf_prog_array_copy_to_user(progs, prog_ids,
+						  attr->query.prog_cnt);
+>>>>>>> origin/android16-base
 
 unlock:
 	mutex_unlock(&ir_raw_handler_lock);

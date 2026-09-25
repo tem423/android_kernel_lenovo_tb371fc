@@ -152,10 +152,19 @@ static int stm_drm_platform_probe(struct platform_device *pdev)
 
 	ret = drm_dev_register(ddev, 0);
 	if (ret)
+<<<<<<< HEAD
 		goto err_put;
 
 	return 0;
 
+=======
+		goto err_unload;
+
+	return 0;
+
+err_unload:
+	drv_unload(ddev);
+>>>>>>> origin/android16-base
 err_put:
 	drm_dev_put(ddev);
 

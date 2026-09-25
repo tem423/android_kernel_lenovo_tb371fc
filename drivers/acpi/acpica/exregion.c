@@ -43,7 +43,10 @@ acpi_ex_system_memory_space_handler(u32 function,
 	struct acpi_mem_space_context *mem_info = region_context;
 	u32 length;
 	acpi_size map_length;
+<<<<<<< HEAD
 	acpi_size page_boundary_map_length;
+=======
+>>>>>>> origin/android16-base
 #ifdef ACPI_MISALIGNMENT_NOT_SUPPORTED
 	u32 remainder;
 #endif
@@ -120,6 +123,7 @@ acpi_ex_system_memory_space_handler(u32 function,
 		map_length = (acpi_size)
 		    ((mem_info->address + mem_info->length) - address);
 
+<<<<<<< HEAD
 		/*
 		 * If mapping the entire remaining portion of the region will cross
 		 * a page boundary, just map up to the page boundary, do not cross.
@@ -140,6 +144,10 @@ acpi_ex_system_memory_space_handler(u32 function,
 		if (map_length > page_boundary_map_length) {
 			map_length = page_boundary_map_length;
 		}
+=======
+		if (map_length > ACPI_DEFAULT_PAGE_SIZE)
+			map_length = ACPI_DEFAULT_PAGE_SIZE;
+>>>>>>> origin/android16-base
 
 		/* Create a new mapping starting at the address given */
 

@@ -54,7 +54,11 @@ u32 rtl92cu_phy_query_rf_reg(struct ieee80211_hw *hw,
 		original_value = _rtl92c_phy_fw_rf_serial_read(hw,
 							       rfpath, regaddr);
 	}
+<<<<<<< HEAD
 	bitshift = _rtl92c_phy_calculate_bit_shift(bitmask);
+=======
+	bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 	readback_value = (original_value & bitmask) >> bitshift;
 	RT_TRACE(rtlpriv, COMP_RF, DBG_TRACE,
 		 "regaddr(%#x), rfpath(%#x), bitmask(%#x), original_value(%#x)\n",
@@ -78,7 +82,11 @@ void rtl92cu_phy_set_rf_reg(struct ieee80211_hw *hw,
 			original_value = _rtl92c_phy_rf_serial_read(hw,
 								    rfpath,
 								    regaddr);
+<<<<<<< HEAD
 			bitshift = _rtl92c_phy_calculate_bit_shift(bitmask);
+=======
+			bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 			data =
 			    ((original_value & (~bitmask)) |
 			     (data << bitshift));
@@ -89,7 +97,11 @@ void rtl92cu_phy_set_rf_reg(struct ieee80211_hw *hw,
 			original_value = _rtl92c_phy_fw_rf_serial_read(hw,
 								       rfpath,
 								       regaddr);
+<<<<<<< HEAD
 			bitshift = _rtl92c_phy_calculate_bit_shift(bitmask);
+=======
+			bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 			data =
 			    ((original_value & (~bitmask)) |
 			     (data << bitshift));

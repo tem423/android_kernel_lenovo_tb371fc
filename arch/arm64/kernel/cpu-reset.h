@@ -16,7 +16,11 @@
 void __cpu_soft_restart(unsigned long el2_switch, unsigned long entry,
 	unsigned long arg0, unsigned long arg1, unsigned long arg2);
 
+<<<<<<< HEAD
 static inline void __noreturn cpu_soft_restart(unsigned long entry,
+=======
+static inline void __noreturn __nocfi cpu_soft_restart(unsigned long entry,
+>>>>>>> origin/android16-base
 					       unsigned long arg0,
 					       unsigned long arg1,
 					       unsigned long arg2)

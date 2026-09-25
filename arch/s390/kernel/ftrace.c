@@ -57,6 +57,10 @@
  * >	brasl	%r0,ftrace_caller	# offset 0
  */
 
+<<<<<<< HEAD
+=======
+void *ftrace_func __read_mostly = ftrace_stub;
+>>>>>>> origin/android16-base
 unsigned long ftrace_plt;
 
 static inline void ftrace_generate_orig_insn(struct ftrace_insn *insn)
@@ -166,6 +170,10 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 
 int ftrace_update_ftrace_func(ftrace_func_t func)
 {
+<<<<<<< HEAD
+=======
+	ftrace_func = func;
+>>>>>>> origin/android16-base
 	return 0;
 }
 

@@ -594,10 +594,13 @@ static void dsi_pll_setup_config(struct dsi_pll_7nm *pll,
 	config->enable_ssc = rsc->ssc_en;
 	config->ssc_center = rsc->ssc_center;
 
+<<<<<<< HEAD
 	if (pll->cphy_enabled) {
 		config->enable_ssc = false;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (config->enable_ssc) {
 		if (rsc->ssc_freq)
 			config->ssc_freq = rsc->ssc_freq;

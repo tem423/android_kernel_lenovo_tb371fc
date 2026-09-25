@@ -44,7 +44,11 @@ TRACE_EVENT(ftrace_test_filter,
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../kernel/trace
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE trace_events_filter_test
 
 /* This part must be outside protection */

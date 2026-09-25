@@ -741,6 +741,10 @@ static int vector_config(char *str, char **error_out)
 
 	if (parsed == NULL) {
 		*error_out = "vector_config failed to parse parameters";
+<<<<<<< HEAD
+=======
+		kfree(params);
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 
@@ -796,7 +800,12 @@ static struct platform_driver uml_net_driver = {
 
 static void vector_device_release(struct device *dev)
 {
+<<<<<<< HEAD
 	struct vector_device *device = dev_get_drvdata(dev);
+=======
+	struct vector_device *device =
+		container_of(dev, struct vector_device, pdev.dev);
+>>>>>>> origin/android16-base
 	struct net_device *netdev = device->dev;
 
 	list_del(&device->list);

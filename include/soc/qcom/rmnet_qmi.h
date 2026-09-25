@@ -1,7 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+>>>>>>> origin/android16-base
  */
 
 #ifndef _RMNET_QMI_H
@@ -27,7 +30,10 @@ void rmnet_get_packets(void *port, u64 *rx, u64 *tx);
 int rmnet_get_powersave_notif(void *port);
 struct net_device *rmnet_get_real_dev(void *port);
 int rmnet_get_dlmarker_info(void *port);
+<<<<<<< HEAD
 void rmnet_prepare_ps_bearers(void *port, u8 *num_bearers, u8 *bearer_id);
+=======
+>>>>>>> origin/android16-base
 #else
 static inline void *rmnet_get_qmi_pt(void *port)
 {

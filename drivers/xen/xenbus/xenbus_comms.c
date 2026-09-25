@@ -57,6 +57,7 @@ DEFINE_MUTEX(xs_response_mutex);
 static int xenbus_irq;
 static struct task_struct *xenbus_task;
 
+<<<<<<< HEAD
 static DECLARE_WORK(probe_work, xenbus_probe);
 
 
@@ -67,6 +68,10 @@ static irqreturn_t wake_waiting(int irq, void *unused)
 		schedule_work(&probe_work);
 	}
 
+=======
+static irqreturn_t wake_waiting(int irq, void *unused)
+{
+>>>>>>> origin/android16-base
 	wake_up(&xb_waitq);
 	return IRQ_HANDLED;
 }

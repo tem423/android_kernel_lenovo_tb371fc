@@ -2193,7 +2193,12 @@ struct megasas_instance {
 	u32 secure_jbod_support;
 	u32 support_morethan256jbod; /* FW support for more than 256 PD/JBOD */
 	bool use_seqnum_jbod_fp;   /* Added for PD sequence */
+<<<<<<< HEAD
 	spinlock_t crashdump_lock;
+=======
+	bool smp_affinity_enable;
+	struct mutex crashdump_lock;
+>>>>>>> origin/android16-base
 
 	struct megasas_register_set __iomem *reg_set;
 	u32 __iomem *reply_post_host_index_addr[MR_MAX_MSIX_REG_ARRAY];
@@ -2210,6 +2215,10 @@ struct megasas_instance {
 	u16 ldio_threshold;
 	u16 cur_can_queue;
 	u32 max_sectors_per_req;
+<<<<<<< HEAD
+=======
+	bool msix_load_balance;
+>>>>>>> origin/android16-base
 	struct megasas_aen_event *ev;
 
 	struct megasas_cmd **cmd_list;
@@ -2246,6 +2255,10 @@ struct megasas_instance {
 	atomic_t sge_holes_type1;
 	atomic_t sge_holes_type2;
 	atomic_t sge_holes_type3;
+<<<<<<< HEAD
+=======
+	atomic64_t total_io_count;
+>>>>>>> origin/android16-base
 
 	struct megasas_instance_template *instancet;
 	struct tasklet_struct isr_tasklet;

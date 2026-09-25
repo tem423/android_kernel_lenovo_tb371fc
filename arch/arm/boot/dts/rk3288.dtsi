@@ -234,8 +234,13 @@
 		compatible = "rockchip,rk3288-timer";
 		reg = <0x0 0xff810000 0x0 0x20>;
 		interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
+<<<<<<< HEAD
 		clocks = <&xin24m>, <&cru PCLK_TIMER>;
 		clock-names = "timer", "pclk";
+=======
+		clocks = <&cru PCLK_TIMER>, <&xin24m>;
+		clock-names = "pclk", "timer";
+>>>>>>> origin/android16-base
 	};
 
 	display-subsystem {
@@ -759,7 +764,11 @@
 			 *	*_HDMI		HDMI
 			 *	*_MIPI_*	MIPI
 			 */
+<<<<<<< HEAD
 			pd_vio@RK3288_PD_VIO {
+=======
+			power-domain@RK3288_PD_VIO {
+>>>>>>> origin/android16-base
 				reg = <RK3288_PD_VIO>;
 				clocks = <&cru ACLK_IEP>,
 					 <&cru ACLK_ISP>,
@@ -801,7 +810,11 @@
 			 * Note: The following 3 are HEVC(H.265) clocks,
 			 * and on the ACLK_HEVC_NIU (NOC).
 			 */
+<<<<<<< HEAD
 			pd_hevc@RK3288_PD_HEVC {
+=======
+			power-domain@RK3288_PD_HEVC {
+>>>>>>> origin/android16-base
 				reg = <RK3288_PD_HEVC>;
 				clocks = <&cru ACLK_HEVC>,
 					 <&cru SCLK_HEVC_CABAC>,
@@ -815,7 +828,11 @@
 			 * (video endecoder & decoder) clocks that on the
 			 * ACLK_VCODEC_NIU and HCLK_VCODEC_NIU (NOC).
 			 */
+<<<<<<< HEAD
 			pd_video@RK3288_PD_VIDEO {
+=======
+			power-domain@RK3288_PD_VIDEO {
+>>>>>>> origin/android16-base
 				reg = <RK3288_PD_VIDEO>;
 				clocks = <&cru ACLK_VCODEC>,
 					 <&cru HCLK_VCODEC>;
@@ -826,7 +843,11 @@
 			 * Note: ACLK_GPU is the GPU clock,
 			 * and on the ACLK_GPU_NIU (NOC).
 			 */
+<<<<<<< HEAD
 			pd_gpu@RK3288_PD_GPU {
+=======
+			power-domain@RK3288_PD_GPU {
+>>>>>>> origin/android16-base
 				reg = <RK3288_PD_GPU>;
 				clocks = <&cru ACLK_GPU>;
 				pm_qos = <&qos_gpu_r>,
@@ -924,7 +945,11 @@
 		status = "disabled";
 	};
 
+<<<<<<< HEAD
 	spdif: sound@ff88b0000 {
+=======
+	spdif: sound@ff8b0000 {
+>>>>>>> origin/android16-base
 		compatible = "rockchip,rk3288-spdif", "rockchip,rk3066-spdif";
 		reg = <0x0 0xff8b0000 0x0 0x10000>;
 		#sound-dai-cells = <0>;
@@ -957,7 +982,11 @@
 		status = "disabled";
 	};
 
+<<<<<<< HEAD
 	crypto: cypto-controller@ff8a0000 {
+=======
+	crypto: crypto@ff8a0000 {
+>>>>>>> origin/android16-base
 		compatible = "rockchip,rk3288-crypto";
 		reg = <0x0 0xff8a0000 0x0 0x4000>;
 		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
@@ -1172,6 +1201,10 @@
 		clock-names = "dp", "pclk";
 		phys = <&edp_phy>;
 		phy-names = "dp";
+<<<<<<< HEAD
+=======
+		power-domains = <&power RK3288_PD_VIO>;
+>>>>>>> origin/android16-base
 		resets = <&cru SRST_EDP>;
 		reset-names = "dp";
 		rockchip,grf = <&grf>;
@@ -1541,7 +1574,11 @@
 			drive-strength = <12>;
 		};
 
+<<<<<<< HEAD
 		sleep {
+=======
+		suspend {
+>>>>>>> origin/android16-base
 			global_pwroff: global-pwroff {
 				rockchip,pins = <0 0 RK_FUNC_1 &pcfg_pull_none>;
 			};

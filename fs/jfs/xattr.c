@@ -447,6 +447,11 @@ static int ea_get(struct inode *inode, struct ea_buffer *ea_buf, int min_size)
 	int rc;
 	int quota_allocation = 0;
 
+<<<<<<< HEAD
+=======
+	memset(&ea_buf->new_ea, 0, sizeof(ea_buf->new_ea));
+
+>>>>>>> origin/android16-base
 	/* When fsck.jfs clears a bad ea, it doesn't clear the size */
 	if (ji->ea.flag == 0)
 		ea_size = 0;
@@ -570,9 +575,17 @@ static int ea_get(struct inode *inode, struct ea_buffer *ea_buf, int min_size)
 
       size_check:
 	if (EALIST_SIZE(ea_buf->xattr) != ea_size) {
+<<<<<<< HEAD
 		printk(KERN_ERR "ea_get: invalid extended attribute\n");
 		print_hex_dump(KERN_ERR, "", DUMP_PREFIX_ADDRESS, 16, 1,
 				     ea_buf->xattr, ea_size, 1);
+=======
+		int size = clamp_t(int, ea_size, 0, EALIST_SIZE(ea_buf->xattr));
+
+		printk(KERN_ERR "ea_get: invalid extended attribute\n");
+		print_hex_dump(KERN_ERR, "", DUMP_PREFIX_ADDRESS, 16, 1,
+				     ea_buf->xattr, size, 1);
+>>>>>>> origin/android16-base
 		ea_release(inode, ea_buf);
 		rc = -EIO;
 		goto clean_up;
@@ -808,7 +821,11 @@ ssize_t __jfs_getxattr(struct inode *inode, const char *name, void *data,
 		       size_t buf_size)
 {
 	struct jfs_ea_list *ealist;
+<<<<<<< HEAD
 	struct jfs_ea *ea;
+=======
+	struct jfs_ea *ea, *ealist_end;
+>>>>>>> origin/android16-base
 	struct ea_buffer ea_buf;
 	int xattr_size;
 	ssize_t size;
@@ -828,9 +845,22 @@ ssize_t __jfs_getxattr(struct inode *inode, const char *name, void *data,
 		goto not_found;
 
 	ealist = (struct jfs_ea_list *) ea_buf.xattr;
+<<<<<<< HEAD
 
 	/* Find the named attribute */
 	for (ea = FIRST_EA(ealist); ea < END_EALIST(ealist); ea = NEXT_EA(ea))
+=======
+	ealist_end = END_EALIST(ealist);
+
+	/* Find the named attribute */
+	for (ea = FIRST_EA(ealist); ea < ealist_end; ea = NEXT_EA(ea)) {
+		if (unlikely(ea + 1 > ealist_end) ||
+		    unlikely(NEXT_EA(ea) > ealist_end)) {
+			size = -EUCLEAN;
+			goto release;
+		}
+
+>>>>>>> origin/android16-base
 		if ((namelen == ea->namelen) &&
 		    memcmp(name, ea->name, namelen) == 0) {
 			/* Found it */
@@ -845,6 +875,10 @@ ssize_t __jfs_getxattr(struct inode *inode, const char *name, void *data,
 			memcpy(data, value, size);
 			goto release;
 		}
+<<<<<<< HEAD
+=======
+	}
+>>>>>>> origin/android16-base
       not_found:
 	size = -ENODATA;
       release:
@@ -872,7 +906,11 @@ ssize_t jfs_listxattr(struct dentry * dentry, char *data, size_t buf_size)
 	ssize_t size = 0;
 	int xattr_size;
 	struct jfs_ea_list *ealist;
+<<<<<<< HEAD
 	struct jfs_ea *ea;
+=======
+	struct jfs_ea *ea, *ealist_end;
+>>>>>>> origin/android16-base
 	struct ea_buffer ea_buf;
 
 	down_read(&JFS_IP(inode)->xattr_sem);
@@ -887,9 +925,22 @@ ssize_t jfs_listxattr(struct dentry * dentry, char *data, size_t buf_size)
 		goto release;
 
 	ealist = (struct jfs_ea_list *) ea_buf.xattr;
+<<<<<<< HEAD
 
 	/* compute required size of list */
 	for (ea = FIRST_EA(ealist); ea < END_EALIST(ealist); ea = NEXT_EA(ea)) {
+=======
+	ealist_end = END_EALIST(ealist);
+
+	/* compute required size of list */
+	for (ea = FIRST_EA(ealist); ea < ealist_end; ea = NEXT_EA(ea)) {
+		if (unlikely(ea + 1 > ealist_end) ||
+		    unlikely(NEXT_EA(ea) > ealist_end)) {
+			size = -EUCLEAN;
+			goto release;
+		}
+
+>>>>>>> origin/android16-base
 		if (can_list(ea))
 			size += name_size(ea) + 1;
 	}

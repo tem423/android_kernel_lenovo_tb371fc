@@ -189,7 +189,11 @@ unsigned int dccp_sync_mss(struct sock *sk, u32 pmtu)
 
 	/* And store cached results */
 	icsk->icsk_pmtu_cookie = pmtu;
+<<<<<<< HEAD
 	dp->dccps_mss_cache = cur_mps;
+=======
+	WRITE_ONCE(dp->dccps_mss_cache, cur_mps);
+>>>>>>> origin/android16-base
 
 	return cur_mps;
 }

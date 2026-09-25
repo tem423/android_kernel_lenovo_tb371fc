@@ -48,11 +48,20 @@
 #define EX_CCR		52
 #define EX_CFAR		56
 #define EX_PPR		64
+<<<<<<< HEAD
 #if defined(CONFIG_RELOCATABLE)
 #define EX_CTR		72
 #define EX_SIZE		10	/* size in u64 units */
 #else
 #define EX_SIZE		9	/* size in u64 units */
+=======
+#define EX_LR		72
+#if defined(CONFIG_RELOCATABLE)
+#define EX_CTR		80
+#define EX_SIZE		11	/* size in u64 units */
+#else
+#define EX_SIZE		10	/* size in u64 units */
+>>>>>>> origin/android16-base
 #endif
 
 /*
@@ -61,6 +70,7 @@
 #define MAX_MCE_DEPTH	4
 
 /*
+<<<<<<< HEAD
  * EX_LR is only used in EXSLB and where it does not overlap with EX_DAR
  * EX_CCR similarly with DSISR, but being 4 byte registers there is a hole
  * in the save area so it's not necessary to overlap them. Could be used
@@ -69,6 +79,8 @@
 #define EX_LR		EX_DAR
 
 /*
+=======
+>>>>>>> origin/android16-base
  * EX_R3 is only used by the bad_stack handler. bad_stack reloads and
  * saves DAR from SPRN_DAR, and EX_DAR is not used. So EX_R3 can overlap
  * with EX_DAR.
@@ -90,11 +102,25 @@
 	nop;								\
 	nop
 
+<<<<<<< HEAD
+=======
+#define ENTRY_FLUSH_SLOT						\
+	ENTRY_FLUSH_FIXUP_SECTION;					\
+	nop;								\
+	nop;								\
+	nop;
+
+>>>>>>> origin/android16-base
 /*
  * r10 must be free to use, r13 must be paca
  */
 #define INTERRUPT_TO_KERNEL						\
+<<<<<<< HEAD
 	STF_ENTRY_BARRIER_SLOT
+=======
+	STF_ENTRY_BARRIER_SLOT;						\
+	ENTRY_FLUSH_SLOT
+>>>>>>> origin/android16-base
 
 /*
  * Macros for annotating the expected destination of (h)rfid
@@ -236,10 +262,29 @@
  * PPR save/restore macros used in exceptions_64s.S  
  * Used for P7 or later processors
  */
+<<<<<<< HEAD
 #define SAVE_PPR(area, ra, rb)						\
 BEGIN_FTR_SECTION_NESTED(940)						\
 	ld	ra,PACACURRENT(r13);					\
 	ld	rb,area+EX_PPR(r13);	/* Read PPR from paca */	\
+=======
+#define SAVE_PPR(area, ra)						\
+BEGIN_FTR_SECTION_NESTED(940)						\
+	ld	ra,area+EX_PPR(r13);	/* Read PPR from paca */	\
+	std	ra,RESULT(r1);		/* Store PPR in RESULT for now */ \
+END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,940)
+
+/*
+ * This is called after we are finished accessing 'area', so we can now take
+ * SLB faults accessing the thread struct, which will use PACA_EXSLB area.
+ * This is required because the large_addr_slb handler uses EXSLB and it also
+ * uses the common exception macros including this PPR saving.
+ */
+#define MOVE_PPR_TO_THREAD(ra, rb)					\
+BEGIN_FTR_SECTION_NESTED(940)						\
+	ld	ra,PACACURRENT(r13);					\
+	ld	rb,RESULT(r1);		/* Read PPR from stack */	\
+>>>>>>> origin/android16-base
 	std	rb,TASKTHREADPPR(ra);					\
 END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,940)
 
@@ -508,9 +553,17 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
 3:	EXCEPTION_PROLOG_COMMON_1();					   \
 	beq	4f;			/* if from kernel mode		*/ \
 	ACCOUNT_CPU_USER_ENTRY(r13, r9, r10);				   \
+<<<<<<< HEAD
 	SAVE_PPR(area, r9, r10);					   \
 4:	EXCEPTION_PROLOG_COMMON_2(area)					   \
 	EXCEPTION_PROLOG_COMMON_3(n)					   \
+=======
+	SAVE_PPR(area, r9);						   \
+4:	EXCEPTION_PROLOG_COMMON_2(area)					   \
+	beq	5f;			/* if from kernel mode		*/ \
+	MOVE_PPR_TO_THREAD(r9, r10);					   \
+5:	EXCEPTION_PROLOG_COMMON_3(n)					   \
+>>>>>>> origin/android16-base
 	ACCOUNT_STOLEN_TIME
 
 /* Save original regs values from save area to stack frame. */

@@ -80,7 +80,11 @@ static inline void *netpoll_poll_lock(struct napi_struct *napi)
 {
 	struct net_device *dev = napi->dev;
 
+<<<<<<< HEAD
 	if (dev && dev->npinfo) {
+=======
+	if (dev && rcu_access_pointer(dev->npinfo)) {
+>>>>>>> origin/android16-base
 		int owner = smp_processor_id();
 
 		while (cmpxchg(&napi->poll_owner, -1, owner) != -1)

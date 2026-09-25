@@ -70,9 +70,17 @@ VERSION
 	LINUX_4.15 {
 	global:
 		__vdso_rt_sigreturn;
+<<<<<<< HEAD
 		__vdso_gettimeofday;
 		__vdso_clock_gettime;
 		__vdso_clock_getres;
+=======
+#ifdef HAS_VGETTIMEOFDAY
+		__vdso_gettimeofday;
+		__vdso_clock_gettime;
+		__vdso_clock_getres;
+#endif
+>>>>>>> origin/android16-base
 		__vdso_getcpu;
 		__vdso_flush_icache;
 	local: *;

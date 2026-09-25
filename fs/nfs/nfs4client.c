@@ -191,8 +191,16 @@ void nfs40_shutdown_client(struct nfs_client *clp)
 
 struct nfs_client *nfs4_alloc_client(const struct nfs_client_initdata *cl_init)
 {
+<<<<<<< HEAD
 	int err;
 	struct nfs_client *clp = nfs_alloc_client(cl_init);
+=======
+	char buf[INET6_ADDRSTRLEN + 1];
+	const char *ip_addr = cl_init->ip_addr;
+	struct nfs_client *clp = nfs_alloc_client(cl_init);
+	int err;
+
+>>>>>>> origin/android16-base
 	if (IS_ERR(clp))
 		return clp;
 
@@ -216,6 +224,47 @@ struct nfs_client *nfs4_alloc_client(const struct nfs_client_initdata *cl_init)
 	init_waitqueue_head(&clp->cl_lock_waitq);
 #endif
 	INIT_LIST_HEAD(&clp->pending_cb_stateids);
+<<<<<<< HEAD
+=======
+
+	if (cl_init->minorversion != 0)
+		__set_bit(NFS_CS_INFINITE_SLOTS, &clp->cl_flags);
+	__set_bit(NFS_CS_DISCRTRY, &clp->cl_flags);
+	__set_bit(NFS_CS_NO_RETRANS_TIMEOUT, &clp->cl_flags);
+
+	/*
+	 * Set up the connection to the server before we add add to the
+	 * global list.
+	 */
+	err = nfs_create_rpc_client(clp, cl_init, RPC_AUTH_GSS_KRB5I);
+	if (err == -EINVAL)
+		err = nfs_create_rpc_client(clp, cl_init, RPC_AUTH_UNIX);
+	if (err < 0)
+		goto error;
+
+	/* If no clientaddr= option was specified, find a usable cb address */
+	if (ip_addr == NULL) {
+		struct sockaddr_storage cb_addr;
+		struct sockaddr *sap = (struct sockaddr *)&cb_addr;
+
+		err = rpc_localaddr(clp->cl_rpcclient, sap, sizeof(cb_addr));
+		if (err < 0)
+			goto error;
+		err = rpc_ntop(sap, buf, sizeof(buf));
+		if (err < 0)
+			goto error;
+		ip_addr = (const char *)buf;
+	}
+	strlcpy(clp->cl_ipaddr, ip_addr, sizeof(clp->cl_ipaddr));
+
+	err = nfs_idmap_new(clp);
+	if (err < 0) {
+		dprintk("%s: failed to create idmapper. Error = %d\n",
+			__func__, err);
+		goto error;
+	}
+	__set_bit(NFS_CS_IDMAP, &clp->cl_res_state);
+>>>>>>> origin/android16-base
 	return clp;
 
 error:
@@ -299,6 +348,10 @@ int nfs40_init_client(struct nfs_client *clp)
 	ret = nfs4_setup_slot_table(tbl, NFS4_MAX_SLOT_TABLE,
 					"NFSv4.0 transport Slot table");
 	if (ret) {
+<<<<<<< HEAD
+=======
+		nfs4_shutdown_slot_table(tbl);
+>>>>>>> origin/android16-base
 		kfree(tbl);
 		return ret;
 	}
@@ -368,8 +421,11 @@ static int nfs4_init_client_minor_version(struct nfs_client *clp)
 struct nfs_client *nfs4_init_client(struct nfs_client *clp,
 				    const struct nfs_client_initdata *cl_init)
 {
+<<<<<<< HEAD
 	char buf[INET6_ADDRSTRLEN + 1];
 	const char *ip_addr = cl_init->ip_addr;
+=======
+>>>>>>> origin/android16-base
 	struct nfs_client *old;
 	int error;
 
@@ -377,6 +433,7 @@ struct nfs_client *nfs4_init_client(struct nfs_client *clp,
 		/* the client is initialised already */
 		return clp;
 
+<<<<<<< HEAD
 	/* Check NFS protocol revision and initialize RPC op vector */
 	clp->rpc_ops = &nfs_v4_clientops;
 
@@ -414,6 +471,8 @@ struct nfs_client *nfs4_init_client(struct nfs_client *clp,
 	}
 	__set_bit(NFS_CS_IDMAP, &clp->cl_res_state);
 
+=======
+>>>>>>> origin/android16-base
 	error = nfs4_init_client_minor_version(clp);
 	if (error < 0)
 		goto error;
@@ -431,8 +490,13 @@ struct nfs_client *nfs4_init_client(struct nfs_client *clp,
 		 */
 		nfs_mark_client_ready(clp, -EPERM);
 	}
+<<<<<<< HEAD
 	nfs_put_client(clp);
 	clear_bit(NFS_CS_TSM_POSSIBLE, &clp->cl_flags);
+=======
+	clear_bit(NFS_CS_TSM_POSSIBLE, &clp->cl_flags);
+	nfs_put_client(clp);
+>>>>>>> origin/android16-base
 	return old;
 
 error:
@@ -1271,8 +1335,16 @@ int nfs4_update_server(struct nfs_server *server, const char *hostname,
 	}
 	nfs_put_client(clp);
 
+<<<<<<< HEAD
 	if (server->nfs_client->cl_hostname == NULL)
 		server->nfs_client->cl_hostname = kstrdup(hostname, GFP_KERNEL);
+=======
+	if (server->nfs_client->cl_hostname == NULL) {
+		server->nfs_client->cl_hostname = kstrdup(hostname, GFP_KERNEL);
+		if (server->nfs_client->cl_hostname == NULL)
+			return -ENOMEM;
+	}
+>>>>>>> origin/android16-base
 	nfs_server_insert_lists(server);
 
 	return nfs_probe_destination(server);

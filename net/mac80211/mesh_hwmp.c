@@ -355,7 +355,11 @@ static u32 airtime_link_metric_get(struct ieee80211_local *local,
 	 */
 	tx_time = (device_constant + 10 * test_frame_len / rate);
 	estimated_retx = ((1 << (2 * ARITH_SHIFT)) / (s_unit - err));
+<<<<<<< HEAD
 	result = (tx_time * estimated_retx) >> (2 * ARITH_SHIFT);
+=======
+	result = ((u64)tx_time * estimated_retx) >> (2 * ARITH_SHIFT);
+>>>>>>> origin/android16-base
 	return (u32)result;
 }
 

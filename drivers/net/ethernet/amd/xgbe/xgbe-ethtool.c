@@ -314,10 +314,22 @@ static int xgbe_get_link_ksettings(struct net_device *netdev,
 
 	cmd->base.phy_address = pdata->phy.address;
 
+<<<<<<< HEAD
 	cmd->base.autoneg = pdata->phy.autoneg;
 	cmd->base.speed = pdata->phy.speed;
 	cmd->base.duplex = pdata->phy.duplex;
 
+=======
+	if (netif_carrier_ok(netdev)) {
+		cmd->base.speed = pdata->phy.speed;
+		cmd->base.duplex = pdata->phy.duplex;
+	} else {
+		cmd->base.speed = SPEED_UNKNOWN;
+		cmd->base.duplex = DUPLEX_UNKNOWN;
+	}
+
+	cmd->base.autoneg = pdata->phy.autoneg;
+>>>>>>> origin/android16-base
 	cmd->base.port = PORT_NONE;
 
 	XGBE_LM_COPY(cmd, supported, lks, supported);

@@ -221,6 +221,11 @@ static inline struct crypto_tfm *crypto_skcipher_tfm(
 /**
  * crypto_free_skcipher() - zeroize and free cipher handle
  * @tfm: cipher handle to be freed
+<<<<<<< HEAD
+=======
+ *
+ * If @tfm is a NULL or error pointer, this function does nothing.
+>>>>>>> origin/android16-base
  */
 static inline void crypto_free_skcipher(struct crypto_skcipher *tfm)
 {

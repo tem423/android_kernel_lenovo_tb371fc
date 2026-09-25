@@ -2945,6 +2945,12 @@ static enum i40iw_status_code i40iw_sc_alloc_stag(
 	u64 header;
 	enum i40iw_page_size page_size;
 
+<<<<<<< HEAD
+=======
+	if (!info->total_len && !info->all_memory)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	page_size = (info->page_size == 0x200000) ? I40IW_PAGE_SIZE_2M : I40IW_PAGE_SIZE_4K;
 	cqp = dev->cqp;
 	wqe = i40iw_sc_cqp_get_next_send_wqe(cqp, scratch);
@@ -3003,6 +3009,12 @@ static enum i40iw_status_code i40iw_sc_mr_reg_non_shared(
 	u8 addr_type;
 	enum i40iw_page_size page_size;
 
+<<<<<<< HEAD
+=======
+	if (!info->total_len && !info->all_memory)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	page_size = (info->page_size == 0x200000) ? I40IW_PAGE_SIZE_2M : I40IW_PAGE_SIZE_4K;
 	if (info->access_rights & (I40IW_ACCESS_FLAGS_REMOTEREAD_ONLY |
 				   I40IW_ACCESS_FLAGS_REMOTEWRITE_ONLY))

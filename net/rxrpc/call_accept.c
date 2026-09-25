@@ -211,6 +211,10 @@ void rxrpc_discard_prealloc(struct rxrpc_sock *rx)
 	tail = b->peer_backlog_tail;
 	while (CIRC_CNT(head, tail, size) > 0) {
 		struct rxrpc_peer *peer = b->peer_backlog[tail];
+<<<<<<< HEAD
+=======
+		rxrpc_put_local(peer->local);
+>>>>>>> origin/android16-base
 		kfree(peer);
 		tail = (tail + 1) & (size - 1);
 	}

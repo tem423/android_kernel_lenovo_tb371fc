@@ -218,6 +218,13 @@ static void ath9k_wmi_ctrl_rx(void *priv, struct sk_buff *skb,
 	if (unlikely(wmi->stopped))
 		goto free_skb;
 
+<<<<<<< HEAD
+=======
+	/* Validate the obtained SKB. */
+	if (unlikely(skb->len < sizeof(struct wmi_cmd_hdr)))
+		goto free_skb;
+
+>>>>>>> origin/android16-base
 	hdr = (struct wmi_cmd_hdr *) skb->data;
 	cmd_id = be16_to_cpu(hdr->command_id);
 
@@ -235,10 +242,17 @@ static void ath9k_wmi_ctrl_rx(void *priv, struct sk_buff *skb,
 		spin_unlock_irqrestore(&wmi->wmi_lock, flags);
 		goto free_skb;
 	}
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&wmi->wmi_lock, flags);
 
 	/* WMI command response */
 	ath9k_wmi_rsp_callback(wmi, skb);
+=======
+
+	/* WMI command response */
+	ath9k_wmi_rsp_callback(wmi, skb);
+	spin_unlock_irqrestore(&wmi->wmi_lock, flags);
+>>>>>>> origin/android16-base
 
 free_skb:
 	kfree_skb(skb);
@@ -276,7 +290,12 @@ int ath9k_wmi_connect(struct htc_target *htc, struct wmi *wmi,
 
 static int ath9k_wmi_cmd_issue(struct wmi *wmi,
 			       struct sk_buff *skb,
+<<<<<<< HEAD
 			       enum wmi_cmd_id cmd, u16 len)
+=======
+			       enum wmi_cmd_id cmd, u16 len,
+			       u8 *rsp_buf, u32 rsp_len)
+>>>>>>> origin/android16-base
 {
 	struct wmi_cmd_hdr *hdr;
 	unsigned long flags;
@@ -286,6 +305,14 @@ static int ath9k_wmi_cmd_issue(struct wmi *wmi,
 	hdr->seq_no = cpu_to_be16(++wmi->tx_seq_id);
 
 	spin_lock_irqsave(&wmi->wmi_lock, flags);
+<<<<<<< HEAD
+=======
+
+	/* record the rsp buffer and length */
+	wmi->cmd_rsp_buf = rsp_buf;
+	wmi->cmd_rsp_len = rsp_len;
+
+>>>>>>> origin/android16-base
 	wmi->last_seq_id = wmi->tx_seq_id;
 	spin_unlock_irqrestore(&wmi->wmi_lock, flags);
 
@@ -301,8 +328,13 @@ int ath9k_wmi_cmd(struct wmi *wmi, enum wmi_cmd_id cmd_id,
 	struct ath_common *common = ath9k_hw_common(ah);
 	u16 headroom = sizeof(struct htc_frame_hdr) +
 		       sizeof(struct wmi_cmd_hdr);
+<<<<<<< HEAD
 	struct sk_buff *skb;
 	unsigned long time_left;
+=======
+	unsigned long time_left, flags;
+	struct sk_buff *skb;
+>>>>>>> origin/android16-base
 	int ret = 0;
 
 	if (ah->ah_flags & AH_UNPLUGGED)
@@ -326,11 +358,15 @@ int ath9k_wmi_cmd(struct wmi *wmi, enum wmi_cmd_id cmd_id,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	/* record the rsp buffer and length */
 	wmi->cmd_rsp_buf = rsp_buf;
 	wmi->cmd_rsp_len = rsp_len;
 
 	ret = ath9k_wmi_cmd_issue(wmi, skb, cmd_id, cmd_len);
+=======
+	ret = ath9k_wmi_cmd_issue(wmi, skb, cmd_id, cmd_len, rsp_buf, rsp_len);
+>>>>>>> origin/android16-base
 	if (ret)
 		goto out;
 
@@ -338,6 +374,12 @@ int ath9k_wmi_cmd(struct wmi *wmi, enum wmi_cmd_id cmd_id,
 	if (!time_left) {
 		ath_dbg(common, WMI, "Timeout waiting for WMI command: %s\n",
 			wmi_cmd_to_name(cmd_id));
+<<<<<<< HEAD
+=======
+		spin_lock_irqsave(&wmi->wmi_lock, flags);
+		wmi->last_seq_id = 0;
+		spin_unlock_irqrestore(&wmi->wmi_lock, flags);
+>>>>>>> origin/android16-base
 		mutex_unlock(&wmi->op_mutex);
 		kfree_skb(skb);
 		return -ETIMEDOUT;

@@ -15,7 +15,11 @@
 #include <asm/intel-family.h>
 
 asmlinkage void poly1305_init_x86_64(void *ctx,
+<<<<<<< HEAD
 				     const u8 key[POLY1305_KEY_SIZE]);
+=======
+				     const u8 key[POLY1305_BLOCK_SIZE]);
+>>>>>>> origin/android16-base
 asmlinkage void poly1305_blocks_x86_64(void *ctx, const u8 *inp,
 				       const size_t len, const u32 padbit);
 asmlinkage void poly1305_emit_x86_64(void *ctx, u8 mac[POLY1305_DIGEST_SIZE],
@@ -80,7 +84,11 @@ static void convert_to_base2_64(void *ctx)
 	state->is_base2_26 = 0;
 }
 
+<<<<<<< HEAD
 static void poly1305_simd_init(void *ctx, const u8 key[POLY1305_KEY_SIZE])
+=======
+static void poly1305_simd_init(void *ctx, const u8 key[POLY1305_BLOCK_SIZE])
+>>>>>>> origin/android16-base
 {
 	poly1305_init_x86_64(ctx, key);
 }
@@ -128,7 +136,11 @@ static void poly1305_simd_emit(void *ctx, u8 mac[POLY1305_DIGEST_SIZE],
 		poly1305_emit_avx(ctx, mac, nonce);
 }
 
+<<<<<<< HEAD
 void poly1305_init_arch(struct poly1305_desc_ctx *dctx, const u8 *key)
+=======
+void poly1305_init_arch(struct poly1305_desc_ctx *dctx, const u8 key[POLY1305_KEY_SIZE])
+>>>>>>> origin/android16-base
 {
 	poly1305_simd_init(&dctx->h, key);
 	dctx->s[0] = get_unaligned_le32(&key[16]);

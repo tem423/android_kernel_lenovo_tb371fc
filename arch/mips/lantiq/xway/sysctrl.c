@@ -313,6 +313,11 @@ static void clkdev_add_pmu(const char *dev, const char *con, bool deactivate,
 {
 	struct clk *clk = kzalloc(sizeof(struct clk), GFP_KERNEL);
 
+<<<<<<< HEAD
+=======
+	if (!clk)
+		return;
+>>>>>>> origin/android16-base
 	clk->cl.dev_id = dev;
 	clk->cl.con_id = con;
 	clk->cl.clk = clk;
@@ -336,6 +341,11 @@ static void clkdev_add_cgu(const char *dev, const char *con,
 {
 	struct clk *clk = kzalloc(sizeof(struct clk), GFP_KERNEL);
 
+<<<<<<< HEAD
+=======
+	if (!clk)
+		return;
+>>>>>>> origin/android16-base
 	clk->cl.dev_id = dev;
 	clk->cl.con_id = con;
 	clk->cl.clk = clk;
@@ -354,6 +364,7 @@ static void clkdev_add_pci(void)
 	struct clk *clk_ext = kzalloc(sizeof(struct clk), GFP_KERNEL);
 
 	/* main pci clock */
+<<<<<<< HEAD
 	clk->cl.dev_id = "17000000.pci";
 	clk->cl.con_id = NULL;
 	clk->cl.clk = clk;
@@ -372,6 +383,30 @@ static void clkdev_add_pci(void)
 	clk_ext->enable = pci_ext_enable;
 	clk_ext->disable = pci_ext_disable;
 	clkdev_add(&clk_ext->cl);
+=======
+	if (clk) {
+		clk->cl.dev_id = "17000000.pci";
+		clk->cl.con_id = NULL;
+		clk->cl.clk = clk;
+		clk->rate = CLOCK_33M;
+		clk->rates = valid_pci_rates;
+		clk->enable = pci_enable;
+		clk->disable = pmu_disable;
+		clk->module = 0;
+		clk->bits = PMU_PCI;
+		clkdev_add(&clk->cl);
+	}
+
+	/* use internal/external bus clock */
+	if (clk_ext) {
+		clk_ext->cl.dev_id = "17000000.pci";
+		clk_ext->cl.con_id = "external";
+		clk_ext->cl.clk = clk_ext;
+		clk_ext->enable = pci_ext_enable;
+		clk_ext->disable = pci_ext_disable;
+		clkdev_add(&clk_ext->cl);
+	}
+>>>>>>> origin/android16-base
 }
 
 /* xway socs can generate clocks on gpio pins */
@@ -391,9 +426,21 @@ static void clkdev_add_clkout(void)
 		char *name;
 
 		name = kzalloc(sizeof("clkout0"), GFP_KERNEL);
+<<<<<<< HEAD
 		sprintf(name, "clkout%d", i);
 
 		clk = kzalloc(sizeof(struct clk), GFP_KERNEL);
+=======
+		if (!name)
+			continue;
+		sprintf(name, "clkout%d", i);
+
+		clk = kzalloc(sizeof(struct clk), GFP_KERNEL);
+		if (!clk) {
+			kfree(name);
+			continue;
+		}
+>>>>>>> origin/android16-base
 		clk->cl.dev_id = "1f103000.cgu";
 		clk->cl.con_id = name;
 		clk->cl.clk = clk;

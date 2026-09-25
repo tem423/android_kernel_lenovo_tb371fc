@@ -127,8 +127,19 @@ static inline int llc_fixup_skb(struct sk_buff *skb)
 	skb->transport_header += llc_len;
 	skb_pull(skb, llc_len);
 	if (skb->protocol == htons(ETH_P_802_2)) {
+<<<<<<< HEAD
 		__be16 pdulen = eth_hdr(skb)->h_proto;
 		s32 data_size = ntohs(pdulen) - llc_len;
+=======
+		__be16 pdulen;
+		s32 data_size;
+
+		if (skb->mac_len < ETH_HLEN)
+			return 0;
+
+		pdulen = eth_hdr(skb)->h_proto;
+		data_size = ntohs(pdulen) - llc_len;
+>>>>>>> origin/android16-base
 
 		if (data_size < 0 ||
 		    !pskb_may_pull(skb, data_size))
@@ -162,9 +173,12 @@ int llc_rcv(struct sk_buff *skb, struct net_device *dev,
 	void (*sta_handler)(struct sk_buff *skb);
 	void (*sap_handler)(struct llc_sap *sap, struct sk_buff *skb);
 
+<<<<<<< HEAD
 	if (!net_eq(dev_net(dev), &init_net))
 		goto drop;
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * When the interface is in promisc. mode, drop all the crap that it
 	 * receives, do not try to analyse it.

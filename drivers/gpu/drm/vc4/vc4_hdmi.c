@@ -276,7 +276,11 @@ static int vc4_hdmi_connector_get_modes(struct drm_connector *connector)
 	edid = drm_get_edid(connector, vc4->hdmi->ddc);
 	cec_s_phys_addr_from_edid(vc4->hdmi->cec_adap, edid);
 	if (!edid)
+<<<<<<< HEAD
 		return -ENODEV;
+=======
+		return 0;
+>>>>>>> origin/android16-base
 
 	vc4_encoder->hdmi_monitor = drm_detect_hdmi_monitor(edid);
 

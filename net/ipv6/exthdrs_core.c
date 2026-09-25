@@ -142,6 +142,11 @@ int ipv6_find_tlv(const struct sk_buff *skb, int offset, int type)
 			optlen = 1;
 			break;
 		default:
+<<<<<<< HEAD
+=======
+			if (len < 2)
+				goto bad;
+>>>>>>> origin/android16-base
 			optlen = nh[offset + 1] + 2;
 			if (optlen > len)
 				goto bad;

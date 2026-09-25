@@ -51,7 +51,10 @@
 #include "msm_mmu.h"
 #include "sde_wb.h"
 #include "sde_dbg.h"
+<<<<<<< HEAD
 #include "dsi/dsi_panel_mi.h"
+=======
+>>>>>>> origin/android16-base
 
 /*
  * MSM driver version:
@@ -2225,8 +2228,11 @@ static void msm_pdev_shutdown(struct platform_device *pdev)
 		return;
 	}
 
+<<<<<<< HEAD
 	dsi_panel_power_turn_off(false);
 
+=======
+>>>>>>> origin/android16-base
 	msm_lastclose(ddev);
 
 	/* set this after lastclose to allow kickoff from lastclose */

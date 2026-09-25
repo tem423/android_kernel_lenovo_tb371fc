@@ -9,8 +9,13 @@ endif
 ifeq ($(KERNEL_BUILD), 1)
 	# These are configurable via Kconfig for kernel-based builds
 	# Need to explicitly configure for Android-based builds
+<<<<<<< HEAD
 	AUDIO_BLD_DIR := $(srctree)
 	AUDIO_ROOT := $(srctree)/techpack/audio
+=======
+	AUDIO_BLD_DIR := $(shell pwd)/kernel/msm-4.19
+	AUDIO_ROOT := $(AUDIO_BLD_DIR)/techpack/audio
+>>>>>>> origin/android16-base
 endif
 
 ifeq ($(KERNEL_BUILD), 0)
@@ -22,6 +27,13 @@ ifeq ($(KERNEL_BUILD), 0)
 		include $(AUDIO_ROOT)/config/litoauto.conf
 		INCS    +=  -include $(AUDIO_ROOT)/config/litoautoconf.h
 	endif
+<<<<<<< HEAD
+=======
+        ifeq ($(CONFIG_ARCH_KONA), y)
+                include $(AUDIO_ROOT)/config/konaauto.conf
+                INCS    +=  -include $(AUDIO_ROOT)/config/konaautoconf.h
+        endif
+>>>>>>> origin/android16-base
 endif
 
 # As per target team, build is done as follows:
@@ -102,6 +114,9 @@ endif
 # Module information used by KBuild framework
 obj-$(CONFIG_SND_SOC_WSA883X) += wsa883x_dlkm.o
 wsa883x_dlkm-y := $(WSA883X_OBJS)
+<<<<<<< HEAD
 
 # inject some build related information
 DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"
+=======
+>>>>>>> origin/android16-base

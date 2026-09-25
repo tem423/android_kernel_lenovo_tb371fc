@@ -56,6 +56,11 @@ struct lapbethdev {
 	struct list_head	node;
 	struct net_device	*ethdev;	/* link to ethernet device */
 	struct net_device	*axdev;		/* lapbeth device (lapb#) */
+<<<<<<< HEAD
+=======
+	bool			up;
+	spinlock_t		up_lock;	/* Protects "up" */
+>>>>>>> origin/android16-base
 };
 
 static LIST_HEAD(lapbeth_devices);
@@ -103,8 +108,14 @@ static int lapbeth_rcv(struct sk_buff *skb, struct net_device *dev, struct packe
 	rcu_read_lock();
 	lapbeth = lapbeth_get_x25_dev(dev);
 	if (!lapbeth)
+<<<<<<< HEAD
 		goto drop_unlock;
 	if (!netif_running(lapbeth->axdev))
+=======
+		goto drop_unlock_rcu;
+	spin_lock_bh(&lapbeth->up_lock);
+	if (!lapbeth->up)
+>>>>>>> origin/android16-base
 		goto drop_unlock;
 
 	len = skb->data[0] + skb->data[1] * 256;
@@ -119,11 +130,20 @@ static int lapbeth_rcv(struct sk_buff *skb, struct net_device *dev, struct packe
 		goto drop_unlock;
 	}
 out:
+<<<<<<< HEAD
+=======
+	spin_unlock_bh(&lapbeth->up_lock);
+>>>>>>> origin/android16-base
 	rcu_read_unlock();
 	return 0;
 drop_unlock:
 	kfree_skb(skb);
 	goto out;
+<<<<<<< HEAD
+=======
+drop_unlock_rcu:
+	rcu_read_unlock();
+>>>>>>> origin/android16-base
 drop:
 	kfree_skb(skb);
 	return 0;
@@ -151,6 +171,7 @@ static int lapbeth_data_indication(struct net_device *dev, struct sk_buff *skb)
 static netdev_tx_t lapbeth_xmit(struct sk_buff *skb,
 				      struct net_device *dev)
 {
+<<<<<<< HEAD
 	int err;
 
 	/*
@@ -158,6 +179,13 @@ static netdev_tx_t lapbeth_xmit(struct sk_buff *skb,
 	 * is down, the ethernet device may have gone.
 	 */
 	if (!netif_running(dev))
+=======
+	struct lapbethdev *lapbeth = netdev_priv(dev);
+	int err;
+
+	spin_lock_bh(&lapbeth->up_lock);
+	if (!lapbeth->up)
+>>>>>>> origin/android16-base
 		goto drop;
 
 	/* There should be a pseudo header of 1 byte added by upper layers.
@@ -188,6 +216,10 @@ static netdev_tx_t lapbeth_xmit(struct sk_buff *skb,
 		goto drop;
 	}
 out:
+<<<<<<< HEAD
+=======
+	spin_unlock_bh(&lapbeth->up_lock);
+>>>>>>> origin/android16-base
 	return NETDEV_TX_OK;
 drop:
 	kfree_skb(skb);
@@ -279,6 +311,10 @@ static const struct lapb_register_struct lapbeth_callbacks = {
  */
 static int lapbeth_open(struct net_device *dev)
 {
+<<<<<<< HEAD
+=======
+	struct lapbethdev *lapbeth = netdev_priv(dev);
+>>>>>>> origin/android16-base
 	int err;
 
 	if ((err = lapb_register(dev, &lapbeth_callbacks)) != LAPB_OK) {
@@ -286,15 +322,31 @@ static int lapbeth_open(struct net_device *dev)
 		return -ENODEV;
 	}
 
+<<<<<<< HEAD
 	netif_start_queue(dev);
+=======
+	spin_lock_bh(&lapbeth->up_lock);
+	lapbeth->up = true;
+	spin_unlock_bh(&lapbeth->up_lock);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
 static int lapbeth_close(struct net_device *dev)
 {
+<<<<<<< HEAD
 	int err;
 
 	netif_stop_queue(dev);
+=======
+	struct lapbethdev *lapbeth = netdev_priv(dev);
+	int err;
+
+	spin_lock_bh(&lapbeth->up_lock);
+	lapbeth->up = false;
+	spin_unlock_bh(&lapbeth->up_lock);
+>>>>>>> origin/android16-base
 
 	if ((err = lapb_unregister(dev)) != LAPB_OK)
 		pr_err("lapb_unregister error: %d\n", err);
@@ -332,6 +384,12 @@ static int lapbeth_new_device(struct net_device *dev)
 
 	ASSERT_RTNL();
 
+<<<<<<< HEAD
+=======
+	if (dev->type != ARPHRD_ETHER)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	ndev = alloc_netdev(sizeof(*lapbeth), "lapb%d", NET_NAME_UNKNOWN,
 			    lapbeth_setup);
 	if (!ndev)
@@ -353,6 +411,12 @@ static int lapbeth_new_device(struct net_device *dev)
 	dev_hold(dev);
 	lapbeth->ethdev = dev;
 
+<<<<<<< HEAD
+=======
+	lapbeth->up = false;
+	spin_lock_init(&lapbeth->up_lock);
+
+>>>>>>> origin/android16-base
 	rc = -EIO;
 	if (register_netdevice(ndev))
 		goto fail;
@@ -391,7 +455,11 @@ static int lapbeth_device_event(struct notifier_block *this,
 	if (dev_net(dev) != &init_net)
 		return NOTIFY_DONE;
 
+<<<<<<< HEAD
 	if (!dev_is_ethdev(dev))
+=======
+	if (!dev_is_ethdev(dev) && !lapbeth_get_x25_dev(dev))
+>>>>>>> origin/android16-base
 		return NOTIFY_DONE;
 
 	switch (event) {

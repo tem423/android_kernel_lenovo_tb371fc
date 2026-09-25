@@ -64,6 +64,11 @@ MODULE_ALIAS_NFNL_SUBSYS(NFNL_SUBSYS_IPSET);
 	ip_set_dereference((inst)->ip_set_list)[id]
 #define ip_set_ref_netlink(inst,id)	\
 	rcu_dereference_raw((inst)->ip_set_list)[id]
+<<<<<<< HEAD
+=======
+#define ip_set_dereference_nfnl(p)	\
+	rcu_dereference_check(p, lockdep_nfnl_is_held(NFNL_SUBSYS_IPSET))
+>>>>>>> origin/android16-base
 
 /* The set types are implemented in modules and registered set types
  * can be found in ip_set_type_list. Adding/deleting types is
@@ -488,13 +493,21 @@ ip_set_match_extensions(struct ip_set *set, const struct ip_set_ext *ext,
 	if (SET_WITH_COUNTER(set)) {
 		struct ip_set_counter *counter = ext_counter(data, set);
 
+<<<<<<< HEAD
+=======
+		ip_set_update_counter(counter, ext, flags);
+
+>>>>>>> origin/android16-base
 		if (flags & IPSET_FLAG_MATCH_COUNTERS &&
 		    !(ip_set_match_counter(ip_set_get_packets(counter),
 				mext->packets, mext->packets_op) &&
 		      ip_set_match_counter(ip_set_get_bytes(counter),
 				mext->bytes, mext->bytes_op)))
 			return false;
+<<<<<<< HEAD
 		ip_set_update_counter(counter, ext, flags);
+=======
+>>>>>>> origin/android16-base
 	}
 	if (SET_WITH_SKBINFO(set))
 		ip_set_get_skbinfo(ext_skbinfo(data, set),
@@ -551,6 +564,7 @@ __ip_set_put_netlink(struct ip_set *set)
 static inline struct ip_set *
 ip_set_rcu_get(struct net *net, ip_set_id_t index)
 {
+<<<<<<< HEAD
 	struct ip_set *set;
 	struct ip_set_net *inst = ip_set_pernet(net);
 
@@ -560,6 +574,12 @@ ip_set_rcu_get(struct net *net, ip_set_id_t index)
 	rcu_read_unlock();
 
 	return set;
+=======
+	struct ip_set_net *inst = ip_set_pernet(net);
+
+	/* ip_set_list and the set pointer need to be protected */
+	return ip_set_dereference_nfnl(inst->ip_set_list)[index];
+>>>>>>> origin/android16-base
 }
 
 int
@@ -790,6 +810,7 @@ static struct nlmsghdr *
 start_msg(struct sk_buff *skb, u32 portid, u32 seq, unsigned int flags,
 	  enum ipset_cmd cmd)
 {
+<<<<<<< HEAD
 	struct nlmsghdr *nlh;
 	struct nfgenmsg *nfmsg;
 
@@ -804,6 +825,11 @@ start_msg(struct sk_buff *skb, u32 portid, u32 seq, unsigned int flags,
 	nfmsg->res_id = 0;
 
 	return nlh;
+=======
+	return nfnl_msg_put(skb, portid, seq,
+			    nfnl_msg_type(NFNL_SUBSYS_IPSET, cmd), flags,
+			    NFPROTO_IPV4, NFNETLINK_V0, 0);
+>>>>>>> origin/android16-base
 }
 
 /* Create a set */
@@ -1237,6 +1263,12 @@ static int ip_set_swap(struct net *net, struct sock *ctnl, struct sk_buff *skb,
 	ip_set(inst, to_id) = from;
 	write_unlock_bh(&ip_set_ref_lock);
 
+<<<<<<< HEAD
+=======
+	/* Make sure all readers of the old set pointers are completed. */
+	synchronize_rcu();
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 

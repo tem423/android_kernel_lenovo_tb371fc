@@ -1276,7 +1276,11 @@ static int ofdpa_port_ipv4_neigh(struct ofdpa_port *ofdpa_port,
 	bool removing;
 	int err = 0;
 
+<<<<<<< HEAD
 	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
+=======
+	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
+>>>>>>> origin/android16-base
 	if (!entry)
 		return -ENOMEM;
 

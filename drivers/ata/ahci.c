@@ -97,6 +97,10 @@ enum board_ids {
 static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);
 static void ahci_remove_one(struct pci_dev *dev);
 static void ahci_shutdown_one(struct pci_dev *dev);
+<<<<<<< HEAD
+=======
+static void ahci_intel_pcs_quirk(struct pci_dev *pdev, struct ahci_host_priv *hpriv);
+>>>>>>> origin/android16-base
 static int ahci_vt8251_hardreset(struct ata_link *link, unsigned int *class,
 				 unsigned long deadline);
 static int ahci_avn_hardreset(struct ata_link *link, unsigned int *class,
@@ -436,6 +440,10 @@ static const struct pci_device_id ahci_pci_tbl[] = {
 	/* AMD */
 	{ PCI_VDEVICE(AMD, 0x7800), board_ahci }, /* AMD Hudson-2 */
 	{ PCI_VDEVICE(AMD, 0x7900), board_ahci }, /* AMD CZ */
+<<<<<<< HEAD
+=======
+	{ PCI_VDEVICE(AMD, 0x7901), board_ahci_mobile }, /* AMD Green Sardine */
+>>>>>>> origin/android16-base
 	/* AMD is using RAID class only for ahci controllers */
 	{ PCI_VENDOR_ID_AMD, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
 	  PCI_CLASS_STORAGE_RAID << 8, 0xffffff, board_ahci },
@@ -654,6 +662,28 @@ static void ahci_pci_save_initial_config(struct pci_dev *pdev,
 	ahci_save_initial_config(&pdev->dev, hpriv);
 }
 
+<<<<<<< HEAD
+=======
+static int ahci_pci_reset_controller(struct ata_host *host)
+{
+	struct pci_dev *pdev = to_pci_dev(host->dev);
+	struct ahci_host_priv *hpriv = host->private_data;
+	int rc;
+
+	rc = ahci_reset_controller(host);
+	if (rc)
+		return rc;
+
+	/*
+	 * If platform firmware failed to enable ports, try to enable
+	 * them here.
+	 */
+	ahci_intel_pcs_quirk(pdev, hpriv);
+
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static void ahci_pci_init_controller(struct ata_host *host)
 {
 	struct ahci_host_priv *hpriv = host->private_data;
@@ -673,7 +703,11 @@ static void ahci_pci_init_controller(struct ata_host *host)
 
 		/* clear port IRQ */
 		tmp = readl(port_mmio + PORT_IRQ_STAT);
+<<<<<<< HEAD
 		VPRINTK("PORT_IRQ_STAT 0x%x\n", tmp);
+=======
+		dev_dbg(&pdev->dev, "PORT_IRQ_STAT 0x%x\n", tmp);
+>>>>>>> origin/android16-base
 		if (tmp)
 			writel(tmp, port_mmio + PORT_IRQ_STAT);
 	}
@@ -856,7 +890,11 @@ static int ahci_pci_device_runtime_resume(struct device *dev)
 	struct ata_host *host = pci_get_drvdata(pdev);
 	int rc;
 
+<<<<<<< HEAD
 	rc = ahci_reset_controller(host);
+=======
+	rc = ahci_pci_reset_controller(host);
+>>>>>>> origin/android16-base
 	if (rc)
 		return rc;
 	ahci_pci_init_controller(host);
@@ -891,7 +929,11 @@ static int ahci_pci_device_resume(struct device *dev)
 		ahci_mcp89_apple_enable(pdev);
 
 	if (pdev->dev.power.power_state.event == PM_EVENT_SUSPEND) {
+<<<<<<< HEAD
 		rc = ahci_reset_controller(host);
+=======
+		rc = ahci_pci_reset_controller(host);
+>>>>>>> origin/android16-base
 		if (rc)
 			return rc;
 
@@ -1483,7 +1525,10 @@ static irqreturn_t ahci_thunderx_irq_handler(int irq, void *dev_instance)
 	u32 irq_stat, irq_masked;
 	unsigned int handled = 1;
 
+<<<<<<< HEAD
 	VPRINTK("ENTER\n");
+=======
+>>>>>>> origin/android16-base
 	hpriv = host->private_data;
 	mmio = hpriv->mmio;
 	irq_stat = readl(mmio + HOST_IRQ_STAT);
@@ -1500,7 +1545,10 @@ static irqreturn_t ahci_thunderx_irq_handler(int irq, void *dev_instance)
 		irq_stat = readl(mmio + HOST_IRQ_STAT);
 		spin_unlock(&host->lock);
 	} while (irq_stat);
+<<<<<<< HEAD
 	VPRINTK("EXIT\n");
+=======
+>>>>>>> origin/android16-base
 
 	return IRQ_RETVAL(handled);
 }
@@ -1768,12 +1816,15 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
 	/* save initial config */
 	ahci_pci_save_initial_config(pdev, hpriv);
 
+<<<<<<< HEAD
 	/*
 	 * If platform firmware failed to enable ports, try to enable
 	 * them here.
 	 */
 	ahci_intel_pcs_quirk(pdev, hpriv);
 
+=======
+>>>>>>> origin/android16-base
 	/* prepare host */
 	if (hpriv->cap & HOST_CAP_NCQ) {
 		pi.flags |= ATA_FLAG_NCQ;
@@ -1851,6 +1902,18 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
 	else
 		dev_info(&pdev->dev, "SSS flag set, parallel bus scan disabled\n");
 
+<<<<<<< HEAD
+=======
+	if (!(hpriv->cap & HOST_CAP_PART))
+		host->flags |= ATA_HOST_NO_PART;
+
+	if (!(hpriv->cap & HOST_CAP_SSC))
+		host->flags |= ATA_HOST_NO_SSC;
+
+	if (!(hpriv->cap2 & HOST_CAP2_SDS))
+		host->flags |= ATA_HOST_NO_DEVSLP;
+
+>>>>>>> origin/android16-base
 	if (pi.flags & ATA_FLAG_EM)
 		ahci_reset_em(host);
 
@@ -1883,7 +1946,11 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
 	if (rc)
 		return rc;
 
+<<<<<<< HEAD
 	rc = ahci_reset_controller(host);
+=======
+	rc = ahci_pci_reset_controller(host);
+>>>>>>> origin/android16-base
 	if (rc)
 		return rc;
 

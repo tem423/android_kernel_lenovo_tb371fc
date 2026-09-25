@@ -80,7 +80,11 @@
 	clocks = <&ref12>;
 };
 
+<<<<<<< HEAD
 &sdhci {
+=======
+&mmc {
+>>>>>>> origin/android16-base
 	status = "okay";
 };
 

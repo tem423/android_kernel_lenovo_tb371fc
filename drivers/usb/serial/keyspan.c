@@ -2910,22 +2910,38 @@ static int keyspan_port_probe(struct usb_serial_port *port)
 	for (i = 0; i < ARRAY_SIZE(p_priv->in_buffer); ++i) {
 		p_priv->in_buffer[i] = kzalloc(IN_BUFLEN, GFP_KERNEL);
 		if (!p_priv->in_buffer[i])
+<<<<<<< HEAD
 			goto err_in_buffer;
+=======
+			goto err_free_in_buffer;
+>>>>>>> origin/android16-base
 	}
 
 	for (i = 0; i < ARRAY_SIZE(p_priv->out_buffer); ++i) {
 		p_priv->out_buffer[i] = kzalloc(OUT_BUFLEN, GFP_KERNEL);
 		if (!p_priv->out_buffer[i])
+<<<<<<< HEAD
 			goto err_out_buffer;
+=======
+			goto err_free_out_buffer;
+>>>>>>> origin/android16-base
 	}
 
 	p_priv->inack_buffer = kzalloc(INACK_BUFLEN, GFP_KERNEL);
 	if (!p_priv->inack_buffer)
+<<<<<<< HEAD
 		goto err_inack_buffer;
 
 	p_priv->outcont_buffer = kzalloc(OUTCONT_BUFLEN, GFP_KERNEL);
 	if (!p_priv->outcont_buffer)
 		goto err_outcont_buffer;
+=======
+		goto err_free_out_buffer;
+
+	p_priv->outcont_buffer = kzalloc(OUTCONT_BUFLEN, GFP_KERNEL);
+	if (!p_priv->outcont_buffer)
+		goto err_free_inack_buffer;
+>>>>>>> origin/android16-base
 
 	p_priv->device_details = d_details;
 
@@ -2971,6 +2987,7 @@ static int keyspan_port_probe(struct usb_serial_port *port)
 
 	return 0;
 
+<<<<<<< HEAD
 err_outcont_buffer:
 	kfree(p_priv->inack_buffer);
 err_inack_buffer:
@@ -2980,6 +2997,16 @@ err_out_buffer:
 	for (i = 0; i < ARRAY_SIZE(p_priv->in_buffer); ++i)
 		kfree(p_priv->in_buffer[i]);
 err_in_buffer:
+=======
+err_free_inack_buffer:
+	kfree(p_priv->inack_buffer);
+err_free_out_buffer:
+	for (i = 0; i < ARRAY_SIZE(p_priv->out_buffer); ++i)
+		kfree(p_priv->out_buffer[i]);
+err_free_in_buffer:
+	for (i = 0; i < ARRAY_SIZE(p_priv->in_buffer); ++i)
+		kfree(p_priv->in_buffer[i]);
+>>>>>>> origin/android16-base
 	kfree(p_priv);
 
 	return -ENOMEM;

@@ -80,8 +80,13 @@ void touchscreen_parse_properties(struct input_dev *input, bool multitouch,
 	data_present = touchscreen_get_prop_u32(dev, "touchscreen-size-x",
 						input_abs_get_max(input,
 								  axis) + 1,
+<<<<<<< HEAD
 						&maximum) |
 		       touchscreen_get_prop_u32(dev, "touchscreen-fuzz-x",
+=======
+						&maximum);
+	data_present |= touchscreen_get_prop_u32(dev, "touchscreen-fuzz-x",
+>>>>>>> origin/android16-base
 						input_abs_get_fuzz(input, axis),
 						&fuzz);
 	if (data_present)
@@ -91,8 +96,13 @@ void touchscreen_parse_properties(struct input_dev *input, bool multitouch,
 	data_present = touchscreen_get_prop_u32(dev, "touchscreen-size-y",
 						input_abs_get_max(input,
 								  axis) + 1,
+<<<<<<< HEAD
 						&maximum) |
 		       touchscreen_get_prop_u32(dev, "touchscreen-fuzz-y",
+=======
+						&maximum);
+	data_present |= touchscreen_get_prop_u32(dev, "touchscreen-fuzz-y",
+>>>>>>> origin/android16-base
 						input_abs_get_fuzz(input, axis),
 						&fuzz);
 	if (data_present)
@@ -102,11 +112,19 @@ void touchscreen_parse_properties(struct input_dev *input, bool multitouch,
 	data_present = touchscreen_get_prop_u32(dev,
 						"touchscreen-max-pressure",
 						input_abs_get_max(input, axis),
+<<<<<<< HEAD
 						&maximum) |
 		       touchscreen_get_prop_u32(dev,
 						"touchscreen-fuzz-pressure",
 						input_abs_get_fuzz(input, axis),
 						&fuzz);
+=======
+						&maximum);
+	data_present |= touchscreen_get_prop_u32(dev,
+						 "touchscreen-fuzz-pressure",
+						 input_abs_get_fuzz(input, axis),
+						 &fuzz);
+>>>>>>> origin/android16-base
 	if (data_present)
 		touchscreen_set_params(input, axis, maximum, fuzz);
 

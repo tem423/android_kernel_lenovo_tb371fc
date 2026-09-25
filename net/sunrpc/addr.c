@@ -184,7 +184,11 @@ static int rpc_parse_scope_id(struct net *net, const char *buf,
 			scope_id = dev->ifindex;
 			dev_put(dev);
 		} else {
+<<<<<<< HEAD
 			if (kstrtou32(p, 10, &scope_id) == 0) {
+=======
+			if (kstrtou32(p, 10, &scope_id) != 0) {
+>>>>>>> origin/android16-base
 				kfree(p);
 				return 0;
 			}
@@ -287,10 +291,17 @@ char *rpc_sockaddr2uaddr(const struct sockaddr *sap, gfp_t gfp_flags)
 	}
 
 	if (snprintf(portbuf, sizeof(portbuf),
+<<<<<<< HEAD
 		     ".%u.%u", port >> 8, port & 0xff) > (int)sizeof(portbuf))
 		return NULL;
 
 	if (strlcat(addrbuf, portbuf, sizeof(addrbuf)) > sizeof(addrbuf))
+=======
+		     ".%u.%u", port >> 8, port & 0xff) >= (int)sizeof(portbuf))
+		return NULL;
+
+	if (strlcat(addrbuf, portbuf, sizeof(addrbuf)) >= sizeof(addrbuf))
+>>>>>>> origin/android16-base
 		return NULL;
 
 	return kstrdup(addrbuf, gfp_flags);

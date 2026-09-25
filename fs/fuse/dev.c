@@ -843,6 +843,10 @@ static int fuse_check_page(struct page *page)
 	       1 << PG_uptodate |
 	       1 << PG_lru |
 	       1 << PG_active |
+<<<<<<< HEAD
+=======
+	       1 << PG_workingset |
+>>>>>>> origin/android16-base
 	       1 << PG_reclaim |
 	       1 << PG_waiters))) {
 		printk(KERN_WARNING "fuse: trying to steal weird page\n");
@@ -916,6 +920,15 @@ static int fuse_try_move_page(struct fuse_copy_state *cs, struct page **pagep)
 	if (!(buf->flags & PIPE_BUF_FLAG_LRU))
 		lru_cache_add_file(newpage);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Release while we have extra ref on stolen page.  Otherwise
+	 * anon_pipe_buf_release() might think the page can be reused.
+	 */
+	pipe_buf_release(cs->pipe, buf);
+
+>>>>>>> origin/android16-base
 	err = 0;
 	spin_lock(&cs->req->waitq.lock);
 	if (test_bit(FR_ABORTED, &cs->req->flags))
@@ -999,7 +1012,21 @@ static int fuse_copy_page(struct fuse_copy_state *cs, struct page **pagep,
 
 	while (count) {
 		if (cs->write && cs->pipebufs && page) {
+<<<<<<< HEAD
 			return fuse_ref_page(cs, page, offset, count);
+=======
+			/*
+			 * Can't control lifetime of pipe buffers, so always
+			 * copy user pages.
+			 */
+			if (cs->req->user_pages) {
+				err = fuse_copy_fill(cs);
+				if (err)
+					return err;
+			} else {
+				return fuse_ref_page(cs, page, offset, count);
+			}
+>>>>>>> origin/android16-base
 		} else if (!cs->len) {
 			if (cs->move_pages && page &&
 			    offset == 0 && count == PAGE_SIZE) {
@@ -1316,6 +1343,18 @@ static ssize_t fuse_dev_do_read(struct fuse_dev *fud, struct file *file,
 		goto restart;
 	}
 	spin_lock(&fpq->lock);
+<<<<<<< HEAD
+=======
+	/*
+	 *  Must not put request on fpq->io queue after having been shut down by
+	 *  fuse_abort_conn()
+	 */
+	if (!fpq->connected) {
+		req->out.h.error = err = -ECONNABORTED;
+		goto out_end;
+
+	}
+>>>>>>> origin/android16-base
 	list_add(&req->list, &fpq->io);
 	spin_unlock(&fpq->lock);
 	cs->req = req;
@@ -1652,9 +1691,17 @@ static int fuse_notify_store(struct fuse_conn *fc, unsigned int size,
 
 		this_num = min_t(unsigned, num, PAGE_SIZE - offset);
 		err = fuse_copy_page(cs, &page, offset, this_num, 0);
+<<<<<<< HEAD
 		if (!err && offset == 0 &&
 		    (this_num == PAGE_SIZE || file_size == end))
 			SetPageUptodate(page);
+=======
+		if (!PageUptodate(page) && !err && offset == 0 &&
+		    (this_num == PAGE_SIZE || file_size == end)) {
+			zero_user_segment(page, this_num, PAGE_SIZE);
+			SetPageUptodate(page);
+		}
+>>>>>>> origin/android16-base
 		unlock_page(page);
 		put_page(page);
 
@@ -1893,7 +1940,11 @@ static ssize_t fuse_dev_do_write(struct fuse_dev *fud,
 	}
 
 	err = -EINVAL;
+<<<<<<< HEAD
 	if (oh.error <= -1000 || oh.error > 0)
+=======
+	if (oh.error <= -512 || oh.error > 0)
+>>>>>>> origin/android16-base
 		goto err_finish;
 
 	spin_lock(&fpq->lock);
@@ -2058,8 +2109,17 @@ static ssize_t fuse_dev_splice_write(struct pipe_inode_info *pipe,
 
 	pipe_lock(pipe);
 out_free:
+<<<<<<< HEAD
 	for (idx = 0; idx < nbuf; idx++)
 		pipe_buf_release(pipe, &bufs[idx]);
+=======
+	for (idx = 0; idx < nbuf; idx++) {
+		struct pipe_buffer *buf = &bufs[idx];
+
+		if (buf->ops)
+			pipe_buf_release(pipe, buf);
+	}
+>>>>>>> origin/android16-base
 	pipe_unlock(pipe);
 
 	kvfree(bufs);
@@ -2260,6 +2320,7 @@ static int fuse_device_clone(struct fuse_conn *fc, struct file *new)
 static long fuse_dev_ioctl(struct file *file, unsigned int cmd,
 			   unsigned long arg)
 {
+<<<<<<< HEAD
 	int err = -ENOTTY;
 
 	if (cmd == FUSE_DEV_IOC_CLONE) {
@@ -2273,24 +2334,65 @@ static long fuse_dev_ioctl(struct file *file, unsigned int cmd,
 			if (old) {
 				struct fuse_dev *fud = NULL;
 
+=======
+	int res;
+	int oldfd;
+	struct fuse_dev *fud = NULL;
+
+	switch (cmd) {
+	case FUSE_DEV_IOC_CLONE:
+		res = -EFAULT;
+		if (!get_user(oldfd, (__u32 __user *)arg)) {
+			struct file *old = fget(oldfd);
+
+			res = -EINVAL;
+			if (old) {
+>>>>>>> origin/android16-base
 				/*
 				 * Check against file->f_op because CUSE
 				 * uses the same ioctl handler.
 				 */
 				if (old->f_op == file->f_op &&
+<<<<<<< HEAD
 				    old->f_cred->user_ns == file->f_cred->user_ns)
+=======
+				    old->f_cred->user_ns ==
+					    file->f_cred->user_ns)
+>>>>>>> origin/android16-base
 					fud = fuse_get_dev(old);
 
 				if (fud) {
 					mutex_lock(&fuse_mutex);
+<<<<<<< HEAD
 					err = fuse_device_clone(fud->fc, file);
+=======
+					res = fuse_device_clone(fud->fc, file);
+>>>>>>> origin/android16-base
 					mutex_unlock(&fuse_mutex);
 				}
 				fput(old);
 			}
 		}
+<<<<<<< HEAD
 	}
 	return err;
+=======
+		break;
+	case FUSE_DEV_IOC_PASSTHROUGH_OPEN:
+		res = -EFAULT;
+		if (!get_user(oldfd, (__u32 __user *)arg)) {
+			res = -EINVAL;
+			fud = fuse_get_dev(file);
+			if (fud)
+				res = fuse_passthrough_open(fud, oldfd);
+		}
+		break;
+	default:
+		res = -ENOTTY;
+		break;
+	}
+	return res;
+>>>>>>> origin/android16-base
 }
 
 const struct file_operations fuse_dev_operations = {

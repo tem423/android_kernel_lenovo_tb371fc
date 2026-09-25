@@ -416,7 +416,11 @@ static int ocfs2_get_clusters_nocache(struct inode *inode,
 {
 	int i, ret, tree_height, len;
 	struct ocfs2_dinode *di;
+<<<<<<< HEAD
 	struct ocfs2_extent_block *uninitialized_var(eb);
+=======
+	struct ocfs2_extent_block *eb;
+>>>>>>> origin/android16-base
 	struct ocfs2_extent_list *el;
 	struct ocfs2_extent_rec *rec;
 	struct buffer_head *eb_bh = NULL;
@@ -613,7 +617,11 @@ int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
 		       unsigned int *extent_flags)
 {
 	int ret;
+<<<<<<< HEAD
 	unsigned int uninitialized_var(hole_len), flags = 0;
+=======
+	unsigned int hole_len, flags = 0;
+>>>>>>> origin/android16-base
 	struct buffer_head *di_bh = NULL;
 	struct ocfs2_extent_rec rec;
 

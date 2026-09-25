@@ -170,6 +170,11 @@ int hfsplus_read_wrapper(struct super_block *sb)
 	if (!blocksize)
 		goto out;
 
+<<<<<<< HEAD
+=======
+	sbi->min_io_size = blocksize;
+
+>>>>>>> origin/android16-base
 	if (hfsplus_get_last_session(sb, &part_start, &part_size))
 		goto out;
 

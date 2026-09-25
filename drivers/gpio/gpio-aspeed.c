@@ -407,6 +407,11 @@ static void __aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
 	gpio->dcache[GPIO_BANK(offset)] = reg;
 
 	iowrite32(reg, addr);
+<<<<<<< HEAD
+=======
+	/* Flush write */
+	ioread32(addr);
+>>>>>>> origin/android16-base
 }
 
 static void aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
@@ -999,7 +1004,11 @@ static int aspeed_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
 	else if (param == PIN_CONFIG_BIAS_DISABLE ||
 			param == PIN_CONFIG_BIAS_PULL_DOWN ||
 			param == PIN_CONFIG_DRIVE_STRENGTH)
+<<<<<<< HEAD
 		return pinctrl_gpio_set_config(offset, config);
+=======
+		return pinctrl_gpio_set_config(chip->base + offset, config);
+>>>>>>> origin/android16-base
 	else if (param == PIN_CONFIG_DRIVE_OPEN_DRAIN ||
 			param == PIN_CONFIG_DRIVE_OPEN_SOURCE)
 		/* Return -ENOTSUPP to trigger emulation, as per datasheet */
@@ -1174,7 +1183,11 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
 	if (!gpio_id)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	gpio->clk = of_clk_get(pdev->dev.of_node, 0);
+=======
+	gpio->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+>>>>>>> origin/android16-base
 	if (IS_ERR(gpio->clk)) {
 		dev_warn(&pdev->dev,
 				"Failed to get clock from devicetree, debouncing disabled\n");

@@ -52,7 +52,11 @@ static unsigned long doc_locations[] __initdata = {
 	0xe8000, 0xea000, 0xec000, 0xee000,
 #endif
 #endif
+<<<<<<< HEAD
 	0xffffffff };
+=======
+};
+>>>>>>> origin/android16-base
 
 static struct mtd_info *doclist = NULL;
 
@@ -1678,7 +1682,11 @@ static int __init init_nanddoc(void)
 		if (ret < 0)
 			return ret;
 	} else {
+<<<<<<< HEAD
 		for (i = 0; (doc_locations[i] != 0xffffffff); i++) {
+=======
+		for (i = 0; i < ARRAY_SIZE(doc_locations); i++) {
+>>>>>>> origin/android16-base
 			doc_probe(doc_locations[i]);
 		}
 	}

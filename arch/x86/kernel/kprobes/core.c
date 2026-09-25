@@ -170,6 +170,11 @@ NOKPROBE_SYMBOL(skip_prefixes);
 int can_boost(struct insn *insn, void *addr)
 {
 	kprobe_opcode_t opcode;
+<<<<<<< HEAD
+=======
+	insn_byte_t prefix;
+	int i;
+>>>>>>> origin/android16-base
 
 	if (search_exception_tables((unsigned long)addr))
 		return 0;	/* Page fault may occur on this address. */
@@ -182,9 +187,20 @@ int can_boost(struct insn *insn, void *addr)
 	if (insn->opcode.nbytes != 1)
 		return 0;
 
+<<<<<<< HEAD
 	/* Can't boost Address-size override prefix */
 	if (unlikely(inat_is_address_size_prefix(insn->attr)))
 		return 0;
+=======
+	for_each_insn_prefix(insn, i, prefix) {
+		insn_attr_t attr;
+
+		attr = inat_get_opcode_attribute(prefix);
+		/* Can't boost Address-size override prefix and CS override prefix */
+		if (prefix == 0x2e || inat_is_address_size_prefix(attr))
+			return 0;
+	}
+>>>>>>> origin/android16-base
 
 	opcode = insn->opcode.bytes[0];
 
@@ -209,8 +225,13 @@ int can_boost(struct insn *insn, void *addr)
 		/* clear and set flags are boostable */
 		return (opcode == 0xf5 || (0xf7 < opcode && opcode < 0xfe));
 	default:
+<<<<<<< HEAD
 		/* CS override prefix and call are not boostable */
 		return (opcode != 0x2e && opcode != 0x9a);
+=======
+		/* call is not boostable */
+		return opcode != 0x9a;
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -1041,6 +1062,14 @@ int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
 		 * So clear it by resetting the current kprobe:
 		 */
 		regs->flags &= ~X86_EFLAGS_TF;
+<<<<<<< HEAD
+=======
+		/*
+		 * Since the single step (trap) has been cancelled,
+		 * we need to restore BTF here.
+		 */
+		restore_btf();
+>>>>>>> origin/android16-base
 
 		/*
 		 * If the TF flag was set before the kprobe hit,

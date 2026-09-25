@@ -567,8 +567,15 @@ int add_mtd_device(struct mtd_info *mtd)
 	dev_set_drvdata(&mtd->dev, mtd);
 	of_node_get(mtd_get_of_node(mtd));
 	error = device_register(&mtd->dev);
+<<<<<<< HEAD
 	if (error)
 		goto fail_added;
+=======
+	if (error) {
+		put_device(&mtd->dev);
+		goto fail_added;
+	}
+>>>>>>> origin/android16-base
 
 	if (!IS_ERR_OR_NULL(dfs_dir_mtd)) {
 		mtd->dbg.dfs_dir = debugfs_create_dir(dev_name(&mtd->dev), dfs_dir_mtd);
@@ -712,6 +719,12 @@ int mtd_device_parse_register(struct mtd_info *mtd, const char * const *types,
 
 	/* Prefer parsed partitions over driver-provided fallback */
 	ret = parse_mtd_partitions(mtd, types, parser_data);
+<<<<<<< HEAD
+=======
+	if (ret == -EPROBE_DEFER)
+		goto out;
+
+>>>>>>> origin/android16-base
 	if (ret > 0)
 		ret = 0;
 	else if (nr_parts)

@@ -262,4 +262,7 @@ int __init xen_xlate_map_ballooned_pages(xen_pfn_t **gfns, void **virt,
 
 	return 0;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(xen_xlate_map_ballooned_pages);
+=======
+>>>>>>> origin/android16-base

@@ -721,7 +721,13 @@ static int davinci_i2s_probe(struct platform_device *pdev)
 	dev->clk = clk_get(&pdev->dev, NULL);
 	if (IS_ERR(dev->clk))
 		return -ENODEV;
+<<<<<<< HEAD
 	clk_enable(dev->clk);
+=======
+	ret = clk_enable(dev->clk);
+	if (ret)
+		goto err_put_clk;
+>>>>>>> origin/android16-base
 
 	dev->dev = &pdev->dev;
 	dev_set_drvdata(&pdev->dev, dev);
@@ -743,6 +749,10 @@ err_unregister_component:
 	snd_soc_unregister_component(&pdev->dev);
 err_release_clk:
 	clk_disable(dev->clk);
+<<<<<<< HEAD
+=======
+err_put_clk:
+>>>>>>> origin/android16-base
 	clk_put(dev->clk);
 	return ret;
 }

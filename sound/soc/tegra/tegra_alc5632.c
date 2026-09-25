@@ -137,6 +137,10 @@ static struct snd_soc_dai_link tegra_alc5632_dai = {
 
 static struct snd_soc_card snd_soc_tegra_alc5632 = {
 	.name = "tegra-alc5632",
+<<<<<<< HEAD
+=======
+	.driver_name = "tegra",
+>>>>>>> origin/android16-base
 	.owner = THIS_MODULE,
 	.dai_link = &tegra_alc5632_dai,
 	.num_links = 1,

@@ -133,3 +133,7 @@ obj-y				+= exofs/ # Multiple modules
 obj-$(CONFIG_CEPH_FS)		+= ceph/
 obj-$(CONFIG_PSTORE)		+= pstore/
 obj-$(CONFIG_EFIVAR_FS)		+= efivarfs/
+<<<<<<< HEAD
+=======
+obj-$(CONFIG_EROFS_FS)		+= erofs/
+>>>>>>> origin/android16-base

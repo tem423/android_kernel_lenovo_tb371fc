@@ -205,9 +205,18 @@ EXPORT_SYMBOL(drm_panel_bridge_remove);
 
 static void devm_drm_panel_bridge_release(struct device *dev, void *res)
 {
+<<<<<<< HEAD
 	struct drm_bridge **bridge = res;
 
 	drm_panel_bridge_remove(*bridge);
+=======
+	struct drm_bridge *bridge = *(struct drm_bridge **)res;
+
+	if (!bridge)
+		return;
+
+	drm_bridge_remove(bridge);
+>>>>>>> origin/android16-base
 }
 
 struct drm_bridge *devm_drm_panel_bridge_add(struct device *dev,

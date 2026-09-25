@@ -474,7 +474,11 @@ arm926_crval:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/android16-base
 
 	.type	__arm926_proc_info,#object
 __arm926_proc_info:

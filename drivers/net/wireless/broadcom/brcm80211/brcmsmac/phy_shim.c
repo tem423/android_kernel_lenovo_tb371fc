@@ -57,12 +57,20 @@ void wlc_phy_shim_detach(struct phy_shim_info *physhim)
 }
 
 struct wlapi_timer *wlapi_init_timer(struct phy_shim_info *physhim,
+<<<<<<< HEAD
 				     void (*fn)(struct brcms_phy *pi),
 				     void *arg, const char *name)
 {
 	return (struct wlapi_timer *)
 			brcms_init_timer(physhim->wl, (void (*)(void *))fn,
 					 arg, name);
+=======
+				     void (*fn)(void *pi),
+				     void *arg, const char *name)
+{
+	return (struct wlapi_timer *)
+			brcms_init_timer(physhim->wl, fn, arg, name);
+>>>>>>> origin/android16-base
 }
 
 void wlapi_free_timer(struct wlapi_timer *t)

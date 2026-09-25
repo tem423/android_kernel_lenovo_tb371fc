@@ -1332,7 +1332,11 @@ void i40e_clear_hw(struct i40e_hw *hw)
 		     I40E_PFLAN_QALLOC_FIRSTQ_SHIFT;
 	j = (val & I40E_PFLAN_QALLOC_LASTQ_MASK) >>
 	    I40E_PFLAN_QALLOC_LASTQ_SHIFT;
+<<<<<<< HEAD
 	if (val & I40E_PFLAN_QALLOC_VALID_MASK)
+=======
+	if (val & I40E_PFLAN_QALLOC_VALID_MASK && j >= base_queue)
+>>>>>>> origin/android16-base
 		num_queues = (j - base_queue) + 1;
 	else
 		num_queues = 0;
@@ -1342,7 +1346,11 @@ void i40e_clear_hw(struct i40e_hw *hw)
 	    I40E_PF_VT_PFALLOC_FIRSTVF_SHIFT;
 	j = (val & I40E_PF_VT_PFALLOC_LASTVF_MASK) >>
 	    I40E_PF_VT_PFALLOC_LASTVF_SHIFT;
+<<<<<<< HEAD
 	if (val & I40E_PF_VT_PFALLOC_VALID_MASK)
+=======
+	if (val & I40E_PF_VT_PFALLOC_VALID_MASK && j >= i)
+>>>>>>> origin/android16-base
 		num_vfs = (j - i) + 1;
 	else
 		num_vfs = 0;

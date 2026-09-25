@@ -570,7 +570,11 @@ _Search3:
 			*op++ = (BYTE) lastRun;
 		} else
 			*op++ = (BYTE)(lastRun<<ML_BITS);
+<<<<<<< HEAD
 		memcpy(op, anchor, iend - anchor);
+=======
+		LZ4_memcpy(op, anchor, iend - anchor);
+>>>>>>> origin/android16-base
 		op += iend - anchor;
 	}
 

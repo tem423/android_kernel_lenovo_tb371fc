@@ -122,6 +122,11 @@ struct integrity_iint_cache {
 	unsigned long flags;
 	unsigned long measured_pcrs;
 	unsigned long atomic_flags;
+<<<<<<< HEAD
+=======
+	unsigned long real_ino;
+	dev_t real_dev;
+>>>>>>> origin/android16-base
 	enum integrity_status ima_file_status:4;
 	enum integrity_status ima_mmap_status:4;
 	enum integrity_status ima_bprm_status:4;

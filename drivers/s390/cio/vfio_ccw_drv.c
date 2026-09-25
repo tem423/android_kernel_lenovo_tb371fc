@@ -205,6 +205,7 @@ static int vfio_ccw_sch_event(struct subchannel *sch, int process)
 	if (work_pending(&sch->todo_work))
 		goto out_unlock;
 
+<<<<<<< HEAD
 	if (cio_update_schib(sch)) {
 		vfio_ccw_fsm_event(private, VFIO_CCW_EVENT_NOT_OPER);
 		rc = 0;
@@ -218,6 +219,13 @@ static int vfio_ccw_sch_event(struct subchannel *sch, int process)
 	}
 	rc = 0;
 
+=======
+	rc = 0;
+
+	if (cio_update_schib(sch))
+		vfio_ccw_fsm_event(private, VFIO_CCW_EVENT_NOT_OPER);
+
+>>>>>>> origin/android16-base
 out_unlock:
 	spin_unlock_irqrestore(sch->lock, flags);
 

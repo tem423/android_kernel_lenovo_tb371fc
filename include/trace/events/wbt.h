@@ -33,7 +33,11 @@ TRACE_EVENT(wbt_stat,
 	),
 
 	TP_fast_assign(
+<<<<<<< HEAD
 		strlcpy(__entry->name, dev_name(bdi->dev),
+=======
+		strlcpy(__entry->name, bdi_dev_name(bdi),
+>>>>>>> origin/android16-base
 			ARRAY_SIZE(__entry->name));
 		__entry->rmean		= stat[0].mean;
 		__entry->rmin		= stat[0].min;
@@ -68,7 +72,11 @@ TRACE_EVENT(wbt_lat,
 	),
 
 	TP_fast_assign(
+<<<<<<< HEAD
 		strlcpy(__entry->name, dev_name(bdi->dev),
+=======
+		strlcpy(__entry->name, bdi_dev_name(bdi),
+>>>>>>> origin/android16-base
 			ARRAY_SIZE(__entry->name));
 		__entry->lat = div_u64(lat, 1000);
 	),
@@ -105,7 +113,11 @@ TRACE_EVENT(wbt_step,
 	),
 
 	TP_fast_assign(
+<<<<<<< HEAD
 		strlcpy(__entry->name, dev_name(bdi->dev),
+=======
+		strlcpy(__entry->name, bdi_dev_name(bdi),
+>>>>>>> origin/android16-base
 			ARRAY_SIZE(__entry->name));
 		__entry->msg	= msg;
 		__entry->step	= step;
@@ -141,7 +153,11 @@ TRACE_EVENT(wbt_timer,
 	),
 
 	TP_fast_assign(
+<<<<<<< HEAD
 		strlcpy(__entry->name, dev_name(bdi->dev),
+=======
+		strlcpy(__entry->name, bdi_dev_name(bdi),
+>>>>>>> origin/android16-base
 			ARRAY_SIZE(__entry->name));
 		__entry->status		= status;
 		__entry->step		= step;

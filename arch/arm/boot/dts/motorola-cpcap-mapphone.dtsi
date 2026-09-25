@@ -165,12 +165,20 @@
 		regulator-enable-ramp-delay = <1000>;
 	};
 
+<<<<<<< HEAD
 	/* Used by DSS */
+=======
+	/* Used by DSS and is the "zerov_regulator" trigger for SoC off mode */
+>>>>>>> origin/android16-base
 	vcsi: VCSI {
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
 		regulator-enable-ramp-delay = <1000>;
+<<<<<<< HEAD
 		regulator-boot-on;
+=======
+		regulator-always-on;
+>>>>>>> origin/android16-base
 	};
 
 	vdac: VDAC {

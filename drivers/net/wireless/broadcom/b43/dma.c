@@ -50,7 +50,11 @@
 static u32 b43_dma_address(struct b43_dma *dma, dma_addr_t dmaaddr,
 			   enum b43_addrtype addrtype)
 {
+<<<<<<< HEAD
 	u32 uninitialized_var(addr);
+=======
+	u32 addr;
+>>>>>>> origin/android16-base
 
 	switch (addrtype) {
 	case B43_DMA_ADDR_LOW:
@@ -1461,8 +1465,13 @@ int b43_dma_tx(struct b43_wldev *dev, struct sk_buff *skb)
 	    should_inject_overflow(ring)) {
 		/* This TX ring is full. */
 		unsigned int skb_mapping = skb_get_queue_mapping(skb);
+<<<<<<< HEAD
 		ieee80211_stop_queue(dev->wl->hw, skb_mapping);
 		dev->wl->tx_queue_stopped[skb_mapping] = 1;
+=======
+		b43_stop_queue(dev, skb_mapping);
+		dev->wl->tx_queue_stopped[skb_mapping] = true;
+>>>>>>> origin/android16-base
 		ring->stopped = true;
 		if (b43_debug(dev, B43_DBG_DMAVERBOSE)) {
 			b43dbg(dev->wl, "Stopped TX ring %d\n", ring->index);
@@ -1628,11 +1637,19 @@ void b43_dma_handle_txstatus(struct b43_wldev *dev,
 	}
 
 	if (dev->wl->tx_queue_stopped[ring->queue_prio]) {
+<<<<<<< HEAD
 		dev->wl->tx_queue_stopped[ring->queue_prio] = 0;
 	} else {
 		/* If the driver queue is running wake the corresponding
 		 * mac80211 queue. */
 		ieee80211_wake_queue(dev->wl->hw, ring->queue_prio);
+=======
+		dev->wl->tx_queue_stopped[ring->queue_prio] = false;
+	} else {
+		/* If the driver queue is running wake the corresponding
+		 * mac80211 queue. */
+		b43_wake_queue(dev, ring->queue_prio);
+>>>>>>> origin/android16-base
 		if (b43_debug(dev, B43_DBG_DMAVERBOSE)) {
 			b43dbg(dev->wl, "Woke up TX ring %d\n", ring->index);
 		}

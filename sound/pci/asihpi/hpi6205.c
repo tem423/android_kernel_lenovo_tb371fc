@@ -441,7 +441,11 @@ void HPI_6205(struct hpi_message *phm, struct hpi_response *phr)
 		pao = hpi_find_adapter(phm->adapter_index);
 	} else {
 		/* subsys messages don't address an adapter */
+<<<<<<< HEAD
 		_HPI_6205(NULL, phm, phr);
+=======
+		phr->error = HPI_ERROR_INVALID_OBJ_INDEX;
+>>>>>>> origin/android16-base
 		return;
 	}
 

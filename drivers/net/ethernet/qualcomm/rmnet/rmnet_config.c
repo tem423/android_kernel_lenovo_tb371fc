@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+>>>>>>> origin/android16-base
  *
  * RMNET configuration engine
  *
@@ -47,6 +50,11 @@ enum {
 	__IFLA_RMNET_EXT_MAX,
 };
 
+<<<<<<< HEAD
+=======
+#define IFLA_RMNET_EXT_MAX	(__IFLA_RMNET_EXT_MAX - 1)
+
+>>>>>>> origin/android16-base
 static const struct nla_policy rmnet_policy[__IFLA_RMNET_EXT_MAX] = {
 	[IFLA_RMNET_MUX_ID] = {
 		.type = NLA_U16
@@ -479,7 +487,11 @@ nla_put_failure:
 
 struct rtnl_link_ops rmnet_link_ops __read_mostly = {
 	.kind		= "rmnet",
+<<<<<<< HEAD
 	.maxtype	= __IFLA_RMNET_EXT_MAX,
+=======
+	.maxtype	= IFLA_RMNET_EXT_MAX,
+>>>>>>> origin/android16-base
 	.priv_size	= sizeof(struct rmnet_priv),
 	.setup		= rmnet_vnd_setup,
 	.validate	= rmnet_rtnl_validate,
@@ -718,6 +730,7 @@ out:
 }
 EXPORT_SYMBOL(rmnet_all_flows_enabled);
 
+<<<<<<< HEAD
 void rmnet_prepare_ps_bearers(void *port, u8 *num_bearers, u8 *bearer_id)
 {
 	struct rmnet_endpoint *ep;
@@ -748,6 +761,8 @@ void rmnet_prepare_ps_bearers(void *port, u8 *num_bearers, u8 *bearer_id)
 }
 EXPORT_SYMBOL(rmnet_prepare_ps_bearers);
 
+=======
+>>>>>>> origin/android16-base
 int rmnet_get_powersave_notif(void *port)
 {
 	if (!port)

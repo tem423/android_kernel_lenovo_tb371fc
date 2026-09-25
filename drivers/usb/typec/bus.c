@@ -126,7 +126,11 @@ int typec_altmode_exit(struct typec_altmode *adev)
 	if (!adev || !adev->active)
 		return 0;
 
+<<<<<<< HEAD
 	if (!pdev->ops || !pdev->ops->enter)
+=======
+	if (!pdev->ops || !pdev->ops->exit)
+>>>>>>> origin/android16-base
 		return -EOPNOTSUPP;
 
 	/* Moving to USB Safe State */
@@ -192,7 +196,14 @@ EXPORT_SYMBOL_GPL(typec_altmode_vdm);
 const struct typec_altmode *
 typec_altmode_get_partner(struct typec_altmode *adev)
 {
+<<<<<<< HEAD
 	return adev ? &to_altmode(adev)->partner->adev : NULL;
+=======
+	if (!adev || !to_altmode(adev)->partner)
+		return NULL;
+
+	return &to_altmode(adev)->partner->adev;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(typec_altmode_get_partner);
 

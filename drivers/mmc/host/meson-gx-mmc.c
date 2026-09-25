@@ -26,7 +26,10 @@
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/ioport.h>
+<<<<<<< HEAD
 #include <linux/spinlock.h>
+=======
+>>>>>>> origin/android16-base
 #include <linux/dma-mapping.h>
 #include <linux/mmc/host.h>
 #include <linux/mmc/mmc.h>
@@ -159,7 +162,10 @@ struct meson_host {
 	struct	mmc_host	*mmc;
 	struct	mmc_command	*cmd;
 
+<<<<<<< HEAD
 	spinlock_t lock;
+=======
+>>>>>>> origin/android16-base
 	void __iomem *regs;
 	struct clk *core_clk;
 	struct clk *mmc_clk;
@@ -933,7 +939,10 @@ static void meson_mmc_start_cmd(struct mmc_host *mmc, struct mmc_command *cmd)
 
 	cmd_cfg |= FIELD_PREP(CMD_CFG_CMD_INDEX_MASK, cmd->opcode);
 	cmd_cfg |= CMD_CFG_OWNER;  /* owned by CPU */
+<<<<<<< HEAD
 	cmd_cfg |= CMD_CFG_ERROR; /* stop in case of error */
+=======
+>>>>>>> origin/android16-base
 
 	meson_mmc_set_response_bits(cmd, &cmd_cfg);
 
@@ -1042,8 +1051,11 @@ static irqreturn_t meson_mmc_irq(int irq, void *dev_id)
 	if (WARN_ON(!host) || WARN_ON(!host->cmd))
 		return IRQ_NONE;
 
+<<<<<<< HEAD
 	spin_lock(&host->lock);
 
+=======
+>>>>>>> origin/android16-base
 	cmd = host->cmd;
 	data = cmd->data;
 	cmd->error = 0;
@@ -1071,11 +1083,16 @@ static irqreturn_t meson_mmc_irq(int irq, void *dev_id)
 	if (status & (IRQ_END_OF_CHAIN | IRQ_RESP_STATUS)) {
 		if (data && !cmd->error)
 			data->bytes_xfered = data->blksz * data->blocks;
+<<<<<<< HEAD
 		if (meson_mmc_bounce_buf_read(data) ||
 		    meson_mmc_get_next_command(cmd))
 			ret = IRQ_WAKE_THREAD;
 		else
 			ret = IRQ_HANDLED;
+=======
+
+		return IRQ_WAKE_THREAD;
+>>>>>>> origin/android16-base
 	}
 
 out:
@@ -1090,10 +1107,13 @@ out:
 		writel(start, host->regs + SD_EMMC_START);
 	}
 
+<<<<<<< HEAD
 	if (ret == IRQ_HANDLED)
 		meson_mmc_request_done(host->mmc, cmd->mrq);
 
 	spin_unlock(&host->lock);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -1246,8 +1266,11 @@ static int meson_mmc_probe(struct platform_device *pdev)
 	host->dev = &pdev->dev;
 	dev_set_drvdata(&pdev->dev, host);
 
+<<<<<<< HEAD
 	spin_lock_init(&host->lock);
 
+=======
+>>>>>>> origin/android16-base
 	/* Get regulators and the supported OCR mask */
 	host->vqmmc_enabled = false;
 	ret = mmc_regulator_get_supply(mmc);
@@ -1285,7 +1308,10 @@ static int meson_mmc_probe(struct platform_device *pdev)
 
 	host->irq = platform_get_irq(pdev, 0);
 	if (host->irq <= 0) {
+<<<<<<< HEAD
 		dev_err(&pdev->dev, "failed to get interrupt resource.\n");
+=======
+>>>>>>> origin/android16-base
 		ret = -EINVAL;
 		goto free_host;
 	}
@@ -1370,7 +1396,13 @@ static int meson_mmc_probe(struct platform_device *pdev)
 	}
 
 	mmc->ops = &meson_mmc_ops;
+<<<<<<< HEAD
 	mmc_add_host(mmc);
+=======
+	ret = mmc_add_host(mmc);
+	if (ret)
+		goto err_free_irq;
+>>>>>>> origin/android16-base
 
 	return 0;
 

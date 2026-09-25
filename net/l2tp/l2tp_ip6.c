@@ -272,8 +272,11 @@ static void l2tp_ip6_destroy_sock(struct sock *sk)
 
 	if (tunnel)
 		l2tp_tunnel_delete(tunnel);
+<<<<<<< HEAD
 
 	inet6_destroy_sock(sk);
+=======
+>>>>>>> origin/android16-base
 }
 
 static int l2tp_ip6_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len)
@@ -519,13 +522,21 @@ static int l2tp_ip6_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 	struct ipcm6_cookie ipc6;
 	int addr_len = msg->msg_namelen;
 	int transhdrlen = 4; /* zero session-id */
+<<<<<<< HEAD
 	int ulen = len + transhdrlen;
+=======
+	int ulen;
+>>>>>>> origin/android16-base
 	int err;
 
 	/* Rough check on arithmetic overflow,
 	   better check is made in ip6_append_data().
 	 */
+<<<<<<< HEAD
 	if (len > INT_MAX)
+=======
+	if (len > INT_MAX - transhdrlen)
+>>>>>>> origin/android16-base
 		return -EMSGSIZE;
 
 	/* Mirror BSD error message compatibility */
@@ -650,6 +661,10 @@ static int l2tp_ip6_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 
 back_from_confirm:
 	lock_sock(sk);
+<<<<<<< HEAD
+=======
+	ulen = len + (skb_queue_empty(&sk->sk_write_queue) ? transhdrlen : 0);
+>>>>>>> origin/android16-base
 	err = ip6_append_data(sk, ip_generic_getfrag, msg,
 			      ulen, transhdrlen, &ipc6,
 			      &fl6, (struct rt6_info *)dst,

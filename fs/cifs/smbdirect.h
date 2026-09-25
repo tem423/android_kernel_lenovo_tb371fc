@@ -71,6 +71,10 @@ struct smbd_connection {
 	struct completion ri_done;
 	wait_queue_head_t conn_wait;
 	wait_queue_head_t wait_destroy;
+<<<<<<< HEAD
+=======
+	wait_queue_head_t disconn_wait;
+>>>>>>> origin/android16-base
 
 	struct completion negotiate_completion;
 	bool negotiate_done;
@@ -288,7 +292,11 @@ struct smbd_connection *smbd_get_connection(
 /* Reconnect SMBDirect session */
 int smbd_reconnect(struct TCP_Server_Info *server);
 /* Destroy SMBDirect session */
+<<<<<<< HEAD
 void smbd_destroy(struct smbd_connection *info);
+=======
+void smbd_destroy(struct TCP_Server_Info *server);
+>>>>>>> origin/android16-base
 
 /* Interface for carrying upper layer I/O through send/recv */
 int smbd_recv(struct smbd_connection *info, struct msghdr *msg);
@@ -331,7 +339,11 @@ struct smbd_connection {};
 static inline void *smbd_get_connection(
 	struct TCP_Server_Info *server, struct sockaddr *dstaddr) {return NULL;}
 static inline int smbd_reconnect(struct TCP_Server_Info *server) {return -1; }
+<<<<<<< HEAD
 static inline void smbd_destroy(struct smbd_connection *info) {}
+=======
+static inline void smbd_destroy(struct TCP_Server_Info *server) {}
+>>>>>>> origin/android16-base
 static inline int smbd_recv(struct smbd_connection *info, struct msghdr *msg) {return -1; }
 static inline int smbd_send(struct TCP_Server_Info *server, int num_rqst, struct smb_rqst *rqst) {return -1; }
 #endif

@@ -215,7 +215,11 @@ static int make_cma_ports(struct cma_dev_group *cma_dev_group,
 	}
 
 	for (i = 0; i < ports_num; i++) {
+<<<<<<< HEAD
 		char port_str[10];
+=======
+		char port_str[11];
+>>>>>>> origin/android16-base
 
 		ports[i].port_num = i + 1;
 		snprintf(port_str, sizeof(port_str), "%u", i + 1);

@@ -278,14 +278,22 @@ cs_etm_decoder__buffer_packet(struct cs_etm_decoder *decoder,
 			      enum cs_etm_sample_type sample_type)
 {
 	u32 et = 0;
+<<<<<<< HEAD
 	struct int_node *inode = NULL;
+=======
+	int cpu;
+>>>>>>> origin/android16-base
 
 	if (decoder->packet_count >= MAX_BUFFER - 1)
 		return OCSD_RESP_FATAL_SYS_ERR;
 
+<<<<<<< HEAD
 	/* Search the RB tree for the cpu associated with this traceID */
 	inode = intlist__find(traceid_list, trace_chan_id);
 	if (!inode)
+=======
+	if (cs_etm__get_cpu(trace_chan_id, &cpu) < 0)
+>>>>>>> origin/android16-base
 		return OCSD_RESP_FATAL_SYS_ERR;
 
 	et = decoder->tail;
@@ -296,7 +304,11 @@ cs_etm_decoder__buffer_packet(struct cs_etm_decoder *decoder,
 	decoder->packet_buffer[et].sample_type = sample_type;
 	decoder->packet_buffer[et].exc = false;
 	decoder->packet_buffer[et].exc_ret = false;
+<<<<<<< HEAD
 	decoder->packet_buffer[et].cpu = *((int *)inode->priv);
+=======
+	decoder->packet_buffer[et].cpu = cpu;
+>>>>>>> origin/android16-base
 	decoder->packet_buffer[et].start_addr = CS_ETM_INVAL_ADDR;
 	decoder->packet_buffer[et].end_addr = CS_ETM_INVAL_ADDR;
 

@@ -3,6 +3,7 @@
 #define __ASM_SPINLOCK_TYPES_H
 
 typedef struct {
+<<<<<<< HEAD
 #ifdef CONFIG_PA20
 	volatile unsigned int slock;
 # define __ARCH_SPIN_LOCK_UNLOCKED { 1 }
@@ -10,6 +11,10 @@ typedef struct {
 	volatile unsigned int lock[4];
 # define __ARCH_SPIN_LOCK_UNLOCKED	{ { 1, 1, 1, 1 } }
 #endif
+=======
+	volatile unsigned int lock[4];
+# define __ARCH_SPIN_LOCK_UNLOCKED	{ { 1, 1, 1, 1 } }
+>>>>>>> origin/android16-base
 } arch_spinlock_t;
 
 typedef struct {

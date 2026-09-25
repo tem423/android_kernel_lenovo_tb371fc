@@ -86,7 +86,11 @@ static int flexcop_usb_readwrite_dw(struct flexcop_device *fc, u16 wRegOffsPCI, 
 			0,
 			fc_usb->data,
 			sizeof(u32),
+<<<<<<< HEAD
 			B2C2_WAIT_FOR_OPERATION_RDW * HZ);
+=======
+			B2C2_WAIT_FOR_OPERATION_RDW);
+>>>>>>> origin/android16-base
 
 	if (ret != sizeof(u32)) {
 		err("error while %s dword from %d (%d).", read ? "reading" :
@@ -154,7 +158,11 @@ static int flexcop_usb_v8_memory_req(struct flexcop_usb *fc_usb,
 			wIndex,
 			fc_usb->data,
 			buflen,
+<<<<<<< HEAD
 			nWaitTime * HZ);
+=======
+			nWaitTime);
+>>>>>>> origin/android16-base
 	if (ret != buflen)
 		ret = -EIO;
 
@@ -248,13 +256,21 @@ static int flexcop_usb_i2c_req(struct flexcop_i2c_adapter *i2c,
 		/* DKT 020208 - add this to support special case of DiSEqC */
 	case USB_FUNC_I2C_CHECKWRITE:
 		pipe = B2C2_USB_CTRL_PIPE_OUT;
+<<<<<<< HEAD
 		nWaitTime = 2;
+=======
+		nWaitTime = 2000;
+>>>>>>> origin/android16-base
 		request_type |= USB_DIR_OUT;
 		break;
 	case USB_FUNC_I2C_READ:
 	case USB_FUNC_I2C_REPEATREAD:
 		pipe = B2C2_USB_CTRL_PIPE_IN;
+<<<<<<< HEAD
 		nWaitTime = 2;
+=======
+		nWaitTime = 2000;
+>>>>>>> origin/android16-base
 		request_type |= USB_DIR_IN;
 		break;
 	default:
@@ -281,7 +297,11 @@ static int flexcop_usb_i2c_req(struct flexcop_i2c_adapter *i2c,
 			wIndex,
 			fc_usb->data,
 			buflen,
+<<<<<<< HEAD
 			nWaitTime * HZ);
+=======
+			nWaitTime);
+>>>>>>> origin/android16-base
 
 	if (ret != buflen)
 		ret = -EIO;

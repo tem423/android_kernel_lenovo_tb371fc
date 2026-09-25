@@ -134,7 +134,13 @@ static struct ieee80211_supported_band wcn_band_2ghz = {
 		.cap =	IEEE80211_HT_CAP_GRN_FLD |
 			IEEE80211_HT_CAP_SGI_20 |
 			IEEE80211_HT_CAP_DSSSCCK40 |
+<<<<<<< HEAD
 			IEEE80211_HT_CAP_LSIG_TXOP_PROT,
+=======
+			IEEE80211_HT_CAP_LSIG_TXOP_PROT |
+			IEEE80211_HT_CAP_SGI_40 |
+			IEEE80211_HT_CAP_SUP_WIDTH_20_40,
+>>>>>>> origin/android16-base
 		.ht_supported = true,
 		.ampdu_factor = IEEE80211_HT_MAX_AMPDU_64K,
 		.ampdu_density = IEEE80211_HT_MPDU_DENSITY_16,
@@ -293,6 +299,7 @@ static int wcn36xx_start(struct ieee80211_hw *hw)
 		goto out_free_dxe_pool;
 	}
 
+<<<<<<< HEAD
 	wcn->hal_buf = kmalloc(WCN36XX_HAL_BUF_SIZE, GFP_KERNEL);
 	if (!wcn->hal_buf) {
 		wcn36xx_err("Failed to allocate smd buf\n");
@@ -304,12 +311,22 @@ static int wcn36xx_start(struct ieee80211_hw *hw)
 	if (ret) {
 		wcn36xx_err("Failed to push NV to chip\n");
 		goto out_free_smd_buf;
+=======
+	ret = wcn36xx_smd_load_nv(wcn);
+	if (ret) {
+		wcn36xx_err("Failed to push NV to chip\n");
+		goto out_free_dxe_ctl;
+>>>>>>> origin/android16-base
 	}
 
 	ret = wcn36xx_smd_start(wcn);
 	if (ret) {
 		wcn36xx_err("Failed to start chip\n");
+<<<<<<< HEAD
 		goto out_free_smd_buf;
+=======
+		goto out_free_dxe_ctl;
+>>>>>>> origin/android16-base
 	}
 
 	if (!wcn36xx_is_fw_version(wcn, 1, 2, 2, 24)) {
@@ -336,8 +353,11 @@ static int wcn36xx_start(struct ieee80211_hw *hw)
 
 out_smd_stop:
 	wcn36xx_smd_stop(wcn);
+<<<<<<< HEAD
 out_free_smd_buf:
 	kfree(wcn->hal_buf);
+=======
+>>>>>>> origin/android16-base
 out_free_dxe_ctl:
 	wcn36xx_dxe_free_ctl_blks(wcn);
 out_free_dxe_pool:
@@ -374,8 +394,11 @@ static void wcn36xx_stop(struct ieee80211_hw *hw)
 
 	wcn36xx_dxe_free_mem_pools(wcn);
 	wcn36xx_dxe_free_ctl_blks(wcn);
+<<<<<<< HEAD
 
 	kfree(wcn->hal_buf);
+=======
+>>>>>>> origin/android16-base
 }
 
 static int wcn36xx_config(struct ieee80211_hw *hw, u32 changed)
@@ -1322,6 +1345,15 @@ static int wcn36xx_probe(struct platform_device *pdev)
 	mutex_init(&wcn->hal_mutex);
 	mutex_init(&wcn->scan_lock);
 
+<<<<<<< HEAD
+=======
+	wcn->hal_buf = devm_kmalloc(wcn->dev, WCN36XX_HAL_BUF_SIZE, GFP_KERNEL);
+	if (!wcn->hal_buf) {
+		ret = -ENOMEM;
+		goto out_wq;
+	}
+
+>>>>>>> origin/android16-base
 	ret = dma_set_mask_and_coherent(wcn->dev, DMA_BIT_MASK(32));
 	if (ret < 0) {
 		wcn36xx_err("failed to set DMA mask: %d\n", ret);

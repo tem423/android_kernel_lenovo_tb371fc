@@ -224,7 +224,11 @@ static int qt1010_set_params(struct dvb_frontend *fe)
 static int qt1010_init_meas1(struct qt1010_priv *priv,
 			     u8 oper, u8 reg, u8 reg_init_val, u8 *retval)
 {
+<<<<<<< HEAD
 	u8 i, val1, uninitialized_var(val2);
+=======
+	u8 i, val1, val2;
+>>>>>>> origin/android16-base
 	int err;
 
 	qt1010_i2c_oper_t i2c_data[] = {
@@ -259,7 +263,11 @@ static int qt1010_init_meas1(struct qt1010_priv *priv,
 static int qt1010_init_meas2(struct qt1010_priv *priv,
 			    u8 reg_init_val, u8 *retval)
 {
+<<<<<<< HEAD
 	u8 i, uninitialized_var(val);
+=======
+	u8 i, val;
+>>>>>>> origin/android16-base
 	int err;
 	qt1010_i2c_oper_t i2c_data[] = {
 		{ QT1010_WR, 0x07, reg_init_val },
@@ -351,11 +359,20 @@ static int qt1010_init(struct dvb_frontend *fe)
 			else
 				valptr = &tmpval;
 
+<<<<<<< HEAD
 			BUG_ON(i >= ARRAY_SIZE(i2c_data) - 1);
 
 			err = qt1010_init_meas1(priv, i2c_data[i+1].reg,
 						i2c_data[i].reg,
 						i2c_data[i].val, valptr);
+=======
+			if (i >= ARRAY_SIZE(i2c_data) - 1)
+				err = -EIO;
+			else
+				err = qt1010_init_meas1(priv, i2c_data[i + 1].reg,
+							i2c_data[i].reg,
+							i2c_data[i].val, valptr);
+>>>>>>> origin/android16-base
 			i++;
 			break;
 		}
@@ -446,7 +463,11 @@ struct dvb_frontend * qt1010_attach(struct dvb_frontend *fe,
 	fe->tuner_priv = priv;
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(qt1010_attach);
+=======
+EXPORT_SYMBOL_GPL(qt1010_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("Quantek QT1010 silicon tuner driver");
 MODULE_AUTHOR("Antti Palosaari <crope@iki.fi>");

@@ -86,12 +86,20 @@ static inline unsigned get_usb_high_speed_rate(unsigned int rate)
  */
 static void release_urb_ctx(struct snd_urb_ctx *u)
 {
+<<<<<<< HEAD
 	if (u->buffer_size)
+=======
+	if (u->urb && u->buffer_size)
+>>>>>>> origin/android16-base
 		usb_free_coherent(u->ep->chip->dev, u->buffer_size,
 				  u->urb->transfer_buffer,
 				  u->urb->transfer_dma);
 	usb_free_urb(u->urb);
 	u->urb = NULL;
+<<<<<<< HEAD
+=======
+	u->buffer_size = 0;
+>>>>>>> origin/android16-base
 }
 
 static const char *usb_error_string(int err)
@@ -323,7 +331,11 @@ static void queue_pending_output_urbs(struct snd_usb_endpoint *ep)
 	while (test_bit(EP_FLAG_RUNNING, &ep->flags)) {
 
 		unsigned long flags;
+<<<<<<< HEAD
 		struct snd_usb_packet_info *uninitialized_var(packet);
+=======
+		struct snd_usb_packet_info *packet;
+>>>>>>> origin/android16-base
 		struct snd_urb_ctx *ctx = NULL;
 		int err, i;
 
@@ -816,6 +828,10 @@ static int sync_ep_set_params(struct snd_usb_endpoint *ep)
 	if (!ep->syncbuf)
 		return -ENOMEM;
 
+<<<<<<< HEAD
+=======
+	ep->nurbs = SYNC_URBS;
+>>>>>>> origin/android16-base
 	for (i = 0; i < SYNC_URBS; i++) {
 		struct snd_urb_ctx *u = &ep->urb[i];
 		u->index = i;
@@ -835,8 +851,11 @@ static int sync_ep_set_params(struct snd_usb_endpoint *ep)
 		u->urb->complete = snd_complete_urb;
 	}
 
+<<<<<<< HEAD
 	ep->nurbs = SYNC_URBS;
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 
 out_of_memory:

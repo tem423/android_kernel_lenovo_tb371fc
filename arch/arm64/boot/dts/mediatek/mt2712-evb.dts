@@ -25,14 +25,22 @@
 		stdout-path = "serial0:921600n8";
 	};
 
+<<<<<<< HEAD
 	cpus_fixed_vproc0: fixedregulator@0 {
+=======
+	cpus_fixed_vproc0: regulator-vproc-buck0 {
+>>>>>>> origin/android16-base
 		compatible = "regulator-fixed";
 		regulator-name = "vproc_buck0";
 		regulator-min-microvolt = <1000000>;
 		regulator-max-microvolt = <1000000>;
 	};
 
+<<<<<<< HEAD
 	cpus_fixed_vproc1: fixedregulator@1 {
+=======
+	cpus_fixed_vproc1: regulator-vproc-buck1 {
+>>>>>>> origin/android16-base
 		compatible = "regulator-fixed";
 		regulator-name = "vproc_buck1";
 		regulator-min-microvolt = <1000000>;

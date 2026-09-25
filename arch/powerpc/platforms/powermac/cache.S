@@ -53,7 +53,11 @@ flush_disable_75x:
 
 	/* Stop DST streams */
 BEGIN_FTR_SECTION
+<<<<<<< HEAD
 	DSSALL
+=======
+	PPC_DSSALL
+>>>>>>> origin/android16-base
 	sync
 END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
 
@@ -201,7 +205,11 @@ flush_disable_745x:
 	isync
 
 	/* Stop prefetch streams */
+<<<<<<< HEAD
 	DSSALL
+=======
+	PPC_DSSALL
+>>>>>>> origin/android16-base
 	sync
 
 	/* Disable L2 prefetching */

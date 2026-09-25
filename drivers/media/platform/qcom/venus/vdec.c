@@ -155,6 +155,11 @@ vdec_try_fmt_common(struct venus_inst *inst, struct v4l2_format *f)
 		else
 			return NULL;
 		fmt = find_format(inst, pixmp->pixelformat, f->type);
+<<<<<<< HEAD
+=======
+		if (!fmt)
+			return NULL;
+>>>>>>> origin/android16-base
 	}
 
 	pixmp->width = clamp(pixmp->width, frame_width_min(inst),
@@ -1094,6 +1099,10 @@ static int vdec_close(struct file *file)
 {
 	struct venus_inst *inst = to_inst(file);
 
+<<<<<<< HEAD
+=======
+	cancel_work_sync(&inst->delayed_process_work);
+>>>>>>> origin/android16-base
 	v4l2_m2m_ctx_release(inst->m2m_ctx);
 	v4l2_m2m_release(inst->m2m_dev);
 	vdec_ctrl_deinit(inst);

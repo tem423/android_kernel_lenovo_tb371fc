@@ -950,6 +950,12 @@ struct net_device_context {
 	u32 vf_alloc;
 	/* Serial number of the VF to team with */
 	u32 vf_serial;
+<<<<<<< HEAD
+=======
+
+	/* completion variable to confirm vf association */
+	struct completion vf_add;
+>>>>>>> origin/android16-base
 };
 
 /* Per channel data */

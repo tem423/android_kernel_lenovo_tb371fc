@@ -1312,6 +1312,11 @@ static int bdisp_probe(struct platform_device *pdev)
 	init_waitqueue_head(&bdisp->irq_queue);
 	INIT_DELAYED_WORK(&bdisp->timeout_work, bdisp_irq_timeout);
 	bdisp->work_queue = create_workqueue(BDISP_NAME);
+<<<<<<< HEAD
+=======
+	if (!bdisp->work_queue)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	spin_lock_init(&bdisp->slock);
 	mutex_init(&bdisp->lock);

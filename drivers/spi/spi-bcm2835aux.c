@@ -407,7 +407,11 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
 	unsigned long clk_hz;
 	int err;
 
+<<<<<<< HEAD
 	master = spi_alloc_master(&pdev->dev, sizeof(*bs));
+=======
+	master = devm_spi_alloc_master(&pdev->dev, sizeof(*bs));
+>>>>>>> origin/android16-base
 	if (!master) {
 		dev_err(&pdev->dev, "spi_alloc_master() failed\n");
 		return -ENOMEM;
@@ -439,30 +443,47 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
 	/* the main area */
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	bs->regs = devm_ioremap_resource(&pdev->dev, res);
+<<<<<<< HEAD
 	if (IS_ERR(bs->regs)) {
 		err = PTR_ERR(bs->regs);
 		goto out_master_put;
 	}
+=======
+	if (IS_ERR(bs->regs))
+		return PTR_ERR(bs->regs);
+>>>>>>> origin/android16-base
 
 	bs->clk = devm_clk_get(&pdev->dev, NULL);
 	if ((!bs->clk) || (IS_ERR(bs->clk))) {
 		err = PTR_ERR(bs->clk);
 		dev_err(&pdev->dev, "could not get clk: %d\n", err);
+<<<<<<< HEAD
 		goto out_master_put;
+=======
+		return err;
+>>>>>>> origin/android16-base
 	}
 
 	bs->irq = platform_get_irq(pdev, 0);
 	if (bs->irq <= 0) {
 		dev_err(&pdev->dev, "could not get IRQ: %d\n", bs->irq);
+<<<<<<< HEAD
 		err = bs->irq ? bs->irq : -ENODEV;
 		goto out_master_put;
+=======
+		return bs->irq ? bs->irq : -ENODEV;
+>>>>>>> origin/android16-base
 	}
 
 	/* this also enables the HW block */
 	err = clk_prepare_enable(bs->clk);
 	if (err) {
 		dev_err(&pdev->dev, "could not prepare clock: %d\n", err);
+<<<<<<< HEAD
 		goto out_master_put;
+=======
+		return err;
+>>>>>>> origin/android16-base
 	}
 
 	/* just checking if the clock returns a sane value */
@@ -495,8 +516,11 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
 
 out_clk_disable:
 	clk_disable_unprepare(bs->clk);
+<<<<<<< HEAD
 out_master_put:
 	spi_master_put(master);
+=======
+>>>>>>> origin/android16-base
 	return err;
 }
 

@@ -54,6 +54,10 @@ obj-$(CONFIG_QCOM_CLK_SMD_RPM) += clk-smd-rpm.o
 obj-$(CONFIG_QM_DISPCC_SCUBA) += dispcc-scuba.o
 obj-$(CONFIG_QM_GCC_SCUBA) += gcc-scuba.o
 obj-$(CONFIG_QM_GPUCC_SCUBA) += gpucc-scuba.o
+<<<<<<< HEAD
+=======
+obj-$(CONFIG_QM_LPASS_AUDIOCC_SCUBA) += lpassaoncc-scuba.o lpassaudiocc-scuba.o
+>>>>>>> origin/android16-base
 obj-$(CONFIG_QM_DEBUGCC_SCUBA) += debugcc-scuba.o
 obj-$(CONFIG_SDM_CAMCC_LAGOON) += camcc-lagoon.o
 obj-$(CONFIG_SDM_DEBUGCC_429W) += debugcc-sdm429w.o
@@ -88,4 +92,7 @@ obj-$(CONFIG_SM_NPUCC_LITO) += npucc-lito.o
 obj-$(CONFIG_SM_VIDEOCC_LITO) += videocc-lito.o
 obj-$(CONFIG_SPMI_PMIC_CLKDIV) += clk-spmi-pmic-div.o
 obj-y += mdss/
+<<<<<<< HEAD
 CFLAGS_clk-debug.o := -I$(src)
+=======
+>>>>>>> origin/android16-base

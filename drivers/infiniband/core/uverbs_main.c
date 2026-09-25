@@ -283,8 +283,17 @@ static ssize_t ib_uverbs_event_read(struct ib_uverbs_event_queue *ev_queue,
 	spin_lock_irq(&ev_queue->lock);
 
 	while (list_empty(&ev_queue->event_list)) {
+<<<<<<< HEAD
 		spin_unlock_irq(&ev_queue->lock);
 
+=======
+		if (ev_queue->is_closed) {
+			spin_unlock_irq(&ev_queue->lock);
+			return -EIO;
+		}
+
+		spin_unlock_irq(&ev_queue->lock);
+>>>>>>> origin/android16-base
 		if (filp->f_flags & O_NONBLOCK)
 			return -EAGAIN;
 
@@ -294,12 +303,15 @@ static ssize_t ib_uverbs_event_read(struct ib_uverbs_event_queue *ev_queue,
 			return -ERESTARTSYS;
 
 		spin_lock_irq(&ev_queue->lock);
+<<<<<<< HEAD
 
 		/* If device was disassociated and no event exists set an error */
 		if (list_empty(&ev_queue->event_list) && ev_queue->is_closed) {
 			spin_unlock_irq(&ev_queue->lock);
 			return -EIO;
 		}
+=======
+>>>>>>> origin/android16-base
 	}
 
 	event = list_entry(ev_queue->event_list.next, struct ib_uverbs_event, list);

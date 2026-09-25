@@ -1270,6 +1270,7 @@ static struct iscsi_param *iscsi_check_key(
 		return param;
 
 	if (!(param->phase & phase)) {
+<<<<<<< HEAD
 		pr_err("Key \"%s\" may not be negotiated during ",
 				param->name);
 		switch (phase) {
@@ -1282,6 +1283,22 @@ static struct iscsi_param *iscsi_check_key(
 		default:
 			pr_debug("Unknown phase.\n");
 		}
+=======
+		char *phase_name;
+
+		switch (phase) {
+		case PHASE_SECURITY:
+			phase_name = "Security";
+			break;
+		case PHASE_OPERATIONAL:
+			phase_name = "Operational";
+			break;
+		default:
+			phase_name = "Unknown";
+		}
+		pr_err("Key \"%s\" may not be negotiated during %s phase.\n",
+				param->name, phase_name);
+>>>>>>> origin/android16-base
 		return NULL;
 	}
 

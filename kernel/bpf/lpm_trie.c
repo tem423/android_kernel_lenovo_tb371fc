@@ -194,6 +194,12 @@ static void *trie_lookup_elem(struct bpf_map *map, void *_key)
 	struct lpm_trie_node *node, *found = NULL;
 	struct bpf_lpm_trie_key *key = _key;
 
+<<<<<<< HEAD
+=======
+	if (key->prefixlen > trie->max_prefixlen)
+		return NULL;
+
+>>>>>>> origin/android16-base
 	/* Start walking the trie from the root node ... */
 
 	for (node = rcu_dereference(trie->root); node;) {
@@ -626,7 +632,11 @@ static int trie_get_next_key(struct bpf_map *map, void *_key, void *_next_key)
 	if (!key || key->prefixlen > trie->max_prefixlen)
 		goto find_leftmost;
 
+<<<<<<< HEAD
 	node_stack = kmalloc_array(trie->max_prefixlen,
+=======
+	node_stack = kmalloc_array(trie->max_prefixlen + 1,
+>>>>>>> origin/android16-base
 				   sizeof(struct lpm_trie_node *),
 				   GFP_ATOMIC | __GFP_NOWARN);
 	if (!node_stack)

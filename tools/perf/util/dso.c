@@ -1025,8 +1025,15 @@ struct map *dso__new_map(const char *name)
 	struct map *map = NULL;
 	struct dso *dso = dso__new(name);
 
+<<<<<<< HEAD
 	if (dso)
 		map = map__new2(0, dso);
+=======
+	if (dso) {
+		map = map__new2(0, dso);
+		dso__put(dso);
+	}
+>>>>>>> origin/android16-base
 
 	return map;
 }

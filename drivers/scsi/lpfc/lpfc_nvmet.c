@@ -1308,7 +1308,11 @@ lpfc_nvmet_setup_io_context(struct lpfc_hba *phba)
 		wqe = &nvmewqe->wqe;
 
 		/* Initialize WQE */
+<<<<<<< HEAD
 		memset(wqe, 0, sizeof(union lpfc_wqe));
+=======
+		memset(wqe, 0, sizeof(*wqe));
+>>>>>>> origin/android16-base
 
 		ctx_buf->iocbq->context1 = NULL;
 		spin_lock(&phba->sli4_hba.sgl_list_lock);
@@ -2912,7 +2916,10 @@ lpfc_nvmet_unsol_issue_abort(struct lpfc_hba *phba,
 	bf_set(wqe_rcvoxid, &wqe_abts->xmit_sequence.wqe_com, xri);
 
 	/* Word 10 */
+<<<<<<< HEAD
 	bf_set(wqe_dbde, &wqe_abts->xmit_sequence.wqe_com, 1);
+=======
+>>>>>>> origin/android16-base
 	bf_set(wqe_iod, &wqe_abts->xmit_sequence.wqe_com, LPFC_WQE_IOD_WRITE);
 	bf_set(wqe_lenloc, &wqe_abts->xmit_sequence.wqe_com,
 	       LPFC_WQE_LENLOC_WORD12);

@@ -20,7 +20,11 @@
 #endif
 
 #ifdef CONFIG_USB_CONFIGFS_F_ACC
+<<<<<<< HEAD
 extern int acc_ctrlrequest(struct usb_composite_dev *cdev,
+=======
+extern int acc_ctrlrequest_composite(struct usb_composite_dev *cdev,
+>>>>>>> origin/android16-base
 				const struct usb_ctrlrequest *ctrl);
 void acc_disconnect(void);
 #endif
@@ -147,26 +151,47 @@ struct gadget_config_name {
 	struct list_head list;
 };
 
+<<<<<<< HEAD
 #define MAX_USB_STRING_LEN	126
 #define MAX_USB_STRING_WITH_NULL_LEN	(MAX_USB_STRING_LEN+1)
+=======
+#define USB_MAX_STRING_WITH_NULL_LEN	(USB_MAX_STRING_LEN+1)
+>>>>>>> origin/android16-base
 
 static int usb_string_copy(const char *s, char **s_copy)
 {
 	int ret;
 	char *str;
 	char *copy = *s_copy;
+<<<<<<< HEAD
 	ret = strlen(s);
 	if (ret > MAX_USB_STRING_LEN)
 		return -EOVERFLOW;
+=======
+
+	ret = strlen(s);
+	if (ret > USB_MAX_STRING_LEN)
+		return -EOVERFLOW;
+	if (ret < 1)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	if (copy) {
 		str = copy;
 	} else {
+<<<<<<< HEAD
 		str = kmalloc(MAX_USB_STRING_WITH_NULL_LEN, GFP_KERNEL);
 		if (!str)
 			return -ENOMEM;
 	}
 	strlcpy(str, s, MAX_USB_STRING_WITH_NULL_LEN);
+=======
+		str = kmalloc(USB_MAX_STRING_WITH_NULL_LEN, GFP_KERNEL);
+		if (!str)
+			return -ENOMEM;
+	}
+	strcpy(str, s);
+>>>>>>> origin/android16-base
 	if (str[ret - 1] == '\n')
 		str[ret - 1] = '\0';
 	*s_copy = str;
@@ -278,9 +303,22 @@ static ssize_t gadget_dev_desc_bcdUSB_store(struct config_item *item,
 
 static ssize_t gadget_dev_desc_UDC_show(struct config_item *item, char *page)
 {
+<<<<<<< HEAD
 	char *udc_name = to_gadget_info(item)->composite.gadget_driver.udc_name;
 
 	return sprintf(page, "%s\n", udc_name ?: "");
+=======
+	struct gadget_info *gi = to_gadget_info(item);
+	char *udc_name;
+	int ret;
+
+	mutex_lock(&gi->lock);
+	udc_name = gi->composite.gadget_driver.udc_name;
+	ret = sprintf(page, "%s\n", udc_name ?: "");
+	mutex_unlock(&gi->lock);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int unregister_gadget(struct gadget_info *gi)
@@ -1640,7 +1678,11 @@ static int android_setup(struct usb_gadget *gadget,
 
 #ifdef CONFIG_USB_CONFIGFS_F_ACC
 	if (value < 0)
+<<<<<<< HEAD
 		value = acc_ctrlrequest(cdev, c);
+=======
+		value = acc_ctrlrequest_composite(cdev, c);
+>>>>>>> origin/android16-base
 #endif
 
 	if (value < 0)
@@ -1841,7 +1883,11 @@ static struct config_group *gadgets_make(
 	gi->composite.unbind = configfs_do_nothing;
 	gi->composite.suspend = NULL;
 	gi->composite.resume = NULL;
+<<<<<<< HEAD
 	gi->composite.max_speed = USB_SPEED_SUPER;
+=======
+	gi->composite.max_speed = USB_SPEED_SUPER_PLUS;
+>>>>>>> origin/android16-base
 
 	spin_lock_init(&gi->spinlock);
 	mutex_init(&gi->lock);

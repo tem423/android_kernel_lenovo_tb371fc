@@ -167,7 +167,11 @@ static int __smc_diag_dump(struct sock *sk, struct sk_buff *skb,
 	}
 	if (smc->conn.lgr && smc->conn.lgr->is_smcd &&
 	    (req->diag_ext & (1 << (SMC_DIAG_DMBINFO - 1))) &&
+<<<<<<< HEAD
 	    !list_empty(&smc->conn.lgr->list)) {
+=======
+	    !list_empty(&smc->conn.lgr->list) && smc->conn.rmb_desc) {
+>>>>>>> origin/android16-base
 		struct smc_connection *conn = &smc->conn;
 		struct smcd_diag_dmbinfo dinfo;
 

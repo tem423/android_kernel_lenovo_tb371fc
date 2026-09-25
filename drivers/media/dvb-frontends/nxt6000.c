@@ -633,4 +633,8 @@ MODULE_DESCRIPTION("NxtWave NXT6000 DVB-T demodulator driver");
 MODULE_AUTHOR("Florian Schirmer");
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(nxt6000_attach);
+=======
+EXPORT_SYMBOL_GPL(nxt6000_attach);
+>>>>>>> origin/android16-base

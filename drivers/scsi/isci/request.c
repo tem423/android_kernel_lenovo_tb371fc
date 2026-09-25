@@ -3398,7 +3398,11 @@ static enum sci_status isci_io_request_build(struct isci_host *ihost,
 		return SCI_FAILURE;
 	}
 
+<<<<<<< HEAD
 	return SCI_SUCCESS;
+=======
+	return status;
+>>>>>>> origin/android16-base
 }
 
 static struct isci_request *isci_request_from_tag(struct isci_host *ihost, u16 tag)

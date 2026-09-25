@@ -83,6 +83,7 @@ void inc_children(struct dm_transaction_manager *tm, struct btree_node *n,
 }
 
 static int insert_at(size_t value_size, struct btree_node *node, unsigned index,
+<<<<<<< HEAD
 		      uint64_t key, void *value)
 		      __dm_written_to_disk(value)
 {
@@ -91,6 +92,18 @@ static int insert_at(size_t value_size, struct btree_node *node, unsigned index,
 
 	if (index > nr_entries ||
 	    index >= le32_to_cpu(node->header.max_entries)) {
+=======
+		     uint64_t key, void *value)
+	__dm_written_to_disk(value)
+{
+	uint32_t nr_entries = le32_to_cpu(node->header.nr_entries);
+	uint32_t max_entries = le32_to_cpu(node->header.max_entries);
+	__le64 key_le = cpu_to_le64(key);
+
+	if (index > nr_entries ||
+	    index >= max_entries ||
+	    nr_entries >= max_entries) {
+>>>>>>> origin/android16-base
 		DMERR("too many entries in btree node for insert");
 		__dm_unbless_for_disk(value);
 		return -ENOMEM;

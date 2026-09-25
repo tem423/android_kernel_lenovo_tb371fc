@@ -338,6 +338,10 @@ static int ch9200_bind(struct usbnet *dev, struct usb_interface *intf)
 {
 	int retval = 0;
 	unsigned char data[2];
+<<<<<<< HEAD
+=======
+	u8 addr[ETH_ALEN];
+>>>>>>> origin/android16-base
 
 	retval = usbnet_get_endpoints(dev, intf);
 	if (retval)
@@ -385,7 +389,12 @@ static int ch9200_bind(struct usbnet *dev, struct usb_interface *intf)
 	retval = control_write(dev, REQUEST_WRITE, 0, MAC_REG_CTRL, data, 0x02,
 			       CONTROL_TIMEOUT_MS);
 
+<<<<<<< HEAD
 	retval = get_mac_address(dev, dev->net->dev_addr);
+=======
+	retval = get_mac_address(dev, addr);
+	eth_hw_addr_set(dev->net, addr);
+>>>>>>> origin/android16-base
 
 	return retval;
 }

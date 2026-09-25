@@ -1003,6 +1003,7 @@ static int spi_qup_probe(struct platform_device *pdev)
 		return -ENXIO;
 	}
 
+<<<<<<< HEAD
 	ret = clk_prepare_enable(cclk);
 	if (ret) {
 		dev_err(dev, "cannot enable core clock\n");
@@ -1020,6 +1021,10 @@ static int spi_qup_probe(struct platform_device *pdev)
 	if (!master) {
 		clk_disable_unprepare(cclk);
 		clk_disable_unprepare(iclk);
+=======
+	master = spi_alloc_master(dev, sizeof(struct spi_qup));
+	if (!master) {
+>>>>>>> origin/android16-base
 		dev_err(dev, "cannot allocate master\n");
 		return -ENOMEM;
 	}
@@ -1065,6 +1070,22 @@ static int spi_qup_probe(struct platform_device *pdev)
 	spin_lock_init(&controller->lock);
 	init_completion(&controller->done);
 
+<<<<<<< HEAD
+=======
+	ret = clk_prepare_enable(cclk);
+	if (ret) {
+		dev_err(dev, "cannot enable core clock\n");
+		goto error_dma;
+	}
+
+	ret = clk_prepare_enable(iclk);
+	if (ret) {
+		clk_disable_unprepare(cclk);
+		dev_err(dev, "cannot enable iface clock\n");
+		goto error_dma;
+	}
+
+>>>>>>> origin/android16-base
 	iomode = readl_relaxed(base + QUP_IO_M_MODES);
 
 	size = QUP_IO_M_OUTPUT_BLOCK_SIZE(iomode);
@@ -1094,7 +1115,11 @@ static int spi_qup_probe(struct platform_device *pdev)
 	ret = spi_qup_set_state(controller, QUP_STATE_RESET);
 	if (ret) {
 		dev_err(dev, "cannot set RESET state\n");
+<<<<<<< HEAD
 		goto error_dma;
+=======
+		goto error_clk;
+>>>>>>> origin/android16-base
 	}
 
 	writel_relaxed(0, base + QUP_OPERATIONAL);
@@ -1118,7 +1143,11 @@ static int spi_qup_probe(struct platform_device *pdev)
 	ret = devm_request_irq(dev, irq, spi_qup_qup_irq,
 			       IRQF_TRIGGER_HIGH, pdev->name, controller);
 	if (ret)
+<<<<<<< HEAD
 		goto error_dma;
+=======
+		goto error_clk;
+>>>>>>> origin/android16-base
 
 	pm_runtime_set_autosuspend_delay(dev, MSEC_PER_SEC);
 	pm_runtime_use_autosuspend(dev);
@@ -1133,11 +1162,20 @@ static int spi_qup_probe(struct platform_device *pdev)
 
 disable_pm:
 	pm_runtime_disable(&pdev->dev);
+<<<<<<< HEAD
 error_dma:
 	spi_qup_release_dma(master);
 error:
 	clk_disable_unprepare(cclk);
 	clk_disable_unprepare(iclk);
+=======
+error_clk:
+	clk_disable_unprepare(cclk);
+	clk_disable_unprepare(iclk);
+error_dma:
+	spi_qup_release_dma(master);
+error:
+>>>>>>> origin/android16-base
 	spi_master_put(master);
 	return ret;
 }
@@ -1172,8 +1210,15 @@ static int spi_qup_pm_resume_runtime(struct device *device)
 		return ret;
 
 	ret = clk_prepare_enable(controller->cclk);
+<<<<<<< HEAD
 	if (ret)
 		return ret;
+=======
+	if (ret) {
+		clk_disable_unprepare(controller->iclk);
+		return ret;
+	}
+>>>>>>> origin/android16-base
 
 	/* Disable clocks auto gaiting */
 	config = readl_relaxed(controller->base + QUP_CONFIG);
@@ -1219,6 +1264,7 @@ static int spi_qup_resume(struct device *device)
 		return ret;
 
 	ret = clk_prepare_enable(controller->cclk);
+<<<<<<< HEAD
 	if (ret)
 		return ret;
 
@@ -1227,6 +1273,27 @@ static int spi_qup_resume(struct device *device)
 		return ret;
 
 	return spi_master_resume(master);
+=======
+	if (ret) {
+		clk_disable_unprepare(controller->iclk);
+		return ret;
+	}
+
+	ret = spi_qup_set_state(controller, QUP_STATE_RESET);
+	if (ret)
+		goto disable_clk;
+
+	ret = spi_master_resume(master);
+	if (ret)
+		goto disable_clk;
+
+	return 0;
+
+disable_clk:
+	clk_disable_unprepare(controller->cclk);
+	clk_disable_unprepare(controller->iclk);
+	return ret;
+>>>>>>> origin/android16-base
 }
 #endif /* CONFIG_PM_SLEEP */
 
@@ -1237,6 +1304,7 @@ static int spi_qup_remove(struct platform_device *pdev)
 	int ret;
 
 	ret = pm_runtime_get_sync(&pdev->dev);
+<<<<<<< HEAD
 	if (ret < 0)
 		return ret;
 
@@ -1249,6 +1317,24 @@ static int spi_qup_remove(struct platform_device *pdev)
 	clk_disable_unprepare(controller->cclk);
 	clk_disable_unprepare(controller->iclk);
 
+=======
+
+	if (ret >= 0) {
+		ret = spi_qup_set_state(controller, QUP_STATE_RESET);
+		if (ret)
+			dev_warn(&pdev->dev, "failed to reset controller (%pe)\n",
+				 ERR_PTR(ret));
+
+		clk_disable_unprepare(controller->cclk);
+		clk_disable_unprepare(controller->iclk);
+	} else {
+		dev_warn(&pdev->dev, "failed to resume, skip hw disable (%pe)\n",
+			 ERR_PTR(ret));
+	}
+
+	spi_qup_release_dma(master);
+
+>>>>>>> origin/android16-base
 	pm_runtime_put_noidle(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 

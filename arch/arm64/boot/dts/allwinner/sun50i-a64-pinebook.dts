@@ -67,8 +67,11 @@
 };
 
 &ehci0 {
+<<<<<<< HEAD
 	phys = <&usbphy 0>;
 	phy-names = "usb";
+=======
+>>>>>>> origin/android16-base
 	status = "okay";
 };
 
@@ -107,6 +110,10 @@
 	pinctrl-0 = <&mmc2_pins>;
 	vmmc-supply = <&reg_dcdc1>;
 	vqmmc-supply = <&reg_eldo1>;
+<<<<<<< HEAD
+=======
+	max-frequency = <200000000>;
+>>>>>>> origin/android16-base
 	bus-width = <8>;
 	non-removable;
 	cap-mmc-hw-reset;
@@ -115,8 +122,11 @@
 };
 
 &ohci0 {
+<<<<<<< HEAD
 	phys = <&usbphy 0>;
 	phy-names = "usb";
+=======
+>>>>>>> origin/android16-base
 	status = "okay";
 };
 

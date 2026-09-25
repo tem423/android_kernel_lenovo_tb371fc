@@ -49,6 +49,10 @@ int reiserfs_security_init(struct inode *dir, struct inode *inode,
 	int error;
 
 	sec->name = NULL;
+<<<<<<< HEAD
+=======
+	sec->value = NULL;
+>>>>>>> origin/android16-base
 
 	/* Don't add selinux attributes on xattrs - they'll never get used */
 	if (IS_PRIVATE(dir))
@@ -80,11 +84,23 @@ int reiserfs_security_write(struct reiserfs_transaction_handle *th,
 			    struct inode *inode,
 			    struct reiserfs_security_handle *sec)
 {
+<<<<<<< HEAD
 	int error;
 	if (strlen(sec->name) < sizeof(XATTR_SECURITY_PREFIX))
 		return -EINVAL;
 
 	error = reiserfs_xattr_set_handle(th, inode, sec->name, sec->value,
+=======
+	char xattr_name[XATTR_NAME_MAX + 1] = XATTR_SECURITY_PREFIX;
+	int error;
+
+	if (XATTR_SECURITY_PREFIX_LEN + strlen(sec->name) > XATTR_NAME_MAX)
+		return -EINVAL;
+
+	strlcat(xattr_name, sec->name, sizeof(xattr_name));
+
+	error = reiserfs_xattr_set_handle(th, inode, xattr_name, sec->value,
+>>>>>>> origin/android16-base
 					  sec->length, XATTR_CREATE);
 	if (error == -ENODATA || error == -EOPNOTSUPP)
 		error = 0;
@@ -94,7 +110,10 @@ int reiserfs_security_write(struct reiserfs_transaction_handle *th,
 
 void reiserfs_security_free(struct reiserfs_security_handle *sec)
 {
+<<<<<<< HEAD
 	kfree(sec->name);
+=======
+>>>>>>> origin/android16-base
 	kfree(sec->value);
 	sec->name = NULL;
 	sec->value = NULL;

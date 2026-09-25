@@ -45,6 +45,10 @@ static const struct proto_ops l2cap_sock_ops;
 static void l2cap_sock_init(struct sock *sk, struct sock *parent);
 static struct sock *l2cap_sock_alloc(struct net *net, struct socket *sock,
 				     int proto, gfp_t prio, int kern);
+<<<<<<< HEAD
+=======
+static void l2cap_sock_cleanup_listen(struct sock *parent);
+>>>>>>> origin/android16-base
 
 bool l2cap_is_socket(struct socket *sock)
 {
@@ -179,9 +183,23 @@ static int l2cap_sock_connect(struct socket *sock, struct sockaddr *addr,
 	struct l2cap_chan *chan = l2cap_pi(sk)->chan;
 	struct sockaddr_l2 la;
 	int len, err = 0;
+<<<<<<< HEAD
 
 	BT_DBG("sk %p", sk);
 
+=======
+	bool zapped;
+
+	BT_DBG("sk %p", sk);
+
+	lock_sock(sk);
+	zapped = sock_flag(sk, SOCK_ZAPPED);
+	release_sock(sk);
+
+	if (zapped)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	if (!addr || alen < offsetofend(struct sockaddr, sa_family) ||
 	    addr->sa_family != AF_BLUETOOTH)
 		return -EINVAL;
@@ -396,7 +414,12 @@ static int l2cap_sock_getsockopt_old(struct socket *sock, int optname,
 	struct l2cap_chan *chan = l2cap_pi(sk)->chan;
 	struct l2cap_options opts;
 	struct l2cap_conninfo cinfo;
+<<<<<<< HEAD
 	int len, err = 0;
+=======
+	int err = 0;
+	size_t len;
+>>>>>>> origin/android16-base
 	u32 opt;
 
 	BT_DBG("sk %p", sk);
@@ -427,7 +450,11 @@ static int l2cap_sock_getsockopt_old(struct socket *sock, int optname,
 		opts.max_tx   = chan->max_tx;
 		opts.txwin_size = chan->tx_win;
 
+<<<<<<< HEAD
 		len = min_t(unsigned int, len, sizeof(opts));
+=======
+		len = min(len, sizeof(opts));
+>>>>>>> origin/android16-base
 		if (copy_to_user(optval, (char *) &opts, len))
 			err = -EFAULT;
 
@@ -477,7 +504,11 @@ static int l2cap_sock_getsockopt_old(struct socket *sock, int optname,
 		cinfo.hci_handle = chan->conn->hcon->handle;
 		memcpy(cinfo.dev_class, chan->conn->hcon->dev_class, 3);
 
+<<<<<<< HEAD
 		len = min_t(unsigned int, len, sizeof(cinfo));
+=======
+		len = min(len, sizeof(cinfo));
+>>>>>>> origin/android16-base
 		if (copy_to_user(optval, (char *) &cinfo, len))
 			err = -EFAULT;
 
@@ -1197,6 +1228,10 @@ static int l2cap_sock_release(struct socket *sock)
 	if (!sk)
 		return 0;
 
+<<<<<<< HEAD
+=======
+	l2cap_sock_cleanup_listen(sk);
+>>>>>>> origin/android16-base
 	bt_sock_unlink(&l2cap_sk_list, sk);
 
 	err = l2cap_sock_shutdown(sock, 2);
@@ -1320,6 +1355,12 @@ static void l2cap_sock_close_cb(struct l2cap_chan *chan)
 {
 	struct sock *sk = chan->data;
 
+<<<<<<< HEAD
+=======
+	if (!sk)
+		return;
+
+>>>>>>> origin/android16-base
 	l2cap_sock_kill(sk);
 }
 
@@ -1328,6 +1369,12 @@ static void l2cap_sock_teardown_cb(struct l2cap_chan *chan, int err)
 	struct sock *sk = chan->data;
 	struct sock *parent;
 
+<<<<<<< HEAD
+=======
+	if (!sk)
+		return;
+
+>>>>>>> origin/android16-base
 	BT_DBG("chan %p state %s", chan, state_to_string(chan->state));
 
 	/* This callback can be called both for server (BT_LISTEN)
@@ -1400,6 +1447,17 @@ static struct sk_buff *l2cap_sock_alloc_skb_cb(struct l2cap_chan *chan,
 	if (!skb)
 		return ERR_PTR(err);
 
+<<<<<<< HEAD
+=======
+	/* Channel lock is released before requesting new skb and then
+	 * reacquired thus we need to recheck channel state.
+	 */
+	if (chan->state != BT_CONNECTED) {
+		kfree_skb(skb);
+		return ERR_PTR(-ENOTCONN);
+	}
+
+>>>>>>> origin/android16-base
 	skb->priority = sk->sk_priority;
 
 	bt_cb(skb)->l2cap.chan = chan;
@@ -1511,8 +1569,15 @@ static void l2cap_sock_destruct(struct sock *sk)
 {
 	BT_DBG("sk %p", sk);
 
+<<<<<<< HEAD
 	if (l2cap_pi(sk)->chan)
 		l2cap_chan_put(l2cap_pi(sk)->chan);
+=======
+	if (l2cap_pi(sk)->chan) {
+		l2cap_pi(sk)->chan->data = NULL;
+		l2cap_chan_put(l2cap_pi(sk)->chan);
+	}
+>>>>>>> origin/android16-base
 
 	if (l2cap_pi(sk)->rx_busy_skb) {
 		kfree_skb(l2cap_pi(sk)->rx_busy_skb);

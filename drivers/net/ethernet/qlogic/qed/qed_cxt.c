@@ -1024,6 +1024,10 @@ static void qed_ilt_shadow_free(struct qed_hwfn *p_hwfn)
 		p_dma->p_virt = NULL;
 	}
 	kfree(p_mngr->ilt_shadow);
+<<<<<<< HEAD
+=======
+	p_mngr->ilt_shadow = NULL;
+>>>>>>> origin/android16-base
 }
 
 static int qed_ilt_blk_alloc(struct qed_hwfn *p_hwfn,

@@ -47,6 +47,16 @@ static int br_pass_frame_up(struct sk_buff *skb)
 	u64_stats_update_end(&brstats->syncp);
 
 	vg = br_vlan_group_rcu(br);
+<<<<<<< HEAD
+=======
+
+	/* Reset the offload_fwd_mark because there could be a stacked
+	 * bridge above, and it should not think this bridge it doing
+	 * that bridge's work forwarding out its ports.
+	 */
+	br_switchdev_frame_unmark(skb);
+
+>>>>>>> origin/android16-base
 	/* Bridge is just like any other port.  Make sure the
 	 * packet is allowed except in promisc modue when someone
 	 * may be running packet capture.
@@ -156,7 +166,11 @@ int br_handle_frame_finish(struct net *net, struct sock *sk, struct sk_buff *skb
 	if (dst) {
 		unsigned long now = jiffies;
 
+<<<<<<< HEAD
 		if (dst->is_local)
+=======
+		if (test_bit(BR_FDB_LOCAL, &dst->flags))
+>>>>>>> origin/android16-base
 			return br_pass_frame_up(skb);
 
 		if (now != dst->used)

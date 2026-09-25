@@ -296,7 +296,11 @@ static void __exit nicstar_cleanup(void)
 {
 	XPRINTK("nicstar: nicstar_cleanup() called.\n");
 
+<<<<<<< HEAD
 	del_timer(&ns_timer);
+=======
+	del_timer_sync(&ns_timer);
+>>>>>>> origin/android16-base
 
 	pci_unregister_driver(&nicstar_driver);
 
@@ -524,6 +528,18 @@ static int ns_init_card(int i, struct pci_dev *pcidev)
 	/* Set the VPI/VCI MSb mask to zero so we can receive OAM cells */
 	writel(0x00000000, card->membase + VPM);
 
+<<<<<<< HEAD
+=======
+	card->intcnt = 0;
+	if (request_irq
+	    (pcidev->irq, &ns_irq_handler, IRQF_SHARED, "nicstar", card) != 0) {
+		pr_err("nicstar%d: can't allocate IRQ %d.\n", i, pcidev->irq);
+		error = 9;
+		ns_init_card_error(card, error);
+		return error;
+	}
+
+>>>>>>> origin/android16-base
 	/* Initialize TSQ */
 	card->tsq.org = dma_alloc_coherent(&card->pcidev->dev,
 					   NS_TSQSIZE + NS_TSQ_ALIGNMENT,
@@ -750,6 +766,7 @@ static int ns_init_card(int i, struct pci_dev *pcidev)
 
 	card->efbie = 1;
 
+<<<<<<< HEAD
 	card->intcnt = 0;
 	if (request_irq
 	    (pcidev->irq, &ns_irq_handler, IRQF_SHARED, "nicstar", card) != 0) {
@@ -759,6 +776,8 @@ static int ns_init_card(int i, struct pci_dev *pcidev)
 		return error;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	/* Register device */
 	card->atmdev = atm_dev_register("nicstar", &card->pcidev->dev, &atm_ops,
 					-1, NULL);
@@ -836,10 +855,19 @@ static void ns_init_card_error(ns_dev *card, int error)
 			dev_kfree_skb_any(hb);
 	}
 	if (error >= 12) {
+<<<<<<< HEAD
 		kfree(card->rsq.org);
 	}
 	if (error >= 11) {
 		kfree(card->tsq.org);
+=======
+		dma_free_coherent(&card->pcidev->dev, NS_RSQSIZE + NS_RSQ_ALIGNMENT,
+				card->rsq.org, card->rsq.dma);
+	}
+	if (error >= 11) {
+		dma_free_coherent(&card->pcidev->dev, NS_TSQSIZE + NS_TSQ_ALIGNMENT,
+				card->tsq.org, card->tsq.dma);
+>>>>>>> origin/android16-base
 	}
 	if (error >= 10) {
 		free_irq(card->pcidev->irq, card);
@@ -1705,6 +1733,11 @@ static int ns_send(struct atm_vcc *vcc, struct sk_buff *skb)
 
 	if (push_scqe(card, vc, scq, &scqe, skb) != 0) {
 		atomic_inc(&vcc->stats->tx_err);
+<<<<<<< HEAD
+=======
+		dma_unmap_single(&card->pcidev->dev, NS_PRV_DMA(skb), skb->len,
+				 DMA_TO_DEVICE);
+>>>>>>> origin/android16-base
 		dev_kfree_skb_any(skb);
 		return -EIO;
 	}

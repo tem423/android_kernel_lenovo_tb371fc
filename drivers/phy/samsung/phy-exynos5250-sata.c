@@ -193,6 +193,10 @@ static int exynos_sata_phy_probe(struct platform_device *pdev)
 		return -EINVAL;
 
 	sata_phy->client = of_find_i2c_device_by_node(node);
+<<<<<<< HEAD
+=======
+	of_node_put(node);
+>>>>>>> origin/android16-base
 	if (!sata_phy->client)
 		return -EPROBE_DEFER;
 
@@ -201,20 +205,35 @@ static int exynos_sata_phy_probe(struct platform_device *pdev)
 	sata_phy->phyclk = devm_clk_get(dev, "sata_phyctrl");
 	if (IS_ERR(sata_phy->phyclk)) {
 		dev_err(dev, "failed to get clk for PHY\n");
+<<<<<<< HEAD
 		return PTR_ERR(sata_phy->phyclk);
+=======
+		ret = PTR_ERR(sata_phy->phyclk);
+		goto put_dev;
+>>>>>>> origin/android16-base
 	}
 
 	ret = clk_prepare_enable(sata_phy->phyclk);
 	if (ret < 0) {
 		dev_err(dev, "failed to enable source clk\n");
+<<<<<<< HEAD
 		return ret;
+=======
+		goto put_dev;
+>>>>>>> origin/android16-base
 	}
 
 	sata_phy->phy = devm_phy_create(dev, NULL, &exynos_sata_phy_ops);
 	if (IS_ERR(sata_phy->phy)) {
+<<<<<<< HEAD
 		clk_disable_unprepare(sata_phy->phyclk);
 		dev_err(dev, "failed to create PHY\n");
 		return PTR_ERR(sata_phy->phy);
+=======
+		dev_err(dev, "failed to create PHY\n");
+		ret = PTR_ERR(sata_phy->phy);
+		goto clk_disable;
+>>>>>>> origin/android16-base
 	}
 
 	phy_set_drvdata(sata_phy->phy, sata_phy);
@@ -222,11 +241,26 @@ static int exynos_sata_phy_probe(struct platform_device *pdev)
 	phy_provider = devm_of_phy_provider_register(dev,
 					of_phy_simple_xlate);
 	if (IS_ERR(phy_provider)) {
+<<<<<<< HEAD
 		clk_disable_unprepare(sata_phy->phyclk);
 		return PTR_ERR(phy_provider);
 	}
 
 	return 0;
+=======
+		ret = PTR_ERR(phy_provider);
+		goto clk_disable;
+	}
+
+	return 0;
+
+clk_disable:
+	clk_disable_unprepare(sata_phy->phyclk);
+put_dev:
+	put_device(&sata_phy->client->dev);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static const struct of_device_id exynos_sata_phy_of_match[] = {

@@ -45,9 +45,16 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
 	this_leaf->type = type;
 }
 
+<<<<<<< HEAD
 static int __init_cache_level(unsigned int cpu)
 {
 	unsigned int ctype, level, leaves, fw_level;
+=======
+int init_cache_level(unsigned int cpu)
+{
+	unsigned int ctype, level, leaves;
+	int fw_level;
+>>>>>>> origin/android16-base
 	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
 
 	for (level = 1, leaves = 0; level <= MAX_CACHE_LEVEL; level++) {
@@ -65,6 +72,12 @@ static int __init_cache_level(unsigned int cpu)
 	else
 		fw_level = acpi_find_last_cache_level(cpu);
 
+<<<<<<< HEAD
+=======
+	if (fw_level < 0)
+		return fw_level;
+
+>>>>>>> origin/android16-base
 	if (level < fw_level) {
 		/*
 		 * some external caches not specified in CLIDR_EL1
@@ -80,7 +93,11 @@ static int __init_cache_level(unsigned int cpu)
 	return 0;
 }
 
+<<<<<<< HEAD
 static int __populate_cache_leaves(unsigned int cpu)
+=======
+int populate_cache_leaves(unsigned int cpu)
+>>>>>>> origin/android16-base
 {
 	unsigned int level, idx;
 	enum cache_type type;
@@ -99,6 +116,9 @@ static int __populate_cache_leaves(unsigned int cpu)
 	}
 	return 0;
 }
+<<<<<<< HEAD
 
 DEFINE_SMP_CALL_CACHE_FUNCTION(init_cache_level)
 DEFINE_SMP_CALL_CACHE_FUNCTION(populate_cache_leaves)
+=======
+>>>>>>> origin/android16-base

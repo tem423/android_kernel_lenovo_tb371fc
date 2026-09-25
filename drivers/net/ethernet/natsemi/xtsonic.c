@@ -120,7 +120,11 @@ static const struct net_device_ops xtsonic_netdev_ops = {
 	.ndo_set_mac_address	= eth_mac_addr,
 };
 
+<<<<<<< HEAD
 static int __init sonic_probe1(struct net_device *dev)
+=======
+static int sonic_probe1(struct net_device *dev)
+>>>>>>> origin/android16-base
 {
 	unsigned int silicon_revision;
 	struct sonic_local *lp = netdev_priv(dev);
@@ -265,11 +269,22 @@ int xtsonic_probe(struct platform_device *pdev)
 	sonic_msg_init(dev);
 
 	if ((err = register_netdev(dev)))
+<<<<<<< HEAD
 		goto out1;
 
 	return 0;
 
 out1:
+=======
+		goto undo_probe1;
+
+	return 0;
+
+undo_probe1:
+	dma_free_coherent(lp->device,
+			  SIZEOF_SONIC_DESC * SONIC_BUS_SCALE(lp->dma_bitmode),
+			  lp->descriptors, lp->descriptors_laddr);
+>>>>>>> origin/android16-base
 	release_region(dev->base_addr, SONIC_MEM_SIZE);
 out:
 	free_netdev(dev);

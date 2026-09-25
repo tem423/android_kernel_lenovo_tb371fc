@@ -1452,12 +1452,25 @@ static int tegra_dsi_ganged_probe(struct tegra_dsi *dsi)
 	np = of_parse_phandle(dsi->dev->of_node, "nvidia,ganged-mode", 0);
 	if (np) {
 		struct platform_device *gangster = of_find_device_by_node(np);
+<<<<<<< HEAD
 
 		dsi->slave = platform_get_drvdata(gangster);
 		of_node_put(np);
 
 		if (!dsi->slave)
 			return -EPROBE_DEFER;
+=======
+		of_node_put(np);
+		if (!gangster)
+			return -EPROBE_DEFER;
+
+		dsi->slave = platform_get_drvdata(gangster);
+
+		if (!dsi->slave) {
+			put_device(&gangster->dev);
+			return -EPROBE_DEFER;
+		}
+>>>>>>> origin/android16-base
 
 		dsi->slave->master = dsi;
 	}
@@ -1500,48 +1513,96 @@ static int tegra_dsi_probe(struct platform_device *pdev)
 
 	if (!pdev->dev.pm_domain) {
 		dsi->rst = devm_reset_control_get(&pdev->dev, "dsi");
+<<<<<<< HEAD
 		if (IS_ERR(dsi->rst))
 			return PTR_ERR(dsi->rst);
+=======
+		if (IS_ERR(dsi->rst)) {
+			err = PTR_ERR(dsi->rst);
+			goto remove;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	dsi->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(dsi->clk)) {
+<<<<<<< HEAD
 		dev_err(&pdev->dev, "cannot get DSI clock\n");
 		return PTR_ERR(dsi->clk);
+=======
+		err = dev_err_probe(&pdev->dev, PTR_ERR(dsi->clk),
+				    "cannot get DSI clock\n");
+		goto remove;
+>>>>>>> origin/android16-base
 	}
 
 	dsi->clk_lp = devm_clk_get(&pdev->dev, "lp");
 	if (IS_ERR(dsi->clk_lp)) {
+<<<<<<< HEAD
 		dev_err(&pdev->dev, "cannot get low-power clock\n");
 		return PTR_ERR(dsi->clk_lp);
+=======
+		err = dev_err_probe(&pdev->dev, PTR_ERR(dsi->clk_lp),
+				    "cannot get low-power clock\n");
+		goto remove;
+>>>>>>> origin/android16-base
 	}
 
 	dsi->clk_parent = devm_clk_get(&pdev->dev, "parent");
 	if (IS_ERR(dsi->clk_parent)) {
+<<<<<<< HEAD
 		dev_err(&pdev->dev, "cannot get parent clock\n");
 		return PTR_ERR(dsi->clk_parent);
+=======
+		err = dev_err_probe(&pdev->dev, PTR_ERR(dsi->clk_parent),
+				    "cannot get parent clock\n");
+		goto remove;
+>>>>>>> origin/android16-base
 	}
 
 	dsi->vdd = devm_regulator_get(&pdev->dev, "avdd-dsi-csi");
 	if (IS_ERR(dsi->vdd)) {
+<<<<<<< HEAD
 		dev_err(&pdev->dev, "cannot get VDD supply\n");
 		return PTR_ERR(dsi->vdd);
+=======
+		err = dev_err_probe(&pdev->dev, PTR_ERR(dsi->vdd),
+				    "cannot get VDD supply\n");
+		goto remove;
+>>>>>>> origin/android16-base
 	}
 
 	err = tegra_dsi_setup_clocks(dsi);
 	if (err < 0) {
 		dev_err(&pdev->dev, "cannot setup clocks\n");
+<<<<<<< HEAD
 		return err;
+=======
+		goto remove;
+>>>>>>> origin/android16-base
 	}
 
 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	dsi->regs = devm_ioremap_resource(&pdev->dev, regs);
+<<<<<<< HEAD
 	if (IS_ERR(dsi->regs))
 		return PTR_ERR(dsi->regs);
 
 	dsi->mipi = tegra_mipi_request(&pdev->dev);
 	if (IS_ERR(dsi->mipi))
 		return PTR_ERR(dsi->mipi);
+=======
+	if (IS_ERR(dsi->regs)) {
+		err = PTR_ERR(dsi->regs);
+		goto remove;
+	}
+
+	dsi->mipi = tegra_mipi_request(&pdev->dev, pdev->dev.of_node);
+	if (IS_ERR(dsi->mipi)) {
+		err = PTR_ERR(dsi->mipi);
+		goto remove;
+	}
+>>>>>>> origin/android16-base
 
 	dsi->host.ops = &tegra_dsi_host_ops;
 	dsi->host.dev = &pdev->dev;
@@ -1569,9 +1630,18 @@ static int tegra_dsi_probe(struct platform_device *pdev)
 	return 0;
 
 unregister:
+<<<<<<< HEAD
 	mipi_dsi_host_unregister(&dsi->host);
 mipi_free:
 	tegra_mipi_free(dsi->mipi);
+=======
+	pm_runtime_disable(&pdev->dev);
+	mipi_dsi_host_unregister(&dsi->host);
+mipi_free:
+	tegra_mipi_free(dsi->mipi);
+remove:
+	tegra_output_remove(&dsi->output);
+>>>>>>> origin/android16-base
 	return err;
 }
 

@@ -275,7 +275,11 @@ static void sm_metadata_destroy(struct dm_space_map *sm)
 {
 	struct sm_metadata *smm = container_of(sm, struct sm_metadata, sm);
 
+<<<<<<< HEAD
 	kfree(smm);
+=======
+	kvfree(smm);
+>>>>>>> origin/android16-base
 }
 
 static int sm_metadata_get_nr_blocks(struct dm_space_map *sm, dm_block_t *count)
@@ -452,6 +456,17 @@ static int sm_metadata_new_block_(struct dm_space_map *sm, dm_block_t *b)
 	 * Any block we allocate has to be free in both the old and current ll.
 	 */
 	r = sm_ll_find_common_free_block(&smm->old_ll, &smm->ll, smm->begin, smm->ll.nr_blocks, b);
+<<<<<<< HEAD
+=======
+	if (r == -ENOSPC) {
+		/*
+		 * There's no free block between smm->begin and the end of the metadata device.
+		 * We search before smm->begin in case something has been freed.
+		 */
+		r = sm_ll_find_common_free_block(&smm->old_ll, &smm->ll, 0, smm->begin, b);
+	}
+
+>>>>>>> origin/android16-base
 	if (r)
 		return r;
 
@@ -503,7 +518,10 @@ static int sm_metadata_commit(struct dm_space_map *sm)
 		return r;
 
 	memcpy(&smm->old_ll, &smm->ll, sizeof(smm->old_ll));
+<<<<<<< HEAD
 	smm->begin = 0;
+=======
+>>>>>>> origin/android16-base
 	smm->allocated_this_transaction = 0;
 
 	return 0;
@@ -752,7 +770,11 @@ struct dm_space_map *dm_sm_metadata_init(void)
 {
 	struct sm_metadata *smm;
 
+<<<<<<< HEAD
 	smm = kmalloc(sizeof(*smm), GFP_KERNEL);
+=======
+	smm = kvmalloc(sizeof(*smm), GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!smm)
 		return ERR_PTR(-ENOMEM);
 

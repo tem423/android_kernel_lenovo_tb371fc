@@ -390,7 +390,11 @@ static int msm_init_vram(struct drm_device *dev)
 		of_node_put(node);
 		if (ret)
 			return ret;
+<<<<<<< HEAD
 		size = r.end - r.start;
+=======
+		size = r.end - r.start + 1;
+>>>>>>> origin/android16-base
 		DRM_INFO("using VRAM carveout: %lx@%pa\n", size, &r.start);
 
 		/* if we have no IOMMU, then we need to use carveout allocator.
@@ -485,15 +489,25 @@ static int msm_drm_init(struct device *dev, struct drm_driver *drv)
 
 	drm_mode_config_init(ddev);
 
+<<<<<<< HEAD
+=======
+	ret = msm_init_vram(ddev);
+	if (ret)
+		goto err_destroy_mdss;
+
+>>>>>>> origin/android16-base
 	/* Bind all our sub-components: */
 	ret = component_bind_all(dev, ddev);
 	if (ret)
 		goto err_destroy_mdss;
 
+<<<<<<< HEAD
 	ret = msm_init_vram(ddev);
 	if (ret)
 		goto err_msm_uninit;
 
+=======
+>>>>>>> origin/android16-base
 	if (!dev->dma_parms) {
 		dev->dma_parms = devm_kzalloc(dev, sizeof(*dev->dma_parms),
 					      GFP_KERNEL);
@@ -1378,6 +1392,13 @@ static int msm_pdev_remove(struct platform_device *pdev)
 static void msm_pdev_shutdown(struct platform_device *pdev)
 {
 	struct drm_device *drm = platform_get_drvdata(pdev);
+<<<<<<< HEAD
+=======
+	struct msm_drm_private *priv = drm ? drm->dev_private : NULL;
+
+	if (!priv || !priv->kms)
+		return;
+>>>>>>> origin/android16-base
 
 	drm_atomic_helper_shutdown(drm);
 }

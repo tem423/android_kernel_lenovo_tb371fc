@@ -446,7 +446,11 @@ _last_literals:
 			*op++ = (BYTE)(lastRun << ML_BITS);
 		}
 
+<<<<<<< HEAD
 		memcpy(op, anchor, lastRun);
+=======
+		LZ4_memcpy(op, anchor, lastRun);
+>>>>>>> origin/android16-base
 
 		op += lastRun;
 	}
@@ -708,7 +712,11 @@ _last_literals:
 		} else {
 			*op++ = (BYTE)(lastRunSize<<ML_BITS);
 		}
+<<<<<<< HEAD
 		memcpy(op, anchor, lastRunSize);
+=======
+		LZ4_memcpy(op, anchor, lastRunSize);
+>>>>>>> origin/android16-base
 		op += lastRunSize;
 	}
 

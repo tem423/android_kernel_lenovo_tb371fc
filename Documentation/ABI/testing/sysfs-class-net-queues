@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/rx-<queue>/rps_cpus
+=======
+What:		/sys/class/net/<iface>/queues/rx-<queue>/rps_cpus
+>>>>>>> origin/android16-base
 Date:		March 2010
 KernelVersion:	2.6.35
 Contact:	netdev@vger.kernel.org
@@ -8,7 +12,11 @@ Description:
 		network device queue. Possible values depend on the number
 		of available CPU(s) in the system.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/rx-<queue>/rps_flow_cnt
+=======
+What:		/sys/class/net/<iface>/queues/rx-<queue>/rps_flow_cnt
+>>>>>>> origin/android16-base
 Date:		April 2010
 KernelVersion:	2.6.35
 Contact:	netdev@vger.kernel.org
@@ -16,7 +24,11 @@ Description:
 		Number of Receive Packet Steering flows being currently
 		processed by this particular network device receive queue.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/tx_timeout
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/tx_timeout
+>>>>>>> origin/android16-base
 Date:		November 2011
 KernelVersion:	3.3
 Contact:	netdev@vger.kernel.org
@@ -24,7 +36,11 @@ Description:
 		Indicates the number of transmit timeout events seen by this
 		network interface transmit queue.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/tx_maxrate
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/tx_maxrate
+>>>>>>> origin/android16-base
 Date:		March 2015
 KernelVersion:	4.1
 Contact:	netdev@vger.kernel.org
@@ -32,7 +48,11 @@ Description:
 		A Mbps max-rate set for the queue, a value of zero means disabled,
 		default is disabled.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/xps_cpus
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/xps_cpus
+>>>>>>> origin/android16-base
 Date:		November 2010
 KernelVersion:	2.6.38
 Contact:	netdev@vger.kernel.org
@@ -42,7 +62,11 @@ Description:
 		network device transmit queue. Possible vaules depend on the
 		number of available CPU(s) in the system.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/xps_rxqs
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/xps_rxqs
+>>>>>>> origin/android16-base
 Date:		June 2018
 KernelVersion:	4.18.0
 Contact:	netdev@vger.kernel.org
@@ -53,7 +77,11 @@ Description:
 		number of available receive queue(s) in the network device.
 		Default is disabled.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/byte_queue_limits/hold_time
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/byte_queue_limits/hold_time
+>>>>>>> origin/android16-base
 Date:		November 2011
 KernelVersion:	3.3
 Contact:	netdev@vger.kernel.org
@@ -62,7 +90,11 @@ Description:
 		of this particular network device transmit queue.
 		Default value is 1000.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/byte_queue_limits/inflight
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/byte_queue_limits/inflight
+>>>>>>> origin/android16-base
 Date:		November 2011
 KernelVersion:	3.3
 Contact:	netdev@vger.kernel.org
@@ -70,7 +102,11 @@ Description:
 		Indicates the number of bytes (objects) in flight on this
 		network device transmit queue.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/byte_queue_limits/limit
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/byte_queue_limits/limit
+>>>>>>> origin/android16-base
 Date:		November 2011
 KernelVersion:	3.3
 Contact:	netdev@vger.kernel.org
@@ -79,7 +115,11 @@ Description:
 		on this network device transmit queue. This value is clamped
 		to be within the bounds defined by limit_max and limit_min.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/byte_queue_limits/limit_max
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/byte_queue_limits/limit_max
+>>>>>>> origin/android16-base
 Date:		November 2011
 KernelVersion:	3.3
 Contact:	netdev@vger.kernel.org
@@ -88,7 +128,11 @@ Description:
 		queued on this network device transmit queue. See
 		include/linux/dynamic_queue_limits.h for the default value.
 
+<<<<<<< HEAD
 What:		/sys/class/<iface>/queues/tx-<queue>/byte_queue_limits/limit_min
+=======
+What:		/sys/class/net/<iface>/queues/tx-<queue>/byte_queue_limits/limit_min
+>>>>>>> origin/android16-base
 Date:		November 2011
 KernelVersion:	3.3
 Contact:	netdev@vger.kernel.org

@@ -1245,8 +1245,12 @@ int CalcStateExt
 )
 {
     int pixelDepth;
+<<<<<<< HEAD
     int uninitialized_var(VClk),uninitialized_var(m),
         uninitialized_var(n),	uninitialized_var(p);
+=======
+    int VClk, m, n, p;
+>>>>>>> origin/android16-base
 
     /*
      * Save mode parameters.

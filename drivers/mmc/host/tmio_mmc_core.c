@@ -161,6 +161,7 @@ static void tmio_mmc_enable_sdio_irq(struct mmc_host *mmc, int enable)
 	}
 }
 
+<<<<<<< HEAD
 static void tmio_mmc_clk_start(struct tmio_mmc_host *host)
 {
 	sd_ctrl_write16(host, CTL_SD_CARD_CLK_CTL, CLK_CTL_SCLKEN |
@@ -238,6 +239,8 @@ static void tmio_mmc_set_clock(struct tmio_mmc_host *host,
 	tmio_mmc_clk_start(host);
 }
 
+=======
+>>>>>>> origin/android16-base
 static void tmio_mmc_reset(struct tmio_mmc_host *host)
 {
 	/* FIXME - should we set stop clock reg here */
@@ -290,6 +293,11 @@ static void tmio_mmc_reset_work(struct work_struct *work)
 	else
 		mrq->cmd->error = -ETIMEDOUT;
 
+<<<<<<< HEAD
+=======
+	/* No new calls yet, but disallow concurrent tmio_mmc_done_work() */
+	host->mrq = ERR_PTR(-EBUSY);
+>>>>>>> origin/android16-base
 	host->cmd = NULL;
 	host->data = NULL;
 
@@ -1051,6 +1059,7 @@ static void tmio_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 	switch (ios->power_mode) {
 	case MMC_POWER_OFF:
 		tmio_mmc_power_off(host);
+<<<<<<< HEAD
 		tmio_mmc_clk_stop(host);
 		break;
 	case MMC_POWER_UP:
@@ -1060,6 +1069,17 @@ static void tmio_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 		break;
 	case MMC_POWER_ON:
 		tmio_mmc_set_clock(host, ios->clock);
+=======
+		host->set_clock(host, 0);
+		break;
+	case MMC_POWER_UP:
+		tmio_mmc_power_on(host, ios->vdd);
+		host->set_clock(host, ios->clock);
+		tmio_mmc_set_bus_width(host, ios->bus_width);
+		break;
+	case MMC_POWER_ON:
+		host->set_clock(host, ios->clock);
+>>>>>>> origin/android16-base
 		tmio_mmc_set_bus_width(host, ios->bus_width);
 		break;
 	}
@@ -1245,7 +1265,11 @@ int tmio_mmc_host_probe(struct tmio_mmc_host *_host)
 	int ret;
 
 	/*
+<<<<<<< HEAD
 	 * Check the sanity of mmc->f_min to prevent tmio_mmc_set_clock() from
+=======
+	 * Check the sanity of mmc->f_min to prevent host->set_clock() from
+>>>>>>> origin/android16-base
 	 * looping forever...
 	 */
 	if (mmc->f_min == 0)
@@ -1255,7 +1279,10 @@ int tmio_mmc_host_probe(struct tmio_mmc_host *_host)
 		_host->write16_hook = NULL;
 
 	_host->set_pwr = pdata->set_pwr;
+<<<<<<< HEAD
 	_host->set_clk_div = pdata->set_clk_div;
+=======
+>>>>>>> origin/android16-base
 
 	ret = tmio_mmc_init_ocr(_host);
 	if (ret < 0)
@@ -1318,7 +1345,11 @@ int tmio_mmc_host_probe(struct tmio_mmc_host *_host)
 	if (pdata->flags & TMIO_MMC_SDIO_IRQ)
 		_host->sdio_irq_mask = TMIO_SDIO_MASK_ALL;
 
+<<<<<<< HEAD
 	tmio_mmc_clk_stop(_host);
+=======
+	_host->set_clock(_host, 0);
+>>>>>>> origin/android16-base
 	tmio_mmc_reset(_host);
 
 	_host->sdcard_irq_mask = sd_ctrl_read16_and_16_as_32(_host, CTL_IRQ_MASK);
@@ -1402,7 +1433,11 @@ int tmio_mmc_host_runtime_suspend(struct device *dev)
 	tmio_mmc_disable_mmc_irqs(host, TMIO_MASK_ALL);
 
 	if (host->clk_cache)
+<<<<<<< HEAD
 		tmio_mmc_clk_stop(host);
+=======
+		host->set_clock(host, 0);
+>>>>>>> origin/android16-base
 
 	tmio_mmc_clk_disable(host);
 
@@ -1423,7 +1458,11 @@ int tmio_mmc_host_runtime_resume(struct device *dev)
 	tmio_mmc_clk_enable(host);
 
 	if (host->clk_cache)
+<<<<<<< HEAD
 		tmio_mmc_set_clock(host, host->clk_cache);
+=======
+		host->set_clock(host, host->clk_cache);
+>>>>>>> origin/android16-base
 
 	if (host->native_hotplug)
 		tmio_mmc_enable_mmc_irqs(host,

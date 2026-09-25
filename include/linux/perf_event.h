@@ -597,6 +597,7 @@ struct perf_event {
 	/* The cumulative AND of all event_caps for events in this group. */
 	int				group_caps;
 
+<<<<<<< HEAD
 	struct perf_event		*group_leader;
 
 	/*
@@ -604,6 +605,12 @@ struct perf_event {
 	 * Note: does not protect the pointer to the group_leader.
 	 */
 	struct mutex			group_leader_mutex;
+=======
+#ifndef __GENKSYMS__	/* ANDROID Bug: 307236803 to keep the crc preserved */
+	unsigned int			group_generation;
+#endif
+	struct perf_event		*group_leader;
+>>>>>>> origin/android16-base
 	struct pmu			*pmu;
 	void				*pmu_private;
 
@@ -1016,15 +1023,42 @@ extern void perf_event_output(struct perf_event *event,
 			      struct pt_regs *regs);
 
 static inline bool
+<<<<<<< HEAD
 is_default_overflow_handler(struct perf_event *event)
 {
 	if (likely(event->overflow_handler == perf_event_output_forward))
 		return true;
 	if (unlikely(event->overflow_handler == perf_event_output_backward))
+=======
+__is_default_overflow_handler(perf_overflow_handler_t overflow_handler)
+{
+	if (likely(overflow_handler == perf_event_output_forward))
+		return true;
+	if (unlikely(overflow_handler == perf_event_output_backward))
+>>>>>>> origin/android16-base
 		return true;
 	return false;
 }
 
+<<<<<<< HEAD
+=======
+#define is_default_overflow_handler(event) \
+	__is_default_overflow_handler((event)->overflow_handler)
+
+#ifdef CONFIG_BPF_SYSCALL
+static inline bool uses_default_overflow_handler(struct perf_event *event)
+{
+	if (likely(is_default_overflow_handler(event)))
+		return true;
+
+	return __is_default_overflow_handler(event->orig_overflow_handler);
+}
+#else
+#define uses_default_overflow_handler(event) \
+	is_default_overflow_handler(event)
+#endif
+
+>>>>>>> origin/android16-base
 extern void
 perf_event_header__init_id(struct perf_event_header *header,
 			   struct perf_sample_data *data,

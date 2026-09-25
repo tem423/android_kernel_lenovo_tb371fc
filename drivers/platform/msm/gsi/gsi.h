@@ -147,7 +147,11 @@ struct gsi_chan_ctx {
 	struct completion compl;
 	bool allocated;
 	atomic_t poll_mode;
+<<<<<<< HEAD
 	union __packed gsi_channel_scratch scratch;
+=======
+	union gsi_channel_scratch scratch;
+>>>>>>> origin/android16-base
 	struct gsi_chan_stats stats;
 	bool enable_dp_stats;
 	bool print_dp_stats;
@@ -166,7 +170,11 @@ struct gsi_evt_ctx {
 	struct completion compl;
 	struct gsi_chan_ctx *chan;
 	atomic_t chan_ref_cnt;
+<<<<<<< HEAD
 	union __packed gsi_evt_scratch scratch;
+=======
+	union gsi_evt_scratch scratch;
+>>>>>>> origin/android16-base
 	struct gsi_evt_stats stats;
 };
 

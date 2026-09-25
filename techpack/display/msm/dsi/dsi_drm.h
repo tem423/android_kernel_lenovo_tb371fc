@@ -23,7 +23,10 @@ struct dsi_bridge {
 
 	struct dsi_display *display;
 	struct dsi_display_mode dsi_mode;
+<<<<<<< HEAD
 	struct mutex lock;
+=======
+>>>>>>> origin/android16-base
 };
 
 /**

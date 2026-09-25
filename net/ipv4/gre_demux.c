@@ -133,7 +133,11 @@ int gre_parse_header(struct sk_buff *skb, struct tnl_ptk_info *tpi,
 	 * to 0 and sets the configured key in the
 	 * inner erspan header field
 	 */
+<<<<<<< HEAD
 	if (greh->protocol == htons(ETH_P_ERSPAN) ||
+=======
+	if ((greh->protocol == htons(ETH_P_ERSPAN) && hdr_len != 4) ||
+>>>>>>> origin/android16-base
 	    greh->protocol == htons(ETH_P_ERSPAN2)) {
 		struct erspan_base_hdr *ershdr;
 

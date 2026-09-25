@@ -1662,7 +1662,11 @@ sh_mobile_lcdc_overlay_fb_init(struct sh_mobile_lcdc_overlay *ovl)
 	 */
 	info->fix = sh_mobile_lcdc_overlay_fix;
 	snprintf(info->fix.id, sizeof(info->fix.id),
+<<<<<<< HEAD
 		 "SH Mobile LCDC Overlay %u", ovl->index);
+=======
+		 "SHMobile ovl %u", ovl->index);
+>>>>>>> origin/android16-base
 	info->fix.smem_start = ovl->dma_handle;
 	info->fix.smem_len = ovl->fb_size;
 	info->fix.line_length = ovl->pitch;

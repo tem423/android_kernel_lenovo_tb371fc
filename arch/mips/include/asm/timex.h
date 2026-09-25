@@ -40,9 +40,15 @@
 typedef unsigned int cycles_t;
 
 /*
+<<<<<<< HEAD
  * On R4000/R4400 before version 5.0 an erratum exists such that if the
  * cycle counter is read in the exact moment that it is matching the
  * compare register, no interrupt will be generated.
+=======
+ * On R4000/R4400 an erratum exists such that if the cycle counter is
+ * read in the exact moment that it is matching the compare register,
+ * no interrupt will be generated.
+>>>>>>> origin/android16-base
  *
  * There is a suggested workaround and also the erratum can't strike if
  * the compare interrupt isn't being used as the clock source device.
@@ -63,7 +69,11 @@ static inline int can_use_mips_counter(unsigned int prid)
 	if (!__builtin_constant_p(cpu_has_counter))
 		asm volatile("" : "=m" (cpu_data[0].options));
 	if (likely(cpu_has_counter &&
+<<<<<<< HEAD
 		   prid >= (PRID_IMP_R4000 | PRID_REV_ENCODE_44(5, 0))))
+=======
+		   prid > (PRID_IMP_R4000 | PRID_REV_ENCODE_44(15, 15))))
+>>>>>>> origin/android16-base
 		return 1;
 	else
 		return 0;
@@ -76,10 +86,15 @@ static inline cycles_t get_cycles(void)
 	else
 		return 0;	/* no usable counter */
 }
+<<<<<<< HEAD
+=======
+#define get_cycles get_cycles
+>>>>>>> origin/android16-base
 
 /*
  * Like get_cycles - but where c0_count is not available we desperately
  * use c0_random in an attempt to get at least a little bit of entropy.
+<<<<<<< HEAD
  *
  * R6000 and R6000A neither have a count register nor a random register.
  * That leaves no entropy source in the CPU itself.
@@ -95,6 +110,21 @@ static inline unsigned long random_get_entropy(void)
 		return read_c0_random();
 	else
 		return 0;	/* no usable register */
+=======
+ */
+static inline unsigned long random_get_entropy(void)
+{
+	unsigned int c0_random;
+
+	if (can_use_mips_counter(read_c0_prid()))
+		return read_c0_count();
+
+	if (cpu_has_3kex)
+		c0_random = (read_c0_random() >> 8) & 0x3f;
+	else
+		c0_random = read_c0_random() & 0x3f;
+	return (random_get_entropy_fallback() << 6) | (0x3f - c0_random);
+>>>>>>> origin/android16-base
 }
 #define random_get_entropy random_get_entropy
 

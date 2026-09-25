@@ -294,7 +294,11 @@ static int hib_submit_io(int op, int op_flags, pgoff_t page_off, void *addr,
 	return error;
 }
 
+<<<<<<< HEAD
 static blk_status_t hib_wait_io(struct hib_bio_batch *hb)
+=======
+static int hib_wait_io(struct hib_bio_batch *hb)
+>>>>>>> origin/android16-base
 {
 	wait_event(hb->wait, atomic_read(&hb->count) == 0);
 	return blk_status_to_errno(hb->error);
@@ -491,10 +495,17 @@ static int swap_writer_finish(struct swap_map_handle *handle,
 		unsigned int flags, int error)
 {
 	if (!error) {
+<<<<<<< HEAD
 		flush_swap_writer(handle);
 		pr_info("S");
 		error = mark_swapfiles(handle, flags);
 		pr_cont("|\n");
+=======
+		pr_info("S");
+		error = mark_swapfiles(handle, flags);
+		pr_cont("|\n");
+		flush_swap_writer(handle);
+>>>>>>> origin/android16-base
 	}
 
 	if (error)
@@ -596,11 +607,19 @@ static int crc32_threadfn(void *data)
 	unsigned i;
 
 	while (1) {
+<<<<<<< HEAD
 		wait_event(d->go, atomic_read(&d->ready) ||
 		                  kthread_should_stop());
 		if (kthread_should_stop()) {
 			d->thr = NULL;
 			atomic_set(&d->stop, 1);
+=======
+		wait_event(d->go, atomic_read_acquire(&d->ready) ||
+		                  kthread_should_stop());
+		if (kthread_should_stop()) {
+			d->thr = NULL;
+			atomic_set_release(&d->stop, 1);
+>>>>>>> origin/android16-base
 			wake_up(&d->done);
 			break;
 		}
@@ -609,7 +628,11 @@ static int crc32_threadfn(void *data)
 		for (i = 0; i < d->run_threads; i++)
 			*d->crc32 = crc32_le(*d->crc32,
 			                     d->unc[i], *d->unc_len[i]);
+<<<<<<< HEAD
 		atomic_set(&d->stop, 1);
+=======
+		atomic_set_release(&d->stop, 1);
+>>>>>>> origin/android16-base
 		wake_up(&d->done);
 	}
 	return 0;
@@ -639,12 +662,20 @@ static int lzo_compress_threadfn(void *data)
 	struct cmp_data *d = data;
 
 	while (1) {
+<<<<<<< HEAD
 		wait_event(d->go, atomic_read(&d->ready) ||
+=======
+		wait_event(d->go, atomic_read_acquire(&d->ready) ||
+>>>>>>> origin/android16-base
 		                  kthread_should_stop());
 		if (kthread_should_stop()) {
 			d->thr = NULL;
 			d->ret = -1;
+<<<<<<< HEAD
 			atomic_set(&d->stop, 1);
+=======
+			atomic_set_release(&d->stop, 1);
+>>>>>>> origin/android16-base
 			wake_up(&d->done);
 			break;
 		}
@@ -653,7 +684,11 @@ static int lzo_compress_threadfn(void *data)
 		d->ret = lzo1x_1_compress(d->unc, d->unc_len,
 		                          d->cmp + LZO_HEADER, &d->cmp_len,
 		                          d->wrk);
+<<<<<<< HEAD
 		atomic_set(&d->stop, 1);
+=======
+		atomic_set_release(&d->stop, 1);
+>>>>>>> origin/android16-base
 		wake_up(&d->done);
 	}
 	return 0;
@@ -791,7 +826,11 @@ static int save_image_lzo(struct swap_map_handle *handle,
 
 			data[thr].unc_len = off;
 
+<<<<<<< HEAD
 			atomic_set(&data[thr].ready, 1);
+=======
+			atomic_set_release(&data[thr].ready, 1);
+>>>>>>> origin/android16-base
 			wake_up(&data[thr].go);
 		}
 
@@ -799,12 +838,20 @@ static int save_image_lzo(struct swap_map_handle *handle,
 			break;
 
 		crc->run_threads = thr;
+<<<<<<< HEAD
 		atomic_set(&crc->ready, 1);
+=======
+		atomic_set_release(&crc->ready, 1);
+>>>>>>> origin/android16-base
 		wake_up(&crc->go);
 
 		for (run_threads = thr, thr = 0; thr < run_threads; thr++) {
 			wait_event(data[thr].done,
+<<<<<<< HEAD
 			           atomic_read(&data[thr].stop));
+=======
+				atomic_read_acquire(&data[thr].stop));
+>>>>>>> origin/android16-base
 			atomic_set(&data[thr].stop, 0);
 
 			ret = data[thr].ret;
@@ -843,7 +890,11 @@ static int save_image_lzo(struct swap_map_handle *handle,
 			}
 		}
 
+<<<<<<< HEAD
 		wait_event(crc->done, atomic_read(&crc->stop));
+=======
+		wait_event(crc->done, atomic_read_acquire(&crc->stop));
+>>>>>>> origin/android16-base
 		atomic_set(&crc->stop, 0);
 	}
 
@@ -1124,12 +1175,20 @@ static int lzo_decompress_threadfn(void *data)
 	struct dec_data *d = data;
 
 	while (1) {
+<<<<<<< HEAD
 		wait_event(d->go, atomic_read(&d->ready) ||
+=======
+		wait_event(d->go, atomic_read_acquire(&d->ready) ||
+>>>>>>> origin/android16-base
 		                  kthread_should_stop());
 		if (kthread_should_stop()) {
 			d->thr = NULL;
 			d->ret = -1;
+<<<<<<< HEAD
 			atomic_set(&d->stop, 1);
+=======
+			atomic_set_release(&d->stop, 1);
+>>>>>>> origin/android16-base
 			wake_up(&d->done);
 			break;
 		}
@@ -1142,7 +1201,11 @@ static int lzo_decompress_threadfn(void *data)
 			flush_icache_range((unsigned long)d->unc,
 					   (unsigned long)d->unc + d->unc_len);
 
+<<<<<<< HEAD
 		atomic_set(&d->stop, 1);
+=======
+		atomic_set_release(&d->stop, 1);
+>>>>>>> origin/android16-base
 		wake_up(&d->done);
 	}
 	return 0;
@@ -1330,7 +1393,11 @@ static int load_image_lzo(struct swap_map_handle *handle,
 		}
 
 		if (crc->run_threads) {
+<<<<<<< HEAD
 			wait_event(crc->done, atomic_read(&crc->stop));
+=======
+			wait_event(crc->done, atomic_read_acquire(&crc->stop));
+>>>>>>> origin/android16-base
 			atomic_set(&crc->stop, 0);
 			crc->run_threads = 0;
 		}
@@ -1366,7 +1433,11 @@ static int load_image_lzo(struct swap_map_handle *handle,
 					pg = 0;
 			}
 
+<<<<<<< HEAD
 			atomic_set(&data[thr].ready, 1);
+=======
+			atomic_set_release(&data[thr].ready, 1);
+>>>>>>> origin/android16-base
 			wake_up(&data[thr].go);
 		}
 
@@ -1385,7 +1456,11 @@ static int load_image_lzo(struct swap_map_handle *handle,
 
 		for (run_threads = thr, thr = 0; thr < run_threads; thr++) {
 			wait_event(data[thr].done,
+<<<<<<< HEAD
 			           atomic_read(&data[thr].stop));
+=======
+				atomic_read_acquire(&data[thr].stop));
+>>>>>>> origin/android16-base
 			atomic_set(&data[thr].stop, 0);
 
 			ret = data[thr].ret;
@@ -1416,7 +1491,11 @@ static int load_image_lzo(struct swap_map_handle *handle,
 				ret = snapshot_write_next(snapshot);
 				if (ret <= 0) {
 					crc->run_threads = thr + 1;
+<<<<<<< HEAD
 					atomic_set(&crc->ready, 1);
+=======
+					atomic_set_release(&crc->ready, 1);
+>>>>>>> origin/android16-base
 					wake_up(&crc->go);
 					goto out_finish;
 				}
@@ -1424,13 +1503,21 @@ static int load_image_lzo(struct swap_map_handle *handle,
 		}
 
 		crc->run_threads = thr;
+<<<<<<< HEAD
 		atomic_set(&crc->ready, 1);
+=======
+		atomic_set_release(&crc->ready, 1);
+>>>>>>> origin/android16-base
 		wake_up(&crc->go);
 	}
 
 out_finish:
 	if (crc->run_threads) {
+<<<<<<< HEAD
 		wait_event(crc->done, atomic_read(&crc->stop));
+=======
+		wait_event(crc->done, atomic_read_acquire(&crc->stop));
+>>>>>>> origin/android16-base
 		atomic_set(&crc->stop, 0);
 	}
 	stop = ktime_get();
@@ -1512,9 +1599,16 @@ end:
 int swsusp_check(void)
 {
 	int error;
+<<<<<<< HEAD
 
 	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
 					    FMODE_READ, NULL);
+=======
+	void *holder;
+
+	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
+					    FMODE_READ | FMODE_EXCL, &holder);
+>>>>>>> origin/android16-base
 	if (!IS_ERR(hib_resume_bdev)) {
 		set_blocksize(hib_resume_bdev, PAGE_SIZE);
 		clear_page(swsusp_header);
@@ -1536,7 +1630,11 @@ int swsusp_check(void)
 
 put:
 		if (error)
+<<<<<<< HEAD
 			blkdev_put(hib_resume_bdev, FMODE_READ);
+=======
+			blkdev_put(hib_resume_bdev, FMODE_READ | FMODE_EXCL);
+>>>>>>> origin/android16-base
 		else
 			pr_debug("Image signature found, resuming\n");
 	} else {

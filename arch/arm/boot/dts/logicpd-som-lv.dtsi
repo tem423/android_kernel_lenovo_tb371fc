@@ -269,6 +269,7 @@
 	};
 };
 
+<<<<<<< HEAD
 &omap3_pmx_core2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&hsusb2_2_pins>;
@@ -284,6 +285,8 @@
 	};
 };
 
+=======
+>>>>>>> origin/android16-base
 &uart2 {
 	interrupts-extended = <&intc 73 &omap3_pmx_core OMAP3_UART2_RX>;
 	pinctrl-names = "default";

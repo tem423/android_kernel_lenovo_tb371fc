@@ -376,6 +376,10 @@ int chtls_setkey(struct chtls_sock *csk, u32 keylen, u32 optname)
 	csk->wr_unacked += DIV_ROUND_UP(len, 16);
 	enqueue_wr(csk, skb);
 	cxgb4_ofld_send(csk->egress_dev, skb);
+<<<<<<< HEAD
+=======
+	skb = NULL;
+>>>>>>> origin/android16-base
 
 	chtls_set_scmd(csk);
 	/* Clear quiesce for Rx key */

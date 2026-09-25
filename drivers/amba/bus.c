@@ -284,10 +284,18 @@ static int amba_remove(struct device *dev)
 {
 	struct amba_device *pcdev = to_amba_device(dev);
 	struct amba_driver *drv = to_amba_driver(dev->driver);
+<<<<<<< HEAD
 	int ret;
 
 	pm_runtime_get_sync(dev);
 	ret = drv->remove(pcdev);
+=======
+	int ret = 0;
+
+	pm_runtime_get_sync(dev);
+	if (drv->remove)
+		ret = drv->remove(pcdev);
+>>>>>>> origin/android16-base
 	pm_runtime_put_noidle(dev);
 
 	/* Undo the runtime PM settings in amba_probe() */
@@ -304,7 +312,13 @@ static int amba_remove(struct device *dev)
 static void amba_shutdown(struct device *dev)
 {
 	struct amba_driver *drv = to_amba_driver(dev->driver);
+<<<<<<< HEAD
 	drv->shutdown(to_amba_device(dev));
+=======
+
+	if (drv->shutdown)
+		drv->shutdown(to_amba_device(dev));
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -317,12 +331,22 @@ static void amba_shutdown(struct device *dev)
  */
 int amba_driver_register(struct amba_driver *drv)
 {
+<<<<<<< HEAD
 	drv->drv.bus = &amba_bustype;
 
 #define SETFN(fn)	if (drv->fn) drv->drv.fn = amba_##fn
 	SETFN(probe);
 	SETFN(remove);
 	SETFN(shutdown);
+=======
+	if (!drv->probe)
+		return -EINVAL;
+
+	drv->drv.bus = &amba_bustype;
+	drv->drv.probe = amba_probe;
+	drv->drv.remove = amba_remove;
+	drv->drv.shutdown = amba_shutdown;
+>>>>>>> origin/android16-base
 
 	return driver_register(&drv->drv);
 }
@@ -345,6 +369,10 @@ static void amba_device_release(struct device *dev)
 {
 	struct amba_device *d = to_amba_device(dev);
 
+<<<<<<< HEAD
+=======
+	of_node_put(d->dev.of_node);
+>>>>>>> origin/android16-base
 	if (d->res.parent)
 		release_resource(&d->res);
 	kfree(d);
@@ -356,9 +384,12 @@ static int amba_device_try_add(struct amba_device *dev, struct resource *parent)
 	void __iomem *tmp;
 	int i, ret;
 
+<<<<<<< HEAD
 	WARN_ON(dev->irq[0] == (unsigned int)-1);
 	WARN_ON(dev->irq[1] == (unsigned int)-1);
 
+=======
+>>>>>>> origin/android16-base
 	ret = request_resource(parent, &dev->res);
 	if (ret)
 		goto err_out;

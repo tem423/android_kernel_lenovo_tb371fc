@@ -35,7 +35,15 @@
 
 #define BUILD_ID_URANDOM /* different uuid for each run */
 
+<<<<<<< HEAD
 #ifdef HAVE_LIBCRYPTO
+=======
+// FIXME, remove this and fix the deprecation warnings before its removed and
+// We'll break for good here...
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
+#ifdef HAVE_LIBCRYPTO_SUPPORT
+>>>>>>> origin/android16-base
 
 #define BUILD_ID_MD5
 #undef BUILD_ID_SHA	/* does not seem to work well when linked with Java */
@@ -252,6 +260,10 @@ jit_write_elf(int fd, uint64_t load_addr, const char *sym,
 	Elf_Data *d;
 	Elf_Scn *scn;
 	Elf_Ehdr *ehdr;
+<<<<<<< HEAD
+=======
+	Elf_Phdr *phdr;
+>>>>>>> origin/android16-base
 	Elf_Shdr *shdr;
 	uint64_t eh_frame_base_offset;
 	char *strsym = NULL;
@@ -287,6 +299,22 @@ jit_write_elf(int fd, uint64_t load_addr, const char *sym,
 	ehdr->e_shstrndx= unwinding ? 4 : 2; /* shdr index for section name */
 
 	/*
+<<<<<<< HEAD
+=======
+	 * setup program header
+	 */
+	phdr = elf_newphdr(e, 1);
+	phdr[0].p_type = PT_LOAD;
+	phdr[0].p_offset = GEN_ELF_TEXT_OFFSET;
+	phdr[0].p_vaddr = GEN_ELF_TEXT_OFFSET;
+	phdr[0].p_paddr = GEN_ELF_TEXT_OFFSET;
+	phdr[0].p_filesz = csize;
+	phdr[0].p_memsz = csize;
+	phdr[0].p_flags = PF_X | PF_R;
+	phdr[0].p_align = 8;
+
+	/*
+>>>>>>> origin/android16-base
 	 * setup text section
 	 */
 	scn = elf_newscn(e);

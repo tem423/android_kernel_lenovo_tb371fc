@@ -345,7 +345,11 @@ struct dvb_frontend *tda18218_attach(struct dvb_frontend *fe,
 
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(tda18218_attach);
+=======
+EXPORT_SYMBOL_GPL(tda18218_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("NXP TDA18218HN silicon tuner driver");
 MODULE_AUTHOR("Antti Palosaari <crope@iki.fi>");

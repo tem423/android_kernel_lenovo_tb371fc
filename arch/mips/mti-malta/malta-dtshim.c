@@ -26,7 +26,11 @@
 #define  ROCIT_CONFIG_GEN1_MEMMAP_SHIFT	8
 #define  ROCIT_CONFIG_GEN1_MEMMAP_MASK	(0xf << 8)
 
+<<<<<<< HEAD
 static unsigned char fdt_buf[16 << 10] __initdata;
+=======
+static unsigned char fdt_buf[16 << 10] __initdata __aligned(8);
+>>>>>>> origin/android16-base
 
 /* determined physical memory size, not overridden by command line args	 */
 extern unsigned long physical_memsize;

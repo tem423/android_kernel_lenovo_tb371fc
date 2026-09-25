@@ -31,6 +31,10 @@ static struct ima_template_desc builtin_templates[] = {
 
 static LIST_HEAD(defined_templates);
 static DEFINE_SPINLOCK(template_list);
+<<<<<<< HEAD
+=======
+static int template_setup_done;
+>>>>>>> origin/android16-base
 
 static struct ima_template_field supported_fields[] = {
 	{.field_id = "d", .field_init = ima_eventdigest_init,
@@ -57,10 +61,18 @@ static int __init ima_template_setup(char *str)
 	struct ima_template_desc *template_desc;
 	int template_len = strlen(str);
 
+<<<<<<< HEAD
 	if (ima_template)
 		return 1;
 
 	ima_init_template_list();
+=======
+	if (template_setup_done)
+		return 1;
+
+	if (!ima_template)
+		ima_init_template_list();
+>>>>>>> origin/android16-base
 
 	/*
 	 * Verify that a template with the supplied name exists.
@@ -84,6 +96,10 @@ static int __init ima_template_setup(char *str)
 	}
 
 	ima_template = template_desc;
+<<<<<<< HEAD
+=======
+	template_setup_done = 1;
+>>>>>>> origin/android16-base
 	return 1;
 }
 __setup("ima_template=", ima_template_setup);
@@ -92,7 +108,11 @@ static int __init ima_template_fmt_setup(char *str)
 {
 	int num_templates = ARRAY_SIZE(builtin_templates);
 
+<<<<<<< HEAD
 	if (ima_template)
+=======
+	if (template_setup_done)
+>>>>>>> origin/android16-base
 		return 1;
 
 	if (template_desc_init_fields(str, NULL, NULL) < 0) {
@@ -103,6 +123,10 @@ static int __init ima_template_fmt_setup(char *str)
 
 	builtin_templates[num_templates - 1].fmt = str;
 	ima_template = builtin_templates + num_templates - 1;
+<<<<<<< HEAD
+=======
+	template_setup_done = 1;
+>>>>>>> origin/android16-base
 
 	return 1;
 }
@@ -192,11 +216,19 @@ static int template_desc_init_fields(const char *template_fmt,
 	}
 
 	if (fields && num_fields) {
+<<<<<<< HEAD
 		*fields = kmalloc_array(i, sizeof(*fields), GFP_KERNEL);
 		if (*fields == NULL)
 			return -ENOMEM;
 
 		memcpy(*fields, found_fields, i * sizeof(*fields));
+=======
+		*fields = kmalloc_array(i, sizeof(**fields), GFP_KERNEL);
+		if (*fields == NULL)
+			return -ENOMEM;
+
+		memcpy(*fields, found_fields, i * sizeof(**fields));
+>>>>>>> origin/android16-base
 		*num_fields = i;
 	}
 
@@ -262,8 +294,16 @@ static struct ima_template_desc *restore_template_fmt(char *template_name)
 
 	template_desc->name = "";
 	template_desc->fmt = kstrdup(template_name, GFP_KERNEL);
+<<<<<<< HEAD
 	if (!template_desc->fmt)
 		goto out;
+=======
+	if (!template_desc->fmt) {
+		kfree(template_desc);
+		template_desc = NULL;
+		goto out;
+	}
+>>>>>>> origin/android16-base
 
 	spin_lock(&template_list);
 	list_add_tail_rcu(&template_desc->list, &defined_templates);

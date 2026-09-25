@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 ccflags-y := -O3
 ccflags-y += -D'pr_fmt(fmt)=KBUILD_MODNAME ": " fmt'
+=======
+ccflags-y := -D'pr_fmt(fmt)=KBUILD_MODNAME ": " fmt'
+>>>>>>> origin/android16-base
 ccflags-$(CONFIG_WIREGUARD_DEBUG) += -DDEBUG
 wireguard-y := main.o
 wireguard-y += noise.o

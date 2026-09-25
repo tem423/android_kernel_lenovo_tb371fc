@@ -143,14 +143,62 @@ out:
 }
 EXPORT_SYMBOL_GPL(xprt_unregister_transport);
 
+<<<<<<< HEAD
 /**
  * xprt_load_transport - load a transport implementation
  * @transport_name: transport to load
+=======
+static void
+xprt_class_release(const struct xprt_class *t)
+{
+	module_put(t->owner);
+}
+
+static const struct xprt_class *
+xprt_class_find_by_netid_locked(const char *netid)
+{
+	const struct xprt_class *t;
+	unsigned int i;
+
+	list_for_each_entry(t, &xprt_list, list) {
+		for (i = 0; t->netid[i][0] != '\0'; i++) {
+			if (strcmp(t->netid[i], netid) != 0)
+				continue;
+			if (!try_module_get(t->owner))
+				continue;
+			return t;
+		}
+	}
+	return NULL;
+}
+
+static const struct xprt_class *
+xprt_class_find_by_netid(const char *netid)
+{
+	const struct xprt_class *t;
+
+	spin_lock(&xprt_list_lock);
+	t = xprt_class_find_by_netid_locked(netid);
+	if (!t) {
+		spin_unlock(&xprt_list_lock);
+		request_module("rpc%s", netid);
+		spin_lock(&xprt_list_lock);
+		t = xprt_class_find_by_netid_locked(netid);
+	}
+	spin_unlock(&xprt_list_lock);
+	return t;
+}
+
+/**
+ * xprt_load_transport - load a transport implementation
+ * @netid: transport to load
+>>>>>>> origin/android16-base
  *
  * Returns:
  * 0:		transport successfully loaded
  * -ENOENT:	transport module not available
  */
+<<<<<<< HEAD
 int xprt_load_transport(const char *transport_name)
 {
 	struct xprt_class *t;
@@ -168,6 +216,17 @@ int xprt_load_transport(const char *transport_name)
 	result = request_module("xprt%s", transport_name);
 out:
 	return result;
+=======
+int xprt_load_transport(const char *netid)
+{
+	const struct xprt_class *t;
+
+	t = xprt_class_find_by_netid(netid);
+	if (!t)
+		return -ENOENT;
+	xprt_class_release(t);
+	return 0;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(xprt_load_transport);
 
@@ -1512,7 +1571,18 @@ static void xprt_destroy(struct rpc_xprt *xprt)
 	 */
 	wait_on_bit_lock(&xprt->state, XPRT_LOCKED, TASK_UNINTERRUPTIBLE);
 
+<<<<<<< HEAD
 	del_timer_sync(&xprt->timer);
+=======
+	/*
+	 * xprt_schedule_autodisconnect() can run after XPRT_LOCKED
+	 * is cleared.  We use ->transport_lock to ensure the mod_timer()
+	 * can only run *before* del_time_sync(), never after.
+	 */
+	spin_lock_bh(&xprt->transport_lock);
+	del_timer_sync(&xprt->timer);
+	spin_unlock_bh(&xprt->transport_lock);
+>>>>>>> origin/android16-base
 
 	/*
 	 * Destroy sockets etc from the system workqueue so they can

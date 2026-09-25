@@ -258,20 +258,32 @@ static int afe4404_read_raw(struct iio_dev *indio_dev,
 			    int *val, int *val2, long mask)
 {
 	struct afe4404_data *afe = iio_priv(indio_dev);
+<<<<<<< HEAD
 	unsigned int value_reg = afe4404_channel_values[chan->address];
 	unsigned int led_field = afe4404_channel_leds[chan->address];
 	unsigned int offdac_field = afe4404_channel_offdacs[chan->address];
+=======
+	unsigned int value_reg, led_field, offdac_field;
+>>>>>>> origin/android16-base
 	int ret;
 
 	switch (chan->type) {
 	case IIO_INTENSITY:
 		switch (mask) {
 		case IIO_CHAN_INFO_RAW:
+<<<<<<< HEAD
+=======
+			value_reg = afe4404_channel_values[chan->address];
+>>>>>>> origin/android16-base
 			ret = regmap_read(afe->regmap, value_reg, val);
 			if (ret)
 				return ret;
 			return IIO_VAL_INT;
 		case IIO_CHAN_INFO_OFFSET:
+<<<<<<< HEAD
+=======
+			offdac_field = afe4404_channel_offdacs[chan->address];
+>>>>>>> origin/android16-base
 			ret = regmap_field_read(afe->fields[offdac_field], val);
 			if (ret)
 				return ret;
@@ -281,6 +293,10 @@ static int afe4404_read_raw(struct iio_dev *indio_dev,
 	case IIO_CURRENT:
 		switch (mask) {
 		case IIO_CHAN_INFO_RAW:
+<<<<<<< HEAD
+=======
+			led_field = afe4404_channel_leds[chan->address];
+>>>>>>> origin/android16-base
 			ret = regmap_field_read(afe->fields[led_field], val);
 			if (ret)
 				return ret;
@@ -303,19 +319,31 @@ static int afe4404_write_raw(struct iio_dev *indio_dev,
 			     int val, int val2, long mask)
 {
 	struct afe4404_data *afe = iio_priv(indio_dev);
+<<<<<<< HEAD
 	unsigned int led_field = afe4404_channel_leds[chan->address];
 	unsigned int offdac_field = afe4404_channel_offdacs[chan->address];
+=======
+	unsigned int led_field, offdac_field;
+>>>>>>> origin/android16-base
 
 	switch (chan->type) {
 	case IIO_INTENSITY:
 		switch (mask) {
 		case IIO_CHAN_INFO_OFFSET:
+<<<<<<< HEAD
+=======
+			offdac_field = afe4404_channel_offdacs[chan->address];
+>>>>>>> origin/android16-base
 			return regmap_field_write(afe->fields[offdac_field], val);
 		}
 		break;
 	case IIO_CURRENT:
 		switch (mask) {
 		case IIO_CHAN_INFO_RAW:
+<<<<<<< HEAD
+=======
+			led_field = afe4404_channel_leds[chan->address];
+>>>>>>> origin/android16-base
 			return regmap_field_write(afe->fields[led_field], val);
 		}
 		break;

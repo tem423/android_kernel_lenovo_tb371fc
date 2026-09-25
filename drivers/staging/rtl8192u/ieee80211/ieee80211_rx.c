@@ -961,9 +961,17 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
 #endif
 
 	if (ieee->iw_mode == IW_MODE_MONITOR) {
+<<<<<<< HEAD
 		ieee80211_monitor_rx(ieee, skb, rx_stats);
 		stats->rx_packets++;
 		stats->rx_bytes += skb->len;
+=======
+		unsigned int len = skb->len;
+
+		ieee80211_monitor_rx(ieee, skb, rx_stats);
+		stats->rx_packets++;
+		stats->rx_bytes += len;
+>>>>>>> origin/android16-base
 		return 1;
 	}
 

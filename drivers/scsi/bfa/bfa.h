@@ -28,7 +28,10 @@
 struct bfa_s;
 
 typedef void (*bfa_isr_func_t) (struct bfa_s *bfa, struct bfi_msg_s *m);
+<<<<<<< HEAD
 typedef void (*bfa_cb_cbfn_status_t) (void *cbarg, bfa_status_t status);
+=======
+>>>>>>> origin/android16-base
 
 /*
  * Interrupt message handlers
@@ -446,4 +449,15 @@ struct bfa_cb_pending_q_s {
 	(__qe)->data = (__data);				\
 } while (0)
 
+<<<<<<< HEAD
+=======
+#define bfa_pending_q_init_status(__qe, __cbfn, __cbarg, __data) do {	\
+	bfa_q_qe_init(&((__qe)->hcb_qe.qe));			\
+	(__qe)->hcb_qe.cbfn_status = (__cbfn);			\
+	(__qe)->hcb_qe.cbarg = (__cbarg);			\
+	(__qe)->hcb_qe.pre_rmv = BFA_TRUE;			\
+	(__qe)->data = (__data);				\
+} while (0)
+
+>>>>>>> origin/android16-base
 #endif /* __BFA_H__ */

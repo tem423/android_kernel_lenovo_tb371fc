@@ -277,7 +277,11 @@ static int ovl_encode_fh(struct inode *inode, u32 *fid, int *max_len,
 		return FILEID_INVALID;
 
 	dentry = d_find_any_alias(inode);
+<<<<<<< HEAD
 	if (WARN_ON(!dentry))
+=======
+	if (!dentry)
+>>>>>>> origin/android16-base
 		return FILEID_INVALID;
 
 	type = ovl_dentry_to_fh(dentry, fid, max_len);

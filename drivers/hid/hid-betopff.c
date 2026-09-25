@@ -59,6 +59,7 @@ static int betopff_init(struct hid_device *hid)
 {
 	struct betopff_device *betopff;
 	struct hid_report *report;
+<<<<<<< HEAD
 	struct hid_input *hidinput =
 			list_first_entry(&hid->inputs, struct hid_input, list);
 	struct list_head *report_list =
@@ -68,6 +69,23 @@ static int betopff_init(struct hid_device *hid)
 	int error;
 	int i, j;
 
+=======
+	struct hid_input *hidinput;
+	struct list_head *report_list =
+			&hid->report_enum[HID_OUTPUT_REPORT].report_list;
+	struct input_dev *dev;
+	int error;
+	int i, j;
+
+	if (list_empty(&hid->inputs)) {
+		hid_err(hid, "no inputs found\n");
+		return -ENODEV;
+	}
+
+	hidinput = list_first_entry(&hid->inputs, struct hid_input, list);
+	dev = hidinput->input;
+
+>>>>>>> origin/android16-base
 	if (list_empty(report_list)) {
 		hid_err(hid, "no output reports found\n");
 		return -ENODEV;
@@ -82,6 +100,7 @@ static int betopff_init(struct hid_device *hid)
 	 * -----------------------------------------
 	 * Do init them with default value.
 	 */
+<<<<<<< HEAD
 	for (i = 0; i < report->maxfield; i++) {
 		for (j = 0; j < report->field[i]->report_count; j++) {
 			report->field[i]->value[j] = 0x00;
@@ -95,6 +114,23 @@ static int betopff_init(struct hid_device *hid)
 		return -ENODEV;
 	}
 
+=======
+	if (report->maxfield < 4) {
+		hid_err(hid, "not enough fields in the report: %d\n",
+				report->maxfield);
+		return -ENODEV;
+	}
+	for (i = 0; i < report->maxfield; i++) {
+		if (report->field[i]->report_count < 1) {
+			hid_err(hid, "no values in the field\n");
+			return -ENODEV;
+		}
+		for (j = 0; j < report->field[i]->report_count; j++) {
+			report->field[i]->value[j] = 0x00;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	betopff = kzalloc(sizeof(*betopff), GFP_KERNEL);
 	if (!betopff)
 		return -ENOMEM;

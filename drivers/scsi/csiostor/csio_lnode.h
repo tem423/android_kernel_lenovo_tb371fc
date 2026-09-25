@@ -53,6 +53,7 @@
 extern int csio_fcoe_rnodes;
 extern int csio_fdmi_enable;
 
+<<<<<<< HEAD
 /* State machine evets */
 enum csio_ln_ev {
 	CSIO_LNE_NONE = (uint32_t)0,
@@ -66,6 +67,8 @@ enum csio_ln_ev {
 };
 
 
+=======
+>>>>>>> origin/android16-base
 struct csio_fcf_info {
 	struct list_head	list;
 	uint8_t			priority;

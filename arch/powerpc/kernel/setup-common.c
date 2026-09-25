@@ -929,8 +929,11 @@ void __init setup_arch(char **cmdline_p)
 
 	/* On BookE, setup per-core TLB data structures. */
 	setup_tlb_core_data();
+<<<<<<< HEAD
 
 	smp_release_cpus();
+=======
+>>>>>>> origin/android16-base
 #endif
 
 	/* Print various info about the machine that has been gathered so far. */
@@ -964,6 +967,11 @@ void __init setup_arch(char **cmdline_p)
 	exc_lvl_early_init();
 	emergency_stack_init();
 
+<<<<<<< HEAD
+=======
+	smp_release_cpus();
+
+>>>>>>> origin/android16-base
 	initmem_init();
 
 #ifdef CONFIG_DUMMY_CONSOLE

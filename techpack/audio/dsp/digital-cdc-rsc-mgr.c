@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
+=======
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/clk.h>
@@ -33,7 +37,10 @@ int digital_cdc_rsc_mgr_hw_vote_enable(struct clk* vote_handle)
 	mutex_unlock(&hw_vote_lock);
 
 	pr_debug("%s: return %d\n", __func__, ret);
+<<<<<<< HEAD
 	trace_printk("%s: return %d\n", __func__, ret);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 EXPORT_SYMBOL(digital_cdc_rsc_mgr_hw_vote_enable);
@@ -55,7 +62,11 @@ void digital_cdc_rsc_mgr_hw_vote_disable(struct clk* vote_handle)
 	mutex_lock(&hw_vote_lock);
 	clk_disable_unprepare(vote_handle);
 	mutex_unlock(&hw_vote_lock);
+<<<<<<< HEAD
 	trace_printk("%s\n", __func__);
+=======
+	pr_debug("%s\n", __func__);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(digital_cdc_rsc_mgr_hw_vote_disable);
 
@@ -79,7 +90,10 @@ void digital_cdc_rsc_mgr_hw_vote_reset(struct clk* vote_handle)
 		count++;
 	}
 	pr_debug("%s: Vote count after SSR: %d\n", __func__, count);
+<<<<<<< HEAD
 	trace_printk("%s: Vote count after SSR: %d\n", __func__, count);
+=======
+>>>>>>> origin/android16-base
 
 	while (count--)
 		clk_prepare_enable(vote_handle);

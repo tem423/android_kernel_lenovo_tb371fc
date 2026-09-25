@@ -468,6 +468,10 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
 					   &kdev->kobj, "state%d", i);
 		if (ret) {
 			kobject_put(&kobj->kobj);
+<<<<<<< HEAD
+=======
+			kfree(kobj);
+>>>>>>> origin/android16-base
 			goto error_state;
 		}
 		cpuidle_add_s2idle_attr_group(kobj);
@@ -599,6 +603,10 @@ static int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
 				   &kdev->kobj, "driver");
 	if (ret) {
 		kobject_put(&kdrv->kobj);
+<<<<<<< HEAD
+=======
+		kfree(kdrv);
+>>>>>>> origin/android16-base
 		return ret;
 	}
 
@@ -685,7 +693,10 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
 	if (!kdev)
 		return -ENOMEM;
 	kdev->dev = dev;
+<<<<<<< HEAD
 	dev->kobj_dev = kdev;
+=======
+>>>>>>> origin/android16-base
 
 	init_completion(&kdev->kobj_unregister);
 
@@ -693,9 +704,17 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
 				   "cpuidle");
 	if (error) {
 		kobject_put(&kdev->kobj);
+<<<<<<< HEAD
 		return error;
 	}
 
+=======
+		kfree(kdev);
+		return error;
+	}
+
+	dev->kobj_dev = kdev;
+>>>>>>> origin/android16-base
 	kobject_uevent(&kdev->kobj, KOBJ_ADD);
 
 	return 0;

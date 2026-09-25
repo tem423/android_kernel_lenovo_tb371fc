@@ -1819,6 +1819,10 @@ qla24xx_tm_iocb_entry(scsi_qla_host_t *vha, struct req_que *req, void *tsk)
 		iocb->u.tmf.data = QLA_FUNCTION_FAILED;
 	} else if ((le16_to_cpu(sts->scsi_status) &
 	    SS_RESPONSE_INFO_LEN_VALID)) {
+<<<<<<< HEAD
+=======
+		host_to_fcp_swap(sts->data, sizeof(sts->data));
+>>>>>>> origin/android16-base
 		if (le32_to_cpu(sts->rsp_data_len) < 4) {
 			ql_log(ql_log_warn, fcport->vha, 0x503b,
 			    "Async-%s error - hdl=%x not enough response(%d).\n",
@@ -2672,7 +2676,10 @@ check_scsi_status:
 	case CS_PORT_BUSY:
 	case CS_INCOMPLETE:
 	case CS_PORT_UNAVAILABLE:
+<<<<<<< HEAD
 	case CS_TIMEOUT:
+=======
+>>>>>>> origin/android16-base
 	case CS_RESET:
 
 		/*

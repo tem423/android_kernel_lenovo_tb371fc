@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
+<<<<<<< HEAD
  * fs/verity/verify.c: data verification functions, i.e. hooks for ->readpages()
+=======
+ * Data verification functions, i.e. hooks for ->readpages()
+>>>>>>> origin/android16-base
  *
  * Copyright 2019 Google LLC
  */
@@ -279,6 +283,7 @@ EXPORT_SYMBOL_GPL(fsverity_enqueue_verify_work);
 int __init fsverity_init_workqueue(void)
 {
 	/*
+<<<<<<< HEAD
 	 * Use an unbound workqueue to allow bios to be verified in parallel
 	 * even when they happen to complete on the same CPU.  This sacrifices
 	 * locality, but it's worthwhile since hashing is CPU-intensive.
@@ -288,6 +293,17 @@ int __init fsverity_init_workqueue(void)
 	 */
 	fsverity_read_workqueue = alloc_workqueue("fsverity_read_queue",
 						  WQ_UNBOUND | WQ_HIGHPRI,
+=======
+	 * Use a high-priority workqueue to prioritize verification work, which
+	 * blocks reads from completing, over regular application tasks.
+	 *
+	 * For performance reasons, don't use an unbound workqueue.  Using an
+	 * unbound workqueue for crypto operations causes excessive scheduler
+	 * latency on ARM64.
+	 */
+	fsverity_read_workqueue = alloc_workqueue("fsverity_read_queue",
+						  WQ_HIGHPRI,
+>>>>>>> origin/android16-base
 						  num_online_cpus());
 	if (!fsverity_read_workqueue)
 		return -ENOMEM;

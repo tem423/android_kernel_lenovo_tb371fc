@@ -630,6 +630,15 @@ static struct sk_buff *tls_wait_data(struct sock *sk, int flags,
 			return NULL;
 		}
 
+<<<<<<< HEAD
+=======
+		if (!skb_queue_empty(&sk->sk_receive_queue)) {
+			__strp_unpause(&ctx->strp);
+			if (ctx->recv_pkt)
+				return ctx->recv_pkt;
+		}
+
+>>>>>>> origin/android16-base
 		if (sk->sk_shutdown & RCV_SHUTDOWN)
 			return NULL;
 

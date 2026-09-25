@@ -233,12 +233,19 @@ static void scsifront_gnttab_done(struct vscsifrnt_info *info,
 		return;
 
 	for (i = 0; i < shadow->nr_grants; i++) {
+<<<<<<< HEAD
 		if (unlikely(gnttab_query_foreign_access(shadow->gref[i]))) {
+=======
+		if (unlikely(!gnttab_try_end_foreign_access(shadow->gref[i]))) {
+>>>>>>> origin/android16-base
 			shost_printk(KERN_ALERT, info->host, KBUILD_MODNAME
 				     "grant still in use by backend\n");
 			BUG();
 		}
+<<<<<<< HEAD
 		gnttab_end_foreign_access(shadow->gref[i], 0, 0UL);
+=======
+>>>>>>> origin/android16-base
 	}
 
 	kfree(shadow->sg);

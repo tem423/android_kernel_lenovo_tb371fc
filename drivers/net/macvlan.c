@@ -769,7 +769,11 @@ static void macvlan_change_rx_flags(struct net_device *dev, int change)
 	if (dev->flags & IFF_UP) {
 		if (change & IFF_ALLMULTI)
 			dev_set_allmulti(lowerdev, dev->flags & IFF_ALLMULTI ? 1 : -1);
+<<<<<<< HEAD
 		if (change & IFF_PROMISC)
+=======
+		if (!macvlan_passthru(vlan->port) && change & IFF_PROMISC)
+>>>>>>> origin/android16-base
 			dev_set_promiscuity(lowerdev,
 					    dev->flags & IFF_PROMISC ? 1 : -1);
 
@@ -1137,7 +1141,11 @@ void macvlan_common_setup(struct net_device *dev)
 {
 	ether_setup(dev);
 
+<<<<<<< HEAD
 	dev->min_mtu		= 0;
+=======
+	/* ether_setup() has set dev->min_mtu to ETH_MIN_MTU. */
+>>>>>>> origin/android16-base
 	dev->max_mtu		= ETH_MAX_MTU;
 	dev->priv_flags	       &= ~IFF_TX_SKB_SHARING;
 	netif_keep_dst(dev);
@@ -1471,8 +1479,15 @@ destroy_macvlan_port:
 	/* the macvlan port may be freed by macvlan_uninit when fail to register.
 	 * so we destroy the macvlan port only when it's valid.
 	 */
+<<<<<<< HEAD
 	if (create && macvlan_port_get_rtnl(lowerdev))
 		macvlan_port_destroy(port->dev);
+=======
+	if (create && macvlan_port_get_rtnl(lowerdev)) {
+		macvlan_flush_sources(port, vlan);
+		macvlan_port_destroy(port->dev);
+	}
+>>>>>>> origin/android16-base
 	return err;
 }
 EXPORT_SYMBOL_GPL(macvlan_common_newlink);

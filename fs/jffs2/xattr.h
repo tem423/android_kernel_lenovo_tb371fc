@@ -71,7 +71,11 @@ static inline int is_xattr_ref_dead(struct jffs2_xattr_ref *ref)
 #ifdef CONFIG_JFFS2_FS_XATTR
 
 extern void jffs2_init_xattr_subsystem(struct jffs2_sb_info *c);
+<<<<<<< HEAD
 extern void jffs2_build_xattr_subsystem(struct jffs2_sb_info *c);
+=======
+extern int jffs2_build_xattr_subsystem(struct jffs2_sb_info *c);
+>>>>>>> origin/android16-base
 extern void jffs2_clear_xattr_subsystem(struct jffs2_sb_info *c);
 
 extern struct jffs2_xattr_datum *jffs2_setup_xattr_datum(struct jffs2_sb_info *c,
@@ -103,7 +107,11 @@ extern ssize_t jffs2_listxattr(struct dentry *, char *, size_t);
 #else
 
 #define jffs2_init_xattr_subsystem(c)
+<<<<<<< HEAD
 #define jffs2_build_xattr_subsystem(c)
+=======
+#define jffs2_build_xattr_subsystem(c)		(0)
+>>>>>>> origin/android16-base
 #define jffs2_clear_xattr_subsystem(c)
 
 #define jffs2_xattr_do_crccheck_inode(c, ic)

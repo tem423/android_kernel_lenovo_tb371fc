@@ -98,7 +98,11 @@ static int do_pd_setup(struct fs_enet_private *fep)
 		return -EINVAL;
 
 	fep->fec.fecp = of_iomap(ofdev->dev.of_node, 0);
+<<<<<<< HEAD
 	if (!fep->fcc.fccp)
+=======
+	if (!fep->fec.fecp)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	return 0;

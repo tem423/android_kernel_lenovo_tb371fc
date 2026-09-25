@@ -176,10 +176,17 @@ void rds_tcp_reset_callbacks(struct socket *sock,
 	 */
 	atomic_set(&cp->cp_state, RDS_CONN_RESETTING);
 	wait_event(cp->cp_waitq, !test_bit(RDS_IN_XMIT, &cp->cp_flags));
+<<<<<<< HEAD
 	lock_sock(osock->sk);
 	/* reset receive side state for rds_tcp_data_recv() for osock  */
 	cancel_delayed_work_sync(&cp->cp_send_w);
 	cancel_delayed_work_sync(&cp->cp_recv_w);
+=======
+	/* reset receive side state for rds_tcp_data_recv() for osock  */
+	cancel_delayed_work_sync(&cp->cp_send_w);
+	cancel_delayed_work_sync(&cp->cp_recv_w);
+	lock_sock(osock->sk);
+>>>>>>> origin/android16-base
 	if (tc->t_tinc) {
 		rds_inc_put(&tc->t_tinc->ti_inc);
 		tc->t_tinc = NULL;
@@ -322,8 +329,13 @@ out:
 }
 #endif
 
+<<<<<<< HEAD
 static int rds_tcp_laddr_check(struct net *net, const struct in6_addr *addr,
 			       __u32 scope_id)
+=======
+int rds_tcp_laddr_check(struct net *net, const struct in6_addr *addr,
+			__u32 scope_id)
+>>>>>>> origin/android16-base
 {
 	struct net_device *dev = NULL;
 #if IS_ENABLED(CONFIG_IPV6)
@@ -502,7 +514,11 @@ void rds_tcp_tune(struct socket *sock)
 		sk->sk_userlocks |= SOCK_SNDBUF_LOCK;
 	}
 	if (rtn->rcvbuf_size > 0) {
+<<<<<<< HEAD
 		sk->sk_sndbuf = rtn->rcvbuf_size;
+=======
+		sk->sk_rcvbuf = rtn->rcvbuf_size;
+>>>>>>> origin/android16-base
 		sk->sk_userlocks |= SOCK_RCVBUF_LOCK;
 	}
 	release_sock(sk);

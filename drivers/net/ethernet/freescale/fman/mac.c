@@ -94,14 +94,25 @@ static void mac_exception(void *handle, enum fman_mac_exceptions ex)
 		__func__, ex);
 }
 
+<<<<<<< HEAD
 static void set_fman_mac_params(struct mac_device *mac_dev,
 				struct fman_mac_params *params)
+=======
+static int set_fman_mac_params(struct mac_device *mac_dev,
+			       struct fman_mac_params *params)
+>>>>>>> origin/android16-base
 {
 	struct mac_priv_s *priv = mac_dev->priv;
 
 	params->base_addr = (typeof(params->base_addr))
 		devm_ioremap(priv->dev, mac_dev->res->start,
 			     resource_size(mac_dev->res));
+<<<<<<< HEAD
+=======
+	if (!params->base_addr)
+		return -ENOMEM;
+
+>>>>>>> origin/android16-base
 	memcpy(&params->addr, mac_dev->addr, sizeof(mac_dev->addr));
 	params->max_speed	= priv->max_speed;
 	params->phy_if		= mac_dev->phy_if;
@@ -112,6 +123,11 @@ static void set_fman_mac_params(struct mac_device *mac_dev,
 	params->event_cb	= mac_exception;
 	params->dev_id		= mac_dev;
 	params->internal_phy_node = priv->internal_phy_node;
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static int tgec_initialization(struct mac_device *mac_dev)
@@ -123,7 +139,13 @@ static int tgec_initialization(struct mac_device *mac_dev)
 
 	priv = mac_dev->priv;
 
+<<<<<<< HEAD
 	set_fman_mac_params(mac_dev, &params);
+=======
+	err = set_fman_mac_params(mac_dev, &params);
+	if (err)
+		goto _return;
+>>>>>>> origin/android16-base
 
 	mac_dev->fman_mac = tgec_config(&params);
 	if (!mac_dev->fman_mac) {
@@ -169,7 +191,13 @@ static int dtsec_initialization(struct mac_device *mac_dev)
 
 	priv = mac_dev->priv;
 
+<<<<<<< HEAD
 	set_fman_mac_params(mac_dev, &params);
+=======
+	err = set_fman_mac_params(mac_dev, &params);
+	if (err)
+		goto _return;
+>>>>>>> origin/android16-base
 
 	mac_dev->fman_mac = dtsec_config(&params);
 	if (!mac_dev->fman_mac) {
@@ -218,7 +246,13 @@ static int memac_initialization(struct mac_device *mac_dev)
 
 	priv = mac_dev->priv;
 
+<<<<<<< HEAD
 	set_fman_mac_params(mac_dev, &params);
+=======
+	err = set_fman_mac_params(mac_dev, &params);
+	if (err)
+		goto _return;
+>>>>>>> origin/android16-base
 
 	if (priv->max_speed == SPEED_10000)
 		params.phy_if = PHY_INTERFACE_MODE_XGMII;
@@ -880,12 +914,27 @@ _return:
 	return err;
 }
 
+<<<<<<< HEAD
+=======
+static int mac_remove(struct platform_device *pdev)
+{
+	struct mac_device *mac_dev = platform_get_drvdata(pdev);
+
+	platform_device_unregister(mac_dev->priv->eth_dev);
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static struct platform_driver mac_driver = {
 	.driver = {
 		.name		= KBUILD_MODNAME,
 		.of_match_table	= mac_match,
 	},
 	.probe		= mac_probe,
+<<<<<<< HEAD
+=======
+	.remove		= mac_remove,
+>>>>>>> origin/android16-base
 };
 
 builtin_platform_driver(mac_driver);

@@ -1443,7 +1443,10 @@ static int reiserfs_remount(struct super_block *s, int *mount_flags, char *arg)
 	unsigned long safe_mask = 0;
 	unsigned int commit_max_age = (unsigned int)-1;
 	struct reiserfs_journal *journal = SB_JOURNAL(s);
+<<<<<<< HEAD
 	char *new_opts;
+=======
+>>>>>>> origin/android16-base
 	int err;
 	char *qf_names[REISERFS_MAXQUOTAS];
 	unsigned int qfmt = 0;
@@ -1451,10 +1454,13 @@ static int reiserfs_remount(struct super_block *s, int *mount_flags, char *arg)
 	int i;
 #endif
 
+<<<<<<< HEAD
 	new_opts = kstrdup(arg, GFP_KERNEL);
 	if (arg && !new_opts)
 		return -ENOMEM;
 
+=======
+>>>>>>> origin/android16-base
 	sync_filesystem(s);
 	reiserfs_write_lock(s);
 
@@ -1605,7 +1611,10 @@ out_ok_unlocked:
 out_err_unlock:
 	reiserfs_write_unlock(s);
 out_err:
+<<<<<<< HEAD
 	kfree(new_opts);
+=======
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -2085,6 +2094,17 @@ static int reiserfs_fill_super(struct super_block *s, void *data, int silent)
 		unlock_new_inode(root_inode);
 	}
 
+<<<<<<< HEAD
+=======
+	if (!S_ISDIR(root_inode->i_mode) || !inode_get_bytes(root_inode) ||
+	    !root_inode->i_size) {
+		SWARN(silent, s, "", "corrupt root inode, run fsck");
+		iput(root_inode);
+		errval = -EUCLEAN;
+		goto error;
+	}
+
+>>>>>>> origin/android16-base
 	s->s_root = d_make_root(root_inode);
 	if (!s->s_root)
 		goto error;

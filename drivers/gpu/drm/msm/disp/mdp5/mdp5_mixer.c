@@ -127,6 +127,7 @@ int mdp5_mixer_assign(struct drm_atomic_state *s, struct drm_crtc *crtc,
 	return 0;
 }
 
+<<<<<<< HEAD
 void mdp5_mixer_release(struct drm_atomic_state *s, struct mdp5_hw_mixer *mixer)
 {
 	struct mdp5_global_state *global_state = mdp5_get_global_state(s);
@@ -137,11 +138,33 @@ void mdp5_mixer_release(struct drm_atomic_state *s, struct mdp5_hw_mixer *mixer)
 
 	if (WARN_ON(!new_state->hwmixer_to_crtc[mixer->idx]))
 		return;
+=======
+int mdp5_mixer_release(struct drm_atomic_state *s, struct mdp5_hw_mixer *mixer)
+{
+	struct mdp5_global_state *global_state = mdp5_get_global_state(s);
+	struct mdp5_hw_mixer_state *new_state;
+
+	if (!mixer)
+		return 0;
+
+	if (IS_ERR(global_state))
+		return PTR_ERR(global_state);
+
+	new_state = &global_state->hwmixer;
+
+	if (WARN_ON(!new_state->hwmixer_to_crtc[mixer->idx]))
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	DBG("%s: release from crtc %s", mixer->name,
 	    new_state->hwmixer_to_crtc[mixer->idx]->name);
 
 	new_state->hwmixer_to_crtc[mixer->idx] = NULL;
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 void mdp5_mixer_destroy(struct mdp5_hw_mixer *mixer)

@@ -97,9 +97,17 @@ static int max77802_set_suspend_disable(struct regulator_dev *rdev)
 {
 	unsigned int val = MAX77802_OFF_PWRREQ;
 	struct max77802_regulator_prv *max77802 = rdev_get_drvdata(rdev);
+<<<<<<< HEAD
 	int id = rdev_get_id(rdev);
 	int shift = max77802_get_opmode_shift(id);
 
+=======
+	unsigned int id = rdev_get_id(rdev);
+	int shift = max77802_get_opmode_shift(id);
+
+	if (WARN_ON_ONCE(id >= ARRAY_SIZE(max77802->opmode)))
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	max77802->opmode[id] = val;
 	return regmap_update_bits(rdev->regmap, rdev->desc->enable_reg,
 				  rdev->desc->enable_mask, val << shift);
@@ -113,7 +121,11 @@ static int max77802_set_suspend_disable(struct regulator_dev *rdev)
 static int max77802_set_mode(struct regulator_dev *rdev, unsigned int mode)
 {
 	struct max77802_regulator_prv *max77802 = rdev_get_drvdata(rdev);
+<<<<<<< HEAD
 	int id = rdev_get_id(rdev);
+=======
+	unsigned int id = rdev_get_id(rdev);
+>>>>>>> origin/android16-base
 	unsigned int val;
 	int shift = max77802_get_opmode_shift(id);
 
@@ -130,6 +142,12 @@ static int max77802_set_mode(struct regulator_dev *rdev, unsigned int mode)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
+=======
+	if (WARN_ON_ONCE(id >= ARRAY_SIZE(max77802->opmode)))
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	max77802->opmode[id] = val;
 	return regmap_update_bits(rdev->regmap, rdev->desc->enable_reg,
 				  rdev->desc->enable_mask, val << shift);
@@ -138,8 +156,15 @@ static int max77802_set_mode(struct regulator_dev *rdev, unsigned int mode)
 static unsigned max77802_get_mode(struct regulator_dev *rdev)
 {
 	struct max77802_regulator_prv *max77802 = rdev_get_drvdata(rdev);
+<<<<<<< HEAD
 	int id = rdev_get_id(rdev);
 
+=======
+	unsigned int id = rdev_get_id(rdev);
+
+	if (WARN_ON_ONCE(id >= ARRAY_SIZE(max77802->opmode)))
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	return max77802_map_mode(max77802->opmode[id]);
 }
 
@@ -163,10 +188,20 @@ static int max77802_set_suspend_mode(struct regulator_dev *rdev,
 				     unsigned int mode)
 {
 	struct max77802_regulator_prv *max77802 = rdev_get_drvdata(rdev);
+<<<<<<< HEAD
 	int id = rdev_get_id(rdev);
 	unsigned int val;
 	int shift = max77802_get_opmode_shift(id);
 
+=======
+	unsigned int id = rdev_get_id(rdev);
+	unsigned int val;
+	int shift = max77802_get_opmode_shift(id);
+
+	if (WARN_ON_ONCE(id >= ARRAY_SIZE(max77802->opmode)))
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	/*
 	 * If the regulator has been disabled for suspend
 	 * then is invalid to try setting a suspend mode.
@@ -212,9 +247,17 @@ static int max77802_set_suspend_mode(struct regulator_dev *rdev,
 static int max77802_enable(struct regulator_dev *rdev)
 {
 	struct max77802_regulator_prv *max77802 = rdev_get_drvdata(rdev);
+<<<<<<< HEAD
 	int id = rdev_get_id(rdev);
 	int shift = max77802_get_opmode_shift(id);
 
+=======
+	unsigned int id = rdev_get_id(rdev);
+	int shift = max77802_get_opmode_shift(id);
+
+	if (WARN_ON_ONCE(id >= ARRAY_SIZE(max77802->opmode)))
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	if (max77802->opmode[id] == MAX77802_OFF_PWRREQ)
 		max77802->opmode[id] = MAX77802_OPMODE_NORMAL;
 
@@ -543,7 +586,11 @@ static int max77802_pmic_probe(struct platform_device *pdev)
 
 	for (i = 0; i < MAX77802_REG_MAX; i++) {
 		struct regulator_dev *rdev;
+<<<<<<< HEAD
 		int id = regulators[i].id;
+=======
+		unsigned int id = regulators[i].id;
+>>>>>>> origin/android16-base
 		int shift = max77802_get_opmode_shift(id);
 		int ret;
 
@@ -561,10 +608,19 @@ static int max77802_pmic_probe(struct platform_device *pdev)
 		 * the hardware reports OFF as the regulator operating mode.
 		 * Default to operating mode NORMAL in that case.
 		 */
+<<<<<<< HEAD
 		if (val == MAX77802_STATUS_OFF)
 			max77802->opmode[id] = MAX77802_OPMODE_NORMAL;
 		else
 			max77802->opmode[id] = val;
+=======
+		if (id < ARRAY_SIZE(max77802->opmode)) {
+			if (val == MAX77802_STATUS_OFF)
+				max77802->opmode[id] = MAX77802_OPMODE_NORMAL;
+			else
+				max77802->opmode[id] = val;
+		}
+>>>>>>> origin/android16-base
 
 		rdev = devm_regulator_register(&pdev->dev,
 					       &regulators[i], &config);

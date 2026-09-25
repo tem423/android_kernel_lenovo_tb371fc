@@ -471,7 +471,11 @@ static void sl_tx_timeout(struct net_device *dev)
 	spin_lock(&sl->lock);
 
 	if (netif_queue_stopped(dev)) {
+<<<<<<< HEAD
 		if (!netif_running(dev))
+=======
+		if (!netif_running(dev) || !sl->tty)
+>>>>>>> origin/android16-base
 			goto out;
 
 		/* May be we must check transmitter timeout here ?

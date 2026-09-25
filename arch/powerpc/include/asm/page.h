@@ -335,6 +335,7 @@ void arch_free_page(struct page *page, int order);
 #endif
 
 struct vm_area_struct;
+<<<<<<< HEAD
 #ifdef CONFIG_PPC_BOOK3S_64
 /*
  * For BOOK3s 64 with 4k and 64K linux page size
@@ -349,6 +350,8 @@ typedef pte_t *pgtable_t;
 typedef struct page *pgtable_t;
 #endif
 #endif
+=======
+>>>>>>> origin/android16-base
 
 #include <asm-generic/memory_model.h>
 #endif /* __ASSEMBLY__ */

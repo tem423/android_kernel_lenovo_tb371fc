@@ -517,6 +517,10 @@ All I-Force devices are supported by the iforce module. This includes:
 * AVB Mag Turbo Force
 * AVB Top Shot Pegasus
 * AVB Top Shot Force Feedback Racing Wheel
+<<<<<<< HEAD
+=======
+* Boeder Force Feedback Wheel
+>>>>>>> origin/android16-base
 * Logitech WingMan Force
 * Logitech WingMan Force Wheel
 * Guillemot Race Leader Force Feedback

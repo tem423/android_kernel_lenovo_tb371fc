@@ -282,7 +282,11 @@ static void die_kernel_fault(const char *msg, unsigned long addr,
 	show_pte(addr);
 	die("Oops", regs, esr);
 	bust_spinlocks(0);
+<<<<<<< HEAD
 	do_exit(SIGKILL);
+=======
+	make_task_dead(SIGKILL);
+>>>>>>> origin/android16-base
 }
 
 static void __do_kernel_fault(unsigned long addr, unsigned int esr,
@@ -390,6 +394,7 @@ static void do_bad_area(unsigned long addr, unsigned int esr, struct pt_regs *re
 	}
 }
 
+<<<<<<< HEAD
 #define VM_FAULT_BADMAP		0x010000
 #define VM_FAULT_BADACCESS	0x020000
 
@@ -399,6 +404,19 @@ static int __do_page_fault(struct vm_area_struct *vma, unsigned long addr,
 {
 	vm_fault_t fault;
 
+=======
+#define VM_FAULT_BADMAP		((__force vm_fault_t)0x010000)
+#define VM_FAULT_BADACCESS	((__force vm_fault_t)0x020000)
+
+static vm_fault_t __do_page_fault(struct mm_struct *mm, unsigned long addr,
+			   unsigned int mm_flags, unsigned long vm_flags,
+			   struct task_struct *tsk)
+{
+	struct vm_area_struct *vma;
+	vm_fault_t fault;
+
+	vma = find_vma(mm, addr);
+>>>>>>> origin/android16-base
 	fault = VM_FAULT_BADMAP;
 	if (unlikely(!vma))
 		goto out;
@@ -442,7 +460,10 @@ static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
 	vm_fault_t fault, major = 0;
 	unsigned long vm_flags = VM_READ | VM_WRITE | VM_EXEC;
 	unsigned int mm_flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+<<<<<<< HEAD
 	struct vm_area_struct *vma = NULL;
+=======
+>>>>>>> origin/android16-base
 
 	if (notify_page_fault(regs, esr))
 		return 0;
@@ -485,6 +506,7 @@ static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, addr);
 
 	/*
+<<<<<<< HEAD
 	 * let's try a speculative page fault without grabbing the
 	 * mmap_sem.
 	 */
@@ -493,6 +515,8 @@ static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
 		goto done;
 
 	/*
+=======
+>>>>>>> origin/android16-base
 	 * As per x86, we may deadlock here. However, since the kernel only
 	 * validly references user space from well defined areas of the code,
 	 * we can bug out early if this is from code which shouldn't.
@@ -514,6 +538,7 @@ retry:
 #endif
 	}
 
+<<<<<<< HEAD
 	if (!vma || !can_reuse_spf_vma(vma, addr))
 		vma = find_vma(mm, addr);
 
@@ -547,13 +572,31 @@ retry:
 			 */
 			vma = NULL;
 
+=======
+	fault = __do_page_fault(mm, addr, mm_flags, vm_flags, tsk);
+	major |= fault & VM_FAULT_MAJOR;
+
+	/* Quick path to respond to signals */
+	if (fault_signal_pending(fault, regs)) {
+		if (!user_mode(regs))
+			goto no_context;
+		return 0;
+	}
+
+	if (fault & VM_FAULT_RETRY) {
+		if (mm_flags & FAULT_FLAG_ALLOW_RETRY) {
+			mm_flags |= FAULT_FLAG_TRIED;
+>>>>>>> origin/android16-base
 			goto retry;
 		}
 	}
 	up_read(&mm->mmap_sem);
 
+<<<<<<< HEAD
 done:
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Handle the "normal" (no error) case first.
 	 */

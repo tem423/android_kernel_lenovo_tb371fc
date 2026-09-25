@@ -145,12 +145,18 @@ void zfcp_fc_enqueue_event(struct zfcp_adapter *adapter,
 
 static int zfcp_fc_wka_port_get(struct zfcp_fc_wka_port *wka_port)
 {
+<<<<<<< HEAD
+=======
+	int ret = -EIO;
+
+>>>>>>> origin/android16-base
 	if (mutex_lock_interruptible(&wka_port->mutex))
 		return -ERESTARTSYS;
 
 	if (wka_port->status == ZFCP_FC_WKA_PORT_OFFLINE ||
 	    wka_port->status == ZFCP_FC_WKA_PORT_CLOSING) {
 		wka_port->status = ZFCP_FC_WKA_PORT_OPENING;
+<<<<<<< HEAD
 		if (zfcp_fsf_open_wka_port(wka_port))
 			wka_port->status = ZFCP_FC_WKA_PORT_OFFLINE;
 	}
@@ -158,14 +164,33 @@ static int zfcp_fc_wka_port_get(struct zfcp_fc_wka_port *wka_port)
 	mutex_unlock(&wka_port->mutex);
 
 	wait_event(wka_port->completion_wq,
+=======
+		if (zfcp_fsf_open_wka_port(wka_port)) {
+			/* could not even send request, nothing to wait for */
+			wka_port->status = ZFCP_FC_WKA_PORT_OFFLINE;
+			goto out;
+		}
+	}
+
+	wait_event(wka_port->opened,
+>>>>>>> origin/android16-base
 		   wka_port->status == ZFCP_FC_WKA_PORT_ONLINE ||
 		   wka_port->status == ZFCP_FC_WKA_PORT_OFFLINE);
 
 	if (wka_port->status == ZFCP_FC_WKA_PORT_ONLINE) {
 		atomic_inc(&wka_port->refcount);
+<<<<<<< HEAD
 		return 0;
 	}
 	return -EIO;
+=======
+		ret = 0;
+		goto out;
+	}
+out:
+	mutex_unlock(&wka_port->mutex);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static void zfcp_fc_wka_port_offline(struct work_struct *work)
@@ -181,9 +206,18 @@ static void zfcp_fc_wka_port_offline(struct work_struct *work)
 
 	wka_port->status = ZFCP_FC_WKA_PORT_CLOSING;
 	if (zfcp_fsf_close_wka_port(wka_port)) {
+<<<<<<< HEAD
 		wka_port->status = ZFCP_FC_WKA_PORT_OFFLINE;
 		wake_up(&wka_port->completion_wq);
 	}
+=======
+		/* could not even send request, nothing to wait for */
+		wka_port->status = ZFCP_FC_WKA_PORT_OFFLINE;
+		goto out;
+	}
+	wait_event(wka_port->closed,
+		   wka_port->status == ZFCP_FC_WKA_PORT_OFFLINE);
+>>>>>>> origin/android16-base
 out:
 	mutex_unlock(&wka_port->mutex);
 }
@@ -193,13 +227,23 @@ static void zfcp_fc_wka_port_put(struct zfcp_fc_wka_port *wka_port)
 	if (atomic_dec_return(&wka_port->refcount) != 0)
 		return;
 	/* wait 10 milliseconds, other reqs might pop in */
+<<<<<<< HEAD
 	schedule_delayed_work(&wka_port->work, HZ / 100);
+=======
+	queue_delayed_work(wka_port->adapter->work_queue, &wka_port->work,
+			   msecs_to_jiffies(10));
+>>>>>>> origin/android16-base
 }
 
 static void zfcp_fc_wka_port_init(struct zfcp_fc_wka_port *wka_port, u32 d_id,
 				  struct zfcp_adapter *adapter)
 {
+<<<<<<< HEAD
 	init_waitqueue_head(&wka_port->completion_wq);
+=======
+	init_waitqueue_head(&wka_port->opened);
+	init_waitqueue_head(&wka_port->closed);
+>>>>>>> origin/android16-base
 
 	wka_port->adapter = adapter;
 	wka_port->d_id = d_id;
@@ -521,8 +565,14 @@ static void zfcp_fc_adisc_handler(void *data)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	/* port is good, unblock rport without going through erp */
 	zfcp_scsi_schedule_rport_register(port);
+=======
+	/* re-init to undo drop from zfcp_fc_adisc() */
+	port->d_id = ntoh24(adisc_resp->adisc_port_id);
+	/* port is still good, nothing to do */
+>>>>>>> origin/android16-base
  out:
 	atomic_andnot(ZFCP_STATUS_PORT_LINK_TEST, &port->status);
 	put_device(&port->dev);
@@ -534,6 +584,10 @@ static int zfcp_fc_adisc(struct zfcp_port *port)
 	struct zfcp_fc_req *fc_req;
 	struct zfcp_adapter *adapter = port->adapter;
 	struct Scsi_Host *shost = adapter->scsi_host;
+<<<<<<< HEAD
+=======
+	u32 d_id;
+>>>>>>> origin/android16-base
 	int ret;
 
 	fc_req = kmem_cache_zalloc(zfcp_fc_req_cache, GFP_ATOMIC);
@@ -558,7 +612,19 @@ static int zfcp_fc_adisc(struct zfcp_port *port)
 	fc_req->u.adisc.req.adisc_cmd = ELS_ADISC;
 	hton24(fc_req->u.adisc.req.adisc_port_id, fc_host_port_id(shost));
 
+<<<<<<< HEAD
 	ret = zfcp_fsf_send_els(adapter, port->d_id, &fc_req->ct_els,
+=======
+	d_id = port->d_id; /* remember as destination for send els below */
+	/*
+	 * Force fresh GID_PN lookup on next port recovery.
+	 * Must happen after request setup and before sending request,
+	 * to prevent race with port->d_id re-init in zfcp_fc_adisc_handler().
+	 */
+	port->d_id = 0;
+
+	ret = zfcp_fsf_send_els(adapter, d_id, &fc_req->ct_els,
+>>>>>>> origin/android16-base
 				ZFCP_FC_CTELS_TMO);
 	if (ret)
 		kmem_cache_free(zfcp_fc_req_cache, fc_req);
@@ -573,9 +639,12 @@ void zfcp_fc_link_test_work(struct work_struct *work)
 	int retval;
 
 	set_worker_desc("zadisc%16llx", port->wwpn); /* < WORKER_DESC_LEN=24 */
+<<<<<<< HEAD
 	get_device(&port->dev);
 	port->rport_task = RPORT_DEL;
 	zfcp_scsi_rport_work(&port->rport_work);
+=======
+>>>>>>> origin/android16-base
 
 	/* only issue one test command at one time per port */
 	if (atomic_read(&port->status) & ZFCP_STATUS_PORT_LINK_TEST)

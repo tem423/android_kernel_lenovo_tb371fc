@@ -18,6 +18,10 @@
 
 #include <linux/clk.h>
 #include <linux/completion.h>
+<<<<<<< HEAD
+=======
+#include <linux/delay.h>
+>>>>>>> origin/android16-base
 #include <linux/dmaengine.h>
 #include <linux/dma-direction.h>
 #include <linux/dma-mapping.h>
@@ -700,6 +704,12 @@ static int fsmc_exec_op(struct nand_chip *chip, const struct nand_operation *op,
 						instr->ctx.waitrdy.timeout_ms);
 			break;
 		}
+<<<<<<< HEAD
+=======
+
+		if (instr->delay_ns)
+			ndelay(instr->delay_ns);
+>>>>>>> origin/android16-base
 	}
 
 	return ret;
@@ -1099,11 +1109,19 @@ static int __init fsmc_nand_probe(struct platform_device *pdev)
 		host->read_dma_chan = dma_request_channel(mask, filter, NULL);
 		if (!host->read_dma_chan) {
 			dev_err(&pdev->dev, "Unable to get read dma channel\n");
+<<<<<<< HEAD
+=======
+			ret = -ENODEV;
+>>>>>>> origin/android16-base
 			goto disable_clk;
 		}
 		host->write_dma_chan = dma_request_channel(mask, filter, NULL);
 		if (!host->write_dma_chan) {
 			dev_err(&pdev->dev, "Unable to get write dma channel\n");
+<<<<<<< HEAD
+=======
+			ret = -ENODEV;
+>>>>>>> origin/android16-base
 			goto release_dma_read_chan;
 		}
 	}

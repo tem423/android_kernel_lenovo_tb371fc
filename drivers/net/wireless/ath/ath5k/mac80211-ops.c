@@ -522,7 +522,11 @@ ath5k_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 		}
 		break;
 	case DISABLE_KEY:
+<<<<<<< HEAD
 		ath_key_delete(common, key);
+=======
+		ath_key_delete(common, key->hw_key_idx);
+>>>>>>> origin/android16-base
 		break;
 	default:
 		ret = -EINVAL;

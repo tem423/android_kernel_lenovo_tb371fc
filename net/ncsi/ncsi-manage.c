@@ -84,6 +84,7 @@ static void ncsi_channel_monitor(struct timer_list *t)
 	monitor_state = nc->monitor.state;
 	spin_unlock_irqrestore(&nc->lock, flags);
 
+<<<<<<< HEAD
 	if (!enabled || chained) {
 		ncsi_stop_channel_monitor(nc);
 		return;
@@ -91,6 +92,22 @@ static void ncsi_channel_monitor(struct timer_list *t)
 	if (state != NCSI_CHANNEL_INACTIVE &&
 	    state != NCSI_CHANNEL_ACTIVE) {
 		ncsi_stop_channel_monitor(nc);
+=======
+	if (!enabled)
+		return;		/* expected race disabling timer */
+	if (WARN_ON_ONCE(chained))
+		goto bad_state;
+
+	if (state != NCSI_CHANNEL_INACTIVE &&
+	    state != NCSI_CHANNEL_ACTIVE) {
+bad_state:
+		netdev_warn(ndp->ndev.dev,
+			    "Bad NCSI monitor state channel %d 0x%x %s queue\n",
+			    nc->id, state, chained ? "on" : "off");
+		spin_lock_irqsave(&nc->lock, flags);
+		nc->monitor.enabled = false;
+		spin_unlock_irqrestore(&nc->lock, flags);
+>>>>>>> origin/android16-base
 		return;
 	}
 
@@ -117,10 +134,16 @@ static void ncsi_channel_monitor(struct timer_list *t)
 			ndp->flags |= NCSI_DEV_RESHUFFLE;
 		}
 
+<<<<<<< HEAD
 		ncsi_stop_channel_monitor(nc);
 
 		ncm = &nc->modes[NCSI_MODE_LINK];
 		spin_lock_irqsave(&nc->lock, flags);
+=======
+		ncm = &nc->modes[NCSI_MODE_LINK];
+		spin_lock_irqsave(&nc->lock, flags);
+		nc->monitor.enabled = false;
+>>>>>>> origin/android16-base
 		nc->state = NCSI_CHANNEL_INVISIBLE;
 		ncm->data[2] &= ~0x1;
 		spin_unlock_irqrestore(&nc->lock, flags);
@@ -1484,9 +1507,12 @@ struct ncsi_dev *ncsi_register_dev(struct net_device *dev,
 	ndp->ptype.dev = dev;
 	dev_add_pack(&ndp->ptype);
 
+<<<<<<< HEAD
 	/* Set up generic netlink interface */
 	ncsi_init_netlink(dev);
 
+=======
+>>>>>>> origin/android16-base
 	return nd;
 }
 EXPORT_SYMBOL_GPL(ncsi_register_dev);
@@ -1566,8 +1592,11 @@ void ncsi_unregister_dev(struct ncsi_dev *nd)
 #endif
 	spin_unlock_irqrestore(&ncsi_dev_lock, flags);
 
+<<<<<<< HEAD
 	ncsi_unregister_netlink(nd->dev);
 
+=======
+>>>>>>> origin/android16-base
 	kfree(ndp);
 }
 EXPORT_SYMBOL_GPL(ncsi_unregister_dev);

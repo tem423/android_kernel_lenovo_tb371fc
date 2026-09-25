@@ -6,4 +6,12 @@ incrementalfs-y := \
 	format.o \
 	integrity.o \
 	main.o \
+<<<<<<< HEAD
 	vfs.o
+=======
+	pseudo_files.o \
+	sysfs.o \
+	vfs.o
+
+incrementalfs-$(CONFIG_FS_VERITY) += verity.o
+>>>>>>> origin/android16-base

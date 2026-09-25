@@ -11,6 +11,7 @@
 #ifndef _ASM_MICROBLAZE_TLB_H
 #define _ASM_MICROBLAZE_TLB_H
 
+<<<<<<< HEAD
 #define tlb_flush(tlb)	flush_tlb_mm((tlb)->mm)
 
 #include <linux/pagemap.h>
@@ -21,6 +22,9 @@
 #define __tlb_remove_tlb_entry(tlb, pte, address) do { } while (0)
 #endif
 
+=======
+#include <linux/pagemap.h>
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 #endif /* _ASM_MICROBLAZE_TLB_H */

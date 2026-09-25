@@ -354,10 +354,19 @@ static int hidraw_release(struct inode * inode, struct file * file)
 	unsigned int minor = iminor(inode);
 	struct hidraw_list *list = file->private_data;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	int i;
+>>>>>>> origin/android16-base
 
 	mutex_lock(&minors_lock);
 
 	spin_lock_irqsave(&hidraw_table[minor]->list_lock, flags);
+<<<<<<< HEAD
+=======
+	for (i = list->tail; i < list->head; i++)
+		kfree(list->buffer[i].value);
+>>>>>>> origin/android16-base
 	list_del(&list->node);
 	spin_unlock_irqrestore(&hidraw_table[minor]->list_lock, flags);
 	kfree(list);

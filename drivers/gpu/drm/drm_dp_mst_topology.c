@@ -1331,14 +1331,23 @@ static struct drm_dp_mst_branch *get_mst_branch_device_by_guid_helper(
 	struct drm_dp_mst_branch *found_mstb;
 	struct drm_dp_mst_port *port;
 
+<<<<<<< HEAD
+=======
+	if (!mstb)
+		return NULL;
+
+>>>>>>> origin/android16-base
 	if (memcmp(mstb->guid, guid, 16) == 0)
 		return mstb;
 
 
 	list_for_each_entry(port, &mstb->ports, next) {
+<<<<<<< HEAD
 		if (!port->mstb)
 			continue;
 
+=======
+>>>>>>> origin/android16-base
 		found_mstb = get_mst_branch_device_by_guid_helper(port->mstb, guid);
 
 		if (found_mstb)
@@ -2881,11 +2890,19 @@ bool drm_dp_mst_allocate_vcpi(struct drm_dp_mst_topology_mgr *mgr,
 {
 	int ret;
 
+<<<<<<< HEAD
 	port = drm_dp_get_validated_port_ref(mgr, port);
 	if (!port)
 		return false;
 
 	if (slots < 0)
+=======
+	if (slots < 0)
+		return false;
+
+	port = drm_dp_get_validated_port_ref(mgr, port);
+	if (!port)
+>>>>>>> origin/android16-base
 		return false;
 
 	if (port->vcpi.vcpi > 0) {
@@ -2900,6 +2917,10 @@ bool drm_dp_mst_allocate_vcpi(struct drm_dp_mst_topology_mgr *mgr,
 	if (ret) {
 		DRM_DEBUG_KMS("failed to init vcpi slots=%d max=63 ret=%d\n",
 				DIV_ROUND_UP(pbn, mgr->pbn_div), ret);
+<<<<<<< HEAD
+=======
+		drm_dp_put_port(port);
+>>>>>>> origin/android16-base
 		goto out;
 	}
 	DRM_DEBUG_KMS("initing vcpi for pbn=%d slots=%d\n",
@@ -3161,6 +3182,10 @@ static void fetch_monitor_name(struct drm_dp_mst_topology_mgr *mgr,
 
 	mst_edid = drm_dp_mst_get_edid(port->connector, mgr, port);
 	drm_edid_get_monitor_name(mst_edid, name, namelen);
+<<<<<<< HEAD
+=======
+	kfree(mst_edid);
+>>>>>>> origin/android16-base
 }
 
 /**

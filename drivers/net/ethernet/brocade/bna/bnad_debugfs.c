@@ -320,7 +320,11 @@ bnad_debugfs_write_regrd(struct file *file, const char __user *buf,
 	void *kern_buf;
 
 	/* Copy the user space buf */
+<<<<<<< HEAD
 	kern_buf = memdup_user(buf, nbytes);
+=======
+	kern_buf = memdup_user_nul(buf, nbytes);
+>>>>>>> origin/android16-base
 	if (IS_ERR(kern_buf))
 		return PTR_ERR(kern_buf);
 
@@ -380,7 +384,11 @@ bnad_debugfs_write_regwr(struct file *file, const char __user *buf,
 	void *kern_buf;
 
 	/* Copy the user space buf */
+<<<<<<< HEAD
 	kern_buf = memdup_user(buf, nbytes);
+=======
+	kern_buf = memdup_user_nul(buf, nbytes);
+>>>>>>> origin/android16-base
 	if (IS_ERR(kern_buf))
 		return PTR_ERR(kern_buf);
 

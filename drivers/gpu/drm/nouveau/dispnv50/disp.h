@@ -68,7 +68,11 @@ struct nv50_dmac {
 
 int nv50_dmac_create(struct nvif_device *device, struct nvif_object *disp,
 		     const s32 *oclass, u8 head, void *data, u32 size,
+<<<<<<< HEAD
 		     u64 syncbuf, struct nv50_dmac *dmac);
+=======
+		     s64 syncbuf, struct nv50_dmac *dmac);
+>>>>>>> origin/android16-base
 void nv50_dmac_destroy(struct nv50_dmac *);
 
 u32 *evo_wait(struct nv50_dmac *, int nr);

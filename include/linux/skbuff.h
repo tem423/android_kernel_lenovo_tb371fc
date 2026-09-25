@@ -1761,7 +1761,11 @@ static inline void __skb_insert(struct sk_buff *newsk,
 	WRITE_ONCE(newsk->prev, prev);
 	WRITE_ONCE(next->prev, newsk);
 	WRITE_ONCE(prev->next, newsk);
+<<<<<<< HEAD
 	list->qlen++;
+=======
+	WRITE_ONCE(list->qlen, list->qlen + 1);
+>>>>>>> origin/android16-base
 }
 
 static inline void __skb_queue_splice(const struct sk_buff_head *list,
@@ -2789,6 +2793,18 @@ static inline void skb_propagate_pfmemalloc(struct page *page,
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * skb_frag_off() - Returns the offset of a skb fragment
+ * @frag: the paged fragment
+ */
+static inline unsigned int skb_frag_off(const skb_frag_t *frag)
+{
+	return frag->page_offset;
+}
+
+/**
+>>>>>>> origin/android16-base
  * skb_frag_page - retrieve the page referred to by a paged fragment
  * @frag: the paged fragment
  *

@@ -240,7 +240,11 @@ static inline struct cred *get_new_cred(struct cred *cred)
  * @cred: The credentials to reference
  *
  * Get a reference on the specified set of credentials.  The caller must
+<<<<<<< HEAD
  * release the reference.
+=======
+ * release the reference.  If %NULL is passed, it is returned with no action.
+>>>>>>> origin/android16-base
  *
  * This is used to deal with a committed set of credentials.  Although the
  * pointer is const, this will temporarily discard the const and increment the
@@ -251,6 +255,11 @@ static inline struct cred *get_new_cred(struct cred *cred)
 static inline const struct cred *get_cred(const struct cred *cred)
 {
 	struct cred *nonconst_cred = (struct cred *) cred;
+<<<<<<< HEAD
+=======
+	if (!cred)
+		return cred;
+>>>>>>> origin/android16-base
 	validate_creds(cred);
 	nonconst_cred->non_rcu = 0;
 	return get_new_cred(nonconst_cred);
@@ -261,7 +270,11 @@ static inline const struct cred *get_cred(const struct cred *cred)
  * @cred: The credentials to release
  *
  * Release a reference to a set of credentials, deleting them when the last ref
+<<<<<<< HEAD
  * is released.
+=======
+ * is released.  If %NULL is passed, nothing is done.
+>>>>>>> origin/android16-base
  *
  * This takes a const pointer to a set of credentials because the credentials
  * on task_struct are attached by const pointers to prevent accidental
@@ -271,9 +284,17 @@ static inline void put_cred(const struct cred *_cred)
 {
 	struct cred *cred = (struct cred *) _cred;
 
+<<<<<<< HEAD
 	validate_creds(cred);
 	if (atomic_dec_and_test(&(cred)->usage))
 		__put_cred(cred);
+=======
+	if (cred) {
+		validate_creds(cred);
+		if (atomic_dec_and_test(&(cred)->usage))
+			__put_cred(cred);
+	}
+>>>>>>> origin/android16-base
 }
 
 /**

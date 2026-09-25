@@ -16,8 +16,13 @@
 #include <net/netfilter/ipv4/nf_dup_ipv4.h>
 
 struct nft_dup_ipv4 {
+<<<<<<< HEAD
 	enum nft_registers	sreg_addr:8;
 	enum nft_registers	sreg_dev:8;
+=======
+	u8	sreg_addr;
+	u8	sreg_dev;
+>>>>>>> origin/android16-base
 };
 
 static void nft_dup_ipv4_eval(const struct nft_expr *expr,
@@ -43,6 +48,7 @@ static int nft_dup_ipv4_init(const struct nft_ctx *ctx,
 	if (tb[NFTA_DUP_SREG_ADDR] == NULL)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	priv->sreg_addr = nft_parse_register(tb[NFTA_DUP_SREG_ADDR]);
 	err = nft_validate_register_load(priv->sreg_addr, sizeof(struct in_addr));
 	if (err < 0)
@@ -53,6 +59,18 @@ static int nft_dup_ipv4_init(const struct nft_ctx *ctx,
 		return nft_validate_register_load(priv->sreg_dev, sizeof(int));
 	}
 	return 0;
+=======
+	err = nft_parse_register_load(tb[NFTA_DUP_SREG_ADDR], &priv->sreg_addr,
+				      sizeof(struct in_addr));
+	if (err < 0)
+		return err;
+
+	if (tb[NFTA_DUP_SREG_DEV])
+		err = nft_parse_register_load(tb[NFTA_DUP_SREG_DEV],
+					      &priv->sreg_dev, sizeof(int));
+
+	return err;
+>>>>>>> origin/android16-base
 }
 
 static int nft_dup_ipv4_dump(struct sk_buff *skb, const struct nft_expr *expr)

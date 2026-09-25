@@ -444,15 +444,27 @@ static int qcom_smp2p_inbound_entry(struct qcom_smp2p *smp2p,
 static int smp2p_update_bits(void *data, u32 mask, u32 value)
 {
 	struct smp2p_entry *entry = data;
+<<<<<<< HEAD
 	u32 orig;
 	u32 val;
 
 	spin_lock(&entry->lock);
+=======
+	unsigned long flags;
+	u32 orig;
+	u32 val;
+
+	spin_lock_irqsave(&entry->lock, flags);
+>>>>>>> origin/android16-base
 	val = orig = readl(entry->value);
 	val &= ~mask;
 	val |= value;
 	writel(val, entry->value);
+<<<<<<< HEAD
 	spin_unlock(&entry->lock);
+=======
+	spin_unlock_irqrestore(&entry->lock, flags);
+>>>>>>> origin/android16-base
 	SMP2P_INFO("%d: %s: orig:0x%0x new:0x%0x\n",
 		   entry->smp2p->remote_pid, entry->name, orig, val);
 
@@ -548,6 +560,10 @@ static int smp2p_parse_ipc(struct qcom_smp2p *smp2p)
 	}
 
 	smp2p->ipc_regmap = syscon_node_to_regmap(syscon);
+<<<<<<< HEAD
+=======
+	of_node_put(syscon);
+>>>>>>> origin/android16-base
 	if (IS_ERR(smp2p->ipc_regmap))
 		return PTR_ERR(smp2p->ipc_regmap);
 

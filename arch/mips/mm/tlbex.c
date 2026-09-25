@@ -630,7 +630,11 @@ static __maybe_unused void build_convert_pte_to_entrylo(u32 **p,
 		return;
 	}
 
+<<<<<<< HEAD
 	if (cpu_has_rixi && !!_PAGE_NO_EXEC) {
+=======
+	if (cpu_has_rixi && _PAGE_NO_EXEC != 0) {
+>>>>>>> origin/android16-base
 		if (fill_includes_sw_bits) {
 			UASM_i_ROTR(p, reg, reg, ilog2(_PAGE_GLOBAL));
 		} else {
@@ -2559,7 +2563,11 @@ static void check_pabits(void)
 	unsigned long entry;
 	unsigned pabits, fillbits;
 
+<<<<<<< HEAD
 	if (!cpu_has_rixi || !_PAGE_NO_EXEC) {
+=======
+	if (!cpu_has_rixi || _PAGE_NO_EXEC == 0) {
+>>>>>>> origin/android16-base
 		/*
 		 * We'll only be making use of the fact that we can rotate bits
 		 * into the fill if the CPU supports RIXI, so don't bother

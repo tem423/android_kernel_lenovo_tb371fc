@@ -34,6 +34,10 @@ struct mmc_bus_ops {
 	int (*shutdown)(struct mmc_host *);
 	int (*hw_reset)(struct mmc_host *);
 	int (*sw_reset)(struct mmc_host *);
+<<<<<<< HEAD
+=======
+	bool (*cache_enabled)(struct mmc_host *);
+>>>>>>> origin/android16-base
 	int (*change_bus_speed)(struct mmc_host *host, unsigned long *freq);
 	int (*change_bus_speed_deferred)(struct mmc_host *host,
 							unsigned long *freq);
@@ -193,4 +197,15 @@ static inline void mmc_post_req(struct mmc_host *host, struct mmc_request *mrq,
 		host->ops->post_req(host, mrq, err);
 }
 
+<<<<<<< HEAD
+=======
+static inline bool mmc_cache_enabled(struct mmc_host *host)
+{
+	if (host->bus_ops->cache_enabled)
+		return host->bus_ops->cache_enabled(host);
+
+	return false;
+}
+
+>>>>>>> origin/android16-base
 #endif

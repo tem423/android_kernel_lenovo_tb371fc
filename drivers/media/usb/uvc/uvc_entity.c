@@ -42,7 +42,11 @@ static int uvc_mc_create_links(struct uvc_video_chain *chain,
 			continue;
 
 		remote = uvc_entity_by_id(chain->dev, entity->baSourceID[i]);
+<<<<<<< HEAD
 		if (remote == NULL)
+=======
+		if (remote == NULL || remote->num_pads == 0)
+>>>>>>> origin/android16-base
 			return -EINVAL;
 
 		source = (UVC_ENTITY_TYPE(remote) == UVC_TT_STREAMING)

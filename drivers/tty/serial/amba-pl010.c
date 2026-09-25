@@ -452,14 +452,20 @@ pl010_set_termios(struct uart_port *port, struct ktermios *termios,
 	if ((termios->c_cflag & CREAD) == 0)
 		uap->port.ignore_status_mask |= UART_DUMMY_RSR_RX;
 
+<<<<<<< HEAD
 	/* first, disable everything */
+=======
+>>>>>>> origin/android16-base
 	old_cr = readb(uap->port.membase + UART010_CR) & ~UART010_CR_MSIE;
 
 	if (UART_ENABLE_MS(port, termios->c_cflag))
 		old_cr |= UART010_CR_MSIE;
 
+<<<<<<< HEAD
 	writel(0, uap->port.membase + UART010_CR);
 
+=======
+>>>>>>> origin/android16-base
 	/* Set baud rate */
 	quot -= 1;
 	writel((quot & 0xf00) >> 8, uap->port.membase + UART010_LCRM);

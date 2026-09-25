@@ -94,6 +94,10 @@
 #include <linux/leds.h>
 #include <linux/usb/input.h>
 #include <linux/power_supply.h>
+<<<<<<< HEAD
+=======
+#include <linux/timer.h>
+>>>>>>> origin/android16-base
 #include <asm/unaligned.h>
 
 /*
@@ -155,6 +159,10 @@ struct wacom_remote {
 		struct input_dev *input;
 		bool registered;
 		struct wacom_battery battery;
+<<<<<<< HEAD
+=======
+		ktime_t active_time;
+>>>>>>> origin/android16-base
 	} remotes[WACOM_MAX_REMOTES];
 };
 
@@ -170,6 +178,10 @@ struct wacom {
 	struct delayed_work init_work;
 	struct wacom_remote *remote;
 	struct work_struct mode_change_work;
+<<<<<<< HEAD
+=======
+	struct timer_list idleprox_timer;
+>>>>>>> origin/android16-base
 	bool generic_has_leds;
 	struct wacom_leds {
 		struct wacom_group_leds *groups;
@@ -242,4 +254,8 @@ struct wacom_led *wacom_led_find(struct wacom *wacom, unsigned int group,
 struct wacom_led *wacom_led_next(struct wacom *wacom, struct wacom_led *cur);
 int wacom_equivalent_usage(int usage);
 int wacom_initialize_leds(struct wacom *wacom);
+<<<<<<< HEAD
+=======
+void wacom_idleprox_timeout(struct timer_list *list);
+>>>>>>> origin/android16-base
 #endif

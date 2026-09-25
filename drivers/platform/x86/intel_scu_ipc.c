@@ -183,7 +183,11 @@ static inline int busy_loop(struct intel_scu_ipc_dev *scu)
 	return 0;
 }
 
+<<<<<<< HEAD
 /* Wait till ipc ioc interrupt is received or timeout in 3 HZ */
+=======
+/* Wait till ipc ioc interrupt is received or timeout in 10 HZ */
+>>>>>>> origin/android16-base
 static inline int ipc_wait_for_interrupt(struct intel_scu_ipc_dev *scu)
 {
 	int status;

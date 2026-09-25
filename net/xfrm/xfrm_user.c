@@ -148,6 +148,10 @@ static int verify_newsa_info(struct xfrm_usersa_info *p,
 			     struct nlattr **attrs)
 {
 	int err;
+<<<<<<< HEAD
+=======
+	u16 family = p->sel.family;
+>>>>>>> origin/android16-base
 
 	err = -EINVAL;
 	switch (p->family) {
@@ -166,7 +170,14 @@ static int verify_newsa_info(struct xfrm_usersa_info *p,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	switch (p->sel.family) {
+=======
+	if (!family && !(p->flags & XFRM_STATE_AF_UNSPEC))
+		family = p->family;
+
+	switch (family) {
+>>>>>>> origin/android16-base
 	case AF_UNSPEC:
 		break;
 
@@ -521,7 +532,11 @@ static void xfrm_update_ae_params(struct xfrm_state *x, struct nlattr **attrs,
 	struct nlattr *et = attrs[XFRMA_ETIMER_THRESH];
 	struct nlattr *rt = attrs[XFRMA_REPLAY_THRESH];
 
+<<<<<<< HEAD
 	if (re) {
+=======
+	if (re && x->replay_esn && x->preplay_esn) {
+>>>>>>> origin/android16-base
 		struct xfrm_replay_state_esn *replay_esn;
 		replay_esn = nla_data(re);
 		memcpy(x->replay_esn, replay_esn,
@@ -579,6 +594,23 @@ static struct xfrm_state *xfrm_state_construct(struct net *net,
 
 	copy_from_user_state(x, p);
 
+<<<<<<< HEAD
+=======
+	if (attrs[XFRMA_ENCAP]) {
+		x->encap = kmemdup(nla_data(attrs[XFRMA_ENCAP]),
+				   sizeof(*x->encap), GFP_KERNEL);
+		if (x->encap == NULL)
+			goto error;
+	}
+
+	if (attrs[XFRMA_COADDR]) {
+		x->coaddr = kmemdup(nla_data(attrs[XFRMA_COADDR]),
+				    sizeof(*x->coaddr), GFP_KERNEL);
+		if (x->coaddr == NULL)
+			goto error;
+	}
+
+>>>>>>> origin/android16-base
 	if (attrs[XFRMA_SA_EXTRA_FLAGS])
 		x->props.extra_flags = nla_get_u32(attrs[XFRMA_SA_EXTRA_FLAGS]);
 
@@ -599,6 +631,7 @@ static struct xfrm_state *xfrm_state_construct(struct net *net,
 				   attrs[XFRMA_ALG_COMP])))
 		goto error;
 
+<<<<<<< HEAD
 	if (attrs[XFRMA_ENCAP]) {
 		x->encap = kmemdup(nla_data(attrs[XFRMA_ENCAP]),
 				   sizeof(*x->encap), GFP_KERNEL);
@@ -616,6 +649,11 @@ static struct xfrm_state *xfrm_state_construct(struct net *net,
 			goto error;
 	}
 
+=======
+	if (attrs[XFRMA_TFCPAD])
+		x->tfcpad = nla_get_u32(attrs[XFRMA_TFCPAD]);
+
+>>>>>>> origin/android16-base
 	xfrm_mark_get(attrs, &x->mark);
 
 	xfrm_smark_init(attrs, &x->props.smark);
@@ -1048,6 +1086,18 @@ static int xfrm_dump_sa(struct sk_buff *skb, struct netlink_callback *cb)
 					 sizeof(*filter), GFP_KERNEL);
 			if (filter == NULL)
 				return -ENOMEM;
+<<<<<<< HEAD
+=======
+
+			/* see addr_match(), (prefix length >> 5) << 2
+			 * will be used to compare xfrm_address_t
+			 */
+			if (filter->splen > (sizeof(xfrm_address_t) << 3) ||
+			    filter->dplen > (sizeof(xfrm_address_t) << 3)) {
+				kfree(filter);
+				return -EINVAL;
+			}
+>>>>>>> origin/android16-base
 		}
 
 		if (attrs[XFRMA_PROTO])
@@ -1730,6 +1780,12 @@ static int copy_to_user_tmpl(struct xfrm_policy *xp, struct sk_buff *skb)
 	if (xp->xfrm_nr == 0)
 		return 0;
 
+<<<<<<< HEAD
+=======
+	if (xp->xfrm_nr > XFRM_MAX_DEPTH)
+		return -ENOBUFS;
+
+>>>>>>> origin/android16-base
 	for (i = 0; i < xp->xfrm_nr; i++) {
 		struct xfrm_user_tmpl *up = &vec[i];
 		struct xfrm_tmpl *kp = &xp->xfrm_vec[i];
@@ -1911,7 +1967,10 @@ static int xfrm_get_policy(struct sk_buff *skb, struct nlmsghdr *nlh,
 	struct km_event c;
 	int delete;
 	struct xfrm_mark m;
+<<<<<<< HEAD
 	u32 mark = xfrm_mark_get(attrs, &m);
+=======
+>>>>>>> origin/android16-base
 	u32 if_id = 0;
 
 	p = nlmsg_data(nlh);
@@ -1928,8 +1987,16 @@ static int xfrm_get_policy(struct sk_buff *skb, struct nlmsghdr *nlh,
 	if (attrs[XFRMA_IF_ID])
 		if_id = nla_get_u32(attrs[XFRMA_IF_ID]);
 
+<<<<<<< HEAD
 	if (p->index)
 		xp = xfrm_policy_byid(net, mark, if_id, type, p->dir, p->index, delete, &err);
+=======
+	xfrm_mark_get(attrs, &m);
+
+	if (p->index)
+		xp = xfrm_policy_byid(net, &m, if_id, type, p->dir,
+				      p->index, delete, &err);
+>>>>>>> origin/android16-base
 	else {
 		struct nlattr *rt = attrs[XFRMA_SEC_CTX];
 		struct xfrm_sec_ctx *ctx;
@@ -1946,8 +2013,13 @@ static int xfrm_get_policy(struct sk_buff *skb, struct nlmsghdr *nlh,
 			if (err)
 				return err;
 		}
+<<<<<<< HEAD
 		xp = xfrm_policy_bysel_ctx(net, mark, if_id, type, p->dir, &p->sel,
 					   ctx, delete, &err);
+=======
+		xp = xfrm_policy_bysel_ctx(net, &m, if_id, type, p->dir,
+					   &p->sel, ctx, delete, &err);
+>>>>>>> origin/android16-base
 		security_xfrm_policy_free(ctx);
 	}
 	if (xp == NULL)
@@ -2214,7 +2286,10 @@ static int xfrm_add_pol_expire(struct sk_buff *skb, struct nlmsghdr *nlh,
 	u8 type = XFRM_POLICY_TYPE_MAIN;
 	int err = -ENOENT;
 	struct xfrm_mark m;
+<<<<<<< HEAD
 	u32 mark = xfrm_mark_get(attrs, &m);
+=======
+>>>>>>> origin/android16-base
 	u32 if_id = 0;
 
 	err = copy_from_user_policy_type(&type, attrs);
@@ -2228,8 +2303,16 @@ static int xfrm_add_pol_expire(struct sk_buff *skb, struct nlmsghdr *nlh,
 	if (attrs[XFRMA_IF_ID])
 		if_id = nla_get_u32(attrs[XFRMA_IF_ID]);
 
+<<<<<<< HEAD
 	if (p->index)
 		xp = xfrm_policy_byid(net, mark, if_id, type, p->dir, p->index, 0, &err);
+=======
+	xfrm_mark_get(attrs, &m);
+
+	if (p->index)
+		xp = xfrm_policy_byid(net, &m, if_id, type, p->dir, p->index,
+				      0, &err);
+>>>>>>> origin/android16-base
 	else {
 		struct nlattr *rt = attrs[XFRMA_SEC_CTX];
 		struct xfrm_sec_ctx *ctx;
@@ -2246,7 +2329,11 @@ static int xfrm_add_pol_expire(struct sk_buff *skb, struct nlmsghdr *nlh,
 			if (err)
 				return err;
 		}
+<<<<<<< HEAD
 		xp = xfrm_policy_bysel_ctx(net, mark, if_id, type, p->dir,
+=======
+		xp = xfrm_policy_bysel_ctx(net, &m, if_id, type, p->dir,
+>>>>>>> origin/android16-base
 					   &p->sel, ctx, 0, &err);
 		security_xfrm_policy_free(ctx);
 	}
@@ -2418,6 +2505,10 @@ static int xfrm_do_migrate(struct sk_buff *skb, struct nlmsghdr *nlh,
 	int n = 0;
 	struct net *net = sock_net(skb->sk);
 	struct xfrm_encap_tmpl  *encap = NULL;
+<<<<<<< HEAD
+=======
+	u32 if_id = 0;
+>>>>>>> origin/android16-base
 
 	if (attrs[XFRMA_MIGRATE] == NULL)
 		return -EINVAL;
@@ -2442,7 +2533,14 @@ static int xfrm_do_migrate(struct sk_buff *skb, struct nlmsghdr *nlh,
 			return 0;
 	}
 
+<<<<<<< HEAD
 	err = xfrm_migrate(&pi->sel, pi->dir, type, m, n, kmp, net, encap);
+=======
+	if (attrs[XFRMA_IF_ID])
+		if_id = nla_get_u32(attrs[XFRMA_IF_ID]);
+
+	err = xfrm_migrate(&pi->sel, pi->dir, type, m, n, kmp, net, encap, if_id);
+>>>>>>> origin/android16-base
 
 	kfree(encap);
 
@@ -2615,7 +2713,11 @@ const struct nla_policy xfrma_policy[XFRMA_MAX+1] = {
 	[XFRMA_ALG_COMP]	= { .len = sizeof(struct xfrm_algo) },
 	[XFRMA_ENCAP]		= { .len = sizeof(struct xfrm_encap_tmpl) },
 	[XFRMA_TMPL]		= { .len = sizeof(struct xfrm_user_tmpl) },
+<<<<<<< HEAD
 	[XFRMA_SEC_CTX]		= { .len = sizeof(struct xfrm_sec_ctx) },
+=======
+	[XFRMA_SEC_CTX]		= { .len = sizeof(struct xfrm_user_sec_ctx) },
+>>>>>>> origin/android16-base
 	[XFRMA_LTIME_VAL]	= { .len = sizeof(struct xfrm_lifetime_cur) },
 	[XFRMA_REPLAY_VAL]	= { .len = sizeof(struct xfrm_replay_state) },
 	[XFRMA_REPLAY_THRESH]	= { .type = NLA_U32 },
@@ -2749,6 +2851,19 @@ static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 
 	err = link->doit(skb, nlh, attrs);
 
+<<<<<<< HEAD
+=======
+	/* We need to free skb allocated in xfrm_alloc_compat() before
+	 * returning from this function, because consume_skb() won't take
+	 * care of frag_list since netlink destructor sets
+	 * sbk->head to NULL. (see netlink_skb_destructor())
+	 */
+	if (skb_has_frag_list(skb)) {
+		kfree_skb(skb_shinfo(skb)->frag_list);
+		skb_shinfo(skb)->frag_list = NULL;
+	}
+
+>>>>>>> origin/android16-base
 err:
 	kvfree(nlh64);
 	return err;
@@ -2886,7 +3001,11 @@ static inline unsigned int xfrm_sa_len(struct xfrm_state *x)
 	if (x->props.extra_flags)
 		l += nla_total_size(sizeof(x->props.extra_flags));
 	if (x->xso.dev)
+<<<<<<< HEAD
 		 l += nla_total_size(sizeof(x->xso));
+=======
+		 l += nla_total_size(sizeof(struct xfrm_user_offload));
+>>>>>>> origin/android16-base
 	if (x->props.smark.v | x->props.smark.m) {
 		l += nla_total_size(sizeof(x->props.smark.v));
 		l += nla_total_size(sizeof(x->props.smark.m));

@@ -140,6 +140,11 @@ static u32 ieee80211_hw_conf_chan(struct ieee80211_local *local)
 	}
 
 	power = ieee80211_chandef_max_power(&chandef);
+<<<<<<< HEAD
+=======
+	if (local->user_power_level != IEEE80211_UNSET_POWER_LEVEL)
+		power = min(local->user_power_level, power);
+>>>>>>> origin/android16-base
 
 	rcu_read_lock();
 	list_for_each_entry_rcu(sdata, &local->interfaces, list) {
@@ -931,8 +936,24 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 			continue;
 
 		if (!dflt_chandef.chan) {
+<<<<<<< HEAD
 			cfg80211_chandef_create(&dflt_chandef,
 						&sband->channels[0],
+=======
+			/*
+			 * Assign the first enabled channel to dflt_chandef
+			 * from the list of channels
+			 */
+			for (i = 0; i < sband->n_channels; i++)
+				if (!(sband->channels[i].flags &
+						IEEE80211_CHAN_DISABLED))
+					break;
+			/* if none found then use the first anyway */
+			if (i == sband->n_channels)
+				i = 0;
+			cfg80211_chandef_create(&dflt_chandef,
+						&sband->channels[i],
+>>>>>>> origin/android16-base
 						NL80211_CHAN_NO_HT);
 			/* init channel we're on */
 			if (!local->use_chanctx && !local->_oper_chandef.chan) {
@@ -1069,8 +1090,16 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 	if (local->hw.wiphy->max_scan_ie_len)
 		local->hw.wiphy->max_scan_ie_len -= local->scan_ies_len;
 
+<<<<<<< HEAD
 	WARN_ON(!ieee80211_cs_list_valid(local->hw.cipher_schemes,
 					 local->hw.n_cipher_schemes));
+=======
+	if (WARN_ON(!ieee80211_cs_list_valid(local->hw.cipher_schemes,
+					     local->hw.n_cipher_schemes))) {
+		result = -EINVAL;
+		goto fail_workqueue;
+	}
+>>>>>>> origin/android16-base
 
 	result = ieee80211_init_cipher_suites(local);
 	if (result < 0)

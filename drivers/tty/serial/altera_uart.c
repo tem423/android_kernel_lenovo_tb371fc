@@ -199,9 +199,14 @@ static void altera_uart_set_termios(struct uart_port *port,
 	 */
 }
 
+<<<<<<< HEAD
 static void altera_uart_rx_chars(struct altera_uart *pp)
 {
 	struct uart_port *port = &pp->port;
+=======
+static void altera_uart_rx_chars(struct uart_port *port)
+{
+>>>>>>> origin/android16-base
 	unsigned char ch, flag;
 	unsigned short status;
 
@@ -248,9 +253,14 @@ static void altera_uart_rx_chars(struct altera_uart *pp)
 	spin_lock(&port->lock);
 }
 
+<<<<<<< HEAD
 static void altera_uart_tx_chars(struct altera_uart *pp)
 {
 	struct uart_port *port = &pp->port;
+=======
+static void altera_uart_tx_chars(struct uart_port *port)
+{
+>>>>>>> origin/android16-base
 	struct circ_buf *xmit = &port->state->xmit;
 
 	if (port->x_char) {
@@ -274,26 +284,44 @@ static void altera_uart_tx_chars(struct altera_uart *pp)
 	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
 
+<<<<<<< HEAD
 	if (xmit->head == xmit->tail) {
 		pp->imr &= ~ALTERA_UART_CONTROL_TRDY_MSK;
 		altera_uart_update_ctrl_reg(pp);
 	}
+=======
+	if (uart_circ_empty(xmit))
+		altera_uart_stop_tx(port);
+>>>>>>> origin/android16-base
 }
 
 static irqreturn_t altera_uart_interrupt(int irq, void *data)
 {
 	struct uart_port *port = data;
 	struct altera_uart *pp = container_of(port, struct altera_uart, port);
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 	unsigned int isr;
 
 	isr = altera_uart_readl(port, ALTERA_UART_STATUS_REG) & pp->imr;
 
+<<<<<<< HEAD
 	spin_lock(&port->lock);
 	if (isr & ALTERA_UART_STATUS_RRDY_MSK)
 		altera_uart_rx_chars(pp);
 	if (isr & ALTERA_UART_STATUS_TRDY_MSK)
 		altera_uart_tx_chars(pp);
 	spin_unlock(&port->lock);
+=======
+	spin_lock_irqsave(&port->lock, flags);
+	if (isr & ALTERA_UART_STATUS_RRDY_MSK)
+		altera_uart_rx_chars(port);
+	if (isr & ALTERA_UART_STATUS_TRDY_MSK)
+		altera_uart_tx_chars(port);
+	spin_unlock_irqrestore(&port->lock, flags);
+>>>>>>> origin/android16-base
 
 	return IRQ_RETVAL(isr);
 }

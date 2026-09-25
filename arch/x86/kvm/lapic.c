@@ -961,6 +961,13 @@ bool kvm_irq_delivery_to_apic_fast(struct kvm *kvm, struct kvm_lapic *src,
 	*r = -1;
 
 	if (irq->shorthand == APIC_DEST_SELF) {
+<<<<<<< HEAD
+=======
+		if (KVM_BUG_ON(!src, kvm)) {
+			*r = 0;
+			return true;
+		}
+>>>>>>> origin/android16-base
 		*r = kvm_apic_set_irq(src->vcpu, irq, dest_map);
 		return true;
 	}
@@ -2045,10 +2052,14 @@ void kvm_set_lapic_tscdeadline_msr(struct kvm_vcpu *vcpu, u64 data)
 
 void kvm_lapic_set_tpr(struct kvm_vcpu *vcpu, unsigned long cr8)
 {
+<<<<<<< HEAD
 	struct kvm_lapic *apic = vcpu->arch.apic;
 
 	apic_set_tpr(apic, ((cr8 & 0x0f) << 4)
 		     | (kvm_lapic_get_reg(apic, APIC_TASKPRI) & 4));
+=======
+	apic_set_tpr(vcpu->arch.apic, (cr8 & 0x0f) << 4);
+>>>>>>> origin/android16-base
 }
 
 u64 kvm_lapic_get_cr8(struct kvm_vcpu *vcpu)
@@ -2200,13 +2211,25 @@ int kvm_apic_local_deliver(struct kvm_lapic *apic, int lvt_type)
 {
 	u32 reg = kvm_lapic_get_reg(apic, lvt_type);
 	int vector, mode, trig_mode;
+<<<<<<< HEAD
+=======
+	int r;
+>>>>>>> origin/android16-base
 
 	if (kvm_apic_hw_enabled(apic) && !(reg & APIC_LVT_MASKED)) {
 		vector = reg & APIC_VECTOR_MASK;
 		mode = reg & APIC_MODE_MASK;
 		trig_mode = reg & APIC_LVT_LEVEL_TRIGGER;
+<<<<<<< HEAD
 		return __apic_accept_irq(apic, mode, vector, 1, trig_mode,
 					NULL);
+=======
+
+		r = __apic_accept_irq(apic, mode, vector, 1, trig_mode, NULL);
+		if (r && lvt_type == APIC_LVTPC)
+			kvm_lapic_set_reg(apic, APIC_LVTPC, reg | APIC_LVT_MASKED);
+		return r;
+>>>>>>> origin/android16-base
 	}
 	return 0;
 }
@@ -2284,7 +2307,11 @@ int kvm_apic_has_interrupt(struct kvm_vcpu *vcpu)
 	struct kvm_lapic *apic = vcpu->arch.apic;
 	u32 ppr;
 
+<<<<<<< HEAD
 	if (!kvm_apic_hw_enabled(apic))
+=======
+	if (!kvm_apic_present(vcpu))
+>>>>>>> origin/android16-base
 		return -1;
 
 	__apic_update_ppr(apic, &ppr);

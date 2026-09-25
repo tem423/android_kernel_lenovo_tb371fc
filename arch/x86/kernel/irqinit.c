@@ -72,8 +72,15 @@ void __init init_ISA_irqs(void)
 
 	legacy_pic->init(0);
 
+<<<<<<< HEAD
 	for (i = 0; i < nr_legacy_irqs(); i++)
 		irq_set_chip_and_handler(i, chip, handle_level_irq);
+=======
+	for (i = 0; i < nr_legacy_irqs(); i++) {
+		irq_set_chip_and_handler(i, chip, handle_level_irq);
+		irq_set_status_flags(i, IRQ_LEVEL);
+	}
+>>>>>>> origin/android16-base
 }
 
 void __init init_IRQ(void)

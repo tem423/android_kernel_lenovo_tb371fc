@@ -1348,9 +1348,14 @@ static unsigned int parport_ip32_fwp_wait_interrupt(struct parport *p)
 			ecr = parport_ip32_read_econtrol(p);
 			if ((ecr & ECR_F_EMPTY) && !(ecr & ECR_SERVINTR)
 			    && !lost_interrupt) {
+<<<<<<< HEAD
 				printk(KERN_WARNING PPIP32
 				       "%s: lost interrupt in %s\n",
 				       p->name, __func__);
+=======
+				pr_warn(PPIP32 "%s: lost interrupt in %s\n",
+					p->name, __func__);
+>>>>>>> origin/android16-base
 				lost_interrupt = 1;
 			}
 		}
@@ -1654,8 +1659,13 @@ static size_t parport_ip32_compat_write_data(struct parport *p,
 				       DSR_nBUSY | DSR_nFAULT)) {
 		/* Avoid to flood the logs */
 		if (ready_before)
+<<<<<<< HEAD
 			printk(KERN_INFO PPIP32 "%s: not ready in %s\n",
 			       p->name, __func__);
+=======
+			pr_info(PPIP32 "%s: not ready in %s\n",
+				p->name, __func__);
+>>>>>>> origin/android16-base
 		ready_before = 0;
 		goto stop;
 	}
@@ -1735,8 +1745,13 @@ static size_t parport_ip32_ecp_write_data(struct parport *p,
 				       DSR_nBUSY | DSR_nFAULT)) {
 		/* Avoid to flood the logs */
 		if (ready_before)
+<<<<<<< HEAD
 			printk(KERN_INFO PPIP32 "%s: not ready in %s\n",
 			       p->name, __func__);
+=======
+			pr_info(PPIP32 "%s: not ready in %s\n",
+				p->name, __func__);
+>>>>>>> origin/android16-base
 		ready_before = 0;
 		goto stop;
 	}
@@ -2075,8 +2090,12 @@ static __init struct parport *parport_ip32_probe_port(void)
 	p->modes |= PARPORT_MODE_TRISTATE;
 
 	if (!parport_ip32_fifo_supported(p)) {
+<<<<<<< HEAD
 		printk(KERN_WARNING PPIP32
 		       "%s: error: FIFO disabled\n", p->name);
+=======
+		pr_warn(PPIP32 "%s: error: FIFO disabled\n", p->name);
+>>>>>>> origin/android16-base
 		/* Disable hardware modes depending on a working FIFO. */
 		features &= ~PARPORT_IP32_ENABLE_SPP;
 		features &= ~PARPORT_IP32_ENABLE_ECP;
@@ -2088,8 +2107,12 @@ static __init struct parport *parport_ip32_probe_port(void)
 	if (features & PARPORT_IP32_ENABLE_IRQ) {
 		int irq = MACEISA_PARALLEL_IRQ;
 		if (request_irq(irq, parport_ip32_interrupt, 0, p->name, p)) {
+<<<<<<< HEAD
 			printk(KERN_WARNING PPIP32
 			       "%s: error: IRQ disabled\n", p->name);
+=======
+			pr_warn(PPIP32 "%s: error: IRQ disabled\n", p->name);
+>>>>>>> origin/android16-base
 			/* DMA cannot work without interrupts. */
 			features &= ~PARPORT_IP32_ENABLE_DMA;
 		} else {
@@ -2102,8 +2125,12 @@ static __init struct parport *parport_ip32_probe_port(void)
 	/* Allocate DMA resources */
 	if (features & PARPORT_IP32_ENABLE_DMA) {
 		if (parport_ip32_dma_register())
+<<<<<<< HEAD
 			printk(KERN_WARNING PPIP32
 			       "%s: error: DMA disabled\n", p->name);
+=======
+			pr_warn(PPIP32 "%s: error: DMA disabled\n", p->name);
+>>>>>>> origin/android16-base
 		else {
 			pr_probe(p, "DMA support enabled\n");
 			p->dma = 0; /* arbitrary value != PARPORT_DMA_NONE */
@@ -2145,8 +2172,12 @@ static __init struct parport *parport_ip32_probe_port(void)
 	parport_ip32_dump_state(p, "end init", 0);
 
 	/* Print out what we found */
+<<<<<<< HEAD
 	printk(KERN_INFO "%s: SGI IP32 at 0x%lx (0x%lx)",
 	       p->name, p->base, p->base_hi);
+=======
+	pr_info("%s: SGI IP32 at 0x%lx (0x%lx)", p->name, p->base, p->base_hi);
+>>>>>>> origin/android16-base
 	if (p->irq != PARPORT_IRQ_NONE)
 		printk(", irq %d", p->irq);
 	printk(" [");

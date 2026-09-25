@@ -124,7 +124,11 @@ TRACE_EVENT(atl_sync_rx_range,
 #endif /* _ATL_TRACE_H */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/ethernet/aquantia/atlantic-fwd
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef  TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE atl_trace
 #include <trace/define_trace.h>

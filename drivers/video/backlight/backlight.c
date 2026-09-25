@@ -119,7 +119,10 @@ static void backlight_generate_event(struct backlight_device *bd,
 	envp[1] = NULL;
 	kobject_uevent_env(&bd->dev.kobj, KOBJ_CHANGE, envp);
 	sysfs_notify(&bd->dev.kobj, NULL, "actual_brightness");
+<<<<<<< HEAD
 	sysfs_notify(&bd->dev.kobj, NULL, "brightness");
+=======
+>>>>>>> origin/android16-base
 }
 
 static ssize_t bl_power_show(struct device *dev, struct device_attribute *attr,
@@ -181,12 +184,15 @@ int backlight_device_set_brightness(struct backlight_device *bd,
 		if (brightness > bd->props.max_brightness)
 			rc = -EINVAL;
 		else {
+<<<<<<< HEAD
 			if ((!bd->use_count && brightness) || (bd->use_count && !brightness)) {
 				if (!bd->use_count)
 					bd->use_count++;
 				else
 					bd->use_count--;
 			}
+=======
+>>>>>>> origin/android16-base
 			pr_debug("set brightness to %lu\n", brightness);
 			bd->props.brightness = brightness;
 			rc = backlight_update_status(bd);
@@ -212,6 +218,13 @@ static ssize_t brightness_store(struct device *dev,
 		return rc;
 
 	bd->usr_brightness_req = brightness;
+<<<<<<< HEAD
+=======
+	brightness = (brightness <= bd->thermal_brightness_limit) ?
+				bd->usr_brightness_req :
+				bd->thermal_brightness_limit;
+
+>>>>>>> origin/android16-base
 	rc = backlight_device_set_brightness(bd, brightness);
 
 	return rc ? rc : count;
@@ -483,6 +496,7 @@ struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
 }
 EXPORT_SYMBOL(backlight_device_get_by_type);
 
+<<<<<<< HEAD
 struct backlight_device *backlight_device_get_by_type_a(enum backlight_type type)
 {
 	bool found = false;
@@ -519,6 +533,8 @@ struct backlight_device *backlight_device_get_by_type_b(enum backlight_type type
 }
 EXPORT_SYMBOL(backlight_device_get_by_type_b);
 
+=======
+>>>>>>> origin/android16-base
 /**
  * backlight_device_unregister - unregisters a backlight device object.
  * @bd: the backlight device object to be unregistered and freed.

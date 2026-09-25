@@ -3018,6 +3018,10 @@ struct tg3_napi {
 	u16				*rx_rcb_prod_idx;
 	struct tg3_rx_prodring_set	prodring;
 	struct tg3_rx_buffer_desc	*rx_rcb;
+<<<<<<< HEAD
+=======
+	unsigned long			rx_dropped;
+>>>>>>> origin/android16-base
 
 	u32				tx_prod	____cacheline_aligned;
 	u32				tx_cons;
@@ -3026,6 +3030,10 @@ struct tg3_napi {
 	u32				prodmbox;
 	struct tg3_tx_buffer_desc	*tx_ring;
 	struct tg3_tx_ring_info		*tx_buffers;
+<<<<<<< HEAD
+=======
+	unsigned long			tx_dropped;
+>>>>>>> origin/android16-base
 
 	dma_addr_t			status_mapping;
 	dma_addr_t			rx_rcb_mapping;
@@ -3219,8 +3227,11 @@ struct tg3 {
 
 
 	/* begin "everything else" cacheline(s) section */
+<<<<<<< HEAD
 	unsigned long			rx_dropped;
 	unsigned long			tx_dropped;
+=======
+>>>>>>> origin/android16-base
 	struct rtnl_link_stats64	net_stats_prev;
 	struct tg3_ethtool_stats	estats_prev;
 

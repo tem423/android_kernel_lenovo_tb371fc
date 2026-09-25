@@ -99,7 +99,11 @@ static void transmit_midi_msg(struct snd_ff *ff, unsigned int port)
 
 	/* Set interval to next transaction. */
 	ff->next_ktime[port] = ktime_add_ns(ktime_get(),
+<<<<<<< HEAD
 					    len * 8 * NSEC_PER_SEC / 31250);
+=======
+					    len * 8 * (NSEC_PER_SEC / 31250));
+>>>>>>> origin/android16-base
 	ff->rx_bytes[port] = len;
 
 	/*

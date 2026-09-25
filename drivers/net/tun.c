@@ -77,6 +77,17 @@
 #include <linux/bpf.h>
 #include <linux/bpf_trace.h>
 #include <linux/mutex.h>
+<<<<<<< HEAD
+=======
+#include <linux/ieee802154.h>
+#include <linux/if_ltalk.h>
+#include <uapi/linux/if_fddi.h>
+#include <uapi/linux/if_hippi.h>
+#include <uapi/linux/if_fc.h>
+#include <net/ax25.h>
+#include <net/rose.h>
+#include <net/6lowpan.h>
+>>>>>>> origin/android16-base
 
 #include <linux/uaccess.h>
 #include <linux/proc_fs.h>
@@ -248,6 +259,12 @@ struct tun_struct {
 	struct tun_prog __rcu *steering_prog;
 	struct tun_prog __rcu *filter_prog;
 	struct ethtool_link_ksettings link_ksettings;
+<<<<<<< HEAD
+=======
+	/* init args */
+	struct file *file;
+	struct ifreq *ifr;
+>>>>>>> origin/android16-base
 };
 
 struct veth {
@@ -273,6 +290,12 @@ void *tun_ptr_to_xdp(void *ptr)
 }
 EXPORT_SYMBOL(tun_ptr_to_xdp);
 
+<<<<<<< HEAD
+=======
+static void tun_flow_init(struct tun_struct *tun);
+static void tun_flow_uninit(struct tun_struct *tun);
+
+>>>>>>> origin/android16-base
 static int tun_napi_receive(struct napi_struct *napi, int budget)
 {
 	struct tun_file *tfile = container_of(napi, struct tun_file, napi);
@@ -325,6 +348,15 @@ static void tun_napi_init(struct tun_struct *tun, struct tun_file *tfile,
 	}
 }
 
+<<<<<<< HEAD
+=======
+static void tun_napi_enable(struct tun_file *tfile)
+{
+	if (tfile->napi_enabled)
+		napi_enable(&tfile->napi);
+}
+
+>>>>>>> origin/android16-base
 static void tun_napi_disable(struct tun_file *tfile)
 {
 	if (tfile->napi_enabled)
@@ -696,7 +728,12 @@ static void __tun_detach(struct tun_file *tfile, bool clean)
 	tun = rtnl_dereference(tfile->tun);
 
 	if (tun && clean) {
+<<<<<<< HEAD
 		tun_napi_disable(tfile);
+=======
+		if (!tfile->detached)
+			tun_napi_disable(tfile);
+>>>>>>> origin/android16-base
 		tun_napi_del(tfile);
 	}
 
@@ -708,6 +745,10 @@ static void __tun_detach(struct tun_file *tfile, bool clean)
 				   tun->tfiles[tun->numqueues - 1]);
 		ntfile = rtnl_dereference(tun->tfiles[index]);
 		ntfile->queue_index = index;
+<<<<<<< HEAD
+=======
+		ntfile->xdp_rxq.queue_index = index;
+>>>>>>> origin/android16-base
 		rcu_assign_pointer(tun->tfiles[tun->numqueues - 1],
 				   NULL);
 
@@ -715,8 +756,15 @@ static void __tun_detach(struct tun_file *tfile, bool clean)
 		if (clean) {
 			RCU_INIT_POINTER(tfile->tun, NULL);
 			sock_put(&tfile->sk);
+<<<<<<< HEAD
 		} else
 			tun_disable_queue(tun, tfile);
+=======
+		} else {
+			tun_disable_queue(tun, tfile);
+			tun_napi_disable(tfile);
+		}
+>>>>>>> origin/android16-base
 
 		synchronize_net();
 		tun_flow_delete_by_queue(tun, tun->numqueues + 1);
@@ -739,7 +787,10 @@ static void __tun_detach(struct tun_file *tfile, bool clean)
 		if (tun)
 			xdp_rxq_info_unreg(&tfile->xdp_rxq);
 		ptr_ring_cleanup(&tfile->tx_ring, tun_ptr_free);
+<<<<<<< HEAD
 		sock_put(&tfile->sk);
+=======
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -755,6 +806,12 @@ static void tun_detach(struct tun_file *tfile, bool clean)
 	if (dev)
 		netdev_state_change(dev);
 	rtnl_unlock();
+<<<<<<< HEAD
+=======
+
+	if (clean)
+		sock_put(&tfile->sk);
+>>>>>>> origin/android16-base
 }
 
 static void tun_detach_all(struct net_device *dev)
@@ -789,6 +846,10 @@ static void tun_detach_all(struct net_device *dev)
 		sock_put(&tfile->sk);
 	}
 	list_for_each_entry_safe(tfile, tmp, &tun->disabled, next) {
+<<<<<<< HEAD
+=======
+		tun_napi_del(tfile);
+>>>>>>> origin/android16-base
 		tun_enable_queue(tfile);
 		tun_queue_purge(tfile);
 		xdp_rxq_info_unreg(&tfile->xdp_rxq);
@@ -869,6 +930,10 @@ static int tun_attach(struct tun_struct *tun, struct file *file,
 
 	if (tfile->detached) {
 		tun_enable_queue(tfile);
+<<<<<<< HEAD
+=======
+		tun_napi_enable(tfile);
+>>>>>>> origin/android16-base
 	} else {
 		sock_hold(&tfile->sk);
 		tun_napi_init(tun, tfile, napi, napi_frags);
@@ -1017,6 +1082,52 @@ static int check_filter(struct tap_filter *filter, const struct sk_buff *skb)
 
 static const struct ethtool_ops tun_ethtool_ops;
 
+<<<<<<< HEAD
+=======
+static int tun_net_init(struct net_device *dev)
+{
+	struct tun_struct *tun = netdev_priv(dev);
+	struct ifreq *ifr = tun->ifr;
+	int err;
+
+	tun->pcpu_stats = netdev_alloc_pcpu_stats(struct tun_pcpu_stats);
+	if (!tun->pcpu_stats)
+		return -ENOMEM;
+
+	spin_lock_init(&tun->lock);
+
+	err = security_tun_dev_alloc_security(&tun->security);
+	if (err < 0) {
+		free_percpu(tun->pcpu_stats);
+		return err;
+	}
+
+	tun_flow_init(tun);
+
+	dev->hw_features = NETIF_F_SG | NETIF_F_FRAGLIST |
+			   TUN_USER_FEATURES | NETIF_F_HW_VLAN_CTAG_TX |
+			   NETIF_F_HW_VLAN_STAG_TX;
+	dev->features = dev->hw_features | NETIF_F_LLTX;
+	dev->vlan_features = dev->features &
+			     ~(NETIF_F_HW_VLAN_CTAG_TX |
+			       NETIF_F_HW_VLAN_STAG_TX);
+
+	tun->flags = (tun->flags & ~TUN_FEATURES) |
+		      (ifr->ifr_flags & TUN_FEATURES);
+
+	INIT_LIST_HEAD(&tun->disabled);
+	err = tun_attach(tun, tun->file, false, ifr->ifr_flags & IFF_NAPI,
+			 ifr->ifr_flags & IFF_NAPI_FRAGS, false);
+	if (err < 0) {
+		tun_flow_uninit(tun);
+		security_tun_dev_free_security(tun->security);
+		free_percpu(tun->pcpu_stats);
+		return err;
+	}
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 /* Net device detach from fd. */
 static void tun_net_uninit(struct net_device *dev)
 {
@@ -1077,6 +1188,10 @@ static netdev_tx_t tun_net_xmit(struct sk_buff *skb, struct net_device *dev)
 {
 	struct tun_struct *tun = netdev_priv(dev);
 	int txq = skb->queue_mapping;
+<<<<<<< HEAD
+=======
+	struct netdev_queue *queue;
+>>>>>>> origin/android16-base
 	struct tun_file *tfile;
 	int len = skb->len;
 
@@ -1123,6 +1238,13 @@ static netdev_tx_t tun_net_xmit(struct sk_buff *skb, struct net_device *dev)
 	if (ptr_ring_produce(&tfile->tx_ring, skb))
 		goto drop;
 
+<<<<<<< HEAD
+=======
+	/* NETIF_F_LLTX requires to do our own update of trans_start */
+	queue = netdev_get_tx_queue(dev, txq);
+	queue->trans_start = jiffies;
+
+>>>>>>> origin/android16-base
 	/* Notify and wake up reader process */
 	if (tfile->flags & TUN_FASYNC)
 		kill_fasync(&tfile->fasync, SIGIO, POLL_IN);
@@ -1242,6 +1364,10 @@ static int tun_xdp(struct net_device *dev, struct netdev_bpf *xdp)
 }
 
 static const struct net_device_ops tun_netdev_ops = {
+<<<<<<< HEAD
+=======
+	.ndo_init		= tun_net_init,
+>>>>>>> origin/android16-base
 	.ndo_uninit		= tun_net_uninit,
 	.ndo_open		= tun_net_open,
 	.ndo_stop		= tun_net_close,
@@ -1321,6 +1447,10 @@ static int tun_xdp_tx(struct net_device *dev, struct xdp_buff *xdp)
 }
 
 static const struct net_device_ops tap_netdev_ops = {
+<<<<<<< HEAD
+=======
+	.ndo_init		= tun_net_init,
+>>>>>>> origin/android16-base
 	.ndo_uninit		= tun_net_uninit,
 	.ndo_open		= tun_net_open,
 	.ndo_stop		= tun_net_close,
@@ -1360,7 +1490,11 @@ static void tun_flow_uninit(struct tun_struct *tun)
 #define MAX_MTU 65535
 
 /* Initialize net device. */
+<<<<<<< HEAD
 static void tun_net_init(struct net_device *dev)
+=======
+static void tun_net_initialize(struct net_device *dev)
+>>>>>>> origin/android16-base
 {
 	struct tun_struct *tun = netdev_priv(dev);
 
@@ -1449,8 +1583,14 @@ static struct sk_buff *tun_napi_alloc_frags(struct tun_file *tfile,
 	int err;
 	int i;
 
+<<<<<<< HEAD
 	if (it->nr_segs > MAX_SKB_FRAGS + 1)
 		return ERR_PTR(-ENOMEM);
+=======
+	if (it->nr_segs > MAX_SKB_FRAGS + 1 ||
+	    len > (ETH_MAX_MTU - NET_SKB_PAD - NET_IP_ALIGN))
+		return ERR_PTR(-EMSGSIZE);
+>>>>>>> origin/android16-base
 
 	local_bh_disable();
 	skb = napi_get_frags(&tfile->napi);
@@ -1576,7 +1716,11 @@ static bool tun_can_build_skb(struct tun_struct *tun, struct tun_file *tfile,
 	if (zerocopy)
 		return false;
 
+<<<<<<< HEAD
 	if (SKB_DATA_ALIGN(len + TUN_RX_PAD) +
+=======
+	if (SKB_DATA_ALIGN(len + TUN_RX_PAD + XDP_PACKET_HEADROOM) +
+>>>>>>> origin/android16-base
 	    SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) > PAGE_SIZE)
 		return false;
 
@@ -1941,6 +2085,7 @@ drop:
 		headlen = eth_get_headlen(skb->data, skb_headlen(skb));
 
 		if (unlikely(headlen > skb_headlen(skb))) {
+<<<<<<< HEAD
 			this_cpu_inc(tun->pcpu_stats->rx_dropped);
 			napi_free_frags(&tfile->napi);
 			rcu_read_unlock();
@@ -1952,6 +2097,27 @@ drop:
 		local_bh_disable();
 		napi_gro_frags(&tfile->napi);
 		local_bh_enable();
+=======
+			WARN_ON_ONCE(1);
+			err = -ENOMEM;
+			this_cpu_inc(tun->pcpu_stats->rx_dropped);
+napi_busy:
+			napi_free_frags(&tfile->napi);
+			rcu_read_unlock();
+			mutex_unlock(&tfile->napi_mutex);
+			return err;
+		}
+
+		if (likely(napi_schedule_prep(&tfile->napi))) {
+			local_bh_disable();
+			napi_gro_frags(&tfile->napi);
+			napi_complete(&tfile->napi);
+			local_bh_enable();
+		} else {
+			err = -EBUSY;
+			goto napi_busy;
+		}
+>>>>>>> origin/android16-base
 		mutex_unlock(&tfile->napi_mutex);
 	} else if (tfile->napi_enabled) {
 		struct sk_buff_head *queue = &tfile->sk.sk_write_queue;
@@ -1992,12 +2158,23 @@ static ssize_t tun_chr_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	struct tun_file *tfile = file->private_data;
 	struct tun_struct *tun = tun_get(tfile);
 	ssize_t result;
+<<<<<<< HEAD
+=======
+	int noblock = 0;
+>>>>>>> origin/android16-base
 
 	if (!tun)
 		return -EBADFD;
 
+<<<<<<< HEAD
 	result = tun_get_user(tun, tfile, NULL, from,
 			      file->f_flags & O_NONBLOCK, false);
+=======
+	if ((file->f_flags & O_NONBLOCK) || (iocb->ki_flags & IOCB_NOWAIT))
+		noblock = 1;
+
+	result = tun_get_user(tun, tfile, NULL, from, noblock, false);
+>>>>>>> origin/android16-base
 
 	tun_put(tun);
 	return result;
@@ -2082,6 +2259,7 @@ static ssize_t tun_put_user(struct tun_struct *tun,
 					    tun_is_little_endian(tun), true,
 					    vlan_hlen)) {
 			struct skb_shared_info *sinfo = skb_shinfo(skb);
+<<<<<<< HEAD
 			pr_err("unexpected GSO type: "
 			       "0x%x, gso_size %d, hdr_len %d\n",
 			       sinfo->gso_type, tun16_to_cpu(tun, gso.gso_size),
@@ -2090,6 +2268,18 @@ static ssize_t tun_put_user(struct tun_struct *tun,
 				       DUMP_PREFIX_NONE,
 				       16, 1, skb->head,
 				       min((int)tun16_to_cpu(tun, gso.hdr_len), 64), true);
+=======
+
+			if (net_ratelimit()) {
+				netdev_err(tun->dev, "unexpected GSO type: 0x%x, gso_size %d, hdr_len %d\n",
+					   sinfo->gso_type, tun16_to_cpu(tun, gso.gso_size),
+					   tun16_to_cpu(tun, gso.hdr_len));
+				print_hex_dump(KERN_ERR, "tun: ",
+					       DUMP_PREFIX_NONE,
+					       16, 1, skb->head,
+					       min((int)tun16_to_cpu(tun, gso.hdr_len), 64), true);
+			}
+>>>>>>> origin/android16-base
 			WARN_ON_ONCE(1);
 			return -EINVAL;
 		}
@@ -2218,10 +2408,22 @@ static ssize_t tun_chr_read_iter(struct kiocb *iocb, struct iov_iter *to)
 	struct tun_file *tfile = file->private_data;
 	struct tun_struct *tun = tun_get(tfile);
 	ssize_t len = iov_iter_count(to), ret;
+<<<<<<< HEAD
 
 	if (!tun)
 		return -EBADFD;
 	ret = tun_do_read(tun, tfile, to, file->f_flags & O_NONBLOCK, NULL);
+=======
+	int noblock = 0;
+
+	if (!tun)
+		return -EBADFD;
+
+	if ((file->f_flags & O_NONBLOCK) || (iocb->ki_flags & IOCB_NOWAIT))
+		noblock = 1;
+
+	ret = tun_do_read(tun, tfile, to, noblock, NULL);
+>>>>>>> origin/android16-base
 	ret = min_t(ssize_t, ret, len);
 	if (ret > 0)
 		iocb->ki_pos = ret;
@@ -2619,9 +2821,12 @@ static int tun_set_iff(struct net *net, struct file *file, struct ifreq *ifr)
 
 		if (!dev)
 			return -ENOMEM;
+<<<<<<< HEAD
 		err = dev_get_valid_name(net, dev, name);
 		if (err < 0)
 			goto err_free_dev;
+=======
+>>>>>>> origin/android16-base
 
 		dev_net_set(dev, net);
 		dev->rtnl_link_ops = &tun_link_ops;
@@ -2640,6 +2845,7 @@ static int tun_set_iff(struct net *net, struct file *file, struct ifreq *ifr)
 		tun->rx_batched = 0;
 		RCU_INIT_POINTER(tun->steering_prog, NULL);
 
+<<<<<<< HEAD
 		tun->pcpu_stats = netdev_alloc_pcpu_stats(struct tun_pcpu_stats);
 		if (!tun->pcpu_stats) {
 			err = -ENOMEM;
@@ -2675,6 +2881,18 @@ static int tun_set_iff(struct net *net, struct file *file, struct ifreq *ifr)
 		err = register_netdevice(tun->dev);
 		if (err < 0)
 			goto err_detach;
+=======
+		tun->ifr = ifr;
+		tun->file = file;
+
+		tun_net_initialize(dev);
+
+		err = register_netdevice(tun->dev);
+		if (err < 0) {
+			free_netdev(dev);
+			return err;
+		}
+>>>>>>> origin/android16-base
 		/* free_netdev() won't check refcnt, to aovid race
 		 * with dev_put() we need publish tun after registration.
 		 */
@@ -2693,6 +2911,7 @@ static int tun_set_iff(struct net *net, struct file *file, struct ifreq *ifr)
 
 	strcpy(ifr->ifr_name, tun->dev->name);
 	return 0;
+<<<<<<< HEAD
 
 err_detach:
 	tun_detach_all(dev);
@@ -2707,6 +2926,8 @@ err_free_stat:
 err_free_dev:
 	free_netdev(dev);
 	return err;
+=======
+>>>>>>> origin/android16-base
 }
 
 static void tun_get_iff(struct net *net, struct tun_struct *tun,
@@ -2860,6 +3081,48 @@ static int tun_set_ebpf(struct tun_struct *tun, struct tun_prog **prog_p,
 	return __tun_set_ebpf(tun, prog_p, prog);
 }
 
+<<<<<<< HEAD
+=======
+/* Return correct value for tun->dev->addr_len based on tun->dev->type. */
+static unsigned char tun_get_addr_len(unsigned short type)
+{
+	switch (type) {
+	case ARPHRD_IP6GRE:
+	case ARPHRD_TUNNEL6:
+		return sizeof(struct in6_addr);
+	case ARPHRD_IPGRE:
+	case ARPHRD_TUNNEL:
+	case ARPHRD_SIT:
+		return 4;
+	case ARPHRD_ETHER:
+		return ETH_ALEN;
+	case ARPHRD_IEEE802154:
+	case ARPHRD_IEEE802154_MONITOR:
+		return IEEE802154_EXTENDED_ADDR_LEN;
+	case ARPHRD_PHONET_PIPE:
+	case ARPHRD_PPP:
+	case ARPHRD_NONE:
+		return 0;
+	case ARPHRD_6LOWPAN:
+		return EUI64_ADDR_LEN;
+	case ARPHRD_FDDI:
+		return FDDI_K_ALEN;
+	case ARPHRD_HIPPI:
+		return HIPPI_ALEN;
+	case ARPHRD_IEEE802:
+		return FC_ALEN;
+	case ARPHRD_ROSE:
+		return ROSE_ADDR_LEN;
+	case ARPHRD_NETROM:
+		return AX25_ADDR_LEN;
+	case ARPHRD_LOCALTLK:
+		return LTALK_ALEN;
+	default:
+		return 0;
+	}
+}
+
+>>>>>>> origin/android16-base
 static long __tun_chr_ioctl(struct file *file, unsigned int cmd,
 			    unsigned long arg, int ifreq_len)
 {
@@ -2877,12 +3140,15 @@ static long __tun_chr_ioctl(struct file *file, unsigned int cmd,
 	int ret;
 	bool do_notify = false;
 
+<<<<<<< HEAD
 #ifdef CONFIG_ANDROID_PARANOID_NETWORK
 	if (cmd != TUNGETIFF && !capable(CAP_NET_ADMIN)) {
 		return -EPERM;
 	}
 #endif
 
+=======
+>>>>>>> origin/android16-base
 	if (cmd == TUNSETIFF || cmd == TUNSETQUEUE ||
 	    (_IOC_TYPE(cmd) == SOCK_IOC_TYPE && cmd != SIOCGSKNS)) {
 		if (copy_from_user(&ifr, argp, ifreq_len))
@@ -3020,6 +3286,10 @@ static long __tun_chr_ioctl(struct file *file, unsigned int cmd,
 			ret = -EBUSY;
 		} else {
 			tun->dev->type = (int) arg;
+<<<<<<< HEAD
+=======
+			tun->dev->addr_len = tun_get_addr_len(tun->dev->type);
+>>>>>>> origin/android16-base
 			tun_debug(KERN_INFO, tun, "linktype set to %d\n",
 				  tun->dev->type);
 			ret = 0;

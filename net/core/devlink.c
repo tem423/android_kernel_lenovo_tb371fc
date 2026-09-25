@@ -1113,7 +1113,11 @@ static int devlink_nl_sb_port_pool_fill(struct sk_buff *msg,
 		err = ops->sb_occ_port_pool_get(devlink_port, devlink_sb->index,
 						pool_index, &cur, &max);
 		if (err && err != -EOPNOTSUPP)
+<<<<<<< HEAD
 			return err;
+=======
+			goto sb_occ_get_failure;
+>>>>>>> origin/android16-base
 		if (!err) {
 			if (nla_put_u32(msg, DEVLINK_ATTR_SB_OCC_CUR, cur))
 				goto nla_put_failure;
@@ -1126,8 +1130,15 @@ static int devlink_nl_sb_port_pool_fill(struct sk_buff *msg,
 	return 0;
 
 nla_put_failure:
+<<<<<<< HEAD
 	genlmsg_cancel(msg, hdr);
 	return -EMSGSIZE;
+=======
+	err = -EMSGSIZE;
+sb_occ_get_failure:
+	genlmsg_cancel(msg, hdr);
+	return err;
+>>>>>>> origin/android16-base
 }
 
 static int devlink_nl_cmd_sb_port_pool_get_doit(struct sk_buff *skb,

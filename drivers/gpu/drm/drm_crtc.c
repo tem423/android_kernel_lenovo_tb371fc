@@ -567,6 +567,7 @@ int drm_mode_setcrtc(struct drm_device *dev, void *data,
 	struct drm_mode_crtc *crtc_req = data;
 	struct drm_crtc *crtc;
 	struct drm_plane *plane;
+<<<<<<< HEAD
 	struct drm_connector **connector_set, *connector;
 	struct drm_framebuffer *fb;
 	struct drm_display_mode *mode;
@@ -575,6 +576,15 @@ int drm_mode_setcrtc(struct drm_device *dev, void *data,
 	struct drm_modeset_acquire_ctx ctx;
 	int ret;
 	int i;
+=======
+	struct drm_connector **connector_set = NULL, *connector;
+	struct drm_framebuffer *fb = NULL;
+	struct drm_display_mode *mode = NULL;
+	struct drm_mode_set set;
+	uint32_t __user *set_connectors_ptr;
+	struct drm_modeset_acquire_ctx ctx;
+	int ret, i, num_connectors = 0;
+>>>>>>> origin/android16-base
 
 	if (!drm_core_check_feature(dev, DRIVER_MODESET))
 		return -EINVAL;
@@ -602,10 +612,13 @@ int drm_mode_setcrtc(struct drm_device *dev, void *data,
 	mutex_lock(&crtc->dev->mode_config.mutex);
 	drm_modeset_acquire_init(&ctx, DRM_MODESET_ACQUIRE_INTERRUPTIBLE);
 retry:
+<<<<<<< HEAD
 	connector_set = NULL;
 	fb = NULL;
 	mode = NULL;
 
+=======
+>>>>>>> origin/android16-base
 	ret = drm_modeset_lock_all_ctx(crtc->dev, &ctx);
 	if (ret)
 		goto out;
@@ -739,6 +752,10 @@ retry:
 					connector->name);
 
 			connector_set[i] = connector;
+<<<<<<< HEAD
+=======
+			num_connectors++;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -747,7 +764,11 @@ retry:
 	set.y = crtc_req->y;
 	set.mode = mode;
 	set.connectors = connector_set;
+<<<<<<< HEAD
 	set.num_connectors = crtc_req->count_connectors;
+=======
+	set.num_connectors = num_connectors;
+>>>>>>> origin/android16-base
 	set.fb = fb;
 
 	if (drm_drv_uses_atomic_modeset(dev))
@@ -760,13 +781,27 @@ out:
 		drm_framebuffer_put(fb);
 
 	if (connector_set) {
+<<<<<<< HEAD
 		for (i = 0; i < crtc_req->count_connectors; i++) {
+=======
+		for (i = 0; i < num_connectors; i++) {
+>>>>>>> origin/android16-base
 			if (connector_set[i])
 				drm_connector_put(connector_set[i]);
 		}
 	}
 	kfree(connector_set);
 	drm_mode_destroy(dev, mode);
+<<<<<<< HEAD
+=======
+
+	/* In case we need to retry... */
+	connector_set = NULL;
+	fb = NULL;
+	mode = NULL;
+	num_connectors = 0;
+
+>>>>>>> origin/android16-base
 	if (ret == -EDEADLK) {
 		ret = drm_modeset_backoff(&ctx);
 		if (!ret)

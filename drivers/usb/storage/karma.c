@@ -172,23 +172,42 @@ static void rio_karma_destructor(void *extra)
 
 static int rio_karma_init(struct us_data *us)
 {
+<<<<<<< HEAD
 	int ret = 0;
 	struct karma_data *data = kzalloc(sizeof(struct karma_data), GFP_NOIO);
 	if (!data)
 		goto out;
+=======
+	struct karma_data *data = kzalloc(sizeof(struct karma_data), GFP_NOIO);
+	if (!data)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	data->recv = kmalloc(RIO_RECV_LEN, GFP_NOIO);
 	if (!data->recv) {
 		kfree(data);
+<<<<<<< HEAD
 		goto out;
+=======
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 	}
 
 	us->extra = data;
 	us->extra_destructor = rio_karma_destructor;
+<<<<<<< HEAD
 	ret = rio_karma_send_command(RIO_ENTER_STORAGE, us);
 	data->in_storage = (ret == 0);
 out:
 	return ret;
+=======
+	if (rio_karma_send_command(RIO_ENTER_STORAGE, us))
+		return -EIO;
+
+	data->in_storage = 1;
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static struct scsi_host_template karma_host_template;

@@ -783,7 +783,11 @@ exit_free_master:
 
 static int dln2_spi_remove(struct platform_device *pdev)
 {
+<<<<<<< HEAD
 	struct spi_master *master = spi_master_get(platform_get_drvdata(pdev));
+=======
+	struct spi_master *master = platform_get_drvdata(pdev);
+>>>>>>> origin/android16-base
 	struct dln2_spi *dln2 = spi_master_get_devdata(master);
 
 	pm_runtime_disable(&pdev->dev);

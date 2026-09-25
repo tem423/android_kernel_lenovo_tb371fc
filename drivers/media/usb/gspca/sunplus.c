@@ -251,6 +251,13 @@ static void reg_r(struct gspca_dev *gspca_dev,
 		gspca_err(gspca_dev, "reg_r: buffer overflow\n");
 		return;
 	}
+<<<<<<< HEAD
+=======
+	if (len == 0) {
+		gspca_err(gspca_dev, "reg_r: zero-length read\n");
+		return;
+	}
+>>>>>>> origin/android16-base
 	if (gspca_dev->usb_err < 0)
 		return;
 	ret = usb_control_msg(gspca_dev->dev,
@@ -259,7 +266,11 @@ static void reg_r(struct gspca_dev *gspca_dev,
 			USB_DIR_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
 			0,		/* value */
 			index,
+<<<<<<< HEAD
 			len ? gspca_dev->usb_buf : NULL, len,
+=======
+			gspca_dev->usb_buf, len,
+>>>>>>> origin/android16-base
 			500);
 	if (ret < 0) {
 		pr_err("reg_r err %d\n", ret);
@@ -736,7 +747,11 @@ static int sd_start(struct gspca_dev *gspca_dev)
 		case MegaImageVI:
 			reg_w_riv(gspca_dev, 0xf0, 0, 0);
 			spca504B_WaitCmdStatus(gspca_dev);
+<<<<<<< HEAD
 			reg_r(gspca_dev, 0xf0, 4, 0);
+=======
+			reg_w_riv(gspca_dev, 0xf0, 4, 0);
+>>>>>>> origin/android16-base
 			spca504B_WaitCmdStatus(gspca_dev);
 			break;
 		default:

@@ -87,7 +87,11 @@
 	flash: flash@0 {
 		#address-cells = <1>;
 		#size-cells = <1>;
+<<<<<<< HEAD
 		compatible = "n25q256a";
+=======
+		compatible = "micron,n25q256a", "jedec,spi-nor";
+>>>>>>> origin/android16-base
 		reg = <0>;
 		spi-max-frequency = <100000000>;
 		m25p,fast-read;

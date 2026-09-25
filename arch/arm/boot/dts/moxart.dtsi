@@ -93,8 +93,13 @@
 			clock-names = "PCLK";
 		};
 
+<<<<<<< HEAD
 		sdhci: sdhci@98e00000 {
 			compatible = "moxa,moxart-sdhci";
+=======
+		mmc: mmc@98e00000 {
+			compatible = "moxa,moxart-mmc";
+>>>>>>> origin/android16-base
 			reg = <0x98e00000 0x5C>;
 			interrupts = <5 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clk_apb>;

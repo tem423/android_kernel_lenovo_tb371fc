@@ -246,8 +246,18 @@ static int lpss8250_dma_setup(struct lpss8250 *lpss, struct uart_8250_port *port
 	struct dw_dma_slave *rx_param, *tx_param;
 	struct device *dev = port->port.dev;
 
+<<<<<<< HEAD
 	if (!lpss->dma_param.dma_dev)
 		return 0;
+=======
+	if (!lpss->dma_param.dma_dev) {
+		dma = port->dma;
+		if (dma)
+			goto out_configuration_only;
+
+		return 0;
+	}
+>>>>>>> origin/android16-base
 
 	rx_param = devm_kzalloc(dev, sizeof(*rx_param), GFP_KERNEL);
 	if (!rx_param)
@@ -258,16 +268,28 @@ static int lpss8250_dma_setup(struct lpss8250 *lpss, struct uart_8250_port *port
 		return -ENOMEM;
 
 	*rx_param = lpss->dma_param;
+<<<<<<< HEAD
 	dma->rxconf.src_maxburst = lpss->dma_maxburst;
 
 	*tx_param = lpss->dma_param;
 	dma->txconf.dst_maxburst = lpss->dma_maxburst;
+=======
+	*tx_param = lpss->dma_param;
+>>>>>>> origin/android16-base
 
 	dma->fn = lpss8250_dma_filter;
 	dma->rx_param = rx_param;
 	dma->tx_param = tx_param;
 
 	port->dma = dma;
+<<<<<<< HEAD
+=======
+
+out_configuration_only:
+	dma->rxconf.src_maxburst = lpss->dma_maxburst;
+	dma->txconf.dst_maxburst = lpss->dma_maxburst;
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 

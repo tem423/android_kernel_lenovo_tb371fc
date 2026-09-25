@@ -216,7 +216,11 @@ void amdgpu_bo_placement_from_domain(struct amdgpu_bo *abo, u32 domain)
 		c++;
 	}
 
+<<<<<<< HEAD
 	BUG_ON(c >= AMDGPU_BO_MAX_PLACEMENTS);
+=======
+	BUG_ON(c > AMDGPU_BO_MAX_PLACEMENTS);
+>>>>>>> origin/android16-base
 
 	placement->num_placement = c;
 	placement->placement = places;
@@ -883,6 +887,13 @@ int amdgpu_bo_pin_restricted(struct amdgpu_bo *bo, u32 domain,
 	if (WARN_ON_ONCE(min_offset > max_offset))
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	/* Check domain to be pinned to against preferred domains */
+	if (bo->preferred_domains & domain)
+		domain = bo->preferred_domains & domain;
+
+>>>>>>> origin/android16-base
 	/* A shared bo cannot be migrated to VRAM */
 	if (bo->prime_shared_count) {
 		if (domain & AMDGPU_GEM_DOMAIN_GTT)

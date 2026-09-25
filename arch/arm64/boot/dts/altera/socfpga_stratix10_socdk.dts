@@ -125,7 +125,11 @@
 	status = "okay";
 	clock-frequency = <100000>;
 	i2c-sda-falling-time-ns = <890>;  /* hcnt */
+<<<<<<< HEAD
 	i2c-sdl-falling-time-ns = <890>;  /* lcnt */
+=======
+	i2c-scl-falling-time-ns = <890>;  /* lcnt */
+>>>>>>> origin/android16-base
 
 	adc@14 {
 		compatible = "lltc,ltc2497";

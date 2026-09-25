@@ -164,6 +164,7 @@ void unlink_file_vma(struct vm_area_struct *vma)
 	}
 }
 
+<<<<<<< HEAD
 static void __free_vma(struct vm_area_struct *vma)
 {
 	if (vma->vm_file)
@@ -185,6 +186,8 @@ static inline void put_vma(struct vm_area_struct *vma)
 }
 #endif
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Close a vm structure and free it, returning the next.
  */
@@ -195,7 +198,14 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 	might_sleep();
 	if (vma->vm_ops && vma->vm_ops->close)
 		vma->vm_ops->close(vma);
+<<<<<<< HEAD
 	put_vma(vma);
+=======
+	if (vma->vm_file)
+		fput(vma->vm_file);
+	mpol_put(vma_policy(vma));
+	vm_area_free(vma);
+>>>>>>> origin/android16-base
 	return next;
 }
 
@@ -415,6 +425,7 @@ static void validate_mm(struct mm_struct *mm)
 #define validate_mm(mm) do { } while (0)
 #endif
 
+<<<<<<< HEAD
 #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
 #define mm_rb_write_lock(mm)	write_lock(&(mm)->mm_rb_lock)
 #define mm_rb_write_unlock(mm)	write_unlock(&(mm)->mm_rb_lock)
@@ -423,6 +434,8 @@ static void validate_mm(struct mm_struct *mm)
 #define mm_rb_write_unlock(mm)	do { } while (0)
 #endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
 
+=======
+>>>>>>> origin/android16-base
 RB_DECLARE_CALLBACKS(static, vma_gap_callbacks, struct vm_area_struct, vm_rb,
 		     unsigned long, rb_subtree_gap, vma_compute_subtree_gap)
 
@@ -441,24 +454,35 @@ static void vma_gap_update(struct vm_area_struct *vma)
 }
 
 static inline void vma_rb_insert(struct vm_area_struct *vma,
+<<<<<<< HEAD
 				 struct mm_struct *mm)
 {
 	struct rb_root *root = &mm->mm_rb;
 
+=======
+				 struct rb_root *root)
+{
+>>>>>>> origin/android16-base
 	/* All rb_subtree_gap values must be consistent prior to insertion */
 	validate_mm_rb(root, NULL);
 
 	rb_insert_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
 }
 
+<<<<<<< HEAD
 static void __vma_rb_erase(struct vm_area_struct *vma, struct mm_struct *mm)
 {
 	struct rb_root *root = &mm->mm_rb;
+=======
+static void __vma_rb_erase(struct vm_area_struct *vma, struct rb_root *root)
+{
+>>>>>>> origin/android16-base
 	/*
 	 * Note rb_erase_augmented is a fairly large inline function,
 	 * so make sure we instantiate it only once with our desired
 	 * augmented rbtree callbacks.
 	 */
+<<<<<<< HEAD
 	mm_rb_write_lock(mm);
 	rb_erase_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
 	mm_rb_write_unlock(mm); /* wmb */
@@ -472,6 +496,13 @@ static void __vma_rb_erase(struct vm_area_struct *vma, struct mm_struct *mm)
 
 static __always_inline void vma_rb_erase_ignore(struct vm_area_struct *vma,
 						struct mm_struct *mm,
+=======
+	rb_erase_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
+}
+
+static __always_inline void vma_rb_erase_ignore(struct vm_area_struct *vma,
+						struct rb_root *root,
+>>>>>>> origin/android16-base
 						struct vm_area_struct *ignore)
 {
 	/*
@@ -479,6 +510,7 @@ static __always_inline void vma_rb_erase_ignore(struct vm_area_struct *vma,
 	 * with the possible exception of the "next" vma being erased if
 	 * next->vm_start was reduced.
 	 */
+<<<<<<< HEAD
 	validate_mm_rb(&mm->mm_rb, ignore);
 
 	__vma_rb_erase(vma, mm);
@@ -486,14 +518,29 @@ static __always_inline void vma_rb_erase_ignore(struct vm_area_struct *vma,
 
 static __always_inline void vma_rb_erase(struct vm_area_struct *vma,
 					 struct mm_struct *mm)
+=======
+	validate_mm_rb(root, ignore);
+
+	__vma_rb_erase(vma, root);
+}
+
+static __always_inline void vma_rb_erase(struct vm_area_struct *vma,
+					 struct rb_root *root)
+>>>>>>> origin/android16-base
 {
 	/*
 	 * All rb_subtree_gap values must be consistent prior to erase,
 	 * with the possible exception of the vma being erased.
 	 */
+<<<<<<< HEAD
 	validate_mm_rb(&mm->mm_rb, vma);
 
 	__vma_rb_erase(vma, mm);
+=======
+	validate_mm_rb(root, vma);
+
+	__vma_rb_erase(vma, root);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -608,12 +655,19 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 	 * immediately update the gap to the correct value. Finally we
 	 * rebalance the rbtree after all augmented values have been set.
 	 */
+<<<<<<< HEAD
 	mm_rb_write_lock(mm);
 	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
 	vma->rb_subtree_gap = 0;
 	vma_gap_update(vma);
 	vma_rb_insert(vma, mm);
 	mm_rb_write_unlock(mm);
+=======
+	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
+	vma->rb_subtree_gap = 0;
+	vma_gap_update(vma);
+	vma_rb_insert(vma, &mm->mm_rb);
+>>>>>>> origin/android16-base
 }
 
 static void __vma_link_file(struct vm_area_struct *vma)
@@ -689,7 +743,11 @@ static __always_inline void __vma_unlink_common(struct mm_struct *mm,
 {
 	struct vm_area_struct *next;
 
+<<<<<<< HEAD
 	vma_rb_erase_ignore(vma, mm, ignore);
+=======
+	vma_rb_erase_ignore(vma, &mm->mm_rb, ignore);
+>>>>>>> origin/android16-base
 	next = vma->vm_next;
 	if (has_prev)
 		prev->vm_next = next;
@@ -723,7 +781,11 @@ static inline void __vma_unlink_prev(struct mm_struct *mm,
  */
 int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
+<<<<<<< HEAD
 	struct vm_area_struct *expand, bool keep_locked)
+=======
+	struct vm_area_struct *expand)
+>>>>>>> origin/android16-base
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *next = vma->vm_next, *orig_vma = vma;
@@ -735,10 +797,13 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	long adjust_next = 0;
 	int remove_next = 0;
 
+<<<<<<< HEAD
 	vm_write_begin(vma);
 	if (next)
 		vm_write_begin(next);
 
+=======
+>>>>>>> origin/android16-base
 	if (next && !insert) {
 		struct vm_area_struct *exporter = NULL, *importer = NULL;
 
@@ -819,12 +884,17 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 
 			importer->anon_vma = exporter->anon_vma;
 			error = anon_vma_clone(importer, exporter);
+<<<<<<< HEAD
 			if (error) {
 				if (next && next != vma)
 					vm_write_end(next);
 				vm_write_end(vma);
 				return error;
 			}
+=======
+			if (error)
+				return error;
+>>>>>>> origin/android16-base
 		}
 	}
 again:
@@ -870,6 +940,7 @@ again:
 	}
 
 	if (start != vma->vm_start) {
+<<<<<<< HEAD
 		WRITE_ONCE(vma->vm_start, start);
 		start_changed = true;
 	}
@@ -882,6 +953,19 @@ again:
 		WRITE_ONCE(next->vm_start,
 			   next->vm_start + (adjust_next << PAGE_SHIFT));
 		WRITE_ONCE(next->vm_pgoff, next->vm_pgoff + adjust_next);
+=======
+		vma->vm_start = start;
+		start_changed = true;
+	}
+	if (end != vma->vm_end) {
+		vma->vm_end = end;
+		end_changed = true;
+	}
+	vma->vm_pgoff = pgoff;
+	if (adjust_next) {
+		next->vm_start += adjust_next << PAGE_SHIFT;
+		next->vm_pgoff += adjust_next;
+>>>>>>> origin/android16-base
 	}
 
 	if (root) {
@@ -946,6 +1030,7 @@ again:
 	}
 
 	if (remove_next) {
+<<<<<<< HEAD
 		if (file)
 			uprobe_munmap(next, next->vm_start, next->vm_end);
 		if (next->anon_vma)
@@ -953,6 +1038,17 @@ again:
 		mm->map_count--;
 		vm_write_end(next);
 		put_vma(next);
+=======
+		if (file) {
+			uprobe_munmap(next, next->vm_start, next->vm_end);
+			fput(file);
+		}
+		if (next->anon_vma)
+			anon_vma_merge(vma, next);
+		mm->map_count--;
+		mpol_put(vma_policy(next));
+		vm_area_free(next);
+>>>>>>> origin/android16-base
 		/*
 		 * In mprotect's case 6 (see comments on vma_merge),
 		 * we must remove another next too. It would clutter
@@ -966,8 +1062,11 @@ again:
 			 * "vma->vm_next" gap must be updated.
 			 */
 			next = vma->vm_next;
+<<<<<<< HEAD
 			if (next)
 				vm_write_begin(next);
+=======
+>>>>>>> origin/android16-base
 		} else {
 			/*
 			 * For the scope of the comment "next" and
@@ -1014,11 +1113,14 @@ again:
 	if (insert && file)
 		uprobe_mmap(insert);
 
+<<<<<<< HEAD
 	if (next && next != vma)
 		vm_write_end(next);
 	if (!keep_locked)
 		vm_write_end(vma);
 
+=======
+>>>>>>> origin/android16-base
 	validate_mm(mm);
 
 	return 0;
@@ -1158,13 +1260,21 @@ can_vma_merge_after(struct vm_area_struct *vma, unsigned long vm_flags,
  * parameter) may establish ptes with the wrong permissions of NNNN
  * instead of the right permissions of XXXX.
  */
+<<<<<<< HEAD
 struct vm_area_struct *__vma_merge(struct mm_struct *mm,
+=======
+struct vm_area_struct *vma_merge(struct mm_struct *mm,
+>>>>>>> origin/android16-base
 			struct vm_area_struct *prev, unsigned long addr,
 			unsigned long end, unsigned long vm_flags,
 			struct anon_vma *anon_vma, struct file *file,
 			pgoff_t pgoff, struct mempolicy *policy,
 			struct vm_userfaultfd_ctx vm_userfaultfd_ctx,
+<<<<<<< HEAD
 			const char __user *anon_name, bool keep_locked)
+=======
+			const char __user *anon_name)
+>>>>>>> origin/android16-base
 {
 	pgoff_t pglen = (end - addr) >> PAGE_SHIFT;
 	struct vm_area_struct *area, *next;
@@ -1214,11 +1324,18 @@ struct vm_area_struct *__vma_merge(struct mm_struct *mm,
 							/* cases 1, 6 */
 			err = __vma_adjust(prev, prev->vm_start,
 					 next->vm_end, prev->vm_pgoff, NULL,
+<<<<<<< HEAD
 					 prev, keep_locked);
 		} else					/* cases 2, 5, 7 */
 			err = __vma_adjust(prev, prev->vm_start,
 					   end, prev->vm_pgoff, NULL, prev,
 					   keep_locked);
+=======
+					 prev);
+		} else					/* cases 2, 5, 7 */
+			err = __vma_adjust(prev, prev->vm_start,
+					 end, prev->vm_pgoff, NULL, prev);
+>>>>>>> origin/android16-base
 		if (err)
 			return NULL;
 		khugepaged_enter_vma_merge(prev, vm_flags);
@@ -1236,12 +1353,19 @@ struct vm_area_struct *__vma_merge(struct mm_struct *mm,
 					     anon_name)) {
 		if (prev && addr < prev->vm_end)	/* case 4 */
 			err = __vma_adjust(prev, prev->vm_start,
+<<<<<<< HEAD
 					 addr, prev->vm_pgoff, NULL, next,
 					 keep_locked);
 		else {					/* cases 3, 8 */
 			err = __vma_adjust(area, addr, next->vm_end,
 					 next->vm_pgoff - pglen, NULL, next,
 					 keep_locked);
+=======
+					 addr, prev->vm_pgoff, NULL, next);
+		else {					/* cases 3, 8 */
+			err = __vma_adjust(area, addr, next->vm_end,
+					 next->vm_pgoff - pglen, NULL, next);
+>>>>>>> origin/android16-base
 			/*
 			 * In case 3 area is already equal to next and
 			 * this is a noop, but in case 8 "area" has
@@ -1709,8 +1833,17 @@ int vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot)
 	    pgprot_val(vm_pgprot_modify(vm_page_prot, vm_flags)))
 		return 0;
 
+<<<<<<< HEAD
 	/* Do we need to track softdirty? */
 	if (IS_ENABLED(CONFIG_MEM_SOFT_DIRTY) && !(vm_flags & VM_SOFTDIRTY))
+=======
+	/*
+	 * Do we need to track softdirty? hugetlb does not support softdirty
+	 * tracking yet.
+	 */
+	if (IS_ENABLED(CONFIG_MEM_SOFT_DIRTY) && !(vm_flags & VM_SOFTDIRTY) &&
+	    !is_vm_hugetlb_page(vma))
+>>>>>>> origin/android16-base
 		return 1;
 
 	/* Specialty mapping? */
@@ -1858,14 +1991,21 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 out:
 	perf_event_mmap(vma);
 
+<<<<<<< HEAD
 	vm_write_begin(vma);
+=======
+>>>>>>> origin/android16-base
 	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
 	if (vm_flags & VM_LOCKED) {
 		if ((vm_flags & VM_SPECIAL) || vma_is_dax(vma) ||
 					is_vm_hugetlb_page(vma) ||
 					vma == get_gate_vma(current->mm))
+<<<<<<< HEAD
 			WRITE_ONCE(vma->vm_flags,
 				   vma->vm_flags & VM_LOCKED_CLEAR_MASK);
+=======
+			vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
+>>>>>>> origin/android16-base
 		else
 			mm->locked_vm += (len >> PAGE_SHIFT);
 	}
@@ -1880,10 +2020,16 @@ out:
 	 * then new mapped in-place (which must be aimed as
 	 * a completely new data area).
 	 */
+<<<<<<< HEAD
 	WRITE_ONCE(vma->vm_flags, vma->vm_flags | VM_SOFTDIRTY);
 
 	vma_set_page_prot(vma);
 	vm_write_end(vma);
+=======
+	vma->vm_flags |= VM_SOFTDIRTY;
+
+	vma_set_page_prot(vma);
+>>>>>>> origin/android16-base
 
 	return addr;
 
@@ -1893,7 +2039,10 @@ unmap_and_free_vma:
 
 	/* Undo any partial mapping done by a device driver. */
 	unmap_region(mm, vma, prev, vma->vm_start, vma->vm_end);
+<<<<<<< HEAD
 	charged = 0;
+=======
+>>>>>>> origin/android16-base
 	if (vm_flags & VM_SHARED)
 		mapping_unmap_writable(file->f_mapping);
 allow_write_and_free_vma:
@@ -2258,11 +2407,23 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 EXPORT_SYMBOL(get_unmapped_area);
 
 /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
+<<<<<<< HEAD
 static struct vm_area_struct *__find_vma(struct mm_struct *mm,
 					 unsigned long addr)
 {
 	struct rb_node *rb_node;
 	struct vm_area_struct *vma = NULL;
+=======
+struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
+{
+	struct rb_node *rb_node;
+	struct vm_area_struct *vma;
+
+	/* Check the cache first. */
+	vma = vmacache_find(mm, addr);
+	if (likely(vma))
+		return vma;
+>>>>>>> origin/android16-base
 
 	rb_node = mm->mm_rb.rb_node;
 
@@ -2280,6 +2441,7 @@ static struct vm_area_struct *__find_vma(struct mm_struct *mm,
 			rb_node = rb_node->rb_right;
 	}
 
+<<<<<<< HEAD
 	return vma;
 }
 
@@ -2293,10 +2455,13 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 		return vma;
 
 	vma = __find_vma(mm, addr);
+=======
+>>>>>>> origin/android16-base
 	if (vma)
 		vmacache_update(addr, vma);
 	return vma;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(find_vma);
 
 #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
@@ -2328,6 +2493,11 @@ struct vm_area_struct *get_vma(struct mm_struct *mm, unsigned long addr)
 }
 #endif
 
+=======
+
+EXPORT_SYMBOL(find_vma);
+
+>>>>>>> origin/android16-base
 /*
  * Same as find_vma, but also return a pointer to the previous VMA in *pprev.
  */
@@ -2551,8 +2721,13 @@ int expand_downwards(struct vm_area_struct *vma,
 					mm->locked_vm += grow;
 				vm_stat_account(mm, vma->vm_flags, grow);
 				anon_vma_interval_tree_pre_update_vma(vma);
+<<<<<<< HEAD
 				WRITE_ONCE(vma->vm_start, address);
 				WRITE_ONCE(vma->vm_pgoff, vma->vm_pgoff - grow);
+=======
+				vma->vm_start = address;
+				vma->vm_pgoff -= grow;
+>>>>>>> origin/android16-base
 				anon_vma_interval_tree_post_update_vma(vma);
 				vma_gap_update(vma);
 				spin_unlock(&mm->page_table_lock);
@@ -2579,7 +2754,11 @@ static int __init cmdline_parse_stack_guard_gap(char *p)
 	if (!*endptr)
 		stack_guard_gap = val << PAGE_SHIFT;
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 __setup("stack_guard_gap=", cmdline_parse_stack_guard_gap);
 
@@ -2674,11 +2853,34 @@ static void unmap_region(struct mm_struct *mm,
 {
 	struct vm_area_struct *next = prev ? prev->vm_next : mm->mmap;
 	struct mmu_gather tlb;
+<<<<<<< HEAD
+=======
+	struct vm_area_struct *cur_vma;
+>>>>>>> origin/android16-base
 
 	lru_add_drain();
 	tlb_gather_mmu(&tlb, mm, start, end);
 	update_hiwater_rss(mm);
 	unmap_vmas(&tlb, vma, start, end);
+<<<<<<< HEAD
+=======
+
+	/*
+	 * Ensure we have no stale TLB entries by the time this mapping is
+	 * removed from the rmap.
+	 * Note that we don't have to worry about nested flushes here because
+	 * we're holding the mm semaphore for removing the mapping - so any
+	 * concurrent flush in this region has to be coming through the rmap,
+	 * and we synchronize against that using the rmap lock.
+	 */
+	for (cur_vma = vma; cur_vma; cur_vma = cur_vma->vm_next) {
+		if ((cur_vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP)) != 0) {
+			tlb_flush_mmu(&tlb);
+			break;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	free_pgtables(&tlb, vma, prev ? prev->vm_end : FIRST_USER_ADDRESS,
 				 next ? next->vm_start : USER_PGTABLES_CEILING);
 	tlb_finish_mmu(&tlb, start, end);
@@ -2698,7 +2900,11 @@ detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma,
 	insertion_point = (prev ? &prev->vm_next : &mm->mmap);
 	vma->vm_prev = NULL;
 	do {
+<<<<<<< HEAD
 		vma_rb_erase(vma, mm);
+=======
+		vma_rb_erase(vma, &mm->mm_rb);
+>>>>>>> origin/android16-base
 		mm->map_count--;
 		tail_vma = vma;
 		vma = vma->vm_next;
@@ -3178,9 +3384,16 @@ void exit_mmap(struct mm_struct *mm)
 		(void)__oom_reap_task_mm(mm);
 
 		set_bit(MMF_OOM_SKIP, &mm->flags);
+<<<<<<< HEAD
 	}
 
 	down_write(&mm->mmap_sem);
+=======
+		down_write(&mm->mmap_sem);
+		up_write(&mm->mmap_sem);
+	}
+
+>>>>>>> origin/android16-base
 	if (mm->locked_vm) {
 		vma = mm->mmap;
 		while (vma) {
@@ -3193,11 +3406,16 @@ void exit_mmap(struct mm_struct *mm)
 	arch_exit_mmap(mm);
 
 	vma = mm->mmap;
+<<<<<<< HEAD
 	if (!vma) {
 		/* Can happen if dup_mmap() received an OOM */
 		up_write(&mm->mmap_sem);;
 		return;
 	}
+=======
+	if (!vma)	/* Can happen if dup_mmap() received an OOM */
+		return;
+>>>>>>> origin/android16-base
 
 	lru_add_drain();
 	flush_cache_mm(mm);
@@ -3208,14 +3426,24 @@ void exit_mmap(struct mm_struct *mm)
 	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, USER_PGTABLES_CEILING);
 	tlb_finish_mmu(&tlb, 0, -1);
 
+<<<<<<< HEAD
 	/* Walk the list again, actually closing and freeing it. */
+=======
+	/*
+	 * Walk the list again, actually closing and freeing it,
+	 * with preemption enabled, without holding any MM locks.
+	 */
+>>>>>>> origin/android16-base
 	while (vma) {
 		if (vma->vm_flags & VM_ACCOUNT)
 			nr_accounted += vma_pages(vma);
 		vma = remove_vma(vma);
 		cond_resched();
 	}
+<<<<<<< HEAD
 	up_write(&mm->mmap_sem);
+=======
+>>>>>>> origin/android16-base
 	vm_unacct_memory(nr_accounted);
 }
 
@@ -3282,6 +3510,7 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
 
 	if (find_vma_links(mm, addr, addr + len, &prev, &rb_link, &rb_parent))
 		return NULL;	/* should never get here */
+<<<<<<< HEAD
 
 	/* There is 3 cases to manage here in
 	 *     AAAA            AAAA              AAAA              AAAA
@@ -3297,6 +3526,11 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
 			      vma->anon_vma, vma->vm_file, pgoff,
 			      vma_policy(vma), vma->vm_userfaultfd_ctx,
 				vma_get_anon_name(vma), true);
+=======
+	new_vma = vma_merge(mm, prev, addr, addr + len, vma->vm_flags,
+			    vma->anon_vma, vma->vm_file, pgoff, vma_policy(vma),
+			    vma->vm_userfaultfd_ctx, vma_get_anon_name(vma));
+>>>>>>> origin/android16-base
 	if (new_vma) {
 		/*
 		 * Source vma may have been merged into new_vma
@@ -3334,6 +3568,7 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
 			get_file(new_vma->vm_file);
 		if (new_vma->vm_ops && new_vma->vm_ops->open)
 			new_vma->vm_ops->open(new_vma);
+<<<<<<< HEAD
 		/*
 		 * As the VMA is linked right now, it may be hit by the
 		 * speculative page fault handler. But we don't want it to
@@ -3343,6 +3578,8 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
 		 * it once the move is done.
 		 */
 		vm_write_begin(new_vma);
+=======
+>>>>>>> origin/android16-base
 		vma_link(mm, new_vma, prev, rb_link, rb_parent);
 		*need_rmap_locks = false;
 	}

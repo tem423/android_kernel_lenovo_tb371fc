@@ -290,6 +290,11 @@ static inline bool nmi_uaccess_okay(void)
 	return true;
 }
 
+<<<<<<< HEAD
+=======
+#define nmi_uaccess_okay nmi_uaccess_okay
+
+>>>>>>> origin/android16-base
 /* Initialize cr4 shadow for this CPU. */
 static inline void cr4_init_shadow(void)
 {
@@ -557,10 +562,15 @@ struct flush_tlb_info {
 	unsigned long		start;
 	unsigned long		end;
 	u64			new_tlb_gen;
+<<<<<<< HEAD
+=======
+	unsigned int		stride_shift;
+>>>>>>> origin/android16-base
 };
 
 #define local_flush_tlb() __flush_tlb()
 
+<<<<<<< HEAD
 #define flush_tlb_mm(mm)	flush_tlb_mm_range(mm, 0UL, TLB_FLUSH_ALL, 0UL)
 
 #define flush_tlb_range(vma, start, end)	\
@@ -569,11 +579,30 @@ struct flush_tlb_info {
 extern void flush_tlb_all(void);
 extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, unsigned long vmflag);
+=======
+#define flush_tlb_mm(mm)						\
+		flush_tlb_mm_range(mm, 0UL, TLB_FLUSH_ALL, 0UL, true)
+
+#define flush_tlb_range(vma, start, end)				\
+	flush_tlb_mm_range((vma)->vm_mm, start, end,			\
+			   ((vma)->vm_flags & VM_HUGETLB)		\
+				? huge_page_shift(hstate_vma(vma))	\
+				: PAGE_SHIFT, false)
+
+extern void flush_tlb_all(void);
+extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
+				unsigned long end, unsigned int stride_shift,
+				bool freed_tables);
+>>>>>>> origin/android16-base
 extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
 
 static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
 {
+<<<<<<< HEAD
 	flush_tlb_mm_range(vma->vm_mm, a, a + PAGE_SIZE, VM_NONE);
+=======
+	flush_tlb_mm_range(vma->vm_mm, a, a + PAGE_SIZE, PAGE_SHIFT, false);
+>>>>>>> origin/android16-base
 }
 
 void native_flush_tlb_others(const struct cpumask *cpumask,

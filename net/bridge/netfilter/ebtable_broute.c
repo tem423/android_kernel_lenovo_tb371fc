@@ -33,6 +33,7 @@ static struct ebt_replace_kernel initial_table = {
 	.entries	= (char *)&initial_chain,
 };
 
+<<<<<<< HEAD
 static int check(const struct ebt_table_info *info, unsigned int valid_hooks)
 {
 	if (valid_hooks & ~(1 << NF_BR_BROUTING))
@@ -40,11 +41,16 @@ static int check(const struct ebt_table_info *info, unsigned int valid_hooks)
 	return 0;
 }
 
+=======
+>>>>>>> origin/android16-base
 static const struct ebt_table broute_table = {
 	.name		= "broute",
 	.table		= &initial_table,
 	.valid_hooks	= 1 << NF_BR_BROUTING,
+<<<<<<< HEAD
 	.check		= check,
+=======
+>>>>>>> origin/android16-base
 	.me		= THIS_MODULE,
 };
 

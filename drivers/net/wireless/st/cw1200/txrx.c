@@ -1173,7 +1173,11 @@ void cw1200_rx_cb(struct cw1200_common *priv,
 		size_t ies_len = skb->len - (ies - (u8 *)(skb->data));
 
 		tim_ie = cfg80211_find_ie(WLAN_EID_TIM, ies, ies_len);
+<<<<<<< HEAD
 		if (tim_ie) {
+=======
+		if (tim_ie && tim_ie[1] >= sizeof(struct ieee80211_tim_ie)) {
+>>>>>>> origin/android16-base
 			struct ieee80211_tim_ie *tim =
 				(struct ieee80211_tim_ie *)&tim_ie[2];
 

@@ -146,5 +146,9 @@ int main(int argc, char **argv)
 	poll_stats(2, ifindex_out);
 
 out:
+<<<<<<< HEAD
 	return 0;
+=======
+	return ret;
+>>>>>>> origin/android16-base
 }

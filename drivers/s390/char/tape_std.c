@@ -53,7 +53,10 @@ int
 tape_std_assign(struct tape_device *device)
 {
 	int                  rc;
+<<<<<<< HEAD
 	struct timer_list    timeout;
+=======
+>>>>>>> origin/android16-base
 	struct tape_request *request;
 
 	request = tape_alloc_request(2, 11);
@@ -70,7 +73,11 @@ tape_std_assign(struct tape_device *device)
 	 * So we set up a timeout for this call.
 	 */
 	timer_setup(&request->timer, tape_std_assign_timeout, 0);
+<<<<<<< HEAD
 	mod_timer(&timeout, jiffies + 2 * HZ);
+=======
+	mod_timer(&request->timer, jiffies + msecs_to_jiffies(2000));
+>>>>>>> origin/android16-base
 
 	rc = tape_do_io_interruptible(device, request);
 

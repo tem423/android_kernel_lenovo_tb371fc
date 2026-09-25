@@ -47,6 +47,34 @@
 #include <linux/string_helpers.h>
 #include "kstrtox.h"
 
+<<<<<<< HEAD
+=======
+static unsigned long long simple_strntoull(const char *startp, size_t max_chars,
+					   char **endp, unsigned int base)
+{
+	const char *cp;
+	unsigned long long result = 0ULL;
+	size_t prefix_chars;
+	unsigned int rv;
+
+	cp = _parse_integer_fixup_radix(startp, &base);
+	prefix_chars = cp - startp;
+	if (prefix_chars < max_chars) {
+		rv = _parse_integer_limit(cp, base, &result, max_chars - prefix_chars);
+		/* FIXME */
+		cp += (rv & ~KSTRTOX_OVERFLOW);
+	} else {
+		/* Field too short for prefix + digit, skip over without converting */
+		cp = startp + max_chars;
+	}
+
+	if (endp)
+		*endp = (char *)cp;
+
+	return result;
+}
+
+>>>>>>> origin/android16-base
 /**
  * simple_strtoull - convert a string to an unsigned long long
  * @cp: The start of the string
@@ -57,6 +85,7 @@
  */
 unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base)
 {
+<<<<<<< HEAD
 	unsigned long long result;
 	unsigned int rv;
 
@@ -69,6 +98,9 @@ unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int bas
 		*endp = (char *)cp;
 
 	return result;
+=======
+	return simple_strntoull(cp, INT_MAX, endp, base);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(simple_strtoull);
 
@@ -103,6 +135,24 @@ long simple_strtol(const char *cp, char **endp, unsigned int base)
 }
 EXPORT_SYMBOL(simple_strtol);
 
+<<<<<<< HEAD
+=======
+static long long simple_strntoll(const char *cp, size_t max_chars, char **endp,
+				 unsigned int base)
+{
+	/*
+	 * simple_strntoull() safely handles receiving max_chars==0 in the
+	 * case cp[0] == '-' && max_chars == 1.
+	 * If max_chars == 0 we can drop through and pass it to simple_strntoull()
+	 * and the content of *cp is irrelevant.
+	 */
+	if (*cp == '-' && max_chars > 0)
+		return -simple_strntoull(cp + 1, max_chars - 1, endp, base);
+
+	return simple_strntoull(cp, max_chars, endp, base);
+}
+
+>>>>>>> origin/android16-base
 /**
  * simple_strtoll - convert a string to a signed long long
  * @cp: The start of the string
@@ -113,10 +163,14 @@ EXPORT_SYMBOL(simple_strtol);
  */
 long long simple_strtoll(const char *cp, char **endp, unsigned int base)
 {
+<<<<<<< HEAD
 	if (*cp == '-')
 		return -simple_strtoull(cp + 1, endp, base);
 
 	return simple_strtoull(cp, endp, base);
+=======
+	return simple_strntoll(cp, INT_MAX, endp, base);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(simple_strtoll);
 
@@ -1674,6 +1728,7 @@ static void enable_ptr_key_workfn(struct work_struct *work)
 
 static DECLARE_WORK(enable_ptr_key_work, enable_ptr_key_workfn);
 
+<<<<<<< HEAD
 static void fill_random_ptr_key(struct random_ready_callback *unused)
 {
 	/* This may be in an interrupt handler. */
@@ -1682,6 +1737,18 @@ static void fill_random_ptr_key(struct random_ready_callback *unused)
 
 static struct random_ready_callback random_ready = {
 	.func = fill_random_ptr_key
+=======
+static int fill_random_ptr_key(struct notifier_block *nb,
+			       unsigned long action, void *data)
+{
+	/* This may be in an interrupt handler. */
+	queue_work(system_unbound_wq, &enable_ptr_key_work);
+	return 0;
+}
+
+static struct notifier_block random_ready = {
+	.notifier_call = fill_random_ptr_key
+>>>>>>> origin/android16-base
 };
 
 static int __init initialize_ptr_random(void)
@@ -1695,7 +1762,11 @@ static int __init initialize_ptr_random(void)
 		return 0;
 	}
 
+<<<<<<< HEAD
 	ret = add_random_ready_callback(&random_ready);
+=======
+	ret = register_random_ready_notifier(&random_ready);
+>>>>>>> origin/android16-base
 	if (!ret) {
 		return 0;
 	} else if (ret == -EALREADY) {
@@ -3139,6 +3210,7 @@ int vsscanf(const char *buf, const char *fmt, va_list args)
 			break;
 
 		if (is_sign)
+<<<<<<< HEAD
 			val.s = qualifier != 'L' ?
 				simple_strtol(str, &next, base) :
 				simple_strtoll(str, &next, base);
@@ -3158,6 +3230,15 @@ int vsscanf(const char *buf, const char *fmt, va_list args)
 				--next;
 			}
 		}
+=======
+			val.s = simple_strntoll(str,
+						field_width >= 0 ? field_width : INT_MAX,
+						&next, base);
+		else
+			val.u = simple_strntoull(str,
+						 field_width >= 0 ? field_width : INT_MAX,
+						 &next, base);
+>>>>>>> origin/android16-base
 
 		switch (qualifier) {
 		case 'H':	/* that's 'hh' in format */

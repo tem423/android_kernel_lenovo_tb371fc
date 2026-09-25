@@ -209,7 +209,11 @@ static inline void ibmveth_flush_buffer(void *addr, unsigned long length)
 	unsigned long offset;
 
 	for (offset = 0; offset < length; offset += SMP_CACHE_BYTES)
+<<<<<<< HEAD
 		asm("dcbfl %0,%1" :: "b" (addr), "r" (offset));
+=======
+		asm("dcbf %0,%1,1" :: "b" (addr), "r" (offset));
+>>>>>>> origin/android16-base
 }
 
 /* replenish the buffers for a pool.  note that we don't need to

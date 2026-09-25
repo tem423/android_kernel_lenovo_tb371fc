@@ -270,6 +270,10 @@ static netdev_tx_t brcmf_netdev_start_xmit(struct sk_buff *skb,
 	struct brcmf_pub *drvr = ifp->drvr;
 	struct ethhdr *eh;
 	int head_delta;
+<<<<<<< HEAD
+=======
+	unsigned int tx_bytes = skb->len;
+>>>>>>> origin/android16-base
 
 	brcmf_dbg(DATA, "Enter, bsscfgidx=%d\n", ifp->bsscfgidx);
 
@@ -312,6 +316,10 @@ static netdev_tx_t brcmf_netdev_start_xmit(struct sk_buff *skb,
 			brcmf_err("%s: failed to expand headroom\n",
 				  brcmf_ifname(ifp));
 			atomic_inc(&drvr->bus_if->stats.pktcow_failed);
+<<<<<<< HEAD
+=======
+			dev_kfree_skb(skb);
+>>>>>>> origin/android16-base
 			goto done;
 		}
 	}
@@ -341,7 +349,11 @@ done:
 		ndev->stats.tx_dropped++;
 	} else {
 		ndev->stats.tx_packets++;
+<<<<<<< HEAD
 		ndev->stats.tx_bytes += skb->len;
+=======
+		ndev->stats.tx_bytes += tx_bytes;
+>>>>>>> origin/android16-base
 	}
 
 	/* Return ok: we always eat the packet */

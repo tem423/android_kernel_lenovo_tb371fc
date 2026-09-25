@@ -631,6 +631,10 @@ struct mlx4_caps {
 	bool			wol_port[MLX4_MAX_PORTS + 1];
 	struct mlx4_rate_limit_caps rl_caps;
 	u32			health_buffer_addrs;
+<<<<<<< HEAD
+=======
+	bool			map_clock_to_user;
+>>>>>>> origin/android16-base
 };
 
 struct mlx4_buf_list {

@@ -1625,7 +1625,11 @@ static u16	dsp_count; /* last sample count */
 static int	dsp_count_valid; /* if we have last sample count */
 
 void
+<<<<<<< HEAD
 dsp_cmx_send(void *arg)
+=======
+dsp_cmx_send(struct timer_list *arg)
+>>>>>>> origin/android16-base
 {
 	struct dsp_conf *conf;
 	struct dsp_conf_member *member;

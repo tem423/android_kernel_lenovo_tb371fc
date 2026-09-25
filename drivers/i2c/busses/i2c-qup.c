@@ -806,7 +806,12 @@ static int qup_i2c_bam_schedule_desc(struct qup_i2c_dev *qup)
 	if (ret || qup->bus_err || qup->qup_err) {
 		reinit_completion(&qup->xfer);
 
+<<<<<<< HEAD
 		if (qup_i2c_change_state(qup, QUP_RUN_STATE)) {
+=======
+		ret = qup_i2c_change_state(qup, QUP_RUN_STATE);
+		if (ret) {
+>>>>>>> origin/android16-base
 			dev_err(qup->dev, "change to run state timed out");
 			goto desc_err;
 		}

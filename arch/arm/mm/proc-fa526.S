@@ -190,7 +190,11 @@ fa526_cr1_set:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/android16-base
 
 	.type	__fa526_proc_info,#object
 __fa526_proc_info:

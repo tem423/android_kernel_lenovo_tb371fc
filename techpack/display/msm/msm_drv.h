@@ -107,7 +107,10 @@ enum msm_mdp_plane_property {
 
 	/* range properties */
 	PLANE_PROP_ZPOS = PLANE_PROP_BLOBCOUNT,
+<<<<<<< HEAD
 	PLANE_PROP_FOD,
+=======
+>>>>>>> origin/android16-base
 	PLANE_PROP_ALPHA,
 	PLANE_PROP_COLOR_FILL,
 	PLANE_PROP_H_DECIMATE,
@@ -129,7 +132,10 @@ enum msm_mdp_plane_property {
 	PLANE_PROP_SRC_CONFIG,
 	PLANE_PROP_FB_TRANSLATION_MODE,
 	PLANE_PROP_MULTIRECT_MODE,
+<<<<<<< HEAD
 	PLANE_PROP_MI_LAYER_INFO,
+=======
+>>>>>>> origin/android16-base
 
 	/* total # of properties */
 	PLANE_PROP_COUNT
@@ -166,7 +172,10 @@ enum msm_mdp_crtc_property {
 	CRTC_PROP_CAPTURE_OUTPUT,
 
 	CRTC_PROP_IDLE_PC_STATE,
+<<<<<<< HEAD
 	CRTC_PROP_MI_FOD_SYNC_INFO,
+=======
+>>>>>>> origin/android16-base
 
 	/* total # of properties */
 	CRTC_PROP_COUNT

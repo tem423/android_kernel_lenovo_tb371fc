@@ -234,7 +234,11 @@ int die(const char *str, struct pt_regs *regs, long err)
 		panic("Fatal exception");
 
 	oops_exit();
+<<<<<<< HEAD
 	do_exit(err);
+=======
+	make_task_dead(err);
+>>>>>>> origin/android16-base
 	return 0;
 }
 

@@ -313,13 +313,20 @@ struct thread_map *thread_map__new_by_tid_str(const char *tid_str)
 		threads->nr = ntasks;
 	}
 out:
+<<<<<<< HEAD
+=======
+	strlist__delete(slist);
+>>>>>>> origin/android16-base
 	if (threads)
 		refcount_set(&threads->refcnt, 1);
 	return threads;
 
 out_free_threads:
 	zfree(&threads);
+<<<<<<< HEAD
 	strlist__delete(slist);
+=======
+>>>>>>> origin/android16-base
 	goto out;
 }
 

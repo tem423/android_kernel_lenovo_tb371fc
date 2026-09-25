@@ -35,7 +35,10 @@
 #include <linux/kdebug.h>
 #include <asm/cpu.h>
 #include <asm/reboot.h>
+<<<<<<< HEAD
 #include <asm/virtext.h>
+=======
+>>>>>>> origin/android16-base
 #include <asm/intel_pt.h>
 
 /* Used while preparing memory map entries for second kernel */
@@ -86,6 +89,7 @@ static void kdump_nmi_callback(int cpu, struct pt_regs *regs)
 	 */
 	cpu_crash_vmclear_loaded_vmcss();
 
+<<<<<<< HEAD
 	/* Disable VMX or SVM if needed.
 	 *
 	 * We need to disable virtualization on all CPUs.
@@ -95,6 +99,8 @@ static void kdump_nmi_callback(int cpu, struct pt_regs *regs)
 	cpu_emergency_vmxoff();
 	cpu_emergency_svm_disable();
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Disable Intel PT to stop its logging
 	 */
@@ -153,12 +159,16 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
 	 */
 	cpu_crash_vmclear_loaded_vmcss();
 
+<<<<<<< HEAD
 	/* Booting kdump kernel with VMX or SVM enabled won't work,
 	 * because (among other limitations) we can't disable paging
 	 * with the virt flags.
 	 */
 	cpu_emergency_vmxoff();
 	cpu_emergency_svm_disable();
+=======
+	cpu_emergency_disable_virtualization();
+>>>>>>> origin/android16-base
 
 	/*
 	 * Disable Intel PT to stop its logging
@@ -356,7 +366,11 @@ int crash_setup_memmap_entries(struct kimage *image, struct boot_params *params)
 	struct crash_memmap_data cmd;
 	struct crash_mem *cmem;
 
+<<<<<<< HEAD
 	cmem = vzalloc(sizeof(struct crash_mem));
+=======
+	cmem = vzalloc(struct_size(cmem, ranges, 1));
+>>>>>>> origin/android16-base
 	if (!cmem)
 		return -ENOMEM;
 

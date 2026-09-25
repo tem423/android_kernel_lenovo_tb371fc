@@ -37,6 +37,10 @@ config QE_TDM
 
 config QE_USB
 	bool
+<<<<<<< HEAD
+=======
+	depends on QUICC_ENGINE
+>>>>>>> origin/android16-base
 	default y if USB_FSL_QE
 	help
 	  QE USB Controller support

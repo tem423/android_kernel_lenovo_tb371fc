@@ -50,15 +50,25 @@ static int udf_update_inode(struct inode *, int);
 static int udf_sync_inode(struct inode *inode);
 static int udf_alloc_i_data(struct inode *inode, size_t size);
 static sector_t inode_getblk(struct inode *, sector_t, int *, int *);
+<<<<<<< HEAD
 static int8_t udf_insert_aext(struct inode *, struct extent_position,
 			      struct kernel_lb_addr, uint32_t);
+=======
+static int udf_insert_aext(struct inode *, struct extent_position,
+			   struct kernel_lb_addr, uint32_t);
+>>>>>>> origin/android16-base
 static void udf_split_extents(struct inode *, int *, int, udf_pblk_t,
 			      struct kernel_long_ad *, int *);
 static void udf_prealloc_extents(struct inode *, int, int,
 				 struct kernel_long_ad *, int *);
 static void udf_merge_extents(struct inode *, struct kernel_long_ad *, int *);
+<<<<<<< HEAD
 static void udf_update_extents(struct inode *, struct kernel_long_ad *, int,
 			       int, struct extent_position *);
+=======
+static int udf_update_extents(struct inode *, struct kernel_long_ad *, int,
+			      int, struct extent_position *);
+>>>>>>> origin/android16-base
 static int udf_get_block(struct inode *, sector_t, struct buffer_head *, int);
 
 static void __udf_clear_extent_cache(struct inode *inode)
@@ -150,8 +160,13 @@ void udf_evict_inode(struct inode *inode)
 	truncate_inode_pages_final(&inode->i_data);
 	invalidate_inode_buffers(inode);
 	clear_inode(inode);
+<<<<<<< HEAD
 	kfree(iinfo->i_ext.i_data);
 	iinfo->i_ext.i_data = NULL;
+=======
+	kfree(iinfo->i_data);
+	iinfo->i_data = NULL;
+>>>>>>> origin/android16-base
 	udf_clear_extent_cache(inode);
 	if (want_delete) {
 		udf_free_inode(inode);
@@ -251,10 +266,13 @@ int udf_expand_file_adinicb(struct inode *inode)
 	char *kaddr;
 	struct udf_inode_info *iinfo = UDF_I(inode);
 	int err;
+<<<<<<< HEAD
 	struct writeback_control udf_wbc = {
 		.sync_mode = WB_SYNC_NONE,
 		.nr_to_write = 1,
 	};
+=======
+>>>>>>> origin/android16-base
 
 	WARN_ON_ONCE(!inode_is_locked(inode));
 	if (!iinfo->i_lenAlloc) {
@@ -282,14 +300,22 @@ int udf_expand_file_adinicb(struct inode *inode)
 		kaddr = kmap_atomic(page);
 		memset(kaddr + iinfo->i_lenAlloc, 0x00,
 		       PAGE_SIZE - iinfo->i_lenAlloc);
+<<<<<<< HEAD
 		memcpy(kaddr, iinfo->i_ext.i_data + iinfo->i_lenEAttr,
+=======
+		memcpy(kaddr, iinfo->i_data + iinfo->i_lenEAttr,
+>>>>>>> origin/android16-base
 			iinfo->i_lenAlloc);
 		flush_dcache_page(page);
 		SetPageUptodate(page);
 		kunmap_atomic(kaddr);
 	}
 	down_write(&iinfo->i_data_sem);
+<<<<<<< HEAD
 	memset(iinfo->i_ext.i_data + iinfo->i_lenEAttr, 0x00,
+=======
+	memset(iinfo->i_data + iinfo->i_lenEAttr, 0x00,
+>>>>>>> origin/android16-base
 	       iinfo->i_lenAlloc);
 	iinfo->i_lenAlloc = 0;
 	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_SHORT_AD))
@@ -298,19 +324,34 @@ int udf_expand_file_adinicb(struct inode *inode)
 		iinfo->i_alloc_type = ICBTAG_FLAG_AD_LONG;
 	/* from now on we have normal address_space methods */
 	inode->i_data.a_ops = &udf_aops;
+<<<<<<< HEAD
 	up_write(&iinfo->i_data_sem);
 	err = inode->i_data.a_ops->writepage(page, &udf_wbc);
+=======
+	set_page_dirty(page);
+	unlock_page(page);
+	up_write(&iinfo->i_data_sem);
+	err = filemap_fdatawrite(inode->i_mapping);
+>>>>>>> origin/android16-base
 	if (err) {
 		/* Restore everything back so that we don't lose data... */
 		lock_page(page);
 		down_write(&iinfo->i_data_sem);
 		kaddr = kmap_atomic(page);
+<<<<<<< HEAD
 		memcpy(iinfo->i_ext.i_data + iinfo->i_lenEAttr, kaddr,
 		       inode->i_size);
+=======
+		memcpy(iinfo->i_data + iinfo->i_lenEAttr, kaddr, inode->i_size);
+>>>>>>> origin/android16-base
 		kunmap_atomic(kaddr);
 		unlock_page(page);
 		iinfo->i_alloc_type = ICBTAG_FLAG_AD_IN_ICB;
 		inode->i_data.a_ops = &udf_adinicb_aops;
+<<<<<<< HEAD
+=======
+		iinfo->i_lenAlloc = inode->i_size;
+>>>>>>> origin/android16-base
 		up_write(&iinfo->i_data_sem);
 	}
 	put_page(page);
@@ -393,8 +434,12 @@ struct buffer_head *udf_expand_dir_adinicb(struct inode *inode,
 	}
 	mark_buffer_dirty_inode(dbh, inode);
 
+<<<<<<< HEAD
 	memset(iinfo->i_ext.i_data + iinfo->i_lenEAttr, 0,
 		iinfo->i_lenAlloc);
+=======
+	memset(iinfo->i_data + iinfo->i_lenEAttr, 0, iinfo->i_lenAlloc);
+>>>>>>> origin/android16-base
 	iinfo->i_lenAlloc = 0;
 	eloc.logicalBlockNum = *block;
 	eloc.partitionReferenceNum =
@@ -435,6 +480,15 @@ static int udf_get_block(struct inode *inode, sector_t block,
 		iinfo->i_next_alloc_goal++;
 	}
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Block beyond EOF and prealloc extents? Just discard preallocation
+	 * as it is not useful and complicates things.
+	 */
+	if (((loff_t)block) << inode->i_blkbits > iinfo->i_lenExtents)
+		udf_discard_prealloc(inode);
+>>>>>>> origin/android16-base
 	udf_clear_extent_cache(inode);
 	phys = inode_getblk(inode, block, &err, &new);
 	if (!phys)
@@ -484,8 +538,11 @@ static int udf_do_extend_file(struct inode *inode,
 	uint32_t add;
 	int count = 0, fake = !(last_ext->extLength & UDF_EXTENT_LENGTH_MASK);
 	struct super_block *sb = inode->i_sb;
+<<<<<<< HEAD
 	struct kernel_lb_addr prealloc_loc = {};
 	uint32_t prealloc_len = 0;
+=======
+>>>>>>> origin/android16-base
 	struct udf_inode_info *iinfo;
 	int err;
 
@@ -506,6 +563,7 @@ static int udf_do_extend_file(struct inode *inode,
 			~(sb->s_blocksize - 1);
 	}
 
+<<<<<<< HEAD
 	/* Last extent are just preallocated blocks? */
 	if ((last_ext->extLength & UDF_EXTENT_FLAG_MASK) ==
 						EXT_NOT_RECORDED_ALLOCATED) {
@@ -519,6 +577,8 @@ static int udf_do_extend_file(struct inode *inode,
 		last_ext->extLocation.partitionReferenceNum = 0;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	/* Can we merge with the previous extent? */
 	if ((last_ext->extLength & UDF_EXTENT_FLAG_MASK) ==
 					EXT_NOT_RECORDED_NOT_ALLOCATED) {
@@ -531,8 +591,15 @@ static int udf_do_extend_file(struct inode *inode,
 	}
 
 	if (fake) {
+<<<<<<< HEAD
 		udf_add_aext(inode, last_pos, &last_ext->extLocation,
 			     last_ext->extLength, 1);
+=======
+		err = udf_add_aext(inode, last_pos, &last_ext->extLocation,
+				   last_ext->extLength, 1);
+		if (err < 0)
+			goto out_err;
+>>>>>>> origin/android16-base
 		count++;
 	} else {
 		struct kernel_lb_addr tmploc;
@@ -540,11 +607,22 @@ static int udf_do_extend_file(struct inode *inode,
 
 		udf_write_aext(inode, last_pos, &last_ext->extLocation,
 				last_ext->extLength, 1);
+<<<<<<< HEAD
 		/*
 		 * We've rewritten the last extent but there may be empty
 		 * indirect extent after it - enter it.
 		 */
 		udf_next_aext(inode, last_pos, &tmploc, &tmplen, 0);
+=======
+
+		/*
+		 * We've rewritten the last extent. If we are going to add
+		 * more extents, we may need to enter possible following
+		 * empty indirect extent.
+		 */
+		if (new_block_bytes)
+			udf_next_aext(inode, last_pos, &tmploc, &tmplen, 0);
+>>>>>>> origin/android16-base
 	}
 
 	/* Managed to do everything necessary? */
@@ -563,7 +641,11 @@ static int udf_do_extend_file(struct inode *inode,
 		err = udf_add_aext(inode, last_pos, &last_ext->extLocation,
 				   last_ext->extLength, 1);
 		if (err)
+<<<<<<< HEAD
 			return err;
+=======
+			goto out_err;
+>>>>>>> origin/android16-base
 		count++;
 	}
 	if (new_block_bytes) {
@@ -572,11 +654,16 @@ static int udf_do_extend_file(struct inode *inode,
 		err = udf_add_aext(inode, last_pos, &last_ext->extLocation,
 				   last_ext->extLength, 1);
 		if (err)
+<<<<<<< HEAD
 			return err;
+=======
+			goto out_err;
+>>>>>>> origin/android16-base
 		count++;
 	}
 
 out:
+<<<<<<< HEAD
 	/* Do we have some preallocated blocks saved? */
 	if (prealloc_len) {
 		err = udf_add_aext(inode, last_pos, &prealloc_loc,
@@ -588,6 +675,8 @@ out:
 		count++;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	/* last_pos should point to the last written extent... */
 	if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_SHORT)
 		last_pos->offset -= sizeof(struct short_ad);
@@ -597,12 +686,21 @@ out:
 		return -EIO;
 
 	return count;
+<<<<<<< HEAD
+=======
+out_err:
+	/* Remove extents we've created so far */
+	udf_clear_extent_cache(inode);
+	udf_truncate_extents(inode);
+	return err;
+>>>>>>> origin/android16-base
 }
 
 /* Extend the final block of the file to final_block_len bytes */
 static void udf_do_extend_final_block(struct inode *inode,
 				      struct extent_position *last_pos,
 				      struct kernel_long_ad *last_ext,
+<<<<<<< HEAD
 				      uint32_t final_block_len)
 {
 	struct super_block *sb = inode->i_sb;
@@ -610,6 +708,19 @@ static void udf_do_extend_final_block(struct inode *inode,
 
 	added_bytes = final_block_len -
 		      (last_ext->extLength & (sb->s_blocksize - 1));
+=======
+				      uint32_t new_elen)
+{
+	uint32_t added_bytes;
+
+	/*
+	 * Extent already large enough? It may be already rounded up to block
+	 * size...
+	 */
+	if (new_elen <= (last_ext->extLength & UDF_EXTENT_LENGTH_MASK))
+		return;
+	added_bytes = new_elen - (last_ext->extLength & UDF_EXTENT_LENGTH_MASK);
+>>>>>>> origin/android16-base
 	last_ext->extLength += added_bytes;
 	UDF_I(inode)->i_lenExtents += added_bytes;
 
@@ -626,12 +737,20 @@ static int udf_extend_file(struct inode *inode, loff_t newsize)
 	int8_t etype;
 	struct super_block *sb = inode->i_sb;
 	sector_t first_block = newsize >> sb->s_blocksize_bits, offset;
+<<<<<<< HEAD
 	unsigned long partial_final_block;
+=======
+	loff_t new_elen;
+>>>>>>> origin/android16-base
 	int adsize;
 	struct udf_inode_info *iinfo = UDF_I(inode);
 	struct kernel_long_ad extent;
 	int err = 0;
+<<<<<<< HEAD
 	int within_final_block;
+=======
+	bool within_last_ext;
+>>>>>>> origin/android16-base
 
 	if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_SHORT)
 		adsize = sizeof(struct short_ad);
@@ -640,8 +759,22 @@ static int udf_extend_file(struct inode *inode, loff_t newsize)
 	else
 		BUG();
 
+<<<<<<< HEAD
 	etype = inode_bmap(inode, first_block, &epos, &eloc, &elen, &offset);
 	within_final_block = (etype != -1);
+=======
+	/*
+	 * When creating hole in file, just don't bother with preserving
+	 * preallocation. It likely won't be very useful anyway.
+	 */
+	udf_discard_prealloc(inode);
+
+	etype = inode_bmap(inode, first_block, &epos, &eloc, &elen, &offset);
+	within_last_ext = (etype != -1);
+	/* We don't expect extents past EOF... */
+	WARN_ON_ONCE(within_last_ext &&
+		     elen > ((loff_t)offset + 1) << inode->i_blkbits);
+>>>>>>> origin/android16-base
 
 	if ((!epos.bh && epos.offset == udf_file_entry_alloc_offset(inode)) ||
 	    (epos.bh && epos.offset == sizeof(struct allocExtDesc))) {
@@ -657,11 +790,17 @@ static int udf_extend_file(struct inode *inode, loff_t newsize)
 		extent.extLength |= etype << 30;
 	}
 
+<<<<<<< HEAD
 	partial_final_block = newsize & (sb->s_blocksize - 1);
+=======
+	new_elen = ((loff_t)offset << inode->i_blkbits) |
+					(newsize & (sb->s_blocksize - 1));
+>>>>>>> origin/android16-base
 
 	/* File has extent covering the new size (could happen when extending
 	 * inside a block)?
 	 */
+<<<<<<< HEAD
 	if (within_final_block) {
 		/* Extending file within the last file block */
 		udf_do_extend_final_block(inode, &epos, &extent,
@@ -670,6 +809,13 @@ static int udf_extend_file(struct inode *inode, loff_t newsize)
 		loff_t add = ((loff_t)offset << sb->s_blocksize_bits) |
 			     partial_final_block;
 		err = udf_do_extend_file(inode, &epos, &extent, add);
+=======
+	if (within_last_ext) {
+		/* Extending file within the last file block */
+		udf_do_extend_final_block(inode, &epos, &extent, new_elen);
+	} else {
+		err = udf_do_extend_file(inode, &epos, &extent, new_elen);
+>>>>>>> origin/android16-base
 	}
 
 	if (err < 0)
@@ -691,7 +837,11 @@ static sector_t inode_getblk(struct inode *inode, sector_t block,
 	struct kernel_lb_addr eloc, tmpeloc;
 	int c = 1;
 	loff_t lbcount = 0, b_off = 0;
+<<<<<<< HEAD
 	udf_pblk_t newblocknum, newblock;
+=======
+	udf_pblk_t newblocknum, newblock = 0;
+>>>>>>> origin/android16-base
 	sector_t offset = 0;
 	int8_t etype;
 	struct udf_inode_info *iinfo = UDF_I(inode);
@@ -770,10 +920,18 @@ static sector_t inode_getblk(struct inode *inode, sector_t block,
 		goto out_free;
 	}
 
+<<<<<<< HEAD
 	/* Are we beyond EOF? */
 	if (etype == -1) {
 		int ret;
 		loff_t hole_len;
+=======
+	/* Are we beyond EOF and preallocated extent? */
+	if (etype == -1) {
+		int ret;
+		loff_t hole_len;
+
+>>>>>>> origin/android16-base
 		isBeyondEOF = true;
 		if (count) {
 			if (c)
@@ -793,12 +951,16 @@ static sector_t inode_getblk(struct inode *inode, sector_t block,
 		ret = udf_do_extend_file(inode, &prev_epos, laarr, hole_len);
 		if (ret < 0) {
 			*err = ret;
+<<<<<<< HEAD
 			newblock = 0;
+=======
+>>>>>>> origin/android16-base
 			goto out_free;
 		}
 		c = 0;
 		offset = 0;
 		count += ret;
+<<<<<<< HEAD
 		/* We are not covered by a preallocated extent? */
 		if ((laarr[0].extLength & UDF_EXTENT_FLAG_MASK) !=
 						EXT_NOT_RECORDED_ALLOCATED) {
@@ -812,6 +974,19 @@ static sector_t inode_getblk(struct inode *inode, sector_t block,
 				sizeof(struct kernel_lb_addr));
 			count++;
 		}
+=======
+		/*
+		 * Is there any real extent? - otherwise we overwrite the fake
+		 * one...
+		 */
+		if (count)
+			c = !c;
+		laarr[c].extLength = EXT_NOT_RECORDED_NOT_ALLOCATED |
+			inode->i_sb->s_blocksize;
+		memset(&laarr[c].extLocation, 0x00,
+			sizeof(struct kernel_lb_addr));
+		count++;
+>>>>>>> origin/android16-base
 		endnum = c + 1;
 		lastblock = 1;
 	} else {
@@ -858,7 +1033,10 @@ static sector_t inode_getblk(struct inode *inode, sector_t block,
 				goal, err);
 		if (!newblocknum) {
 			*err = -ENOSPC;
+<<<<<<< HEAD
 			newblock = 0;
+=======
+>>>>>>> origin/android16-base
 			goto out_free;
 		}
 		if (isBeyondEOF)
@@ -884,7 +1062,13 @@ static sector_t inode_getblk(struct inode *inode, sector_t block,
 	/* write back the new extents, inserting new extents if the new number
 	 * of extents is greater than the old number, and deleting extents if
 	 * the new number of extents is less than the old number */
+<<<<<<< HEAD
 	udf_update_extents(inode, laarr, startnum, endnum, &prev_epos);
+=======
+	*err = udf_update_extents(inode, laarr, startnum, endnum, &prev_epos);
+	if (*err < 0)
+		goto out_free;
+>>>>>>> origin/android16-base
 
 	newblock = udf_get_pblock(inode->i_sb, newblocknum,
 				iinfo->i_location.partitionReferenceNum, 0);
@@ -1088,6 +1272,7 @@ static void udf_merge_extents(struct inode *inode, struct kernel_long_ad *laarr,
 			blocksize - 1) >> blocksize_bits)))) {
 
 			if (((li->extLength & UDF_EXTENT_LENGTH_MASK) +
+<<<<<<< HEAD
 				(lip1->extLength & UDF_EXTENT_LENGTH_MASK) +
 				blocksize - 1) & ~UDF_EXTENT_LENGTH_MASK) {
 				lip1->extLength = (lip1->extLength -
@@ -1105,6 +1290,10 @@ static void udf_merge_extents(struct inode *inode, struct kernel_long_ad *laarr,
 						UDF_EXTENT_LENGTH_MASK) >>
 						blocksize_bits);
 			} else {
+=======
+			     (lip1->extLength & UDF_EXTENT_LENGTH_MASK) +
+			     blocksize - 1) <= UDF_EXTENT_LENGTH_MASK) {
+>>>>>>> origin/android16-base
 				li->extLength = lip1->extLength +
 					(((li->extLength &
 						UDF_EXTENT_LENGTH_MASK) +
@@ -1167,21 +1356,44 @@ static void udf_merge_extents(struct inode *inode, struct kernel_long_ad *laarr,
 	}
 }
 
+<<<<<<< HEAD
 static void udf_update_extents(struct inode *inode, struct kernel_long_ad *laarr,
 			       int startnum, int endnum,
 			       struct extent_position *epos)
+=======
+static int udf_update_extents(struct inode *inode, struct kernel_long_ad *laarr,
+			      int startnum, int endnum,
+			      struct extent_position *epos)
+>>>>>>> origin/android16-base
 {
 	int start = 0, i;
 	struct kernel_lb_addr tmploc;
 	uint32_t tmplen;
+<<<<<<< HEAD
+=======
+	int err;
+>>>>>>> origin/android16-base
 
 	if (startnum > endnum) {
 		for (i = 0; i < (startnum - endnum); i++)
 			udf_delete_aext(inode, *epos);
 	} else if (startnum < endnum) {
 		for (i = 0; i < (endnum - startnum); i++) {
+<<<<<<< HEAD
 			udf_insert_aext(inode, *epos, laarr[i].extLocation,
 					laarr[i].extLength);
+=======
+			err = udf_insert_aext(inode, *epos,
+					      laarr[i].extLocation,
+					      laarr[i].extLength);
+			/*
+			 * If we fail here, we are likely corrupting the extent
+			 * list and leaking blocks. At least stop early to
+			 * limit the damage.
+			 */
+			if (err < 0)
+				return err;
+>>>>>>> origin/android16-base
 			udf_next_aext(inode, epos, &laarr[i].extLocation,
 				      &laarr[i].extLength, 1);
 			start++;
@@ -1193,6 +1405,10 @@ static void udf_update_extents(struct inode *inode, struct kernel_long_ad *laarr
 		udf_write_aext(inode, epos, &laarr[i].extLocation,
 			       laarr[i].extLength, 1);
 	}
+<<<<<<< HEAD
+=======
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 struct buffer_head *udf_bread(struct inode *inode, udf_pblk_t block,
@@ -1257,7 +1473,11 @@ set_size:
 		if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB) {
 			down_write(&iinfo->i_data_sem);
 			udf_clear_extent_cache(inode);
+<<<<<<< HEAD
 			memset(iinfo->i_ext.i_data + iinfo->i_lenEAttr + newsize,
+=======
+			memset(iinfo->i_data + iinfo->i_lenEAttr + newsize,
+>>>>>>> origin/android16-base
 			       0x00, bsize - newsize -
 			       udf_file_entry_alloc_offset(inode));
 			iinfo->i_lenAlloc = newsize;
@@ -1393,6 +1613,10 @@ reread:
 		ret = -EIO;
 		goto out;
 	}
+<<<<<<< HEAD
+=======
+	iinfo->i_hidden = hidden_inode;
+>>>>>>> origin/android16-base
 	iinfo->i_unique = 0;
 	iinfo->i_lenEAttr = 0;
 	iinfo->i_lenExtents = 0;
@@ -1406,7 +1630,11 @@ reread:
 					sizeof(struct extendedFileEntry));
 		if (ret)
 			goto out;
+<<<<<<< HEAD
 		memcpy(iinfo->i_ext.i_data,
+=======
+		memcpy(iinfo->i_data,
+>>>>>>> origin/android16-base
 		       bh->b_data + sizeof(struct extendedFileEntry),
 		       bs - sizeof(struct extendedFileEntry));
 	} else if (fe->descTag.tagIdent == cpu_to_le16(TAG_IDENT_FE)) {
@@ -1415,7 +1643,11 @@ reread:
 		ret = udf_alloc_i_data(inode, bs - sizeof(struct fileEntry));
 		if (ret)
 			goto out;
+<<<<<<< HEAD
 		memcpy(iinfo->i_ext.i_data,
+=======
+		memcpy(iinfo->i_data,
+>>>>>>> origin/android16-base
 		       bh->b_data + sizeof(struct fileEntry),
 		       bs - sizeof(struct fileEntry));
 	} else if (fe->descTag.tagIdent == cpu_to_le16(TAG_IDENT_USE)) {
@@ -1428,7 +1660,11 @@ reread:
 					sizeof(struct unallocSpaceEntry));
 		if (ret)
 			goto out;
+<<<<<<< HEAD
 		memcpy(iinfo->i_ext.i_data,
+=======
+		memcpy(iinfo->i_data,
+>>>>>>> origin/android16-base
 		       bh->b_data + sizeof(struct unallocSpaceEntry),
 		       bs - sizeof(struct unallocSpaceEntry));
 		return 0;
@@ -1486,6 +1722,11 @@ reread:
 		iinfo->i_lenEAttr = le32_to_cpu(fe->lengthExtendedAttr);
 		iinfo->i_lenAlloc = le32_to_cpu(fe->lengthAllocDescs);
 		iinfo->i_checkpoint = le32_to_cpu(fe->checkpoint);
+<<<<<<< HEAD
+=======
+		iinfo->i_streamdir = 0;
+		iinfo->i_lenStreams = 0;
+>>>>>>> origin/android16-base
 	} else {
 		inode->i_blocks = le64_to_cpu(efe->logicalBlocksRecorded) <<
 		    (inode->i_sb->s_blocksize_bits - 9);
@@ -1499,6 +1740,19 @@ reread:
 		iinfo->i_lenEAttr = le32_to_cpu(efe->lengthExtendedAttr);
 		iinfo->i_lenAlloc = le32_to_cpu(efe->lengthAllocDescs);
 		iinfo->i_checkpoint = le32_to_cpu(efe->checkpoint);
+<<<<<<< HEAD
+=======
+
+		/* Named streams */
+		iinfo->i_streamdir = (efe->streamDirectoryICB.extLength != 0);
+		iinfo->i_locStreamdir =
+			lelb_to_cpu(efe->streamDirectoryICB.extLocation);
+		iinfo->i_lenStreams = le64_to_cpu(efe->objectSize);
+		if (iinfo->i_lenStreams >= inode->i_size)
+			iinfo->i_lenStreams -= inode->i_size;
+		else
+			iinfo->i_lenStreams = 0;
+>>>>>>> origin/android16-base
 	}
 	inode->i_generation = iinfo->i_unique;
 
@@ -1595,8 +1849,13 @@ out:
 static int udf_alloc_i_data(struct inode *inode, size_t size)
 {
 	struct udf_inode_info *iinfo = UDF_I(inode);
+<<<<<<< HEAD
 	iinfo->i_ext.i_data = kmalloc(size, GFP_KERNEL);
 	if (!iinfo->i_ext.i_data)
+=======
+	iinfo->i_data = kmalloc(size, GFP_KERNEL);
+	if (!iinfo->i_data)
+>>>>>>> origin/android16-base
 		return -ENOMEM;
 	return 0;
 }
@@ -1670,7 +1929,11 @@ static int udf_update_inode(struct inode *inode, int do_sync)
 
 		use->lengthAllocDescs = cpu_to_le32(iinfo->i_lenAlloc);
 		memcpy(bh->b_data + sizeof(struct unallocSpaceEntry),
+<<<<<<< HEAD
 		       iinfo->i_ext.i_data, inode->i_sb->s_blocksize -
+=======
+		       iinfo->i_data, inode->i_sb->s_blocksize -
+>>>>>>> origin/android16-base
 					sizeof(struct unallocSpaceEntry));
 		use->descTag.tagIdent = cpu_to_le16(TAG_IDENT_USE);
 		crclen = sizeof(struct unallocSpaceEntry);
@@ -1700,8 +1963,17 @@ static int udf_update_inode(struct inode *inode, int do_sync)
 
 	if (S_ISDIR(inode->i_mode) && inode->i_nlink > 0)
 		fe->fileLinkCount = cpu_to_le16(inode->i_nlink - 1);
+<<<<<<< HEAD
 	else
 		fe->fileLinkCount = cpu_to_le16(inode->i_nlink);
+=======
+	else {
+		if (iinfo->i_hidden)
+			fe->fileLinkCount = cpu_to_le16(0);
+		else
+			fe->fileLinkCount = cpu_to_le16(inode->i_nlink);
+	}
+>>>>>>> origin/android16-base
 
 	fe->informationLength = cpu_to_le64(inode->i_size);
 
@@ -1739,7 +2011,11 @@ static int udf_update_inode(struct inode *inode, int do_sync)
 
 	if (iinfo->i_efe == 0) {
 		memcpy(bh->b_data + sizeof(struct fileEntry),
+<<<<<<< HEAD
 		       iinfo->i_ext.i_data,
+=======
+		       iinfo->i_data,
+>>>>>>> origin/android16-base
 		       inode->i_sb->s_blocksize - sizeof(struct fileEntry));
 		fe->logicalBlocksRecorded = cpu_to_le64(lb_recorded);
 
@@ -1758,12 +2034,31 @@ static int udf_update_inode(struct inode *inode, int do_sync)
 		crclen = sizeof(struct fileEntry);
 	} else {
 		memcpy(bh->b_data + sizeof(struct extendedFileEntry),
+<<<<<<< HEAD
 		       iinfo->i_ext.i_data,
 		       inode->i_sb->s_blocksize -
 					sizeof(struct extendedFileEntry));
 		efe->objectSize = cpu_to_le64(inode->i_size);
 		efe->logicalBlocksRecorded = cpu_to_le64(lb_recorded);
 
+=======
+		       iinfo->i_data,
+		       inode->i_sb->s_blocksize -
+					sizeof(struct extendedFileEntry));
+		efe->objectSize =
+			cpu_to_le64(inode->i_size + iinfo->i_lenStreams);
+		efe->logicalBlocksRecorded = cpu_to_le64(lb_recorded);
+
+		if (iinfo->i_streamdir) {
+			struct long_ad *icb_lad = &efe->streamDirectoryICB;
+
+			icb_lad->extLocation =
+				cpu_to_lelb(iinfo->i_locStreamdir);
+			icb_lad->extLength =
+				cpu_to_le32(inode->i_sb->s_blocksize);
+		}
+
+>>>>>>> origin/android16-base
 		udf_adjust_time(iinfo, inode->i_atime);
 		udf_adjust_time(iinfo, inode->i_mtime);
 		udf_adjust_time(iinfo, inode->i_ctime);
@@ -1862,8 +2157,18 @@ struct inode *__udf_iget(struct super_block *sb, struct kernel_lb_addr *ino,
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
 
+<<<<<<< HEAD
 	if (!(inode->i_state & I_NEW))
 		return inode;
+=======
+	if (!(inode->i_state & I_NEW)) {
+		if (UDF_I(inode)->i_hidden != hidden_inode) {
+			iput(inode);
+			return ERR_PTR(-EFSCORRUPTED);
+		}
+		return inode;
+	}
+>>>>>>> origin/android16-base
 
 	memcpy(&UDF_I(inode)->i_location, ino, sizeof(struct kernel_lb_addr));
 	err = udf_read_inode(inode, hidden_inode);
@@ -2044,7 +2349,11 @@ void udf_write_aext(struct inode *inode, struct extent_position *epos,
 	struct udf_inode_info *iinfo = UDF_I(inode);
 
 	if (!epos->bh)
+<<<<<<< HEAD
 		ptr = iinfo->i_ext.i_data + epos->offset -
+=======
+		ptr = iinfo->i_data + epos->offset -
+>>>>>>> origin/android16-base
 			udf_file_entry_alloc_offset(inode) +
 			iinfo->i_lenEAttr;
 	else
@@ -2136,18 +2445,34 @@ int8_t udf_current_aext(struct inode *inode, struct extent_position *epos,
 	if (!epos->bh) {
 		if (!epos->offset)
 			epos->offset = udf_file_entry_alloc_offset(inode);
+<<<<<<< HEAD
 		ptr = iinfo->i_ext.i_data + epos->offset -
+=======
+		ptr = iinfo->i_data + epos->offset -
+>>>>>>> origin/android16-base
 			udf_file_entry_alloc_offset(inode) +
 			iinfo->i_lenEAttr;
 		alen = udf_file_entry_alloc_offset(inode) +
 							iinfo->i_lenAlloc;
 	} else {
+<<<<<<< HEAD
 		if (!epos->offset)
 			epos->offset = sizeof(struct allocExtDesc);
 		ptr = epos->bh->b_data + epos->offset;
 		alen = sizeof(struct allocExtDesc) +
 			le32_to_cpu(((struct allocExtDesc *)epos->bh->b_data)->
 							lengthAllocDescs);
+=======
+		struct allocExtDesc *header =
+			(struct allocExtDesc *)epos->bh->b_data;
+
+		if (!epos->offset)
+			epos->offset = sizeof(struct allocExtDesc);
+		ptr = epos->bh->b_data + epos->offset;
+		if (check_add_overflow(sizeof(struct allocExtDesc),
+				le32_to_cpu(header->lengthAllocDescs), &alen))
+			return -1;
+>>>>>>> origin/android16-base
 	}
 
 	switch (iinfo->i_alloc_type) {
@@ -2177,12 +2502,21 @@ int8_t udf_current_aext(struct inode *inode, struct extent_position *epos,
 	return etype;
 }
 
+<<<<<<< HEAD
 static int8_t udf_insert_aext(struct inode *inode, struct extent_position epos,
 			      struct kernel_lb_addr neloc, uint32_t nelen)
+=======
+static int udf_insert_aext(struct inode *inode, struct extent_position epos,
+			   struct kernel_lb_addr neloc, uint32_t nelen)
+>>>>>>> origin/android16-base
 {
 	struct kernel_lb_addr oeloc;
 	uint32_t oelen;
 	int8_t etype;
+<<<<<<< HEAD
+=======
+	int err;
+>>>>>>> origin/android16-base
 
 	if (epos.bh)
 		get_bh(epos.bh);
@@ -2192,10 +2526,17 @@ static int8_t udf_insert_aext(struct inode *inode, struct extent_position epos,
 		neloc = oeloc;
 		nelen = (etype << 30) | oelen;
 	}
+<<<<<<< HEAD
 	udf_add_aext(inode, &epos, &neloc, nelen, 1);
 	brelse(epos.bh);
 
 	return (nelen >> 30);
+=======
+	err = udf_add_aext(inode, &epos, &neloc, nelen, 1);
+	brelse(epos.bh);
+
+	return err;
+>>>>>>> origin/android16-base
 }
 
 int8_t udf_delete_aext(struct inode *inode, struct extent_position epos)

@@ -222,6 +222,10 @@ int __init zynq_early_slcr_init(void)
 	zynq_slcr_regmap = syscon_regmap_lookup_by_compatible("xlnx,zynq-slcr");
 	if (IS_ERR(zynq_slcr_regmap)) {
 		pr_err("%s: failed to find zynq-slcr\n", __func__);
+<<<<<<< HEAD
+=======
+		of_node_put(np);
+>>>>>>> origin/android16-base
 		return -ENODEV;
 	}
 

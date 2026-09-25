@@ -35,8 +35,13 @@
 #endif
 
 struct wf_lm75_sensor {
+<<<<<<< HEAD
 	int			ds1775 : 1;
 	int			inited : 1;
+=======
+	unsigned int		ds1775 : 1;
+	unsigned int		inited : 1;
+>>>>>>> origin/android16-base
 	struct i2c_client	*i2c;
 	struct wf_sensor	sens;
 };

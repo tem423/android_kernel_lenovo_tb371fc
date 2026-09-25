@@ -2075,6 +2075,7 @@ end:
 	mutex_unlock(&rm->rm_lock);
 }
 
+<<<<<<< HEAD
 static void _sde_rm_check_and_modify_commit_rsvps(
 		struct sde_rm *rm,
 		struct sde_rm_rsvp *rsvp)
@@ -2107,6 +2108,8 @@ static void _sde_rm_check_and_modify_commit_rsvps(
 	}
 }
 
+=======
+>>>>>>> origin/android16-base
 static int _sde_rm_commit_rsvp(
 		struct sde_rm *rm,
 		struct sde_rm_rsvp *rsvp,
@@ -2116,8 +2119,11 @@ static int _sde_rm_commit_rsvp(
 	enum sde_hw_blk_type type;
 	int ret = 0;
 
+<<<<<<< HEAD
 	_sde_rm_check_and_modify_commit_rsvps(rm, rsvp);
 
+=======
+>>>>>>> origin/android16-base
 	/* Swap next rsvp to be the active */
 	for (type = 0; type < SDE_HW_BLK_MAX; type++) {
 		list_for_each_entry(blk, &rm->hw_blks[type], list) {

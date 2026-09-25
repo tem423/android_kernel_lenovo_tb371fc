@@ -2636,10 +2636,15 @@ static int ehea_restart_qps(struct net_device *dev)
 	u16 dummy16 = 0;
 
 	cb0 = (void *)get_zeroed_page(GFP_KERNEL);
+<<<<<<< HEAD
 	if (!cb0) {
 		ret = -ENOMEM;
 		goto out;
 	}
+=======
+	if (!cb0)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < (port->num_def_qps); i++) {
 		struct ehea_port_res *pr =  &port->port_res[i];
@@ -2659,6 +2664,10 @@ static int ehea_restart_qps(struct net_device *dev)
 					    cb0);
 		if (hret != H_SUCCESS) {
 			netdev_err(dev, "query_ehea_qp failed (1)\n");
+<<<<<<< HEAD
+=======
+			ret = -EFAULT;
+>>>>>>> origin/android16-base
 			goto out;
 		}
 
@@ -2671,6 +2680,10 @@ static int ehea_restart_qps(struct net_device *dev)
 					     &dummy64, &dummy16, &dummy16);
 		if (hret != H_SUCCESS) {
 			netdev_err(dev, "modify_ehea_qp failed (1)\n");
+<<<<<<< HEAD
+=======
+			ret = -EFAULT;
+>>>>>>> origin/android16-base
 			goto out;
 		}
 
@@ -2679,6 +2692,10 @@ static int ehea_restart_qps(struct net_device *dev)
 					    cb0);
 		if (hret != H_SUCCESS) {
 			netdev_err(dev, "query_ehea_qp failed (2)\n");
+<<<<<<< HEAD
+=======
+			ret = -EFAULT;
+>>>>>>> origin/android16-base
 			goto out;
 		}
 
@@ -2915,6 +2932,10 @@ static struct device *ehea_register_port(struct ehea_port *port,
 	ret = of_device_register(&port->ofdev);
 	if (ret) {
 		pr_err("failed to register device. ret=%d\n", ret);
+<<<<<<< HEAD
+=======
+		put_device(&port->ofdev.dev);
+>>>>>>> origin/android16-base
 		goto out;
 	}
 

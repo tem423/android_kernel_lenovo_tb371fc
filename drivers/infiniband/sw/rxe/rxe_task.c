@@ -114,6 +114,7 @@ void rxe_do_task(unsigned long data)
 	task->ret = ret;
 }
 
+<<<<<<< HEAD
 int rxe_init_task(void *obj, struct rxe_task *task,
 		  void *arg, int (*func)(void *), char *name)
 {
@@ -121,6 +122,12 @@ int rxe_init_task(void *obj, struct rxe_task *task,
 	task->arg	= arg;
 	task->func	= func;
 	snprintf(task->name, sizeof(task->name), "%s", name);
+=======
+int rxe_init_task(struct rxe_task *task, void *arg, int (*func)(void *))
+{
+	task->arg	= arg;
+	task->func	= func;
+>>>>>>> origin/android16-base
 	task->destroyed	= false;
 
 	tasklet_init(&task->tasklet, rxe_do_task, (unsigned long)task);

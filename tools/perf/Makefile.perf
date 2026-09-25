@@ -148,10 +148,13 @@ endef
 
 LD += $(EXTRA_LDFLAGS)
 
+<<<<<<< HEAD
 HOSTCC  ?= gcc
 HOSTLD  ?= ld
 HOSTAR  ?= ar
 
+=======
+>>>>>>> origin/android16-base
 PKG_CONFIG = $(CROSS_COMPILE)pkg-config
 LLVM_CONFIG ?= llvm-config
 

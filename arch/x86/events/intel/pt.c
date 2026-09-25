@@ -69,13 +69,21 @@ static struct pt_cap_desc {
 	PT_CAP(topa_multiple_entries,	0, CPUID_ECX, BIT(1)),
 	PT_CAP(single_range_output,	0, CPUID_ECX, BIT(2)),
 	PT_CAP(payloads_lip,		0, CPUID_ECX, BIT(31)),
+<<<<<<< HEAD
 	PT_CAP(num_address_ranges,	1, CPUID_EAX, 0x3),
+=======
+	PT_CAP(num_address_ranges,	1, CPUID_EAX, 0x7),
+>>>>>>> origin/android16-base
 	PT_CAP(mtc_periods,		1, CPUID_EAX, 0xffff0000),
 	PT_CAP(cycle_thresholds,	1, CPUID_EBX, 0xffff),
 	PT_CAP(psb_periods,		1, CPUID_EBX, 0xffff0000),
 };
 
+<<<<<<< HEAD
 static u32 pt_cap_get(enum pt_capabilities cap)
+=======
+u32 intel_pt_validate_hw_cap(enum pt_capabilities cap)
+>>>>>>> origin/android16-base
 {
 	struct pt_cap_desc *cd = &pt_caps[cap];
 	u32 c = pt_pmu.caps[cd->leaf * PT_CPUID_REGS_NUM + cd->reg];
@@ -83,6 +91,10 @@ static u32 pt_cap_get(enum pt_capabilities cap)
 
 	return (c & cd->mask) >> shift;
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL_GPL(intel_pt_validate_hw_cap);
+>>>>>>> origin/android16-base
 
 static ssize_t pt_cap_show(struct device *cdev,
 			   struct device_attribute *attr,
@@ -92,7 +104,11 @@ static ssize_t pt_cap_show(struct device *cdev,
 		container_of(attr, struct dev_ext_attribute, attr);
 	enum pt_capabilities cap = (long)ea->var;
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%x\n", pt_cap_get(cap));
+=======
+	return snprintf(buf, PAGE_SIZE, "%x\n", intel_pt_validate_hw_cap(cap));
+>>>>>>> origin/android16-base
 }
 
 static struct attribute_group pt_cap_group = {
@@ -310,16 +326,27 @@ static bool pt_event_valid(struct perf_event *event)
 		return false;
 
 	if (config & RTIT_CTL_CYC_PSB) {
+<<<<<<< HEAD
 		if (!pt_cap_get(PT_CAP_psb_cyc))
 			return false;
 
 		allowed = pt_cap_get(PT_CAP_psb_periods);
+=======
+		if (!intel_pt_validate_hw_cap(PT_CAP_psb_cyc))
+			return false;
+
+		allowed = intel_pt_validate_hw_cap(PT_CAP_psb_periods);
+>>>>>>> origin/android16-base
 		requested = (config & RTIT_CTL_PSB_FREQ) >>
 			RTIT_CTL_PSB_FREQ_OFFSET;
 		if (requested && (!(allowed & BIT(requested))))
 			return false;
 
+<<<<<<< HEAD
 		allowed = pt_cap_get(PT_CAP_cycle_thresholds);
+=======
+		allowed = intel_pt_validate_hw_cap(PT_CAP_cycle_thresholds);
+>>>>>>> origin/android16-base
 		requested = (config & RTIT_CTL_CYC_THRESH) >>
 			RTIT_CTL_CYC_THRESH_OFFSET;
 		if (requested && (!(allowed & BIT(requested))))
@@ -334,10 +361,17 @@ static bool pt_event_valid(struct perf_event *event)
 		 * Spec says that setting mtc period bits while mtc bit in
 		 * CPUID is 0 will #GP, so better safe than sorry.
 		 */
+<<<<<<< HEAD
 		if (!pt_cap_get(PT_CAP_mtc))
 			return false;
 
 		allowed = pt_cap_get(PT_CAP_mtc_periods);
+=======
+		if (!intel_pt_validate_hw_cap(PT_CAP_mtc))
+			return false;
+
+		allowed = intel_pt_validate_hw_cap(PT_CAP_mtc_periods);
+>>>>>>> origin/android16-base
 		if (!allowed)
 			return false;
 
@@ -349,11 +383,19 @@ static bool pt_event_valid(struct perf_event *event)
 	}
 
 	if (config & RTIT_CTL_PWR_EVT_EN &&
+<<<<<<< HEAD
 	    !pt_cap_get(PT_CAP_power_event_trace))
 		return false;
 
 	if (config & RTIT_CTL_PTW) {
 		if (!pt_cap_get(PT_CAP_ptwrite))
+=======
+	    !intel_pt_validate_hw_cap(PT_CAP_power_event_trace))
+		return false;
+
+	if (config & RTIT_CTL_PTW) {
+		if (!intel_pt_validate_hw_cap(PT_CAP_ptwrite))
+>>>>>>> origin/android16-base
 			return false;
 
 		/* FUPonPTW without PTW doesn't make sense */
@@ -460,7 +502,11 @@ static u64 pt_config_filters(struct perf_event *event)
 			pt->filters.filter[range].msr_b = filter->msr_b;
 		}
 
+<<<<<<< HEAD
 		rtit_ctl |= filter->config << pt_address_ranges[range].reg_off;
+=======
+		rtit_ctl |= (u64)filter->config << pt_address_ranges[range].reg_off;
+>>>>>>> origin/android16-base
 	}
 
 	return rtit_ctl;
@@ -545,6 +591,7 @@ static void pt_config_buffer(void *buf, unsigned int topa_idx,
 	wrmsrl(MSR_IA32_RTIT_OUTPUT_MASK, reg);
 }
 
+<<<<<<< HEAD
 /*
  * Keep ToPA table-related metadata on the same page as the actual table,
  * taking up a few words from the top
@@ -555,6 +602,10 @@ static void pt_config_buffer(void *buf, unsigned int topa_idx,
 /**
  * struct topa - page-sized ToPA table with metadata at the top
  * @table:	actual ToPA table entries, as understood by PT hardware
+=======
+/**
+ * struct topa - ToPA metadata
+>>>>>>> origin/android16-base
  * @list:	linkage to struct pt_buffer's list of tables
  * @phys:	physical address of this page
  * @offset:	offset of the first entry in this table in the buffer
@@ -562,7 +613,10 @@ static void pt_config_buffer(void *buf, unsigned int topa_idx,
  * @last:	index of the last initialized entry in this table
  */
 struct topa {
+<<<<<<< HEAD
 	struct topa_entry	table[TENTS_PER_PAGE];
+=======
+>>>>>>> origin/android16-base
 	struct list_head	list;
 	u64			phys;
 	u64			offset;
@@ -570,8 +624,45 @@ struct topa {
 	int			last;
 };
 
+<<<<<<< HEAD
 /* make -1 stand for the last table entry */
 #define TOPA_ENTRY(t, i) ((i) == -1 ? &(t)->table[(t)->last] : &(t)->table[(i)])
+=======
+/*
+ * Keep ToPA table-related metadata on the same page as the actual table,
+ * taking up a few words from the top
+ */
+
+#define TENTS_PER_PAGE	\
+	((PAGE_SIZE - sizeof(struct topa)) / sizeof(struct topa_entry))
+
+/**
+ * struct topa_page - page-sized ToPA table with metadata at the top
+ * @table:	actual ToPA table entries, as understood by PT hardware
+ * @topa:	metadata
+ */
+struct topa_page {
+	struct topa_entry	table[TENTS_PER_PAGE];
+	struct topa		topa;
+};
+
+static inline struct topa_page *topa_to_page(struct topa *topa)
+{
+	return container_of(topa, struct topa_page, topa);
+}
+
+static inline struct topa_page *topa_entry_to_page(struct topa_entry *te)
+{
+	return (struct topa_page *)((unsigned long)te & PAGE_MASK);
+}
+
+/* make -1 stand for the last table entry */
+#define TOPA_ENTRY(t, i)				\
+	((i) == -1					\
+		? &topa_to_page(t)->table[(t)->last]	\
+		: &topa_to_page(t)->table[(i)])
+#define TOPA_ENTRY_SIZE(t, i) (sizes(TOPA_ENTRY((t), (i))->size))
+>>>>>>> origin/android16-base
 
 /**
  * topa_alloc() - allocate page-sized ToPA table
@@ -583,27 +674,46 @@ struct topa {
 static struct topa *topa_alloc(int cpu, gfp_t gfp)
 {
 	int node = cpu_to_node(cpu);
+<<<<<<< HEAD
 	struct topa *topa;
+=======
+	struct topa_page *tp;
+>>>>>>> origin/android16-base
 	struct page *p;
 
 	p = alloc_pages_node(node, gfp | __GFP_ZERO, 0);
 	if (!p)
 		return NULL;
 
+<<<<<<< HEAD
 	topa = page_address(p);
 	topa->last = 0;
 	topa->phys = page_to_phys(p);
+=======
+	tp = page_address(p);
+	tp->topa.last = 0;
+	tp->topa.phys = page_to_phys(p);
+>>>>>>> origin/android16-base
 
 	/*
 	 * In case of singe-entry ToPA, always put the self-referencing END
 	 * link as the 2nd entry in the table
 	 */
+<<<<<<< HEAD
 	if (!pt_cap_get(PT_CAP_topa_multiple_entries)) {
 		TOPA_ENTRY(topa, 1)->base = topa->phys >> TOPA_SHIFT;
 		TOPA_ENTRY(topa, 1)->end = 1;
 	}
 
 	return topa;
+=======
+	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries)) {
+		TOPA_ENTRY(&tp->topa, 1)->base = tp->topa.phys;
+		TOPA_ENTRY(&tp->topa, 1)->end = 1;
+	}
+
+	return &tp->topa;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -638,7 +748,11 @@ static void topa_insert_table(struct pt_buffer *buf, struct topa *topa)
 	topa->offset = last->offset + last->size;
 	buf->last = topa;
 
+<<<<<<< HEAD
 	if (!pt_cap_get(PT_CAP_topa_multiple_entries))
+=======
+	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries))
+>>>>>>> origin/android16-base
 		return;
 
 	BUG_ON(last->last != TENTS_PER_PAGE - 1);
@@ -654,7 +768,11 @@ static void topa_insert_table(struct pt_buffer *buf, struct topa *topa)
 static bool topa_table_full(struct topa *topa)
 {
 	/* single-entry ToPA is a special case */
+<<<<<<< HEAD
 	if (!pt_cap_get(PT_CAP_topa_multiple_entries))
+=======
+	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries))
+>>>>>>> origin/android16-base
 		return !!topa->last;
 
 	return topa->last == TENTS_PER_PAGE - 1;
@@ -690,7 +808,12 @@ static int topa_insert_pages(struct pt_buffer *buf, gfp_t gfp)
 
 	TOPA_ENTRY(topa, -1)->base = page_to_phys(p) >> TOPA_SHIFT;
 	TOPA_ENTRY(topa, -1)->size = order;
+<<<<<<< HEAD
 	if (!buf->snapshot && !pt_cap_get(PT_CAP_topa_multiple_entries)) {
+=======
+	if (!buf->snapshot &&
+	    !intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries)) {
+>>>>>>> origin/android16-base
 		TOPA_ENTRY(topa, -1)->intr = 1;
 		TOPA_ENTRY(topa, -1)->stop = 1;
 	}
@@ -712,6 +835,7 @@ static void pt_topa_dump(struct pt_buffer *buf)
 	struct topa *topa;
 
 	list_for_each_entry(topa, &buf->tables, list) {
+<<<<<<< HEAD
 		int i;
 
 		pr_debug("# table @%p (%016Lx), off %llx size %zx\n", topa->table,
@@ -728,6 +852,25 @@ static void pt_topa_dump(struct pt_buffer *buf)
 			if ((pt_cap_get(PT_CAP_topa_multiple_entries) &&
 			     topa->table[i].stop) ||
 			    topa->table[i].end)
+=======
+		struct topa_page *tp = topa_to_page(topa);
+		int i;
+
+		pr_debug("# table @%p (%016Lx), off %llx size %zx\n", tp->table,
+			 topa->phys, topa->offset, topa->size);
+		for (i = 0; i < TENTS_PER_PAGE; i++) {
+			pr_debug("# entry @%p (%lx sz %u %c%c%c) raw=%16llx\n",
+				 &tp->table[i],
+				 (unsigned long)tp->table[i].base << TOPA_SHIFT,
+				 sizes(tp->table[i].size),
+				 tp->table[i].end ?  'E' : ' ',
+				 tp->table[i].intr ? 'I' : ' ',
+				 tp->table[i].stop ? 'S' : ' ',
+				 *(u64 *)&tp->table[i]);
+			if ((intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries) &&
+			     tp->table[i].stop) ||
+			    tp->table[i].end)
+>>>>>>> origin/android16-base
 				break;
 		}
 	}
@@ -770,7 +913,11 @@ static void pt_update_head(struct pt *pt)
 
 	/* offset of the current output region within this table */
 	for (topa_idx = 0; topa_idx < buf->cur_idx; topa_idx++)
+<<<<<<< HEAD
 		base += sizes(buf->cur->table[topa_idx].size);
+=======
+		base += TOPA_ENTRY_SIZE(buf->cur, topa_idx);
+>>>>>>> origin/android16-base
 
 	if (buf->snapshot) {
 		local_set(&buf->data_size, base);
@@ -790,7 +937,11 @@ static void pt_update_head(struct pt *pt)
  */
 static void *pt_buffer_region(struct pt_buffer *buf)
 {
+<<<<<<< HEAD
 	return phys_to_virt(buf->cur->table[buf->cur_idx].base << TOPA_SHIFT);
+=======
+	return phys_to_virt((phys_addr_t)TOPA_ENTRY(buf->cur, buf->cur_idx)->base << TOPA_SHIFT);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -799,7 +950,11 @@ static void *pt_buffer_region(struct pt_buffer *buf)
  */
 static size_t pt_buffer_region_size(struct pt_buffer *buf)
 {
+<<<<<<< HEAD
 	return sizes(buf->cur->table[buf->cur_idx].size);
+=======
+	return TOPA_ENTRY_SIZE(buf->cur, buf->cur_idx);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -828,8 +983,13 @@ static void pt_handle_status(struct pt *pt)
 		 * means we are already losing data; need to let the decoder
 		 * know.
 		 */
+<<<<<<< HEAD
 		if (!pt_cap_get(PT_CAP_topa_multiple_entries) ||
 		    buf->output_off == sizes(TOPA_ENTRY(buf->cur, buf->cur_idx)->size)) {
+=======
+		if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries) ||
+		    buf->output_off == pt_buffer_region_size(buf)) {
+>>>>>>> origin/android16-base
 			perf_aux_output_flag(&pt->handle,
 			                     PERF_AUX_FLAG_TRUNCATED);
 			advance++;
@@ -840,7 +1000,12 @@ static void pt_handle_status(struct pt *pt)
 	 * Also on single-entry ToPA implementations, interrupt will come
 	 * before the output reaches its output region's boundary.
 	 */
+<<<<<<< HEAD
 	if (!pt_cap_get(PT_CAP_topa_multiple_entries) && !buf->snapshot &&
+=======
+	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries) &&
+	    !buf->snapshot &&
+>>>>>>> origin/android16-base
 	    pt_buffer_region_size(buf) - buf->output_off <= TOPA_PMI_MARGIN) {
 		void *head = pt_buffer_region(buf);
 
@@ -866,9 +1031,17 @@ static void pt_handle_status(struct pt *pt)
 static void pt_read_offset(struct pt_buffer *buf)
 {
 	u64 offset, base_topa;
+<<<<<<< HEAD
 
 	rdmsrl(MSR_IA32_RTIT_OUTPUT_BASE, base_topa);
 	buf->cur = phys_to_virt(base_topa);
+=======
+	struct topa_page *tp;
+
+	rdmsrl(MSR_IA32_RTIT_OUTPUT_BASE, base_topa);
+	tp = phys_to_virt(base_topa);
+	buf->cur = &tp->topa;
+>>>>>>> origin/android16-base
 
 	rdmsrl(MSR_IA32_RTIT_OUTPUT_MASK, offset);
 	/* offset within current output region */
@@ -923,15 +1096,23 @@ static int pt_buffer_reset_markers(struct pt_buffer *buf,
 	unsigned long idx, npages, wakeup;
 
 	/* can't stop in the middle of an output region */
+<<<<<<< HEAD
 	if (buf->output_off + handle->size + 1 <
 	    sizes(TOPA_ENTRY(buf->cur, buf->cur_idx)->size)) {
+=======
+	if (buf->output_off + handle->size + 1 < pt_buffer_region_size(buf)) {
+>>>>>>> origin/android16-base
 		perf_aux_output_flag(handle, PERF_AUX_FLAG_TRUNCATED);
 		return -EINVAL;
 	}
 
 
 	/* single entry ToPA is handled by marking all regions STOP=1 INT=1 */
+<<<<<<< HEAD
 	if (!pt_cap_get(PT_CAP_topa_multiple_entries))
+=======
+	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries))
+>>>>>>> origin/android16-base
 		return 0;
 
 	/* clear STOP and INT from current entry */
@@ -1019,6 +1200,10 @@ static void pt_buffer_setup_topa_index(struct pt_buffer *buf)
  */
 static void pt_buffer_reset_offsets(struct pt_buffer *buf, unsigned long head)
 {
+<<<<<<< HEAD
+=======
+	struct topa_page *cur_tp;
+>>>>>>> origin/android16-base
 	int pg;
 
 	if (buf->snapshot)
@@ -1027,10 +1212,17 @@ static void pt_buffer_reset_offsets(struct pt_buffer *buf, unsigned long head)
 	pg = (head >> PAGE_SHIFT) & (buf->nr_pages - 1);
 	pg = pt_topa_next_entry(buf, pg);
 
+<<<<<<< HEAD
 	buf->cur = (struct topa *)((unsigned long)buf->topa_index[pg] & PAGE_MASK);
 	buf->cur_idx = ((unsigned long)buf->topa_index[pg] -
 			(unsigned long)buf->cur) / sizeof(struct topa_entry);
 	buf->output_off = head & (sizes(buf->cur->table[buf->cur_idx].size) - 1);
+=======
+	cur_tp = topa_entry_to_page(buf->topa_index[pg]);
+	buf->cur = &cur_tp->topa;
+	buf->cur_idx = buf->topa_index[pg] - TOPA_ENTRY(buf->cur, 0);
+	buf->output_off = head & (pt_buffer_region_size(buf) - 1);
+>>>>>>> origin/android16-base
 
 	local64_set(&buf->head, head);
 	local_set(&buf->data_size, 0);
@@ -1082,7 +1274,11 @@ static int pt_buffer_init_topa(struct pt_buffer *buf, unsigned long nr_pages,
 	pt_buffer_setup_topa_index(buf);
 
 	/* link last table to the first one, unless we're double buffering */
+<<<<<<< HEAD
 	if (pt_cap_get(PT_CAP_topa_multiple_entries)) {
+=======
+	if (intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries)) {
+>>>>>>> origin/android16-base
 		TOPA_ENTRY(buf->last, -1)->base = buf->first->phys >> TOPA_SHIFT;
 		TOPA_ENTRY(buf->last, -1)->end = 1;
 	}
@@ -1154,7 +1350,11 @@ static int pt_addr_filters_init(struct perf_event *event)
 	struct pt_filters *filters;
 	int node = event->cpu == -1 ? -1 : cpu_to_node(event->cpu);
 
+<<<<<<< HEAD
 	if (!pt_cap_get(PT_CAP_num_address_ranges))
+=======
+	if (!intel_pt_validate_hw_cap(PT_CAP_num_address_ranges))
+>>>>>>> origin/android16-base
 		return 0;
 
 	filters = kzalloc_node(sizeof(struct pt_filters), GFP_KERNEL, node);
@@ -1203,7 +1403,11 @@ static int pt_event_addr_filters_validate(struct list_head *filters)
 				return -EINVAL;
 		}
 
+<<<<<<< HEAD
 		if (++range > pt_cap_get(PT_CAP_num_address_ranges))
+=======
+		if (++range > intel_pt_validate_hw_cap(PT_CAP_num_address_ranges))
+>>>>>>> origin/android16-base
 			return -EOPNOTSUPP;
 	}
 
@@ -1294,7 +1498,11 @@ void intel_pt_interrupt(void)
 			return;
 		}
 
+<<<<<<< HEAD
 		pt_config_buffer(buf->cur->table, buf->cur_idx,
+=======
+		pt_config_buffer(topa_to_page(buf->cur)->table, buf->cur_idx,
+>>>>>>> origin/android16-base
 				 buf->output_off);
 		pt_config(event);
 	}
@@ -1359,7 +1567,11 @@ static void pt_event_start(struct perf_event *event, int mode)
 	WRITE_ONCE(pt->handle_nmi, 1);
 	hwc->state = 0;
 
+<<<<<<< HEAD
 	pt_config_buffer(buf->cur->table, buf->cur_idx,
+=======
+	pt_config_buffer(topa_to_page(buf->cur)->table, buf->cur_idx,
+>>>>>>> origin/android16-base
 			 buf->output_off);
 	pt_config(event);
 
@@ -1509,12 +1721,20 @@ static __init int pt_init(void)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	if (!pt_cap_get(PT_CAP_topa_output)) {
+=======
+	if (!intel_pt_validate_hw_cap(PT_CAP_topa_output)) {
+>>>>>>> origin/android16-base
 		pr_warn("ToPA output is not supported on this CPU\n");
 		return -ENODEV;
 	}
 
+<<<<<<< HEAD
 	if (!pt_cap_get(PT_CAP_topa_multiple_entries))
+=======
+	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries))
+>>>>>>> origin/android16-base
 		pt_pmu.pmu.capabilities =
 			PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_SW_DOUBLEBUF;
 
@@ -1532,7 +1752,11 @@ static __init int pt_init(void)
 	pt_pmu.pmu.addr_filters_sync     = pt_event_addr_filters_sync;
 	pt_pmu.pmu.addr_filters_validate = pt_event_addr_filters_validate;
 	pt_pmu.pmu.nr_addr_filters       =
+<<<<<<< HEAD
 		pt_cap_get(PT_CAP_num_address_ranges);
+=======
+		intel_pt_validate_hw_cap(PT_CAP_num_address_ranges);
+>>>>>>> origin/android16-base
 
 	ret = perf_pmu_register(&pt_pmu.pmu, "intel_pt", -1);
 

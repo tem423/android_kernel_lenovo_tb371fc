@@ -265,6 +265,10 @@ int iioutils_get_param_float(float *output, const char *param_name,
 			if (fscanf(sysfsfp, "%f", output) != 1)
 				ret = errno ? -errno : -ENODATA;
 
+<<<<<<< HEAD
+=======
+			fclose(sysfsfp);
+>>>>>>> origin/android16-base
 			break;
 		}
 error_free_filename:
@@ -345,9 +349,15 @@ int build_channel_array(const char *device_dir,
 			}
 
 			sysfsfp = fopen(filename, "r");
+<<<<<<< HEAD
 			if (!sysfsfp) {
 				ret = -errno;
 				free(filename);
+=======
+			free(filename);
+			if (!sysfsfp) {
+				ret = -errno;
+>>>>>>> origin/android16-base
 				goto error_close_dir;
 			}
 
@@ -357,7 +367,10 @@ int build_channel_array(const char *device_dir,
 				if (fclose(sysfsfp))
 					perror("build_channel_array(): Failed to close file");
 
+<<<<<<< HEAD
 				free(filename);
+=======
+>>>>>>> origin/android16-base
 				goto error_close_dir;
 			}
 			if (ret == 1)
@@ -365,11 +378,17 @@ int build_channel_array(const char *device_dir,
 
 			if (fclose(sysfsfp)) {
 				ret = -errno;
+<<<<<<< HEAD
 				free(filename);
 				goto error_close_dir;
 			}
 
 			free(filename);
+=======
+				goto error_close_dir;
+			}
+
+>>>>>>> origin/android16-base
 		}
 
 	*ci_array = malloc(sizeof(**ci_array) * (*counter));
@@ -378,7 +397,11 @@ int build_channel_array(const char *device_dir,
 		goto error_close_dir;
 	}
 
+<<<<<<< HEAD
 	seekdir(dp, 0);
+=======
+	rewinddir(dp);
+>>>>>>> origin/android16-base
 	while (ent = readdir(dp), ent) {
 		if (strcmp(ent->d_name + strlen(ent->d_name) - strlen("_en"),
 			   "_en") == 0) {
@@ -395,9 +418,15 @@ int build_channel_array(const char *device_dir,
 			}
 
 			sysfsfp = fopen(filename, "r");
+<<<<<<< HEAD
 			if (!sysfsfp) {
 				ret = -errno;
 				free(filename);
+=======
+			free(filename);
+			if (!sysfsfp) {
+				ret = -errno;
+>>>>>>> origin/android16-base
 				count--;
 				goto error_cleanup_array;
 			}
@@ -405,20 +434,29 @@ int build_channel_array(const char *device_dir,
 			errno = 0;
 			if (fscanf(sysfsfp, "%i", &current_enabled) != 1) {
 				ret = errno ? -errno : -ENODATA;
+<<<<<<< HEAD
 				free(filename);
+=======
+>>>>>>> origin/android16-base
 				count--;
 				goto error_cleanup_array;
 			}
 
 			if (fclose(sysfsfp)) {
 				ret = -errno;
+<<<<<<< HEAD
 				free(filename);
+=======
+>>>>>>> origin/android16-base
 				count--;
 				goto error_cleanup_array;
 			}
 
 			if (!current_enabled) {
+<<<<<<< HEAD
 				free(filename);
+=======
+>>>>>>> origin/android16-base
 				count--;
 				continue;
 			}
@@ -429,7 +467,10 @@ int build_channel_array(const char *device_dir,
 						strlen(ent->d_name) -
 						strlen("_en"));
 			if (!current->name) {
+<<<<<<< HEAD
 				free(filename);
+=======
+>>>>>>> origin/android16-base
 				ret = -ENOMEM;
 				count--;
 				goto error_cleanup_array;
@@ -439,7 +480,10 @@ int build_channel_array(const char *device_dir,
 			ret = iioutils_break_up_name(current->name,
 						     &current->generic_name);
 			if (ret) {
+<<<<<<< HEAD
 				free(filename);
+=======
+>>>>>>> origin/android16-base
 				free(current->name);
 				count--;
 				goto error_cleanup_array;
@@ -450,17 +494,28 @@ int build_channel_array(const char *device_dir,
 				       scan_el_dir,
 				       current->name);
 			if (ret < 0) {
+<<<<<<< HEAD
 				free(filename);
+=======
+>>>>>>> origin/android16-base
 				ret = -ENOMEM;
 				goto error_cleanup_array;
 			}
 
 			sysfsfp = fopen(filename, "r");
+<<<<<<< HEAD
 			if (!sysfsfp) {
 				ret = -errno;
 				fprintf(stderr, "failed to open %s\n",
 					filename);
 				free(filename);
+=======
+			free(filename);
+			if (!sysfsfp) {
+				ret = -errno;
+				fprintf(stderr, "failed to open %s/%s_index\n",
+					scan_el_dir, current->name);
+>>>>>>> origin/android16-base
 				goto error_cleanup_array;
 			}
 
@@ -470,17 +525,26 @@ int build_channel_array(const char *device_dir,
 				if (fclose(sysfsfp))
 					perror("build_channel_array(): Failed to close file");
 
+<<<<<<< HEAD
 				free(filename);
+=======
+>>>>>>> origin/android16-base
 				goto error_cleanup_array;
 			}
 
 			if (fclose(sysfsfp)) {
 				ret = -errno;
+<<<<<<< HEAD
 				free(filename);
 				goto error_cleanup_array;
 			}
 
 			free(filename);
+=======
+				goto error_cleanup_array;
+			}
+
+>>>>>>> origin/android16-base
 			/* Find the scale */
 			ret = iioutils_get_param_float(&current->scale,
 						       "scale",
@@ -546,6 +610,13 @@ static int calc_digits(int num)
 {
 	int count = 0;
 
+<<<<<<< HEAD
+=======
+	/* It takes a digit to represent zero */
+	if (!num)
+		return 1;
+
+>>>>>>> origin/android16-base
 	while (num != 0) {
 		num /= 10;
 		count++;

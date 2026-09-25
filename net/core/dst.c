@@ -97,9 +97,19 @@ void *dst_alloc(struct dst_ops *ops, struct net_device *dev,
 {
 	struct dst_entry *dst;
 
+<<<<<<< HEAD
 	if (ops->gc && dst_entries_get_fast(ops) > ops->gc_thresh) {
 		if (ops->gc(ops))
 			return NULL;
+=======
+	if (ops->gc &&
+	    !(flags & DST_NOCOUNT) &&
+	    dst_entries_get_fast(ops) > ops->gc_thresh) {
+		if (ops->gc(ops)) {
+			pr_notice_ratelimited("Route cache is full: consider increasing sysctl net.ipv6.route.max_size.\n");
+			return NULL;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	dst = kmem_cache_alloc(ops->kmem_cachep, GFP_ATOMIC);

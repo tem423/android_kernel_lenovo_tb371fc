@@ -14,11 +14,15 @@
 #include "dsi_panel.h"
 #include "dsi_ctrl_hw.h"
 #include "dsi_parser.h"
+<<<<<<< HEAD
 #include "dsi_mi_feature.h"
 
 #include "dsi_display.h"
 #include "sde_dbg.h"
 #include "dsi_mi_feature.h"
+=======
+#include "sde_dbg.h"
+>>>>>>> origin/android16-base
 
 /**
  * topology is currently defined by a set of following 3 values:
@@ -38,8 +42,11 @@
 #define DEFAULT_PANEL_PREFILL_LINES	25
 #define MIN_PREFILL_LINES      35
 
+<<<<<<< HEAD
 extern void sde_crtc_fod_ui_ready(struct dsi_display *display, int type, int value);
 
+=======
+>>>>>>> origin/android16-base
 enum dsi_dsc_ratio_type {
 	DSC_8BPC_8BPP,
 	DSC_10BPC_8BPP,
@@ -79,7 +86,11 @@ static char dsi_dsc_rc_range_min_qp_1_1_scr1[][15] = {
  */
 static char dsi_dsc_rc_range_max_qp_1_1[][15] = {
 	{4, 4, 5, 6, 7, 7, 7, 8, 9, 10, 11, 12, 13, 13, 15},
+<<<<<<< HEAD
 	{8, 8, 9, 10, 11, 11, 11, 12, 13, 14, 15, 16, 17, 17, 19},
+=======
+	{4, 8, 9, 10, 11, 11, 11, 12, 13, 14, 15, 16, 17, 17, 19},
+>>>>>>> origin/android16-base
 	{12, 12, 13, 14, 15, 15, 15, 16, 17, 18, 19, 20, 21, 21, 23},
 	{7, 8, 9, 10, 11, 11, 11, 12, 13, 13, 14, 14, 15, 15, 16},
 	};
@@ -454,15 +465,19 @@ static int dsi_panel_set_pinctrl_state(struct dsi_panel *panel, bool enable)
 }
 
 
+<<<<<<< HEAD
 /* TB371FC p108: kernel power-cut+reset+init at wake always degrades the
  * panel to 0x0c (black); soft sleep with power kept preserves 0x9c
  * (p106/p107 evidence). Skip both power_off and power_on. */
 static bool p108_keep_panel_power = true;
 
+=======
+>>>>>>> origin/android16-base
 static int dsi_panel_power_on(struct dsi_panel *panel)
 {
 	int rc = 0;
 
+<<<<<<< HEAD
 	if (p108_keep_panel_power) {
 		return 0;
 	}
@@ -487,6 +502,9 @@ static int dsi_panel_power_on(struct dsi_panel *panel)
 	} else {
 		rc = dsi_pwr_enable_regulator(&panel->power_info, true);
 	}
+=======
+	rc = dsi_pwr_enable_regulator(&panel->power_info, true);
+>>>>>>> origin/android16-base
 	if (rc) {
 		DSI_ERR("[%s] failed to enable vregs, rc=%d\n",
 				panel->name, rc);
@@ -499,10 +517,13 @@ static int dsi_panel_power_on(struct dsi_panel *panel)
 		goto error_disable_vregs;
 	}
 
+<<<<<<< HEAD
 	/* If LP11_INIT is set, skip panel reset here*/
 	if (panel->lp11_init)
 		goto exit;
 
+=======
+>>>>>>> origin/android16-base
 	rc = dsi_panel_reset(panel);
 	if (rc) {
 		DSI_ERR("[%s] failed to reset panel, rc=%d\n", panel->name, rc);
@@ -531,6 +552,7 @@ static int dsi_panel_power_off(struct dsi_panel *panel)
 {
 	int rc = 0;
 
+<<<<<<< HEAD
 	if (p108_keep_panel_power) {
 		return 0;
 	}
@@ -567,6 +589,14 @@ static int dsi_panel_power_off(struct dsi_panel *panel)
 			(panel->reset_config.reset_powerdown_delay * 1000) + 100);
 		DSI_WARN("reset_powerdown_delay = %d\n", panel->reset_config.reset_powerdown_delay);
 	}
+=======
+	if (gpio_is_valid(panel->reset_config.disp_en_gpio))
+		gpio_set_value(panel->reset_config.disp_en_gpio, 0);
+
+	if (gpio_is_valid(panel->reset_config.reset_gpio) &&
+					!panel->reset_gpio_always_on)
+		gpio_set_value(panel->reset_config.reset_gpio, 0);
+>>>>>>> origin/android16-base
 
 	if (gpio_is_valid(panel->reset_config.lcd_mode_sel_gpio))
 		gpio_set_value(panel->reset_config.lcd_mode_sel_gpio, 0);
@@ -584,6 +614,7 @@ static int dsi_panel_power_off(struct dsi_panel *panel)
 		       rc);
 	}
 
+<<<<<<< HEAD
 	if (!panel->mi_cfg.is_tddi_flag
 			|| (!panel->mi_cfg.tddi_doubleclick_flag || panel->mi_cfg.panel_dead_flag)) {
 		rc = dsi_pwr_enable_regulator(&panel->power_info, false);
@@ -595,6 +626,16 @@ static int dsi_panel_power_off(struct dsi_panel *panel)
 	return rc;
 }
 int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
+=======
+	rc = dsi_pwr_enable_regulator(&panel->power_info, false);
+	if (rc)
+		DSI_ERR("[%s] failed to enable vregs, rc=%d\n",
+				panel->name, rc);
+
+	return rc;
+}
+static int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
+>>>>>>> origin/android16-base
 				enum dsi_cmd_set_type type)
 {
 	int rc = 0, i = 0;
@@ -631,9 +672,12 @@ int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
 		if (type == DSI_CMD_SET_VID_TO_CMD_SWITCH)
 			cmds->msg.flags |= MIPI_DSI_MSG_ASYNC_OVERRIDE;
 
+<<<<<<< HEAD
 		if (type == DSI_CMD_SET_MI_GIR_ON || type == DSI_CMD_SET_MI_GIR_OFF)
 			cmds->msg.flags |= MIPI_DSI_MSG_CMD_DMA_SCHED;
 
+=======
+>>>>>>> origin/android16-base
 		len = ops->transfer(panel->host, &cmds->msg);
 		if (len < 0) {
 			rc = len;
@@ -712,6 +756,7 @@ static int dsi_panel_wled_register(struct dsi_panel *panel,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int dsi_panel_wled_register_a(struct dsi_panel *panel,
 		struct dsi_backlight_config *bl)
 {
@@ -742,6 +787,8 @@ static int dsi_panel_wled_register_b(struct dsi_panel *panel,
 	return 0;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int dsi_panel_dcs_set_display_brightness_c2(struct mipi_dsi_device *dsi,
 			u32 bl_lvl)
 {
@@ -758,13 +805,20 @@ static int dsi_panel_dcs_set_display_brightness_c2(struct mipi_dsi_device *dsi,
 
 
 
+<<<<<<< HEAD
 int dsi_panel_update_backlight(struct dsi_panel *panel,
+=======
+static int dsi_panel_update_backlight(struct dsi_panel *panel,
+>>>>>>> origin/android16-base
 	u32 bl_lvl)
 {
 	int rc = 0;
 	struct mipi_dsi_device *dsi;
+<<<<<<< HEAD
 	struct dsi_panel_mi_cfg *mi_cfg = &panel->mi_cfg;
 	static int use_count = 10;
+=======
+>>>>>>> origin/android16-base
 	struct dsi_backlight_config *bl;
 
 	if (!panel || (bl_lvl > 0xffff)) {
@@ -780,6 +834,7 @@ int dsi_panel_update_backlight(struct dsi_panel *panel,
 
 	if (panel->bl_config.bl_dcs_subtype == 0xc2)
 		rc = dsi_panel_dcs_set_display_brightness_c2(dsi, bl_lvl);
+<<<<<<< HEAD
 	else if (panel->mi_cfg.bl_is_big_endian) {
 		if ((!mi_cfg->last_bl_level && bl_lvl) ||
 			(mi_cfg->last_bl_level && !bl_lvl))
@@ -798,11 +853,15 @@ int dsi_panel_update_backlight(struct dsi_panel *panel,
 		}
 		rc = mipi_dsi_dcs_set_display_brightness_big_endian(dsi, bl_lvl);
 	} else
+=======
+	else
+>>>>>>> origin/android16-base
 		rc = mipi_dsi_dcs_set_display_brightness(dsi, bl_lvl);
 
 	if (rc < 0)
 		DSI_ERR("failed to update dcs backlight:%d\n", bl_lvl);
 
+<<<<<<< HEAD
 	if (mi_cfg->local_hbm_enabled) {
 		if (bl_lvl > 2047 && mi_cfg->dim_fp_dbv_max_in_hbm_flag == false) {
 			dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_MI_DIM_FP_DBV_MAX_IN_HBM);
@@ -817,6 +876,8 @@ int dsi_panel_update_backlight(struct dsi_panel *panel,
 			mi_dsi_panel_set_fod_brightness(dsi, bl_lvl);
 		}
 	}
+=======
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -871,6 +932,7 @@ error:
 	return rc;
 }
 
+<<<<<<< HEAD
 bool dc_skip_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 {
 	struct dsi_panel_mi_cfg *mi_cfg = &panel->mi_cfg;
@@ -933,17 +995,23 @@ int dsi_panel_set_fod_hbm(struct dsi_panel *panel, bool status)
 	return rc;
 }
 
+=======
+>>>>>>> origin/android16-base
 int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 {
 	int rc = 0;
 	struct dsi_backlight_config *bl = &panel->bl_config;
+<<<<<<< HEAD
 	struct dsi_backlight_config *bl_slaver = &panel->bl_slaver_config;
 	struct dsi_panel_mi_cfg *mi_cfg = &panel->mi_cfg;
+=======
+>>>>>>> origin/android16-base
 
 	if (panel->host_config.ext_bridge_mode)
 		return 0;
 
 	DSI_DEBUG("backlight type:%d lvl:%d\n", bl->type, bl_lvl);
+<<<<<<< HEAD
 
 	/* lmi panel must restore to last_bl_level to avoid flash high
 	 * brightness white exiting app lock with DC on (MIUI-1755728),
@@ -1007,6 +1075,17 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 			DSI_ERR("lcd_bl_set_led_brightness failed, rc=%d\n", rc);
 		break;
 	}
+=======
+	switch (bl->type) {
+	case DSI_BACKLIGHT_WLED:
+		rc = backlight_device_set_brightness(bl->raw_bd, bl_lvl);
+		break;
+	case DSI_BACKLIGHT_DCS:
+		rc = dsi_panel_update_backlight(panel, bl_lvl);
+		break;
+	case DSI_BACKLIGHT_EXTERNAL:
+		break;
+>>>>>>> origin/android16-base
 	case DSI_BACKLIGHT_PWM:
 		rc = dsi_panel_update_pwm_backlight(panel, bl_lvl);
 		break;
@@ -1015,6 +1094,7 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 		rc = -ENOTSUPP;
 	}
 
+<<<<<<< HEAD
 	if ((mi_cfg->last_bl_level == 0 || (mi_cfg->dimming_state == STATE_DIM_RESTORE)) && bl_lvl) {
 		if (mi_cfg->panel_on_dimming_delay)
 			schedule_delayed_work(&mi_cfg->dimming_enable_delayed_work,
@@ -1040,6 +1120,8 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 	mi_cfg->last_bl_level = bl_lvl;
 	if (bl_lvl)
 		mi_cfg->last_nonzero_bl_level = bl_lvl;
+=======
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -1099,13 +1181,17 @@ static int dsi_panel_bl_register(struct dsi_panel *panel)
 {
 	int rc = 0;
 	struct dsi_backlight_config *bl = &panel->bl_config;
+<<<<<<< HEAD
 	struct dsi_backlight_config *bl_slaver = &panel->bl_slaver_config;
+=======
+>>>>>>> origin/android16-base
 
 	if (panel->host_config.ext_bridge_mode)
 		return 0;
 
 	switch (bl->type) {
 	case DSI_BACKLIGHT_WLED:
+<<<<<<< HEAD
 		if (panel->mi_cfg.panel_id == 0x4C38314100420400){
 			// L81A dual backlight
 			rc = dsi_panel_wled_register_a(panel, bl);
@@ -1113,6 +1199,9 @@ static int dsi_panel_bl_register(struct dsi_panel *panel)
 		}else{
 			rc = dsi_panel_wled_register(panel, bl);
 		}
+=======
+		rc = dsi_panel_wled_register(panel, bl);
+>>>>>>> origin/android16-base
 		break;
 	case DSI_BACKLIGHT_DCS:
 		break;
@@ -1491,7 +1580,11 @@ static int dsi_panel_parse_misc_host_config(struct dsi_host_common_cfg *host,
 					    struct dsi_parser_utils *utils,
 					    const char *name)
 {
+<<<<<<< HEAD
 	u32 val = 0, line_no = 0, window = 0;
+=======
+	u32 val = 0;
+>>>>>>> origin/android16-base
 	int rc = 0;
 	bool panel_cphy_mode = false;
 
@@ -1522,6 +1615,7 @@ static int dsi_panel_parse_misc_host_config(struct dsi_host_common_cfg *host,
 
 	host->force_hs_clk_lane = utils->read_bool(utils->data,
 					"qcom,mdss-dsi-force-clock-lane-hs");
+<<<<<<< HEAD
 
 	rc = utils->read_u32(utils->data, "qcom,mdss-dsi-clk-strength", &val);
 	if (!rc) {
@@ -1532,11 +1626,14 @@ static int dsi_panel_parse_misc_host_config(struct dsi_host_common_cfg *host,
 		DSI_INFO("[%s] clk_strength default value = %d\n", name, val);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	panel_cphy_mode = utils->read_bool(utils->data,
 					"qcom,panel-cphy-mode");
 	host->phy_type = panel_cphy_mode ? DSI_PHY_TYPE_CPHY
 						: DSI_PHY_TYPE_DPHY;
 
+<<<<<<< HEAD
 	host->cphy_strength = utils->read_bool(utils->data,
 					"qcom,mdss-dsi-cphy-strength");
 
@@ -1557,6 +1654,8 @@ static int dsi_panel_parse_misc_host_config(struct dsi_host_common_cfg *host,
 	DSI_DEBUG("[%s] DMA scheduling parameters Line: %d Window: %d\n", name,
 		host->dma_sched_line, host->dma_sched_window);
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1891,6 +1990,10 @@ static int dsi_panel_parse_video_host_config(struct dsi_video_engine_cfg *cfg,
 	const char *traffic_mode;
 	u32 vc_id = 0;
 	u32 val = 0;
+<<<<<<< HEAD
+=======
+	u32 line_no = 0;
+>>>>>>> origin/android16-base
 
 	rc = utils->read_u32(utils->data, "qcom,mdss-dsi-h-sync-pulse", &val);
 	if (rc) {
@@ -1953,6 +2056,20 @@ static int dsi_panel_parse_video_host_config(struct dsi_video_engine_cfg *cfg,
 		cfg->vc_id = vc_id;
 	}
 
+<<<<<<< HEAD
+=======
+	rc = utils->read_u32(utils->data, "qcom,mdss-dsi-dma-schedule-line",
+				  &line_no);
+	if (rc) {
+		DSI_DEBUG("[%s] set default dma scheduling line no\n", name);
+		cfg->dma_sched_line = 0x1;
+		/* do not fail since we have default value */
+		rc = 0;
+	} else {
+		cfg->dma_sched_line = line_no;
+	}
+
+>>>>>>> origin/android16-base
 error:
 	return rc;
 }
@@ -2125,7 +2242,10 @@ const char *cmd_set_prop_map[DSI_CMD_SET_MAX] = {
 	"qcom,cmd-to-video-mode-post-switch-commands",
 	"qcom,video-to-cmd-mode-switch-commands",
 	"qcom,video-to-cmd-mode-post-switch-commands",
+<<<<<<< HEAD
 	"qcom,mdss-dsi-panel-status-offset-command",
+=======
+>>>>>>> origin/android16-base
 	"qcom,mdss-dsi-panel-status-command",
 	"qcom,mdss-dsi-lp1-command",
 	"qcom,mdss-dsi-lp2-command",
@@ -2136,6 +2256,7 @@ const char *cmd_set_prop_map[DSI_CMD_SET_MAX] = {
 	"qcom,mdss-dsi-post-mode-switch-on-command",
 	"qcom,mdss-dsi-qsync-on-commands",
 	"qcom,mdss-dsi-qsync-off-commands",
+<<<<<<< HEAD
 	/* xiaomi add start */
 	"mi,mdss-dsi-ceon-command",
 	"mi,mdss-dsi-ceoff-command",
@@ -2237,6 +2358,8 @@ const char *cmd_set_prop_map[DSI_CMD_SET_MAX] = {
 	"mi,mdss-dsi-dim-fp-dbv-max-in-hbm-command",
 	"mi,mdss-dsi-dim-fp-dbv-max-in-normal-command",
 	/* xiaomi add end */
+=======
+>>>>>>> origin/android16-base
 };
 
 const char *cmd_set_state_map[DSI_CMD_SET_MAX] = {
@@ -2253,7 +2376,10 @@ const char *cmd_set_state_map[DSI_CMD_SET_MAX] = {
 	"qcom,cmd-to-video-mode-post-switch-commands-state",
 	"qcom,video-to-cmd-mode-switch-commands-state",
 	"qcom,video-to-cmd-mode-post-switch-commands-state",
+<<<<<<< HEAD
 	"qcom,mdss-dsi-panel-status-offset-command-state",
+=======
+>>>>>>> origin/android16-base
 	"qcom,mdss-dsi-panel-status-command-state",
 	"qcom,mdss-dsi-lp1-command-state",
 	"qcom,mdss-dsi-lp2-command-state",
@@ -2264,6 +2390,7 @@ const char *cmd_set_state_map[DSI_CMD_SET_MAX] = {
 	"qcom,mdss-dsi-post-mode-switch-on-command-state",
 	"qcom,mdss-dsi-qsync-on-commands-state",
 	"qcom,mdss-dsi-qsync-off-commands-state",
+<<<<<<< HEAD
 	/* xiaomi add start */
 	"mi,mdss-dsi-ceon-command-state",
 	"mi,mdss-dsi-ceoff-command-state",
@@ -2368,6 +2495,11 @@ const char *cmd_set_state_map[DSI_CMD_SET_MAX] = {
 };
 
 int dsi_panel_get_cmd_pkt_count(const char *data, u32 length, u32 *cnt)
+=======
+};
+
+static int dsi_panel_get_cmd_pkt_count(const char *data, u32 length, u32 *cnt)
+>>>>>>> origin/android16-base
 {
 	const u32 cmd_set_min_size = 7;
 	u32 count = 0;
@@ -2391,7 +2523,11 @@ int dsi_panel_get_cmd_pkt_count(const char *data, u32 length, u32 *cnt)
 	return 0;
 }
 
+<<<<<<< HEAD
 int dsi_panel_create_cmd_packets(const char *data,
+=======
+static int dsi_panel_create_cmd_packets(const char *data,
+>>>>>>> origin/android16-base
 					u32 length,
 					u32 count,
 					struct dsi_cmd_desc *cmd)
@@ -2436,7 +2572,11 @@ error_free_payloads:
 	return rc;
 }
 
+<<<<<<< HEAD
 void dsi_panel_destroy_cmd_packets(struct dsi_panel_cmd_set *set)
+=======
+static void dsi_panel_destroy_cmd_packets(struct dsi_panel_cmd_set *set)
+>>>>>>> origin/android16-base
 {
 	u32 i = 0;
 	struct dsi_cmd_desc *cmd;
@@ -2447,12 +2587,20 @@ void dsi_panel_destroy_cmd_packets(struct dsi_panel_cmd_set *set)
 	}
 }
 
+<<<<<<< HEAD
 void dsi_panel_dealloc_cmd_packets(struct dsi_panel_cmd_set *set)
+=======
+static void dsi_panel_dealloc_cmd_packets(struct dsi_panel_cmd_set *set)
+>>>>>>> origin/android16-base
 {
 	kfree(set->cmds);
 }
 
+<<<<<<< HEAD
 int dsi_panel_alloc_cmd_packets(struct dsi_panel_cmd_set *cmd,
+=======
+static int dsi_panel_alloc_cmd_packets(struct dsi_panel_cmd_set *cmd,
+>>>>>>> origin/android16-base
 					u32 packet_count)
 {
 	u32 size;
@@ -2574,7 +2722,10 @@ static int dsi_panel_parse_reset_sequence(struct dsi_panel *panel)
 	u32 count = 0;
 	u32 size = 0;
 	u32 *arr_32 = NULL;
+<<<<<<< HEAD
 	u32 powerdown_delay = 0;
+=======
+>>>>>>> origin/android16-base
 	const u32 *arr;
 	struct dsi_parser_utils *utils = &panel->utils;
 	struct dsi_reset_seq *seq;
@@ -2582,6 +2733,7 @@ static int dsi_panel_parse_reset_sequence(struct dsi_panel *panel)
 	if (panel->host_config.ext_bridge_mode)
 		return 0;
 
+<<<<<<< HEAD
 	rc = utils->read_u32(utils->data, "qcom,mdss-dsi-reset-powerdown-delay",
 							&powerdown_delay);
 	if (rc)
@@ -2589,6 +2741,8 @@ static int dsi_panel_parse_reset_sequence(struct dsi_panel *panel)
 
 	panel->reset_config.reset_powerdown_delay = powerdown_delay;
 
+=======
+>>>>>>> origin/android16-base
 	arr = utils->get_property(utils->data,
 			"qcom,mdss-dsi-reset-sequence", &length);
 	if (!arr) {
@@ -2770,10 +2924,13 @@ static int dsi_panel_parse_gpios(struct dsi_panel *panel)
 		goto error;
 	}
 
+<<<<<<< HEAD
 	panel->reset_config.tp_reset_gpio = utils->get_named_gpio(utils->data,
 						"qcom,platform-tp-reset-gpio",
 						0);
 
+=======
+>>>>>>> origin/android16-base
 	panel->reset_config.disp_en_gpio = utils->get_named_gpio(utils->data,
 						"qcom,5v-boost-gpio",
 						0);
@@ -2854,6 +3011,7 @@ error:
 	return rc;
 }
 
+<<<<<<< HEAD
 static int dsi_panel_parse_fod_dim_lut(struct dsi_panel *panel,
 		struct dsi_parser_utils *utils)
 {
@@ -2916,6 +3074,8 @@ count_fail:
 	return rc;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 {
 	int rc = 0;
@@ -2989,7 +3149,10 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 		panel->bl_config.brightness_max_level = val;
 	}
 
+<<<<<<< HEAD
 	/*
+=======
+>>>>>>> origin/android16-base
 	rc = utils->read_u32(utils->data, "qcom,mdss-dsi-bl-ctrl-dcs-subtype",
 		&val);
 	if (rc) {
@@ -2999,6 +3162,7 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 	} else {
 		panel->bl_config.bl_dcs_subtype = val;
 	}
+<<<<<<< HEAD
 	*/
 
 	rc = utils->read_u32(utils->data, "qcom,mdss-brightness-init-level",
@@ -3010,14 +3174,19 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 	} else {
 		panel->bl_config.brightness_init_level = val;
 	}
+=======
+>>>>>>> origin/android16-base
 
 	panel->bl_config.bl_inverted_dbv = utils->read_bool(utils->data,
 		"qcom,mdss-dsi-bl-inverted-dbv");
 
+<<<<<<< HEAD
 	rc = dsi_panel_parse_fod_dim_lut(panel, utils);
 	if (rc)
 		pr_err("[%s failed to parse fod dim lut\n", panel->name);
 
+=======
+>>>>>>> origin/android16-base
 	if (panel->bl_config.type == DSI_BACKLIGHT_PWM) {
 		rc = dsi_panel_parse_bl_pwm_config(panel);
 		if (rc) {
@@ -3775,12 +3944,15 @@ int dsi_panel_parse_esd_reg_read_configs(struct dsi_panel *panel)
 	if (!esd_config)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	dsi_panel_parse_cmd_sets_sub(&esd_config->offset_cmd,
 				DSI_CMD_SET_PANEL_STATUS_OFFSET, utils);
 	if (!esd_config->offset_cmd.count) {
 		pr_err("no panel status offset command\n");
 	}
 
+=======
+>>>>>>> origin/android16-base
 	dsi_panel_parse_cmd_sets_sub(&esd_config->status_cmd,
 				DSI_CMD_SET_PANEL_STATUS, utils);
 	if (!esd_config->status_cmd.count) {
@@ -3893,12 +4065,15 @@ static int dsi_panel_parse_esd_config(struct dsi_panel *panel)
 
 	esd_config = &panel->esd_config;
 	esd_config->status_mode = ESD_MODE_MAX;
+<<<<<<< HEAD
 
 	/* esd check using gpio irq method has high priority */
 	rc = dsi_panel_parse_esd_gpio_config(panel);
 	if (rc)
 		DSI_DEBUG("Failed to get mi,esd-err-irq-gpio config\n");
 
+=======
+>>>>>>> origin/android16-base
 	esd_config->esd_enabled = utils->read_bool(utils->data,
 		"qcom,esd-check-enabled");
 
@@ -4081,10 +4256,13 @@ struct dsi_panel *dsi_panel_get(struct device *parent,
 	if (rc)
 		DSI_DEBUG("failed to parse esd config, rc=%d\n", rc);
 
+<<<<<<< HEAD
 	rc = dsi_panel_parse_mi_config(panel, of_node);
 	if (rc)
 		DSI_DEBUG("failed to parse mi config, rc=%d\n", rc);
 
+=======
+>>>>>>> origin/android16-base
 	panel->power_mode = SDE_MODE_DPMS_OFF;
 	drm_panel_init(&panel->drm_panel);
 	panel->drm_panel.dev = &panel->mipi_device.dev;
@@ -4109,9 +4287,12 @@ void dsi_panel_put(struct dsi_panel *panel)
 	/* free resources allocated for ESD check */
 	dsi_panel_esd_config_deinit(&panel->esd_config);
 
+<<<<<<< HEAD
 	wakeup_source_remove(panel->mi_cfg.aod_wakelock);
 	wakeup_source_destroy(panel->mi_cfg.aod_wakelock);
 
+=======
+>>>>>>> origin/android16-base
 	kfree(panel);
 }
 
@@ -4621,6 +4802,13 @@ int dsi_panel_pre_prepare(struct dsi_panel *panel)
 
 	mutex_lock(&panel->panel_lock);
 
+<<<<<<< HEAD
+=======
+	/* If LP11_INIT is set, panel will be powered up during prepare() */
+	if (panel->lp11_init)
+		goto error;
+
+>>>>>>> origin/android16-base
 	rc = dsi_panel_power_on(panel);
 	if (rc) {
 		DSI_ERR("[%s] panel power on failed, rc=%d\n", panel->name, rc);
@@ -4637,8 +4825,11 @@ int dsi_panel_update_pps(struct dsi_panel *panel)
 	int rc = 0;
 	struct dsi_panel_cmd_set *set = NULL;
 	struct dsi_display_mode_priv_info *priv_info = NULL;
+<<<<<<< HEAD
 	struct dsi_parser_utils *utils = &panel->utils;
 	int panel_cnt = 0;
+=======
+>>>>>>> origin/android16-base
 
 	if (!panel || !panel->cur_mode) {
 		DSI_ERR("invalid params\n");
@@ -4650,10 +4841,13 @@ int dsi_panel_update_pps(struct dsi_panel *panel)
 	priv_info = panel->cur_mode->priv_info;
 
 	set = &priv_info->cmd_sets[DSI_CMD_SET_PPS];
+<<<<<<< HEAD
 	rc = utils->read_u32(utils->data, "qcom,mdss-dsi-panel-count",
 							&panel_cnt);
 	if (!rc && panel_cnt == 2)
 		priv_info->dsc.pic_width >>= 1;
+=======
+>>>>>>> origin/android16-base
 
 	dsi_dsc_create_pps_buf_cmd(&priv_info->dsc, panel->dsc_pps_cmd, 0);
 	rc = dsi_panel_create_cmd_packets(panel->dsc_pps_cmd,
@@ -4678,10 +4872,13 @@ error:
 int dsi_panel_set_lp1(struct dsi_panel *panel)
 {
 	int rc = 0;
+<<<<<<< HEAD
 	struct dsi_panel_mi_cfg *mi_cfg;
 
 	mi_cfg = &panel->mi_cfg;
 	mi_cfg->hbm_enabled = false;
+=======
+>>>>>>> origin/android16-base
 
 	if (!panel) {
 		DSI_ERR("invalid params\n");
@@ -4708,6 +4905,7 @@ int dsi_panel_set_lp1(struct dsi_panel *panel)
 		DSI_ERR("[%s] failed to send DSI_CMD_SET_LP1 cmd, rc=%d\n",
 		       panel->name, rc);
 exit:
+<<<<<<< HEAD
 	/* TB371FC: the nt36532 panel reads an l3a/j11 panel_id, and the
 	 * l3a/j11 bl_enable=false special case here swallowed every
 	 * brightness set (wake stayed black). bl_ctrl_external (ktz8866a/b
@@ -4715,6 +4913,8 @@ exit:
 	 * keep it enabled unconditionally. */
 	panel->mi_cfg.bl_enable = true;
 	panel->mi_cfg.bl_wait_frame = false;
+=======
+>>>>>>> origin/android16-base
 	mutex_unlock(&panel->panel_lock);
 	return rc;
 }
@@ -4722,10 +4922,14 @@ exit:
 int dsi_panel_set_lp2(struct dsi_panel *panel)
 {
 	int rc = 0;
+<<<<<<< HEAD
 	struct dsi_panel_mi_cfg *mi_cfg;
 
 	mi_cfg = &panel->mi_cfg;
 	mi_cfg->hbm_enabled = false;
+=======
+
+>>>>>>> origin/android16-base
 	if (!panel) {
 		DSI_ERR("invalid params\n");
 		return -EINVAL;
@@ -4747,7 +4951,10 @@ exit:
 int dsi_panel_set_nolp(struct dsi_panel *panel)
 {
 	int rc = 0;
+<<<<<<< HEAD
 	struct dsi_panel_mi_cfg *mi_cfg;
+=======
+>>>>>>> origin/android16-base
 
 	if (!panel) {
 		DSI_ERR("invalid params\n");
@@ -4755,6 +4962,7 @@ int dsi_panel_set_nolp(struct dsi_panel *panel)
 	}
 
 	mutex_lock(&panel->panel_lock);
+<<<<<<< HEAD
 
 	mi_cfg = &panel->mi_cfg;
 
@@ -4768,6 +4976,11 @@ int dsi_panel_set_nolp(struct dsi_panel *panel)
 		goto exit_skip;
 	}
 
+=======
+	if (!panel->panel_initialized)
+		goto exit;
+
+>>>>>>> origin/android16-base
 	/*
 	 * Consider about LP1->LP2->NOLP.
 	 */
@@ -4780,6 +4993,7 @@ int dsi_panel_set_nolp(struct dsi_panel *panel)
 	if (rc)
 		DSI_ERR("[%s] failed to send DSI_CMD_SET_NOLP cmd, rc=%d\n",
 		       panel->name, rc);
+<<<<<<< HEAD
 
 	mi_cfg->dimming_state = STATE_DIM_RESTORE;
 
@@ -4805,6 +5019,8 @@ exit_skip:
 	mi_cfg->layer_fod_unlock_success = false;
 	mi_cfg->sysfs_fod_unlock_success = false;
 	mi_cfg->fod_to_nolp = false;
+=======
+>>>>>>> origin/android16-base
 exit:
 	mutex_unlock(&panel->panel_lock);
 	return rc;
@@ -4822,7 +5038,11 @@ int dsi_panel_prepare(struct dsi_panel *panel)
 	mutex_lock(&panel->panel_lock);
 
 	if (panel->lp11_init) {
+<<<<<<< HEAD
 		rc = dsi_panel_reset(panel);
+=======
+		rc = dsi_panel_power_on(panel);
+>>>>>>> origin/android16-base
 		if (rc) {
 			DSI_ERR("[%s] panel power on failed, rc=%d\n",
 			       panel->name, rc);
@@ -5092,6 +5312,7 @@ int dsi_panel_switch(struct dsi_panel *panel)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	if (panel->mi_cfg.panel_id == 0x4C334100420200 && panel->mi_cfg.in_aod) {
 		DSI_INFO("In AOD, skip set fps \n");
 		return rc;
@@ -5104,6 +5325,11 @@ int dsi_panel_switch(struct dsi_panel *panel)
 	} else {
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_TIMING_SWITCH);
 	}
+=======
+	mutex_lock(&panel->panel_lock);
+
+	rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_TIMING_SWITCH);
+>>>>>>> origin/android16-base
 	if (rc)
 		DSI_ERR("[%s] failed to send DSI_CMD_SET_TIMING_SWITCH cmds, rc=%d\n",
 		       panel->name, rc);
@@ -5132,6 +5358,7 @@ int dsi_panel_post_switch(struct dsi_panel *panel)
 	return rc;
 }
 
+<<<<<<< HEAD
 int dsi_panel_dc_switch(struct dsi_panel *panel)
 {
 	int rc = 0;
@@ -5167,6 +5394,11 @@ int dsi_panel_enable(struct dsi_panel *panel)
 	struct dsi_panel_mi_cfg *mi_cfg;
 	struct dsi_display *display = NULL;
 	struct mipi_dsi_host *host = NULL;
+=======
+int dsi_panel_enable(struct dsi_panel *panel)
+{
+	int rc = 0;
+>>>>>>> origin/android16-base
 
 	if (!panel) {
 		DSI_ERR("Invalid params\n");
@@ -5175,12 +5407,16 @@ int dsi_panel_enable(struct dsi_panel *panel)
 
 	mutex_lock(&panel->panel_lock);
 
+<<<<<<< HEAD
 	mi_cfg = &panel->mi_cfg;
 
+=======
+>>>>>>> origin/android16-base
 	rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_ON);
 	if (rc)
 		DSI_ERR("[%s] failed to send DSI_CMD_SET_ON cmds, rc=%d\n",
 		       panel->name, rc);
+<<<<<<< HEAD
 	else {
 		panel->panel_initialized = true;
 	}
@@ -5227,6 +5463,10 @@ int dsi_panel_enable(struct dsi_panel *panel)
 	mi_cfg->into_aod_pending = false;
 	mi_cfg->cabc_current_status = 0;
 
+=======
+	else
+		panel->panel_initialized = true;
+>>>>>>> origin/android16-base
 	mutex_unlock(&panel->panel_lock);
 	return rc;
 }
@@ -5249,6 +5489,7 @@ int dsi_panel_post_enable(struct dsi_panel *panel)
 		goto error;
 	}
 error:
+<<<<<<< HEAD
 	if (panel->host_config.phy_type == DSI_PHY_TYPE_CPHY || panel->mi_cfg.panel_id == 0x4C38314100420400) {
 		rc = dsi_panel_match_fps_pen_setting(panel, panel->cur_mode);
 		if (rc) {
@@ -5315,6 +5556,9 @@ error:
 		}
 	}
 
+=======
+	mutex_unlock(&panel->panel_lock);
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -5344,6 +5588,7 @@ error:
 int dsi_panel_disable(struct dsi_panel *panel)
 {
 	int rc = 0;
+<<<<<<< HEAD
 	struct dsi_panel_mi_cfg *mi_cfg = NULL;
 	struct dsi_display *display = NULL;
 	struct mipi_dsi_host *host = NULL;
@@ -5351,6 +5596,8 @@ int dsi_panel_disable(struct dsi_panel *panel)
 	struct dsi_cmd_desc *cmds = NULL;
 	u32 count;
 	u8 *tx_buf = NULL;
+=======
+>>>>>>> origin/android16-base
 
 	if (!panel) {
 		DSI_ERR("invalid params\n");
@@ -5359,8 +5606,11 @@ int dsi_panel_disable(struct dsi_panel *panel)
 
 	mutex_lock(&panel->panel_lock);
 
+<<<<<<< HEAD
 	mi_cfg = &panel->mi_cfg;
 
+=======
+>>>>>>> origin/android16-base
 	/* Avoid sending panel off commands when ESD recovery is underway */
 	if (!atomic_read(&panel->esd_recovery_pending)) {
 		/*
@@ -5372,6 +5622,7 @@ int dsi_panel_disable(struct dsi_panel *panel)
 			panel->power_mode == SDE_MODE_DPMS_LP2))
 			dsi_pwr_panel_regulator_mode_set(&panel->power_info,
 				"ibb", REGULATOR_MODE_STANDBY);
+<<<<<<< HEAD
 
 		priv_info = panel->cur_mode ? panel->cur_mode->priv_info : NULL;
 		if (mi_cfg->fod_hbm_enabled && priv_info) {
@@ -5403,6 +5654,8 @@ int dsi_panel_disable(struct dsi_panel *panel)
 			}
 		}
 
+=======
+>>>>>>> origin/android16-base
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_OFF);
 		if (rc) {
 			/*
@@ -5415,14 +5668,18 @@ int dsi_panel_disable(struct dsi_panel *panel)
 					panel->name, rc);
 			rc = 0;
 		}
+<<<<<<< HEAD
 	} else {
 		mi_cfg->unset_doze_brightness = mi_cfg->doze_brightness_state;
 		DSI_INFO("save doze brightness state [%d] when ESD recovery is underway\n",
 				mi_cfg->unset_doze_brightness);
+=======
+>>>>>>> origin/android16-base
 	}
 	panel->panel_initialized = false;
 	panel->power_mode = SDE_MODE_DPMS_OFF;
 
+<<<<<<< HEAD
 	host = panel->host;
 	if (host && mi_cfg->fod_hbm_enabled) {
 		display = container_of(host, struct dsi_display, host);
@@ -5445,6 +5702,8 @@ int dsi_panel_disable(struct dsi_panel *panel)
 	mi_cfg->bl_enable = true;
 	if (mi_cfg->dc_type)
 		mi_cfg->dc_enable = false;
+=======
+>>>>>>> origin/android16-base
 	mutex_unlock(&panel->panel_lock);
 	return rc;
 }

@@ -118,7 +118,11 @@ struct smsm_entry {
 	DECLARE_BITMAP(irq_enabled, 32);
 	DECLARE_BITMAP(irq_rising, 32);
 	DECLARE_BITMAP(irq_falling, 32);
+<<<<<<< HEAD
 	u32 last_value;
+=======
+	unsigned long last_value;
+>>>>>>> origin/android16-base
 
 	u32 *remote_state;
 	u32 *subscription;
@@ -213,8 +217,12 @@ static irqreturn_t smsm_intr(int irq, void *data)
 	u32 val;
 
 	val = readl(entry->remote_state);
+<<<<<<< HEAD
 	changed = val ^ entry->last_value;
 	entry->last_value = val;
+=======
+	changed = val ^ xchg(&entry->last_value, val);
+>>>>>>> origin/android16-base
 
 	for_each_set_bit(i, entry->irq_enabled, 32) {
 		if (!(changed & BIT(i)))
@@ -275,6 +283,15 @@ static void smsm_unmask_irq(struct irq_data *irqd)
 	struct qcom_smsm *smsm = entry->smsm;
 	u32 val;
 
+<<<<<<< HEAD
+=======
+	/* Make sure our last cached state is up-to-date */
+	if (readl(entry->remote_state) & BIT(irq))
+		set_bit(irq, &entry->last_value);
+	else
+		clear_bit(irq, &entry->last_value);
+
+>>>>>>> origin/android16-base
 	set_bit(irq, entry->irq_enabled);
 
 	if (entry->subscription) {
@@ -366,6 +383,10 @@ static int smsm_parse_ipc(struct qcom_smsm *smsm, unsigned host_id)
 		return 0;
 
 	host->ipc_regmap = syscon_node_to_regmap(syscon);
+<<<<<<< HEAD
+=======
+	of_node_put(syscon);
+>>>>>>> origin/android16-base
 	if (IS_ERR(host->ipc_regmap))
 		return PTR_ERR(host->ipc_regmap);
 
@@ -516,7 +537,11 @@ static int qcom_smsm_probe(struct platform_device *pdev)
 	for (id = 0; id < smsm->num_hosts; id++) {
 		ret = smsm_parse_ipc(smsm, id);
 		if (ret < 0)
+<<<<<<< HEAD
 			return ret;
+=======
+			goto out_put;
+>>>>>>> origin/android16-base
 	}
 
 	/* Acquire the main SMSM state vector */
@@ -524,13 +549,22 @@ static int qcom_smsm_probe(struct platform_device *pdev)
 			      smsm->num_entries * sizeof(u32));
 	if (ret < 0 && ret != -EEXIST) {
 		dev_err(&pdev->dev, "unable to allocate shared state entry\n");
+<<<<<<< HEAD
 		return ret;
+=======
+		goto out_put;
+>>>>>>> origin/android16-base
 	}
 
 	states = qcom_smem_get(QCOM_SMEM_HOST_ANY, SMEM_SMSM_SHARED_STATE, NULL);
 	if (IS_ERR(states)) {
 		dev_err(&pdev->dev, "Unable to acquire shared state entry\n");
+<<<<<<< HEAD
 		return PTR_ERR(states);
+=======
+		ret = PTR_ERR(states);
+		goto out_put;
+>>>>>>> origin/android16-base
 	}
 
 	/* Acquire the list of interrupt mask vectors */
@@ -538,13 +572,22 @@ static int qcom_smsm_probe(struct platform_device *pdev)
 	ret = qcom_smem_alloc(QCOM_SMEM_HOST_ANY, SMEM_SMSM_CPU_INTR_MASK, size);
 	if (ret < 0 && ret != -EEXIST) {
 		dev_err(&pdev->dev, "unable to allocate smsm interrupt mask\n");
+<<<<<<< HEAD
 		return ret;
+=======
+		goto out_put;
+>>>>>>> origin/android16-base
 	}
 
 	intr_mask = qcom_smem_get(QCOM_SMEM_HOST_ANY, SMEM_SMSM_CPU_INTR_MASK, NULL);
 	if (IS_ERR(intr_mask)) {
 		dev_err(&pdev->dev, "unable to acquire shared memory interrupt mask\n");
+<<<<<<< HEAD
 		return PTR_ERR(intr_mask);
+=======
+		ret = PTR_ERR(intr_mask);
+		goto out_put;
+>>>>>>> origin/android16-base
 	}
 
 	/* Setup the reference to the local state bits */
@@ -555,7 +598,12 @@ static int qcom_smsm_probe(struct platform_device *pdev)
 	smsm->state = qcom_smem_state_register(local_node, &smsm_state_ops, smsm);
 	if (IS_ERR(smsm->state)) {
 		dev_err(smsm->dev, "failed to register qcom_smem_state\n");
+<<<<<<< HEAD
 		return PTR_ERR(smsm->state);
+=======
+		ret = PTR_ERR(smsm->state);
+		goto out_put;
+>>>>>>> origin/android16-base
 	}
 
 	/* Register handlers for remote processor entries of interest. */
@@ -585,16 +633,29 @@ static int qcom_smsm_probe(struct platform_device *pdev)
 	}
 
 	platform_set_drvdata(pdev, smsm);
+<<<<<<< HEAD
+=======
+	of_node_put(local_node);
+>>>>>>> origin/android16-base
 
 	return 0;
 
 unwind_interfaces:
+<<<<<<< HEAD
+=======
+	of_node_put(node);
+>>>>>>> origin/android16-base
 	for (id = 0; id < smsm->num_entries; id++)
 		if (smsm->entries[id].domain)
 			irq_domain_remove(smsm->entries[id].domain);
 
 	qcom_smem_state_unregister(smsm->state);
+<<<<<<< HEAD
 
+=======
+out_put:
+	of_node_put(local_node);
+>>>>>>> origin/android16-base
 	return ret;
 }
 

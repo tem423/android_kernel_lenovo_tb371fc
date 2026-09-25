@@ -707,6 +707,11 @@ try_again:
 	if (host->ops->init_card)
 		host->ops->init_card(host, card);
 
+<<<<<<< HEAD
+=======
+	card->ocr = ocr_card;
+
+>>>>>>> origin/android16-base
 	/*
 	 * If the host and card support UHS-I mode request the card
 	 * to switch to 1.8V signaling level.  No 1.8v signalling if
@@ -813,7 +818,11 @@ try_again:
 
 		card = oldcard;
 	}
+<<<<<<< HEAD
 	card->ocr = ocr_card;
+=======
+
+>>>>>>> origin/android16-base
 	mmc_fixup_device(card, sdio_fixup_methods);
 
 	if (card->type == MMC_TYPE_SD_COMBO) {
@@ -1042,7 +1051,15 @@ static int mmc_sdio_resume(struct mmc_host *host)
 	mmc_claim_host(host);
 	mmc_log_string(host, "Enter\n");
 
+<<<<<<< HEAD
 	/* Restore power if needed */
+=======
+	/*
+	 * Restore power and reinitialize the card when needed. Note that a
+	 * removable card is checked from a detect work later on in the resume
+	 * process.
+	 */
+>>>>>>> origin/android16-base
 	if (!mmc_card_keep_power(host)) {
 		mmc_power_up(host, host->card->ocr);
 		/*
@@ -1056,6 +1073,7 @@ static int mmc_sdio_resume(struct mmc_host *host)
 			pm_runtime_set_active(&host->card->dev);
 			pm_runtime_enable(&host->card->dev);
 		}
+<<<<<<< HEAD
 	}
 
 	/* No need to reinitialize powered-resumed nonremovable cards */
@@ -1063,6 +1081,16 @@ static int mmc_sdio_resume(struct mmc_host *host)
 		err = mmc_sdio_reinit_card(host, mmc_card_keep_power(host));
 	} else if (mmc_card_keep_power(host) && mmc_card_wake_sdio_irq(host)) {
 		/* We may have switched to 1-bit mode during suspend */
+=======
+		err = mmc_sdio_reinit_card(host, 0);
+	} else if (mmc_card_wake_sdio_irq(host)) {
+		/*
+		 * We may have switched to 1-bit mode during suspend,
+		 * need to hold retuning, because tuning only supprt
+		 * 4-bit mode or 8 bit mode.
+		 */
+		mmc_retune_hold_now(host);
+>>>>>>> origin/android16-base
 		err = sdio_enable_4bit_bus(host->card);
 		if (err > 0) {
 			if (host->caps & MMC_CAP_8_BIT_DATA)
@@ -1071,6 +1099,10 @@ static int mmc_sdio_resume(struct mmc_host *host)
 				mmc_set_bus_width(host, MMC_BUS_WIDTH_4);
 			err = 0;
 		}
+<<<<<<< HEAD
+=======
+		mmc_retune_release(host);
+>>>>>>> origin/android16-base
 	}
 
 	if (err)

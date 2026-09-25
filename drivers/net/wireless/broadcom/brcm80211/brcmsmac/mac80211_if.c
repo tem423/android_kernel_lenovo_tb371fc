@@ -1091,6 +1091,10 @@ static int ieee_hw_init(struct ieee80211_hw *hw)
 	ieee80211_hw_set(hw, AMPDU_AGGREGATION);
 	ieee80211_hw_set(hw, SIGNAL_DBM);
 	ieee80211_hw_set(hw, REPORTS_TX_ACK_STATUS);
+<<<<<<< HEAD
+=======
+	ieee80211_hw_set(hw, MFP_CAPABLE);
+>>>>>>> origin/android16-base
 
 	hw->extra_tx_headroom = brcms_c_get_header_len();
 	hw->queues = N_TX_QUEUES;
@@ -1223,6 +1227,10 @@ static int brcms_bcma_probe(struct bcma_device *pdev)
 {
 	struct brcms_info *wl;
 	struct ieee80211_hw *hw;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 
 	dev_info(&pdev->dev, "mfg %x core %x rev %d class %d irq %d\n",
 		 pdev->id.manuf, pdev->id.id, pdev->id.rev, pdev->id.class,
@@ -1247,11 +1255,23 @@ static int brcms_bcma_probe(struct bcma_device *pdev)
 	wl = brcms_attach(pdev);
 	if (!wl) {
 		pr_err("%s: brcms_attach failed!\n", __func__);
+<<<<<<< HEAD
 		return -ENODEV;
+=======
+		ret = -ENODEV;
+		goto err_free_ieee80211;
+>>>>>>> origin/android16-base
 	}
 	brcms_led_register(wl);
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+err_free_ieee80211:
+	ieee80211_free_hw(hw);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int brcms_suspend(struct bcma_device *pdev)

@@ -112,9 +112,15 @@ bool trace_kprobe_on_func_entry(struct trace_event_call *call)
 {
 	struct trace_kprobe *tk = (struct trace_kprobe *)call->data;
 
+<<<<<<< HEAD
 	return kprobe_on_func_entry(tk->rp.kp.addr,
 			tk->rp.kp.addr ? NULL : tk->rp.kp.symbol_name,
 			tk->rp.kp.addr ? 0 : tk->rp.kp.offset);
+=======
+	return (kprobe_on_func_entry(tk->rp.kp.addr,
+			tk->rp.kp.addr ? NULL : tk->rp.kp.symbol_name,
+			tk->rp.kp.addr ? 0 : tk->rp.kp.offset) == 0);
+>>>>>>> origin/android16-base
 }
 
 bool trace_kprobe_error_injectable(struct trace_event_call *call)
@@ -517,7 +523,11 @@ disable_trace_kprobe(struct trace_kprobe *tk, struct trace_event_file *file)
 	return ret;
 }
 
+<<<<<<< HEAD
 #if defined(CONFIG_KPROBES_ON_FTRACE) && \
+=======
+#if defined(CONFIG_DYNAMIC_FTRACE) && \
+>>>>>>> origin/android16-base
 	!defined(CONFIG_KPROBE_EVENTS_ON_NOTRACE)
 static bool __within_notrace_func(unsigned long addr)
 {
@@ -836,8 +846,14 @@ static int create_trace_kprobe(int argc, char **argv)
 			pr_info("Failed to parse either an address or a symbol.\n");
 			return ret;
 		}
+<<<<<<< HEAD
 		if (offset && is_return &&
 		    !kprobe_on_func_entry(NULL, symbol, offset)) {
+=======
+		/* Defer the ENOENT case until register kprobe */
+		if (offset && is_return &&
+		    kprobe_on_func_entry(NULL, symbol, offset) == -EINVAL) {
+>>>>>>> origin/android16-base
 			pr_info("Given offset is not valid for return probe.\n");
 			return -EINVAL;
 		}

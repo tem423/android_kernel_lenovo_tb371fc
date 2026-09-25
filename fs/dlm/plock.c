@@ -22,10 +22,21 @@ static struct list_head recv_list;
 static wait_queue_head_t send_wq;
 static wait_queue_head_t recv_wq;
 
+<<<<<<< HEAD
+=======
+struct plock_async_data {
+	void *fl;
+	void *file;
+	struct file_lock flc;
+	int (*callback)(struct file_lock *fl, int result);
+};
+
+>>>>>>> origin/android16-base
 struct plock_op {
 	struct list_head list;
 	int done;
 	struct dlm_plock_info info;
+<<<<<<< HEAD
 };
 
 struct plock_xop {
@@ -37,6 +48,12 @@ struct plock_xop {
 };
 
 
+=======
+	/* if set indicates async handling */
+	struct plock_async_data *data;
+};
+
+>>>>>>> origin/android16-base
 static inline void set_version(struct dlm_plock_info *info)
 {
 	info->version[0] = DLM_PLOCK_VERSION_MAJOR;
@@ -61,6 +78,15 @@ static int check_version(struct dlm_plock_info *info)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static void dlm_release_plock_op(struct plock_op *op)
+{
+	kfree(op->data);
+	kfree(op);
+}
+
+>>>>>>> origin/android16-base
 static void send_op(struct plock_op *op)
 {
 	set_version(&op->info);
@@ -77,8 +103,12 @@ static void send_op(struct plock_op *op)
    abandoned waiter.  So, we have to insert the unlock-close when the
    lock call is interrupted. */
 
+<<<<<<< HEAD
 static void do_unlock_close(struct dlm_ls *ls, u64 number,
 			    struct file *file, struct file_lock *fl)
+=======
+static void do_unlock_close(const struct dlm_plock_info *info)
+>>>>>>> origin/android16-base
 {
 	struct plock_op *op;
 
@@ -87,6 +117,7 @@ static void do_unlock_close(struct dlm_ls *ls, u64 number,
 		return;
 
 	op->info.optype		= DLM_PLOCK_OP_UNLOCK;
+<<<<<<< HEAD
 	op->info.pid		= fl->fl_pid;
 	op->info.fsid		= ls->ls_global_id;
 	op->info.number		= number;
@@ -96,6 +127,14 @@ static void do_unlock_close(struct dlm_ls *ls, u64 number,
 		op->info.owner	= (__u64) fl->fl_pid;
 	else
 		op->info.owner	= (__u64)(long) fl->fl_owner;
+=======
+	op->info.pid		= info->pid;
+	op->info.fsid		= info->fsid;
+	op->info.number		= info->number;
+	op->info.start		= 0;
+	op->info.end		= OFFSET_MAX;
+	op->info.owner		= info->owner;
+>>>>>>> origin/android16-base
 
 	op->info.flags |= DLM_PLOCK_FL_CLOSE;
 	send_op(op);
@@ -104,22 +143,36 @@ static void do_unlock_close(struct dlm_ls *ls, u64 number,
 int dlm_posix_lock(dlm_lockspace_t *lockspace, u64 number, struct file *file,
 		   int cmd, struct file_lock *fl)
 {
+<<<<<<< HEAD
 	struct dlm_ls *ls;
 	struct plock_op *op;
 	struct plock_xop *xop;
+=======
+	struct plock_async_data *op_data;
+	struct dlm_ls *ls;
+	struct plock_op *op;
+>>>>>>> origin/android16-base
 	int rv;
 
 	ls = dlm_find_lockspace_local(lockspace);
 	if (!ls)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	xop = kzalloc(sizeof(*xop), GFP_NOFS);
 	if (!xop) {
+=======
+	op = kzalloc(sizeof(*op), GFP_NOFS);
+	if (!op) {
+>>>>>>> origin/android16-base
 		rv = -ENOMEM;
 		goto out;
 	}
 
+<<<<<<< HEAD
 	op = &xop->xop;
+=======
+>>>>>>> origin/android16-base
 	op->info.optype		= DLM_PLOCK_OP_LOCK;
 	op->info.pid		= fl->fl_pid;
 	op->info.ex		= (fl->fl_type == F_WRLCK);
@@ -128,6 +181,7 @@ int dlm_posix_lock(dlm_lockspace_t *lockspace, u64 number, struct file *file,
 	op->info.number		= number;
 	op->info.start		= fl->fl_start;
 	op->info.end		= fl->fl_end;
+<<<<<<< HEAD
 	if (fl->fl_lmops && fl->fl_lmops->lm_grant) {
 		/* fl_owner is lockd which doesn't distinguish
 		   processes on the nfs client */
@@ -140,10 +194,38 @@ int dlm_posix_lock(dlm_lockspace_t *lockspace, u64 number, struct file *file,
 	} else {
 		op->info.owner	= (__u64)(long) fl->fl_owner;
 		xop->callback	= NULL;
+=======
+	/* async handling */
+	if (fl->fl_lmops && fl->fl_lmops->lm_grant) {
+		op_data = kzalloc(sizeof(*op_data), GFP_NOFS);
+		if (!op_data) {
+			dlm_release_plock_op(op);
+			rv = -ENOMEM;
+			goto out;
+		}
+
+		/* fl_owner is lockd which doesn't distinguish
+		   processes on the nfs client */
+		op->info.owner	= (__u64) fl->fl_pid;
+		op_data->callback = fl->fl_lmops->lm_grant;
+		locks_init_lock(&op_data->flc);
+		locks_copy_lock(&op_data->flc, fl);
+		op_data->fl		= fl;
+		op_data->file	= file;
+
+		op->data = op_data;
+
+		send_op(op);
+		rv = FILE_LOCK_DEFERRED;
+		goto out;
+	} else {
+		op->info.owner	= (__u64)(long) fl->fl_owner;
+>>>>>>> origin/android16-base
 	}
 
 	send_op(op);
 
+<<<<<<< HEAD
 	if (xop->callback == NULL) {
 		rv = wait_event_interruptible(recv_wq, (op->done != 0));
 		if (rv == -ERESTARTSYS) {
@@ -158,6 +240,18 @@ int dlm_posix_lock(dlm_lockspace_t *lockspace, u64 number, struct file *file,
 		}
 	} else {
 		rv = FILE_LOCK_DEFERRED;
+=======
+	rv = wait_event_killable(recv_wq, (op->done != 0));
+	if (rv == -ERESTARTSYS) {
+		spin_lock(&ops_lock);
+		list_del(&op->list);
+		spin_unlock(&ops_lock);
+		log_debug(ls, "%s: wait interrupted %x %llx pid %d",
+			  __func__, ls->ls_global_id,
+			  (unsigned long long)number, op->info.pid);
+		dlm_release_plock_op(op);
+		do_unlock_close(&op->info);
+>>>>>>> origin/android16-base
 		goto out;
 	}
 
@@ -177,7 +271,11 @@ int dlm_posix_lock(dlm_lockspace_t *lockspace, u64 number, struct file *file,
 				  (unsigned long long)number);
 	}
 
+<<<<<<< HEAD
 	kfree(xop);
+=======
+	dlm_release_plock_op(op);
+>>>>>>> origin/android16-base
 out:
 	dlm_put_lockspace(ls);
 	return rv;
@@ -187,11 +285,18 @@ EXPORT_SYMBOL_GPL(dlm_posix_lock);
 /* Returns failure iff a successful lock operation should be canceled */
 static int dlm_plock_callback(struct plock_op *op)
 {
+<<<<<<< HEAD
+=======
+	struct plock_async_data *op_data = op->data;
+>>>>>>> origin/android16-base
 	struct file *file;
 	struct file_lock *fl;
 	struct file_lock *flc;
 	int (*notify)(struct file_lock *fl, int result) = NULL;
+<<<<<<< HEAD
 	struct plock_xop *xop = (struct plock_xop *)op;
+=======
+>>>>>>> origin/android16-base
 	int rv = 0;
 
 	spin_lock(&ops_lock);
@@ -203,10 +308,17 @@ static int dlm_plock_callback(struct plock_op *op)
 	spin_unlock(&ops_lock);
 
 	/* check if the following 2 are still valid or make a copy */
+<<<<<<< HEAD
 	file = xop->file;
 	flc = &xop->flc;
 	fl = xop->fl;
 	notify = xop->callback;
+=======
+	file = op_data->file;
+	flc = &op_data->flc;
+	fl = op_data->fl;
+	notify = op_data->callback;
+>>>>>>> origin/android16-base
 
 	if (op->info.rv) {
 		notify(fl, op->info.rv);
@@ -237,7 +349,11 @@ static int dlm_plock_callback(struct plock_op *op)
 	}
 
 out:
+<<<<<<< HEAD
 	kfree(xop);
+=======
+	dlm_release_plock_op(op);
+>>>>>>> origin/android16-base
 	return rv;
 }
 
@@ -307,7 +423,11 @@ int dlm_posix_unlock(dlm_lockspace_t *lockspace, u64 number, struct file *file,
 		rv = 0;
 
 out_free:
+<<<<<<< HEAD
 	kfree(op);
+=======
+	dlm_release_plock_op(op);
+>>>>>>> origin/android16-base
 out:
 	dlm_put_lockspace(ls);
 	fl->fl_flags = fl_flags;
@@ -367,13 +487,23 @@ int dlm_posix_get(dlm_lockspace_t *lockspace, u64 number, struct file *file,
 		locks_init_lock(fl);
 		fl->fl_type = (op->info.ex) ? F_WRLCK : F_RDLCK;
 		fl->fl_flags = FL_POSIX;
+<<<<<<< HEAD
 		fl->fl_pid = -op->info.pid;
+=======
+		fl->fl_pid = op->info.pid;
+		if (op->info.nodeid != dlm_our_nodeid())
+			fl->fl_pid = -fl->fl_pid;
+>>>>>>> origin/android16-base
 		fl->fl_start = op->info.start;
 		fl->fl_end = op->info.end;
 		rv = 0;
 	}
 
+<<<<<<< HEAD
 	kfree(op);
+=======
+	dlm_release_plock_op(op);
+>>>>>>> origin/android16-base
 out:
 	dlm_put_lockspace(ls);
 	return rv;
@@ -396,7 +526,11 @@ static ssize_t dev_read(struct file *file, char __user *u, size_t count,
 		if (op->info.flags & DLM_PLOCK_FL_CLOSE)
 			list_del(&op->list);
 		else
+<<<<<<< HEAD
 			list_move(&op->list, &recv_list);
+=======
+			list_move_tail(&op->list, &recv_list);
+>>>>>>> origin/android16-base
 		memcpy(&info, &op->info, sizeof(info));
 	}
 	spin_unlock(&ops_lock);
@@ -409,7 +543,11 @@ static ssize_t dev_read(struct file *file, char __user *u, size_t count,
 	   (the process did not make an unlock call). */
 
 	if (op->info.flags & DLM_PLOCK_FL_CLOSE)
+<<<<<<< HEAD
 		kfree(op);
+=======
+		dlm_release_plock_op(op);
+>>>>>>> origin/android16-base
 
 	if (copy_to_user(u, &info, sizeof(info)))
 		return -EFAULT;
@@ -421,9 +559,15 @@ static ssize_t dev_read(struct file *file, char __user *u, size_t count,
 static ssize_t dev_write(struct file *file, const char __user *u, size_t count,
 			 loff_t *ppos)
 {
+<<<<<<< HEAD
 	struct dlm_plock_info info;
 	struct plock_op *op;
 	int found = 0, do_callback = 0;
+=======
+	struct plock_op *op = NULL, *iter;
+	struct dlm_plock_info info;
+	int do_callback = 0;
+>>>>>>> origin/android16-base
 
 	if (count != sizeof(info))
 		return -EINVAL;
@@ -434,6 +578,7 @@ static ssize_t dev_write(struct file *file, const char __user *u, size_t count,
 	if (check_version(&info))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	spin_lock(&ops_lock);
 	list_for_each_entry(op, &recv_list, list) {
 		if (op->info.fsid == info.fsid &&
@@ -453,13 +598,70 @@ static ssize_t dev_write(struct file *file, const char __user *u, size_t count,
 	spin_unlock(&ops_lock);
 
 	if (found) {
+=======
+	/*
+	 * The results for waiting ops (SETLKW) can be returned in any
+	 * order, so match all fields to find the op.  The results for
+	 * non-waiting ops are returned in the order that they were sent
+	 * to userspace, so match the result with the first non-waiting op.
+	 */
+	spin_lock(&ops_lock);
+	if (info.wait) {
+		list_for_each_entry(iter, &recv_list, list) {
+			if (iter->info.fsid == info.fsid &&
+			    iter->info.number == info.number &&
+			    iter->info.owner == info.owner &&
+			    iter->info.pid == info.pid &&
+			    iter->info.start == info.start &&
+			    iter->info.end == info.end &&
+			    iter->info.ex == info.ex &&
+			    iter->info.wait) {
+				op = iter;
+				break;
+			}
+		}
+	} else {
+		list_for_each_entry(iter, &recv_list, list) {
+			if (!iter->info.wait &&
+			    iter->info.fsid == info.fsid) {
+				op = iter;
+				break;
+			}
+		}
+	}
+
+	if (op) {
+		/* Sanity check that op and info match. */
+		if (info.wait)
+			WARN_ON(op->info.optype != DLM_PLOCK_OP_LOCK);
+		else
+			WARN_ON(op->info.number != info.number ||
+				op->info.owner != info.owner ||
+				op->info.optype != info.optype);
+
+		list_del_init(&op->list);
+		memcpy(&op->info, &info, sizeof(info));
+		if (op->data)
+			do_callback = 1;
+		else
+			op->done = 1;
+	}
+	spin_unlock(&ops_lock);
+
+	if (op) {
+>>>>>>> origin/android16-base
 		if (do_callback)
 			dlm_plock_callback(op);
 		else
 			wake_up(&recv_wq);
 	} else
+<<<<<<< HEAD
 		log_print("dev_write no op %x %llx", info.fsid,
 			  (unsigned long long)info.number);
+=======
+		log_print("%s: no op %x %llx", __func__,
+			  info.fsid, (unsigned long long)info.number);
+>>>>>>> origin/android16-base
 	return count;
 }
 

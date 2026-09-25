@@ -262,6 +262,10 @@ static const char* l4proto_name(u16 proto)
 	case IPPROTO_GRE: return "gre";
 	case IPPROTO_SCTP: return "sctp";
 	case IPPROTO_UDPLITE: return "udplite";
+<<<<<<< HEAD
+=======
+	case IPPROTO_ICMPV6: return "icmpv6";
+>>>>>>> origin/android16-base
 	}
 
 	return "unknown";
@@ -500,6 +504,12 @@ nf_conntrack_hash_sysctl(struct ctl_table *table, int write,
 {
 	int ret;
 
+<<<<<<< HEAD
+=======
+	/* module_param hashsize could have changed value */
+	nf_conntrack_htable_size_user = nf_conntrack_htable_size;
+
+>>>>>>> origin/android16-base
 	ret = proc_dointvec(table, write, buffer, lenp, ppos);
 	if (ret < 0 || !write)
 		return ret;
@@ -590,8 +600,16 @@ static int nf_conntrack_standalone_init_sysctl(struct net *net)
 	if (net->user_ns != &init_user_ns)
 		table[0].procname = NULL;
 
+<<<<<<< HEAD
 	if (!net_eq(&init_net, net))
 		table[2].mode = 0444;
+=======
+	if (!net_eq(&init_net, net)) {
+		table[0].mode = 0444;
+		table[2].mode = 0444;
+		table[5].mode = 0444;
+	}
+>>>>>>> origin/android16-base
 
 	net->ct.sysctl_header = register_net_sysctl(net, "net/netfilter", table);
 	if (!net->ct.sysctl_header)

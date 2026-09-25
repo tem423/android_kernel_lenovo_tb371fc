@@ -10,6 +10,10 @@
  */
 
 #include <linux/kernel.h>
+<<<<<<< HEAD
+=======
+#include <linux/cpu.h>
+>>>>>>> origin/android16-base
 #include <linux/mm.h>
 #include <linux/sched.h>
 #include <linux/delay.h>
@@ -526,7 +530,11 @@ static int __init proc_hardware_init(void)
 module_init(proc_hardware_init);
 #endif
 
+<<<<<<< HEAD
 void check_bugs(void)
+=======
+void __init arch_cpu_finalize_init(void)
+>>>>>>> origin/android16-base
 {
 #if defined(CONFIG_FPU) && !defined(CONFIG_M68KFPU_EMU)
 	if (m68k_fputype == 0) {

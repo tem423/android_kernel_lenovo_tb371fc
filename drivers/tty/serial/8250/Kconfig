@@ -106,7 +106,11 @@ config SERIAL_8250_CONSOLE
 
 config SERIAL_8250_GSC
 	tristate
+<<<<<<< HEAD
 	depends on SERIAL_8250 && GSC
+=======
+	depends on SERIAL_8250 && PARISC
+>>>>>>> origin/android16-base
 	default SERIAL_8250
 
 config SERIAL_8250_DMA
@@ -312,6 +316,12 @@ config SERIAL_8250_RSA
 
 	  If you don't have such card, or if unsure, say N.
 
+<<<<<<< HEAD
+=======
+config SERIAL_8250_DWLIB
+	bool
+
+>>>>>>> origin/android16-base
 config SERIAL_8250_ACORN
 	tristate "Acorn expansion card serial port support"
 	depends on ARCH_ACORN && SERIAL_8250

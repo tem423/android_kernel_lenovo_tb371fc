@@ -420,7 +420,11 @@ struct dvb_frontend *max2165_attach(struct dvb_frontend *fe,
 
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(max2165_attach);
+=======
+EXPORT_SYMBOL_GPL(max2165_attach);
+>>>>>>> origin/android16-base
 
 MODULE_AUTHOR("David T. L. Wong <davidtlwong@gmail.com>");
 MODULE_DESCRIPTION("Maxim MAX2165 silicon tuner driver");

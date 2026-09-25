@@ -1592,7 +1592,11 @@ static void zfcp_fsf_open_wka_port_handler(struct zfcp_fsf_req *req)
 		wka_port->status = ZFCP_FC_WKA_PORT_ONLINE;
 	}
 out:
+<<<<<<< HEAD
 	wake_up(&wka_port->completion_wq);
+=======
+	wake_up(&wka_port->opened);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -1650,7 +1654,11 @@ static void zfcp_fsf_close_wka_port_handler(struct zfcp_fsf_req *req)
 	}
 
 	wka_port->status = ZFCP_FC_WKA_PORT_OFFLINE;
+<<<<<<< HEAD
 	wake_up(&wka_port->completion_wq);
+=======
+	wake_up(&wka_port->closed);
+>>>>>>> origin/android16-base
 }
 
 /**

@@ -131,13 +131,17 @@ efx_ethtool_get_link_ksettings(struct net_device *net_dev,
 {
 	struct efx_nic *efx = netdev_priv(net_dev);
 	struct efx_link_state *link_state = &efx->link_state;
+<<<<<<< HEAD
 	u32 supported;
+=======
+>>>>>>> origin/android16-base
 
 	mutex_lock(&efx->mac_lock);
 	efx->phy_op->get_link_ksettings(efx, cmd);
 	mutex_unlock(&efx->mac_lock);
 
 	/* Both MACs support pause frames (bidirectional and respond-only) */
+<<<<<<< HEAD
 	ethtool_convert_link_mode_to_legacy_u32(&supported,
 						cmd->link_modes.supported);
 
@@ -145,6 +149,10 @@ efx_ethtool_get_link_ksettings(struct net_device *net_dev,
 
 	ethtool_convert_legacy_u32_to_link_mode(cmd->link_modes.supported,
 						supported);
+=======
+	ethtool_link_ksettings_add_link_mode(cmd, supported, Pause);
+	ethtool_link_ksettings_add_link_mode(cmd, supported, Asym_Pause);
+>>>>>>> origin/android16-base
 
 	if (LOOPBACK_INTERNAL(efx)) {
 		cmd->base.speed = link_state->speed;

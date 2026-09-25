@@ -41,7 +41,11 @@ static inline void debug_fence_init(struct i915_sw_fence *fence)
 	debug_object_init(fence, &i915_sw_fence_debug_descr);
 }
 
+<<<<<<< HEAD
 static inline void debug_fence_init_onstack(struct i915_sw_fence *fence)
+=======
+static inline __maybe_unused void debug_fence_init_onstack(struct i915_sw_fence *fence)
+>>>>>>> origin/android16-base
 {
 	debug_object_init_on_stack(fence, &i915_sw_fence_debug_descr);
 }
@@ -67,7 +71,11 @@ static inline void debug_fence_destroy(struct i915_sw_fence *fence)
 	debug_object_destroy(fence, &i915_sw_fence_debug_descr);
 }
 
+<<<<<<< HEAD
 static inline void debug_fence_free(struct i915_sw_fence *fence)
+=======
+static inline __maybe_unused void debug_fence_free(struct i915_sw_fence *fence)
+>>>>>>> origin/android16-base
 {
 	debug_object_free(fence, &i915_sw_fence_debug_descr);
 	smp_wmb(); /* flush the change in state before reallocation */
@@ -84,7 +92,11 @@ static inline void debug_fence_init(struct i915_sw_fence *fence)
 {
 }
 
+<<<<<<< HEAD
 static inline void debug_fence_init_onstack(struct i915_sw_fence *fence)
+=======
+static inline __maybe_unused void debug_fence_init_onstack(struct i915_sw_fence *fence)
+>>>>>>> origin/android16-base
 {
 }
 
@@ -105,7 +117,11 @@ static inline void debug_fence_destroy(struct i915_sw_fence *fence)
 {
 }
 
+<<<<<<< HEAD
 static inline void debug_fence_free(struct i915_sw_fence *fence)
+=======
+static inline __maybe_unused void debug_fence_free(struct i915_sw_fence *fence)
+>>>>>>> origin/android16-base
 {
 }
 

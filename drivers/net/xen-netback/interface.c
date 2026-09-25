@@ -41,7 +41,10 @@
 #include <asm/xen/hypercall.h>
 #include <xen/balloon.h>
 
+<<<<<<< HEAD
 #define XENVIF_QUEUE_LENGTH 32
+=======
+>>>>>>> origin/android16-base
 #define XENVIF_NAPI_WEIGHT  64
 
 /* Number of bytes allowed on the internal guest Rx queue. */
@@ -70,7 +73,11 @@ void xenvif_skb_zerocopy_complete(struct xenvif_queue *queue)
 	wake_up(&queue->dealloc_wq);
 }
 
+<<<<<<< HEAD
 int xenvif_schedulable(struct xenvif *vif)
+=======
+static int xenvif_schedulable(struct xenvif *vif)
+>>>>>>> origin/android16-base
 {
 	return netif_running(vif->dev) &&
 		test_bit(VIF_STATUS_CONNECTED, &vif->status) &&
@@ -162,13 +169,24 @@ irqreturn_t xenvif_interrupt(int irq, void *dev_id)
 {
 	struct xenvif_queue *queue = dev_id;
 	int old;
+<<<<<<< HEAD
+=======
+	bool has_rx, has_tx;
+>>>>>>> origin/android16-base
 
 	old = atomic_fetch_or(NETBK_COMMON_EOI, &queue->eoi_pending);
 	WARN(old, "Interrupt while EOI pending\n");
 
+<<<<<<< HEAD
 	/* Use bitwise or as we need to call both functions. */
 	if ((!xenvif_handle_tx_interrupt(queue) |
 	     !xenvif_handle_rx_interrupt(queue))) {
+=======
+	has_tx = xenvif_handle_tx_interrupt(queue);
+	has_rx = xenvif_handle_rx_interrupt(queue);
+
+	if (!has_rx && !has_tx) {
+>>>>>>> origin/android16-base
 		atomic_andnot(NETBK_COMMON_EOI, &queue->eoi_pending);
 		xen_irq_lateeoi(irq, XEN_EOI_FLAG_SPURIOUS);
 	}
@@ -176,6 +194,7 @@ irqreturn_t xenvif_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
+<<<<<<< HEAD
 int xenvif_queue_stopped(struct xenvif_queue *queue)
 {
 	struct net_device *dev = queue->vif->dev;
@@ -190,6 +209,8 @@ void xenvif_wake_queue(struct xenvif_queue *queue)
 	netif_tx_wake_queue(netdev_get_tx_queue(dev, id));
 }
 
+=======
+>>>>>>> origin/android16-base
 static u16 xenvif_select_queue(struct net_device *dev, struct sk_buff *skb,
 			       struct net_device *sb_dev,
 			       select_queue_fallback_t fallback)
@@ -267,14 +288,24 @@ xenvif_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	if (vif->hash.alg == XEN_NETIF_CTRL_HASH_ALGORITHM_NONE)
 		skb_clear_hash(skb);
 
+<<<<<<< HEAD
 	xenvif_rx_queue_tail(queue, skb);
+=======
+	if (!xenvif_rx_queue_tail(queue, skb))
+		goto drop;
+
+>>>>>>> origin/android16-base
 	xenvif_kick_thread(queue);
 
 	return NETDEV_TX_OK;
 
  drop:
 	vif->dev->stats.tx_dropped++;
+<<<<<<< HEAD
 	dev_kfree_skb(skb);
+=======
+	dev_kfree_skb_any(skb);
+>>>>>>> origin/android16-base
 	return NETDEV_TX_OK;
 }
 
@@ -536,8 +567,11 @@ struct xenvif *xenvif_alloc(struct device *parent, domid_t domid,
 	dev->features = dev->hw_features | NETIF_F_RXCSUM;
 	dev->ethtool_ops = &xenvif_ethtool_ops;
 
+<<<<<<< HEAD
 	dev->tx_queue_len = XENVIF_QUEUE_LENGTH;
 
+=======
+>>>>>>> origin/android16-base
 	dev->min_mtu = ETH_MIN_MTU;
 	dev->max_mtu = ETH_MAX_MTU - VLAN_ETH_HLEN;
 

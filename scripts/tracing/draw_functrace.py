@@ -17,7 +17,11 @@ Usage:
 	$ cat /sys/kernel/debug/tracing/trace_pipe > ~/raw_trace_func
 	Wait some times but not too much, the script is a bit slow.
 	Break the pipe (Ctrl + Z)
+<<<<<<< HEAD
 	$ scripts/draw_functrace.py < raw_trace_func > draw_functrace
+=======
+	$ scripts/tracing/draw_functrace.py < ~/raw_trace_func > draw_functrace
+>>>>>>> origin/android16-base
 	Then you have your drawn trace in draw_functrace
 """
 
@@ -103,10 +107,17 @@ def parseLine(line):
 	line = line.strip()
 	if line.startswith("#"):
 		raise CommentLineException
+<<<<<<< HEAD
 	m = re.match("[^]]+?\\] +([0-9.]+): (\\w+) <-(\\w+)", line)
 	if m is None:
 		raise BrokenLineException
 	return (m.group(1), m.group(2), m.group(3))
+=======
+	m = re.match("[^]]+?\\] +([a-z.]+) +([0-9.]+): (\\w+) <-(\\w+)", line)
+	if m is None:
+		raise BrokenLineException
+	return (m.group(2), m.group(3), m.group(4))
+>>>>>>> origin/android16-base
 
 
 def main():

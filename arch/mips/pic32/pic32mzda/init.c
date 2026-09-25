@@ -36,7 +36,11 @@ static ulong get_fdtaddr(void)
 	if (fw_passed_dtb && !fw_arg2 && !fw_arg3)
 		return (ulong)fw_passed_dtb;
 
+<<<<<<< HEAD
 	if (__dtb_start < __dtb_end)
+=======
+	if (&__dtb_start < &__dtb_end)
+>>>>>>> origin/android16-base
 		ftaddr = (ulong)__dtb_start;
 
 	return ftaddr;
@@ -68,7 +72,11 @@ void __init plat_mem_setup(void)
 		strlcpy(arcs_cmdline, boot_command_line, COMMAND_LINE_SIZE);
 
 #ifdef CONFIG_EARLY_PRINTK
+<<<<<<< HEAD
 	fw_init_early_console(-1);
+=======
+	fw_init_early_console();
+>>>>>>> origin/android16-base
 #endif
 	pic32_config_init();
 }

@@ -9,4 +9,8 @@
 #include <net/caif/caif_layer.h>
 
 struct cflayer *cfserl_create(int instance, bool use_stx);
+<<<<<<< HEAD
+=======
+void cfserl_release(struct cflayer *layer);
+>>>>>>> origin/android16-base
 #endif

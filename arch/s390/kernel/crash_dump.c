@@ -45,7 +45,11 @@ struct save_area {
 	u64 fprs[16];
 	u32 fpc;
 	u32 prefix;
+<<<<<<< HEAD
 	u64 todpreg;
+=======
+	u32 todpreg;
+>>>>>>> origin/android16-base
 	u64 timer;
 	u64 todcmp;
 	u64 vxrs_low[16];

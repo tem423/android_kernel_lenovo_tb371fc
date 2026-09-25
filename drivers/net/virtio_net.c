@@ -383,7 +383,11 @@ static struct sk_buff *page_to_skb(struct virtnet_info *vi,
 				   struct receive_queue *rq,
 				   struct page *page, unsigned int offset,
 				   unsigned int len, unsigned int truesize,
+<<<<<<< HEAD
 				   bool hdr_valid)
+=======
+				   bool hdr_valid, unsigned int metasize)
+>>>>>>> origin/android16-base
 {
 	struct sk_buff *skb;
 	struct virtio_net_hdr_mrg_rxbuf *hdr;
@@ -405,6 +409,10 @@ static struct sk_buff *page_to_skb(struct virtnet_info *vi,
 	else
 		hdr_padded_len = sizeof(struct padded_vnet_hdr);
 
+<<<<<<< HEAD
+=======
+	/* hdr_valid means no XDP, so we can copy the vnet header */
+>>>>>>> origin/android16-base
 	if (hdr_valid)
 		memcpy(hdr, p, hdr_len);
 
@@ -412,11 +420,28 @@ static struct sk_buff *page_to_skb(struct virtnet_info *vi,
 	offset += hdr_padded_len;
 	p += hdr_padded_len;
 
+<<<<<<< HEAD
 	copy = len;
 	if (copy > skb_tailroom(skb))
 		copy = skb_tailroom(skb);
 	skb_put_data(skb, p, copy);
 
+=======
+	/* Copy all frame if it fits skb->head, otherwise
+	 * we let virtio_net_hdr_to_skb() and GRO pull headers as needed.
+	 */
+	if (len <= skb_tailroom(skb))
+		copy = len;
+	else
+		copy = ETH_HLEN + metasize;
+	skb_put_data(skb, p, copy);
+
+	if (metasize) {
+		__skb_pull(skb, metasize);
+		skb_metadata_set(skb, metasize);
+	}
+
+>>>>>>> origin/android16-base
 	len -= copy;
 	offset += copy;
 
@@ -462,10 +487,13 @@ static int __virtnet_xdp_xmit_one(struct virtnet_info *vi,
 	struct virtio_net_hdr_mrg_rxbuf *hdr;
 	int err;
 
+<<<<<<< HEAD
 	/* virtqueue want to use data area in-front of packet */
 	if (unlikely(xdpf->metasize > 0))
 		return -EOPNOTSUPP;
 
+=======
+>>>>>>> origin/android16-base
 	if (unlikely(xdpf->headroom < vi->hdr_len))
 		return -EOVERFLOW;
 
@@ -594,8 +622,18 @@ static struct page *xdp_linearize_page(struct receive_queue *rq,
 				       int page_off,
 				       unsigned int *len)
 {
+<<<<<<< HEAD
 	struct page *page = alloc_page(GFP_ATOMIC);
 
+=======
+	int tailroom = SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
+	struct page *page;
+
+	if (page_off + *len + tailroom > PAGE_SIZE)
+		return NULL;
+
+	page = alloc_page(GFP_ATOMIC);
+>>>>>>> origin/android16-base
 	if (!page)
 		return NULL;
 
@@ -603,7 +641,10 @@ static struct page *xdp_linearize_page(struct receive_queue *rq,
 	page_off += *len;
 
 	while (--*num_buf) {
+<<<<<<< HEAD
 		int tailroom = SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
+=======
+>>>>>>> origin/android16-base
 		unsigned int buflen;
 		void *buf;
 		int off;
@@ -656,6 +697,10 @@ static struct sk_buff *receive_small(struct net_device *dev,
 	unsigned int delta = 0;
 	struct page *xdp_page;
 	int err;
+<<<<<<< HEAD
+=======
+	unsigned int metasize = 0;
+>>>>>>> origin/android16-base
 
 	len -= vi->hdr_len;
 	stats->bytes += len;
@@ -695,8 +740,13 @@ static struct sk_buff *receive_small(struct net_device *dev,
 
 		xdp.data_hard_start = buf + VIRTNET_RX_PAD + vi->hdr_len;
 		xdp.data = xdp.data_hard_start + xdp_headroom;
+<<<<<<< HEAD
 		xdp_set_data_meta_invalid(&xdp);
 		xdp.data_end = xdp.data + len;
+=======
+		xdp.data_end = xdp.data + len;
+		xdp.data_meta = xdp.data;
+>>>>>>> origin/android16-base
 		xdp.rxq = &rq->xdp_rxq;
 		orig_data = xdp.data;
 		act = bpf_prog_run_xdp(xdp_prog, &xdp);
@@ -707,6 +757,10 @@ static struct sk_buff *receive_small(struct net_device *dev,
 			/* Recalculate length in case bpf program changed it */
 			delta = orig_data - xdp.data;
 			len = xdp.data_end - xdp.data;
+<<<<<<< HEAD
+=======
+			metasize = xdp.data - xdp.data_meta;
+>>>>>>> origin/android16-base
 			break;
 		case XDP_TX:
 			stats->xdp_tx++;
@@ -752,6 +806,12 @@ static struct sk_buff *receive_small(struct net_device *dev,
 		memcpy(skb_vnet_hdr(skb), buf, vi->hdr_len);
 	} /* keep zeroed vnet hdr since packet was changed by bpf */
 
+<<<<<<< HEAD
+=======
+	if (metasize)
+		skb_metadata_set(skb, metasize);
+
+>>>>>>> origin/android16-base
 err:
 	return skb;
 
@@ -772,8 +832,13 @@ static struct sk_buff *receive_big(struct net_device *dev,
 				   struct virtnet_rq_stats *stats)
 {
 	struct page *page = buf;
+<<<<<<< HEAD
 	struct sk_buff *skb = page_to_skb(vi, rq, page, 0, len,
 					  PAGE_SIZE, true);
+=======
+	struct sk_buff *skb =
+		page_to_skb(vi, rq, page, 0, len, PAGE_SIZE, true, 0);
+>>>>>>> origin/android16-base
 
 	stats->bytes += len - vi->hdr_len;
 	if (unlikely(!skb))
@@ -805,6 +870,10 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 	unsigned int truesize;
 	unsigned int headroom = mergeable_ctx_to_headroom(ctx);
 	int err;
+<<<<<<< HEAD
+=======
+	unsigned int metasize = 0;
+>>>>>>> origin/android16-base
 
 	head_skb = NULL;
 	stats->bytes += len - vi->hdr_len;
@@ -851,8 +920,13 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 		data = page_address(xdp_page) + offset;
 		xdp.data_hard_start = data - VIRTIO_XDP_HEADROOM + vi->hdr_len;
 		xdp.data = data + vi->hdr_len;
+<<<<<<< HEAD
 		xdp_set_data_meta_invalid(&xdp);
 		xdp.data_end = xdp.data + (len - vi->hdr_len);
+=======
+		xdp.data_end = xdp.data + (len - vi->hdr_len);
+		xdp.data_meta = xdp.data;
+>>>>>>> origin/android16-base
 		xdp.rxq = &rq->xdp_rxq;
 
 		act = bpf_prog_run_xdp(xdp_prog, &xdp);
@@ -860,6 +934,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 
 		switch (act) {
 		case XDP_PASS:
+<<<<<<< HEAD
 			/* recalculate offset to account for any header
 			 * adjustments. Note other cases do not build an
 			 * skb and avoid using offset
@@ -871,13 +946,35 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 			 * adjusted
 			 */
 			len = xdp.data_end - xdp.data + vi->hdr_len;
+=======
+			metasize = xdp.data - xdp.data_meta;
+
+			/* recalculate offset to account for any header
+			 * adjustments and minus the metasize to copy the
+			 * metadata in page_to_skb(). Note other cases do not
+			 * build an skb and avoid using offset
+			 */
+			offset = xdp.data - page_address(xdp_page) -
+				 vi->hdr_len - metasize;
+
+			/* recalculate len if xdp.data, xdp.data_end or
+			 * xdp.data_meta were adjusted
+			 */
+			len = xdp.data_end - xdp.data + vi->hdr_len + metasize;
+>>>>>>> origin/android16-base
 			/* We can only create skb based on xdp_page. */
 			if (unlikely(xdp_page != page)) {
 				rcu_read_unlock();
 				put_page(page);
+<<<<<<< HEAD
 				head_skb = page_to_skb(vi, rq, xdp_page,
 						       offset, len,
 						       PAGE_SIZE, false);
+=======
+				head_skb = page_to_skb(vi, rq, xdp_page, offset,
+						       len, PAGE_SIZE, false,
+						       metasize);
+>>>>>>> origin/android16-base
 				return head_skb;
 			}
 			break;
@@ -933,7 +1030,12 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 		goto err_skb;
 	}
 
+<<<<<<< HEAD
 	head_skb = page_to_skb(vi, rq, page, offset, len, truesize, !xdp_prog);
+=======
+	head_skb = page_to_skb(vi, rq, page, offset, len, truesize, !xdp_prog,
+			       metasize);
+>>>>>>> origin/android16-base
 	curr_skb = head_skb;
 
 	if (unlikely(!curr_skb))
@@ -1408,7 +1510,11 @@ static bool is_xdp_raw_buffer_queue(struct virtnet_info *vi, int q)
 		return false;
 }
 
+<<<<<<< HEAD
 static void virtnet_poll_cleantx(struct receive_queue *rq)
+=======
+static void virtnet_poll_cleantx(struct receive_queue *rq, int budget)
+>>>>>>> origin/android16-base
 {
 	struct virtnet_info *vi = rq->vq->vdev->priv;
 	unsigned int index = vq2rxq(rq->vq);
@@ -1419,7 +1525,11 @@ static void virtnet_poll_cleantx(struct receive_queue *rq)
 		return;
 
 	if (__netif_tx_trylock(txq)) {
+<<<<<<< HEAD
 		free_old_xmit_skbs(sq, true);
+=======
+		free_old_xmit_skbs(sq, !!budget);
+>>>>>>> origin/android16-base
 		__netif_tx_unlock(txq);
 	}
 
@@ -1436,7 +1546,11 @@ static int virtnet_poll(struct napi_struct *napi, int budget)
 	unsigned int received;
 	unsigned int xdp_xmit = 0;
 
+<<<<<<< HEAD
 	virtnet_poll_cleantx(rq);
+=======
+	virtnet_poll_cleantx(rq, budget);
+>>>>>>> origin/android16-base
 
 	received = virtnet_receive(rq, budget, &xdp_xmit);
 
@@ -1494,6 +1608,11 @@ static int virtnet_poll_tx(struct napi_struct *napi, int budget)
 	struct virtnet_info *vi = sq->vq->vdev->priv;
 	unsigned int index = vq2txq(sq->vq);
 	struct netdev_queue *txq;
+<<<<<<< HEAD
+=======
+	int opaque;
+	bool done;
+>>>>>>> origin/android16-base
 
 	if (unlikely(is_xdp_raw_buffer_queue(vi, index))) {
 		/* We don't need to enable cb for XDP */
@@ -1503,10 +1622,35 @@ static int virtnet_poll_tx(struct napi_struct *napi, int budget)
 
 	txq = netdev_get_tx_queue(vi->dev, index);
 	__netif_tx_lock(txq, raw_smp_processor_id());
+<<<<<<< HEAD
 	free_old_xmit_skbs(sq, true);
 	__netif_tx_unlock(txq);
 
 	virtqueue_napi_complete(napi, sq->vq, 0);
+=======
+	virtqueue_disable_cb(sq->vq);
+	free_old_xmit_skbs(sq, !!budget);
+
+	opaque = virtqueue_enable_cb_prepare(sq->vq);
+
+	done = napi_complete_done(napi, 0);
+
+	if (!done)
+		virtqueue_disable_cb(sq->vq);
+
+	__netif_tx_unlock(txq);
+
+	if (done) {
+		if (unlikely(virtqueue_poll(sq->vq, opaque))) {
+			if (napi_schedule_prep(napi)) {
+				__netif_tx_lock(txq, raw_smp_processor_id());
+				virtqueue_disable_cb(sq->vq);
+				__netif_tx_unlock(txq);
+				__napi_schedule(napi);
+			}
+		}
+	}
+>>>>>>> origin/android16-base
 
 	if (sq->vq->num_free >= 2 + MAX_SKB_FRAGS)
 		netif_tx_wake_queue(txq);
@@ -1538,7 +1682,11 @@ static int xmit_skb(struct send_queue *sq, struct sk_buff *skb)
 	if (virtio_net_hdr_from_skb(skb, &hdr->hdr,
 				    virtio_is_little_endian(vi->vdev), false,
 				    0))
+<<<<<<< HEAD
 		BUG();
+=======
+		return -EPROTO;
+>>>>>>> origin/android16-base
 
 	if (vi->mergeable_rx_bufs)
 		hdr->num_buffers = 0;
@@ -2077,6 +2225,7 @@ static int virtnet_set_channels(struct net_device *dev,
 
 	get_online_cpus();
 	err = _virtnet_set_queues(vi, queue_pairs);
+<<<<<<< HEAD
 	if (!err) {
 		netif_set_real_num_tx_queues(dev, queue_pairs);
 		netif_set_real_num_rx_queues(dev, queue_pairs);
@@ -2085,6 +2234,18 @@ static int virtnet_set_channels(struct net_device *dev,
 	}
 	put_online_cpus();
 
+=======
+	if (err) {
+		put_online_cpus();
+		goto err;
+	}
+	virtnet_set_affinity(vi);
+	put_online_cpus();
+
+	netif_set_real_num_tx_queues(dev, queue_pairs);
+	netif_set_real_num_rx_queues(dev, queue_pairs);
+ err:
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -2277,7 +2438,10 @@ static const struct ethtool_ops virtnet_ethtool_ops = {
 static void virtnet_freeze_down(struct virtio_device *vdev)
 {
 	struct virtnet_info *vi = vdev->priv;
+<<<<<<< HEAD
 	int i;
+=======
+>>>>>>> origin/android16-base
 
 	/* Make sure no work handler is accessing the device */
 	flush_work(&vi->config_work);
@@ -2285,6 +2449,7 @@ static void virtnet_freeze_down(struct virtio_device *vdev)
 	netif_tx_lock_bh(vi->dev);
 	netif_device_detach(vi->dev);
 	netif_tx_unlock_bh(vi->dev);
+<<<<<<< HEAD
 	cancel_delayed_work_sync(&vi->refill);
 
 	if (netif_running(vi->dev)) {
@@ -2293,6 +2458,10 @@ static void virtnet_freeze_down(struct virtio_device *vdev)
 			virtnet_napi_tx_disable(&vi->sq[i].napi);
 		}
 	}
+=======
+	if (netif_running(vi->dev))
+		virtnet_close(vi->dev);
+>>>>>>> origin/android16-base
 }
 
 static int init_vqs(struct virtnet_info *vi);
@@ -2300,7 +2469,11 @@ static int init_vqs(struct virtnet_info *vi);
 static int virtnet_restore_up(struct virtio_device *vdev)
 {
 	struct virtnet_info *vi = vdev->priv;
+<<<<<<< HEAD
 	int err, i;
+=======
+	int err;
+>>>>>>> origin/android16-base
 
 	err = init_vqs(vi);
 	if (err)
@@ -2309,6 +2482,7 @@ static int virtnet_restore_up(struct virtio_device *vdev)
 	virtio_device_ready(vdev);
 
 	if (netif_running(vi->dev)) {
+<<<<<<< HEAD
 		for (i = 0; i < vi->curr_queue_pairs; i++)
 			if (!try_fill_recv(vi, &vi->rq[i], GFP_KERNEL))
 				schedule_delayed_work(&vi->refill, 0);
@@ -2318,6 +2492,11 @@ static int virtnet_restore_up(struct virtio_device *vdev)
 			virtnet_napi_tx_enable(vi, vi->sq[i].vq,
 					       &vi->sq[i].napi);
 		}
+=======
+		err = virtnet_open(vi->dev);
+		if (err)
+			return err;
+>>>>>>> origin/android16-base
 	}
 
 	netif_tx_lock_bh(vi->dev);
@@ -2626,6 +2805,30 @@ static void free_receive_page_frags(struct virtnet_info *vi)
 			put_page(vi->rq[i].alloc_frag.page);
 }
 
+<<<<<<< HEAD
+=======
+static void virtnet_sq_free_unused_buf(struct virtqueue *vq, void *buf)
+{
+	if (!is_xdp_frame(buf))
+		dev_kfree_skb(buf);
+	else
+		xdp_return_frame(ptr_to_xdp(buf));
+}
+
+static void virtnet_rq_free_unused_buf(struct virtqueue *vq, void *buf)
+{
+	struct virtnet_info *vi = vq->vdev->priv;
+	int i = vq2rxq(vq);
+
+	if (vi->mergeable_rx_bufs)
+		put_page(virt_to_head_page(buf));
+	else if (vi->big_packets)
+		give_pages(&vi->rq[i], buf);
+	else
+		put_page(virt_to_head_page(buf));
+}
+
+>>>>>>> origin/android16-base
 static void free_unused_bufs(struct virtnet_info *vi)
 {
 	void *buf;
@@ -2633,16 +2836,23 @@ static void free_unused_bufs(struct virtnet_info *vi)
 
 	for (i = 0; i < vi->max_queue_pairs; i++) {
 		struct virtqueue *vq = vi->sq[i].vq;
+<<<<<<< HEAD
 		while ((buf = virtqueue_detach_unused_buf(vq)) != NULL) {
 			if (!is_xdp_frame(buf))
 				dev_kfree_skb(buf);
 			else
 				xdp_return_frame(ptr_to_xdp(buf));
 		}
+=======
+		while ((buf = virtqueue_detach_unused_buf(vq)) != NULL)
+			virtnet_sq_free_unused_buf(vq, buf);
+		cond_resched();
+>>>>>>> origin/android16-base
 	}
 
 	for (i = 0; i < vi->max_queue_pairs; i++) {
 		struct virtqueue *vq = vi->rq[i].vq;
+<<<<<<< HEAD
 
 		while ((buf = virtqueue_detach_unused_buf(vq)) != NULL) {
 			if (vi->mergeable_rx_bufs) {
@@ -2653,6 +2863,11 @@ static void free_unused_bufs(struct virtnet_info *vi)
 				put_page(virt_to_head_page(buf));
 			}
 		}
+=======
+		while ((buf = virtqueue_detach_unused_buf(vq)) != NULL)
+			virtnet_rq_free_unused_buf(vq, buf);
+		cond_resched();
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -2687,10 +2902,18 @@ static int virtnet_find_vqs(struct virtnet_info *vi)
 {
 	vq_callback_t **callbacks;
 	struct virtqueue **vqs;
+<<<<<<< HEAD
 	int ret = -ENOMEM;
 	int i, total_vqs;
 	const char **names;
 	bool *ctx;
+=======
+	const char **names;
+	int ret = -ENOMEM;
+	int total_vqs;
+	bool *ctx;
+	u16 i;
+>>>>>>> origin/android16-base
 
 	/* We expect 1 RX virtqueue followed by 1 TX virtqueue, followed by
 	 * possible N-1 RX/TX queue pairs used in multiqueue mode, followed by
@@ -2727,8 +2950,13 @@ static int virtnet_find_vqs(struct virtnet_info *vi)
 	for (i = 0; i < vi->max_queue_pairs; i++) {
 		callbacks[rxq2vq(i)] = skb_recv_done;
 		callbacks[txq2vq(i)] = skb_xmit_done;
+<<<<<<< HEAD
 		sprintf(vi->rq[i].name, "input.%d", i);
 		sprintf(vi->sq[i].name, "output.%d", i);
+=======
+		sprintf(vi->rq[i].name, "input.%u", i);
+		sprintf(vi->sq[i].name, "output.%u", i);
+>>>>>>> origin/android16-base
 		names[rxq2vq(i)] = vi->rq[i].name;
 		names[txq2vq(i)] = vi->sq[i].name;
 		if (ctx)
@@ -2979,8 +3207,20 @@ static int virtnet_probe(struct virtio_device *vdev)
 			dev->features |= dev->hw_features & NETIF_F_ALL_TSO;
 		/* (!csum && gso) case will be fixed by register_netdev() */
 	}
+<<<<<<< HEAD
 	if (virtio_has_feature(vdev, VIRTIO_NET_F_GUEST_CSUM))
 		dev->features |= NETIF_F_RXCSUM;
+=======
+
+	/* 1. With VIRTIO_NET_F_GUEST_CSUM negotiation, the driver doesn't
+	 * need to calculate checksums for partially checksummed packets,
+	 * as they're considered valid by the upper layer.
+	 * 2. Without VIRTIO_NET_F_GUEST_CSUM negotiation, the driver only
+	 * receives fully checksummed packets. The device may assist in
+	 * validating these packets' checksums, so the driver won't have to.
+	 */
+	dev->features |= NETIF_F_RXCSUM;
+>>>>>>> origin/android16-base
 
 	dev->vlan_features = dev->features;
 
@@ -3080,22 +3320,42 @@ static int virtnet_probe(struct virtio_device *vdev)
 		}
 	}
 
+<<<<<<< HEAD
 	err = register_netdev(dev);
 	if (err) {
 		pr_debug("virtio_net: registering device failed\n");
+=======
+	/* serialize netdev register + virtio_device_ready() with ndo_open() */
+	rtnl_lock();
+
+	err = register_netdevice(dev);
+	if (err) {
+		pr_debug("virtio_net: registering device failed\n");
+		rtnl_unlock();
+>>>>>>> origin/android16-base
 		goto free_failover;
 	}
 
 	virtio_device_ready(vdev);
 
+<<<<<<< HEAD
+=======
+	_virtnet_set_queues(vi, vi->curr_queue_pairs);
+
+	rtnl_unlock();
+
+>>>>>>> origin/android16-base
 	err = virtnet_cpu_notif_add(vi);
 	if (err) {
 		pr_debug("virtio_net: registering cpu notifier failed\n");
 		goto free_unregister_netdev;
 	}
 
+<<<<<<< HEAD
 	virtnet_set_queues(vi, vi->curr_queue_pairs);
 
+=======
+>>>>>>> origin/android16-base
 	/* Assume link up if device can't report link status,
 	   otherwise get link status from config. */
 	netif_carrier_off(dev);
@@ -3185,8 +3445,16 @@ static __maybe_unused int virtnet_restore(struct virtio_device *vdev)
 	virtnet_set_queues(vi, vi->curr_queue_pairs);
 
 	err = virtnet_cpu_notif_add(vi);
+<<<<<<< HEAD
 	if (err)
 		return err;
+=======
+	if (err) {
+		virtnet_freeze_down(vdev);
+		remove_vq_common(vi);
+		return err;
+	}
+>>>>>>> origin/android16-base
 
 	return 0;
 }

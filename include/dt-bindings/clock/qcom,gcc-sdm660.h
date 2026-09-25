@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2016-2017, 2019-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
+=======
+ * Copyright (c) 2024, Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #ifndef _DT_BINDINGS_CLK_MSM_GCC_660_H
@@ -195,5 +199,9 @@
 #define GCC_USB_20_BCR				6
 #define GCC_USB_30_BCR				7
 #define GCC_USB_PHY_CFG_AHB2PHY_BCR		8
+<<<<<<< HEAD
+=======
+#define GCC_SDCC1_BCR				9
+>>>>>>> origin/android16-base
 
 #endif

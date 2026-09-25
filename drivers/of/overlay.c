@@ -170,9 +170,13 @@ static int overlay_notify(struct overlay_changeset *ovcs,
 
 		ret = blocking_notifier_call_chain(&overlay_notify_chain,
 						   action, &nd);
+<<<<<<< HEAD
 		if (ret == NOTIFY_OK || ret == NOTIFY_STOP)
 			return 0;
 		if (ret) {
+=======
+		if (notifier_to_errno(ret)) {
+>>>>>>> origin/android16-base
 			ret = notifier_to_errno(ret);
 			pr_err("overlay changeset %s notifier error %d, target: %pOF\n",
 			       of_overlay_action_name[action], ret, nd.target);

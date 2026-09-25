@@ -34,6 +34,12 @@
 #include <net/flow.h>
 #include <net/flow_dissector.h>
 #include <net/netns/hash.h>
+<<<<<<< HEAD
+=======
+#ifndef __GENKSYMS__
+#include <net/lwtunnel.h>
+#endif
+>>>>>>> origin/android16-base
 
 #define IPV4_MAX_PMTU		65535U		/* RFC 2675, Section 5.1 */
 #define IPV4_MIN_MTU		68			/* RFC 791 */
@@ -72,6 +78,10 @@ struct ipcm_cookie {
 	__be32			addr;
 	int			oif;
 	struct ip_options_rcu	*opt;
+<<<<<<< HEAD
+=======
+	__u8			protocol;
+>>>>>>> origin/android16-base
 	__u8			ttl;
 	__s16			tos;
 	char			priority;
@@ -91,6 +101,10 @@ static inline void ipcm_init_sk(struct ipcm_cookie *ipcm,
 	ipcm->sockc.tsflags = inet->sk.sk_tsflags;
 	ipcm->oif = inet->sk.sk_bound_dev_if;
 	ipcm->addr = inet->inet_saddr;
+<<<<<<< HEAD
+=======
+	ipcm->protocol = inet->inet_num;
+>>>>>>> origin/android16-base
 }
 
 #define IPCB(skb) ((struct inet_skb_parm*)((skb)->cb))
@@ -343,7 +357,11 @@ void ipfrag_init(void);
 void ip_static_sysctl_init(void);
 
 #define IP4_REPLY_MARK(net, mark) \
+<<<<<<< HEAD
 	((net)->ipv4.sysctl_fwmark_reflect ? (mark) : 0)
+=======
+	(READ_ONCE((net)->ipv4.sysctl_fwmark_reflect) ? (mark) : 0)
+>>>>>>> origin/android16-base
 
 static inline bool ip_is_fragment(const struct iphdr *iph)
 {
@@ -404,29 +422,50 @@ static inline unsigned int ip_dst_mtu_maybe_forward(const struct dst_entry *dst,
 	struct net *net = dev_net(dst->dev);
 	unsigned int mtu;
 
+<<<<<<< HEAD
 	if (net->ipv4.sysctl_ip_fwd_use_pmtu ||
+=======
+	if (READ_ONCE(net->ipv4.sysctl_ip_fwd_use_pmtu) ||
+>>>>>>> origin/android16-base
 	    ip_mtu_locked(dst) ||
 	    !forwarding)
 		return dst_mtu(dst);
 
 	/* 'forwarding = true' case should always honour route mtu */
 	mtu = dst_metric_raw(dst, RTAX_MTU);
+<<<<<<< HEAD
 	if (mtu)
 		return mtu;
 
 	return min(READ_ONCE(dst->dev->mtu), IP_MAX_MTU);
+=======
+	if (!mtu)
+		mtu = min(READ_ONCE(dst->dev->mtu), IP_MAX_MTU);
+
+	return mtu - lwtunnel_headroom(dst->lwtstate, mtu);
+>>>>>>> origin/android16-base
 }
 
 static inline unsigned int ip_skb_dst_mtu(struct sock *sk,
 					  const struct sk_buff *skb)
 {
+<<<<<<< HEAD
+=======
+	unsigned int mtu;
+
+>>>>>>> origin/android16-base
 	if (!sk || !sk_fullsock(sk) || ip_sk_use_pmtu(sk)) {
 		bool forwarding = IPCB(skb)->flags & IPSKB_FORWARDED;
 
 		return ip_dst_mtu_maybe_forward(skb_dst(skb), forwarding);
 	}
 
+<<<<<<< HEAD
 	return min(READ_ONCE(skb_dst(skb)->dev->mtu), IP_MAX_MTU);
+=======
+	mtu = min(READ_ONCE(skb_dst(skb)->dev->mtu), IP_MAX_MTU);
+	return mtu - lwtunnel_headroom(skb_dst(skb)->lwtstate, mtu);
+>>>>>>> origin/android16-base
 }
 
 int ip_metrics_convert(struct net *net, struct nlattr *fc_mx, int fc_mx_len,
@@ -440,6 +479,7 @@ static inline void ip_select_ident_segs(struct net *net, struct sk_buff *skb,
 {
 	struct iphdr *iph = ip_hdr(skb);
 
+<<<<<<< HEAD
 	if ((iph->frag_off & htons(IP_DF)) && !skb->ignore_df) {
 		/* This is only to work around buggy Windows95/2000
 		 * VJ compression implementations.  If the ID field
@@ -453,6 +493,20 @@ static inline void ip_select_ident_segs(struct net *net, struct sk_buff *skb,
 			iph->id = 0;
 		}
 	} else {
+=======
+	/* We had many attacks based on IPID, use the private
+	 * generator as much as we can.
+	 */
+	if (sk && inet_sk(sk)->inet_daddr) {
+		iph->id = htons(inet_sk(sk)->inet_id);
+		inet_sk(sk)->inet_id += segs;
+		return;
+	}
+	if ((iph->frag_off & htons(IP_DF)) && !skb->ignore_df) {
+		iph->id = 0;
+	} else {
+		/* Unfortunately we need the big hammer to get a suitable IPID */
+>>>>>>> origin/android16-base
 		__ip_select_ident(net, iph, segs);
 	}
 }

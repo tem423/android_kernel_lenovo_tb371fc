@@ -439,6 +439,11 @@ sa1100_set_termios(struct uart_port *port, struct ktermios *termios,
 	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16); 
 	quot = uart_get_divisor(port, baud);
 
+<<<<<<< HEAD
+=======
+	del_timer_sync(&sport->timer);
+
+>>>>>>> origin/android16-base
 	spin_lock_irqsave(&sport->port.lock, flags);
 
 	sport->port.read_status_mask &= UTSR0_TO_SM(UTSR0_TFS);
@@ -469,8 +474,11 @@ sa1100_set_termios(struct uart_port *port, struct ktermios *termios,
 				UTSR1_TO_SM(UTSR1_ROR);
 	}
 
+<<<<<<< HEAD
 	del_timer_sync(&sport->timer);
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Update the per-port timeout.
 	 */

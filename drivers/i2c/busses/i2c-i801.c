@@ -384,11 +384,17 @@ static int i801_check_post(struct i801_priv *priv, int status)
 		dev_err(&priv->pci_dev->dev, "Transaction timeout\n");
 		/* try to stop the current command */
 		dev_dbg(&priv->pci_dev->dev, "Terminating the current operation\n");
+<<<<<<< HEAD
 		outb_p(inb_p(SMBHSTCNT(priv)) | SMBHSTCNT_KILL,
 		       SMBHSTCNT(priv));
 		usleep_range(1000, 2000);
 		outb_p(inb_p(SMBHSTCNT(priv)) & (~SMBHSTCNT_KILL),
 		       SMBHSTCNT(priv));
+=======
+		outb_p(SMBHSTCNT_KILL, SMBHSTCNT(priv));
+		usleep_range(1000, 2000);
+		outb_p(0, SMBHSTCNT(priv));
+>>>>>>> origin/android16-base
 
 		/* Check if it worked */
 		status = inb_p(SMBHSTSTS(priv));
@@ -714,6 +720,7 @@ static int i801_block_transaction_byte_by_byte(struct i801_priv *priv,
 		return i801_check_post(priv, status);
 	}
 
+<<<<<<< HEAD
 	for (i = 1; i <= len; i++) {
 		if (i == len && read_write == I2C_SMBUS_READ)
 			smbcmd |= SMBHSTCNT_LAST_BYTE;
@@ -723,6 +730,13 @@ static int i801_block_transaction_byte_by_byte(struct i801_priv *priv,
 			outb_p(inb(SMBHSTCNT(priv)) | SMBHSTCNT_START,
 			       SMBHSTCNT(priv));
 
+=======
+	if (len == 1 && read_write == I2C_SMBUS_READ)
+		smbcmd |= SMBHSTCNT_LAST_BYTE;
+	outb_p(smbcmd | SMBHSTCNT_START, SMBHSTCNT(priv));
+
+	for (i = 1; i <= len; i++) {
+>>>>>>> origin/android16-base
 		status = i801_wait_byte_done(priv);
 		if (status)
 			goto exit;
@@ -745,9 +759,18 @@ static int i801_block_transaction_byte_by_byte(struct i801_priv *priv,
 			data->block[0] = len;
 		}
 
+<<<<<<< HEAD
 		/* Retrieve/store value in SMBBLKDAT */
 		if (read_write == I2C_SMBUS_READ)
 			data->block[i] = inb_p(SMBBLKDAT(priv));
+=======
+		if (read_write == I2C_SMBUS_READ) {
+			data->block[i] = inb_p(SMBBLKDAT(priv));
+			if (i == len - 1)
+				outb_p(smbcmd | SMBHSTCNT_LAST_BYTE, SMBHSTCNT(priv));
+		}
+
+>>>>>>> origin/android16-base
 		if (read_write == I2C_SMBUS_WRITE && i+1 <= len)
 			outb_p(data->block[i+1], SMBBLKDAT(priv));
 
@@ -776,6 +799,14 @@ static int i801_block_transaction(struct i801_priv *priv,
 	int result = 0;
 	unsigned char hostc;
 
+<<<<<<< HEAD
+=======
+	if (read_write == I2C_SMBUS_READ && command == I2C_SMBUS_BLOCK_DATA)
+		data->block[0] = I2C_SMBUS_BLOCK_MAX;
+	else if (data->block[0] < 1 || data->block[0] > I2C_SMBUS_BLOCK_MAX)
+		return -EPROTO;
+
+>>>>>>> origin/android16-base
 	if (command == I2C_SMBUS_I2C_BLOCK_DATA) {
 		if (read_write == I2C_SMBUS_WRITE) {
 			/* set I2C_EN bit in configuration register */
@@ -789,6 +820,7 @@ static int i801_block_transaction(struct i801_priv *priv,
 		}
 	}
 
+<<<<<<< HEAD
 	if (read_write == I2C_SMBUS_WRITE
 	 || command == I2C_SMBUS_I2C_BLOCK_DATA) {
 		if (data->block[0] < 1)
@@ -799,6 +831,8 @@ static int i801_block_transaction(struct i801_priv *priv,
 		data->block[0] = 32;	/* max for SMBus block reads */
 	}
 
+=======
+>>>>>>> origin/android16-base
 	/* Experience has shown that the block buffer can only be used for
 	   SMBus (not I2C) block transactions, even though the datasheet
 	   doesn't mention this limitation. */
@@ -1047,7 +1081,11 @@ static const struct pci_device_id i801_ids[] = {
 MODULE_DEVICE_TABLE(pci, i801_ids);
 
 #if defined CONFIG_X86 && defined CONFIG_DMI
+<<<<<<< HEAD
 static unsigned char apanel_addr;
+=======
+static unsigned char apanel_addr __ro_after_init;
+>>>>>>> origin/android16-base
 
 /* Scan the system ROM for the signature "FJKEYINF" */
 static __init const void __iomem *bios_signature(const void __iomem *bios)
@@ -1682,10 +1720,25 @@ static int i801_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
 	i801_add_tco(priv);
 
+<<<<<<< HEAD
 	snprintf(priv->adapter.name, sizeof(priv->adapter.name),
 		"SMBus I801 adapter at %04lx", priv->smba);
 	err = i2c_add_adapter(&priv->adapter);
 	if (err) {
+=======
+	/*
+	 * adapter.name is used by platform code to find the main I801 adapter
+	 * to instantiante i2c_clients, do not change.
+	 */
+	snprintf(priv->adapter.name, sizeof(priv->adapter.name),
+		 "SMBus %s adapter at %04lx",
+		 (priv->features & FEATURE_IDF) ? "I801 IDF" : "I801",
+		 priv->smba);
+
+	err = i2c_add_adapter(&priv->adapter);
+	if (err) {
+		platform_device_unregister(priv->tco_pdev);
+>>>>>>> origin/android16-base
 		i801_acpi_remove(priv);
 		return err;
 	}

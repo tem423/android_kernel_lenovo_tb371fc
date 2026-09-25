@@ -65,9 +65,12 @@ static int get_free_idx(struct task_struct* task)
 	struct thread_struct *t = &task->thread;
 	int idx;
 
+<<<<<<< HEAD
 	if (!t->arch.tls_array)
 		return GDT_ENTRY_TLS_MIN;
 
+=======
+>>>>>>> origin/android16-base
 	for (idx = 0; idx < GDT_ENTRY_TLS_ENTRIES; idx++)
 		if (!t->arch.tls_array[idx].present)
 			return idx + GDT_ENTRY_TLS_MIN;
@@ -242,9 +245,12 @@ static int get_tls_entry(struct task_struct *task, struct user_desc *info,
 {
 	struct thread_struct *t = &task->thread;
 
+<<<<<<< HEAD
 	if (!t->arch.tls_array)
 		goto clear;
 
+=======
+>>>>>>> origin/android16-base
 	if (idx < GDT_ENTRY_TLS_MIN || idx > GDT_ENTRY_TLS_MAX)
 		return -EINVAL;
 

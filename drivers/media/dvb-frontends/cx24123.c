@@ -1105,7 +1105,11 @@ error:
 
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(cx24123_attach);
+=======
+EXPORT_SYMBOL_GPL(cx24123_attach);
+>>>>>>> origin/android16-base
 
 static const struct dvb_frontend_ops cx24123_ops = {
 	.delsys = { SYS_DVBS },

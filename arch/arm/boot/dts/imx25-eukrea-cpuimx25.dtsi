@@ -35,7 +35,11 @@
 	pinctrl-0 = <&pinctrl_i2c1>;
 	status = "okay";
 
+<<<<<<< HEAD
 	pcf8563@51 {
+=======
+	rtc@51 {
+>>>>>>> origin/android16-base
 		compatible = "nxp,pcf8563";
 		reg = <0x51>;
 	};

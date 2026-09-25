@@ -853,11 +853,17 @@ static bool vc4_dsi_encoder_mode_fixup(struct drm_encoder *encoder,
 	/* Find what divider gets us a faster clock than the requested
 	 * pixel clock.
 	 */
+<<<<<<< HEAD
 	for (divider = 1; divider < 8; divider++) {
 		if (parent_rate / divider < pll_clock) {
 			divider--;
 			break;
 		}
+=======
+	for (divider = 1; divider < 255; divider++) {
+		if (parent_rate / (divider + 1) < pll_clock)
+			break;
+>>>>>>> origin/android16-base
 	}
 
 	/* Now that we've picked a PLL divider, calculate back to its

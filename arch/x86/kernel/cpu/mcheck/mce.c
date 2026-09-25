@@ -295,11 +295,25 @@ static void wait_for_panic(void)
 	panic("Panicing machine check CPU died");
 }
 
+<<<<<<< HEAD
 static void mce_panic(const char *msg, struct mce *final, char *exp)
 {
 	int apei_err = 0;
 	struct llist_node *pending;
 	struct mce_evt_llist *l;
+=======
+static noinstr void mce_panic(const char *msg, struct mce *final, char *exp)
+{
+	struct llist_node *pending;
+	struct mce_evt_llist *l;
+	int apei_err = 0;
+
+	/*
+	 * Allow instrumentation around external facilities usage. Not that it
+	 * matters a whole lot since the machine is going to panic anyway.
+	 */
+	instrumentation_begin();
+>>>>>>> origin/android16-base
 
 	if (!fake_panic) {
 		/*
@@ -314,7 +328,11 @@ static void mce_panic(const char *msg, struct mce *final, char *exp)
 	} else {
 		/* Don't log too much for fake panic */
 		if (atomic_inc_return(&mce_fake_panicked) > 1)
+<<<<<<< HEAD
 			return;
+=======
+			goto out;
+>>>>>>> origin/android16-base
 	}
 	pending = mce_gen_pool_prepare_records();
 	/* First print corrected ones that are still unlogged */
@@ -352,6 +370,12 @@ static void mce_panic(const char *msg, struct mce *final, char *exp)
 		panic(msg);
 	} else
 		pr_emerg(HW_ERR "Fake kernel panic: %s\n", msg);
+<<<<<<< HEAD
+=======
+
+out:
+	instrumentation_end();
+>>>>>>> origin/android16-base
 }
 
 /* Support code for software error injection */
@@ -642,7 +666,11 @@ static struct notifier_block mce_default_nb = {
 /*
  * Read ADDR and MISC registers.
  */
+<<<<<<< HEAD
 static void mce_read_aux(struct mce *m, int i)
+=======
+static noinstr void mce_read_aux(struct mce *m, int i)
+>>>>>>> origin/android16-base
 {
 	if (m->status & MCI_STATUS_MISCV)
 		m->misc = mce_rdmsrl(msr_ops.misc(i));
@@ -1021,10 +1049,20 @@ static int mce_start(int *no_way_out)
  * Synchronize between CPUs after main scanning loop.
  * This invokes the bulk of the Monarch processing.
  */
+<<<<<<< HEAD
 static int mce_end(int order)
 {
 	int ret = -1;
 	u64 timeout = (u64)mca_cfg.monarch_timeout * NSEC_PER_USEC;
+=======
+static noinstr int mce_end(int order)
+{
+	u64 timeout = (u64)mca_cfg.monarch_timeout * NSEC_PER_USEC;
+	int ret = -1;
+
+	/* Allow instrumentation around external facilities. */
+	instrumentation_begin();
+>>>>>>> origin/android16-base
 
 	if (!timeout)
 		goto reset;
@@ -1068,7 +1106,12 @@ static int mce_end(int order)
 		/*
 		 * Don't reset anything. That's done by the Monarch.
 		 */
+<<<<<<< HEAD
 		return 0;
+=======
+		ret = 0;
+		goto out;
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -1083,6 +1126,13 @@ reset:
 	 * Let others run again.
 	 */
 	atomic_set(&mce_executing, 0);
+<<<<<<< HEAD
+=======
+
+out:
+	instrumentation_end();
+
+>>>>>>> origin/android16-base
 	return ret;
 }
 

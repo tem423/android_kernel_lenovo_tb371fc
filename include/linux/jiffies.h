@@ -347,7 +347,11 @@ static inline unsigned long _msecs_to_jiffies(const unsigned int m)
  * - all other values are converted to jiffies by either multiplying
  *   the input value by a factor or dividing it with a factor and
  *   handling any 32-bit overflows.
+<<<<<<< HEAD
  *   for the details see __msecs_to_jiffies()
+=======
+ *   for the details see _msecs_to_jiffies()
+>>>>>>> origin/android16-base
  *
  * msecs_to_jiffies() checks for the passed in value being a constant
  * via __builtin_constant_p() allowing gcc to eliminate most of the

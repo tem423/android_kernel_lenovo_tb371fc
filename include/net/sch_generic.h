@@ -108,6 +108,12 @@ struct Qdisc {
 
 	spinlock_t		busylock ____cacheline_aligned_in_smp;
 	spinlock_t		seqlock;
+<<<<<<< HEAD
+=======
+#ifndef __GENKSYMS__
+	struct rcu_head		rcu;
+#endif
+>>>>>>> origin/android16-base
 };
 
 static inline void qdisc_refcount_inc(struct Qdisc *qdisc)
@@ -117,6 +123,22 @@ static inline void qdisc_refcount_inc(struct Qdisc *qdisc)
 	refcount_inc(&qdisc->refcnt);
 }
 
+<<<<<<< HEAD
+=======
+/* Intended to be used by unlocked users, when concurrent qdisc release is
+ * possible.
+ */
+
+static inline struct Qdisc *qdisc_refcount_inc_nz(struct Qdisc *qdisc)
+{
+	if (qdisc->flags & TCQ_F_BUILTIN)
+		return qdisc;
+	if (refcount_inc_not_zero(&qdisc->refcnt))
+		return qdisc;
+	return NULL;
+}
+
+>>>>>>> origin/android16-base
 static inline bool qdisc_is_running(struct Qdisc *qdisc)
 {
 	if (qdisc->flags & TCQ_F_NOLOCK)
@@ -555,7 +577,12 @@ void dev_deactivate_many(struct list_head *head);
 struct Qdisc *dev_graft_qdisc(struct netdev_queue *dev_queue,
 			      struct Qdisc *qdisc);
 void qdisc_reset(struct Qdisc *qdisc);
+<<<<<<< HEAD
 void qdisc_destroy(struct Qdisc *qdisc);
+=======
+void qdisc_put(struct Qdisc *qdisc);
+void qdisc_put_unlocked(struct Qdisc *qdisc);
+>>>>>>> origin/android16-base
 void qdisc_tree_reduce_backlog(struct Qdisc *qdisc, unsigned int n,
 			       unsigned int len);
 struct Qdisc *qdisc_alloc(struct netdev_queue *dev_queue,
@@ -1058,6 +1085,10 @@ struct psched_ratecfg {
 	u64	rate_bytes_ps; /* bytes per second */
 	u32	mult;
 	u16	overhead;
+<<<<<<< HEAD
+=======
+	u16	mpu;
+>>>>>>> origin/android16-base
 	u8	linklayer;
 	u8	shift;
 };
@@ -1067,6 +1098,12 @@ static inline u64 psched_l2t_ns(const struct psched_ratecfg *r,
 {
 	len += r->overhead;
 
+<<<<<<< HEAD
+=======
+	if (len < r->mpu)
+		len = r->mpu;
+
+>>>>>>> origin/android16-base
 	if (unlikely(r->linklayer == TC_LINKLAYER_ATM))
 		return ((u64)(DIV_ROUND_UP(len,48)*53) * r->mult) >> r->shift;
 
@@ -1089,6 +1126,10 @@ static inline void psched_ratecfg_getrate(struct tc_ratespec *res,
 	res->rate = min_t(u64, r->rate_bytes_ps, ~0U);
 
 	res->overhead = r->overhead;
+<<<<<<< HEAD
+=======
+	res->mpu = r->mpu;
+>>>>>>> origin/android16-base
 	res->linklayer = (r->linklayer & TC_LINKLAYER_MASK);
 }
 

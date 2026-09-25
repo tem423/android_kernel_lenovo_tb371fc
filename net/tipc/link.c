@@ -914,9 +914,13 @@ void tipc_link_reset(struct tipc_link *l)
 int tipc_link_xmit(struct tipc_link *l, struct sk_buff_head *list,
 		   struct sk_buff_head *xmitq)
 {
+<<<<<<< HEAD
 	struct tipc_msg *hdr = buf_msg(skb_peek(list));
 	unsigned int maxwin = l->window;
 	int imp = msg_importance(hdr);
+=======
+	unsigned int maxwin = l->window;
+>>>>>>> origin/android16-base
 	unsigned int mtu = l->mtu;
 	u16 ack = l->rcv_nxt - 1;
 	u16 seqno = l->snd_nxt;
@@ -925,13 +929,28 @@ int tipc_link_xmit(struct tipc_link *l, struct sk_buff_head *list,
 	struct sk_buff_head *backlogq = &l->backlogq;
 	struct sk_buff *skb, *_skb, **tskb;
 	int pkt_cnt = skb_queue_len(list);
+<<<<<<< HEAD
 	int rc = 0;
 
+=======
+	struct tipc_msg *hdr;
+	int rc = 0;
+	int imp;
+
+	if (pkt_cnt <= 0)
+		return 0;
+
+	hdr = buf_msg(skb_peek(list));
+>>>>>>> origin/android16-base
 	if (unlikely(msg_size(hdr) > mtu)) {
 		__skb_queue_purge(list);
 		return -EMSGSIZE;
 	}
 
+<<<<<<< HEAD
+=======
+	imp = msg_importance(hdr);
+>>>>>>> origin/android16-base
 	/* Allow oversubscription of one data msg per source at congestion */
 	if (unlikely(l->backlog[imp].len >= l->backlog[imp].limit)) {
 		if (imp == TIPC_SYSTEM_IMPORTANCE) {
@@ -1574,20 +1593,36 @@ static int tipc_link_proto_rcv(struct tipc_link *l, struct sk_buff *skb,
 	u16 peers_tol = msg_link_tolerance(hdr);
 	u16 peers_prio = msg_linkprio(hdr);
 	u16 rcv_nxt = l->rcv_nxt;
+<<<<<<< HEAD
 	u16 dlen = msg_data_sz(hdr);
+=======
+	u32 dlen = msg_data_sz(hdr);
+>>>>>>> origin/android16-base
 	int mtyp = msg_type(hdr);
 	bool reply = msg_probe(hdr);
 	void *data;
 	char *if_name;
 	int rc = 0;
 
+<<<<<<< HEAD
+=======
+	if (dlen > U16_MAX)
+		goto exit;
+
+>>>>>>> origin/android16-base
 	if (tipc_link_is_blocked(l) || !xmitq)
 		goto exit;
 
 	if (tipc_own_addr(l->net) > msg_prevnode(hdr))
 		l->net_plane = msg_net_plane(hdr);
 
+<<<<<<< HEAD
 	skb_linearize(skb);
+=======
+	if (skb_linearize(skb))
+		goto exit;
+
+>>>>>>> origin/android16-base
 	hdr = buf_msg(skb);
 	data = msg_data(hdr);
 

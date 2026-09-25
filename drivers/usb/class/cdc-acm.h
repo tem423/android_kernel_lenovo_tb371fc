@@ -22,6 +22,11 @@
 #define ACM_TTY_MAJOR		166
 #define ACM_TTY_MINORS		256
 
+<<<<<<< HEAD
+=======
+#define ACM_MINOR_INVALID	ACM_TTY_MINORS
+
+>>>>>>> origin/android16-base
 /*
  * Requests.
  */

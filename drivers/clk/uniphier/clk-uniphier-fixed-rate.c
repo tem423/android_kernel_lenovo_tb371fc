@@ -33,6 +33,10 @@ struct clk_hw *uniphier_clk_register_fixed_rate(struct device *dev,
 
 	init.name = name;
 	init.ops = &clk_fixed_rate_ops;
+<<<<<<< HEAD
+=======
+	init.flags = 0;
+>>>>>>> origin/android16-base
 	init.parent_names = NULL;
 	init.num_parents = 0;
 

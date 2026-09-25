@@ -427,7 +427,11 @@
 
 		/* Direct-mapped development chip ROM */
 		pb1176_rom@10200000 {
+<<<<<<< HEAD
 			compatible = "direct-mapped";
+=======
+			compatible = "mtd-rom";
+>>>>>>> origin/android16-base
 			reg = <0x10200000 0x4000>;
 			bank-width = <1>;
 		};

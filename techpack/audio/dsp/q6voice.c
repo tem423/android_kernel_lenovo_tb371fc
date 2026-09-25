@@ -2761,7 +2761,11 @@ static int voice_send_cvs_register_cal_cmd(struct voice_data *v)
 	}
 
 	if (col_data->cal_data.size >= MAX_COL_INFO_SIZE) {
+<<<<<<< HEAD
 		pr_err("%s: Invalid cal data size %d!\n",
+=======
+		pr_err("%s: Invalid cal data size %ld!\n",
+>>>>>>> origin/android16-base
 			__func__, col_data->cal_data.size);
 		ret = -EINVAL;
 		goto unlock;
@@ -3221,6 +3225,16 @@ static int voice_send_cvp_register_cal_cmd(struct voice_data *v)
 		 voc_get_session_name(v->session_id), v->dev_tx.dev_id,
 		 v->dev_rx.dev_id);
 
+<<<<<<< HEAD
+=======
+	if (col_data->cal_data.size >= MAX_COL_INFO_SIZE) {
+		pr_err("%s: Invalid cal data size %ld!\n",
+			__func__, col_data->cal_data.size);
+		ret = -EINVAL;
+		goto unlock;
+	}
+
+>>>>>>> origin/android16-base
 	memcpy(&cvp_reg_cal_cmd.cvp_cal_data.column_info[0],
 	       (void *) &((struct audio_cal_info_voc_col *)
 	       col_data->cal_info)->data,
@@ -3381,6 +3395,16 @@ static int voice_send_cvp_register_vol_cal_cmd(struct voice_data *v)
 		goto unlock;
 	}
 
+<<<<<<< HEAD
+=======
+	if (col_data->cal_data.size >= MAX_COL_INFO_SIZE) {
+		pr_err("%s: Invalid cal data size %ld!\n",
+			__func__, col_data->cal_data.size);
+		ret = -EINVAL;
+		goto unlock;
+	}
+
+>>>>>>> origin/android16-base
 	memcpy(&cvp_reg_vol_cal_cmd.cvp_vol_cal_data.column_info[0],
 	       (void *) &((struct audio_cal_info_voc_col *)
 	       col_data->cal_info)->data,

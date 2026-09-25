@@ -23,7 +23,10 @@ source "arch/powerpc/platforms/amigaone/Kconfig"
 
 config KVM_GUEST
 	bool "KVM Guest support"
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	select EPAPR_PARAVIRT
 	---help---
 	  This option enables various optimizations for running under the KVM
@@ -34,7 +37,10 @@ config KVM_GUEST
 
 config EPAPR_PARAVIRT
 	bool "ePAPR para-virtualization support"
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	help
 	  Enables ePAPR para-virtualization support for guests.
 
@@ -74,7 +80,10 @@ config PPC_DT_CPU_FTRS
 config UDBG_RTAS_CONSOLE
 	bool "RTAS based debug console"
 	depends on PPC_RTAS
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 
 config PPC_SMP_MUXED_IPI
 	bool
@@ -86,16 +95,25 @@ config PPC_SMP_MUXED_IPI
 
 config IPIC
 	bool
+<<<<<<< HEAD
 	default n
 
 config MPIC
 	bool
 	default n
+=======
+
+config MPIC
+	bool
+>>>>>>> origin/android16-base
 
 config MPIC_TIMER
 	bool "MPIC Global Timer"
 	depends on MPIC && FSL_SOC
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	help
 	  The MPIC global timer is a hardware timer inside the
 	  Freescale PIC complying with OpenPIC standard. When the
@@ -107,7 +125,10 @@ config MPIC_TIMER
 config FSL_MPIC_TIMER_WAKEUP
 	tristate "Freescale MPIC global timer wakeup driver"
 	depends on FSL_SOC &&  MPIC_TIMER && PM
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	help
 	  The driver provides a way to wake up the system by MPIC
 	  timer.
@@ -115,43 +136,67 @@ config FSL_MPIC_TIMER_WAKEUP
 
 config PPC_EPAPR_HV_PIC
 	bool
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	select EPAPR_PARAVIRT
 
 config MPIC_WEIRD
 	bool
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 
 config MPIC_MSGR
 	bool "MPIC message register support"
 	depends on MPIC
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	help
 	  Enables support for the MPIC message registers.  These
 	  registers are used for inter-processor communication.
 
 config PPC_I8259
 	bool
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 
 config U3_DART
 	bool
 	depends on PPC64
+<<<<<<< HEAD
 	default n
 
 config PPC_RTAS
 	bool
 	default n
+=======
+
+config PPC_RTAS
+	bool
+>>>>>>> origin/android16-base
 
 config RTAS_ERROR_LOGGING
 	bool
 	depends on PPC_RTAS
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 
 config PPC_RTAS_DAEMON
 	bool
 	depends on PPC_RTAS
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 
 config RTAS_PROC
 	bool "Proc interface to RTAS"
@@ -164,11 +209,17 @@ config RTAS_FLASH
 
 config MMIO_NVRAM
 	bool
+<<<<<<< HEAD
 	default n
 
 config MPIC_U3_HT_IRQS
 	bool
 	default n
+=======
+
+config MPIC_U3_HT_IRQS
+	bool
+>>>>>>> origin/android16-base
 
 config MPIC_BROKEN_REGREAD
 	bool
@@ -187,6 +238,7 @@ config EEH
 
 config PPC_MPC106
 	bool
+<<<<<<< HEAD
 	default n
 
 config PPC_970_NAP
@@ -196,6 +248,14 @@ config PPC_970_NAP
 config PPC_P7_NAP
 	bool
 	default n
+=======
+
+config PPC_970_NAP
+	bool
+
+config PPC_P7_NAP
+	bool
+>>>>>>> origin/android16-base
 
 config PPC_INDIRECT_PIO
 	bool
@@ -289,7 +349,10 @@ config CPM2
 
 config FSL_ULI1575
 	bool
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	select GENERIC_ISA_DMA
 	help
 	  Supports for the ULI1575 PCIe south bridge that exists on some

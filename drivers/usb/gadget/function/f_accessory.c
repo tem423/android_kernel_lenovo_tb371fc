@@ -27,6 +27,10 @@
 #include <linux/interrupt.h>
 #include <linux/kthread.h>
 #include <linux/freezer.h>
+<<<<<<< HEAD
+=======
+#include <linux/kref.h>
+>>>>>>> origin/android16-base
 
 #include <linux/types.h>
 #include <linux/file.h>
@@ -73,6 +77,10 @@ struct acc_dev {
 	struct usb_function function;
 	struct usb_composite_dev *cdev;
 	spinlock_t lock;
+<<<<<<< HEAD
+=======
+	struct acc_dev_ref *ref;
+>>>>>>> origin/android16-base
 
 	struct usb_ep *ep_in;
 	struct usb_ep *ep_out;
@@ -199,14 +207,56 @@ static struct usb_gadget_strings *acc_strings[] = {
 	NULL,
 };
 
+<<<<<<< HEAD
 /* temporary variable used between acc_open() and acc_gadget_bind() */
 static struct acc_dev *_acc_dev;
+=======
+struct acc_dev_ref {
+	struct kref	kref;
+	struct acc_dev	*acc_dev;
+};
+
+static struct acc_dev_ref _acc_dev_ref = {
+	.kref = KREF_INIT(0),
+};
+>>>>>>> origin/android16-base
 
 struct acc_instance {
 	struct usb_function_instance func_inst;
 	const char *name;
 };
 
+<<<<<<< HEAD
+=======
+static struct acc_dev *get_acc_dev(void)
+{
+	struct acc_dev_ref *ref = &_acc_dev_ref;
+
+	return kref_get_unless_zero(&ref->kref) ? ref->acc_dev : NULL;
+}
+
+static void __put_acc_dev(struct kref *kref)
+{
+	struct acc_dev_ref *ref = container_of(kref, struct acc_dev_ref, kref);
+	struct acc_dev *dev = ref->acc_dev;
+
+	/* Cancel any async work */
+	cancel_delayed_work_sync(&dev->start_work);
+	cancel_work_sync(&dev->hid_work);
+
+	ref->acc_dev = NULL;
+	kfree(dev);
+}
+
+static void put_acc_dev(struct acc_dev *dev)
+{
+	struct acc_dev_ref *ref = dev->ref;
+
+	WARN_ON(ref->acc_dev != dev);
+	kref_put(&ref->kref, __put_acc_dev);
+}
+
+>>>>>>> origin/android16-base
 static inline struct acc_dev *func_to_dev(struct usb_function *f)
 {
 	return container_of(f, struct acc_dev, function);
@@ -272,7 +322,14 @@ static void acc_set_disconnected(struct acc_dev *dev)
 
 static void acc_complete_in(struct usb_ep *ep, struct usb_request *req)
 {
+<<<<<<< HEAD
 	struct acc_dev *dev = _acc_dev;
+=======
+	struct acc_dev *dev = get_acc_dev();
+
+	if (!dev)
+		return;
+>>>>>>> origin/android16-base
 
 	if (req->status == -ESHUTDOWN) {
 		pr_debug("acc_complete_in set disconnected");
@@ -282,11 +339,22 @@ static void acc_complete_in(struct usb_ep *ep, struct usb_request *req)
 	req_put(dev, &dev->tx_idle, req);
 
 	wake_up(&dev->write_wq);
+<<<<<<< HEAD
+=======
+	put_acc_dev(dev);
+>>>>>>> origin/android16-base
 }
 
 static void acc_complete_out(struct usb_ep *ep, struct usb_request *req)
 {
+<<<<<<< HEAD
 	struct acc_dev *dev = _acc_dev;
+=======
+	struct acc_dev *dev = get_acc_dev();
+
+	if (!dev)
+		return;
+>>>>>>> origin/android16-base
 
 	dev->rx_done = 1;
 	if (req->status == -ESHUTDOWN) {
@@ -295,6 +363,10 @@ static void acc_complete_out(struct usb_ep *ep, struct usb_request *req)
 	}
 
 	wake_up(&dev->read_wq);
+<<<<<<< HEAD
+=======
+	put_acc_dev(dev);
+>>>>>>> origin/android16-base
 }
 
 static void acc_complete_set_string(struct usb_ep *ep, struct usb_request *req)
@@ -557,8 +629,16 @@ fail:
 	pr_err("acc_bind() could not allocate requests\n");
 	while ((req = req_get(dev, &dev->tx_idle)))
 		acc_request_free(req, dev->ep_in);
+<<<<<<< HEAD
 	for (i = 0; i < RX_REQ_MAX; i++)
 		acc_request_free(dev->rx_req[i], dev->ep_out);
+=======
+	for (i = 0; i < RX_REQ_MAX; i++) {
+		acc_request_free(dev->rx_req[i], dev->ep_out);
+		dev->rx_req[i] = NULL;
+	}
+
+>>>>>>> origin/android16-base
 	return -1;
 }
 
@@ -567,7 +647,12 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 {
 	struct acc_dev *dev = fp->private_data;
 	struct usb_request *req;
+<<<<<<< HEAD
 	ssize_t r = count, xfer, len;
+=======
+	ssize_t r = count, xfer;
+	ssize_t data_length;
+>>>>>>> origin/android16-base
 	int ret = 0;
 
 	pr_debug("acc_read(%zu)\n", count);
@@ -588,7 +673,24 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 		goto done;
 	}
 
+<<<<<<< HEAD
 	len = ALIGN(count, dev->ep_out->maxpacket);
+=======
+	if (!dev->rx_req[0]) {
+		pr_warn("acc_read: USB request already handled/freed");
+		r = -EINVAL;
+		goto done;
+	}
+
+	/*
+	 * Calculate the data length by considering termination character.
+	 * Then compansite the difference of rounding up to
+	 * integer multiple of maxpacket size.
+	 */
+	data_length = count;
+	data_length += dev->ep_out->maxpacket - 1;
+	data_length -= data_length % dev->ep_out->maxpacket;
+>>>>>>> origin/android16-base
 
 	if (dev->rx_done) {
 		// last req cancelled. try to get it.
@@ -599,7 +701,11 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 requeue_req:
 	/* queue a request */
 	req = dev->rx_req[0];
+<<<<<<< HEAD
 	req->length = len;
+=======
+	req->length = data_length;
+>>>>>>> origin/android16-base
 	dev->rx_done = 0;
 	ret = usb_ep_queue(dev->ep_out, req, GFP_KERNEL);
 	if (ret < 0) {
@@ -753,17 +859,33 @@ static long acc_ioctl(struct file *fp, unsigned code, unsigned long value)
 
 static int acc_open(struct inode *ip, struct file *fp)
 {
+<<<<<<< HEAD
 	printk(KERN_INFO "acc_open\n");
 	if (atomic_xchg(&_acc_dev->open_excl, 1))
 		return -EBUSY;
 
 	_acc_dev->disconnected = 0;
 	fp->private_data = _acc_dev;
+=======
+	struct acc_dev *dev = get_acc_dev();
+
+	if (!dev)
+		return -ENODEV;
+
+	if (atomic_xchg(&dev->open_excl, 1)) {
+		put_acc_dev(dev);
+		return -EBUSY;
+	}
+
+	dev->disconnected = 0;
+	fp->private_data = dev;
+>>>>>>> origin/android16-base
 	return 0;
 }
 
 static int acc_release(struct inode *ip, struct file *fp)
 {
+<<<<<<< HEAD
 	printk(KERN_INFO "acc_release\n");
 
 	WARN_ON(!atomic_xchg(&_acc_dev->open_excl, 0));
@@ -771,6 +893,21 @@ static int acc_release(struct inode *ip, struct file *fp)
 	 * still could be online so don't touch online flag
 	 */
 	_acc_dev->disconnected = 1;
+=======
+	struct acc_dev *dev = fp->private_data;
+
+	if (!dev)
+		return -ENOENT;
+
+	/* indicate that we are disconnected
+	 * still could be online so don't touch online flag
+	 */
+	dev->disconnected = 1;
+
+	fp->private_data = NULL;
+	WARN_ON(!atomic_xchg(&dev->open_excl, 0));
+	put_acc_dev(dev);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -823,7 +960,11 @@ static void acc_complete_setup_noop(struct usb_ep *ep, struct usb_request *req)
 int acc_ctrlrequest(struct usb_composite_dev *cdev,
 				const struct usb_ctrlrequest *ctrl)
 {
+<<<<<<< HEAD
 	struct acc_dev	*dev = _acc_dev;
+=======
+	struct acc_dev	*dev = get_acc_dev();
+>>>>>>> origin/android16-base
 	int	value = -EOPNOTSUPP;
 	struct acc_hid_dev *hid;
 	int offset;
@@ -840,12 +981,15 @@ int acc_ctrlrequest(struct usb_composite_dev *cdev,
 	 */
 	if (!dev)
 		return -ENODEV;
+<<<<<<< HEAD
 /*
 	printk(KERN_INFO "acc_ctrlrequest "
 			"%02x.%02x v%04x i%04x l%u\n",
 			b_requestType, b_request,
 			w_value, w_index, w_length);
 */
+=======
+>>>>>>> origin/android16-base
 
 	if (b_requestType == (USB_DIR_OUT | USB_TYPE_VENDOR)) {
 		if (b_request == ACCESSORY_START) {
@@ -934,10 +1078,37 @@ err:
 			"%02x.%02x v%04x i%04x l%u\n",
 			ctrl->bRequestType, ctrl->bRequest,
 			w_value, w_index, w_length);
+<<<<<<< HEAD
+=======
+	put_acc_dev(dev);
+>>>>>>> origin/android16-base
 	return value;
 }
 EXPORT_SYMBOL_GPL(acc_ctrlrequest);
 
+<<<<<<< HEAD
+=======
+int acc_ctrlrequest_composite(struct usb_composite_dev *cdev,
+			      const struct usb_ctrlrequest *ctrl)
+{
+	u16 w_length = le16_to_cpu(ctrl->wLength);
+
+	if (w_length > USB_COMP_EP0_BUFSIZ) {
+		if (ctrl->bRequestType & USB_DIR_IN) {
+			/* Cast away the const, we are going to overwrite on purpose. */
+			__le16 *temp = (__le16 *)&ctrl->wLength;
+
+			*temp = cpu_to_le16(USB_COMP_EP0_BUFSIZ);
+			w_length = USB_COMP_EP0_BUFSIZ;
+		} else {
+			return -EINVAL;
+		}
+	}
+	return acc_ctrlrequest(cdev, ctrl);
+}
+EXPORT_SYMBOL_GPL(acc_ctrlrequest_composite);
+
+>>>>>>> origin/android16-base
 static int
 __acc_function_bind(struct usb_configuration *c,
 			struct usb_function *f, bool configfs)
@@ -1004,10 +1175,13 @@ kill_all_hid_devices(struct acc_dev *dev)
 	struct list_head *entry, *temp;
 	unsigned long flags;
 
+<<<<<<< HEAD
 	/* do nothing if usb accessory device doesn't exist */
 	if (!dev)
 		return;
 
+=======
+>>>>>>> origin/android16-base
 	spin_lock_irqsave(&dev->lock, flags);
 	list_for_each_safe(entry, temp, &dev->hid_list) {
 		hid = list_entry(entry, struct acc_hid_dev, list);
@@ -1044,8 +1218,15 @@ acc_function_unbind(struct usb_configuration *c, struct usb_function *f)
 
 	while ((req = req_get(dev, &dev->tx_idle)))
 		acc_request_free(req, dev->ep_in);
+<<<<<<< HEAD
 	for (i = 0; i < RX_REQ_MAX; i++)
 		acc_request_free(dev->rx_req[i], dev->ep_out);
+=======
+	for (i = 0; i < RX_REQ_MAX; i++) {
+		acc_request_free(dev->rx_req[i], dev->ep_out);
+		dev->rx_req[i] = NULL;
+	}
+>>>>>>> origin/android16-base
 
 	acc_hid_unbind(dev);
 }
@@ -1092,12 +1273,22 @@ static void acc_hid_delete(struct acc_hid_dev *hid)
 
 static void acc_hid_work(struct work_struct *data)
 {
+<<<<<<< HEAD
 	struct acc_dev *dev = _acc_dev;
+=======
+	struct acc_dev *dev = get_acc_dev();
+>>>>>>> origin/android16-base
 	struct list_head	*entry, *temp;
 	struct acc_hid_dev *hid;
 	struct list_head	new_list, dead_list;
 	unsigned long flags;
 
+<<<<<<< HEAD
+=======
+	if (!dev)
+		return;
+
+>>>>>>> origin/android16-base
 	INIT_LIST_HEAD(&new_list);
 
 	spin_lock_irqsave(&dev->lock, flags);
@@ -1143,6 +1334,11 @@ static void acc_hid_work(struct work_struct *data)
 			hid_destroy_device(hid->hid);
 		acc_hid_delete(hid);
 	}
+<<<<<<< HEAD
+=======
+
+	put_acc_dev(dev);
+>>>>>>> origin/android16-base
 }
 
 static int acc_function_set_alt(struct usb_function *f,
@@ -1199,9 +1395,19 @@ static void acc_function_disable(struct usb_function *f)
 
 static int acc_setup(void)
 {
+<<<<<<< HEAD
 	struct acc_dev *dev;
 	int ret;
 
+=======
+	struct acc_dev_ref *ref = &_acc_dev_ref;
+	struct acc_dev *dev;
+	int ret;
+
+	if (kref_read(&ref->kref))
+		return -EBUSY;
+
+>>>>>>> origin/android16-base
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev)
 		return -ENOMEM;
@@ -1217,6 +1423,7 @@ static int acc_setup(void)
 	INIT_DELAYED_WORK(&dev->start_work, acc_start_work);
 	INIT_WORK(&dev->hid_work, acc_hid_work);
 
+<<<<<<< HEAD
 	ret = misc_register(&acc_device);
 	if (ret)
 		goto err;
@@ -1227,6 +1434,24 @@ static int acc_setup(void)
 	return 0;
 
 err:
+=======
+	dev->ref = ref;
+	if (cmpxchg_relaxed(&ref->acc_dev, NULL, dev)) {
+		ret = -EBUSY;
+		goto err_free_dev;
+	}
+
+	ret = misc_register(&acc_device);
+	if (ret)
+		goto err_zap_ptr;
+
+	kref_init(&ref->kref);
+	return 0;
+
+err_zap_ptr:
+	ref->acc_dev = NULL;
+err_free_dev:
+>>>>>>> origin/android16-base
 	kfree(dev);
 	pr_err("USB accessory gadget driver failed to initialize\n");
 	return ret;
@@ -1234,16 +1459,35 @@ err:
 
 void acc_disconnect(void)
 {
+<<<<<<< HEAD
 	/* unregister all HID devices if USB is disconnected */
 	kill_all_hid_devices(_acc_dev);
+=======
+	struct acc_dev *dev = get_acc_dev();
+
+	if (!dev)
+		return;
+
+	/* unregister all HID devices if USB is disconnected */
+	kill_all_hid_devices(dev);
+	put_acc_dev(dev);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(acc_disconnect);
 
 static void acc_cleanup(void)
 {
+<<<<<<< HEAD
 	misc_deregister(&acc_device);
 	kfree(_acc_dev);
 	_acc_dev = NULL;
+=======
+	struct acc_dev *dev = get_acc_dev();
+
+	misc_deregister(&acc_device);
+	put_acc_dev(dev);
+	put_acc_dev(dev); /* Pairs with kref_init() in acc_setup() */
+>>>>>>> origin/android16-base
 }
 static struct acc_instance *to_acc_instance(struct config_item *item)
 {
@@ -1303,7 +1547,10 @@ static void acc_free_inst(struct usb_function_instance *fi)
 static struct usb_function_instance *acc_alloc_inst(void)
 {
 	struct acc_instance *fi_acc;
+<<<<<<< HEAD
 	struct acc_dev *dev;
+=======
+>>>>>>> origin/android16-base
 	int err;
 
 	fi_acc = kzalloc(sizeof(*fi_acc), GFP_KERNEL);
@@ -1315,19 +1562,31 @@ static struct usb_function_instance *acc_alloc_inst(void)
 	err = acc_setup();
 	if (err) {
 		kfree(fi_acc);
+<<<<<<< HEAD
 		pr_err("Error setting ACCESSORY\n");
+=======
+>>>>>>> origin/android16-base
 		return ERR_PTR(err);
 	}
 
 	config_group_init_type_name(&fi_acc->func_inst.group,
 					"", &acc_func_type);
+<<<<<<< HEAD
 	dev = _acc_dev;
+=======
+>>>>>>> origin/android16-base
 	return  &fi_acc->func_inst;
 }
 
 static void acc_free(struct usb_function *f)
 {
+<<<<<<< HEAD
 /*NO-OP: no function specific resource allocation in mtp_alloc*/
+=======
+	struct acc_dev *dev = func_to_dev(f);
+
+	put_acc_dev(dev);
+>>>>>>> origin/android16-base
 }
 
 int acc_ctrlrequest_configfs(struct usb_function *f,
@@ -1340,9 +1599,13 @@ int acc_ctrlrequest_configfs(struct usb_function *f,
 
 static struct usb_function *acc_alloc(struct usb_function_instance *fi)
 {
+<<<<<<< HEAD
 	struct acc_dev *dev = _acc_dev;
 
 	pr_info("acc_alloc\n");
+=======
+	struct acc_dev *dev = get_acc_dev();
+>>>>>>> origin/android16-base
 
 	dev->function.name = "accessory";
 	dev->function.strings = acc_strings,

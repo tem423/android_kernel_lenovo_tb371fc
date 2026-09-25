@@ -393,6 +393,11 @@ static int stm32_usbphyc_probe(struct platform_device *pdev)
 		ret = of_property_read_u32(child, "reg", &index);
 		if (ret || index > usbphyc->nphys) {
 			dev_err(&phy->dev, "invalid reg property: %d\n", ret);
+<<<<<<< HEAD
+=======
+			if (!ret)
+				ret = -EINVAL;
+>>>>>>> origin/android16-base
 			goto put_child;
 		}
 

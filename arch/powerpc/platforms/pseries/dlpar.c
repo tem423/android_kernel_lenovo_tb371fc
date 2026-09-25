@@ -132,7 +132,10 @@ void dlpar_free_cc_nodes(struct device_node *dn)
 #define NEXT_PROPERTY   3
 #define PREV_PARENT     4
 #define MORE_MEMORY     5
+<<<<<<< HEAD
 #define CALL_AGAIN	-2
+=======
+>>>>>>> origin/android16-base
 #define ERR_CFG_USE     -9003
 
 struct device_node *dlpar_configure_connector(__be32 drc_index,
@@ -173,6 +176,12 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
 
 		spin_unlock(&rtas_data_buf_lock);
 
+<<<<<<< HEAD
+=======
+		if (rtas_busy_delay(rc))
+			continue;
+
+>>>>>>> origin/android16-base
 		switch (rc) {
 		case COMPLETE:
 			break;
@@ -221,9 +230,12 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
 			last_dn = last_dn->parent;
 			break;
 
+<<<<<<< HEAD
 		case CALL_AGAIN:
 			break;
 
+=======
+>>>>>>> origin/android16-base
 		case MORE_MEMORY:
 		case ERR_CFG_USE:
 		default:

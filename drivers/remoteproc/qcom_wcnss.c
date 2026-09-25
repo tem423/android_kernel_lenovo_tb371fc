@@ -415,6 +415,10 @@ static int wcnss_request_irq(struct qcom_wcnss *wcnss,
 			     irq_handler_t thread_fn)
 {
 	int ret;
+<<<<<<< HEAD
+=======
+	int irq_number;
+>>>>>>> origin/android16-base
 
 	ret = platform_get_irq_byname(pdev, name);
 	if (ret < 0 && optional) {
@@ -425,14 +429,29 @@ static int wcnss_request_irq(struct qcom_wcnss *wcnss,
 		return ret;
 	}
 
+<<<<<<< HEAD
+=======
+	irq_number = ret;
+
+>>>>>>> origin/android16-base
 	ret = devm_request_threaded_irq(&pdev->dev, ret,
 					NULL, thread_fn,
 					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
 					"wcnss", wcnss);
+<<<<<<< HEAD
 	if (ret)
 		dev_err(&pdev->dev, "request %s IRQ failed\n", name);
 
 	return ret;
+=======
+	if (ret) {
+		dev_err(&pdev->dev, "request %s IRQ failed\n", name);
+		return ret;
+	}
+
+	/* Return the IRQ number if the IRQ was successfully acquired */
+	return irq_number;
+>>>>>>> origin/android16-base
 }
 
 static int wcnss_alloc_memory_region(struct qcom_wcnss *wcnss)
@@ -448,6 +467,10 @@ static int wcnss_alloc_memory_region(struct qcom_wcnss *wcnss)
 	}
 
 	ret = of_address_to_resource(node, 0, &r);
+<<<<<<< HEAD
+=======
+	of_node_put(node);
+>>>>>>> origin/android16-base
 	if (ret)
 		return ret;
 

@@ -26,8 +26,15 @@ static int orangefs_revalidate_lookup(struct dentry *dentry)
 	gossip_debug(GOSSIP_DCACHE_DEBUG, "%s: attempting lookup.\n", __func__);
 
 	new_op = op_alloc(ORANGEFS_VFS_OP_LOOKUP);
+<<<<<<< HEAD
 	if (!new_op)
 		goto out_put_parent;
+=======
+	if (!new_op) {
+		ret = -ENOMEM;
+		goto out_put_parent;
+	}
+>>>>>>> origin/android16-base
 
 	new_op->upcall.req.lookup.sym_follow = ORANGEFS_LOOKUP_LINK_NO_FOLLOW;
 	new_op->upcall.req.lookup.parent_refn = parent->refn;

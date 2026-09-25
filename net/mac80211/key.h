@@ -127,6 +127,11 @@ struct ieee80211_key {
 	} debugfs;
 #endif
 
+<<<<<<< HEAD
+=======
+	unsigned int color;
+
+>>>>>>> origin/android16-base
 	/*
 	 * key config, must be last because it contains key
 	 * material as variable length member

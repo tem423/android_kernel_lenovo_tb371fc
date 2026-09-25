@@ -1218,6 +1218,10 @@ static int fsldma_of_probe(struct platform_device *op)
 {
 	struct fsldma_device *fdev;
 	struct device_node *child;
+<<<<<<< HEAD
+=======
+	unsigned int i;
+>>>>>>> origin/android16-base
 	int err;
 
 	fdev = kzalloc(sizeof(*fdev), GFP_KERNEL);
@@ -1296,6 +1300,13 @@ static int fsldma_of_probe(struct platform_device *op)
 	return 0;
 
 out_free_fdev:
+<<<<<<< HEAD
+=======
+	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
+		if (fdev->chan[i])
+			fsl_dma_chan_remove(fdev->chan[i]);
+	}
+>>>>>>> origin/android16-base
 	irq_dispose_mapping(fdev->irq);
 	iounmap(fdev->regs);
 out_free:
@@ -1318,6 +1329,10 @@ static int fsldma_of_remove(struct platform_device *op)
 		if (fdev->chan[i])
 			fsl_dma_chan_remove(fdev->chan[i]);
 	}
+<<<<<<< HEAD
+=======
+	irq_dispose_mapping(fdev->irq);
+>>>>>>> origin/android16-base
 
 	iounmap(fdev->regs);
 	kfree(fdev);

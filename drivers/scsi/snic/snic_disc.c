@@ -317,7 +317,14 @@ snic_tgt_create(struct snic *snic, struct snic_tgt_id *tgtid)
 			      ret);
 
 		put_device(&snic->shost->shost_gendev);
+<<<<<<< HEAD
 		kfree(tgt);
+=======
+		spin_lock_irqsave(snic->shost->host_lock, flags);
+		list_del(&tgt->list);
+		spin_unlock_irqrestore(snic->shost->host_lock, flags);
+		put_device(&tgt->dev);
+>>>>>>> origin/android16-base
 		tgt = NULL;
 
 		return tgt;

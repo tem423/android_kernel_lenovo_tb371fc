@@ -616,4 +616,8 @@ MODULE_AUTHOR("Kirk Lapray");
 MODULE_AUTHOR("Trent Piepho");
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(or51132_attach);
+=======
+EXPORT_SYMBOL_GPL(or51132_attach);
+>>>>>>> origin/android16-base

@@ -20,7 +20,11 @@
 #include <acpi/pcc.h>
 #include <acpi/processor.h>
 
+<<<<<<< HEAD
 /* Support CPPCv2 and CPPCv3  */
+=======
+/* CPPCv2 and CPPCv3 support */
+>>>>>>> origin/android16-base
 #define CPPC_V2_REV	2
 #define CPPC_V3_REV	3
 #define CPPC_V2_NUM_ENT	21

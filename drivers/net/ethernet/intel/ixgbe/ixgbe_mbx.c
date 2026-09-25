@@ -24,7 +24,11 @@ s32 ixgbe_read_mbx(struct ixgbe_hw *hw, u32 *msg, u16 size, u16 mbx_id)
 		size = mbx->size;
 
 	if (!mbx->ops)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	return mbx->ops->read(hw, msg, size, mbx_id);
 }
@@ -43,10 +47,17 @@ s32 ixgbe_write_mbx(struct ixgbe_hw *hw, u32 *msg, u16 size, u16 mbx_id)
 	struct ixgbe_mbx_info *mbx = &hw->mbx;
 
 	if (size > mbx->size)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
 
 	if (!mbx->ops)
 		return IXGBE_ERR_MBX;
+=======
+		return -EINVAL;
+
+	if (!mbx->ops)
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	return mbx->ops->write(hw, msg, size, mbx_id);
 }
@@ -63,7 +74,11 @@ s32 ixgbe_check_for_msg(struct ixgbe_hw *hw, u16 mbx_id)
 	struct ixgbe_mbx_info *mbx = &hw->mbx;
 
 	if (!mbx->ops)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	return mbx->ops->check_for_msg(hw, mbx_id);
 }
@@ -80,7 +95,11 @@ s32 ixgbe_check_for_ack(struct ixgbe_hw *hw, u16 mbx_id)
 	struct ixgbe_mbx_info *mbx = &hw->mbx;
 
 	if (!mbx->ops)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	return mbx->ops->check_for_ack(hw, mbx_id);
 }
@@ -97,7 +116,11 @@ s32 ixgbe_check_for_rst(struct ixgbe_hw *hw, u16 mbx_id)
 	struct ixgbe_mbx_info *mbx = &hw->mbx;
 
 	if (!mbx->ops)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	return mbx->ops->check_for_rst(hw, mbx_id);
 }
@@ -115,12 +138,20 @@ static s32 ixgbe_poll_for_msg(struct ixgbe_hw *hw, u16 mbx_id)
 	int countdown = mbx->timeout;
 
 	if (!countdown || !mbx->ops)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	while (mbx->ops->check_for_msg(hw, mbx_id)) {
 		countdown--;
 		if (!countdown)
+<<<<<<< HEAD
 			return IXGBE_ERR_MBX;
+=======
+			return -EIO;
+>>>>>>> origin/android16-base
 		udelay(mbx->usec_delay);
 	}
 
@@ -140,12 +171,20 @@ static s32 ixgbe_poll_for_ack(struct ixgbe_hw *hw, u16 mbx_id)
 	int countdown = mbx->timeout;
 
 	if (!countdown || !mbx->ops)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	while (mbx->ops->check_for_ack(hw, mbx_id)) {
 		countdown--;
 		if (!countdown)
+<<<<<<< HEAD
 			return IXGBE_ERR_MBX;
+=======
+			return -EIO;
+>>>>>>> origin/android16-base
 		udelay(mbx->usec_delay);
 	}
 
@@ -169,7 +208,11 @@ static s32 ixgbe_read_posted_mbx(struct ixgbe_hw *hw, u32 *msg, u16 size,
 	s32 ret_val;
 
 	if (!mbx->ops)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	ret_val = ixgbe_poll_for_msg(hw, mbx_id);
 	if (ret_val)
@@ -197,7 +240,11 @@ static s32 ixgbe_write_posted_mbx(struct ixgbe_hw *hw, u32 *msg, u16 size,
 
 	/* exit if either we can't write or there isn't a defined timeout */
 	if (!mbx->ops || !mbx->timeout)
+<<<<<<< HEAD
 		return IXGBE_ERR_MBX;
+=======
+		return -EIO;
+>>>>>>> origin/android16-base
 
 	/* send msg */
 	ret_val = mbx->ops->write(hw, msg, size, mbx_id);
@@ -217,7 +264,11 @@ static s32 ixgbe_check_for_bit_pf(struct ixgbe_hw *hw, u32 mask, s32 index)
 		return 0;
 	}
 
+<<<<<<< HEAD
 	return IXGBE_ERR_MBX;
+=======
+	return -EIO;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -238,7 +289,11 @@ static s32 ixgbe_check_for_msg_pf(struct ixgbe_hw *hw, u16 vf_number)
 		return 0;
 	}
 
+<<<<<<< HEAD
 	return IXGBE_ERR_MBX;
+=======
+	return -EIO;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -259,7 +314,11 @@ static s32 ixgbe_check_for_ack_pf(struct ixgbe_hw *hw, u16 vf_number)
 		return 0;
 	}
 
+<<<<<<< HEAD
 	return IXGBE_ERR_MBX;
+=======
+	return -EIO;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -295,7 +354,11 @@ static s32 ixgbe_check_for_rst_pf(struct ixgbe_hw *hw, u16 vf_number)
 		return 0;
 	}
 
+<<<<<<< HEAD
 	return IXGBE_ERR_MBX;
+=======
+	return -EIO;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -317,7 +380,11 @@ static s32 ixgbe_obtain_mbx_lock_pf(struct ixgbe_hw *hw, u16 vf_number)
 	if (p2v_mailbox & IXGBE_PFMAILBOX_PFU)
 		return 0;
 
+<<<<<<< HEAD
 	return IXGBE_ERR_MBX;
+=======
+	return -EIO;
+>>>>>>> origin/android16-base
 }
 
 /**

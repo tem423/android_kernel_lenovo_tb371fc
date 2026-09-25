@@ -76,6 +76,7 @@ struct cpu_cacheinfo {
 	bool cpu_map_populated;
 };
 
+<<<<<<< HEAD
 /*
  * Helpers to make sure "func" is executed on the cpu whose cache
  * attributes are being detected
@@ -94,6 +95,8 @@ int func(unsigned int cpu)					\
 	return ret;						\
 }
 
+=======
+>>>>>>> origin/android16-base
 struct cpu_cacheinfo *get_cpu_cacheinfo(unsigned int cpu);
 int init_cache_level(unsigned int cpu);
 int populate_cache_leaves(unsigned int cpu);

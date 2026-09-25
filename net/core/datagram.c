@@ -837,11 +837,16 @@ __poll_t datagram_poll(struct file *file, struct socket *sock,
 {
 	struct sock *sk = sock->sk;
 	__poll_t mask;
+<<<<<<< HEAD
+=======
+	u8 shutdown;
+>>>>>>> origin/android16-base
 
 	sock_poll_wait(file, sock, wait);
 	mask = 0;
 
 	/* exceptional events? */
+<<<<<<< HEAD
 	if (sk->sk_err || !skb_queue_empty_lockless(&sk->sk_error_queue))
 		mask |= EPOLLERR |
 			(sock_flag(sk, SOCK_SELECT_ERR_QUEUE) ? EPOLLPRI : 0);
@@ -849,6 +854,17 @@ __poll_t datagram_poll(struct file *file, struct socket *sock,
 	if (sk->sk_shutdown & RCV_SHUTDOWN)
 		mask |= EPOLLRDHUP | EPOLLIN | EPOLLRDNORM;
 	if (sk->sk_shutdown == SHUTDOWN_MASK)
+=======
+	if (READ_ONCE(sk->sk_err) ||
+	    !skb_queue_empty_lockless(&sk->sk_error_queue))
+		mask |= EPOLLERR |
+			(sock_flag(sk, SOCK_SELECT_ERR_QUEUE) ? EPOLLPRI : 0);
+
+	shutdown = READ_ONCE(sk->sk_shutdown);
+	if (shutdown & RCV_SHUTDOWN)
+		mask |= EPOLLRDHUP | EPOLLIN | EPOLLRDNORM;
+	if (shutdown == SHUTDOWN_MASK)
+>>>>>>> origin/android16-base
 		mask |= EPOLLHUP;
 
 	/* readable? */
@@ -857,10 +873,19 @@ __poll_t datagram_poll(struct file *file, struct socket *sock,
 
 	/* Connection-based need to check for termination and startup */
 	if (connection_based(sk)) {
+<<<<<<< HEAD
 		if (sk->sk_state == TCP_CLOSE)
 			mask |= EPOLLHUP;
 		/* connection hasn't started yet? */
 		if (sk->sk_state == TCP_SYN_SENT)
+=======
+		int state = READ_ONCE(sk->sk_state);
+
+		if (state == TCP_CLOSE)
+			mask |= EPOLLHUP;
+		/* connection hasn't started yet? */
+		if (state == TCP_SYN_SENT)
+>>>>>>> origin/android16-base
 			return mask;
 	}
 

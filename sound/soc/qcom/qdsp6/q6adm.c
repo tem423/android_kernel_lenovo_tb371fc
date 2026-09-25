@@ -218,7 +218,11 @@ static struct q6copp *q6adm_alloc_copp(struct q6adm *adm, int port_idx)
 	idx = find_first_zero_bit(&adm->copp_bitmap[port_idx],
 				  MAX_COPPS_PER_PORT);
 
+<<<<<<< HEAD
 	if (idx > MAX_COPPS_PER_PORT)
+=======
+	if (idx >= MAX_COPPS_PER_PORT)
+>>>>>>> origin/android16-base
 		return ERR_PTR(-EBUSY);
 
 	c = kzalloc(sizeof(*c), GFP_ATOMIC);

@@ -40,6 +40,10 @@ void __raw_readsw(const void __iomem *addr, void *data, int len)
 		*dst++ = *src;
 
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(__raw_readsw);
+>>>>>>> origin/android16-base
 
 /*
  * __raw_writesw - read words a short at a time
@@ -60,6 +64,10 @@ void __raw_writesw(void __iomem *addr, const void *data, int len)
 
 
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(__raw_writesw);
+>>>>>>> origin/android16-base
 
 /*  Pretty sure len is pre-adjusted for the length of the access already */
 void __raw_readsl(const void __iomem *addr, void *data, int len)
@@ -75,6 +83,10 @@ void __raw_readsl(const void __iomem *addr, void *data, int len)
 
 
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(__raw_readsl);
+>>>>>>> origin/android16-base
 
 void __raw_writesl(void __iomem *addr, const void *data, int len)
 {
@@ -89,3 +101,7 @@ void __raw_writesl(void __iomem *addr, const void *data, int len)
 
 
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(__raw_writesl);
+>>>>>>> origin/android16-base

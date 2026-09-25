@@ -396,7 +396,11 @@ static int tegra_powergate_power_up(struct tegra_powergate *pg,
 
 	err = tegra_powergate_enable_clocks(pg);
 	if (err)
+<<<<<<< HEAD
 		goto disable_clks;
+=======
+		goto powergate_off;
+>>>>>>> origin/android16-base
 
 	usleep_range(10, 20);
 
@@ -408,7 +412,11 @@ static int tegra_powergate_power_up(struct tegra_powergate *pg,
 
 	err = reset_control_deassert(pg->reset);
 	if (err)
+<<<<<<< HEAD
 		goto powergate_off;
+=======
+		goto disable_clks;
+>>>>>>> origin/android16-base
 
 	usleep_range(10, 20);
 

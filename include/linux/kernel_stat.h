@@ -73,7 +73,11 @@ extern unsigned int kstat_irqs_usr(unsigned int irq);
 /*
  * Number of interrupts per cpu, since bootup
  */
+<<<<<<< HEAD
 static inline unsigned int kstat_cpu_irqs_sum(unsigned int cpu)
+=======
+static inline unsigned long kstat_cpu_irqs_sum(unsigned int cpu)
+>>>>>>> origin/android16-base
 {
 	return kstat_cpu(cpu).irqs_sum;
 }

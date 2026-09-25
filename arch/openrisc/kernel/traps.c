@@ -224,7 +224,11 @@ void die(const char *str, struct pt_regs *regs, long err)
 	__asm__ __volatile__("l.nop   1");
 	do {} while (1);
 #endif
+<<<<<<< HEAD
 	do_exit(SIGSEGV);
+=======
+	make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 }
 
 /* This is normally the 'Oops' routine */

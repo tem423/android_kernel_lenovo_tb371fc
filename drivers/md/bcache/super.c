@@ -423,7 +423,11 @@ static int __uuid_write(struct cache_set *c)
 	closure_init_stack(&cl);
 	lockdep_assert_held(&bch_register_lock);
 
+<<<<<<< HEAD
 	if (bch_bucket_alloc_set(c, RESERVE_BTREE, &k.key, 1, true))
+=======
+	if (bch_bucket_alloc_set(c, RESERVE_BTREE, &k.key, true))
+>>>>>>> origin/android16-base
 		return 1;
 
 	SET_KEY_SIZE(&k.key, c->sb.bucket_size);
@@ -807,6 +811,11 @@ static int bcache_device_init(struct bcache_device *d, unsigned int block_size,
 
 	if (!d->stripe_size)
 		d->stripe_size = 1 << 31;
+<<<<<<< HEAD
+=======
+	else if (d->stripe_size < BCH_MIN_STRIPE_SZ)
+		d->stripe_size = roundup(BCH_MIN_STRIPE_SZ, d->stripe_size);
+>>>>>>> origin/android16-base
 
 	d->nr_stripes = DIV_ROUND_UP_ULL(sectors, d->stripe_size);
 
@@ -824,11 +833,16 @@ static int bcache_device_init(struct bcache_device *d, unsigned int block_size,
 	n = BITS_TO_LONGS(d->nr_stripes) * sizeof(unsigned long);
 	d->full_dirty_stripes = kvzalloc(n, GFP_KERNEL);
 	if (!d->full_dirty_stripes)
+<<<<<<< HEAD
 		return -ENOMEM;
+=======
+		goto out_free_stripe_sectors_dirty;
+>>>>>>> origin/android16-base
 
 	idx = ida_simple_get(&bcache_device_idx, 0,
 				BCACHE_DEVICE_IDX_MAX, GFP_KERNEL);
 	if (idx < 0)
+<<<<<<< HEAD
 		return idx;
 
 	if (bioset_init(&d->bio_split, 4, offsetof(struct bbio, bio),
@@ -838,6 +852,17 @@ static int bcache_device_init(struct bcache_device *d, unsigned int block_size,
 	d->disk = alloc_disk(BCACHE_MINORS);
 	if (!d->disk)
 		goto err;
+=======
+		goto out_free_full_dirty_stripes;
+
+	if (bioset_init(&d->bio_split, 4, offsetof(struct bbio, bio),
+			BIOSET_NEED_BVECS|BIOSET_NEED_RESCUER))
+		goto out_ida_remove;
+
+	d->disk = alloc_disk(BCACHE_MINORS);
+	if (!d->disk)
+		goto out_bioset_exit;
+>>>>>>> origin/android16-base
 
 	set_capacity(d->disk, sectors);
 	snprintf(d->disk->disk_name, DISK_NAME_LEN, "bcache%i", idx);
@@ -872,8 +897,19 @@ static int bcache_device_init(struct bcache_device *d, unsigned int block_size,
 
 	return 0;
 
+<<<<<<< HEAD
 err:
 	ida_simple_remove(&bcache_device_idx, idx);
+=======
+out_bioset_exit:
+	bioset_exit(&d->bio_split);
+out_ida_remove:
+	ida_simple_remove(&bcache_device_idx, idx);
+out_free_full_dirty_stripes:
+	kvfree(d->full_dirty_stripes);
+out_free_stripe_sectors_dirty:
+	kvfree(d->stripe_sectors_dirty);
+>>>>>>> origin/android16-base
 	return -ENOMEM;
 
 }
@@ -1570,7 +1606,11 @@ static void cache_set_flush(struct closure *cl)
 	if (!IS_ERR_OR_NULL(c->gc_thread))
 		kthread_stop(c->gc_thread);
 
+<<<<<<< HEAD
 	if (!IS_ERR_OR_NULL(c->root))
+=======
+	if (!IS_ERR(c->root))
+>>>>>>> origin/android16-base
 		list_add(&c->root->list, &c->btree_cache);
 
 	/* Should skip this if we're unregistering because of an error */
@@ -1838,7 +1878,11 @@ static int run_cache_set(struct cache_set *c)
 		c->root = bch_btree_node_get(c, NULL, k,
 					     j->btree_level,
 					     true, NULL);
+<<<<<<< HEAD
 		if (IS_ERR_OR_NULL(c->root))
+=======
+		if (IS_ERR(c->root))
+>>>>>>> origin/android16-base
 			goto err;
 
 		list_del_init(&c->root->list);
@@ -1915,7 +1959,11 @@ static int run_cache_set(struct cache_set *c)
 
 		err = "cannot allocate new btree root";
 		c->root = __bch_btree_node_alloc(c, NULL, 0, true, NULL);
+<<<<<<< HEAD
 		if (IS_ERR_OR_NULL(c->root))
+=======
+		if (IS_ERR(c->root))
+>>>>>>> origin/android16-base
 			goto err;
 
 		mutex_lock(&c->root->write_lock);

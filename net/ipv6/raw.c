@@ -303,7 +303,11 @@ static int rawv6_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 		 */
 		v4addr = LOOPBACK4_IPV6;
 		if (!(addr_type & IPV6_ADDR_MULTICAST) &&
+<<<<<<< HEAD
 		    !sock_net(sk)->ipv6.sysctl.ip_nonlocal_bind) {
+=======
+		    !ipv6_can_nonlocal_bind(sock_net(sk), inet)) {
+>>>>>>> origin/android16-base
 			err = -EADDRNOTAVAIL;
 			if (!ipv6_chk_addr(sock_net(sk), &addr->sin6_addr,
 					   dev, 0)) {
@@ -544,6 +548,10 @@ csum_copy_err:
 static int rawv6_push_pending_frames(struct sock *sk, struct flowi6 *fl6,
 				     struct raw6_sock *rp)
 {
+<<<<<<< HEAD
+=======
+	struct ipv6_txoptions *opt;
+>>>>>>> origin/android16-base
 	struct sk_buff *skb;
 	int err = 0;
 	int offset;
@@ -561,6 +569,12 @@ static int rawv6_push_pending_frames(struct sock *sk, struct flowi6 *fl6,
 
 	offset = rp->offset;
 	total_len = inet_sk(sk)->cork.base.length;
+<<<<<<< HEAD
+=======
+	opt = inet6_sk(sk)->cork.opt;
+	total_len -= opt ? opt->opt_flen : 0;
+
+>>>>>>> origin/android16-base
 	if (offset >= total_len - 1) {
 		err = -EINVAL;
 		ip6_flush_pending_frames(sk);
@@ -660,7 +674,11 @@ static int rawv6_send_hdrinc(struct sock *sk, struct msghdr *msg, int length,
 
 	skb->ip_summed = CHECKSUM_NONE;
 
+<<<<<<< HEAD
 	sock_tx_timestamp(sk, sockc->tsflags, &skb_shinfo(skb)->tx_flags);
+=======
+	skb_setup_tx_timestamp(skb, sockc->tsflags);
+>>>>>>> origin/android16-base
 
 	if (flags & MSG_CONFIRM)
 		skb_set_dst_pending_confirm(skb, 1);
@@ -828,7 +846,12 @@ static int rawv6_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 
 		if (!proto)
 			proto = inet->inet_num;
+<<<<<<< HEAD
 		else if (proto != inet->inet_num)
+=======
+		else if (proto != inet->inet_num &&
+			 inet->inet_num != IPPROTO_RAW)
+>>>>>>> origin/android16-base
 			return -EINVAL;
 
 		if (proto > 255)
@@ -1255,8 +1278,11 @@ static void raw6_destroy(struct sock *sk)
 	lock_sock(sk);
 	ip6_flush_pending_frames(sk);
 	release_sock(sk);
+<<<<<<< HEAD
 
 	inet6_destroy_sock(sk);
+=======
+>>>>>>> origin/android16-base
 }
 
 static int rawv6_init_sk(struct sock *sk)

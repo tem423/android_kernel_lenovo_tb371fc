@@ -131,7 +131,11 @@ static struct device_attribute *ide_port_attrs[] = {
 
 int ide_sysfs_register_port(ide_hwif_t *hwif)
 {
+<<<<<<< HEAD
 	int i, uninitialized_var(rc);
+=======
+	int i, rc;
+>>>>>>> origin/android16-base
 
 	for (i = 0; ide_port_attrs[i]; i++) {
 		rc = device_create_file(hwif->portdev, ide_port_attrs[i]);

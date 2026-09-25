@@ -107,7 +107,11 @@ static int hi6220_reset_probe(struct platform_device *pdev)
 	if (!data)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	type = (enum hi6220_reset_ctrl_type)of_device_get_match_data(dev);
+=======
+	type = (uintptr_t)of_device_get_match_data(dev);
+>>>>>>> origin/android16-base
 
 	regmap = syscon_node_to_regmap(np);
 	if (IS_ERR(regmap)) {

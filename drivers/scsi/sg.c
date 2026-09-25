@@ -195,7 +195,11 @@ static void sg_link_reserve(Sg_fd * sfp, Sg_request * srp, int size);
 static void sg_unlink_reserve(Sg_fd * sfp, Sg_request * srp);
 static Sg_fd *sg_add_sfp(Sg_device * sdp);
 static void sg_remove_sfp(struct kref *);
+<<<<<<< HEAD
 static Sg_request *sg_get_rq_mark(Sg_fd * sfp, int pack_id);
+=======
+static Sg_request *sg_get_rq_mark(Sg_fd * sfp, int pack_id, bool *busy);
+>>>>>>> origin/android16-base
 static Sg_request *sg_add_request(Sg_fd * sfp);
 static int sg_remove_request(Sg_fd * sfp, Sg_request * srp);
 static Sg_device *sg_get_dev(int dev);
@@ -417,6 +421,10 @@ sg_read(struct file *filp, char __user *buf, size_t count, loff_t * ppos)
 	Sg_fd *sfp;
 	Sg_request *srp;
 	int req_pack_id = -1;
+<<<<<<< HEAD
+=======
+	bool busy;
+>>>>>>> origin/android16-base
 	sg_io_hdr_t *hp;
 	struct sg_header *old_hdr = NULL;
 	int retval = 0;
@@ -464,17 +472,23 @@ sg_read(struct file *filp, char __user *buf, size_t count, loff_t * ppos)
 		} else
 			req_pack_id = old_hdr->pack_id;
 	}
+<<<<<<< HEAD
 	srp = sg_get_rq_mark(sfp, req_pack_id);
 	if (!srp) {		/* now wait on packet to arrive */
 		if (atomic_read(&sdp->detaching)) {
 			retval = -ENODEV;
 			goto free_old_hdr;
 		}
+=======
+	srp = sg_get_rq_mark(sfp, req_pack_id, &busy);
+	if (!srp) {		/* now wait on packet to arrive */
+>>>>>>> origin/android16-base
 		if (filp->f_flags & O_NONBLOCK) {
 			retval = -EAGAIN;
 			goto free_old_hdr;
 		}
 		retval = wait_event_interruptible(sfp->read_wait,
+<<<<<<< HEAD
 			(atomic_read(&sdp->detaching) ||
 			(srp = sg_get_rq_mark(sfp, req_pack_id))));
 		if (atomic_read(&sdp->detaching)) {
@@ -483,6 +497,14 @@ sg_read(struct file *filp, char __user *buf, size_t count, loff_t * ppos)
 		}
 		if (retval) {
 			/* -ERESTARTSYS as signal hit process */
+=======
+			((srp = sg_get_rq_mark(sfp, req_pack_id, &busy)) ||
+			(!busy && atomic_read(&sdp->detaching))));
+		if (!srp) {
+			/* signal or detaching */
+			if (!retval)
+				retval = -ENODEV;
+>>>>>>> origin/android16-base
 			goto free_old_hdr;
 		}
 	}
@@ -939,9 +961,13 @@ sg_ioctl(struct file *filp, unsigned int cmd_in, unsigned long arg)
 		if (result < 0)
 			return result;
 		result = wait_event_interruptible(sfp->read_wait,
+<<<<<<< HEAD
 			(srp_done(sfp, srp) || atomic_read(&sdp->detaching)));
 		if (atomic_read(&sdp->detaching))
 			return -ENODEV;
+=======
+			srp_done(sfp, srp));
+>>>>>>> origin/android16-base
 		write_lock_irq(&sfp->rq_list_lock);
 		if (srp->done) {
 			srp->done = 2;
@@ -2083,11 +2109,16 @@ sg_unlink_reserve(Sg_fd * sfp, Sg_request * srp)
 }
 
 static Sg_request *
+<<<<<<< HEAD
 sg_get_rq_mark(Sg_fd * sfp, int pack_id)
+=======
+sg_get_rq_mark(Sg_fd * sfp, int pack_id, bool *busy)
+>>>>>>> origin/android16-base
 {
 	Sg_request *resp;
 	unsigned long iflags;
 
+<<<<<<< HEAD
 	write_lock_irqsave(&sfp->rq_list_lock, iflags);
 	list_for_each_entry(resp, &sfp->rq_list, entry) {
 		/* look for requests that are ready + not SG_IO owned */
@@ -2096,6 +2127,25 @@ sg_get_rq_mark(Sg_fd * sfp, int pack_id)
 			resp->done = 2;	/* guard against other readers */
 			write_unlock_irqrestore(&sfp->rq_list_lock, iflags);
 			return resp;
+=======
+	*busy = false;
+	write_lock_irqsave(&sfp->rq_list_lock, iflags);
+	list_for_each_entry(resp, &sfp->rq_list, entry) {
+		/* look for requests that are not SG_IO owned */
+		if ((!resp->sg_io_owned) &&
+		    ((-1 == pack_id) || (resp->header.pack_id == pack_id))) {
+			switch (resp->done) {
+			case 0: /* request active */
+				*busy = true;
+				break;
+			case 1: /* request done; response ready to return */
+				resp->done = 2;	/* guard against other readers */
+				write_unlock_irqrestore(&sfp->rq_list_lock, iflags);
+				return resp;
+			case 2: /* response already being returned */
+				break;
+			}
+>>>>>>> origin/android16-base
 		}
 	}
 	write_unlock_irqrestore(&sfp->rq_list_lock, iflags);
@@ -2149,6 +2199,18 @@ sg_remove_request(Sg_fd * sfp, Sg_request * srp)
 		res = 1;
 	}
 	write_unlock_irqrestore(&sfp->rq_list_lock, iflags);
+<<<<<<< HEAD
+=======
+
+	/*
+	 * If the device is detaching, wakeup any readers in case we just
+	 * removed the last response, which would leave nothing for them to
+	 * return other than -ENODEV.
+	 */
+	if (unlikely(atomic_read(&sfp->parentdp->detaching)))
+		wake_up_interruptible_all(&sfp->read_wait);
+
+>>>>>>> origin/android16-base
 	return res;
 }
 

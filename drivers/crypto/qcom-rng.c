@@ -7,6 +7,10 @@
 #include <linux/acpi.h>
 #include <linux/clk.h>
 #include <linux/crypto.h>
+<<<<<<< HEAD
+=======
+#include <linux/iopoll.h>
+>>>>>>> origin/android16-base
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/platform_device.h>
@@ -42,6 +46,7 @@ static int qcom_rng_read(struct qcom_rng *rng, u8 *data, unsigned int max)
 {
 	unsigned int currsize = 0;
 	u32 val;
+<<<<<<< HEAD
 
 	/* read random data from hardware */
 	do {
@@ -52,6 +57,21 @@ static int qcom_rng_read(struct qcom_rng *rng, u8 *data, unsigned int max)
 		val = readl_relaxed(rng->base + PRNG_DATA_OUT);
 		if (!val)
 			break;
+=======
+	int ret;
+
+	/* read random data from hardware */
+	do {
+		ret = readl_poll_timeout(rng->base + PRNG_STATUS, val,
+					 val & PRNG_STATUS_DATA_AVAIL,
+					 200, 10000);
+		if (ret)
+			return ret;
+
+		val = readl_relaxed(rng->base + PRNG_DATA_OUT);
+		if (!val)
+			return -EINVAL;
+>>>>>>> origin/android16-base
 
 		if ((max - currsize) >= WORD_SZ) {
 			memcpy(data, &val, WORD_SZ);
@@ -64,7 +84,11 @@ static int qcom_rng_read(struct qcom_rng *rng, u8 *data, unsigned int max)
 		}
 	} while (currsize < max);
 
+<<<<<<< HEAD
 	return currsize;
+=======
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static int qcom_rng_generate(struct crypto_rng *tfm,
@@ -86,7 +110,11 @@ static int qcom_rng_generate(struct crypto_rng *tfm,
 	mutex_unlock(&rng->lock);
 	clk_disable_unprepare(rng->clk);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int qcom_rng_seed(struct crypto_rng *tfm, const u8 *seed,

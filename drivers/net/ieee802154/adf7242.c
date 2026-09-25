@@ -1318,10 +1318,18 @@ static int adf7242_remove(struct spi_device *spi)
 
 	debugfs_remove_recursive(lp->debugfs_root);
 
+<<<<<<< HEAD
 	cancel_delayed_work_sync(&lp->work);
 	destroy_workqueue(lp->wqueue);
 
 	ieee802154_unregister_hw(lp->hw);
+=======
+	ieee802154_unregister_hw(lp->hw);
+
+	cancel_delayed_work_sync(&lp->work);
+	destroy_workqueue(lp->wqueue);
+
+>>>>>>> origin/android16-base
 	mutex_destroy(&lp->bmux);
 	ieee802154_free_hw(lp->hw);
 

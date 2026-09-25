@@ -146,7 +146,11 @@ static void clear_huge_pte_skeys(struct mm_struct *mm, unsigned long rste)
 	}
 
 	if (!test_and_set_bit(PG_arch_1, &page->flags))
+<<<<<<< HEAD
 		__storage_key_init_range(paddr, paddr + size - 1);
+=======
+		__storage_key_init_range(paddr, paddr + size);
+>>>>>>> origin/android16-base
 }
 
 void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
@@ -189,7 +193,11 @@ pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
 	return pte;
 }
 
+<<<<<<< HEAD
 pte_t *huge_pte_alloc(struct mm_struct *mm,
+=======
+pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
+>>>>>>> origin/android16-base
 			unsigned long addr, unsigned long sz)
 {
 	pgd_t *pgdp;

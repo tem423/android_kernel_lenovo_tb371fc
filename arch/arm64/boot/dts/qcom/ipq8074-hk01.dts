@@ -28,7 +28,11 @@
 		stdout-path = "serial0";
 	};
 
+<<<<<<< HEAD
 	memory {
+=======
+	memory@40000000 {
+>>>>>>> origin/android16-base
 		device_type = "memory";
 		reg = <0x0 0x40000000 0x0 0x20000000>;
 	};

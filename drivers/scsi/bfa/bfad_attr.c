@@ -719,7 +719,11 @@ bfad_im_serial_num_show(struct device *dev, struct device_attribute *attr,
 	char serial_num[BFA_ADAPTER_SERIAL_NUM_LEN];
 
 	bfa_get_adapter_serial_num(&bfad->bfa, serial_num);
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", serial_num);
+=======
+	return sysfs_emit(buf, "%s\n", serial_num);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -733,7 +737,11 @@ bfad_im_model_show(struct device *dev, struct device_attribute *attr,
 	char model[BFA_ADAPTER_MODEL_NAME_LEN];
 
 	bfa_get_adapter_model(&bfad->bfa, model);
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", model);
+=======
+	return sysfs_emit(buf, "%s\n", model);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -813,7 +821,11 @@ bfad_im_model_desc_show(struct device *dev, struct device_attribute *attr,
 		snprintf(model_descr, BFA_ADAPTER_MODEL_DESCR_LEN,
 			"Invalid Model");
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", model_descr);
+=======
+	return sysfs_emit(buf, "%s\n", model_descr);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -827,7 +839,11 @@ bfad_im_node_name_show(struct device *dev, struct device_attribute *attr,
 	u64        nwwn;
 
 	nwwn = bfa_fcs_lport_get_nwwn(port->fcs_port);
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "0x%llx\n", cpu_to_be64(nwwn));
+=======
+	return sysfs_emit(buf, "0x%llx\n", cpu_to_be64(nwwn));
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -844,7 +860,11 @@ bfad_im_symbolic_name_show(struct device *dev, struct device_attribute *attr,
 	bfa_fcs_lport_get_attr(&bfad->bfa_fcs.fabric.bport, &port_attr);
 	strlcpy(symname, port_attr.port_cfg.sym_name.symname,
 			BFA_SYMNAME_MAXLEN);
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", symname);
+=======
+	return sysfs_emit(buf, "%s\n", symname);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -858,14 +878,22 @@ bfad_im_hw_version_show(struct device *dev, struct device_attribute *attr,
 	char hw_ver[BFA_VERSION_LEN];
 
 	bfa_get_pci_chip_rev(&bfad->bfa, hw_ver);
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", hw_ver);
+=======
+	return sysfs_emit(buf, "%s\n", hw_ver);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
 bfad_im_drv_version_show(struct device *dev, struct device_attribute *attr,
 				char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", BFAD_DRIVER_VERSION);
+=======
+	return sysfs_emit(buf, "%s\n", BFAD_DRIVER_VERSION);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -879,7 +907,11 @@ bfad_im_optionrom_version_show(struct device *dev,
 	char optrom_ver[BFA_VERSION_LEN];
 
 	bfa_get_adapter_optrom_ver(&bfad->bfa, optrom_ver);
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", optrom_ver);
+=======
+	return sysfs_emit(buf, "%s\n", optrom_ver);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -893,7 +925,11 @@ bfad_im_fw_version_show(struct device *dev, struct device_attribute *attr,
 	char fw_ver[BFA_VERSION_LEN];
 
 	bfa_get_adapter_fw_ver(&bfad->bfa, fw_ver);
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", fw_ver);
+=======
+	return sysfs_emit(buf, "%s\n", fw_ver);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -905,7 +941,11 @@ bfad_im_num_of_ports_show(struct device *dev, struct device_attribute *attr,
 			(struct bfad_im_port_s *) shost->hostdata[0];
 	struct bfad_s *bfad = im_port->bfad;
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%d\n",
+=======
+	return sysfs_emit(buf, "%d\n",
+>>>>>>> origin/android16-base
 			bfa_get_nports(&bfad->bfa));
 }
 
@@ -913,7 +953,11 @@ static ssize_t
 bfad_im_drv_name_show(struct device *dev, struct device_attribute *attr,
 				char *buf)
 {
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%s\n", BFAD_DRIVER_NAME);
+=======
+	return sysfs_emit(buf, "%s\n", BFAD_DRIVER_NAME);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t
@@ -932,14 +976,22 @@ bfad_im_num_of_discovered_ports_show(struct device *dev,
 	rports = kcalloc(nrports, sizeof(struct bfa_rport_qualifier_s),
 			 GFP_ATOMIC);
 	if (rports == NULL)
+<<<<<<< HEAD
 		return snprintf(buf, PAGE_SIZE, "Failed\n");
+=======
+		return sysfs_emit(buf, "Failed\n");
+>>>>>>> origin/android16-base
 
 	spin_lock_irqsave(&bfad->bfad_lock, flags);
 	bfa_fcs_lport_get_rport_quals(port->fcs_port, rports, &nrports);
 	spin_unlock_irqrestore(&bfad->bfad_lock, flags);
 	kfree(rports);
 
+<<<<<<< HEAD
 	return snprintf(buf, PAGE_SIZE, "%d\n", nrports);
+=======
+	return sysfs_emit(buf, "%d\n", nrports);
+>>>>>>> origin/android16-base
 }
 
 static          DEVICE_ATTR(serial_number, S_IRUGO,

@@ -1261,6 +1261,12 @@ static int build_insn(const struct bpf_insn *insn, struct jit_ctx *ctx)
 		emit(opcode | RS1(src) | rs2 | RD(dst), ctx);
 		break;
 	}
+<<<<<<< HEAD
+=======
+	/* speculation barrier */
+	case BPF_ST | BPF_NOSPEC:
+		break;
+>>>>>>> origin/android16-base
 	/* ST: *(size *)(dst + off) = imm */
 	case BPF_ST | BPF_MEM | BPF_W:
 	case BPF_ST | BPF_MEM | BPF_H:

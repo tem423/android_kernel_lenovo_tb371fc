@@ -177,7 +177,10 @@ static int __init processor_probe(struct parisc_device *dev)
 	if (cpuid)
 		memset(p, 0, sizeof(struct cpuinfo_parisc));
 
+<<<<<<< HEAD
 	p->loops_per_jiffy = loops_per_jiffy;
+=======
+>>>>>>> origin/android16-base
 	p->dev = dev;		/* Save IODC data in case we need it */
 	p->hpa = dev->hpa.start;	/* save CPU hpa */
 	p->cpuid = cpuid;	/* save CPU id */
@@ -377,10 +380,25 @@ int
 show_cpuinfo (struct seq_file *m, void *v)
 {
 	unsigned long cpu;
+<<<<<<< HEAD
 
 	for_each_online_cpu(cpu) {
 		const struct cpuinfo_parisc *cpuinfo = &per_cpu(cpu_data, cpu);
 #ifdef CONFIG_SMP
+=======
+	char cpu_name[60], *p;
+
+	/* strip PA path from CPU name to not confuse lscpu */
+	strlcpy(cpu_name, per_cpu(cpu_data, 0).dev->name, sizeof(cpu_name));
+	p = strrchr(cpu_name, '[');
+	if (p)
+		*(--p) = 0;
+
+	for_each_online_cpu(cpu) {
+#ifdef CONFIG_SMP
+		const struct cpuinfo_parisc *cpuinfo = &per_cpu(cpu_data, cpu);
+
+>>>>>>> origin/android16-base
 		if (0 == cpuinfo->hpa)
 			continue;
 #endif
@@ -423,11 +441,17 @@ show_cpuinfo (struct seq_file *m, void *v)
 		}
 		seq_printf(m, " (0x%02lx)\n", boot_cpu_data.pdc.capabilities);
 
+<<<<<<< HEAD
 		seq_printf(m, "model\t\t: %s\n"
 				"model name\t: %s\n",
 				 boot_cpu_data.pdc.sys_model_name,
 				 cpuinfo->dev ?
 				 cpuinfo->dev->name : "Unknown");
+=======
+		seq_printf(m, "model\t\t: %s - %s\n",
+				 boot_cpu_data.pdc.sys_model_name,
+				 cpu_name);
+>>>>>>> origin/android16-base
 
 		seq_printf(m, "hversion\t: 0x%08x\n"
 			        "sversion\t: 0x%08x\n",
@@ -438,8 +462,13 @@ show_cpuinfo (struct seq_file *m, void *v)
 		show_cache_info(m);
 
 		seq_printf(m, "bogomips\t: %lu.%02lu\n",
+<<<<<<< HEAD
 			     cpuinfo->loops_per_jiffy / (500000 / HZ),
 			     (cpuinfo->loops_per_jiffy / (5000 / HZ)) % 100);
+=======
+			     loops_per_jiffy / (500000 / HZ),
+			     loops_per_jiffy / (5000 / HZ) % 100);
+>>>>>>> origin/android16-base
 
 		seq_printf(m, "software id\t: %ld\n\n",
 				boot_cpu_data.pdc.model.sw_id);

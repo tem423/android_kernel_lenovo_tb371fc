@@ -51,6 +51,7 @@ enum blk_zone_type {
  *
  * The Zone Condition state machine in the ZBC/ZAC standards maps the above
  * deinitions as:
+<<<<<<< HEAD
  *   - ZC1: Empty         | BLK_ZONE_EMPTY
  *   - ZC2: Implicit Open | BLK_ZONE_COND_IMP_OPEN
  *   - ZC3: Explicit Open | BLK_ZONE_COND_EXP_OPEN
@@ -58,6 +59,15 @@ enum blk_zone_type {
  *   - ZC5: Full          | BLK_ZONE_FULL
  *   - ZC6: Read Only     | BLK_ZONE_READONLY
  *   - ZC7: Offline       | BLK_ZONE_OFFLINE
+=======
+ *   - ZC1: Empty         | BLK_ZONE_COND_EMPTY
+ *   - ZC2: Implicit Open | BLK_ZONE_COND_IMP_OPEN
+ *   - ZC3: Explicit Open | BLK_ZONE_COND_EXP_OPEN
+ *   - ZC4: Closed        | BLK_ZONE_COND_CLOSED
+ *   - ZC5: Full          | BLK_ZONE_COND_FULL
+ *   - ZC6: Read Only     | BLK_ZONE_COND_READONLY
+ *   - ZC7: Offline       | BLK_ZONE_COND_OFFLINE
+>>>>>>> origin/android16-base
  *
  * Conditions 0x5 to 0xC are reserved by the current ZBC/ZAC spec and should
  * be considered invalid.

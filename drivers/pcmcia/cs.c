@@ -608,6 +608,10 @@ static int pccardd(void *__skt)
 		dev_warn(&skt->dev, "PCMCIA: unable to register socket\n");
 		skt->thread = NULL;
 		complete(&skt->thread_done);
+<<<<<<< HEAD
+=======
+		put_device(&skt->dev);
+>>>>>>> origin/android16-base
 		return 0;
 	}
 	ret = pccard_sysfs_add_socket(&skt->dev);
@@ -669,6 +673,7 @@ static int pccardd(void *__skt)
 		if (events || sysfs_events)
 			continue;
 
+<<<<<<< HEAD
 		if (kthread_should_stop())
 			break;
 
@@ -681,6 +686,18 @@ static int pccardd(void *__skt)
 
 		try_to_freeze();
 	}
+=======
+		set_current_state(TASK_INTERRUPTIBLE);
+		if (kthread_should_stop())
+			break;
+
+		schedule();
+
+		try_to_freeze();
+	}
+	/* make sure we are running before we exit */
+	__set_current_state(TASK_RUNNING);
+>>>>>>> origin/android16-base
 
 	/* shut down socket, if a device is still present */
 	if (skt->state & SOCKET_PRESENT) {

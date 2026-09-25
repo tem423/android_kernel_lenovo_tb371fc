@@ -88,7 +88,13 @@ int main(int argc, char **argv)
 		int pid2 = getpid();
 		int ret;
 
+<<<<<<< HEAD
 		fd2 = open(kpath, O_RDWR, 0644);
+=======
+		ksft_print_header();
+
+		fd2 = open(kpath, O_RDWR);
+>>>>>>> origin/android16-base
 		if (fd2 < 0) {
 			perror("Can't open file");
 			ksft_exit_fail();
@@ -152,7 +158,10 @@ int main(int argc, char **argv)
 			ksft_inc_pass_cnt();
 		}
 
+<<<<<<< HEAD
 		ksft_print_cnts();
+=======
+>>>>>>> origin/android16-base
 
 		if (ret)
 			ksft_exit_fail();
@@ -162,5 +171,9 @@ int main(int argc, char **argv)
 
 	waitpid(pid2, &status, P_ALL);
 
+<<<<<<< HEAD
 	return ksft_exit_pass();
+=======
+	return 0;
+>>>>>>> origin/android16-base
 }

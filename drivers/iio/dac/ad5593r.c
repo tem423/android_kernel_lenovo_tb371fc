@@ -15,6 +15,11 @@
 #include <linux/of.h>
 #include <linux/acpi.h>
 
+<<<<<<< HEAD
+=======
+#include <asm/unaligned.h>
+
+>>>>>>> origin/android16-base
 #define AD5593R_MODE_CONF		(0 << 4)
 #define AD5593R_MODE_DAC_WRITE		(1 << 4)
 #define AD5593R_MODE_ADC_READBACK	(4 << 4)
@@ -22,6 +27,27 @@
 #define AD5593R_MODE_GPIO_READBACK	(6 << 4)
 #define AD5593R_MODE_REG_READBACK	(7 << 4)
 
+<<<<<<< HEAD
+=======
+static int ad5593r_read_word(struct i2c_client *i2c, u8 reg, u16 *value)
+{
+	int ret;
+	u8 buf[2];
+
+	ret = i2c_smbus_write_byte(i2c, reg);
+	if (ret < 0)
+		return ret;
+
+	ret = i2c_master_recv(i2c, buf, sizeof(buf));
+	if (ret < 0)
+		return ret;
+
+	*value = get_unaligned_be16(buf);
+
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static int ad5593r_write_dac(struct ad5592r_state *st, unsigned chan, u16 value)
 {
 	struct i2c_client *i2c = to_i2c_client(st->dev);
@@ -40,6 +66,7 @@ static int ad5593r_read_adc(struct ad5592r_state *st, unsigned chan, u16 *value)
 	if (val < 0)
 		return (int) val;
 
+<<<<<<< HEAD
 	val = i2c_smbus_read_word_swapped(i2c, AD5593R_MODE_ADC_READBACK);
 	if (val < 0)
 		return (int) val;
@@ -47,6 +74,9 @@ static int ad5593r_read_adc(struct ad5592r_state *st, unsigned chan, u16 *value)
 	*value = (u16) val;
 
 	return 0;
+=======
+	return ad5593r_read_word(i2c, AD5593R_MODE_ADC_READBACK, value);
+>>>>>>> origin/android16-base
 }
 
 static int ad5593r_reg_write(struct ad5592r_state *st, u8 reg, u16 value)
@@ -60,6 +90,7 @@ static int ad5593r_reg_write(struct ad5592r_state *st, u8 reg, u16 value)
 static int ad5593r_reg_read(struct ad5592r_state *st, u8 reg, u16 *value)
 {
 	struct i2c_client *i2c = to_i2c_client(st->dev);
+<<<<<<< HEAD
 	s32 val;
 
 	val = i2c_smbus_read_word_swapped(i2c, AD5593R_MODE_REG_READBACK | reg);
@@ -69,16 +100,29 @@ static int ad5593r_reg_read(struct ad5592r_state *st, u8 reg, u16 *value)
 	*value = (u16) val;
 
 	return 0;
+=======
+
+	return ad5593r_read_word(i2c, AD5593R_MODE_REG_READBACK | reg, value);
+>>>>>>> origin/android16-base
 }
 
 static int ad5593r_gpio_read(struct ad5592r_state *st, u8 *value)
 {
 	struct i2c_client *i2c = to_i2c_client(st->dev);
+<<<<<<< HEAD
 	s32 val;
 
 	val = i2c_smbus_read_word_swapped(i2c, AD5593R_MODE_GPIO_READBACK);
 	if (val < 0)
 		return (int) val;
+=======
+	u16 val;
+	int ret;
+
+	ret = ad5593r_read_word(i2c, AD5593R_MODE_GPIO_READBACK, &val);
+	if (ret)
+		return ret;
+>>>>>>> origin/android16-base
 
 	*value = (u8) val;
 

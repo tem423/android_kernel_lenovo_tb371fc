@@ -127,6 +127,12 @@
 
 		pcie0: pcie@2000 {
 			reg = <0x00002000 0x1000>;
+<<<<<<< HEAD
+=======
+
+			#address-cells = <3>;
+			#size-cells = <2>;
+>>>>>>> origin/android16-base
 		};
 
 		usb2: usb2@4000 {
@@ -135,7 +141,11 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
+<<<<<<< HEAD
 			ehci: ehci@4000 {
+=======
+			ehci: usb@4000 {
+>>>>>>> origin/android16-base
 				compatible = "generic-ehci";
 				reg = <0x4000 0x1000>;
 				interrupt-parent = <&gic>;
@@ -155,9 +165,13 @@
 				};
 			};
 
+<<<<<<< HEAD
 			ohci: ohci@d000 {
 				#usb-cells = <0>;
 
+=======
+			ohci: usb@d000 {
+>>>>>>> origin/android16-base
 				compatible = "generic-ohci";
 				reg = <0xd000 0x1000>;
 				interrupt-parent = <&gic>;
@@ -180,6 +194,27 @@
 
 		gmac0: ethernet@5000 {
 			reg = <0x5000 0x1000>;
+<<<<<<< HEAD
+=======
+
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				switch: switch@1e {
+					compatible = "brcm,bcm53125";
+					reg = <0x1e>;
+
+					status = "disabled";
+
+					/* ports are defined in board DTS */
+					ports {
+						#address-cells = <1>;
+						#size-cells = <0>;
+					};
+				};
+			};
+>>>>>>> origin/android16-base
 		};
 
 		gmac1: ethernet@b000 {

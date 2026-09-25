@@ -516,6 +516,10 @@ static int mlxsw_i2c_probe(struct i2c_client *client,
 	return 0;
 
 errout:
+<<<<<<< HEAD
+=======
+	mutex_destroy(&mlxsw_i2c->cmd.lock);
+>>>>>>> origin/android16-base
 	i2c_set_clientdata(client, NULL);
 
 	return err;

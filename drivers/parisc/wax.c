@@ -72,7 +72,10 @@ static int __init wax_init_chip(struct parisc_device *dev)
 {
 	struct gsc_asic *wax;
 	struct parisc_device *parent;
+<<<<<<< HEAD
 	struct gsc_irq gsc_irq;
+=======
+>>>>>>> origin/android16-base
 	int ret;
 
 	wax = kzalloc(sizeof(*wax), GFP_KERNEL);
@@ -89,7 +92,11 @@ static int __init wax_init_chip(struct parisc_device *dev)
 	wax_init_irq(wax);
 
 	/* the IRQ wax should use */
+<<<<<<< HEAD
 	dev->irq = gsc_claim_irq(&gsc_irq, WAX_GSC_IRQ);
+=======
+	dev->irq = gsc_claim_irq(&wax->gsc_irq, WAX_GSC_IRQ);
+>>>>>>> origin/android16-base
 	if (dev->irq < 0) {
 		printk(KERN_ERR "%s(): cannot get GSC irq\n",
 				__func__);
@@ -97,9 +104,15 @@ static int __init wax_init_chip(struct parisc_device *dev)
 		return -EBUSY;
 	}
 
+<<<<<<< HEAD
 	wax->eim = ((u32) gsc_irq.txn_addr) | gsc_irq.txn_data;
 
 	ret = request_irq(gsc_irq.irq, gsc_asic_intr, 0, "wax", wax);
+=======
+	wax->eim = ((u32) wax->gsc_irq.txn_addr) | wax->gsc_irq.txn_data;
+
+	ret = request_irq(wax->gsc_irq.irq, gsc_asic_intr, 0, "wax", wax);
+>>>>>>> origin/android16-base
 	if (ret < 0) {
 		kfree(wax);
 		return ret;

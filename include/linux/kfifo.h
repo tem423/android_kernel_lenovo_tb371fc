@@ -629,7 +629,11 @@ __kfifo_uint_must_check_helper( \
  * writer, you don't need extra locking to use these macro.
  */
 #define	kfifo_to_user(fifo, to, len, copied) \
+<<<<<<< HEAD
 __kfifo_uint_must_check_helper( \
+=======
+__kfifo_int_must_check_helper( \
+>>>>>>> origin/android16-base
 ({ \
 	typeof((fifo) + 1) __tmp = (fifo); \
 	void __user *__to = (to); \

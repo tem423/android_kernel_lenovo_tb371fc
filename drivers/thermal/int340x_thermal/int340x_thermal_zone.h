@@ -41,6 +41,10 @@ struct int34x_thermal_zone {
 	struct thermal_zone_device_ops *override_ops;
 	void *priv_data;
 	struct acpi_lpat_conversion_table *lpat_table;
+<<<<<<< HEAD
+=======
+	struct mutex trip_mutex;
+>>>>>>> origin/android16-base
 };
 
 struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *,

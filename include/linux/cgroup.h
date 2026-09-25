@@ -69,6 +69,10 @@ struct css_task_iter {
 	struct list_head		iters_node;	/* css_set->task_iters */
 };
 
+<<<<<<< HEAD
+=======
+extern struct file_system_type cgroup_fs_type;
+>>>>>>> origin/android16-base
 extern struct cgroup_root cgrp_dfl_root;
 extern struct css_set init_css_set;
 

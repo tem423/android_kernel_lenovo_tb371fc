@@ -24,8 +24,16 @@ extern void pm_runtime_remove(struct device *dev);
 
 #define WAKE_IRQ_DEDICATED_ALLOCATED	BIT(0)
 #define WAKE_IRQ_DEDICATED_MANAGED	BIT(1)
+<<<<<<< HEAD
 #define WAKE_IRQ_DEDICATED_MASK		(WAKE_IRQ_DEDICATED_ALLOCATED | \
 					 WAKE_IRQ_DEDICATED_MANAGED)
+=======
+#define WAKE_IRQ_DEDICATED_REVERSE	BIT(2)
+#define WAKE_IRQ_DEDICATED_MASK		(WAKE_IRQ_DEDICATED_ALLOCATED | \
+					 WAKE_IRQ_DEDICATED_MANAGED | \
+					 WAKE_IRQ_DEDICATED_REVERSE)
+#define WAKE_IRQ_DEDICATED_ENABLED	BIT(3)
+>>>>>>> origin/android16-base
 
 struct wake_irq {
 	struct device *dev;
@@ -38,7 +46,12 @@ extern void dev_pm_arm_wake_irq(struct wake_irq *wirq);
 extern void dev_pm_disarm_wake_irq(struct wake_irq *wirq);
 extern void dev_pm_enable_wake_irq_check(struct device *dev,
 					 bool can_change_status);
+<<<<<<< HEAD
 extern void dev_pm_disable_wake_irq_check(struct device *dev);
+=======
+extern void dev_pm_disable_wake_irq_check(struct device *dev, bool cond_disable);
+extern void dev_pm_enable_wake_irq_complete(struct device *dev);
+>>>>>>> origin/android16-base
 
 #ifdef CONFIG_PM_SLEEP
 

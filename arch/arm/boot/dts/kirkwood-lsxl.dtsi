@@ -10,6 +10,14 @@
 
 	ocp@f1000000 {
 		pinctrl: pin-controller@10000 {
+<<<<<<< HEAD
+=======
+			/* Non-default UART pins */
+			pmx_uart0: pmx-uart0 {
+				marvell,pins = "mpp4", "mpp5";
+			};
+
+>>>>>>> origin/android16-base
 			pmx_power_hdd: pmx-power-hdd {
 				marvell,pins = "mpp10";
 				marvell,function = "gpo";
@@ -213,15 +221,19 @@
 &mdio {
 	status = "okay";
 
+<<<<<<< HEAD
 	ethphy0: ethernet-phy@0 {
 		reg = <0>;
 	};
 
+=======
+>>>>>>> origin/android16-base
 	ethphy1: ethernet-phy@8 {
 		reg = <8>;
 	};
 };
 
+<<<<<<< HEAD
 &eth0 {
 	status = "okay";
 	ethernet0-port@0 {
@@ -229,6 +241,8 @@
 	};
 };
 
+=======
+>>>>>>> origin/android16-base
 &eth1 {
 	status = "okay";
 	ethernet1-port@0 {

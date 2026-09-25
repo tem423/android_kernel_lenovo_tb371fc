@@ -55,9 +55,12 @@
 #define APDS9960_REG_CONTROL_PGAIN_MASK_SHIFT	2
 
 #define APDS9960_REG_CONFIG_2	0x90
+<<<<<<< HEAD
 #define APDS9960_REG_CONFIG_2_GGAIN_MASK	0x60
 #define APDS9960_REG_CONFIG_2_GGAIN_MASK_SHIFT	5
 
+=======
+>>>>>>> origin/android16-base
 #define APDS9960_REG_ID		0x92
 
 #define APDS9960_REG_STATUS	0x93
@@ -78,6 +81,12 @@
 #define APDS9960_REG_GCONF_1_GFIFO_THRES_MASK_SHIFT	6
 
 #define APDS9960_REG_GCONF_2	0xa3
+<<<<<<< HEAD
+=======
+#define APDS9960_REG_GCONF_2_GGAIN_MASK			0x60
+#define APDS9960_REG_GCONF_2_GGAIN_MASK_SHIFT		5
+
+>>>>>>> origin/android16-base
 #define APDS9960_REG_GOFFSET_U	0xa4
 #define APDS9960_REG_GOFFSET_D	0xa5
 #define APDS9960_REG_GPULSE	0xa6
@@ -396,9 +405,15 @@ static int apds9960_set_pxs_gain(struct apds9960_data *data, int val)
 			}
 
 			ret = regmap_update_bits(data->regmap,
+<<<<<<< HEAD
 				APDS9960_REG_CONFIG_2,
 				APDS9960_REG_CONFIG_2_GGAIN_MASK,
 				idx << APDS9960_REG_CONFIG_2_GGAIN_MASK_SHIFT);
+=======
+				APDS9960_REG_GCONF_2,
+				APDS9960_REG_GCONF_2_GGAIN_MASK,
+				idx << APDS9960_REG_GCONF_2_GGAIN_MASK_SHIFT);
+>>>>>>> origin/android16-base
 			if (!ret)
 				data->pxs_gain = idx;
 			mutex_unlock(&data->lock);

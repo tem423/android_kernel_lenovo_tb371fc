@@ -73,6 +73,10 @@ config CASSINI
 config SUNVNET_COMMON
 	tristate "Common routines to support Sun Virtual Networking"
 	depends on SUN_LDOMS
+<<<<<<< HEAD
+=======
+	depends on INET
+>>>>>>> origin/android16-base
 	default m
 
 config SUNVNET

@@ -395,9 +395,15 @@ int ks_wlan_hw_tx(struct ks_wlan_private *priv, void *p, unsigned long size,
 	priv->hostt.buff[priv->hostt.qtail] = le16_to_cpu(hdr->event);
 	priv->hostt.qtail = (priv->hostt.qtail + 1) % SME_EVENT_BUFF_SIZE;
 
+<<<<<<< HEAD
 	spin_lock(&priv->tx_dev.tx_dev_lock);
 	result = enqueue_txdev(priv, p, size, complete_handler, skb);
 	spin_unlock(&priv->tx_dev.tx_dev_lock);
+=======
+	spin_lock_bh(&priv->tx_dev.tx_dev_lock);
+	result = enqueue_txdev(priv, p, size, complete_handler, skb);
+	spin_unlock_bh(&priv->tx_dev.tx_dev_lock);
+>>>>>>> origin/android16-base
 
 	if (txq_has_space(priv))
 		queue_delayed_work(priv->wq, &priv->rw_dwork, 0);
@@ -938,9 +944,15 @@ static void ks7010_private_init(struct ks_wlan_private *priv,
 	memset(&priv->wstats, 0, sizeof(priv->wstats));
 
 	/* sleep mode */
+<<<<<<< HEAD
 	atomic_set(&priv->sleepstatus.doze_request, 0);
 	atomic_set(&priv->sleepstatus.wakeup_request, 0);
 	atomic_set(&priv->sleepstatus.wakeup_request, 0);
+=======
+	atomic_set(&priv->sleepstatus.status, 0);
+	atomic_set(&priv->sleepstatus.doze_request, 0);
+	atomic_set(&priv->sleepstatus.wakeup_request, 0);
+>>>>>>> origin/android16-base
 
 	trx_device_init(priv);
 	hostif_init(priv);

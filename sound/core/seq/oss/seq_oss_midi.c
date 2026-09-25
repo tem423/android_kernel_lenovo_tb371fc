@@ -50,6 +50,10 @@ struct seq_oss_midi {
 	struct snd_midi_event *coder;	/* MIDI event coder */
 	struct seq_oss_devinfo *devinfo;	/* assigned OSSseq device */
 	snd_use_lock_t use_lock;
+<<<<<<< HEAD
+=======
+	struct mutex open_mutex;
+>>>>>>> origin/android16-base
 };
 
 
@@ -184,6 +188,10 @@ snd_seq_oss_midi_check_new_port(struct snd_seq_port_info *pinfo)
 	mdev->flags = pinfo->capability;
 	mdev->opened = 0;
 	snd_use_lock_init(&mdev->use_lock);
+<<<<<<< HEAD
+=======
+	mutex_init(&mdev->open_mutex);
+>>>>>>> origin/android16-base
 
 	/* copy and truncate the name of synth device */
 	strlcpy(mdev->name, pinfo->name, sizeof(mdev->name));
@@ -280,7 +288,13 @@ snd_seq_oss_midi_clear_all(void)
 void
 snd_seq_oss_midi_setup(struct seq_oss_devinfo *dp)
 {
+<<<<<<< HEAD
 	dp->max_mididev = max_midi_devs;
+=======
+	spin_lock_irq(&register_lock);
+	dp->max_mididev = max_midi_devs;
+	spin_unlock_irq(&register_lock);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -330,14 +344,26 @@ snd_seq_oss_midi_open(struct seq_oss_devinfo *dp, int dev, int fmode)
 	int perm;
 	struct seq_oss_midi *mdev;
 	struct snd_seq_port_subscribe subs;
+<<<<<<< HEAD
+=======
+	int err;
+>>>>>>> origin/android16-base
 
 	if ((mdev = get_mididev(dp, dev)) == NULL)
 		return -ENODEV;
 
+<<<<<<< HEAD
 	/* already used? */
 	if (mdev->opened && mdev->devinfo != dp) {
 		snd_use_lock_free(&mdev->use_lock);
 		return -EBUSY;
+=======
+	mutex_lock(&mdev->open_mutex);
+	/* already used? */
+	if (mdev->opened && mdev->devinfo != dp) {
+		err = -EBUSY;
+		goto unlock;
+>>>>>>> origin/android16-base
 	}
 
 	perm = 0;
@@ -347,14 +373,24 @@ snd_seq_oss_midi_open(struct seq_oss_devinfo *dp, int dev, int fmode)
 		perm |= PERM_READ;
 	perm &= mdev->flags;
 	if (perm == 0) {
+<<<<<<< HEAD
 		snd_use_lock_free(&mdev->use_lock);
 		return -ENXIO;
+=======
+		err = -ENXIO;
+		goto unlock;
+>>>>>>> origin/android16-base
 	}
 
 	/* already opened? */
 	if ((mdev->opened & perm) == perm) {
+<<<<<<< HEAD
 		snd_use_lock_free(&mdev->use_lock);
 		return 0;
+=======
+		err = 0;
+		goto unlock;
+>>>>>>> origin/android16-base
 	}
 
 	perm &= ~mdev->opened;
@@ -379,6 +415,7 @@ snd_seq_oss_midi_open(struct seq_oss_devinfo *dp, int dev, int fmode)
 	}
 
 	if (! mdev->opened) {
+<<<<<<< HEAD
 		snd_use_lock_free(&mdev->use_lock);
 		return -ENXIO;
 	}
@@ -386,6 +423,19 @@ snd_seq_oss_midi_open(struct seq_oss_devinfo *dp, int dev, int fmode)
 	mdev->devinfo = dp;
 	snd_use_lock_free(&mdev->use_lock);
 	return 0;
+=======
+		err = -ENXIO;
+		goto unlock;
+	}
+
+	mdev->devinfo = dp;
+	err = 0;
+
+ unlock:
+	mutex_unlock(&mdev->open_mutex);
+	snd_use_lock_free(&mdev->use_lock);
+	return err;
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -399,10 +449,16 @@ snd_seq_oss_midi_close(struct seq_oss_devinfo *dp, int dev)
 
 	if ((mdev = get_mididev(dp, dev)) == NULL)
 		return -ENODEV;
+<<<<<<< HEAD
 	if (! mdev->opened || mdev->devinfo != dp) {
 		snd_use_lock_free(&mdev->use_lock);
 		return 0;
 	}
+=======
+	mutex_lock(&mdev->open_mutex);
+	if (!mdev->opened || mdev->devinfo != dp)
+		goto unlock;
+>>>>>>> origin/android16-base
 
 	memset(&subs, 0, sizeof(subs));
 	if (mdev->opened & PERM_WRITE) {
@@ -421,6 +477,11 @@ snd_seq_oss_midi_close(struct seq_oss_devinfo *dp, int dev)
 	mdev->opened = 0;
 	mdev->devinfo = NULL;
 
+<<<<<<< HEAD
+=======
+ unlock:
+	mutex_unlock(&mdev->open_mutex);
+>>>>>>> origin/android16-base
 	snd_use_lock_free(&mdev->use_lock);
 	return 0;
 }

@@ -181,6 +181,13 @@ void _rtl_dbg_print_data(struct rtl_priv *rtlpriv, u64 comp, int level,
 			 const char *titlestring,
 			 const void *hexdata, int hexdatalen);
 
+<<<<<<< HEAD
+=======
+#define rtl_dbg(rtlpriv, comp, level, fmt, ...)			\
+	_rtl_dbg_trace(rtlpriv, comp, level,				\
+		       fmt, ##__VA_ARGS__)
+
+>>>>>>> origin/android16-base
 #define RT_TRACE(rtlpriv, comp, level, fmt, ...)			\
 	_rtl_dbg_trace(rtlpriv, comp, level,				\
 		       fmt, ##__VA_ARGS__)
@@ -198,6 +205,16 @@ void _rtl_dbg_print_data(struct rtl_priv *rtlpriv, u64 comp, int level,
 struct rtl_priv;
 
 __printf(4, 5)
+<<<<<<< HEAD
+=======
+static inline void rtl_dbg(struct rtl_priv *rtlpriv,
+			   u64 comp, int level,
+			   const char *fmt, ...)
+{
+}
+
+__printf(4, 5)
+>>>>>>> origin/android16-base
 static inline void RT_TRACE(struct rtl_priv *rtlpriv,
 			    u64 comp, int level,
 			    const char *fmt, ...)

@@ -68,9 +68,14 @@
 	stp \ptr, \regB, [\regC], \val
 	.endm
 
+<<<<<<< HEAD
 	.weak memcpy
 ENTRY(__memcpy)
 ENTRY(memcpy)
+=======
+ENTRY(__memcpy)
+WEAK(memcpy)
+>>>>>>> origin/android16-base
 #include "copy_template.S"
 	ret
 ENDPIPROC(memcpy)

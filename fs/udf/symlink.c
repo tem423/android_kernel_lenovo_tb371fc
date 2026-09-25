@@ -122,7 +122,11 @@ static int udf_symlink_filler(struct file *file, struct page *page)
 
 	down_read(&iinfo->i_data_sem);
 	if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB) {
+<<<<<<< HEAD
 		symlink = iinfo->i_ext.i_data + iinfo->i_lenEAttr;
+=======
+		symlink = iinfo->i_data + iinfo->i_lenEAttr;
+>>>>>>> origin/android16-base
 	} else {
 		bh = sb_bread(inode->i_sb, pos);
 

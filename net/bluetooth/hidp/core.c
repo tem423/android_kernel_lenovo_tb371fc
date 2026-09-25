@@ -428,7 +428,11 @@ static void hidp_set_timer(struct hidp_session *session)
 static void hidp_del_timer(struct hidp_session *session)
 {
 	if (session->idle_to > 0)
+<<<<<<< HEAD
 		del_timer(&session->timer);
+=======
+		del_timer_sync(&session->timer);
+>>>>>>> origin/android16-base
 }
 
 static void hidp_process_report(struct hidp_session *session, int type,
@@ -1282,7 +1286,11 @@ static int hidp_session_thread(void *arg)
 
 	/* cleanup runtime environment */
 	remove_wait_queue(sk_sleep(session->intr_sock->sk), &intr_wait);
+<<<<<<< HEAD
 	remove_wait_queue(sk_sleep(session->intr_sock->sk), &ctrl_wait);
+=======
+	remove_wait_queue(sk_sleep(session->ctrl_sock->sk), &ctrl_wait);
+>>>>>>> origin/android16-base
 	wake_up_interruptible(&session->report_queue);
 	hidp_del_timer(session);
 

@@ -163,11 +163,19 @@ static const char *normalize_arch(char *arch)
 
 const char *perf_env__arch(struct perf_env *env)
 {
+<<<<<<< HEAD
 	struct utsname uts;
 	char *arch_name;
 
 	if (!env || !env->arch) { /* Assume local operation */
 		if (uname(&uts) < 0)
+=======
+	char *arch_name;
+
+	if (!env || !env->arch) { /* Assume local operation */
+		static struct utsname uts = { .machine[0] = '\0', };
+		if (uts.machine[0] == '\0' && uname(&uts) < 0)
+>>>>>>> origin/android16-base
 			return NULL;
 		arch_name = uts.machine;
 	} else

@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
+<<<<<<< HEAD
  * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2016-2017, 2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/module.h>
@@ -109,10 +113,14 @@ static int audio_notifer_get_default_service(int domain)
 	/* initial service to connect per domain */
 	switch (domain) {
 	case AUDIO_NOTIFIER_ADSP_DOMAIN:
+<<<<<<< HEAD
 		/* p118: use SSR (subsystem_notif) for ADSP; the PDR (servreg QMI)
 		 * path never delivered SERVICE_UP on this kernel, wedging the
 		 * audio bootstrap (apr_adsp_up never fired -> no sound card). */
 		service = AUDIO_NOTIFIER_SSR_SERVICE;
+=======
+		service = AUDIO_NOTIFIER_PDR_SERVICE;
+>>>>>>> origin/android16-base
 		break;
 	case AUDIO_NOTIFIER_MODEM_DOMAIN:
 		service = AUDIO_NOTIFIER_SSR_SERVICE;
@@ -632,7 +640,11 @@ static int __init audio_notifier_init(void)
 static int __init audio_notifier_init(void)
 {
 	audio_notifier_subsys_init();
+<<<<<<< HEAD
 	audio_notifier_disable_service(AUDIO_NOTIFIER_PDR_SERVICE);
+=======
+	audio_notifer_disable_service(AUDIO_NOTIFIER_PDR_SERVICE);
+>>>>>>> origin/android16-base
 
 	audio_notifier_late_init();
 

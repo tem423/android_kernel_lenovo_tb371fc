@@ -99,6 +99,35 @@ void i40e_vc_notify_reset(struct i40e_pf *pf)
 			     (u8 *)&pfe, sizeof(struct virtchnl_pf_event));
 }
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_PCI_IOV
+void i40e_restore_all_vfs_msi_state(struct pci_dev *pdev)
+{
+	u16 vf_id;
+	u16 pos;
+
+	/* Continue only if this is a PF */
+	if (!pdev->is_physfn)
+		return;
+
+	if (!pci_num_vf(pdev))
+		return;
+
+	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
+	if (pos) {
+		struct pci_dev *vf_dev = NULL;
+
+		pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
+		while ((vf_dev = pci_get_device(pdev->vendor, vf_id, vf_dev))) {
+			if (vf_dev->is_virtfn && vf_dev->physfn == pdev)
+				pci_restore_msi_state(vf_dev);
+		}
+	}
+}
+#endif /* CONFIG_PCI_IOV */
+
+>>>>>>> origin/android16-base
 /**
  * i40e_vc_notify_vf_reset
  * @vf: pointer to the VF structure
@@ -137,6 +166,10 @@ void i40e_vc_notify_vf_reset(struct i40e_vf *vf)
  **/
 static inline void i40e_vc_disable_vf(struct i40e_vf *vf)
 {
+<<<<<<< HEAD
+=======
+	struct i40e_pf *pf = vf->pf;
+>>>>>>> origin/android16-base
 	int i;
 
 	i40e_vc_notify_vf_reset(vf);
@@ -147,6 +180,14 @@ static inline void i40e_vc_disable_vf(struct i40e_vf *vf)
 	 * ensure a reset.
 	 */
 	for (i = 0; i < 20; i++) {
+<<<<<<< HEAD
+=======
+		/* If PF is in VFs releasing state reset VF is impossible,
+		 * so leave it.
+		 */
+		if (test_bit(__I40E_VFS_RELEASING, pf->state))
+			return;
+>>>>>>> origin/android16-base
 		if (i40e_reset_vf(vf, false))
 			return;
 		usleep_range(10000, 20000);
@@ -615,6 +656,7 @@ static int i40e_config_vsi_rx_queue(struct i40e_vf *vf, u16 vsi_id,
 				    u16 vsi_queue_id,
 				    struct virtchnl_rxq_info *info)
 {
+<<<<<<< HEAD
 	struct i40e_pf *pf = vf->pf;
 	struct i40e_hw *hw = &pf->hw;
 	struct i40e_hmc_obj_rxq rx_ctx;
@@ -623,6 +665,15 @@ static int i40e_config_vsi_rx_queue(struct i40e_vf *vf, u16 vsi_id,
 
 	pf_queue_id = i40e_vc_get_pf_queue_id(vf, vsi_id, vsi_queue_id);
 
+=======
+	u16 pf_queue_id = i40e_vc_get_pf_queue_id(vf, vsi_id, vsi_queue_id);
+	struct i40e_pf *pf = vf->pf;
+	struct i40e_vsi *vsi = pf->vsi[vf->lan_vsi_idx];
+	struct i40e_hw *hw = &pf->hw;
+	struct i40e_hmc_obj_rxq rx_ctx;
+	int ret = 0;
+
+>>>>>>> origin/android16-base
 	/* clear the context structure first */
 	memset(&rx_ctx, 0, sizeof(struct i40e_hmc_obj_rxq));
 
@@ -660,6 +711,13 @@ static int i40e_config_vsi_rx_queue(struct i40e_vf *vf, u16 vsi_id,
 	}
 	rx_ctx.rxmax = info->max_pkt_size;
 
+<<<<<<< HEAD
+=======
+	/* if port VLAN is configured increase the max packet size */
+	if (vsi->info.pvid)
+		rx_ctx.rxmax += VLAN_HLEN;
+
+>>>>>>> origin/android16-base
 	/* enable 32bytes desc always */
 	rx_ctx.dsize = 1;
 
@@ -1204,7 +1262,12 @@ static void i40e_cleanup_reset_vf(struct i40e_vf *vf)
  * @vf: pointer to the VF structure
  * @flr: VFLR was issued or not
  *
+<<<<<<< HEAD
  * Returns true if the VF is reset, false otherwise.
+=======
+ * Returns true if the VF is in reset, resets successfully, or resets
+ * are disabled and false otherwise.
+>>>>>>> origin/android16-base
  **/
 bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
 {
@@ -1214,11 +1277,24 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
 	u32 reg;
 	int i;
 
+<<<<<<< HEAD
 	/* If the VFs have been disabled, this means something else is
 	 * resetting the VF, so we shouldn't continue.
 	 */
 	if (test_and_set_bit(__I40E_VF_DISABLE, pf->state))
 		return false;
+=======
+	if (test_bit(__I40E_VF_RESETS_DISABLED, pf->state))
+		return true;
+
+	/* Bail out if VFs are disabled. */
+	if (test_bit(__I40E_VF_DISABLE, pf->state))
+		return true;
+
+	/* If VF is being reset already we don't need to continue. */
+	if (test_and_set_bit(I40E_VF_STATE_RESETTING, &vf->vf_states))
+		return true;
+>>>>>>> origin/android16-base
 
 	i40e_trigger_vf_reset(vf, flr);
 
@@ -1254,7 +1330,12 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
 	i40e_cleanup_reset_vf(vf);
 
 	i40e_flush(hw);
+<<<<<<< HEAD
 	clear_bit(__I40E_VF_DISABLE, pf->state);
+=======
+	usleep_range(20000, 40000);
+	clear_bit(I40E_VF_STATE_RESETTING, &vf->vf_states);
+>>>>>>> origin/android16-base
 
 	return true;
 }
@@ -1275,8 +1356,13 @@ bool i40e_reset_all_vfs(struct i40e_pf *pf, bool flr)
 {
 	struct i40e_hw *hw = &pf->hw;
 	struct i40e_vf *vf;
+<<<<<<< HEAD
 	int i, v;
 	u32 reg;
+=======
+	u32 reg;
+	int i;
+>>>>>>> origin/android16-base
 
 	/* If we don't have any VFs, then there is nothing to reset */
 	if (!pf->num_alloc_vfs)
@@ -1287,8 +1373,16 @@ bool i40e_reset_all_vfs(struct i40e_pf *pf, bool flr)
 		return false;
 
 	/* Begin reset on all VFs at once */
+<<<<<<< HEAD
 	for (v = 0; v < pf->num_alloc_vfs; v++)
 		i40e_trigger_vf_reset(&pf->vf[v], flr);
+=======
+	for (vf = &pf->vf[0]; vf < &pf->vf[pf->num_alloc_vfs]; ++vf) {
+		/* If VF is being reset no need to trigger reset again */
+		if (!test_bit(I40E_VF_STATE_RESETTING, &vf->vf_states))
+			i40e_trigger_vf_reset(vf, flr);
+	}
+>>>>>>> origin/android16-base
 
 	/* HW requires some time to make sure it can flush the FIFO for a VF
 	 * when it resets it. Poll the VPGEN_VFRSTAT register for each VF in
@@ -1296,22 +1390,39 @@ bool i40e_reset_all_vfs(struct i40e_pf *pf, bool flr)
 	 * the VFs using a simple iterator that increments once that VF has
 	 * finished resetting.
 	 */
+<<<<<<< HEAD
 	for (i = 0, v = 0; i < 10 && v < pf->num_alloc_vfs; i++) {
+=======
+	for (i = 0, vf = &pf->vf[0]; i < 10 && vf < &pf->vf[pf->num_alloc_vfs]; ++i) {
+>>>>>>> origin/android16-base
 		usleep_range(10000, 20000);
 
 		/* Check each VF in sequence, beginning with the VF to fail
 		 * the previous check.
 		 */
+<<<<<<< HEAD
 		while (v < pf->num_alloc_vfs) {
 			vf = &pf->vf[v];
 			reg = rd32(hw, I40E_VPGEN_VFRSTAT(vf->vf_id));
 			if (!(reg & I40E_VPGEN_VFRSTAT_VFRD_MASK))
 				break;
+=======
+		while (vf < &pf->vf[pf->num_alloc_vfs]) {
+			if (!test_bit(I40E_VF_STATE_RESETTING, &vf->vf_states)) {
+				reg = rd32(hw, I40E_VPGEN_VFRSTAT(vf->vf_id));
+				if (!(reg & I40E_VPGEN_VFRSTAT_VFRD_MASK))
+					break;
+			}
+>>>>>>> origin/android16-base
 
 			/* If the current VF has finished resetting, move on
 			 * to the next VF in sequence.
 			 */
+<<<<<<< HEAD
 			v++;
+=======
+			++vf;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -1321,31 +1432,63 @@ bool i40e_reset_all_vfs(struct i40e_pf *pf, bool flr)
 	/* Display a warning if at least one VF didn't manage to reset in
 	 * time, but continue on with the operation.
 	 */
+<<<<<<< HEAD
 	if (v < pf->num_alloc_vfs)
 		dev_err(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
 			pf->vf[v].vf_id);
+=======
+	if (vf < &pf->vf[pf->num_alloc_vfs])
+		dev_err(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
+			vf->vf_id);
+>>>>>>> origin/android16-base
 	usleep_range(10000, 20000);
 
 	/* Begin disabling all the rings associated with VFs, but do not wait
 	 * between each VF.
 	 */
+<<<<<<< HEAD
 	for (v = 0; v < pf->num_alloc_vfs; v++) {
 		/* On initial reset, we don't have any queues to disable */
 		if (pf->vf[v].lan_vsi_idx == 0)
 			continue;
 
 		i40e_vsi_stop_rings_no_wait(pf->vsi[pf->vf[v].lan_vsi_idx]);
+=======
+	for (vf = &pf->vf[0]; vf < &pf->vf[pf->num_alloc_vfs]; ++vf) {
+		/* On initial reset, we don't have any queues to disable */
+		if (vf->lan_vsi_idx == 0)
+			continue;
+
+		/* If VF is reset in another thread just continue */
+		if (test_bit(I40E_VF_STATE_RESETTING, &vf->vf_states))
+			continue;
+
+		i40e_vsi_stop_rings_no_wait(pf->vsi[vf->lan_vsi_idx]);
+>>>>>>> origin/android16-base
 	}
 
 	/* Now that we've notified HW to disable all of the VF rings, wait
 	 * until they finish.
 	 */
+<<<<<<< HEAD
 	for (v = 0; v < pf->num_alloc_vfs; v++) {
 		/* On initial reset, we don't have any queues to disable */
 		if (pf->vf[v].lan_vsi_idx == 0)
 			continue;
 
 		i40e_vsi_wait_queues_disabled(pf->vsi[pf->vf[v].lan_vsi_idx]);
+=======
+	for (vf = &pf->vf[0]; vf < &pf->vf[pf->num_alloc_vfs]; ++vf) {
+		/* On initial reset, we don't have any queues to disable */
+		if (vf->lan_vsi_idx == 0)
+			continue;
+
+		/* If VF is reset in another thread just continue */
+		if (test_bit(I40E_VF_STATE_RESETTING, &vf->vf_states))
+			continue;
+
+		i40e_vsi_wait_queues_disabled(pf->vsi[vf->lan_vsi_idx]);
+>>>>>>> origin/android16-base
 	}
 
 	/* Hw may need up to 50ms to finish disabling the RX queues. We
@@ -1354,10 +1497,23 @@ bool i40e_reset_all_vfs(struct i40e_pf *pf, bool flr)
 	mdelay(50);
 
 	/* Finish the reset on each VF */
+<<<<<<< HEAD
 	for (v = 0; v < pf->num_alloc_vfs; v++)
 		i40e_cleanup_reset_vf(&pf->vf[v]);
 
 	i40e_flush(hw);
+=======
+	for (vf = &pf->vf[0]; vf < &pf->vf[pf->num_alloc_vfs]; ++vf) {
+		/* If VF is reset in another thread just continue */
+		if (test_bit(I40E_VF_STATE_RESETTING, &vf->vf_states))
+			continue;
+
+		i40e_cleanup_reset_vf(vf);
+	}
+
+	i40e_flush(hw);
+	usleep_range(20000, 40000);
+>>>>>>> origin/android16-base
 	clear_bit(__I40E_VF_DISABLE, pf->state);
 
 	return true;
@@ -1377,11 +1533,28 @@ void i40e_free_vfs(struct i40e_pf *pf)
 
 	if (!pf->vf)
 		return;
+<<<<<<< HEAD
+=======
+
+	set_bit(__I40E_VFS_RELEASING, pf->state);
+>>>>>>> origin/android16-base
 	while (test_and_set_bit(__I40E_VF_DISABLE, pf->state))
 		usleep_range(1000, 2000);
 
 	i40e_notify_client_of_vf_enable(pf, 0);
 
+<<<<<<< HEAD
+=======
+	/* Disable IOV before freeing resources. This lets any VF drivers
+	 * running in the host get themselves cleaned up before we yank
+	 * the carpet out from underneath their feet.
+	 */
+	if (!pci_vfs_assigned(pf->pdev))
+		pci_disable_sriov(pf->pdev);
+	else
+		dev_warn(&pf->pdev->dev, "VFs are assigned - not disabling SR-IOV\n");
+
+>>>>>>> origin/android16-base
 	/* Amortize wait time by stopping all VFs at the same time */
 	for (i = 0; i < pf->num_alloc_vfs; i++) {
 		if (test_bit(I40E_VF_STATE_INIT, &pf->vf[i].vf_states))
@@ -1397,6 +1570,7 @@ void i40e_free_vfs(struct i40e_pf *pf)
 		i40e_vsi_wait_queues_disabled(pf->vsi[pf->vf[i].lan_vsi_idx]);
 	}
 
+<<<<<<< HEAD
 	/* Disable IOV before freeing resources. This lets any VF drivers
 	 * running in the host get themselves cleaned up before we yank
 	 * the carpet out from underneath their feet.
@@ -1406,6 +1580,8 @@ void i40e_free_vfs(struct i40e_pf *pf)
 	else
 		dev_warn(&pf->pdev->dev, "VFs are assigned - not disabling SR-IOV\n");
 
+=======
+>>>>>>> origin/android16-base
 	/* free up VF resources */
 	tmp = pf->num_alloc_vfs;
 	pf->num_alloc_vfs = 0;
@@ -1434,6 +1610,10 @@ void i40e_free_vfs(struct i40e_pf *pf)
 		}
 	}
 	clear_bit(__I40E_VF_DISABLE, pf->state);
+<<<<<<< HEAD
+=======
+	clear_bit(__I40E_VFS_RELEASING, pf->state);
+>>>>>>> origin/android16-base
 }
 
 #ifdef CONFIG_PCI_IOV
@@ -1563,7 +1743,11 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
 	if (num_vfs) {
 		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
 			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
+<<<<<<< HEAD
 			i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
+=======
+			i40e_do_reset_safe(pf, I40E_PF_RESET_AND_REBUILD_FLAG);
+>>>>>>> origin/android16-base
 		}
 		return i40e_pci_sriov_enable(pdev, num_vfs);
 	}
@@ -1571,7 +1755,11 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
 	if (!pci_vfs_assigned(pf->pdev)) {
 		i40e_free_vfs(pf);
 		pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
+<<<<<<< HEAD
 		i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
+=======
+		i40e_do_reset_safe(pf, I40E_PF_RESET_AND_REBUILD_FLAG);
+>>>>>>> origin/android16-base
 	} else {
 		dev_warn(&pdev->dev, "Unable to free VFs because some are assigned to VMs.\n");
 		return -EINVAL;
@@ -1697,6 +1885,28 @@ static void i40e_del_qch(struct i40e_vf *vf)
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * i40e_vc_get_max_frame_size
+ * @vf: pointer to the VF
+ *
+ * Max frame size is determined based on the current port's max frame size and
+ * whether a port VLAN is configured on this VF. The VF is not aware whether
+ * it's in a port VLAN so the PF needs to account for this in max frame size
+ * checks and sending the max frame size to the VF.
+ **/
+static u16 i40e_vc_get_max_frame_size(struct i40e_vf *vf)
+{
+	u16 max_frame_size = vf->pf->hw.phy.link_info.max_frame_size;
+
+	if (vf->port_vlan_id)
+		max_frame_size -= VLAN_HLEN;
+
+	return max_frame_size;
+}
+
+/**
+>>>>>>> origin/android16-base
  * i40e_vc_get_vf_resources_msg
  * @vf: pointer to the VF info
  * @msg: pointer to the msg buffer
@@ -1798,6 +2008,10 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
 	vfres->max_vectors = pf->hw.func_caps.num_msix_vectors_vf;
 	vfres->rss_key_size = I40E_HKEY_ARRAY_SIZE;
 	vfres->rss_lut_size = I40E_VF_HLUT_ARRAY_SIZE;
+<<<<<<< HEAD
+=======
+	vfres->max_mtu = i40e_vc_get_max_frame_size(vf);
+>>>>>>> origin/android16-base
 
 	if (vf->lan_vsi_idx) {
 		vfres->vsi_res[0].vsi_id = vf->lan_vsi_id;
@@ -2323,6 +2537,62 @@ error_param:
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * i40e_check_enough_queue - find big enough queue number
+ * @vf: pointer to the VF info
+ * @needed: the number of items needed
+ *
+ * Returns the base item index of the queue, or negative for error
+ **/
+static int i40e_check_enough_queue(struct i40e_vf *vf, u16 needed)
+{
+	unsigned int  i, cur_queues, more, pool_size;
+	struct i40e_lump_tracking *pile;
+	struct i40e_pf *pf = vf->pf;
+	struct i40e_vsi *vsi;
+
+	vsi = pf->vsi[vf->lan_vsi_idx];
+	cur_queues = vsi->alloc_queue_pairs;
+
+	/* if current allocated queues are enough for need */
+	if (cur_queues >= needed)
+		return vsi->base_queue;
+
+	pile = pf->qp_pile;
+	if (cur_queues > 0) {
+		/* if the allocated queues are not zero
+		 * just check if there are enough queues for more
+		 * behind the allocated queues.
+		 */
+		more = needed - cur_queues;
+		for (i = vsi->base_queue + cur_queues;
+			i < pile->num_entries; i++) {
+			if (pile->list[i] & I40E_PILE_VALID_BIT)
+				break;
+
+			if (more-- == 1)
+				/* there is enough */
+				return vsi->base_queue;
+		}
+	}
+
+	pool_size = 0;
+	for (i = 0; i < pile->num_entries; i++) {
+		if (pile->list[i] & I40E_PILE_VALID_BIT) {
+			pool_size = 0;
+			continue;
+		}
+		if (needed <= ++pool_size)
+			/* there is enough */
+			return i;
+	}
+
+	return -ENOMEM;
+}
+
+/**
+>>>>>>> origin/android16-base
  * i40e_vc_request_queues_msg
  * @vf: pointer to the VF info
  * @msg: pointer to the msg buffer
@@ -2361,6 +2631,15 @@ static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg, int msglen)
 			 req_pairs - cur_pairs,
 			 pf->queues_left);
 		vfres->num_queue_pairs = pf->queues_left + cur_pairs;
+<<<<<<< HEAD
+=======
+	} else if (i40e_check_enough_queue(vf, req_pairs) < 0) {
+		dev_warn(&pf->pdev->dev,
+			 "VF %d requested %d more queues, but there is not enough for it.\n",
+			 vf->vf_id,
+			 req_pairs - cur_pairs);
+		vfres->num_queue_pairs = cur_pairs;
+>>>>>>> origin/android16-base
 	} else {
 		/* successful request */
 		vf->num_req_queues = req_pairs;
@@ -2477,7 +2756,11 @@ static inline int i40e_check_vf_permission(struct i40e_vf *vf,
 		    !is_multicast_ether_addr(addr) && vf->pf_set_mac &&
 		    !ether_addr_equal(addr, vf->default_lan_addr.addr)) {
 			dev_err(&pf->pdev->dev,
+<<<<<<< HEAD
 				"VF attempting to override administratively set MAC address, reload the VF driver to resume normal operation\n");
+=======
+				"VF attempting to override administratively set MAC address, bring down and up the VF interface to resume normal operation\n");
+>>>>>>> origin/android16-base
 			return -EPERM;
 		}
 	}
@@ -3025,16 +3308,27 @@ static int i40e_validate_cloud_filter(struct i40e_vf *vf,
 	bool found = false;
 	int bkt;
 
+<<<<<<< HEAD
 	if (!tc_filter->action) {
 		dev_info(&pf->pdev->dev,
 			 "VF %d: Currently ADq doesn't support Drop Action\n",
 			 vf->vf_id);
+=======
+	if (tc_filter->action != VIRTCHNL_ACTION_TC_REDIRECT) {
+		dev_info(&pf->pdev->dev,
+			 "VF %d: ADQ doesn't support this action (%d)\n",
+			 vf->vf_id, tc_filter->action);
+>>>>>>> origin/android16-base
 		goto err;
 	}
 
 	/* action_meta is TC number here to which the filter is applied */
 	if (!tc_filter->action_meta ||
+<<<<<<< HEAD
 	    tc_filter->action_meta > I40E_MAX_VF_VSI) {
+=======
+	    tc_filter->action_meta > vf->num_tc) {
+>>>>>>> origin/android16-base
 		dev_info(&pf->pdev->dev, "VF %d: Invalid TC number %u\n",
 			 vf->vf_id, tc_filter->action_meta);
 		goto err;
@@ -3564,11 +3858,14 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
 
 	/* set this flag only after making sure all inputs are sane */
 	vf->adq_enabled = true;
+<<<<<<< HEAD
 	/* num_req_queues is set when user changes number of queues via ethtool
 	 * and this causes issue for default VSI(which depends on this variable)
 	 * when ADq is enabled, hence reset it.
 	 */
 	vf->num_req_queues = 0;
+=======
+>>>>>>> origin/android16-base
 
 	/* reset the VF in order to allocate resources */
 	i40e_vc_notify_vf_reset(vf);
@@ -3906,15 +4203,24 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
 			 mac, vf_id);
 	}
 
+<<<<<<< HEAD
 	/* Force the VF driver stop so it has to reload with new MAC address */
 	i40e_vc_disable_vf(vf);
 	dev_info(&pf->pdev->dev, "Reload the VF driver to make this change effective.\n");
+=======
+	/* Force the VF interface down so it has to bring up with new MAC
+	 * address
+	 */
+	i40e_vc_disable_vf(vf);
+	dev_info(&pf->pdev->dev, "Bring down and up the VF interface to make this change effective.\n");
+>>>>>>> origin/android16-base
 
 error_param:
 	return ret;
 }
 
 /**
+<<<<<<< HEAD
  * i40e_vsi_has_vlans - True if VSI has configured VLANs
  * @vsi: pointer to the vsi
  *
@@ -3943,6 +4249,8 @@ static bool i40e_vsi_has_vlans(struct i40e_vsi *vsi)
 }
 
 /**
+=======
+>>>>>>> origin/android16-base
  * i40e_ndo_set_vf_port_vlan
  * @netdev: network interface device structure
  * @vf_id: VF identifier
@@ -3994,6 +4302,7 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
 		/* duplicate request, so just return success */
 		goto error_pvid;
 
+<<<<<<< HEAD
 	if (i40e_vsi_has_vlans(vsi)) {
 		dev_err(&pf->pdev->dev,
 			"VF %d has already configured VLAN filters and the administrator is requesting a port VLAN override.\nPlease unload and reload the VF driver for this change to take effect.\n",
@@ -4007,6 +4316,11 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
 		vsi = pf->vsi[vf->lan_vsi_idx];
 	}
 
+=======
+	i40e_vc_disable_vf(vf);
+	/* During reset the VF got a new VSI, so refresh a pointer. */
+	vsi = pf->vsi[vf->lan_vsi_idx];
+>>>>>>> origin/android16-base
 	/* Locked once because multiple functions below iterate list */
 	spin_lock_bh(&vsi->mac_filter_hash_lock);
 

@@ -655,8 +655,15 @@ static int nfc_genl_dump_devices_done(struct netlink_callback *cb)
 {
 	struct class_dev_iter *iter = (struct class_dev_iter *) cb->args[0];
 
+<<<<<<< HEAD
 	nfc_device_iter_exit(iter);
 	kfree(iter);
+=======
+	if (iter) {
+		nfc_device_iter_exit(iter);
+		kfree(iter);
+	}
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -871,6 +878,10 @@ static int nfc_genl_stop_poll(struct sk_buff *skb, struct genl_info *info)
 
 	if (!dev->polling) {
 		device_unlock(&dev->dev);
+<<<<<<< HEAD
+=======
+		nfc_put_device(dev);
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 
@@ -1259,7 +1270,11 @@ int nfc_genl_fw_download_done(struct nfc_dev *dev, const char *firmware_name,
 	struct sk_buff *msg;
 	void *hdr;
 
+<<<<<<< HEAD
 	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+=======
+	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
+>>>>>>> origin/android16-base
 	if (!msg)
 		return -ENOMEM;
 
@@ -1275,7 +1290,11 @@ int nfc_genl_fw_download_done(struct nfc_dev *dev, const char *firmware_name,
 
 	genlmsg_end(msg, hdr);
 
+<<<<<<< HEAD
 	genlmsg_multicast(&nfc_genl_family, msg, 0, 0, GFP_KERNEL);
+=======
+	genlmsg_multicast(&nfc_genl_family, msg, 0, 0, GFP_ATOMIC);
+>>>>>>> origin/android16-base
 
 	return 0;
 
@@ -1409,8 +1428,15 @@ static int nfc_genl_dump_ses_done(struct netlink_callback *cb)
 {
 	struct class_dev_iter *iter = (struct class_dev_iter *) cb->args[0];
 
+<<<<<<< HEAD
 	nfc_device_iter_exit(iter);
 	kfree(iter);
+=======
+	if (iter) {
+		nfc_device_iter_exit(iter);
+		kfree(iter);
+	}
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -1455,8 +1481,17 @@ static int nfc_se_io(struct nfc_dev *dev, u32 se_idx,
 	rc = dev->ops->se_io(dev, se_idx, apdu,
 			apdu_length, cb, cb_context);
 
+<<<<<<< HEAD
 error:
 	device_unlock(&dev->dev);
+=======
+	device_unlock(&dev->dev);
+	return rc;
+
+error:
+	device_unlock(&dev->dev);
+	kfree(cb_context);
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -1510,6 +1545,10 @@ static int nfc_genl_se_io(struct sk_buff *skb, struct genl_info *info)
 	u32 dev_idx, se_idx;
 	u8 *apdu;
 	size_t apdu_len;
+<<<<<<< HEAD
+=======
+	int rc;
+>>>>>>> origin/android16-base
 
 	if (!info->attrs[NFC_ATTR_DEVICE_INDEX] ||
 	    !info->attrs[NFC_ATTR_SE_INDEX] ||
@@ -1523,6 +1562,7 @@ static int nfc_genl_se_io(struct sk_buff *skb, struct genl_info *info)
 	if (!dev)
 		return -ENODEV;
 
+<<<<<<< HEAD
 	if (!dev->ops || !dev->ops->se_io)
 		return -ENOTSUPP;
 
@@ -1537,11 +1577,43 @@ static int nfc_genl_se_io(struct sk_buff *skb, struct genl_info *info)
 	ctx = kzalloc(sizeof(struct se_io_ctx), GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
+=======
+	if (!dev->ops || !dev->ops->se_io) {
+		rc = -EOPNOTSUPP;
+		goto put_dev;
+	}
+
+	apdu_len = nla_len(info->attrs[NFC_ATTR_SE_APDU]);
+	if (apdu_len == 0) {
+		rc = -EINVAL;
+		goto put_dev;
+	}
+
+	apdu = nla_data(info->attrs[NFC_ATTR_SE_APDU]);
+	if (!apdu) {
+		rc = -EINVAL;
+		goto put_dev;
+	}
+
+	ctx = kzalloc(sizeof(struct se_io_ctx), GFP_KERNEL);
+	if (!ctx) {
+		rc = -ENOMEM;
+		goto put_dev;
+	}
+>>>>>>> origin/android16-base
 
 	ctx->dev_idx = dev_idx;
 	ctx->se_idx = se_idx;
 
+<<<<<<< HEAD
 	return nfc_se_io(dev, se_idx, apdu, apdu_len, se_io_cb, ctx);
+=======
+	rc = nfc_se_io(dev, se_idx, apdu, apdu_len, se_io_cb, ctx);
+
+put_dev:
+	nfc_put_device(dev);
+	return rc;
+>>>>>>> origin/android16-base
 }
 
 static int nfc_genl_vendor_cmd(struct sk_buff *skb,
@@ -1564,6 +1636,7 @@ static int nfc_genl_vendor_cmd(struct sk_buff *skb,
 	subcmd = nla_get_u32(info->attrs[NFC_ATTR_VENDOR_SUBCMD]);
 
 	dev = nfc_get_device(dev_idx);
+<<<<<<< HEAD
 	if (!dev || !dev->vendor_cmds || !dev->n_vendor_cmds)
 		return -ENODEV;
 
@@ -1572,6 +1645,23 @@ static int nfc_genl_vendor_cmd(struct sk_buff *skb,
 		data_len = nla_len(info->attrs[NFC_ATTR_VENDOR_DATA]);
 		if (data_len == 0)
 			return -EINVAL;
+=======
+	if (!dev)
+		return -ENODEV;
+
+	if (!dev->vendor_cmds || !dev->n_vendor_cmds) {
+		err = -ENODEV;
+		goto put_dev;
+	}
+
+	if (info->attrs[NFC_ATTR_VENDOR_DATA]) {
+		data = nla_data(info->attrs[NFC_ATTR_VENDOR_DATA]);
+		data_len = nla_len(info->attrs[NFC_ATTR_VENDOR_DATA]);
+		if (data_len == 0) {
+			err = -EINVAL;
+			goto put_dev;
+		}
+>>>>>>> origin/android16-base
 	} else {
 		data = NULL;
 		data_len = 0;
@@ -1586,10 +1676,21 @@ static int nfc_genl_vendor_cmd(struct sk_buff *skb,
 		dev->cur_cmd_info = info;
 		err = cmd->doit(dev, data, data_len);
 		dev->cur_cmd_info = NULL;
+<<<<<<< HEAD
 		return err;
 	}
 
 	return -EOPNOTSUPP;
+=======
+		goto put_dev;
+	}
+
+	err = -EOPNOTSUPP;
+
+put_dev:
+	nfc_put_device(dev);
+	return err;
+>>>>>>> origin/android16-base
 }
 
 /* message building helper */

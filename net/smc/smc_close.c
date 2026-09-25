@@ -21,6 +21,25 @@
 
 #define SMC_CLOSE_WAIT_LISTEN_CLCSOCK_TIME	(5 * HZ)
 
+<<<<<<< HEAD
+=======
+/* release the clcsock that is assigned to the smc_sock */
+void smc_clcsock_release(struct smc_sock *smc)
+{
+	struct socket *tcp;
+
+	if (smc->listen_smc && current_work() != &smc->smc_listen_work)
+		cancel_work_sync(&smc->smc_listen_work);
+	mutex_lock(&smc->clcsock_release_lock);
+	if (smc->clcsock) {
+		tcp = smc->clcsock;
+		smc->clcsock = NULL;
+		sock_release(tcp);
+	}
+	mutex_unlock(&smc->clcsock_release_lock);
+}
+
+>>>>>>> origin/android16-base
 static void smc_close_cleanup_listen(struct sock *parent)
 {
 	struct sock *sk;
@@ -148,7 +167,11 @@ static void smc_close_active_abort(struct smc_sock *smc)
 		break;
 	}
 
+<<<<<<< HEAD
 	sock_set_flag(sk, SOCK_DEAD);
+=======
+	smc_sock_set_flag(sk, SOCK_DEAD);
+>>>>>>> origin/android16-base
 	sk->sk_state_change(sk);
 }
 
@@ -167,6 +190,10 @@ int smc_close_active(struct smc_sock *smc)
 	int old_state;
 	long timeout;
 	int rc = 0;
+<<<<<<< HEAD
+=======
+	int rc1 = 0;
+>>>>>>> origin/android16-base
 
 	timeout = current->flags & PF_EXITING ?
 		  0 : sock_flag(sk, SOCK_LINGER) ?
@@ -202,6 +229,18 @@ again:
 			if (rc)
 				break;
 			sk->sk_state = SMC_PEERCLOSEWAIT1;
+<<<<<<< HEAD
+=======
+
+			/* actively shutdown clcsock before peer close it,
+			 * prevent peer from entering TIME_WAIT state.
+			 */
+			if (smc->clcsock && smc->clcsock->sk) {
+				rc1 = kernel_sock_shutdown(smc->clcsock,
+							   SHUT_RDWR);
+				rc = rc ? rc : rc1;
+			}
+>>>>>>> origin/android16-base
 		} else {
 			/* peer event has changed the state */
 			goto again;
@@ -321,6 +360,10 @@ static void smc_close_passive_work(struct work_struct *work)
 						   close_work);
 	struct smc_sock *smc = container_of(conn, struct smc_sock, conn);
 	struct smc_cdc_conn_state_flags *rxflags;
+<<<<<<< HEAD
+=======
+	bool release_clcsock = false;
+>>>>>>> origin/android16-base
 	struct sock *sk = &smc->sk;
 	int old_state;
 
@@ -405,10 +448,22 @@ wakeup:
 	if (old_state != sk->sk_state) {
 		sk->sk_state_change(sk);
 		if ((sk->sk_state == SMC_CLOSED) &&
+<<<<<<< HEAD
 		    (sock_flag(sk, SOCK_DEAD) || !sk->sk_socket))
 			smc_conn_free(conn);
 	}
 	release_sock(sk);
+=======
+		    (sock_flag(sk, SOCK_DEAD) || !sk->sk_socket)) {
+			smc_conn_free(conn);
+			if (smc->clcsock)
+				release_clcsock = true;
+		}
+	}
+	release_sock(sk);
+	if (release_clcsock)
+		smc_clcsock_release(smc);
+>>>>>>> origin/android16-base
 	sock_put(sk); /* sock_hold done by schedulers of close_work */
 }
 

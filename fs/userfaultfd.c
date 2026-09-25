@@ -17,6 +17,10 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
 #include <linux/mm.h>
+<<<<<<< HEAD
+=======
+#include <linux/mmu_notifier.h>
+>>>>>>> origin/android16-base
 #include <linux/poll.h>
 #include <linux/slab.h>
 #include <linux/seq_file.h>
@@ -30,12 +34,18 @@
 #include <linux/security.h>
 #include <linux/hugetlb.h>
 
+<<<<<<< HEAD
 static struct kmem_cache *userfaultfd_ctx_cachep __read_mostly;
 
 enum userfaultfd_state {
 	UFFD_STATE_WAIT_API,
 	UFFD_STATE_RUNNING,
 };
+=======
+int sysctl_unprivileged_userfaultfd __read_mostly;
+
+static struct kmem_cache *userfaultfd_ctx_cachep __read_mostly;
+>>>>>>> origin/android16-base
 
 /*
  * Start with fault_pending_wqh and fault_wqh so they're more likely
@@ -63,13 +73,20 @@ struct userfaultfd_ctx {
 	/* a refile sequence protected by fault_pending_wqh lock */
 	struct seqcount refile_seq;
 	/* pseudo fd refcounting */
+<<<<<<< HEAD
 	atomic_t refcount;
+=======
+	refcount_t refcount;
+>>>>>>> origin/android16-base
 	/* userfaultfd syscall flags */
 	unsigned int flags;
 	/* features requested from the userspace */
 	unsigned int features;
+<<<<<<< HEAD
 	/* state machine */
 	enum userfaultfd_state state;
+=======
+>>>>>>> origin/android16-base
 	/* released */
 	bool released;
 	/* memory mappings are changing because of non-cooperative event */
@@ -103,6 +120,17 @@ struct userfaultfd_wake_range {
 	unsigned long len;
 };
 
+<<<<<<< HEAD
+=======
+/* internal indication that UFFD_API ioctl was successfully executed */
+#define UFFD_FEATURE_INITIALIZED		(1u << 31)
+
+static bool userfaultfd_is_initialized(struct userfaultfd_ctx *ctx)
+{
+	return ctx->features & UFFD_FEATURE_INITIALIZED;
+}
+
+>>>>>>> origin/android16-base
 static int userfaultfd_wake_function(wait_queue_entry_t *wq, unsigned mode,
 				     int wake_flags, void *key)
 {
@@ -150,8 +178,12 @@ out:
  */
 static void userfaultfd_ctx_get(struct userfaultfd_ctx *ctx)
 {
+<<<<<<< HEAD
 	if (!atomic_inc_not_zero(&ctx->refcount))
 		BUG();
+=======
+	refcount_inc(&ctx->refcount);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -164,7 +196,11 @@ static void userfaultfd_ctx_get(struct userfaultfd_ctx *ctx)
  */
 static void userfaultfd_ctx_put(struct userfaultfd_ctx *ctx)
 {
+<<<<<<< HEAD
 	if (atomic_dec_and_test(&ctx->refcount)) {
+=======
+	if (refcount_dec_and_test(&ctx->refcount)) {
+>>>>>>> origin/android16-base
 		VM_BUG_ON(spin_is_locked(&ctx->fault_pending_wqh.lock));
 		VM_BUG_ON(waitqueue_active(&ctx->fault_pending_wqh));
 		VM_BUG_ON(spin_is_locked(&ctx->fault_wqh.lock));
@@ -197,6 +233,7 @@ static inline struct uffd_msg userfault_msg(unsigned long address,
 	msg_init(&msg);
 	msg.event = UFFD_EVENT_PAGEFAULT;
 	msg.arg.pagefault.address = address;
+<<<<<<< HEAD
 	if (flags & FAULT_FLAG_WRITE)
 		/*
 		 * If UFFD_FEATURE_PAGEFAULT_FLAG_WP was set in the
@@ -215,6 +252,23 @@ static inline struct uffd_msg userfault_msg(unsigned long address,
 		 * write protect fault.
 		 */
 		msg.arg.pagefault.flags |= UFFD_PAGEFAULT_FLAG_WP;
+=======
+	/*
+	 * These flags indicate why the userfault occurred:
+	 * - UFFD_PAGEFAULT_FLAG_WP indicates a write protect fault.
+	 * - UFFD_PAGEFAULT_FLAG_MINOR indicates a minor fault.
+	 * - Neither of these flags being set indicates a MISSING fault.
+	 *
+	 * Separately, UFFD_PAGEFAULT_FLAG_WRITE indicates it was a write
+	 * fault. Otherwise, it was a read fault.
+	 */
+	if (flags & FAULT_FLAG_WRITE)
+		msg.arg.pagefault.flags |= UFFD_PAGEFAULT_FLAG_WRITE;
+	if (reason & VM_UFFD_WP)
+		msg.arg.pagefault.flags |= UFFD_PAGEFAULT_FLAG_WP;
+	if (reason & VM_UFFD_MINOR)
+		msg.arg.pagefault.flags |= UFFD_PAGEFAULT_FLAG_MINOR;
+>>>>>>> origin/android16-base
 	if (features & UFFD_FEATURE_THREAD_ID)
 		msg.arg.pagefault.feat.ptid = task_pid_vnr(current);
 	return msg;
@@ -335,6 +389,33 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+/* Should pair with userfaultfd_signal_pending() */
+static inline long userfaultfd_get_blocking_state(unsigned int flags)
+{
+	if (flags & FAULT_FLAG_INTERRUPTIBLE)
+		return TASK_INTERRUPTIBLE;
+
+	if (flags & FAULT_FLAG_KILLABLE)
+		return TASK_KILLABLE;
+
+	return TASK_UNINTERRUPTIBLE;
+}
+
+/* Should pair with userfaultfd_get_blocking_state() */
+static inline bool userfaultfd_signal_pending(unsigned int flags)
+{
+	if (flags & FAULT_FLAG_INTERRUPTIBLE)
+		return signal_pending(current);
+
+	if (flags & FAULT_FLAG_KILLABLE)
+		return fatal_signal_pending(current);
+
+	return false;
+}
+
+>>>>>>> origin/android16-base
 /*
  * The locking rules involved in returning VM_FAULT_RETRY depending on
  * FAULT_FLAG_ALLOW_RETRY, FAULT_FLAG_RETRY_NOWAIT and
@@ -356,7 +437,11 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 	struct userfaultfd_ctx *ctx;
 	struct userfaultfd_wait_queue uwq;
 	vm_fault_t ret = VM_FAULT_SIGBUS;
+<<<<<<< HEAD
 	bool must_wait, return_to_userland;
+=======
+	bool must_wait;
+>>>>>>> origin/android16-base
 	long blocking_state;
 
 	/*
@@ -385,11 +470,28 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 
 	BUG_ON(ctx->mm != mm);
 
+<<<<<<< HEAD
 	VM_BUG_ON(reason & ~(VM_UFFD_MISSING|VM_UFFD_WP));
 	VM_BUG_ON(!(reason & VM_UFFD_MISSING) ^ !!(reason & VM_UFFD_WP));
 
 	if (ctx->features & UFFD_FEATURE_SIGBUS)
 		goto out;
+=======
+	/* Any unrecognized flag is a bug. */
+	VM_BUG_ON(reason & ~__VM_UFFD_FLAGS);
+	/* 0 or > 1 flags set is a bug; we expect exactly 1. */
+	VM_BUG_ON(!reason || (reason & (reason - 1)));
+
+	if (ctx->features & UFFD_FEATURE_SIGBUS)
+		goto out;
+	if ((vmf->flags & FAULT_FLAG_USER) == 0 &&
+	    ctx->flags & UFFD_USER_MODE_ONLY) {
+		printk_once(KERN_WARNING "uffd: Set unprivileged_userfaultfd "
+			"sysctl knob to 1 if kernel faults must be handled "
+			"without obtaining CAP_SYS_PTRACE capability\n");
+		goto out;
+	}
+>>>>>>> origin/android16-base
 
 	/*
 	 * If it's already released don't get it. This avoids to loop
@@ -463,11 +565,15 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 	uwq.ctx = ctx;
 	uwq.waken = false;
 
+<<<<<<< HEAD
 	return_to_userland =
 		(vmf->flags & (FAULT_FLAG_USER|FAULT_FLAG_KILLABLE)) ==
 		(FAULT_FLAG_USER|FAULT_FLAG_KILLABLE);
 	blocking_state = return_to_userland ? TASK_INTERRUPTIBLE :
 			 TASK_KILLABLE;
+=======
+	blocking_state = userfaultfd_get_blocking_state(vmf->flags);
+>>>>>>> origin/android16-base
 
 	spin_lock_irq(&ctx->fault_pending_wqh.lock);
 	/*
@@ -493,8 +599,12 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 	up_read(&mm->mmap_sem);
 
 	if (likely(must_wait && !READ_ONCE(ctx->released) &&
+<<<<<<< HEAD
 		   (return_to_userland ? !signal_pending(current) :
 		    !fatal_signal_pending(current)))) {
+=======
+		   !userfaultfd_signal_pending(vmf->flags))) {
+>>>>>>> origin/android16-base
 		wake_up_poll(&ctx->fd_wqh, EPOLLIN);
 		schedule();
 		ret |= VM_FAULT_MAJOR;
@@ -516,8 +626,12 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 			set_current_state(blocking_state);
 			if (READ_ONCE(uwq.waken) ||
 			    READ_ONCE(ctx->released) ||
+<<<<<<< HEAD
 			    (return_to_userland ? signal_pending(current) :
 			     fatal_signal_pending(current)))
+=======
+			    userfaultfd_signal_pending(vmf->flags))
+>>>>>>> origin/android16-base
 				break;
 			schedule();
 		}
@@ -525,6 +639,7 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 
 	__set_current_state(TASK_RUNNING);
 
+<<<<<<< HEAD
 	if (return_to_userland) {
 		if (signal_pending(current) &&
 		    !fatal_signal_pending(current)) {
@@ -549,6 +664,8 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 		}
 	}
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Here we race with the list_del; list_add in
 	 * userfaultfd_ctx_read(), however because we don't ever run
@@ -645,7 +762,11 @@ static void userfaultfd_event_wait_completion(struct userfaultfd_ctx *ctx,
 		for (vma = mm->mmap; vma; vma = vma->vm_next)
 			if (vma->vm_userfaultfd_ctx.ctx == release_new_ctx) {
 				vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
+<<<<<<< HEAD
 				vma->vm_flags &= ~(VM_UFFD_WP | VM_UFFD_MISSING);
+=======
+				vma->vm_flags &= ~__VM_UFFD_FLAGS;
+>>>>>>> origin/android16-base
 			}
 		up_write(&mm->mmap_sem);
 
@@ -676,11 +797,16 @@ int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)
 
 	octx = vma->vm_userfaultfd_ctx.ctx;
 	if (!octx || !(octx->features & UFFD_FEATURE_EVENT_FORK)) {
+<<<<<<< HEAD
 		vm_write_begin(vma);
 		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
 		WRITE_ONCE(vma->vm_flags,
 			   vma->vm_flags & ~(VM_UFFD_WP | VM_UFFD_MISSING));
 		vm_write_end(vma);
+=======
+		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
+		vma->vm_flags &= ~__VM_UFFD_FLAGS;
+>>>>>>> origin/android16-base
 		return 0;
 	}
 
@@ -701,9 +827,14 @@ int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)
 			return -ENOMEM;
 		}
 
+<<<<<<< HEAD
 		atomic_set(&ctx->refcount, 1);
 		ctx->flags = octx->flags;
 		ctx->state = UFFD_STATE_RUNNING;
+=======
+		refcount_set(&ctx->refcount, 1);
+		ctx->flags = octx->flags;
+>>>>>>> origin/android16-base
 		ctx->features = octx->features;
 		ctx->released = false;
 		ctx->mmap_changing = false;
@@ -762,7 +893,11 @@ void mremap_userfaultfd_prep(struct vm_area_struct *vma,
 	} else {
 		/* Drop uffd context if remap feature not enabled */
 		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
+<<<<<<< HEAD
 		vma->vm_flags &= ~(VM_UFFD_WP | VM_UFFD_MISSING);
+=======
+		vma->vm_flags &= ~__VM_UFFD_FLAGS;
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -905,12 +1040,20 @@ static int userfaultfd_release(struct inode *inode, struct file *file)
 	for (vma = mm->mmap; vma; vma = vma->vm_next) {
 		cond_resched();
 		BUG_ON(!!vma->vm_userfaultfd_ctx.ctx ^
+<<<<<<< HEAD
 		       !!(vma->vm_flags & (VM_UFFD_MISSING | VM_UFFD_WP)));
+=======
+		       !!(vma->vm_flags & __VM_UFFD_FLAGS));
+>>>>>>> origin/android16-base
 		if (vma->vm_userfaultfd_ctx.ctx != ctx) {
 			prev = vma;
 			continue;
 		}
+<<<<<<< HEAD
 		new_flags = vma->vm_flags & ~(VM_UFFD_MISSING | VM_UFFD_WP);
+=======
+		new_flags = vma->vm_flags & ~__VM_UFFD_FLAGS;
+>>>>>>> origin/android16-base
 		if (still_valid) {
 			prev = vma_merge(mm, prev, vma->vm_start, vma->vm_end,
 					 new_flags, vma->anon_vma,
@@ -923,10 +1066,15 @@ static int userfaultfd_release(struct inode *inode, struct file *file)
 			else
 				prev = vma;
 		}
+<<<<<<< HEAD
 		vm_write_begin(vma);
 		WRITE_ONCE(vma->vm_flags, new_flags);
 		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
 		vm_write_end(vma);
+=======
+		vma->vm_flags = new_flags;
+		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
+>>>>>>> origin/android16-base
 	}
 	up_write(&mm->mmap_sem);
 	mmput(mm);
@@ -956,7 +1104,11 @@ static inline struct userfaultfd_wait_queue *find_userfault_in(
 	wait_queue_entry_t *wq;
 	struct userfaultfd_wait_queue *uwq;
 
+<<<<<<< HEAD
 	VM_BUG_ON(!spin_is_locked(&wqh->lock));
+=======
+	lockdep_assert_held(&wqh->lock);
+>>>>>>> origin/android16-base
 
 	uwq = NULL;
 	if (!waitqueue_active(wqh))
@@ -987,6 +1139,7 @@ static __poll_t userfaultfd_poll(struct file *file, poll_table *wait)
 
 	poll_wait(file, &ctx->fd_wqh, wait);
 
+<<<<<<< HEAD
 	switch (ctx->state) {
 	case UFFD_STATE_WAIT_API:
 		return EPOLLERR;
@@ -1019,18 +1172,57 @@ static __poll_t userfaultfd_poll(struct file *file, poll_table *wait)
 		WARN_ON_ONCE(1);
 		return EPOLLERR;
 	}
+=======
+	if (!userfaultfd_is_initialized(ctx))
+		return EPOLLERR;
+
+	/*
+	 * poll() never guarantees that read won't block.
+	 * userfaults can be waken before they're read().
+	 */
+	if (unlikely(!(file->f_flags & O_NONBLOCK)))
+		return EPOLLERR;
+	/*
+	 * lockless access to see if there are pending faults
+	 * __pollwait last action is the add_wait_queue but
+	 * the spin_unlock would allow the waitqueue_active to
+	 * pass above the actual list_add inside
+	 * add_wait_queue critical section. So use a full
+	 * memory barrier to serialize the list_add write of
+	 * add_wait_queue() with the waitqueue_active read
+	 * below.
+	 */
+	ret = 0;
+	smp_mb();
+	if (waitqueue_active(&ctx->fault_pending_wqh))
+		ret = EPOLLIN;
+	else if (waitqueue_active(&ctx->event_wqh))
+		ret = EPOLLIN;
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static const struct file_operations userfaultfd_fops;
 
+<<<<<<< HEAD
 static int resolve_userfault_fork(struct userfaultfd_ctx *ctx,
 				  struct userfaultfd_ctx *new,
+=======
+static int resolve_userfault_fork(struct userfaultfd_ctx *new,
+				  struct inode *inode,
+>>>>>>> origin/android16-base
 				  struct uffd_msg *msg)
 {
 	int fd;
 
+<<<<<<< HEAD
 	fd = anon_inode_getfd("[userfaultfd]", &userfaultfd_fops, new,
 			      O_RDWR | (new->flags & UFFD_SHARED_FCNTL_FLAGS));
+=======
+	fd = anon_inode_getfd_secure("[userfaultfd]", &userfaultfd_fops, new,
+			O_RDONLY | (new->flags & UFFD_SHARED_FCNTL_FLAGS), inode);
+>>>>>>> origin/android16-base
 	if (fd < 0)
 		return fd;
 
@@ -1040,7 +1232,11 @@ static int resolve_userfault_fork(struct userfaultfd_ctx *ctx,
 }
 
 static ssize_t userfaultfd_ctx_read(struct userfaultfd_ctx *ctx, int no_wait,
+<<<<<<< HEAD
 				    struct uffd_msg *msg)
+=======
+				    struct uffd_msg *msg, struct inode *inode)
+>>>>>>> origin/android16-base
 {
 	ssize_t ret;
 	DECLARE_WAITQUEUE(wait, current);
@@ -1151,7 +1347,11 @@ static ssize_t userfaultfd_ctx_read(struct userfaultfd_ctx *ctx, int no_wait,
 	spin_unlock_irq(&ctx->fd_wqh.lock);
 
 	if (!ret && msg->event == UFFD_EVENT_FORK) {
+<<<<<<< HEAD
 		ret = resolve_userfault_fork(ctx, fork_nctx, msg);
+=======
+		ret = resolve_userfault_fork(fork_nctx, inode, msg);
+>>>>>>> origin/android16-base
 		spin_lock_irq(&ctx->event_wqh.lock);
 		if (!list_empty(&fork_event)) {
 			/*
@@ -1211,14 +1411,24 @@ static ssize_t userfaultfd_read(struct file *file, char __user *buf,
 	ssize_t _ret, ret = 0;
 	struct uffd_msg msg;
 	int no_wait = file->f_flags & O_NONBLOCK;
+<<<<<<< HEAD
 
 	if (ctx->state == UFFD_STATE_WAIT_API)
+=======
+	struct inode *inode = file_inode(file);
+
+	if (!userfaultfd_is_initialized(ctx))
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	for (;;) {
 		if (count < sizeof(msg))
 			return ret ? ret : -EINVAL;
+<<<<<<< HEAD
 		_ret = userfaultfd_ctx_read(ctx, no_wait, &msg);
+=======
+		_ret = userfaultfd_ctx_read(ctx, no_wait, &msg, inode);
+>>>>>>> origin/android16-base
 		if (_ret < 0)
 			return ret ? ret : _ret;
 		if (copy_to_user((__u64 __user *) buf, &msg, sizeof(msg)))
@@ -1279,6 +1489,7 @@ static __always_inline void wake_userfault(struct userfaultfd_ctx *ctx,
 }
 
 static __always_inline int validate_range(struct mm_struct *mm,
+<<<<<<< HEAD
 					  __u64 *start, __u64 len)
 {
 	__u64 task_size = mm->task_size;
@@ -1286,24 +1497,52 @@ static __always_inline int validate_range(struct mm_struct *mm,
 	*start = untagged_addr(*start);
 
 	if (*start & ~PAGE_MASK)
+=======
+					  __u64 start, __u64 len)
+{
+	__u64 task_size = mm->task_size;
+
+	if (start & ~PAGE_MASK)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	if (len & ~PAGE_MASK)
 		return -EINVAL;
 	if (!len)
 		return -EINVAL;
+<<<<<<< HEAD
 	if (*start < mmap_min_addr)
 		return -EINVAL;
 	if (*start >= task_size)
 		return -EINVAL;
 	if (len > task_size - *start)
+=======
+	if (start < mmap_min_addr)
+		return -EINVAL;
+	if (start >= task_size)
+		return -EINVAL;
+	if (len > task_size - start)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	return 0;
 }
 
+<<<<<<< HEAD
 static inline bool vma_can_userfault(struct vm_area_struct *vma)
 {
 	return vma_is_anonymous(vma) || is_vm_hugetlb_page(vma) ||
 		vma_is_shmem(vma);
+=======
+static inline bool vma_can_userfault(struct vm_area_struct *vma,
+				     unsigned long vm_flags)
+{
+	if (vm_flags & VM_UFFD_MINOR) {
+		if (!(is_vm_hugetlb_page(vma) || vma_is_shmem(vma)))
+			return false;
+	}
+
+	return vma_is_anonymous(vma) || is_vm_hugetlb_page(vma) ||
+	       vma_is_shmem(vma);
+>>>>>>> origin/android16-base
 }
 
 static int userfaultfd_register(struct userfaultfd_ctx *ctx,
@@ -1329,8 +1568,12 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
 	ret = -EINVAL;
 	if (!uffdio_register.mode)
 		goto out;
+<<<<<<< HEAD
 	if (uffdio_register.mode & ~(UFFDIO_REGISTER_MODE_MISSING|
 				     UFFDIO_REGISTER_MODE_WP))
+=======
+	if (uffdio_register.mode & ~UFFD_API_REGISTER_MODES)
+>>>>>>> origin/android16-base
 		goto out;
 	vm_flags = 0;
 	if (uffdio_register.mode & UFFDIO_REGISTER_MODE_MISSING)
@@ -1344,8 +1587,19 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
 		ret = -EINVAL;
 		goto out;
 	}
+<<<<<<< HEAD
 
 	ret = validate_range(mm, &uffdio_register.range.start,
+=======
+	if (uffdio_register.mode & UFFDIO_REGISTER_MODE_MINOR) {
+#ifndef CONFIG_HAVE_ARCH_USERFAULTFD_MINOR
+		goto out;
+#endif
+		vm_flags |= VM_UFFD_MINOR;
+	}
+
+	ret = validate_range(mm, uffdio_register.range.start,
+>>>>>>> origin/android16-base
 			     uffdio_register.range.len);
 	if (ret)
 		goto out;
@@ -1389,11 +1643,19 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
 		cond_resched();
 
 		BUG_ON(!!cur->vm_userfaultfd_ctx.ctx ^
+<<<<<<< HEAD
 		       !!(cur->vm_flags & (VM_UFFD_MISSING | VM_UFFD_WP)));
 
 		/* check not compatible vmas */
 		ret = -EINVAL;
 		if (!vma_can_userfault(cur))
+=======
+		       !!(cur->vm_flags & __VM_UFFD_FLAGS));
+
+		/* check not compatible vmas */
+		ret = -EINVAL;
+		if (!vma_can_userfault(cur, vm_flags))
+>>>>>>> origin/android16-base
 			goto out_unlock;
 
 		/*
@@ -1450,7 +1712,11 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
 	do {
 		cond_resched();
 
+<<<<<<< HEAD
 		BUG_ON(!vma_can_userfault(vma));
+=======
+		BUG_ON(!vma_can_userfault(vma, vm_flags));
+>>>>>>> origin/android16-base
 		BUG_ON(vma->vm_userfaultfd_ctx.ctx &&
 		       vma->vm_userfaultfd_ctx.ctx != ctx);
 		WARN_ON(!(vma->vm_flags & VM_MAYWRITE));
@@ -1467,7 +1733,11 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
 			start = vma->vm_start;
 		vma_end = min(end, vma->vm_end);
 
+<<<<<<< HEAD
 		new_flags = (vma->vm_flags & ~vm_flags) | vm_flags;
+=======
+		new_flags = (vma->vm_flags & ~__VM_UFFD_FLAGS) | vm_flags;
+>>>>>>> origin/android16-base
 		prev = vma_merge(mm, prev, start, vma_end, new_flags,
 				 vma->anon_vma, vma->vm_file, vma->vm_pgoff,
 				 vma_policy(vma),
@@ -1493,10 +1763,18 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
 		 * the next vma was merged into the current one and
 		 * the current one has not been updated yet.
 		 */
+<<<<<<< HEAD
 		vm_write_begin(vma);
 		WRITE_ONCE(vma->vm_flags, new_flags);
 		vma->vm_userfaultfd_ctx.ctx = ctx;
 		vm_write_end(vma);
+=======
+		vma->vm_flags = new_flags;
+		vma->vm_userfaultfd_ctx.ctx = ctx;
+
+		if (is_vm_hugetlb_page(vma) && uffd_disable_huge_pmd_share(vma))
+			hugetlb_unshare_all_pmds(vma);
+>>>>>>> origin/android16-base
 
 	skip:
 		prev = vma;
@@ -1507,14 +1785,30 @@ out_unlock:
 	up_write(&mm->mmap_sem);
 	mmput(mm);
 	if (!ret) {
+<<<<<<< HEAD
+=======
+		__u64 ioctls_out;
+
+		ioctls_out = basic_ioctls ? UFFD_API_RANGE_IOCTLS_BASIC :
+		    UFFD_API_RANGE_IOCTLS;
+
+		/* CONTINUE ioctl is only supported for MINOR ranges. */
+		if (!(uffdio_register.mode & UFFDIO_REGISTER_MODE_MINOR))
+			ioctls_out &= ~((__u64)1 << _UFFDIO_CONTINUE);
+
+>>>>>>> origin/android16-base
 		/*
 		 * Now that we scanned all vmas we can already tell
 		 * userland which ioctls methods are guaranteed to
 		 * succeed on this range.
 		 */
+<<<<<<< HEAD
 		if (put_user(basic_ioctls ? UFFD_API_RANGE_IOCTLS_BASIC :
 			     UFFD_API_RANGE_IOCTLS,
 			     &user_uffdio_register->ioctls))
+=======
+		if (put_user(ioctls_out, &user_uffdio_register->ioctls))
+>>>>>>> origin/android16-base
 			ret = -EFAULT;
 	}
 out:
@@ -1537,7 +1831,11 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
 	if (copy_from_user(&uffdio_unregister, buf, sizeof(uffdio_unregister)))
 		goto out;
 
+<<<<<<< HEAD
 	ret = validate_range(mm, &uffdio_unregister.start,
+=======
+	ret = validate_range(mm, uffdio_unregister.start,
+>>>>>>> origin/android16-base
 			     uffdio_unregister.len);
 	if (ret)
 		goto out;
@@ -1581,7 +1879,11 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
 		cond_resched();
 
 		BUG_ON(!!cur->vm_userfaultfd_ctx.ctx ^
+<<<<<<< HEAD
 		       !!(cur->vm_flags & (VM_UFFD_MISSING | VM_UFFD_WP)));
+=======
+		       !!(cur->vm_flags & __VM_UFFD_FLAGS));
+>>>>>>> origin/android16-base
 
 		/*
 		 * Check not compatible vmas, not strictly required
@@ -1590,7 +1892,11 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
 		 * provides for more strict behavior to notice
 		 * unregistration errors.
 		 */
+<<<<<<< HEAD
 		if (!vma_can_userfault(cur))
+=======
+		if (!vma_can_userfault(cur, cur->vm_flags))
+>>>>>>> origin/android16-base
 			goto out_unlock;
 
 		found = true;
@@ -1604,7 +1910,11 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
 	do {
 		cond_resched();
 
+<<<<<<< HEAD
 		BUG_ON(!vma_can_userfault(vma));
+=======
+		BUG_ON(!vma_can_userfault(vma, vma->vm_flags));
+>>>>>>> origin/android16-base
 
 		/*
 		 * Nothing to do: this vma is already registered into this
@@ -1632,7 +1942,11 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
 			wake_userfault(vma->vm_userfaultfd_ctx.ctx, &range);
 		}
 
+<<<<<<< HEAD
 		new_flags = vma->vm_flags & ~(VM_UFFD_MISSING | VM_UFFD_WP);
+=======
+		new_flags = vma->vm_flags & ~__VM_UFFD_FLAGS;
+>>>>>>> origin/android16-base
 		prev = vma_merge(mm, prev, start, vma_end, new_flags,
 				 vma->anon_vma, vma->vm_file, vma->vm_pgoff,
 				 vma_policy(vma),
@@ -1658,10 +1972,15 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
 		 * the next vma was merged into the current one and
 		 * the current one has not been updated yet.
 		 */
+<<<<<<< HEAD
 		vm_write_begin(vma);
 		WRITE_ONCE(vma->vm_flags, new_flags);
 		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
 		vm_write_end(vma);
+=======
+		vma->vm_flags = new_flags;
+		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
+>>>>>>> origin/android16-base
 
 	skip:
 		prev = vma;
@@ -1691,7 +2010,11 @@ static int userfaultfd_wake(struct userfaultfd_ctx *ctx,
 	if (copy_from_user(&uffdio_wake, buf, sizeof(uffdio_wake)))
 		goto out;
 
+<<<<<<< HEAD
 	ret = validate_range(ctx->mm, &uffdio_wake.start, uffdio_wake.len);
+=======
+	ret = validate_range(ctx->mm, uffdio_wake.start, uffdio_wake.len);
+>>>>>>> origin/android16-base
 	if (ret)
 		goto out;
 
@@ -1731,7 +2054,11 @@ static int userfaultfd_copy(struct userfaultfd_ctx *ctx,
 			   sizeof(uffdio_copy)-sizeof(__s64)))
 		goto out;
 
+<<<<<<< HEAD
 	ret = validate_range(ctx->mm, &uffdio_copy.dst, uffdio_copy.len);
+=======
+	ret = validate_range(ctx->mm, uffdio_copy.dst, uffdio_copy.len);
+>>>>>>> origin/android16-base
 	if (ret)
 		goto out;
 	/*
@@ -1787,7 +2114,11 @@ static int userfaultfd_zeropage(struct userfaultfd_ctx *ctx,
 			   sizeof(uffdio_zeropage)-sizeof(__s64)))
 		goto out;
 
+<<<<<<< HEAD
 	ret = validate_range(ctx->mm, &uffdio_zeropage.range.start,
+=======
+	ret = validate_range(ctx->mm, uffdio_zeropage.range.start,
+>>>>>>> origin/android16-base
 			     uffdio_zeropage.range.len);
 	if (ret)
 		goto out;
@@ -1819,12 +2150,82 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
 static inline unsigned int uffd_ctx_features(__u64 user_features)
 {
 	/*
 	 * For the current set of features the bits just coincide
 	 */
 	return (unsigned int)user_features;
+=======
+static int userfaultfd_continue(struct userfaultfd_ctx *ctx, unsigned long arg)
+{
+	__s64 ret;
+	struct uffdio_continue uffdio_continue;
+	struct uffdio_continue __user *user_uffdio_continue;
+	struct userfaultfd_wake_range range;
+
+	user_uffdio_continue = (struct uffdio_continue __user *)arg;
+
+	ret = -EAGAIN;
+	if (READ_ONCE(ctx->mmap_changing))
+		goto out;
+
+	ret = -EFAULT;
+	if (copy_from_user(&uffdio_continue, user_uffdio_continue,
+			   /* don't copy the output fields */
+			   sizeof(uffdio_continue) - (sizeof(__s64))))
+		goto out;
+
+	ret = validate_range(ctx->mm, uffdio_continue.range.start,
+			     uffdio_continue.range.len);
+	if (ret)
+		goto out;
+
+	ret = -EINVAL;
+	/* double check for wraparound just in case. */
+	if (uffdio_continue.range.start + uffdio_continue.range.len <=
+	    uffdio_continue.range.start) {
+		goto out;
+	}
+	if (uffdio_continue.mode & ~UFFDIO_CONTINUE_MODE_DONTWAKE)
+		goto out;
+
+	if (mmget_not_zero(ctx->mm)) {
+		ret = mcopy_continue(ctx->mm, uffdio_continue.range.start,
+				     uffdio_continue.range.len,
+				     &ctx->mmap_changing);
+		mmput(ctx->mm);
+	} else {
+		return -ESRCH;
+	}
+
+	if (unlikely(put_user(ret, &user_uffdio_continue->mapped)))
+		return -EFAULT;
+	if (ret < 0)
+		goto out;
+
+	/* len == 0 would wake all */
+	BUG_ON(!ret);
+	range.len = ret;
+	if (!(uffdio_continue.mode & UFFDIO_CONTINUE_MODE_DONTWAKE)) {
+		range.start = uffdio_continue.range.start;
+		wake_userfault(ctx, &range);
+	}
+	ret = range.len == uffdio_continue.range.len ? 0 : -EAGAIN;
+
+out:
+	return ret;
+}
+
+static inline unsigned int uffd_ctx_features(__u64 user_features)
+{
+	/*
+	 * For the current set of features the bits just coincide. Set
+	 * UFFD_FEATURE_INITIALIZED to mark the features as enabled.
+	 */
+	return (unsigned int)user_features | UFFD_FEATURE_INITIALIZED;
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -1837,12 +2238,19 @@ static int userfaultfd_api(struct userfaultfd_ctx *ctx,
 {
 	struct uffdio_api uffdio_api;
 	void __user *buf = (void __user *)arg;
+<<<<<<< HEAD
 	int ret;
 	__u64 features;
 
 	ret = -EINVAL;
 	if (ctx->state != UFFD_STATE_WAIT_API)
 		goto out;
+=======
+	unsigned int ctx_features;
+	int ret;
+	__u64 features;
+
+>>>>>>> origin/android16-base
 	ret = -EFAULT;
 	if (copy_from_user(&uffdio_api, buf, sizeof(uffdio_api)))
 		goto out;
@@ -1855,13 +2263,30 @@ static int userfaultfd_api(struct userfaultfd_ctx *ctx,
 		goto err_out;
 	/* report all available features and ioctls to userland */
 	uffdio_api.features = UFFD_API_FEATURES;
+<<<<<<< HEAD
+=======
+#ifndef CONFIG_HAVE_ARCH_USERFAULTFD_MINOR
+	uffdio_api.features &=
+		~(UFFD_FEATURE_MINOR_HUGETLBFS | UFFD_FEATURE_MINOR_SHMEM);
+#endif
+>>>>>>> origin/android16-base
 	uffdio_api.ioctls = UFFD_API_IOCTLS;
 	ret = -EFAULT;
 	if (copy_to_user(buf, &uffdio_api, sizeof(uffdio_api)))
 		goto out;
+<<<<<<< HEAD
 	ctx->state = UFFD_STATE_RUNNING;
 	/* only enable the requested features for this uffd context */
 	ctx->features = uffd_ctx_features(features);
+=======
+
+	/* only enable the requested features for this uffd context */
+	ctx_features = uffd_ctx_features(features);
+	ret = -EINVAL;
+	if (cmpxchg(&ctx->features, 0, ctx_features) != 0)
+		goto err_out;
+
+>>>>>>> origin/android16-base
 	ret = 0;
 out:
 	return ret;
@@ -1878,7 +2303,11 @@ static long userfaultfd_ioctl(struct file *file, unsigned cmd,
 	int ret = -EINVAL;
 	struct userfaultfd_ctx *ctx = file->private_data;
 
+<<<<<<< HEAD
 	if (cmd != UFFDIO_API && ctx->state == UFFD_STATE_WAIT_API)
+=======
+	if (cmd != UFFDIO_API && !userfaultfd_is_initialized(ctx))
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	switch(cmd) {
@@ -1900,6 +2329,12 @@ static long userfaultfd_ioctl(struct file *file, unsigned cmd,
 	case UFFDIO_ZEROPAGE:
 		ret = userfaultfd_zeropage(ctx, arg);
 		break;
+<<<<<<< HEAD
+=======
+	case UFFDIO_CONTINUE:
+		ret = userfaultfd_continue(ctx, arg);
+		break;
+>>>>>>> origin/android16-base
 	}
 	return ret;
 }
@@ -1960,6 +2395,7 @@ SYSCALL_DEFINE1(userfaultfd, int, flags)
 	struct userfaultfd_ctx *ctx;
 	int fd;
 
+<<<<<<< HEAD
 	BUG_ON(!current->mm);
 
 	/* Check the UFFD_* constants for consistency.  */
@@ -1967,24 +2403,54 @@ SYSCALL_DEFINE1(userfaultfd, int, flags)
 	BUILD_BUG_ON(UFFD_NONBLOCK != O_NONBLOCK);
 
 	if (flags & ~UFFD_SHARED_FCNTL_FLAGS)
+=======
+	if (!sysctl_unprivileged_userfaultfd &&
+	    (flags & UFFD_USER_MODE_ONLY) == 0 &&
+	    !capable(CAP_SYS_PTRACE)) {
+		printk_once(KERN_WARNING "uffd: Set unprivileged_userfaultfd "
+			"sysctl knob to 1 if kernel faults must be handled "
+			"without obtaining CAP_SYS_PTRACE capability\n");
+		return -EPERM;
+	}
+
+	BUG_ON(!current->mm);
+
+	/* Check the UFFD_* constants for consistency.  */
+	BUILD_BUG_ON(UFFD_USER_MODE_ONLY & UFFD_SHARED_FCNTL_FLAGS);
+	BUILD_BUG_ON(UFFD_CLOEXEC != O_CLOEXEC);
+	BUILD_BUG_ON(UFFD_NONBLOCK != O_NONBLOCK);
+
+	if (flags & ~(UFFD_SHARED_FCNTL_FLAGS | UFFD_USER_MODE_ONLY))
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	ctx = kmem_cache_alloc(userfaultfd_ctx_cachep, GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	atomic_set(&ctx->refcount, 1);
 	ctx->flags = flags;
 	ctx->features = 0;
 	ctx->state = UFFD_STATE_WAIT_API;
+=======
+	refcount_set(&ctx->refcount, 1);
+	ctx->flags = flags;
+	ctx->features = 0;
+>>>>>>> origin/android16-base
 	ctx->released = false;
 	ctx->mmap_changing = false;
 	ctx->mm = current->mm;
 	/* prevent the mm struct to be freed */
 	mmgrab(ctx->mm);
 
+<<<<<<< HEAD
 	fd = anon_inode_getfd("[userfaultfd]", &userfaultfd_fops, ctx,
 			      O_RDWR | (flags & UFFD_SHARED_FCNTL_FLAGS));
+=======
+	fd = anon_inode_getfd_secure("[userfaultfd]", &userfaultfd_fops, ctx,
+			O_RDONLY | (flags & UFFD_SHARED_FCNTL_FLAGS), NULL);
+>>>>>>> origin/android16-base
 	if (fd < 0) {
 		mmdrop(ctx->mm);
 		kmem_cache_free(userfaultfd_ctx_cachep, ctx);

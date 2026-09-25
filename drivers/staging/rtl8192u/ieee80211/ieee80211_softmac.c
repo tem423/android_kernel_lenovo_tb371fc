@@ -529,9 +529,15 @@ static void ieee80211_beacons_stop(struct ieee80211_device *ieee)
 	spin_lock_irqsave(&ieee->beacon_lock, flags);
 
 	ieee->beacon_txing = 0;
+<<<<<<< HEAD
 	del_timer_sync(&ieee->beacon_timer);
 
 	spin_unlock_irqrestore(&ieee->beacon_lock, flags);
+=======
+
+	spin_unlock_irqrestore(&ieee->beacon_lock, flags);
+	del_timer_sync(&ieee->beacon_timer);
+>>>>>>> origin/android16-base
 }
 
 void ieee80211_stop_send_beacons(struct ieee80211_device *ieee)

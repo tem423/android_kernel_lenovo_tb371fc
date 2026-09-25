@@ -1518,9 +1518,14 @@ lcs_txbuffer_cb(struct lcs_channel *channel, struct lcs_buffer *buffer)
 /**
  * Packet transmit function called by network stack
  */
+<<<<<<< HEAD
 static int
 __lcs_start_xmit(struct lcs_card *card, struct sk_buff *skb,
 		 struct net_device *dev)
+=======
+static netdev_tx_t __lcs_start_xmit(struct lcs_card *card, struct sk_buff *skb,
+				    struct net_device *dev)
+>>>>>>> origin/android16-base
 {
 	struct lcs_header *header;
 	int rc = NETDEV_TX_OK;
@@ -1581,8 +1586,12 @@ out:
 	return rc;
 }
 
+<<<<<<< HEAD
 static int
 lcs_start_xmit(struct sk_buff *skb, struct net_device *dev)
+=======
+static netdev_tx_t lcs_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>>>>>>> origin/android16-base
 {
 	struct lcs_card *card;
 	int rc;
@@ -1735,10 +1744,18 @@ lcs_get_control(struct lcs_card *card, struct lcs_cmd *cmd)
 			lcs_schedule_recovery(card);
 			break;
 		case LCS_CMD_STOPLAN:
+<<<<<<< HEAD
 			pr_warn("Stoplan for %s initiated by LGW\n",
 				card->dev->name);
 			if (card->dev)
 				netif_carrier_off(card->dev);
+=======
+			if (card->dev) {
+				pr_warn("Stoplan for %s initiated by LGW\n",
+					card->dev->name);
+				netif_carrier_off(card->dev);
+			}
+>>>>>>> origin/android16-base
 			break;
 		default:
 			LCS_DBF_TEXT(5, trace, "noLGWcmd");

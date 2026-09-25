@@ -59,7 +59,11 @@ MODULE_DESCRIPTION("Adaptec I2O RAID Driver");
 
 #include <asm/processor.h>	/* for boot_cpu_data */
 #include <asm/pgtable.h>
+<<<<<<< HEAD
 #include <asm/io.h>		/* for virt_to_bus, etc. */
+=======
+#include <asm/io.h>
+>>>>>>> origin/android16-base
 
 #include <scsi/scsi.h>
 #include <scsi/scsi_cmnd.h>
@@ -628,6 +632,7 @@ static struct scsi_cmnd *
 	return NULL;
 }
 
+<<<<<<< HEAD
 /*
  *	Turn a pointer to ioctl reply data into an u32 'context'
  */
@@ -673,6 +678,8 @@ static void *adpt_ioctl_from_context(adpt_hba *pHba, u32 context)
 #endif
 }
 
+=======
+>>>>>>> origin/android16-base
 /*===========================================================================
  * Error Handling routines
  *===========================================================================
@@ -1697,6 +1704,7 @@ static int adpt_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
+<<<<<<< HEAD
 
 static int adpt_i2o_passthru(adpt_hba* pHba, u32 __user *arg)
 {
@@ -1899,6 +1907,8 @@ free:
 	return rcode;
 }
 
+=======
+>>>>>>> origin/android16-base
 #if defined __ia64__ 
 static void adpt_ia64_info(sysInfo_S* si)
 {
@@ -2025,8 +2035,11 @@ static int adpt_ioctl(struct inode *inode, struct file *file, uint cmd, ulong ar
 			return -EFAULT;
 		}
 		break;
+<<<<<<< HEAD
 	case I2OUSRCMD:
 		return adpt_i2o_passthru(pHba, argp);
+=======
+>>>>>>> origin/android16-base
 
 	case DPT_CTRLINFO:{
 		drvrHBAinfo_S HbaInfo;
@@ -2163,7 +2176,11 @@ static irqreturn_t adpt_isr(int irq, void *dev_id)
 		} else {
 			/* Ick, we should *never* be here */
 			printk(KERN_ERR "dpti: reply frame not from pool\n");
+<<<<<<< HEAD
 			reply = (u8 *)bus_to_virt(m);
+=======
+			continue;
+>>>>>>> origin/android16-base
 		}
 
 		if (readl(reply) & MSG_FAIL) {
@@ -2183,6 +2200,7 @@ static irqreturn_t adpt_isr(int irq, void *dev_id)
 			adpt_send_nop(pHba, old_m);
 		} 
 		context = readl(reply+8);
+<<<<<<< HEAD
 		if(context & 0x40000000){ // IOCTL
 			void *p = adpt_ioctl_from_context(pHba, readl(reply+12));
 			if( p != NULL) {
@@ -2190,6 +2208,8 @@ static irqreturn_t adpt_isr(int irq, void *dev_id)
 			}
 			// All IOCTLs will also be post wait
 		}
+=======
+>>>>>>> origin/android16-base
 		if(context & 0x80000000){ // Post wait message
 			status = readl(reply+16);
 			if(status  >> 24){
@@ -2197,12 +2217,18 @@ static irqreturn_t adpt_isr(int irq, void *dev_id)
 			} else {
 				status = I2O_POST_WAIT_OK;
 			}
+<<<<<<< HEAD
 			if(!(context & 0x40000000)) {
 				cmd = adpt_cmd_from_context(pHba,
 							readl(reply+12));
 				if(cmd != NULL) {
 					printk(KERN_WARNING"%s: Apparent SCSI cmd in Post Wait Context - cmd=%p context=%x\n", pHba->name, cmd, context);
 				}
+=======
+			cmd = adpt_cmd_from_context(pHba, readl(reply+12));
+			if(cmd != NULL) {
+				printk(KERN_WARNING"%s: Apparent SCSI cmd in Post Wait Context - cmd=%p context=%x\n", pHba->name, cmd, context);
+>>>>>>> origin/android16-base
 			}
 			adpt_i2o_post_wait_complete(context, status);
 		} else { // SCSI message

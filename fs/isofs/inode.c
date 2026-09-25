@@ -157,7 +157,10 @@ struct iso9660_options{
 	unsigned int overriderockperm:1;
 	unsigned int uid_set:1;
 	unsigned int gid_set:1;
+<<<<<<< HEAD
 	unsigned int utf8:1;
+=======
+>>>>>>> origin/android16-base
 	unsigned char map;
 	unsigned char check;
 	unsigned int blocksize;
@@ -357,7 +360,10 @@ static int parse_options(char *options, struct iso9660_options *popt)
 	popt->gid = GLOBAL_ROOT_GID;
 	popt->uid = GLOBAL_ROOT_UID;
 	popt->iocharset = NULL;
+<<<<<<< HEAD
 	popt->utf8 = 0;
+=======
+>>>>>>> origin/android16-base
 	popt->overriderockperm = 0;
 	popt->session=-1;
 	popt->sbsector=-1;
@@ -390,10 +396,20 @@ static int parse_options(char *options, struct iso9660_options *popt)
 		case Opt_cruft:
 			popt->cruft = 1;
 			break;
+<<<<<<< HEAD
 		case Opt_utf8:
 			popt->utf8 = 1;
 			break;
 #ifdef CONFIG_JOLIET
+=======
+#ifdef CONFIG_JOLIET
+		case Opt_utf8:
+			kfree(popt->iocharset);
+			popt->iocharset = kstrdup("utf8", GFP_KERNEL);
+			if (!popt->iocharset)
+				return 0;
+			break;
+>>>>>>> origin/android16-base
 		case Opt_iocharset:
 			kfree(popt->iocharset);
 			popt->iocharset = match_strdup(&args[0]);
@@ -496,7 +512,10 @@ static int isofs_show_options(struct seq_file *m, struct dentry *root)
 	if (sbi->s_nocompress)		seq_puts(m, ",nocompress");
 	if (sbi->s_overriderockperm)	seq_puts(m, ",overriderockperm");
 	if (sbi->s_showassoc)		seq_puts(m, ",showassoc");
+<<<<<<< HEAD
 	if (sbi->s_utf8)		seq_puts(m, ",utf8");
+=======
+>>>>>>> origin/android16-base
 
 	if (sbi->s_check)		seq_printf(m, ",check=%c", sbi->s_check);
 	if (sbi->s_mapping)		seq_printf(m, ",map=%c", sbi->s_mapping);
@@ -519,9 +538,16 @@ static int isofs_show_options(struct seq_file *m, struct dentry *root)
 		seq_printf(m, ",fmode=%o", sbi->s_fmode);
 
 #ifdef CONFIG_JOLIET
+<<<<<<< HEAD
 	if (sbi->s_nls_iocharset &&
 	    strcmp(sbi->s_nls_iocharset->charset, CONFIG_NLS_DEFAULT) != 0)
 		seq_printf(m, ",iocharset=%s", sbi->s_nls_iocharset->charset);
+=======
+	if (sbi->s_nls_iocharset)
+		seq_printf(m, ",iocharset=%s", sbi->s_nls_iocharset->charset);
+	else
+		seq_puts(m, ",iocharset=utf8");
+>>>>>>> origin/android16-base
 #endif
 	return 0;
 }
@@ -865,6 +891,7 @@ root_found:
 	sbi->s_nls_iocharset = NULL;
 
 #ifdef CONFIG_JOLIET
+<<<<<<< HEAD
 	if (joliet_level && opt.utf8 == 0) {
 		char *p = opt.iocharset ? opt.iocharset : CONFIG_NLS_DEFAULT;
 		sbi->s_nls_iocharset = load_nls(p);
@@ -873,6 +900,15 @@ root_found:
 			if (opt.iocharset)
 				goto out_freesbi;
 			sbi->s_nls_iocharset = load_nls_default();
+=======
+	if (joliet_level) {
+		char *p = opt.iocharset ? opt.iocharset : CONFIG_NLS_DEFAULT;
+		if (strcmp(p, "utf8") != 0) {
+			sbi->s_nls_iocharset = opt.iocharset ?
+				load_nls(opt.iocharset) : load_nls_default();
+			if (!sbi->s_nls_iocharset)
+				goto out_freesbi;
+>>>>>>> origin/android16-base
 		}
 	}
 #endif
@@ -888,7 +924,10 @@ root_found:
 	sbi->s_gid = opt.gid;
 	sbi->s_uid_set = opt.uid_set;
 	sbi->s_gid_set = opt.gid_set;
+<<<<<<< HEAD
 	sbi->s_utf8 = opt.utf8;
+=======
+>>>>>>> origin/android16-base
 	sbi->s_nocompress = opt.nocompress;
 	sbi->s_overriderockperm = opt.overriderockperm;
 	/*
@@ -911,8 +950,27 @@ root_found:
 	 * we then decide whether to use the Joliet descriptor.
 	 */
 	inode = isofs_iget(s, sbi->s_firstdatazone, 0);
+<<<<<<< HEAD
 	if (IS_ERR(inode))
 		goto out_no_root;
+=======
+
+	/*
+	 * Fix for broken CDs with a corrupt root inode but a correct Joliet
+	 * root directory.
+	 */
+	if (IS_ERR(inode)) {
+		if (joliet_level && sbi->s_firstdatazone != first_data_zone) {
+			printk(KERN_NOTICE
+			       "ISOFS: root inode is unusable. "
+			       "Disabling Rock Ridge and switching to Joliet.");
+			sbi->s_rock = 0;
+			inode = NULL;
+		} else {
+			goto out_no_root;
+		}
+	}
+>>>>>>> origin/android16-base
 
 	/*
 	 * Fix for broken CDs with Rock Ridge and empty ISO root directory but
@@ -1327,6 +1385,11 @@ static int isofs_read_inode(struct inode *inode, int relocated)
 
 	de = (struct iso_directory_record *) (bh->b_data + offset);
 	de_len = *(unsigned char *) de;
+<<<<<<< HEAD
+=======
+	if (de_len < sizeof(struct iso_directory_record))
+		goto fail;
+>>>>>>> origin/android16-base
 
 	if (offset + de_len > bufsize) {
 		int frag1 = bufsize - offset;

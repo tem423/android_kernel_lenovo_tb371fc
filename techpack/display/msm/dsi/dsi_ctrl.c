@@ -325,6 +325,7 @@ static void dsi_ctrl_dma_cmd_wait_for_done(struct work_struct *work)
 	if (atomic_read(&dsi_ctrl->dma_irq_trig))
 		goto done;
 
+<<<<<<< HEAD
 	/* TB371FC p96: dsi_ctrl DMA-done IRQ is not delivered after the
 	 * first screen cycle on this self-built kernel (verified via
 	 * /proc/interrupts: count frozen at 2 while parent msm_drm IRQ
@@ -351,6 +352,23 @@ static void dsi_ctrl_dma_cmd_wait_for_done(struct work_struct *work)
 			}
 		}
 		DSI_CTRL_ERR(dsi_ctrl, "Command transfer failed\n");
+=======
+	ret = wait_for_completion_timeout(
+			&dsi_ctrl->irq_info.cmd_dma_done,
+			msecs_to_jiffies(DSI_CTRL_TX_TO_MS));
+	if (ret == 0 && !atomic_read(&dsi_ctrl->dma_irq_trig)) {
+		status = dsi_hw_ops.get_interrupt_status(&dsi_ctrl->hw);
+		if (status & mask) {
+			status |= (DSI_CMD_MODE_DMA_DONE | DSI_BTA_DONE);
+			dsi_hw_ops.clear_interrupt_status(&dsi_ctrl->hw,
+					status);
+			DSI_CTRL_WARN(dsi_ctrl,
+					"dma_tx done but irq not triggered\n");
+		} else {
+			DSI_CTRL_ERR(dsi_ctrl,
+					"Command transfer failed\n");
+		}
+>>>>>>> origin/android16-base
 		dsi_ctrl_disable_status_interrupt(dsi_ctrl,
 					DSI_SINT_CMD_MODE_DMA_DONE);
 	}
@@ -563,7 +581,10 @@ static int dsi_ctrl_init_regmap(struct platform_device *pdev,
 		}
 		ctrl->hw.mmss_misc_base = ptr;
 		ctrl->hw.disp_cc_base = NULL;
+<<<<<<< HEAD
 		ctrl->hw.mdp_intf_base = NULL;
+=======
+>>>>>>> origin/android16-base
 		break;
 	case DSI_CTRL_VERSION_2_2:
 	case DSI_CTRL_VERSION_2_3:
@@ -576,10 +597,13 @@ static int dsi_ctrl_init_regmap(struct platform_device *pdev,
 		}
 		ctrl->hw.disp_cc_base = ptr;
 		ctrl->hw.mmss_misc_base = NULL;
+<<<<<<< HEAD
 
 		ptr = msm_ioremap(pdev, "mdp_intf_base", ctrl->name);
 		if (!IS_ERR(ptr))
 			ctrl->hw.mdp_intf_base = ptr;
+=======
+>>>>>>> origin/android16-base
 		break;
 	default:
 		break;
@@ -1242,6 +1266,7 @@ int dsi_message_validate_tx_mode(struct dsi_ctrl *dsi_ctrl,
 
 	return rc;
 }
+<<<<<<< HEAD
 
 static void dsi_configure_command_scheduling(struct dsi_ctrl *dsi_ctrl,
 		struct dsi_ctrl_cmd_dma_info *cmd_mem)
@@ -1297,6 +1322,8 @@ static void dsi_configure_command_scheduling(struct dsi_ctrl *dsi_ctrl,
 			sched_line_no, window);
 }
 
+=======
+>>>>>>> origin/android16-base
 static u32 calculate_schedule_line(struct dsi_ctrl *dsi_ctrl, u32 flags)
 {
 	u32 line_no = 0x1;
@@ -1305,7 +1332,11 @@ static u32 calculate_schedule_line(struct dsi_ctrl *dsi_ctrl, u32 flags)
 	/* check if custom dma scheduling line needed */
 	if ((dsi_ctrl->host_config.panel_mode == DSI_OP_VIDEO_MODE) &&
 		(flags & DSI_CTRL_CMD_CUSTOM_DMA_SCHED))
+<<<<<<< HEAD
 		line_no = dsi_ctrl->host_config.common_config.dma_sched_line;
+=======
+		line_no = dsi_ctrl->host_config.u.video_engine.dma_sched_line;
+>>>>>>> origin/android16-base
 
 	timing = &(dsi_ctrl->host_config.video_timing);
 
@@ -1323,11 +1354,16 @@ static void dsi_kickoff_msg_tx(struct dsi_ctrl *dsi_ctrl,
 				u32 flags)
 {
 	u32 hw_flags = 0;
+<<<<<<< HEAD
+=======
+	u32 line_no = 0x1;
+>>>>>>> origin/android16-base
 	struct dsi_ctrl_hw_ops dsi_hw_ops = dsi_ctrl->hw.ops;
 
 	SDE_EVT32(dsi_ctrl->cell_index, SDE_EVTLOG_FUNC_ENTRY, flags,
 		msg->flags);
 
+<<<<<<< HEAD
 	if (dsi_ctrl->hw.reset_trig_ctrl)
 		dsi_hw_ops.reset_trig_ctrl(&dsi_ctrl->hw,
 			&dsi_ctrl->host_config.common_config);
@@ -1348,6 +1384,16 @@ static void dsi_kickoff_msg_tx(struct dsi_ctrl *dsi_ctrl,
 	if ((flags & DSI_CTRL_CMD_CUSTOM_DMA_SCHED) ||
 		(dsi_ctrl->host_config.panel_mode == DSI_OP_VIDEO_MODE))
 		dsi_configure_command_scheduling(dsi_ctrl, cmd_mem);
+=======
+	line_no = calculate_schedule_line(dsi_ctrl, flags);
+
+	if ((dsi_ctrl->host_config.panel_mode == DSI_OP_VIDEO_MODE) &&
+		dsi_hw_ops.schedule_dma_cmd &&
+		(dsi_ctrl->current_state.vid_engine_state ==
+					DSI_CTRL_ENGINE_ON))
+		dsi_hw_ops.schedule_dma_cmd(&dsi_ctrl->hw,
+				line_no);
+>>>>>>> origin/android16-base
 
 	dsi_ctrl->cmd_mode = (dsi_ctrl->host_config.panel_mode ==
 				DSI_OP_CMD_MODE);

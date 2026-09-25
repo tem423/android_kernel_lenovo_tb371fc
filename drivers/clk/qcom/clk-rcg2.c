@@ -239,6 +239,7 @@ static void disable_unprepare_rcg_srcs(struct clk *curr, struct clk *new)
 static unsigned long
 calc_rate(unsigned long rate, u32 m, u32 n, u32 mode, u32 hid_div)
 {
+<<<<<<< HEAD
 	u64 tmp = rate;
 
 	if (hid_div) {
@@ -252,6 +253,15 @@ calc_rate(unsigned long rate, u32 m, u32 n, u32 mode, u32 hid_div)
 	}
 
 	return tmp;
+=======
+	if (hid_div)
+		rate = mult_frac(rate, 2, hid_div + 1);
+
+	if (mode)
+		rate = mult_frac(rate, m, n);
+
+	return rate;
+>>>>>>> origin/android16-base
 }
 
 static unsigned long

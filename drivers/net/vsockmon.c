@@ -11,12 +11,15 @@
 #define DEFAULT_MTU (VIRTIO_VSOCK_MAX_PKT_BUF_SIZE + \
 		     sizeof(struct af_vsockmon_hdr))
 
+<<<<<<< HEAD
 struct pcpu_lstats {
 	u64 rx_packets;
 	u64 rx_bytes;
 	struct u64_stats_sync syncp;
 };
 
+=======
+>>>>>>> origin/android16-base
 static int vsockmon_dev_init(struct net_device *dev)
 {
 	dev->lstats = netdev_alloc_pcpu_stats(struct pcpu_lstats);
@@ -56,8 +59,13 @@ static netdev_tx_t vsockmon_xmit(struct sk_buff *skb, struct net_device *dev)
 	struct pcpu_lstats *stats = this_cpu_ptr(dev->lstats);
 
 	u64_stats_update_begin(&stats->syncp);
+<<<<<<< HEAD
 	stats->rx_bytes += len;
 	stats->rx_packets++;
+=======
+	stats->bytes += len;
+	stats->packets++;
+>>>>>>> origin/android16-base
 	u64_stats_update_end(&stats->syncp);
 
 	dev_kfree_skb(skb);
@@ -80,8 +88,13 @@ vsockmon_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *stats)
 
 		do {
 			start = u64_stats_fetch_begin_irq(&vstats->syncp);
+<<<<<<< HEAD
 			tbytes = vstats->rx_bytes;
 			tpackets = vstats->rx_packets;
+=======
+			tbytes = vstats->bytes;
+			tpackets = vstats->packets;
+>>>>>>> origin/android16-base
 		} while (u64_stats_fetch_retry_irq(&vstats->syncp, start));
 
 		packets += tpackets;

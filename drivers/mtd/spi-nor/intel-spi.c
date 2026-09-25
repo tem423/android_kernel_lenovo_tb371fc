@@ -116,7 +116,11 @@
 #define ERASE_OPCODE_SHIFT		8
 #define ERASE_OPCODE_MASK		(0xff << ERASE_OPCODE_SHIFT)
 #define ERASE_64K_OPCODE_SHIFT		16
+<<<<<<< HEAD
 #define ERASE_64K_OPCODE_MASK		(0xff << ERASE_OPCODE_SHIFT)
+=======
+#define ERASE_64K_OPCODE_MASK		(0xff << ERASE_64K_OPCODE_SHIFT)
+>>>>>>> origin/android16-base
 
 #define INTEL_SPI_TIMEOUT		5000 /* ms */
 #define INTEL_SPI_FIFO_SZ		64

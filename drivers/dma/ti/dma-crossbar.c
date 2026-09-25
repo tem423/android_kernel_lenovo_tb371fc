@@ -251,6 +251,10 @@ static void *ti_dra7_xbar_route_allocate(struct of_phandle_args *dma_spec,
 	if (dma_spec->args[0] >= xbar->xbar_requests) {
 		dev_err(&pdev->dev, "Invalid XBAR request number: %d\n",
 			dma_spec->args[0]);
+<<<<<<< HEAD
+=======
+		put_device(&pdev->dev);
+>>>>>>> origin/android16-base
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -258,12 +262,20 @@ static void *ti_dra7_xbar_route_allocate(struct of_phandle_args *dma_spec,
 	dma_spec->np = of_parse_phandle(ofdma->of_node, "dma-masters", 0);
 	if (!dma_spec->np) {
 		dev_err(&pdev->dev, "Can't get DMA master\n");
+<<<<<<< HEAD
+=======
+		put_device(&pdev->dev);
+>>>>>>> origin/android16-base
 		return ERR_PTR(-EINVAL);
 	}
 
 	map = kzalloc(sizeof(*map), GFP_KERNEL);
 	if (!map) {
 		of_node_put(dma_spec->np);
+<<<<<<< HEAD
+=======
+		put_device(&pdev->dev);
+>>>>>>> origin/android16-base
 		return ERR_PTR(-ENOMEM);
 	}
 
@@ -274,6 +286,11 @@ static void *ti_dra7_xbar_route_allocate(struct of_phandle_args *dma_spec,
 		mutex_unlock(&xbar->mutex);
 		dev_err(&pdev->dev, "Run out of free DMA requests\n");
 		kfree(map);
+<<<<<<< HEAD
+=======
+		of_node_put(dma_spec->np);
+		put_device(&pdev->dev);
+>>>>>>> origin/android16-base
 		return ERR_PTR(-ENOMEM);
 	}
 	set_bit(map->xbar_out, xbar->dma_inuse);

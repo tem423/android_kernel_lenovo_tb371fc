@@ -4,7 +4,10 @@
  */
 
 #include <crypto/internal/blake2s.h>
+<<<<<<< HEAD
 #include <crypto/internal/hash.h>
+=======
+>>>>>>> origin/android16-base
 
 #include <linux/types.h>
 #include <linux/jump_label.h>
@@ -26,9 +29,14 @@ asmlinkage void blake2s_compress_avx512(struct blake2s_state *state,
 static __ro_after_init DEFINE_STATIC_KEY_FALSE(blake2s_use_ssse3);
 static __ro_after_init DEFINE_STATIC_KEY_FALSE(blake2s_use_avx512);
 
+<<<<<<< HEAD
 void blake2s_compress_arch(struct blake2s_state *state,
 			   const u8 *block, size_t nblocks,
 			   const u32 inc)
+=======
+void blake2s_compress(struct blake2s_state *state, const u8 *block,
+		      size_t nblocks, const u32 inc)
+>>>>>>> origin/android16-base
 {
 	/* SIMD disables preemption, so relax after processing each page. */
 	BUILD_BUG_ON(SZ_4K / BLAKE2S_BLOCK_SIZE < 8);
@@ -54,6 +62,7 @@ void blake2s_compress_arch(struct blake2s_state *state,
 		block += blocks * BLAKE2S_BLOCK_SIZE;
 	} while (nblocks);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(blake2s_compress_arch);
 
 static int crypto_blake2s_setkey(struct crypto_shash *tfm, const u8 *key,
@@ -197,6 +206,14 @@ static int __init blake2s_mod_init(void)
 		return 0;
 
 	static_branch_enable(&blake2s_use_ssse3);
+=======
+EXPORT_SYMBOL(blake2s_compress);
+
+static int __init blake2s_mod_init(void)
+{
+	if (boot_cpu_has(X86_FEATURE_SSSE3))
+		static_branch_enable(&blake2s_use_ssse3);
+>>>>>>> origin/android16-base
 
 	if (IS_ENABLED(CONFIG_AS_AVX512) &&
 	    boot_cpu_has(X86_FEATURE_AVX) &&
@@ -207,6 +224,7 @@ static int __init blake2s_mod_init(void)
 			      XFEATURE_MASK_AVX512, NULL))
 		static_branch_enable(&blake2s_use_avx512);
 
+<<<<<<< HEAD
 	return IS_REACHABLE(CONFIG_CRYPTO_HASH) ?
 		crypto_register_shashes(blake2s_algs,
 					ARRAY_SIZE(blake2s_algs)) : 0;
@@ -229,4 +247,11 @@ MODULE_ALIAS_CRYPTO("blake2s-224");
 MODULE_ALIAS_CRYPTO("blake2s-224-x86");
 MODULE_ALIAS_CRYPTO("blake2s-256");
 MODULE_ALIAS_CRYPTO("blake2s-256-x86");
+=======
+	return 0;
+}
+
+module_init(blake2s_mod_init);
+
+>>>>>>> origin/android16-base
 MODULE_LICENSE("GPL v2");

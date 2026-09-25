@@ -695,6 +695,10 @@ static const struct pci_device_id pch_ieee1588_pcidev_id[] = {
 	 },
 	{0}
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(pci, pch_ieee1588_pcidev_id);
+>>>>>>> origin/android16-base
 
 static struct pci_driver pch_driver = {
 	.name = KBUILD_MODNAME,

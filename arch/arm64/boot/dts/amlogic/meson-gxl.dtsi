@@ -636,7 +636,11 @@
 		};
 	};
 
+<<<<<<< HEAD
 	eth-phy-mux {
+=======
+	eth-phy-mux@55c {
+>>>>>>> origin/android16-base
 		compatible = "mdio-mux-mmioreg", "mdio-mux";
 		#address-cells = <1>;
 		#size-cells = <0>;

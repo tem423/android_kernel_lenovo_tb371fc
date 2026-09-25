@@ -434,7 +434,11 @@ void fsnotify_free_mark(struct fsnotify_mark *mark)
 void fsnotify_destroy_mark(struct fsnotify_mark *mark,
 			   struct fsnotify_group *group)
 {
+<<<<<<< HEAD
 	mutex_lock_nested(&group->mark_mutex, SINGLE_DEPTH_NESTING);
+=======
+	mutex_lock(&group->mark_mutex);
+>>>>>>> origin/android16-base
 	fsnotify_detach_mark(mark);
 	mutex_unlock(&group->mark_mutex);
 	fsnotify_free_mark(mark);
@@ -703,7 +707,11 @@ void fsnotify_clear_marks_by_group(struct fsnotify_group *group,
 	 * move marks to free to to_free list in one go and then free marks in
 	 * to_free list one by one.
 	 */
+<<<<<<< HEAD
 	mutex_lock_nested(&group->mark_mutex, SINGLE_DEPTH_NESTING);
+=======
+	mutex_lock(&group->mark_mutex);
+>>>>>>> origin/android16-base
 	list_for_each_entry_safe(mark, lmark, &group->marks_list, g_list) {
 		if ((1U << mark->connector->type) & type_mask)
 			list_move(&mark->g_list, &to_free);
@@ -712,7 +720,11 @@ void fsnotify_clear_marks_by_group(struct fsnotify_group *group,
 
 clear:
 	while (1) {
+<<<<<<< HEAD
 		mutex_lock_nested(&group->mark_mutex, SINGLE_DEPTH_NESTING);
+=======
+		mutex_lock(&group->mark_mutex);
+>>>>>>> origin/android16-base
 		if (list_empty(head)) {
 			mutex_unlock(&group->mark_mutex);
 			break;

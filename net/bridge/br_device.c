@@ -39,9 +39,21 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 	struct pcpu_sw_netstats *brstats = this_cpu_ptr(br->stats);
 	const struct nf_br_ops *nf_ops;
 	const unsigned char *dest;
+<<<<<<< HEAD
 	struct ethhdr *eth;
 	u16 vid = 0;
 
+=======
+	u16 vid = 0;
+
+	if (unlikely(!pskb_may_pull(skb, ETH_HLEN))) {
+		kfree_skb(skb);
+		return NETDEV_TX_OK;
+	}
+
+	memset(skb->cb, 0, sizeof(struct br_input_skb_cb));
+
+>>>>>>> origin/android16-base
 	rcu_read_lock();
 	nf_ops = rcu_dereference(nf_br_ops);
 	if (nf_ops && nf_ops->br_dev_xmit_hook(skb)) {
@@ -58,15 +70,23 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 	BR_INPUT_SKB_CB(skb)->brdev = dev;
 
 	skb_reset_mac_header(skb);
+<<<<<<< HEAD
 	eth = eth_hdr(skb);
+=======
+>>>>>>> origin/android16-base
 	skb_pull(skb, ETH_HLEN);
 
 	if (!br_allowed_ingress(br, br_vlan_group_rcu(br), skb, &vid))
 		goto out;
 
 	if (IS_ENABLED(CONFIG_INET) &&
+<<<<<<< HEAD
 	    (eth->h_proto == htons(ETH_P_ARP) ||
 	     eth->h_proto == htons(ETH_P_RARP)) &&
+=======
+	    (eth_hdr(skb)->h_proto == htons(ETH_P_ARP) ||
+	     eth_hdr(skb)->h_proto == htons(ETH_P_RARP)) &&
+>>>>>>> origin/android16-base
 	    br->neigh_suppress_enabled) {
 		br_do_proxy_suppress_arp(skb, br, vid, NULL);
 	} else if (IS_ENABLED(CONFIG_IPV6) &&
@@ -215,6 +235,10 @@ static void br_get_stats64(struct net_device *dev,
 		sum.rx_packets += tmp.rx_packets;
 	}
 
+<<<<<<< HEAD
+=======
+	netdev_stats_to_stats64(stats, &dev->stats);
+>>>>>>> origin/android16-base
 	stats->tx_bytes   = sum.tx_bytes;
 	stats->tx_packets = sum.tx_packets;
 	stats->rx_bytes   = sum.rx_bytes;

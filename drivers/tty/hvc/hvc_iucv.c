@@ -1470,7 +1470,13 @@ out_error:
  */
 static	int __init hvc_iucv_config(char *val)
 {
+<<<<<<< HEAD
 	 return kstrtoul(val, 10, &hvc_iucv_devices);
+=======
+	if (kstrtoul(val, 10, &hvc_iucv_devices))
+		pr_warn("hvc_iucv= invalid parameter value '%s'\n", val);
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 

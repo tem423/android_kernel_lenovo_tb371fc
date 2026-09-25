@@ -244,6 +244,10 @@ static int load_aout_binary(struct linux_binprm * bprm)
 	set_personality(PER_LINUX);
 #endif
 	setup_new_exec(bprm);
+<<<<<<< HEAD
+=======
+	install_exec_creds(bprm);
+>>>>>>> origin/android16-base
 
 	current->mm->end_code = ex.a_text +
 		(current->mm->start_code = N_TXTADDR(ex));
@@ -256,7 +260,10 @@ static int load_aout_binary(struct linux_binprm * bprm)
 	if (retval < 0)
 		return retval;
 
+<<<<<<< HEAD
 	install_exec_creds(bprm);
+=======
+>>>>>>> origin/android16-base
 
 	if (N_MAGIC(ex) == OMAGIC) {
 		unsigned long text_addr, map_size;

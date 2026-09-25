@@ -17,6 +17,10 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+<<<<<<< HEAD
+=======
+#include <asm/barrier.h>
+>>>>>>> origin/android16-base
 #include <linux/err.h>
 #include <linux/hw_random.h>
 #include <linux/scatterlist.h>
@@ -30,6 +34,7 @@ static DEFINE_IDA(rng_index_ida);
 struct virtrng_info {
 	struct hwrng hwrng;
 	struct virtqueue *vq;
+<<<<<<< HEAD
 	struct completion have_data;
 	char name[25];
 	unsigned int data_avail;
@@ -37,11 +42,28 @@ struct virtrng_info {
 	bool busy;
 	bool hwrng_register_done;
 	bool hwrng_removed;
+=======
+	char name[25];
+	int index;
+	bool hwrng_register_done;
+	bool hwrng_removed;
+	/* data transfer */
+	struct completion have_data;
+	unsigned int data_avail;
+	unsigned int data_idx;
+	/* minimal size returned by rng_buffer_size() */
+#if SMP_CACHE_BYTES < 32
+	u8 data[32];
+#else
+	u8 data[SMP_CACHE_BYTES];
+#endif
+>>>>>>> origin/android16-base
 };
 
 static void random_recv_done(struct virtqueue *vq)
 {
 	struct virtrng_info *vi = vq->vdev->priv;
+<<<<<<< HEAD
 
 	/* We can get spurious callbacks, e.g. shared IRQs + virtio_pci. */
 	if (!virtqueue_get_buf(vi->vq, &vi->data_avail))
@@ -59,18 +81,62 @@ static void register_buffer(struct virtrng_info *vi, u8 *buf, size_t size)
 
 	/* There should always be room for one buffer. */
 	virtqueue_add_inbuf(vi->vq, &sg, 1, buf, GFP_KERNEL);
+=======
+	unsigned int len;
+
+	/* We can get spurious callbacks, e.g. shared IRQs + virtio_pci. */
+	if (!virtqueue_get_buf(vi->vq, &len))
+		return;
+
+	smp_store_release(&vi->data_avail, len);
+	complete(&vi->have_data);
+}
+
+static void request_entropy(struct virtrng_info *vi)
+{
+	struct scatterlist sg;
+
+	reinit_completion(&vi->have_data);
+	vi->data_idx = 0;
+
+	sg_init_one(&sg, vi->data, sizeof(vi->data));
+
+	/* There should always be room for one buffer. */
+	virtqueue_add_inbuf(vi->vq, &sg, 1, vi->data, GFP_KERNEL);
+>>>>>>> origin/android16-base
 
 	virtqueue_kick(vi->vq);
 }
 
+<<<<<<< HEAD
+=======
+static unsigned int copy_data(struct virtrng_info *vi, void *buf,
+			      unsigned int size)
+{
+	size = min_t(unsigned int, size, vi->data_avail);
+	memcpy(buf, vi->data + vi->data_idx, size);
+	vi->data_idx += size;
+	vi->data_avail -= size;
+	if (vi->data_avail == 0)
+		request_entropy(vi);
+	return size;
+}
+
+>>>>>>> origin/android16-base
 static int virtio_read(struct hwrng *rng, void *buf, size_t size, bool wait)
 {
 	int ret;
 	struct virtrng_info *vi = (struct virtrng_info *)rng->priv;
+<<<<<<< HEAD
+=======
+	unsigned int chunk;
+	size_t read;
+>>>>>>> origin/android16-base
 
 	if (vi->hwrng_removed)
 		return -ENODEV;
 
+<<<<<<< HEAD
 	if (!vi->busy) {
 		vi->busy = true;
 		reinit_completion(&vi->have_data);
@@ -87,14 +153,52 @@ static int virtio_read(struct hwrng *rng, void *buf, size_t size, bool wait)
 	vi->busy = false;
 
 	return vi->data_avail;
+=======
+	read = 0;
+
+	/* copy available data */
+	if (smp_load_acquire(&vi->data_avail)) {
+		chunk = copy_data(vi, buf, size);
+		size -= chunk;
+		read += chunk;
+	}
+
+	if (!wait)
+		return read;
+
+	/* We have already copied available entropy,
+	 * so either size is 0 or data_avail is 0
+	 */
+	while (size != 0) {
+		/* data_avail is 0 but a request is pending */
+		ret = wait_for_completion_killable(&vi->have_data);
+		if (ret < 0)
+			return ret;
+		/* if vi->data_avail is 0, we have been interrupted
+		 * by a cleanup, but buffer stays in the queue
+		 */
+		if (vi->data_avail == 0)
+			return read;
+
+		chunk = copy_data(vi, buf + read, size);
+		size -= chunk;
+		read += chunk;
+	}
+
+	return read;
+>>>>>>> origin/android16-base
 }
 
 static void virtio_cleanup(struct hwrng *rng)
 {
 	struct virtrng_info *vi = (struct virtrng_info *)rng->priv;
 
+<<<<<<< HEAD
 	if (vi->busy)
 		wait_for_completion(&vi->have_data);
+=======
+	complete(&vi->have_data);
+>>>>>>> origin/android16-base
 }
 
 static int probe_common(struct virtio_device *vdev)
@@ -130,6 +234,12 @@ static int probe_common(struct virtio_device *vdev)
 		goto err_find;
 	}
 
+<<<<<<< HEAD
+=======
+	/* we always have a pending entropy request */
+	request_entropy(vi);
+
+>>>>>>> origin/android16-base
 	return 0;
 
 err_find:
@@ -145,9 +255,15 @@ static void remove_common(struct virtio_device *vdev)
 
 	vi->hwrng_removed = true;
 	vi->data_avail = 0;
+<<<<<<< HEAD
 	complete(&vi->have_data);
 	vdev->config->reset(vdev);
 	vi->busy = false;
+=======
+	vi->data_idx = 0;
+	complete(&vi->have_data);
+	vdev->config->reset(vdev);
+>>>>>>> origin/android16-base
 	if (vi->hwrng_register_done)
 		hwrng_unregister(&vi->hwrng);
 	vdev->config->del_vqs(vdev);

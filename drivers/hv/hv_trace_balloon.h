@@ -39,7 +39,11 @@ TRACE_EVENT(balloon_status,
 	);
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/hv
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE hv_trace_balloon
 #endif /* _HV_TRACE_BALLOON_H */

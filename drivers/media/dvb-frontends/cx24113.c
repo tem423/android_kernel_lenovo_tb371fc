@@ -600,7 +600,11 @@ error:
 
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(cx24113_attach);
+=======
+EXPORT_SYMBOL_GPL(cx24113_attach);
+>>>>>>> origin/android16-base
 
 module_param(debug, int, 0644);
 MODULE_PARM_DESC(debug, "Activates frontend debugging (default:0)");

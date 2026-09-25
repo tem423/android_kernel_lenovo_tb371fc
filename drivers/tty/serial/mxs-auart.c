@@ -1128,11 +1128,21 @@ static void mxs_auart_set_ldisc(struct uart_port *port,
 
 static irqreturn_t mxs_auart_irq_handle(int irq, void *context)
 {
+<<<<<<< HEAD
 	u32 istat;
 	struct mxs_auart_port *s = context;
 	u32 mctrl_temp = s->mctrl_prev;
 	u32 stat = mxs_read(s, REG_STAT);
 
+=======
+	u32 istat, stat;
+	struct mxs_auart_port *s = context;
+	u32 mctrl_temp = s->mctrl_prev;
+
+	uart_port_lock(&s->port);
+
+	stat = mxs_read(s, REG_STAT);
+>>>>>>> origin/android16-base
 	istat = mxs_read(s, REG_INTR);
 
 	/* ack irq */
@@ -1168,6 +1178,11 @@ static irqreturn_t mxs_auart_irq_handle(int irq, void *context)
 		istat &= ~AUART_INTR_TXIS;
 	}
 
+<<<<<<< HEAD
+=======
+	uart_port_unlock(&s->port);
+
+>>>>>>> origin/android16-base
 	return IRQ_HANDLED;
 }
 

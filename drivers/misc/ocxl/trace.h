@@ -177,6 +177,10 @@ TRACE_EVENT(ocxl_afu_irq_receive,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/misc/ocxl
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE trace
 #include <trace/define_trace.h>

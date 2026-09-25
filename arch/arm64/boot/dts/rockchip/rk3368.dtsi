@@ -677,6 +677,10 @@
 		dma-names = "tx";
 		pinctrl-names = "default";
 		pinctrl-0 = <&spdif_tx>;
+<<<<<<< HEAD
+=======
+		#sound-dai-cells = <0>;
+>>>>>>> origin/android16-base
 		status = "disabled";
 	};
 
@@ -688,6 +692,10 @@
 		clocks = <&cru SCLK_I2S_2CH>, <&cru HCLK_I2S_2CH>;
 		dmas = <&dmac_bus 6>, <&dmac_bus 7>;
 		dma-names = "tx", "rx";
+<<<<<<< HEAD
+=======
+		#sound-dai-cells = <0>;
+>>>>>>> origin/android16-base
 		status = "disabled";
 	};
 
@@ -701,6 +709,10 @@
 		dma-names = "tx", "rx";
 		pinctrl-names = "default";
 		pinctrl-0 = <&i2s_8ch_bus>;
+<<<<<<< HEAD
+=======
+		#sound-dai-cells = <0>;
+>>>>>>> origin/android16-base
 		status = "disabled";
 	};
 

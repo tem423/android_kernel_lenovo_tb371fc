@@ -184,7 +184,11 @@ struct qm_eqcr_entry {
 	__be32 tag;
 	struct qm_fd fd;
 	u8 __reserved3[32];
+<<<<<<< HEAD
 } __packed;
+=======
+} __packed __aligned(8);
+>>>>>>> origin/android16-base
 #define QM_EQCR_VERB_VBIT		0x80
 #define QM_EQCR_VERB_CMD_MASK		0x61	/* but only one value; */
 #define QM_EQCR_VERB_CMD_ENQUEUE	0x01
@@ -976,7 +980,11 @@ struct qman_portal {
 	/* linked-list of CSCN handlers. */
 	struct list_head cgr_cbs;
 	/* list lock */
+<<<<<<< HEAD
 	spinlock_t cgr_lock;
+=======
+	raw_spinlock_t cgr_lock;
+>>>>>>> origin/android16-base
 	struct work_struct congestion_work;
 	struct work_struct mr_work;
 	char irqname[MAX_IRQNAME];
@@ -1194,7 +1202,11 @@ static int qman_create_portal(struct qman_portal *portal,
 		/* if the given mask is NULL, assume all CGRs can be seen */
 		qman_cgrs_fill(&portal->cgrs[0]);
 	INIT_LIST_HEAD(&portal->cgr_cbs);
+<<<<<<< HEAD
 	spin_lock_init(&portal->cgr_lock);
+=======
+	raw_spin_lock_init(&portal->cgr_lock);
+>>>>>>> origin/android16-base
 	INIT_WORK(&portal->congestion_work, qm_congestion_task);
 	INIT_WORK(&portal->mr_work, qm_mr_process_task);
 	portal->bits = 0;
@@ -1369,11 +1381,22 @@ static void qm_congestion_task(struct work_struct *work)
 	union qm_mc_result *mcr;
 	struct qman_cgr *cgr;
 
+<<<<<<< HEAD
 	spin_lock(&p->cgr_lock);
 	qm_mc_start(&p->p);
 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
 		spin_unlock(&p->cgr_lock);
+=======
+	/*
+	 * FIXME: QM_MCR_TIMEOUT is 10ms, which is too long for a raw spinlock!
+	 */
+	raw_spin_lock_irq(&p->cgr_lock);
+	qm_mc_start(&p->p);
+	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
+	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+		raw_spin_unlock_irq(&p->cgr_lock);
+>>>>>>> origin/android16-base
 		dev_crit(p->config->dev, "QUERYCONGESTION timeout\n");
 		qman_p_irqsource_add(p, QM_PIRQ_CSCI);
 		return;
@@ -1389,7 +1412,11 @@ static void qm_congestion_task(struct work_struct *work)
 	list_for_each_entry(cgr, &p->cgr_cbs, node)
 		if (cgr->cb && qman_cgrs_get(&c, cgr->cgrid))
 			cgr->cb(p, cgr, qman_cgrs_get(&rr, cgr->cgrid));
+<<<<<<< HEAD
 	spin_unlock(&p->cgr_lock);
+=======
+	raw_spin_unlock_irq(&p->cgr_lock);
+>>>>>>> origin/android16-base
 	qman_p_irqsource_add(p, QM_PIRQ_CSCI);
 }
 
@@ -2346,7 +2373,11 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
 	preempt_enable();
 
 	cgr->chan = p->config->channel;
+<<<<<<< HEAD
 	spin_lock(&p->cgr_lock);
+=======
+	raw_spin_lock_irq(&p->cgr_lock);
+>>>>>>> origin/android16-base
 
 	if (opts) {
 		struct qm_mcc_initcgr local_opts = *opts;
@@ -2383,12 +2414,35 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
 	    qman_cgrs_get(&p->cgrs[1], cgr->cgrid))
 		cgr->cb(p, cgr, 1);
 out:
+<<<<<<< HEAD
 	spin_unlock(&p->cgr_lock);
+=======
+	raw_spin_unlock_irq(&p->cgr_lock);
+>>>>>>> origin/android16-base
 	put_affine_portal();
 	return ret;
 }
 EXPORT_SYMBOL(qman_create_cgr);
 
+<<<<<<< HEAD
+=======
+static struct qman_portal *qman_cgr_get_affine_portal(struct qman_cgr *cgr)
+{
+	struct qman_portal *p = get_affine_portal();
+
+	if (cgr->chan != p->config->channel) {
+		/* attempt to delete from other portal than creator */
+		dev_err(p->config->dev, "CGR not owned by current portal");
+		dev_dbg(p->config->dev, " create 0x%x, delete 0x%x\n",
+			cgr->chan, p->config->channel);
+		put_affine_portal();
+		return NULL;
+	}
+
+	return p;
+}
+
+>>>>>>> origin/android16-base
 int qman_delete_cgr(struct qman_cgr *cgr)
 {
 	unsigned long irqflags;
@@ -2396,6 +2450,7 @@ int qman_delete_cgr(struct qman_cgr *cgr)
 	struct qm_mcc_initcgr local_opts;
 	int ret = 0;
 	struct qman_cgr *i;
+<<<<<<< HEAD
 	struct qman_portal *p = get_affine_portal();
 
 	if (cgr->chan != p->config->channel) {
@@ -2409,6 +2464,15 @@ int qman_delete_cgr(struct qman_cgr *cgr)
 	}
 	memset(&local_opts, 0, sizeof(struct qm_mcc_initcgr));
 	spin_lock_irqsave(&p->cgr_lock, irqflags);
+=======
+	struct qman_portal *p = qman_cgr_get_affine_portal(cgr);
+
+	if (!p)
+		return -EINVAL;
+
+	memset(&local_opts, 0, sizeof(struct qm_mcc_initcgr));
+	raw_spin_lock_irqsave(&p->cgr_lock, irqflags);
+>>>>>>> origin/android16-base
 	list_del(&cgr->node);
 	/*
 	 * If there are no other CGR objects for this CGRID in the list,
@@ -2433,8 +2497,12 @@ int qman_delete_cgr(struct qman_cgr *cgr)
 		/* add back to the list */
 		list_add(&cgr->node, &p->cgr_cbs);
 release_lock:
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&p->cgr_lock, irqflags);
 put_portal:
+=======
+	raw_spin_unlock_irqrestore(&p->cgr_lock, irqflags);
+>>>>>>> origin/android16-base
 	put_affine_portal();
 	return ret;
 }
@@ -2465,6 +2533,57 @@ void qman_delete_cgr_safe(struct qman_cgr *cgr)
 }
 EXPORT_SYMBOL(qman_delete_cgr_safe);
 
+<<<<<<< HEAD
+=======
+static int qman_update_cgr(struct qman_cgr *cgr, struct qm_mcc_initcgr *opts)
+{
+	int ret;
+	unsigned long irqflags;
+	struct qman_portal *p = qman_cgr_get_affine_portal(cgr);
+
+	if (!p)
+		return -EINVAL;
+
+	raw_spin_lock_irqsave(&p->cgr_lock, irqflags);
+	ret = qm_modify_cgr(cgr, 0, opts);
+	raw_spin_unlock_irqrestore(&p->cgr_lock, irqflags);
+	put_affine_portal();
+	return ret;
+}
+
+struct update_cgr_params {
+	struct qman_cgr *cgr;
+	struct qm_mcc_initcgr *opts;
+	int ret;
+};
+
+static void qman_update_cgr_smp_call(void *p)
+{
+	struct update_cgr_params *params = p;
+
+	params->ret = qman_update_cgr(params->cgr, params->opts);
+}
+
+int qman_update_cgr_safe(struct qman_cgr *cgr, struct qm_mcc_initcgr *opts)
+{
+	struct update_cgr_params params = {
+		.cgr = cgr,
+		.opts = opts,
+	};
+
+	preempt_disable();
+	if (qman_cgr_cpus[cgr->cgrid] != smp_processor_id())
+		smp_call_function_single(qman_cgr_cpus[cgr->cgrid],
+					 qman_update_cgr_smp_call, &params,
+					 true);
+	else
+		params.ret = qman_update_cgr(cgr, opts);
+	preempt_enable();
+	return params.ret;
+}
+EXPORT_SYMBOL(qman_update_cgr_safe);
+
+>>>>>>> origin/android16-base
 /* Cleanup FQs */
 
 static int _qm_mr_consume_and_match_verb(struct qm_portal *p, int v)

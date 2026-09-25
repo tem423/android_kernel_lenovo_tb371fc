@@ -25,8 +25,13 @@
  * rax: dest
  */
 .weak memmove
+<<<<<<< HEAD
 
 ENTRY(memmove)
+=======
+.p2align 4, 0x90
+memmove:
+>>>>>>> origin/android16-base
 ENTRY(__memmove)
 
 	/* Handle more 32 bytes in loop */

@@ -414,7 +414,11 @@ static int hynix_nand_rr_init(struct nand_chip *chip)
 	if (ret)
 		pr_warn("failed to initialize read-retry infrastructure");
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static void hynix_nand_extract_oobsize(struct nand_chip *chip,

@@ -1338,6 +1338,10 @@ int lmLogInit(struct jfs_log * log)
 		} else {
 			if (memcmp(logsuper->uuid, log->uuid, 16)) {
 				jfs_warn("wrong uuid on JFS log device");
+<<<<<<< HEAD
+=======
+				rc = -EINVAL;
+>>>>>>> origin/android16-base
 				goto errout20;
 			}
 			log->size = le32_to_cpu(logsuper->size);

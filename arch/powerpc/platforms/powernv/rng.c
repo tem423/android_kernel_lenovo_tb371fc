@@ -21,6 +21,10 @@
 #include <asm/prom.h>
 #include <asm/machdep.h>
 #include <asm/smp.h>
+<<<<<<< HEAD
+=======
+#include "powernv.h"
+>>>>>>> origin/android16-base
 
 #define DARN_ERR 0xFFFFFFFFFFFFFFFFul
 
@@ -32,7 +36,10 @@ struct powernv_rng {
 
 static DEFINE_PER_CPU(struct powernv_rng *, powernv_rng);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 int powernv_hwrng_present(void)
 {
 	struct powernv_rng *rng;
@@ -47,7 +54,15 @@ static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
 	unsigned long parity;
 
 	/* Calculate the parity of the value */
+<<<<<<< HEAD
 	asm ("popcntd %0,%1" : "=r" (parity) : "r" (val));
+=======
+	asm (".machine push;   \
+	      .machine power7; \
+	      popcntd %0,%1;   \
+	      .machine pop;"
+	     : "=r" (parity) : "r" (val));
+>>>>>>> origin/android16-base
 
 	/* xor our value with the previous mask */
 	val ^= rng->mask;
@@ -63,6 +78,11 @@ int powernv_get_random_real_mode(unsigned long *v)
 	struct powernv_rng *rng;
 
 	rng = raw_cpu_read(powernv_rng);
+<<<<<<< HEAD
+=======
+	if (!rng)
+		return 0;
+>>>>>>> origin/android16-base
 
 	*v = rng_whiten(rng, __raw_rm_readq(rng->regs_real));
 
@@ -98,9 +118,12 @@ static int initialise_darn(void)
 			return 0;
 		}
 	}
+<<<<<<< HEAD
 
 	pr_warn("Unable to use DARN for get_random_seed()\n");
 
+=======
+>>>>>>> origin/android16-base
 	return -EIO;
 }
 
@@ -163,13 +186,17 @@ static __init int rng_create(struct device_node *dn)
 
 	rng_init_per_cpu(rng, dn);
 
+<<<<<<< HEAD
 	pr_info_once("Registering arch random hook.\n");
 
+=======
+>>>>>>> origin/android16-base
 	ppc_md.get_random_seed = powernv_get_random_long;
 
 	return 0;
 }
 
+<<<<<<< HEAD
 static __init int rng_init(void)
 {
 	struct device_node *dn;
@@ -192,3 +219,56 @@ static __init int rng_init(void)
 	return 0;
 }
 machine_subsys_initcall(powernv, rng_init);
+=======
+static int __init pnv_get_random_long_early(unsigned long *v)
+{
+	struct device_node *dn;
+
+	if (!slab_is_available())
+		return 0;
+
+	if (cmpxchg(&ppc_md.get_random_seed, pnv_get_random_long_early,
+		    NULL) != pnv_get_random_long_early)
+		return 0;
+
+	for_each_compatible_node(dn, NULL, "ibm,power-rng")
+		rng_create(dn);
+
+	if (!ppc_md.get_random_seed)
+		return 0;
+	return ppc_md.get_random_seed(v);
+}
+
+void __init pnv_rng_init(void)
+{
+	struct device_node *dn;
+
+	/* Prefer darn over the rest. */
+	if (!initialise_darn())
+		return;
+
+	dn = of_find_compatible_node(NULL, NULL, "ibm,power-rng");
+	if (dn)
+		ppc_md.get_random_seed = pnv_get_random_long_early;
+
+	of_node_put(dn);
+}
+
+static int __init pnv_rng_late_init(void)
+{
+	struct device_node *dn;
+	unsigned long v;
+
+	/* In case it wasn't called during init for some other reason. */
+	if (ppc_md.get_random_seed == pnv_get_random_long_early)
+		pnv_get_random_long_early(&v);
+
+	if (ppc_md.get_random_seed == powernv_get_random_long) {
+		for_each_compatible_node(dn, NULL, "ibm,power-rng")
+			of_platform_device_create(dn, NULL, NULL);
+	}
+
+	return 0;
+}
+machine_subsys_initcall(powernv, pnv_rng_late_init);
+>>>>>>> origin/android16-base

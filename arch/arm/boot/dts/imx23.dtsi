@@ -406,7 +406,11 @@
 				status = "disabled";
 			};
 
+<<<<<<< HEAD
 			dma_apbx: dma-apbx@80024000 {
+=======
+			dma_apbx: dma-controller@80024000 {
+>>>>>>> origin/android16-base
 				compatible = "fsl,imx23-dma-apbx";
 				reg = <0x80024000 0x2000>;
 				interrupts = <7 5 9 26

@@ -19,6 +19,10 @@
 #include <linux/if_arp.h>
 #include <linux/icmp.h>
 #include <linux/suspend.h>
+<<<<<<< HEAD
+=======
+#include <net/dst_metadata.h>
+>>>>>>> origin/android16-base
 #include <net/icmp.h>
 #include <net/rtnetlink.h>
 #include <net/ip_tunnels.h>
@@ -98,6 +102,10 @@ static int wg_stop(struct net_device *dev)
 {
 	struct wg_device *wg = netdev_priv(dev);
 	struct wg_peer *peer;
+<<<<<<< HEAD
+=======
+	struct sk_buff *skb;
+>>>>>>> origin/android16-base
 
 	mutex_lock(&wg->device_update_lock);
 	list_for_each_entry(peer, &wg->peer_list, peer_list) {
@@ -108,7 +116,13 @@ static int wg_stop(struct net_device *dev)
 		wg_noise_reset_last_sent_handshake(&peer->last_sent_handshake);
 	}
 	mutex_unlock(&wg->device_update_lock);
+<<<<<<< HEAD
 	skb_queue_purge(&wg->incoming_handshakes);
+=======
+	while ((skb = ptr_ring_consume(&wg->handshake_queue.ring)) != NULL)
+		kfree_skb(skb);
+	atomic_set(&wg->handshake_queue_len, 0);
+>>>>>>> origin/android16-base
 	wg_socket_reinit(wg, NULL, NULL);
 	return 0;
 }
@@ -138,7 +152,11 @@ static netdev_tx_t wg_xmit(struct sk_buff *skb, struct net_device *dev)
 		else if (skb->protocol == htons(ETH_P_IPV6))
 			net_dbg_ratelimited("%s: No peer has allowed IPs matching %pI6\n",
 					    dev->name, &ipv6_hdr(skb)->daddr);
+<<<<<<< HEAD
 		goto err;
+=======
+		goto err_icmp;
+>>>>>>> origin/android16-base
 	}
 
 	family = READ_ONCE(peer->endpoint.addr.sa_family);
@@ -149,7 +167,11 @@ static netdev_tx_t wg_xmit(struct sk_buff *skb, struct net_device *dev)
 		goto err_peer;
 	}
 
+<<<<<<< HEAD
 	mtu = skb_dst(skb) ? dst_mtu(skb_dst(skb)) : dev->mtu;
+=======
+	mtu = skb_valid_dst(skb) ? dst_mtu(skb_dst(skb)) : dev->mtu;
+>>>>>>> origin/android16-base
 
 	__skb_queue_head_init(&packets);
 	if (!skb_is_gso(skb)) {
@@ -201,12 +223,21 @@ static netdev_tx_t wg_xmit(struct sk_buff *skb, struct net_device *dev)
 
 err_peer:
 	wg_peer_put(peer);
+<<<<<<< HEAD
 err:
 	++dev->stats.tx_errors;
+=======
+err_icmp:
+>>>>>>> origin/android16-base
 	if (skb->protocol == htons(ETH_P_IP))
 		icmp_ndo_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, 0);
 	else if (skb->protocol == htons(ETH_P_IPV6))
 		icmpv6_ndo_send(skb, ICMPV6_DEST_UNREACH, ICMPV6_ADDR_UNREACH, 0);
+<<<<<<< HEAD
+=======
+err:
+	++dev->stats.tx_errors;
+>>>>>>> origin/android16-base
 	kfree_skb(skb);
 	return ret;
 }
@@ -234,6 +265,7 @@ static void wg_destruct(struct net_device *dev)
 	destroy_workqueue(wg->handshake_receive_wq);
 	destroy_workqueue(wg->handshake_send_wq);
 	destroy_workqueue(wg->packet_crypt_wq);
+<<<<<<< HEAD
 	wg_packet_queue_free(&wg->decrypt_queue, true);
 	wg_packet_queue_free(&wg->encrypt_queue, true);
 	rcu_barrier(); /* Wait for all the peers to be actually freed. */
@@ -242,6 +274,15 @@ static void wg_destruct(struct net_device *dev)
 	skb_queue_purge(&wg->incoming_handshakes);
 	free_percpu(dev->tstats);
 	free_percpu(wg->incoming_handshakes_worker);
+=======
+	wg_packet_queue_free(&wg->handshake_queue, true);
+	wg_packet_queue_free(&wg->decrypt_queue, false);
+	wg_packet_queue_free(&wg->encrypt_queue, false);
+	rcu_barrier(); /* Wait for all the peers to be actually freed. */
+	wg_ratelimiter_uninit();
+	memzero_explicit(&wg->static_identity, sizeof(wg->static_identity));
+	free_percpu(dev->tstats);
+>>>>>>> origin/android16-base
 	kvfree(wg->index_hashtable);
 	kvfree(wg->peer_hashtable);
 	mutex_unlock(&wg->device_update_lock);
@@ -296,7 +337,10 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
 	init_rwsem(&wg->static_identity.lock);
 	mutex_init(&wg->socket_update_lock);
 	mutex_init(&wg->device_update_lock);
+<<<<<<< HEAD
 	skb_queue_head_init(&wg->incoming_handshakes);
+=======
+>>>>>>> origin/android16-base
 	wg_allowedips_init(&wg->peer_allowedips);
 	wg_cookie_checker_init(&wg->cookie_checker, wg);
 	INIT_LIST_HEAD(&wg->peer_list);
@@ -314,6 +358,7 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
 	if (!dev->tstats)
 		goto err_free_index_hashtable;
 
+<<<<<<< HEAD
 	wg->incoming_handshakes_worker =
 		wg_packet_percpu_multicore_worker_alloc(
 				wg_packet_handshake_receive_worker, wg);
@@ -324,6 +369,12 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
 			WQ_CPU_INTENSIVE | WQ_FREEZABLE, 0, dev->name);
 	if (!wg->handshake_receive_wq)
 		goto err_free_incoming_handshakes;
+=======
+	wg->handshake_receive_wq = alloc_workqueue("wg-kex-%s",
+			WQ_CPU_INTENSIVE | WQ_FREEZABLE, 0, dev->name);
+	if (!wg->handshake_receive_wq)
+		goto err_free_tstats;
+>>>>>>> origin/android16-base
 
 	wg->handshake_send_wq = alloc_workqueue("wg-kex-%s",
 			WQ_UNBOUND | WQ_FREEZABLE, 0, dev->name);
@@ -336,11 +387,16 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
 		goto err_destroy_handshake_send;
 
 	ret = wg_packet_queue_init(&wg->encrypt_queue, wg_packet_encrypt_worker,
+<<<<<<< HEAD
 				   true, MAX_QUEUED_PACKETS);
+=======
+				   MAX_QUEUED_PACKETS);
+>>>>>>> origin/android16-base
 	if (ret < 0)
 		goto err_destroy_packet_crypt;
 
 	ret = wg_packet_queue_init(&wg->decrypt_queue, wg_packet_decrypt_worker,
+<<<<<<< HEAD
 				   true, MAX_QUEUED_PACKETS);
 	if (ret < 0)
 		goto err_free_encrypt_queue;
@@ -349,6 +405,21 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
 	if (ret < 0)
 		goto err_free_decrypt_queue;
 
+=======
+				   MAX_QUEUED_PACKETS);
+	if (ret < 0)
+		goto err_free_encrypt_queue;
+
+	ret = wg_packet_queue_init(&wg->handshake_queue, wg_packet_handshake_receive_worker,
+				   MAX_QUEUED_INCOMING_HANDSHAKES);
+	if (ret < 0)
+		goto err_free_decrypt_queue;
+
+	ret = wg_ratelimiter_init();
+	if (ret < 0)
+		goto err_free_handshake_queue;
+
+>>>>>>> origin/android16-base
 	ret = register_netdevice(dev);
 	if (ret < 0)
 		goto err_uninit_ratelimiter;
@@ -365,18 +436,30 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
 
 err_uninit_ratelimiter:
 	wg_ratelimiter_uninit();
+<<<<<<< HEAD
 err_free_decrypt_queue:
 	wg_packet_queue_free(&wg->decrypt_queue, true);
 err_free_encrypt_queue:
 	wg_packet_queue_free(&wg->encrypt_queue, true);
+=======
+err_free_handshake_queue:
+	wg_packet_queue_free(&wg->handshake_queue, false);
+err_free_decrypt_queue:
+	wg_packet_queue_free(&wg->decrypt_queue, false);
+err_free_encrypt_queue:
+	wg_packet_queue_free(&wg->encrypt_queue, false);
+>>>>>>> origin/android16-base
 err_destroy_packet_crypt:
 	destroy_workqueue(wg->packet_crypt_wq);
 err_destroy_handshake_send:
 	destroy_workqueue(wg->handshake_send_wq);
 err_destroy_handshake_receive:
 	destroy_workqueue(wg->handshake_receive_wq);
+<<<<<<< HEAD
 err_free_incoming_handshakes:
 	free_percpu(wg->incoming_handshakes_worker);
+=======
+>>>>>>> origin/android16-base
 err_free_tstats:
 	free_percpu(dev->tstats);
 err_free_index_hashtable:
@@ -396,6 +479,10 @@ static struct rtnl_link_ops link_ops __read_mostly = {
 static void wg_netns_exit(struct net *net)
 {
 	struct wg_device *wg;
+<<<<<<< HEAD
+=======
+	struct wg_peer *peer;
+>>>>>>> origin/android16-base
 
 	rtnl_lock();
 	list_for_each_entry(wg, &device_list, device_list) {
@@ -405,6 +492,11 @@ static void wg_netns_exit(struct net *net)
 			mutex_lock(&wg->device_update_lock);
 			rcu_assign_pointer(wg->creating_net, NULL);
 			wg_socket_reinit(wg, NULL, NULL);
+<<<<<<< HEAD
+=======
+			list_for_each_entry(peer, &wg->peer_list, peer_list)
+				wg_socket_clear_peer_endpoint_src(peer);
+>>>>>>> origin/android16-base
 			mutex_unlock(&wg->device_update_lock);
 		}
 	}

@@ -900,7 +900,11 @@ static struct tcphdr *cake_get_tcphdr(const struct sk_buff *skb,
 	}
 
 	tcph = skb_header_pointer(skb, offset, sizeof(_tcph), &_tcph);
+<<<<<<< HEAD
 	if (!tcph)
+=======
+	if (!tcph || tcph->doff < 5)
+>>>>>>> origin/android16-base
 		return NULL;
 
 	return skb_header_pointer(skb, offset,
@@ -924,6 +928,11 @@ static const void *cake_get_tcpopt(const struct tcphdr *tcph,
 			length--;
 			continue;
 		}
+<<<<<<< HEAD
+=======
+		if (length < 2)
+			break;
+>>>>>>> origin/android16-base
 		opsize = *ptr++;
 		if (opsize < 2 || opsize > length)
 			break;
@@ -1061,6 +1070,11 @@ static bool cake_tcph_may_drop(const struct tcphdr *tcph,
 			length--;
 			continue;
 		}
+<<<<<<< HEAD
+=======
+		if (length < 2)
+			break;
+>>>>>>> origin/android16-base
 		opsize = *ptr++;
 		if (opsize < 2 || opsize > length)
 			break;
@@ -1645,7 +1659,11 @@ static s32 cake_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 {
 	struct cake_sched_data *q = qdisc_priv(sch);
 	int len = qdisc_pkt_len(skb);
+<<<<<<< HEAD
 	int uninitialized_var(ret);
+=======
+	int ret;
+>>>>>>> origin/android16-base
 	struct sk_buff *ack = NULL;
 	ktime_t now = ktime_get();
 	struct cake_tin_data *b;
@@ -2145,8 +2163,17 @@ retry:
 
 static void cake_reset(struct Qdisc *sch)
 {
+<<<<<<< HEAD
 	u32 c;
 
+=======
+	struct cake_sched_data *q = qdisc_priv(sch);
+	u32 c;
+
+	if (!q->tins)
+		return;
+
+>>>>>>> origin/android16-base
 	for (c = 0; c < CAKE_MAX_TINS; c++)
 		cake_clear_tin(sch, c);
 }
@@ -2671,7 +2698,11 @@ static int cake_init(struct Qdisc *sch, struct nlattr *opt,
 	q->tins = kvcalloc(CAKE_MAX_TINS, sizeof(struct cake_tin_data),
 			   GFP_KERNEL);
 	if (!q->tins)
+<<<<<<< HEAD
 		goto nomem;
+=======
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < CAKE_MAX_TINS; i++) {
 		struct cake_tin_data *b = q->tins + i;
@@ -2701,10 +2732,13 @@ static int cake_init(struct Qdisc *sch, struct nlattr *opt,
 	q->min_netlen = ~0;
 	q->min_adjlen = ~0;
 	return 0;
+<<<<<<< HEAD
 
 nomem:
 	cake_destroy(sch);
 	return -ENOMEM;
+=======
+>>>>>>> origin/android16-base
 }
 
 static int cake_dump(struct Qdisc *sch, struct sk_buff *skb)

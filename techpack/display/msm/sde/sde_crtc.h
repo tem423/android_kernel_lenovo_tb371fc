@@ -340,7 +340,10 @@ struct sde_crtc {
 	struct sde_crtc_frame_event frame_events[SDE_CRTC_FRAME_EVENT_SIZE];
 	struct list_head frame_event_list;
 	spinlock_t spin_lock;
+<<<<<<< HEAD
 	spinlock_t fevent_spin_lock;
+=======
+>>>>>>> origin/android16-base
 
 	/* for handling internal event thread */
 	struct sde_crtc_event event_cache[SDE_CRTC_MAX_EVENT_COUNT];
@@ -374,10 +377,15 @@ struct sde_crtc {
 	struct mutex ltm_buffer_lock;
 	spinlock_t ltm_lock;
 	bool needs_hw_reset;
+<<<<<<< HEAD
 	int hist_irq_idx;
 
 	int comp_ratio;
 	uint32_t mi_dimlayer_type;
+=======
+
+	int comp_ratio;
+>>>>>>> origin/android16-base
 
 	struct drm_property_blob *dspp_blob_info;
 };
@@ -385,6 +393,7 @@ struct sde_crtc {
 #define to_sde_crtc(x) container_of(x, struct sde_crtc, base)
 
 /**
+<<<<<<< HEAD
  * enum sde_crtc_mi_layer_type: type of mi layer
  * @MI_LAYER_FOD_PRESSED_ICON: FOD touched icon layer
  * @MI_LAYER_FOD_ICON: FOD untouch icon layer
@@ -429,6 +438,8 @@ struct sde_crtc_mi_state {
 };
 
 /**
+=======
+>>>>>>> origin/android16-base
  * struct sde_crtc_state - sde container for atomic crtc state
  * @base: Base drm crtc state structure
  * @connectors    : Currently associated drm connectors
@@ -478,7 +489,10 @@ struct sde_crtc_state {
 	uint64_t input_fence_timeout_ns;
 	uint32_t num_dim_layers;
 	struct sde_hw_dim_layer dim_layer[SDE_MAX_DIM_LAYERS];
+<<<<<<< HEAD
 	struct sde_hw_dim_layer *fod_dim_layer;
+=======
+>>>>>>> origin/android16-base
 	uint32_t num_ds;
 	uint32_t num_ds_enabled;
 	bool ds_dirty;
@@ -486,10 +500,13 @@ struct sde_crtc_state {
 	struct sde_hw_scaler3_lut_cfg scl3_lut_cfg;
 
 	struct sde_core_perf_params new_perf;
+<<<<<<< HEAD
     /* Mi crtc state */
 	struct sde_crtc_mi_state mi_state;
 	uint32_t num_dim_layers_bank;
   
+=======
+>>>>>>> origin/android16-base
 	int secure_session;
 };
 
@@ -913,6 +930,7 @@ void sde_crtc_get_misr_info(struct drm_crtc *crtc,
 		struct sde_crtc_misr_info *crtc_misr_info);
 
 /**
+<<<<<<< HEAD
  * sde_crtc_mi_atomic_check - to do crtc mi atomic check
  * @crtc: Pointer to sde crtc state structure
  * @cstate: Pointer to sde crtc state structure
@@ -932,6 +950,8 @@ int sde_crtc_mi_atomic_check(struct sde_crtc *sde_crtc, struct sde_crtc_state *c
 uint32_t sde_crtc_get_mi_fod_sync_info(struct sde_crtc_state *cstate);
 
 /**
+=======
+>>>>>>> origin/android16-base
  * sde_crtc_get_num_datapath - get the number of datapath active
  *				of primary connector
  * @crtc: Pointer to DRM crtc object

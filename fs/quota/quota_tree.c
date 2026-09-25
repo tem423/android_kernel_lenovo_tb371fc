@@ -61,7 +61,11 @@ static ssize_t read_blk(struct qtree_mem_dqinfo *info, uint blk, char *buf)
 
 	memset(buf, 0, info->dqi_usable_bs);
 	return sb->s_op->quota_read(sb, info->dqi_type, buf,
+<<<<<<< HEAD
 	       info->dqi_usable_bs, blk << info->dqi_blocksize_bits);
+=======
+	       info->dqi_usable_bs, (loff_t)blk << info->dqi_blocksize_bits);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t write_blk(struct qtree_mem_dqinfo *info, uint blk, char *buf)
@@ -70,7 +74,11 @@ static ssize_t write_blk(struct qtree_mem_dqinfo *info, uint blk, char *buf)
 	ssize_t ret;
 
 	ret = sb->s_op->quota_write(sb, info->dqi_type, buf,
+<<<<<<< HEAD
 	       info->dqi_usable_bs, blk << info->dqi_blocksize_bits);
+=======
+	       info->dqi_usable_bs, (loff_t)blk << info->dqi_blocksize_bits);
+>>>>>>> origin/android16-base
 	if (ret != info->dqi_usable_bs) {
 		quota_error(sb, "dquota write failed");
 		if (ret >= 0)
@@ -79,6 +87,38 @@ static ssize_t write_blk(struct qtree_mem_dqinfo *info, uint blk, char *buf)
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static inline int do_check_range(struct super_block *sb, const char *val_name,
+				 uint val, uint min_val, uint max_val)
+{
+	if (val < min_val || val > max_val) {
+		quota_error(sb, "Getting %s %u out of range %u-%u",
+			    val_name, val, min_val, max_val);
+		return -EUCLEAN;
+	}
+
+	return 0;
+}
+
+static int check_dquot_block_header(struct qtree_mem_dqinfo *info,
+				    struct qt_disk_dqdbheader *dh)
+{
+	int err = 0;
+
+	err = do_check_range(info->dqi_sb, "dqdh_next_free",
+			     le32_to_cpu(dh->dqdh_next_free), 0,
+			     info->dqi_blocks - 1);
+	if (err)
+		return err;
+	err = do_check_range(info->dqi_sb, "dqdh_prev_free",
+			     le32_to_cpu(dh->dqdh_prev_free), 0,
+			     info->dqi_blocks - 1);
+
+	return err;
+}
+
+>>>>>>> origin/android16-base
 /* Remove empty block from list and return it */
 static int get_free_dqblk(struct qtree_mem_dqinfo *info)
 {
@@ -93,6 +133,12 @@ static int get_free_dqblk(struct qtree_mem_dqinfo *info)
 		ret = read_blk(info, blk, buf);
 		if (ret < 0)
 			goto out_buf;
+<<<<<<< HEAD
+=======
+		ret = check_dquot_block_header(info, dh);
+		if (ret)
+			goto out_buf;
+>>>>>>> origin/android16-base
 		info->dqi_free_blk = le32_to_cpu(dh->dqdh_next_free);
 	}
 	else {
@@ -240,6 +286,12 @@ static uint find_free_dqentry(struct qtree_mem_dqinfo *info,
 		*err = read_blk(info, blk, buf);
 		if (*err < 0)
 			goto out_buf;
+<<<<<<< HEAD
+=======
+		*err = check_dquot_block_header(info, dh);
+		if (*err)
+			goto out_buf;
+>>>>>>> origin/android16-base
 	} else {
 		blk = get_free_dqblk(info);
 		if ((int)blk < 0) {
@@ -283,7 +335,11 @@ static uint find_free_dqentry(struct qtree_mem_dqinfo *info,
 			    blk);
 		goto out_buf;
 	}
+<<<<<<< HEAD
 	dquot->dq_off = (blk << info->dqi_blocksize_bits) +
+=======
+	dquot->dq_off = ((loff_t)blk << info->dqi_blocksize_bits) +
+>>>>>>> origin/android16-base
 			sizeof(struct qt_disk_dqdbheader) +
 			i * info->dqi_entry_size;
 	kfree(buf);
@@ -422,6 +478,10 @@ static int free_dqentry(struct qtree_mem_dqinfo *info, struct dquot *dquot,
 		quota_error(dquot->dq_sb, "Quota structure has offset to "
 			"other block (%u) than it should (%u)", blk,
 			(uint)(dquot->dq_off >> info->dqi_blocksize_bits));
+<<<<<<< HEAD
+=======
+		ret = -EIO;
+>>>>>>> origin/android16-base
 		goto out_buf;
 	}
 	ret = read_blk(info, blk, buf);
@@ -431,6 +491,12 @@ static int free_dqentry(struct qtree_mem_dqinfo *info, struct dquot *dquot,
 		goto out_buf;
 	}
 	dh = (struct qt_disk_dqdbheader *)buf;
+<<<<<<< HEAD
+=======
+	ret = check_dquot_block_header(info, dh);
+	if (ret)
+		goto out_buf;
+>>>>>>> origin/android16-base
 	le16_add_cpu(&dh->dqdh_entries, -1);
 	if (!le16_to_cpu(dh->dqdh_entries)) {	/* Block got free? */
 		ret = remove_free_dqentry(info, buf, blk);
@@ -487,6 +553,16 @@ static int remove_tree(struct qtree_mem_dqinfo *info, struct dquot *dquot,
 		goto out_buf;
 	}
 	newblk = le32_to_cpu(ref[get_index(info, dquot->dq_id, depth)]);
+<<<<<<< HEAD
+=======
+	if (newblk < QT_TREEOFF || newblk >= info->dqi_blocks) {
+		quota_error(dquot->dq_sb, "Getting block too big (%u >= %u)",
+			    newblk, info->dqi_blocks);
+		ret = -EUCLEAN;
+		goto out_buf;
+	}
+
+>>>>>>> origin/android16-base
 	if (depth == info->dqi_qtree_depth - 1) {
 		ret = free_dqentry(info, dquot, newblk);
 		newblk = 0;
@@ -558,7 +634,11 @@ static loff_t find_block_dqentry(struct qtree_mem_dqinfo *info,
 		ret = -EIO;
 		goto out_buf;
 	} else {
+<<<<<<< HEAD
 		ret = (blk << info->dqi_blocksize_bits) + sizeof(struct
+=======
+		ret = ((loff_t)blk << info->dqi_blocksize_bits) + sizeof(struct
+>>>>>>> origin/android16-base
 		  qt_disk_dqdbheader) + i * info->dqi_entry_size;
 	}
 out_buf:
@@ -586,6 +666,16 @@ static loff_t find_tree_dqentry(struct qtree_mem_dqinfo *info,
 	blk = le32_to_cpu(ref[get_index(info, dquot->dq_id, depth)]);
 	if (!blk)	/* No reference? */
 		goto out_buf;
+<<<<<<< HEAD
+=======
+	if (blk < QT_TREEOFF || blk >= info->dqi_blocks) {
+		quota_error(dquot->dq_sb, "Getting block too big (%u >= %u)",
+			    blk, info->dqi_blocks);
+		ret = -EUCLEAN;
+		goto out_buf;
+	}
+
+>>>>>>> origin/android16-base
 	if (depth < info->dqi_qtree_depth - 1)
 		ret = find_tree_dqentry(info, dquot, blk, depth+1);
 	else

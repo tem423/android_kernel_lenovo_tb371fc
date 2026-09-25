@@ -1436,7 +1436,11 @@ struct dvb_frontend *lg2160_attach(const struct lg2160_config *config,
 
 	return &state->frontend;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(lg2160_attach);
+=======
+EXPORT_SYMBOL_GPL(lg2160_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("LG Electronics LG216x ATSC/MH Demodulator Driver");
 MODULE_AUTHOR("Michael Krufky <mkrufky@linuxtv.org>");

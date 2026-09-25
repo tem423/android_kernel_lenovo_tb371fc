@@ -53,7 +53,12 @@ static void config_sub_second_increment(void __iomem *ioaddr,
 	if (!(value & PTP_TCR_TSCTRLSSR))
 		data = (data * 1000) / 465;
 
+<<<<<<< HEAD
 	data &= PTP_SSIR_SSINC_MASK;
+=======
+	if (data > PTP_SSIR_SSINC_MAX)
+		data = PTP_SSIR_SSINC_MAX;
+>>>>>>> origin/android16-base
 
 	reg_value = data;
 	if (gmac4)
@@ -159,6 +164,7 @@ static int adjust_systime(void __iomem *ioaddr, u32 sec, u32 nsec,
 
 static void get_systime(void __iomem *ioaddr, u64 *systime)
 {
+<<<<<<< HEAD
 	u64 ns;
 
 	/* Get the TSSS value */
@@ -168,6 +174,22 @@ static void get_systime(void __iomem *ioaddr, u64 *systime)
 
 	if (systime)
 		*systime = ns;
+=======
+	u64 ns, sec0, sec1;
+
+	/* Get the TSS value */
+	sec1 = readl_relaxed(ioaddr + PTP_STSR);
+	do {
+		sec0 = sec1;
+		/* Get the TSSS value */
+		ns = readl_relaxed(ioaddr + PTP_STNSR);
+		/* Get the TSS value */
+		sec1 = readl_relaxed(ioaddr + PTP_STSR);
+	} while (sec0 != sec1);
+
+	if (systime)
+		*systime = ns + (sec1 * 1000000000ULL);
+>>>>>>> origin/android16-base
 }
 
 const struct stmmac_hwtimestamp stmmac_ptp = {

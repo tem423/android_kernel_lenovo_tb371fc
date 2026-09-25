@@ -212,6 +212,10 @@ ext4_mballoc_query_range(
 	ext4_group_t			agno,
 	ext4_grpblk_t			start,
 	ext4_grpblk_t			end,
+<<<<<<< HEAD
+=======
+	ext4_mballoc_query_range_fn	meta_formatter,
+>>>>>>> origin/android16-base
 	ext4_mballoc_query_range_fn	formatter,
 	void				*priv);
 

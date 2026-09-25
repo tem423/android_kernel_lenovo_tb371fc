@@ -427,7 +427,10 @@ static int parse_icmpv6(struct sk_buff *skb, struct sw_flow_key *key,
 	 */
 	key->tp.src = htons(icmp->icmp6_type);
 	key->tp.dst = htons(icmp->icmp6_code);
+<<<<<<< HEAD
 	memset(&key->ipv6.nd, 0, sizeof(key->ipv6.nd));
+=======
+>>>>>>> origin/android16-base
 
 	if (icmp->icmp6_code == 0 &&
 	    (icmp->icmp6_type == NDISC_NEIGHBOUR_SOLICITATION ||
@@ -436,6 +439,11 @@ static int parse_icmpv6(struct sk_buff *skb, struct sw_flow_key *key,
 		struct nd_msg *nd;
 		int offset;
 
+<<<<<<< HEAD
+=======
+		memset(&key->ipv6.nd, 0, sizeof(key->ipv6.nd));
+
+>>>>>>> origin/android16-base
 		/* In order to process neighbor discovery options, we need the
 		 * entire packet.
 		 */

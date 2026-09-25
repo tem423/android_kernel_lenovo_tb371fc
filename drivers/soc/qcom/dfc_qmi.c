@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+ * Copyright (c) 2021 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <net/pkt_sched.h>
@@ -1104,6 +1108,7 @@ void dfc_do_burst_flow_control(struct dfc_qmi_data *dfc,
 
 		spin_lock_bh(&qos->qos_lock);
 
+<<<<<<< HEAD
 		/* In powersave, change grant to 1 if it is a enable */
 		if (qmi_rmnet_ignore_grant(dfc->rmnet_port)) {
 			if (flow_status->num_bytes) {
@@ -1116,6 +1121,11 @@ void dfc_do_burst_flow_control(struct dfc_qmi_data *dfc,
 				spin_unlock_bh(&qos->qos_lock);
 				continue;
 			}
+=======
+		if (qmi_rmnet_ignore_grant(dfc->rmnet_port)) {
+			spin_unlock_bh(&qos->qos_lock);
+			continue;
+>>>>>>> origin/android16-base
 		}
 
 		if (unlikely(flow_status->bearer_id == 0xFF))

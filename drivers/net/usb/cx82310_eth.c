@@ -52,6 +52,14 @@ enum cx82310_status {
 #define CX82310_MTU	1514
 #define CMD_EP		0x01
 
+<<<<<<< HEAD
+=======
+struct cx82310_priv {
+	struct work_struct reenable_work;
+	struct usbnet *dev;
+};
+
+>>>>>>> origin/android16-base
 /*
  * execute control command
  *  - optionally send some data (command parameters)
@@ -127,6 +135,26 @@ end:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static int cx82310_enable_ethernet(struct usbnet *dev)
+{
+	int ret = cx82310_cmd(dev, CMD_ETHERNET_MODE, true, "\x01", 1, NULL, 0);
+
+	if (ret)
+		netdev_err(dev->net, "unable to enable ethernet mode: %d\n",
+			   ret);
+	return ret;
+}
+
+static void cx82310_reenable_work(struct work_struct *work)
+{
+	struct cx82310_priv *priv = container_of(work, struct cx82310_priv,
+						 reenable_work);
+	cx82310_enable_ethernet(priv->dev);
+}
+
+>>>>>>> origin/android16-base
 #define partial_len	data[0]		/* length of partial packet data */
 #define partial_rem	data[1]		/* remaining (missing) data length */
 #define partial_data	data[2]		/* partial packet data */
@@ -138,6 +166,11 @@ static int cx82310_bind(struct usbnet *dev, struct usb_interface *intf)
 	struct usb_device *udev = dev->udev;
 	u8 link[3];
 	int timeout = 50;
+<<<<<<< HEAD
+=======
+	struct cx82310_priv *priv;
+	u8 addr[ETH_ALEN];
+>>>>>>> origin/android16-base
 
 	/* avoid ADSL modems - continue only if iProduct is "USB NET CARD" */
 	if (usb_string(udev, udev->descriptor.iProduct, buf, sizeof(buf)) > 0
@@ -164,6 +197,18 @@ static int cx82310_bind(struct usbnet *dev, struct usb_interface *intf)
 	if (!dev->partial_data)
 		return -ENOMEM;
 
+<<<<<<< HEAD
+=======
+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+	if (!priv) {
+		ret = -ENOMEM;
+		goto err_partial;
+	}
+	dev->driver_priv = priv;
+	INIT_WORK(&priv->reenable_work, cx82310_reenable_work);
+	priv->dev = dev;
+
+>>>>>>> origin/android16-base
 	/* wait for firmware to become ready (indicated by the link being up) */
 	while (--timeout) {
 		ret = cx82310_cmd(dev, CMD_GET_LINK_STATUS, true, NULL, 0,
@@ -180,6 +225,7 @@ static int cx82310_bind(struct usbnet *dev, struct usb_interface *intf)
 	}
 
 	/* enable ethernet mode (?) */
+<<<<<<< HEAD
 	ret = cx82310_cmd(dev, CMD_ETHERNET_MODE, true, "\x01", 1, NULL, 0);
 	if (ret) {
 		dev_err(&udev->dev, "unable to enable ethernet mode: %d\n",
@@ -190,10 +236,22 @@ static int cx82310_bind(struct usbnet *dev, struct usb_interface *intf)
 	/* get the MAC address */
 	ret = cx82310_cmd(dev, CMD_GET_MAC_ADDR, true, NULL, 0,
 			  dev->net->dev_addr, ETH_ALEN);
+=======
+	ret = cx82310_enable_ethernet(dev);
+	if (ret)
+		goto err;
+
+	/* get the MAC address */
+	ret = cx82310_cmd(dev, CMD_GET_MAC_ADDR, true, NULL, 0, addr, ETH_ALEN);
+>>>>>>> origin/android16-base
 	if (ret) {
 		dev_err(&udev->dev, "unable to read MAC address: %d\n", ret);
 		goto err;
 	}
+<<<<<<< HEAD
+=======
+	eth_hw_addr_set(dev->net, addr);
+>>>>>>> origin/android16-base
 
 	/* start (does not seem to have any effect?) */
 	ret = cx82310_cmd(dev, CMD_START, false, NULL, 0, NULL, 0);
@@ -202,13 +260,26 @@ static int cx82310_bind(struct usbnet *dev, struct usb_interface *intf)
 
 	return 0;
 err:
+<<<<<<< HEAD
+=======
+	kfree(dev->driver_priv);
+err_partial:
+>>>>>>> origin/android16-base
 	kfree((void *)dev->partial_data);
 	return ret;
 }
 
 static void cx82310_unbind(struct usbnet *dev, struct usb_interface *intf)
 {
+<<<<<<< HEAD
 	kfree((void *)dev->partial_data);
+=======
+	struct cx82310_priv *priv = dev->driver_priv;
+
+	kfree((void *)dev->partial_data);
+	cancel_work_sync(&priv->reenable_work);
+	kfree(dev->driver_priv);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -223,6 +294,10 @@ static int cx82310_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 {
 	int len;
 	struct sk_buff *skb2;
+<<<<<<< HEAD
+=======
+	struct cx82310_priv *priv = dev->driver_priv;
+>>>>>>> origin/android16-base
 
 	/*
 	 * If the last skb ended with an incomplete packet, this skb contains
@@ -257,7 +332,14 @@ static int cx82310_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			break;
 		}
 
+<<<<<<< HEAD
 		if (len > CX82310_MTU) {
+=======
+		if (len == 0xffff) {
+			netdev_info(dev->net, "router was rebooted, re-enabling ethernet mode");
+			schedule_work(&priv->reenable_work);
+		} else if (len > CX82310_MTU) {
+>>>>>>> origin/android16-base
 			dev_err(&dev->udev->dev, "RX packet too long: %d B\n",
 				len);
 			return 0;

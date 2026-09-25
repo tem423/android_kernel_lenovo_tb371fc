@@ -216,6 +216,10 @@ err_ttm:
 err_vbufs:
 	vgdev->vdev->config->del_vqs(vgdev->vdev);
 err_vqs:
+<<<<<<< HEAD
+=======
+	dev->dev_private = NULL;
+>>>>>>> origin/android16-base
 	kfree(vgdev);
 	return ret;
 }

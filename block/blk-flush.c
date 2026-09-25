@@ -239,8 +239,15 @@ static void flush_end_io(struct request *flush_rq, blk_status_t error)
 			return;
 		}
 
+<<<<<<< HEAD
 		if (fq->rq_status != BLK_STS_OK)
 			error = fq->rq_status;
+=======
+		if (fq->rq_status != BLK_STS_OK) {
+			error = fq->rq_status;
+			fq->rq_status = BLK_STS_OK;
+		}
+>>>>>>> origin/android16-base
 
 		hctx = blk_mq_map_queue(q, flush_rq->mq_ctx->cpu);
 		if (!q->elevator) {
@@ -289,11 +296,14 @@ static void flush_end_io(struct request *flush_rq, blk_status_t error)
 		spin_unlock_irqrestore(&fq->mq_flush_lock, flags);
 }
 
+<<<<<<< HEAD
 bool is_flush_rq(struct request *rq)
 {
 	return rq->end_io == flush_end_io;
 }
 
+=======
+>>>>>>> origin/android16-base
 /**
  * blk_kick_flush - consider issuing flush request
  * @q: request_queue being kicked

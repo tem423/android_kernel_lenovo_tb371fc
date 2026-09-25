@@ -1032,11 +1032,14 @@ static int chv_config_get(struct pinctrl_dev *pctldev, unsigned pin,
 
 		break;
 
+<<<<<<< HEAD
 	case PIN_CONFIG_DRIVE_OPEN_DRAIN:
 		if (!(ctrl1 & CHV_PADCTRL1_ODEN))
 			return -EINVAL;
 		break;
 
+=======
+>>>>>>> origin/android16-base
 	case PIN_CONFIG_BIAS_HIGH_IMPEDANCE: {
 		u32 cfg;
 
@@ -1046,6 +1049,19 @@ static int chv_config_get(struct pinctrl_dev *pctldev, unsigned pin,
 			return -EINVAL;
 
 		break;
+<<<<<<< HEAD
+=======
+
+	case PIN_CONFIG_DRIVE_PUSH_PULL:
+		if (ctrl1 & CHV_PADCTRL1_ODEN)
+			return -EINVAL;
+		break;
+
+	case PIN_CONFIG_DRIVE_OPEN_DRAIN:
+		if (!(ctrl1 & CHV_PADCTRL1_ODEN))
+			return -EINVAL;
+		break;
+>>>>>>> origin/android16-base
 	}
 
 	default:

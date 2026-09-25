@@ -2,6 +2,7 @@
 #ifndef _SPARC_TLB_H
 #define _SPARC_TLB_H
 
+<<<<<<< HEAD
 #define tlb_start_vma(tlb, vma) \
 do {								\
 	flush_cache_range(vma, vma->vm_start, vma->vm_end);	\
@@ -20,6 +21,8 @@ do {								\
 	flush_tlb_mm((tlb)->mm);				\
 } while (0)
 
+=======
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 #endif /* _SPARC_TLB_H */

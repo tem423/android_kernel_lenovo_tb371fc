@@ -361,6 +361,10 @@ ep_io (struct ep_data *epdata, void *buf, unsigned len)
 				spin_unlock_irq (&epdata->dev->lock);
 
 				DBG (epdata->dev, "endpoint gone\n");
+<<<<<<< HEAD
+=======
+				wait_for_completion(&done);
+>>>>>>> origin/android16-base
 				epdata->status = -ENODEV;
 			}
 		}
@@ -2057,6 +2061,12 @@ gadgetfs_fill_super (struct super_block *sb, void *opts, int silent)
 	return 0;
 
 Enomem:
+<<<<<<< HEAD
+=======
+	kfree(CHIP);
+	CHIP = NULL;
+
+>>>>>>> origin/android16-base
 	return -ENOMEM;
 }
 

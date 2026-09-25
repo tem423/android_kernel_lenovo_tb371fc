@@ -84,7 +84,11 @@ static int nr_header(struct sk_buff *skb, struct net_device *dev,
 	buff[6] |= AX25_SSSID_SPARE;
 	buff    += AX25_ADDR_LEN;
 
+<<<<<<< HEAD
 	*buff++ = sysctl_netrom_network_ttl_initialiser;
+=======
+	*buff++ = READ_ONCE(sysctl_netrom_network_ttl_initialiser);
+>>>>>>> origin/android16-base
 
 	*buff++ = NR_PROTO_IP;
 	*buff++ = NR_PROTO_IP;

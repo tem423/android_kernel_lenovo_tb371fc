@@ -15,10 +15,13 @@ endef
 $(call allow-override,CC,$(CROSS_COMPILE)gcc)
 $(call allow-override,LD,$(CROSS_COMPILE)ld)
 
+<<<<<<< HEAD
 HOSTCC ?= gcc
 HOSTLD ?= ld
 HOSTAR ?= ar
 
+=======
+>>>>>>> origin/android16-base
 export HOSTCC HOSTLD HOSTAR
 
 ifeq ($(V),1)

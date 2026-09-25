@@ -231,7 +231,14 @@ found:
 		ioport_unmap(gp.pm);
 		goto out;
 	}
+<<<<<<< HEAD
 out:
+=======
+	return 0;
+
+out:
+	pci_dev_put(pdev);
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -239,6 +246,10 @@ static void __exit amd_gpio_exit(void)
 {
 	gpiochip_remove(&gp.chip);
 	ioport_unmap(gp.pm);
+<<<<<<< HEAD
+=======
+	pci_dev_put(gp.pdev);
+>>>>>>> origin/android16-base
 }
 
 module_init(amd_gpio_init);

@@ -128,6 +128,7 @@ struct mesh_path {
 	bool is_gate;
 };
 
+<<<<<<< HEAD
 /**
  * struct mesh_table
  *
@@ -148,6 +149,8 @@ struct mesh_table {
 	atomic_t entries;		/* Up to MAX_MESH_NEIGHBOURS */
 };
 
+=======
+>>>>>>> origin/android16-base
 /* Recent multicast cache */
 /* RMC_BUCKETS must be a power of 2, maximum 256 */
 #define RMC_BUCKETS		256
@@ -300,7 +303,11 @@ int mesh_path_error_tx(struct ieee80211_sub_if_data *sdata,
 void mesh_path_assign_nexthop(struct mesh_path *mpath, struct sta_info *sta);
 void mesh_path_flush_pending(struct mesh_path *mpath);
 void mesh_path_tx_pending(struct mesh_path *mpath);
+<<<<<<< HEAD
 int mesh_pathtbl_init(struct ieee80211_sub_if_data *sdata);
+=======
+void mesh_pathtbl_init(struct ieee80211_sub_if_data *sdata);
+>>>>>>> origin/android16-base
 void mesh_pathtbl_unregister(struct ieee80211_sub_if_data *sdata);
 int mesh_path_del(struct ieee80211_sub_if_data *sdata, const u8 *addr);
 void mesh_path_timer(struct timer_list *t);

@@ -1129,12 +1129,20 @@ static const struct spi_device_id spinand_ids[] = {
 	{ .name = "spi-nand" },
 	{ /* sentinel */ },
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(spi, spinand_ids);
+>>>>>>> origin/android16-base
 
 #ifdef CONFIG_OF
 static const struct of_device_id spinand_of_ids[] = {
 	{ .compatible = "spi-nand" },
 	{ /* sentinel */ },
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(of, spinand_of_ids);
+>>>>>>> origin/android16-base
 #endif
 
 static struct spi_mem_driver spinand_drv = {

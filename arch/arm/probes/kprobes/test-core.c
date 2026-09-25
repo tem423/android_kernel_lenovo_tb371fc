@@ -723,7 +723,11 @@ static const char coverage_register_lookup[16] = {
 	[REG_TYPE_NOSPPCX]	= COVERAGE_ANY_REG | COVERAGE_SP,
 };
 
+<<<<<<< HEAD
 unsigned coverage_start_registers(const struct decode_header *h)
+=======
+static unsigned coverage_start_registers(const struct decode_header *h)
+>>>>>>> origin/android16-base
 {
 	unsigned regs = 0;
 	int i;

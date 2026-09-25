@@ -158,7 +158,14 @@ static void parport_attach(struct parport *port)
 		return;
 	}
 
+<<<<<<< HEAD
 	index = ida_simple_get(&pps_client_index, 0, 0, GFP_KERNEL);
+=======
+	index = ida_alloc(&pps_client_index, GFP_KERNEL);
+	if (index < 0)
+		goto err_free_device;
+
+>>>>>>> origin/android16-base
 	memset(&pps_client_cb, 0, sizeof(pps_client_cb));
 	pps_client_cb.private = device;
 	pps_client_cb.irq_func = parport_irq;
@@ -169,7 +176,11 @@ static void parport_attach(struct parport *port)
 						    index);
 	if (!device->pardev) {
 		pr_err("couldn't register with %s\n", port->name);
+<<<<<<< HEAD
 		goto err_free;
+=======
+		goto err_free_ida;
+>>>>>>> origin/android16-base
 	}
 
 	if (parport_claim_or_block(device->pardev) < 0) {
@@ -197,8 +208,14 @@ err_release_dev:
 	parport_release(device->pardev);
 err_unregister_dev:
 	parport_unregister_device(device->pardev);
+<<<<<<< HEAD
 err_free:
 	ida_simple_remove(&pps_client_index, index);
+=======
+err_free_ida:
+	ida_free(&pps_client_index, index);
+err_free_device:
+>>>>>>> origin/android16-base
 	kfree(device);
 }
 
@@ -218,7 +235,11 @@ static void parport_detach(struct parport *port)
 	pps_unregister_source(device->pps);
 	parport_release(pardev);
 	parport_unregister_device(pardev);
+<<<<<<< HEAD
 	ida_simple_remove(&pps_client_index, device->index);
+=======
+	ida_free(&pps_client_index, device->index);
+>>>>>>> origin/android16-base
 	kfree(device);
 }
 

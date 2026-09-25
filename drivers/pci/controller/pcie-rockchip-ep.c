@@ -124,11 +124,16 @@ static void rockchip_pcie_prog_ep_ob_atu(struct rockchip_pcie *rockchip, u8 fn,
 static int rockchip_pcie_ep_write_header(struct pci_epc *epc, u8 fn,
 					 struct pci_epf_header *hdr)
 {
+<<<<<<< HEAD
+=======
+	u32 reg;
+>>>>>>> origin/android16-base
 	struct rockchip_pcie_ep *ep = epc_get_drvdata(epc);
 	struct rockchip_pcie *rockchip = &ep->rockchip;
 
 	/* All functions share the same vendor ID with function 0 */
 	if (fn == 0) {
+<<<<<<< HEAD
 		u32 vid_regs = (hdr->vendorid & GENMASK(15, 0)) |
 			       (hdr->subsys_vendor_id & GENMASK(31, 16)) << 16;
 
@@ -138,6 +143,16 @@ static int rockchip_pcie_ep_write_header(struct pci_epc *epc, u8 fn,
 
 	rockchip_pcie_write(rockchip, hdr->deviceid << 16,
 			    ROCKCHIP_PCIE_EP_FUNC_BASE(fn) + PCI_VENDOR_ID);
+=======
+		rockchip_pcie_write(rockchip,
+				    hdr->vendorid | hdr->subsys_vendor_id << 16,
+				    PCIE_CORE_CONFIG_VENDOR);
+	}
+
+	reg = rockchip_pcie_read(rockchip, PCIE_EP_CONFIG_DID_VID);
+	reg = (reg & 0xFFFF) | (hdr->deviceid << 16);
+	rockchip_pcie_write(rockchip, reg, PCIE_EP_CONFIG_DID_VID);
+>>>>>>> origin/android16-base
 
 	rockchip_pcie_write(rockchip,
 			    hdr->revid |
@@ -263,8 +278,12 @@ static int rockchip_pcie_ep_map_addr(struct pci_epc *epc, u8 fn,
 	struct rockchip_pcie *pcie = &ep->rockchip;
 	u32 r;
 
+<<<<<<< HEAD
 	r = find_first_zero_bit(&ep->ob_region_map,
 				sizeof(ep->ob_region_map) * BITS_PER_LONG);
+=======
+	r = find_first_zero_bit(&ep->ob_region_map, BITS_PER_LONG);
+>>>>>>> origin/android16-base
 	/*
 	 * Region 0 is reserved for configuration space and shouldn't
 	 * be used elsewhere per TRM, so leave it out.
@@ -312,15 +331,24 @@ static int rockchip_pcie_ep_set_msi(struct pci_epc *epc, u8 fn,
 {
 	struct rockchip_pcie_ep *ep = epc_get_drvdata(epc);
 	struct rockchip_pcie *rockchip = &ep->rockchip;
+<<<<<<< HEAD
 	u16 flags;
+=======
+	u32 flags;
+>>>>>>> origin/android16-base
 
 	flags = rockchip_pcie_read(rockchip,
 				   ROCKCHIP_PCIE_EP_FUNC_BASE(fn) +
 				   ROCKCHIP_PCIE_EP_MSI_CTRL_REG);
 	flags &= ~ROCKCHIP_PCIE_EP_MSI_CTRL_MMC_MASK;
 	flags |=
+<<<<<<< HEAD
 	   ((multi_msg_cap << 1) <<  ROCKCHIP_PCIE_EP_MSI_CTRL_MMC_OFFSET) |
 	   PCI_MSI_FLAGS_64BIT;
+=======
+	   (multi_msg_cap << ROCKCHIP_PCIE_EP_MSI_CTRL_MMC_OFFSET) |
+	   (PCI_MSI_FLAGS_64BIT << ROCKCHIP_PCIE_EP_MSI_FLAGS_OFFSET);
+>>>>>>> origin/android16-base
 	flags &= ~ROCKCHIP_PCIE_EP_MSI_CTRL_MASK_MSI_CAP;
 	rockchip_pcie_write(rockchip, flags,
 			    ROCKCHIP_PCIE_EP_FUNC_BASE(fn) +
@@ -332,7 +360,11 @@ static int rockchip_pcie_ep_get_msi(struct pci_epc *epc, u8 fn)
 {
 	struct rockchip_pcie_ep *ep = epc_get_drvdata(epc);
 	struct rockchip_pcie *rockchip = &ep->rockchip;
+<<<<<<< HEAD
 	u16 flags;
+=======
+	u32 flags;
+>>>>>>> origin/android16-base
 
 	flags = rockchip_pcie_read(rockchip,
 				   ROCKCHIP_PCIE_EP_FUNC_BASE(fn) +
@@ -345,6 +377,7 @@ static int rockchip_pcie_ep_get_msi(struct pci_epc *epc, u8 fn)
 }
 
 static void rockchip_pcie_ep_assert_intx(struct rockchip_pcie_ep *ep, u8 fn,
+<<<<<<< HEAD
 					 u8 intx, bool is_asserted)
 {
 	struct rockchip_pcie *rockchip = &ep->rockchip;
@@ -387,6 +420,27 @@ static void rockchip_pcie_ep_assert_intx(struct rockchip_pcie_ep *ep, u8 fn,
 	   ROCKCHIP_PCIE_MSG_ROUTING(ROCKCHIP_PCIE_MSG_ROUTING_LOCAL_INTX) |
 	   ROCKCHIP_PCIE_MSG_CODE(msg_code) | ROCKCHIP_PCIE_MSG_NO_DATA;
 	writel(0, ep->irq_cpu_addr + offset);
+=======
+					 u8 intx, bool do_assert)
+{
+	struct rockchip_pcie *rockchip = &ep->rockchip;
+
+	intx &= 3;
+
+	if (do_assert) {
+		ep->irq_pending |= BIT(intx);
+		rockchip_pcie_write(rockchip,
+				    PCIE_CLIENT_INT_IN_ASSERT |
+				    PCIE_CLIENT_INT_PEND_ST_PEND,
+				    PCIE_CLIENT_LEGACY_INT_CTRL);
+	} else {
+		ep->irq_pending &= ~BIT(intx);
+		rockchip_pcie_write(rockchip,
+				    PCIE_CLIENT_INT_IN_DEASSERT |
+				    PCIE_CLIENT_INT_PEND_ST_NORMAL,
+				    PCIE_CLIENT_LEGACY_INT_CTRL);
+	}
+>>>>>>> origin/android16-base
 }
 
 static int rockchip_pcie_ep_send_legacy_irq(struct rockchip_pcie_ep *ep, u8 fn,
@@ -416,7 +470,11 @@ static int rockchip_pcie_ep_send_msi_irq(struct rockchip_pcie_ep *ep, u8 fn,
 					 u8 interrupt_num)
 {
 	struct rockchip_pcie *rockchip = &ep->rockchip;
+<<<<<<< HEAD
 	u16 flags, mme, data, data_mask;
+=======
+	u32 flags, mme, data, data_mask;
+>>>>>>> origin/android16-base
 	u8 msi_count;
 	u64 pci_addr, pci_addr_mask = 0xff;
 
@@ -621,6 +679,12 @@ static int rockchip_pcie_ep_probe(struct platform_device *pdev)
 
 	ep->irq_pci_addr = ROCKCHIP_PCIE_EP_DUMMY_IRQ_ADDR;
 
+<<<<<<< HEAD
+=======
+	rockchip_pcie_write(rockchip, PCIE_CLIENT_CONF_ENABLE,
+			    PCIE_CLIENT_CONFIG);
+
+>>>>>>> origin/android16-base
 	return 0;
 err_epc_mem_exit:
 	pci_epc_mem_exit(epc);

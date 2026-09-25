@@ -49,10 +49,14 @@ struct bq27xxx_reg_cache {
 	int capacity;
 	int energy;
 	int flags;
+<<<<<<< HEAD
 	int power_avg;
 	int health;
 	int elapsed_months;
 	int charge_voltage;
+=======
+	int health;
+>>>>>>> origin/android16-base
 };
 
 struct bq27xxx_device_info {
@@ -66,20 +70,30 @@ struct bq27xxx_device_info {
 	struct bq27xxx_access_methods bus;
 	struct bq27xxx_reg_cache cache;
 	int charge_design_full;
+<<<<<<< HEAD
+=======
+	bool removed;
+>>>>>>> origin/android16-base
 	unsigned long last_update;
 	struct delayed_work work;
 	struct power_supply *bat;
 	struct list_head list;
 	struct mutex lock;
 	u8 *regs;
+<<<<<<< HEAD
 	int fake_temp;
 	int battery_maintenance;
 	int last_current;
+=======
+>>>>>>> origin/android16-base
 };
 
 void bq27xxx_battery_update(struct bq27xxx_device_info *di);
 int bq27xxx_battery_setup(struct bq27xxx_device_info *di);
 void bq27xxx_battery_teardown(struct bq27xxx_device_info *di);
+<<<<<<< HEAD
 void bq27xxx_battery_maintenance(struct bq27xxx_device_info *di);
+=======
+>>>>>>> origin/android16-base
 
 #endif

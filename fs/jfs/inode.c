@@ -156,12 +156,21 @@ void jfs_evict_inode(struct inode *inode)
 		dquot_initialize(inode);
 
 		if (JFS_IP(inode)->fileset == FILESYSTEM_I) {
+<<<<<<< HEAD
+=======
+			struct inode *ipimap = JFS_SBI(inode->i_sb)->ipimap;
+>>>>>>> origin/android16-base
 			truncate_inode_pages_final(&inode->i_data);
 
 			if (test_cflag(COMMIT_Freewmap, inode))
 				jfs_free_zero_link(inode);
 
+<<<<<<< HEAD
 			diFree(inode);
+=======
+			if (ipimap && JFS_IP(ipimap)->i_imap)
+				diFree(inode);
+>>>>>>> origin/android16-base
 
 			/*
 			 * Free the inode from the quota allocation.

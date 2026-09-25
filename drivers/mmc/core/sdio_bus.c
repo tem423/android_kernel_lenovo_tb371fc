@@ -264,7 +264,18 @@ static void sdio_release_func(struct device *dev)
 {
 	struct sdio_func *func = dev_to_sdio_func(dev);
 
+<<<<<<< HEAD
 	sdio_free_func_cis(func);
+=======
+	if (!(func->card->quirks & MMC_QUIRK_NONSTD_SDIO))
+		sdio_free_func_cis(func);
+
+	/*
+	 * We have now removed the link to the tuples in the
+	 * card structure, so remove the reference.
+	 */
+	put_device(&func->card->dev);
+>>>>>>> origin/android16-base
 
 	kfree(func->info);
 	kfree(func->tmpbuf);
@@ -296,6 +307,15 @@ struct sdio_func *sdio_alloc_func(struct mmc_card *card)
 
 	device_initialize(&func->dev);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * We may link to tuples in the card structure,
+	 * we need make sure we have a reference to it.
+	 */
+	get_device(&func->card->dev);
+
+>>>>>>> origin/android16-base
 	func->dev.parent = &card->dev;
 	func->dev.bus = &sdio_bus_type;
 	func->dev.release = sdio_release_func;
@@ -349,10 +369,16 @@ int sdio_add_func(struct sdio_func *func)
  */
 void sdio_remove_func(struct sdio_func *func)
 {
+<<<<<<< HEAD
 	if (!sdio_func_present(func))
 		return;
 
 	device_del(&func->dev);
+=======
+	if (sdio_func_present(func))
+		device_del(&func->dev);
+
+>>>>>>> origin/android16-base
 	of_node_put(func->dev.of_node);
 	put_device(&func->dev);
 }

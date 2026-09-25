@@ -199,12 +199,17 @@ static int omap4_keypad_open(struct input_dev *input)
 	return 0;
 }
 
+<<<<<<< HEAD
 static void omap4_keypad_close(struct input_dev *input)
 {
 	struct omap4_keypad *keypad_data = input_get_drvdata(input);
 
 	disable_irq(keypad_data->irq);
 
+=======
+static void omap4_keypad_stop(struct omap4_keypad *keypad_data)
+{
+>>>>>>> origin/android16-base
 	/* Disable interrupts and wake-up events */
 	kbd_write_irqreg(keypad_data, OMAP4_KBD_IRQENABLE,
 			 OMAP4_VAL_IRQDISABLE);
@@ -213,7 +218,19 @@ static void omap4_keypad_close(struct input_dev *input)
 	/* clear pending interrupts */
 	kbd_write_irqreg(keypad_data, OMAP4_KBD_IRQSTATUS,
 			 kbd_read_irqreg(keypad_data, OMAP4_KBD_IRQSTATUS));
+<<<<<<< HEAD
 
+=======
+}
+
+static void omap4_keypad_close(struct input_dev *input)
+{
+	struct omap4_keypad *keypad_data;
+
+	keypad_data = input_get_drvdata(input);
+	disable_irq(keypad_data->irq);
+	omap4_keypad_stop(keypad_data);
+>>>>>>> origin/android16-base
 	enable_irq(keypad_data->irq);
 
 	pm_runtime_put_sync(input->dev.parent);
@@ -236,13 +253,44 @@ static int omap4_keypad_parse_dt(struct device *dev,
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int omap4_keypad_check_revision(struct device *dev,
+				       struct omap4_keypad *keypad_data)
+{
+	unsigned int rev;
+
+	rev = __raw_readl(keypad_data->base + OMAP4_KBD_REVISION);
+	rev &= 0x03 << 30;
+	rev >>= 30;
+	switch (rev) {
+	case KBD_REVISION_OMAP4:
+		keypad_data->reg_offset = 0x00;
+		keypad_data->irqreg_offset = 0x00;
+		break;
+	case KBD_REVISION_OMAP5:
+		keypad_data->reg_offset = 0x10;
+		keypad_data->irqreg_offset = 0x0c;
+		break;
+	default:
+		dev_err(dev, "Keypad reports unsupported revision %d", rev);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static int omap4_keypad_probe(struct platform_device *pdev)
 {
 	struct omap4_keypad *keypad_data;
 	struct input_dev *input_dev;
 	struct resource *res;
 	unsigned int max_keys;
+<<<<<<< HEAD
 	int rev;
+=======
+>>>>>>> origin/android16-base
 	int irq;
 	int error;
 
@@ -282,11 +330,16 @@ static int omap4_keypad_probe(struct platform_device *pdev)
 		goto err_release_mem;
 	}
 
+<<<<<<< HEAD
+=======
+	pm_runtime_enable(&pdev->dev);
+>>>>>>> origin/android16-base
 
 	/*
 	 * Enable clocks for the keypad module so that we can read
 	 * revision register.
 	 */
+<<<<<<< HEAD
 	pm_runtime_enable(&pdev->dev);
 	error = pm_runtime_get_sync(&pdev->dev);
 	if (error) {
@@ -311,12 +364,33 @@ static int omap4_keypad_probe(struct platform_device *pdev)
 		error = -EINVAL;
 		goto err_pm_put_sync;
 	}
+=======
+	error = pm_runtime_get_sync(&pdev->dev);
+	if (error) {
+		dev_err(&pdev->dev, "pm_runtime_get_sync() failed\n");
+		pm_runtime_put_noidle(&pdev->dev);
+	} else {
+		error = omap4_keypad_check_revision(&pdev->dev,
+						    keypad_data);
+		if (!error) {
+			/* Ensure device does not raise interrupts */
+			omap4_keypad_stop(keypad_data);
+		}
+		pm_runtime_put_sync(&pdev->dev);
+	}
+	if (error)
+		goto err_pm_disable;
+>>>>>>> origin/android16-base
 
 	/* input device allocation */
 	keypad_data->input = input_dev = input_allocate_device();
 	if (!input_dev) {
 		error = -ENOMEM;
+<<<<<<< HEAD
 		goto err_pm_put_sync;
+=======
+		goto err_pm_disable;
+>>>>>>> origin/android16-base
 	}
 
 	input_dev->name = pdev->name;
@@ -362,6 +436,7 @@ static int omap4_keypad_probe(struct platform_device *pdev)
 		goto err_free_keymap;
 	}
 
+<<<<<<< HEAD
 	device_init_wakeup(&pdev->dev, true);
 	pm_runtime_put_sync(&pdev->dev);
 
@@ -376,14 +451,33 @@ static int omap4_keypad_probe(struct platform_device *pdev)
 
 err_pm_disable:
 	pm_runtime_disable(&pdev->dev);
+=======
+	error = input_register_device(keypad_data->input);
+	if (error < 0) {
+		dev_err(&pdev->dev, "failed to register input device\n");
+		goto err_free_irq;
+	}
+
+	device_init_wakeup(&pdev->dev, true);
+	platform_set_drvdata(pdev, keypad_data);
+
+	return 0;
+
+err_free_irq:
+>>>>>>> origin/android16-base
 	free_irq(keypad_data->irq, keypad_data);
 err_free_keymap:
 	kfree(keypad_data->keymap);
 err_free_input:
 	input_free_device(input_dev);
+<<<<<<< HEAD
 err_pm_put_sync:
 	pm_runtime_put_sync(&pdev->dev);
 err_unmap:
+=======
+err_pm_disable:
+	pm_runtime_disable(&pdev->dev);
+>>>>>>> origin/android16-base
 	iounmap(keypad_data->base);
 err_release_mem:
 	release_mem_region(res->start, resource_size(res));

@@ -559,6 +559,10 @@ void * devres_open_group(struct device *dev, void *id, gfp_t gfp)
 	grp->id = grp;
 	if (id)
 		grp->id = id;
+<<<<<<< HEAD
+=======
+	grp->color = 0;
+>>>>>>> origin/android16-base
 
 	spin_lock_irqsave(&dev->devres_lock, flags);
 	add_dr(dev, &grp->node[0]);
@@ -1057,7 +1061,16 @@ EXPORT_SYMBOL_GPL(__devm_alloc_percpu);
  */
 void devm_free_percpu(struct device *dev, void __percpu *pdata)
 {
+<<<<<<< HEAD
 	WARN_ON(devres_destroy(dev, devm_percpu_release, devm_percpu_match,
 			       (void *)pdata));
+=======
+	/*
+	 * Use devres_release() to prevent memory leakage as
+	 * devm_free_pages() does.
+	 */
+	WARN_ON(devres_release(dev, devm_percpu_release, devm_percpu_match,
+			       (__force void *)pdata));
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(devm_free_percpu);

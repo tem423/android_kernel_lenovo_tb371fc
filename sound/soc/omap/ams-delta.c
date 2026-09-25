@@ -300,7 +300,11 @@ static int cx81801_open(struct tty_struct *tty)
 static void cx81801_close(struct tty_struct *tty)
 {
 	struct snd_soc_component *component = tty->disc_data;
+<<<<<<< HEAD
 	struct snd_soc_dapm_context *dapm = &component->card->dapm;
+=======
+	struct snd_soc_dapm_context *dapm;
+>>>>>>> origin/android16-base
 
 	del_timer_sync(&cx81801_timer);
 
@@ -312,6 +316,11 @@ static void cx81801_close(struct tty_struct *tty)
 
 	v253_ops.close(tty);
 
+<<<<<<< HEAD
+=======
+	dapm = &component->card->dapm;
+
+>>>>>>> origin/android16-base
 	/* Revert back to default audio input/output constellation */
 	snd_soc_dapm_mutex_lock(dapm);
 

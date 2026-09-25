@@ -7,6 +7,13 @@
 #include <linux/bio.h>
 #include <linux/blkdev.h>
 #include <linux/scatterlist.h>
+<<<<<<< HEAD
+=======
+#ifndef __GENKSYMS__
+#include <linux/blkdev.h>
+#include <linux/blk-cgroup.h>
+#endif
+>>>>>>> origin/android16-base
 
 #include <trace/events/block.h>
 
@@ -486,6 +493,12 @@ static inline int ll_new_hw_segment(struct request_queue *q,
 	if (req->nr_phys_segments + nr_phys_segs > queue_max_segments(q))
 		goto no_merge;
 
+<<<<<<< HEAD
+=======
+	if (!blk_cgroup_mergeable(req, bio))
+		goto no_merge;
+
+>>>>>>> origin/android16-base
 	if (blk_integrity_merge_bio(q, req, bio) == false)
 		goto no_merge;
 
@@ -613,6 +626,12 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
 	if (total_phys_segments > queue_max_segments(q))
 		return 0;
 
+<<<<<<< HEAD
+=======
+	if (!blk_cgroup_mergeable(req, next->bio))
+		return 0;
+
+>>>>>>> origin/android16-base
 	if (blk_integrity_merge_rq(q, req, next) == false)
 		return 0;
 
@@ -822,6 +841,13 @@ bool blk_rq_merge_ok(struct request *rq, struct bio *bio)
 	if (rq->rq_disk != bio->bi_disk || req_no_special_merge(rq))
 		return false;
 
+<<<<<<< HEAD
+=======
+	/* don't merge across cgroup boundaries */
+	if (!blk_cgroup_mergeable(rq, bio))
+		return false;
+
+>>>>>>> origin/android16-base
 	/* only merge integrity protected bio into ditto rq */
 	if (blk_integrity_merge_bio(rq->q, rq, bio) == false)
 		return false;

@@ -601,8 +601,11 @@ static irqreturn_t xgene_ahci_irq_intr(int irq, void *dev_instance)
 	void __iomem *mmio;
 	u32 irq_stat, irq_masked;
 
+<<<<<<< HEAD
 	VPRINTK("ENTER\n");
 
+=======
+>>>>>>> origin/android16-base
 	hpriv = host->private_data;
 	mmio = hpriv->mmio;
 
@@ -625,8 +628,11 @@ static irqreturn_t xgene_ahci_irq_intr(int irq, void *dev_instance)
 
 	spin_unlock(&host->lock);
 
+<<<<<<< HEAD
 	VPRINTK("EXIT\n");
 
+=======
+>>>>>>> origin/android16-base
 	return IRQ_RETVAL(rc);
 }
 

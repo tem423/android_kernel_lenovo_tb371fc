@@ -21,10 +21,22 @@ static int __init mod_init(void)
 {
 	int ret;
 
+<<<<<<< HEAD
 #ifdef DEBUG
 	if (!wg_allowedips_selftest() || !wg_packet_counter_selftest() ||
 	    !wg_ratelimiter_selftest())
 		return -ENOTRECOVERABLE;
+=======
+	ret = wg_allowedips_slab_init();
+	if (ret < 0)
+		goto err_allowedips;
+
+#ifdef DEBUG
+	ret = -ENOTRECOVERABLE;
+	if (!wg_allowedips_selftest() || !wg_packet_counter_selftest() ||
+	    !wg_ratelimiter_selftest())
+		goto err_device;
+>>>>>>> origin/android16-base
 #endif
 	wg_noise_init();
 
@@ -44,6 +56,11 @@ static int __init mod_init(void)
 err_netlink:
 	wg_device_uninit();
 err_device:
+<<<<<<< HEAD
+=======
+	wg_allowedips_slab_uninit();
+err_allowedips:
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -51,6 +68,10 @@ static void __exit mod_exit(void)
 {
 	wg_genetlink_uninit();
 	wg_device_uninit();
+<<<<<<< HEAD
+=======
+	wg_allowedips_slab_uninit();
+>>>>>>> origin/android16-base
 }
 
 module_init(mod_init);

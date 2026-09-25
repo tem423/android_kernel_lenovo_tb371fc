@@ -1175,7 +1175,11 @@ static int nic_register_interrupts(struct nicpf *nic)
 		dev_err(&nic->pdev->dev,
 			"Request for #%d msix vectors failed, returned %d\n",
 			   nic->num_vec, ret);
+<<<<<<< HEAD
 		return 1;
+=======
+		return ret;
+>>>>>>> origin/android16-base
 	}
 
 	/* Register mailbox interrupt handler */

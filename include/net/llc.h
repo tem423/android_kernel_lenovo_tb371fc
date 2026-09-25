@@ -72,7 +72,13 @@ struct llc_sap {
 static inline
 struct hlist_head *llc_sk_dev_hash(struct llc_sap *sap, int ifindex)
 {
+<<<<<<< HEAD
 	return &sap->sk_dev_hash[ifindex % LLC_SK_DEV_HASH_ENTRIES];
+=======
+	u32 bucket = hash_32(ifindex, LLC_SK_DEV_HASH_BITS);
+
+	return &sap->sk_dev_hash[bucket];
+>>>>>>> origin/android16-base
 }
 
 static inline

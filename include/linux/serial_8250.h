@@ -99,7 +99,10 @@ struct uart_8250_port {
 	struct list_head	list;		/* ports on this IRQ */
 	u32			capabilities;	/* port capabilities */
 	unsigned short		bugs;		/* port bugs */
+<<<<<<< HEAD
 	bool			fifo_bug;	/* min RX trigger if enabled */
+=======
+>>>>>>> origin/android16-base
 	unsigned int		tx_loadsz;	/* transmit fifo load size */
 	unsigned char		acr;
 	unsigned char		fcr;

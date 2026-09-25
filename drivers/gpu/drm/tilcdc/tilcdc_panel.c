@@ -174,6 +174,7 @@ static int panel_connector_get_modes(struct drm_connector *connector)
 	return i;
 }
 
+<<<<<<< HEAD
 static int panel_connector_mode_valid(struct drm_connector *connector,
 		  struct drm_display_mode *mode)
 {
@@ -182,6 +183,8 @@ static int panel_connector_mode_valid(struct drm_connector *connector,
 	return tilcdc_crtc_mode_valid(priv->crtc, mode);
 }
 
+=======
+>>>>>>> origin/android16-base
 static struct drm_encoder *panel_connector_best_encoder(
 		struct drm_connector *connector)
 {
@@ -199,7 +202,10 @@ static const struct drm_connector_funcs panel_connector_funcs = {
 
 static const struct drm_connector_helper_funcs panel_connector_helper_funcs = {
 	.get_modes          = panel_connector_get_modes,
+<<<<<<< HEAD
 	.mode_valid         = panel_connector_mode_valid,
+=======
+>>>>>>> origin/android16-base
 	.best_encoder       = panel_connector_best_encoder,
 };
 

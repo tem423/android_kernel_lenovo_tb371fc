@@ -393,7 +393,11 @@ static void bcsp_pkt_cull(struct bcsp_struct *bcsp)
 		i++;
 
 		__skb_unlink(skb, &bcsp->unack);
+<<<<<<< HEAD
 		kfree_skb(skb);
+=======
+		dev_kfree_skb_irq(skb);
+>>>>>>> origin/android16-base
 	}
 
 	if (skb_queue_empty(&bcsp->unack))

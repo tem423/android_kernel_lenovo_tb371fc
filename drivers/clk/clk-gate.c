@@ -43,7 +43,11 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
 {
 	struct clk_gate *gate = to_clk_gate(hw);
 	int set = gate->flags & CLK_GATE_SET_TO_DISABLE ? 1 : 0;
+<<<<<<< HEAD
 	unsigned long uninitialized_var(flags);
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 	u32 reg;
 
 	set ^= enable;

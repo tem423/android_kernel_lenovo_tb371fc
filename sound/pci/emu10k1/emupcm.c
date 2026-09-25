@@ -137,7 +137,11 @@ static int snd_emu10k1_pcm_channel_alloc(struct snd_emu10k1_pcm * epcm, int voic
 	epcm->voices[0]->epcm = epcm;
 	if (voices > 1) {
 		for (i = 1; i < voices; i++) {
+<<<<<<< HEAD
 			epcm->voices[i] = &epcm->emu->voices[epcm->voices[0]->number + i];
+=======
+			epcm->voices[i] = &epcm->emu->voices[(epcm->voices[0]->number + i) % NUM_G];
+>>>>>>> origin/android16-base
 			epcm->voices[i]->epcm = epcm;
 		}
 	}
@@ -1258,7 +1262,11 @@ static int snd_emu10k1_capture_mic_close(struct snd_pcm_substream *substream)
 {
 	struct snd_emu10k1 *emu = snd_pcm_substream_chip(substream);
 
+<<<<<<< HEAD
 	emu->capture_interrupt = NULL;
+=======
+	emu->capture_mic_interrupt = NULL;
+>>>>>>> origin/android16-base
 	emu->pcm_capture_mic_substream = NULL;
 	return 0;
 }
@@ -1366,7 +1374,11 @@ static int snd_emu10k1_capture_efx_close(struct snd_pcm_substream *substream)
 {
 	struct snd_emu10k1 *emu = snd_pcm_substream_chip(substream);
 
+<<<<<<< HEAD
 	emu->capture_interrupt = NULL;
+=======
+	emu->capture_efx_interrupt = NULL;
+>>>>>>> origin/android16-base
 	emu->pcm_capture_efx_substream = NULL;
 	return 0;
 }

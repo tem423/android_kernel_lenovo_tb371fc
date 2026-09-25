@@ -42,6 +42,9 @@ void local_flush_tlb_page(struct vm_area_struct *vma, unsigned long addr);
 
 void update_mmu_cache(struct vm_area_struct *vma,
 		      unsigned long address, pte_t * pte);
+<<<<<<< HEAD
 void tlb_migrate_finish(struct mm_struct *mm);
+=======
+>>>>>>> origin/android16-base
 
 #endif

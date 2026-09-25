@@ -1595,6 +1595,11 @@ struct drm_i915_private {
 
 	struct intel_uncore uncore;
 
+<<<<<<< HEAD
+=======
+	struct mutex tlb_invalidate_lock;
+
+>>>>>>> origin/android16-base
 	struct i915_virtual_gpu vgpu;
 
 	struct intel_gvt *gvt;

@@ -126,7 +126,11 @@ static int stm32_pwm_lp_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 
 	/* ensure CMP & ARR registers are properly written */
 	ret = regmap_read_poll_timeout(priv->regmap, STM32_LPTIM_ISR, val,
+<<<<<<< HEAD
 				       (val & STM32_LPTIM_CMPOK_ARROK),
+=======
+				       (val & STM32_LPTIM_CMPOK_ARROK) == STM32_LPTIM_CMPOK_ARROK,
+>>>>>>> origin/android16-base
 				       100, 1000);
 	if (ret) {
 		dev_err(priv->chip.dev, "ARR/CMP registers write issue\n");
@@ -224,8 +228,11 @@ static int stm32_pwm_lp_remove(struct platform_device *pdev)
 {
 	struct stm32_pwm_lp *priv = platform_get_drvdata(pdev);
 
+<<<<<<< HEAD
 	pwm_disable(&priv->chip.pwms[0]);
 
+=======
+>>>>>>> origin/android16-base
 	return pwmchip_remove(&priv->chip);
 }
 

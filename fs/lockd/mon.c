@@ -275,6 +275,12 @@ static struct nsm_handle *nsm_create_handle(const struct sockaddr *sap,
 {
 	struct nsm_handle *new;
 
+<<<<<<< HEAD
+=======
+	if (!hostname)
+		return NULL;
+
+>>>>>>> origin/android16-base
 	new = kzalloc(sizeof(*new) + hostname_len + 1, GFP_KERNEL);
 	if (unlikely(new == NULL))
 		return NULL;

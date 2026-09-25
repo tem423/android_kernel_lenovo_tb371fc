@@ -246,8 +246,12 @@ static int usbtll_omap_probe(struct platform_device *pdev)
 		break;
 	}
 
+<<<<<<< HEAD
 	tll = devm_kzalloc(dev, sizeof(*tll) + sizeof(tll->ch_clk[nch]),
 			   GFP_KERNEL);
+=======
+	tll = devm_kzalloc(dev, struct_size(tll, ch_clk, nch), GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!tll) {
 		pm_runtime_put_sync(dev);
 		pm_runtime_disable(dev);

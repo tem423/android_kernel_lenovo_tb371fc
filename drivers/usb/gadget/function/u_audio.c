@@ -629,9 +629,17 @@ void g_audio_cleanup(struct g_audio *g_audio)
 		return;
 
 	uac = g_audio->uac;
+<<<<<<< HEAD
 	card = uac->card;
 	if (card)
 		snd_card_free(card);
+=======
+	g_audio->uac = NULL;
+
+	card = uac->card;
+	if (card)
+		snd_card_free_when_closed(card);
+>>>>>>> origin/android16-base
 
 	kfree(uac->p_prm.ureq);
 	kfree(uac->c_prm.ureq);

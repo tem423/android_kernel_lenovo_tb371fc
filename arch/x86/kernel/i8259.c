@@ -32,6 +32,10 @@
  */
 static void init_8259A(int auto_eoi);
 
+<<<<<<< HEAD
+=======
+static bool pcat_compat __ro_after_init;
+>>>>>>> origin/android16-base
 static int i8259A_auto_eoi;
 DEFINE_RAW_SPINLOCK(i8259A_lock);
 
@@ -114,6 +118,10 @@ static void make_8259A_irq(unsigned int irq)
 	disable_irq_nosync(irq);
 	io_apic_irqs &= ~(1<<irq);
 	irq_set_chip_and_handler(irq, &i8259A_chip, handle_level_irq);
+<<<<<<< HEAD
+=======
+	irq_set_status_flags(irq, IRQ_LEVEL);
+>>>>>>> origin/android16-base
 	enable_irq(irq);
 	lapic_assign_legacy_vector(irq, true);
 }
@@ -300,6 +308,7 @@ static void unmask_8259A(void)
 
 static int probe_8259A(void)
 {
+<<<<<<< HEAD
 	unsigned long flags;
 	unsigned char probe_val = ~(1 << PIC_CASCADE_IR);
 	unsigned char new_val;
@@ -309,6 +318,34 @@ static int probe_8259A(void)
 	 * back the value we just wrote. If we don't
 	 * have a PIC, we will read 0xff as opposed to the
 	 * value we wrote.
+=======
+	unsigned char new_val, probe_val = ~(1 << PIC_CASCADE_IR);
+	unsigned long flags;
+
+	/*
+	 * If MADT has the PCAT_COMPAT flag set, then do not bother probing
+	 * for the PIC. Some BIOSes leave the PIC uninitialized and probing
+	 * fails.
+	 *
+	 * Right now this causes problems as quite some code depends on
+	 * nr_legacy_irqs() > 0 or has_legacy_pic() == true. This is silly
+	 * when the system has an IO/APIC because then PIC is not required
+	 * at all, except for really old machines where the timer interrupt
+	 * must be routed through the PIC. So just pretend that the PIC is
+	 * there and let legacy_pic->init() initialize it for nothing.
+	 *
+	 * Alternatively this could just try to initialize the PIC and
+	 * repeat the probe, but for cases where there is no PIC that's
+	 * just pointless.
+	 */
+	if (pcat_compat)
+		return nr_legacy_irqs();
+
+	/*
+	 * Check to see if we have a PIC.  Mask all except the cascade and
+	 * read back the value we just wrote. If we don't have a PIC, we
+	 * will read 0xff as opposed to the value we wrote.
+>>>>>>> origin/android16-base
 	 */
 	raw_spin_lock_irqsave(&i8259A_lock, flags);
 
@@ -430,5 +467,14 @@ static int __init i8259A_init_ops(void)
 
 	return 0;
 }
+<<<<<<< HEAD
 
 device_initcall(i8259A_init_ops);
+=======
+device_initcall(i8259A_init_ops);
+
+void __init legacy_pic_pcat_compat(void)
+{
+	pcat_compat = true;
+}
+>>>>>>> origin/android16-base

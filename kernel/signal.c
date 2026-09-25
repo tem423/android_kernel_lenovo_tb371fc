@@ -1752,10 +1752,18 @@ struct sigqueue *sigqueue_alloc(void)
 
 void sigqueue_free(struct sigqueue *q)
 {
+<<<<<<< HEAD
 	unsigned long flags;
 	spinlock_t *lock = &current->sighand->siglock;
 
 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
+=======
+	spinlock_t *lock = &current->sighand->siglock;
+	unsigned long flags;
+
+	if (WARN_ON_ONCE(!(q->flags & SIGQUEUE_PREALLOC)))
+		return;
+>>>>>>> origin/android16-base
 	/*
 	 * We must hold ->siglock while testing q->list
 	 * to serialize with collect_signal() or with
@@ -1783,7 +1791,14 @@ int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 	unsigned long flags;
 	int ret, result;
 
+<<<<<<< HEAD
 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
+=======
+	if (WARN_ON_ONCE(!(q->flags & SIGQUEUE_PREALLOC)))
+		return 0;
+	if (WARN_ON_ONCE(q->info.si_code != SI_TIMER))
+		return 0;
+>>>>>>> origin/android16-base
 
 	ret = -1;
 	rcu_read_lock();
@@ -1802,7 +1817,10 @@ int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 		 * If an SI_TIMER entry is already queue just increment
 		 * the overrun count.
 		 */
+<<<<<<< HEAD
 		BUG_ON(q->info.si_code != SI_TIMER);
+=======
+>>>>>>> origin/android16-base
 		q->info.si_overrun++;
 		result = TRACE_SIGNAL_ALREADY_PENDING;
 		goto out;
@@ -1846,12 +1864,21 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
 	bool autoreap = false;
 	u64 utime, stime;
 
+<<<<<<< HEAD
 	BUG_ON(sig == -1);
 
  	/* do_notify_parent_cldstop should have been called instead.  */
  	BUG_ON(task_is_stopped_or_traced(tsk));
 
 	BUG_ON(!tsk->ptrace &&
+=======
+	WARN_ON_ONCE(sig == -1);
+
+	/* do_notify_parent_cldstop should have been called instead.  */
+	WARN_ON_ONCE(task_is_stopped_or_traced(tsk));
+
+	WARN_ON_ONCE(!tsk->ptrace &&
+>>>>>>> origin/android16-base
 	       (tsk->group_leader != tsk || !thread_group_empty(tsk)));
 
 	/* Wake up all pidfd waiters */
@@ -2031,6 +2058,7 @@ static inline bool may_ptrace_stop(void)
 	return true;
 }
 
+<<<<<<< HEAD
 /*
  * Return non-zero if there is a SIGKILL that should be waking us up.
  * Called with the siglock held.
@@ -2040,6 +2068,8 @@ static bool sigkill_pending(struct task_struct *tsk)
 	return sigismember(&tsk->pending.signal, SIGKILL) ||
 	       sigismember(&tsk->signal->shared_pending.signal, SIGKILL);
 }
+=======
+>>>>>>> origin/android16-base
 
 /*
  * This must be called with current->sighand->siglock held.
@@ -2066,17 +2096,29 @@ static void ptrace_stop(int exit_code, int why, int clear_code, siginfo_t *info)
 		 * calling arch_ptrace_stop, so we must release it now.
 		 * To preserve proper semantics, we must do this before
 		 * any signal bookkeeping like checking group_stop_count.
+<<<<<<< HEAD
 		 * Meanwhile, a SIGKILL could come in before we retake the
 		 * siglock.  That must prevent us from sleeping in TASK_TRACED.
 		 * So after regaining the lock, we must check for SIGKILL.
+=======
+>>>>>>> origin/android16-base
 		 */
 		spin_unlock_irq(&current->sighand->siglock);
 		arch_ptrace_stop(exit_code, info);
 		spin_lock_irq(&current->sighand->siglock);
+<<<<<<< HEAD
 		if (sigkill_pending(current))
 			return;
 	}
 
+=======
+	}
+
+	/*
+	 * schedule() will not sleep if there is a pending signal that
+	 * can awaken the task.
+	 */
+>>>>>>> origin/android16-base
 	set_special_state(TASK_TRACED);
 
 	/*

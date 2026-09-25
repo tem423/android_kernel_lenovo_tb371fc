@@ -42,11 +42,17 @@
 
 /**
  * netlbl_netlink_auditinfo - Fetch the audit information from a NETLINK msg
+<<<<<<< HEAD
  * @skb: the packet
  * @audit_info: NetLabel audit information
  */
 static inline void netlbl_netlink_auditinfo(struct sk_buff *skb,
 					    struct netlbl_audit *audit_info)
+=======
+ * @audit_info: NetLabel audit information
+ */
+static inline void netlbl_netlink_auditinfo(struct netlbl_audit *audit_info)
+>>>>>>> origin/android16-base
 {
 	security_task_getsecid(current, &audit_info->secid);
 	audit_info->loginuid = audit_get_loginuid(current);

@@ -451,6 +451,12 @@ static bool iscsit_tpg_check_network_portal(
 				break;
 		}
 		spin_unlock(&tpg->tpg_np_lock);
+<<<<<<< HEAD
+=======
+
+		if (match)
+			break;
+>>>>>>> origin/android16-base
 	}
 	spin_unlock(&tiqn->tiqn_tpg_lock);
 

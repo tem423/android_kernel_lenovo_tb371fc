@@ -27,6 +27,15 @@ static __init int register_e820_pmem(void)
 	 * simply here to trigger the module to load on demand.
 	 */
 	pdev = platform_device_alloc("e820_pmem", -1);
+<<<<<<< HEAD
 	return platform_device_add(pdev);
+=======
+
+	rc = platform_device_add(pdev);
+	if (rc)
+		platform_device_put(pdev);
+
+	return rc;
+>>>>>>> origin/android16-base
 }
 device_initcall(register_e820_pmem);

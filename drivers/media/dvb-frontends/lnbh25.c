@@ -182,7 +182,11 @@ struct dvb_frontend *lnbh25_attach(struct dvb_frontend *fe,
 		__func__, priv->i2c_address);
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(lnbh25_attach);
+=======
+EXPORT_SYMBOL_GPL(lnbh25_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("ST LNBH25 driver");
 MODULE_AUTHOR("info@netup.ru");

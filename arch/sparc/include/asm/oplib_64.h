@@ -247,6 +247,10 @@ void prom_sun4v_guest_soft_state(void);
 int prom_ihandle2path(int handle, char *buffer, int bufsize);
 
 /* Client interface level routines. */
+<<<<<<< HEAD
+=======
+void prom_cif_init(void *cif_handler);
+>>>>>>> origin/android16-base
 void p1275_cmd_direct(unsigned long *);
 
 #endif /* !(__SPARC64_OPLIB_H) */

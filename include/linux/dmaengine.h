@@ -827,7 +827,12 @@ static inline int dmaengine_slave_config(struct dma_chan *chan,
 
 static inline bool is_slave_direction(enum dma_transfer_direction direction)
 {
+<<<<<<< HEAD
 	return (direction == DMA_MEM_TO_DEV) || (direction == DMA_DEV_TO_MEM);
+=======
+	return (direction == DMA_MEM_TO_DEV) || (direction == DMA_DEV_TO_MEM) ||
+	       (direction == DMA_DEV_TO_DEV);
+>>>>>>> origin/android16-base
 }
 
 static inline struct dma_async_tx_descriptor *dmaengine_prep_slave_single(

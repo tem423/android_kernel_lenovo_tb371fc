@@ -273,6 +273,10 @@ int brcmf_c_preinit_dcmds(struct brcmf_if *ifp)
 			  err);
 		goto done;
 	}
+<<<<<<< HEAD
+=======
+	buf[sizeof(buf) - 1] = '\0';
+>>>>>>> origin/android16-base
 	ptr = (char *)buf;
 	strsep(&ptr, "\n");
 
@@ -289,15 +293,26 @@ int brcmf_c_preinit_dcmds(struct brcmf_if *ifp)
 	if (err) {
 		brcmf_dbg(TRACE, "retrieving clmver failed, %d\n", err);
 	} else {
+<<<<<<< HEAD
 		clmver = (char *)buf;
 		/* store CLM version for adding it to revinfo debugfs file */
 		memcpy(ifp->drvr->clmver, clmver, sizeof(ifp->drvr->clmver));
+=======
+		buf[sizeof(buf) - 1] = '\0';
+		clmver = (char *)buf;
+>>>>>>> origin/android16-base
 
 		/* Replace all newline/linefeed characters with space
 		 * character
 		 */
 		strreplace(clmver, '\n', ' ');
 
+<<<<<<< HEAD
+=======
+		/* store CLM version for adding it to revinfo debugfs file */
+		memcpy(ifp->drvr->clmver, clmver, sizeof(ifp->drvr->clmver));
+
+>>>>>>> origin/android16-base
 		brcmf_dbg(INFO, "CLM version = %s\n", clmver);
 	}
 

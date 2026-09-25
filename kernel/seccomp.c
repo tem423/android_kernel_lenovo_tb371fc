@@ -28,6 +28,12 @@
 #include <linux/syscalls.h>
 #include <linux/sysctl.h>
 
+<<<<<<< HEAD
+=======
+/* Not exposed in headers: strictly internal use only. */
+#define SECCOMP_MODE_DEAD	(SECCOMP_MODE_FILTER + 1)
+
+>>>>>>> origin/android16-base
 #ifdef CONFIG_HAVE_ARCH_SECCOMP_FILTER
 #include <asm/syscall.h>
 #endif
@@ -36,7 +42,11 @@
 #include <linux/filter.h>
 #include <linux/pid.h>
 #include <linux/ptrace.h>
+<<<<<<< HEAD
 #include <linux/security.h>
+=======
+#include <linux/capability.h>
+>>>>>>> origin/android16-base
 #include <linux/tracehook.h>
 #include <linux/uaccess.h>
 
@@ -383,8 +393,12 @@ static struct seccomp_filter *seccomp_prepare_filter(struct sock_fprog *fprog)
 	 * behavior of privileged children.
 	 */
 	if (!task_no_new_privs(current) &&
+<<<<<<< HEAD
 	    security_capable(current_cred(), current_user_ns(),
 				     CAP_SYS_ADMIN, CAP_OPT_NOAUDIT) != 0)
+=======
+			!ns_capable_noaudit(current_user_ns(), CAP_SYS_ADMIN))
+>>>>>>> origin/android16-base
 		return ERR_PTR(-EACCES);
 
 	/* Allocate a new seccomp_filter */
@@ -629,6 +643,10 @@ static void __secure_computing_strict(int this_syscall)
 #ifdef SECCOMP_DEBUG
 	dump_stack();
 #endif
+<<<<<<< HEAD
+=======
+	current->seccomp.mode = SECCOMP_MODE_DEAD;
+>>>>>>> origin/android16-base
 	seccomp_log(this_syscall, SIGKILL, SECCOMP_RET_KILL_THREAD, true);
 	do_exit(SIGKILL);
 }
@@ -743,6 +761,10 @@ static int __seccomp_filter(int this_syscall, const struct seccomp_data *sd,
 	case SECCOMP_RET_KILL_THREAD:
 	case SECCOMP_RET_KILL_PROCESS:
 	default:
+<<<<<<< HEAD
+=======
+		current->seccomp.mode = SECCOMP_MODE_DEAD;
+>>>>>>> origin/android16-base
 		seccomp_log(this_syscall, SIGSYS, action, true);
 		/* Dump core only if this is the last remaining thread. */
 		if (action == SECCOMP_RET_KILL_PROCESS ||
@@ -772,6 +794,11 @@ static int __seccomp_filter(int this_syscall, const struct seccomp_data *sd,
 			    const bool recheck_after_trace)
 {
 	BUG();
+<<<<<<< HEAD
+=======
+
+	return -1;
+>>>>>>> origin/android16-base
 }
 #endif
 
@@ -793,6 +820,14 @@ int __secure_computing(const struct seccomp_data *sd)
 		return 0;
 	case SECCOMP_MODE_FILTER:
 		return __seccomp_filter(this_syscall, sd, false);
+<<<<<<< HEAD
+=======
+	/* Surviving SECCOMP_RET_KILL_* must be proactively impossible. */
+	case SECCOMP_MODE_DEAD:
+		WARN_ON_ONCE(1);
+		do_exit(SIGKILL);
+		return -1;
+>>>>>>> origin/android16-base
 	default:
 		BUG();
 	}

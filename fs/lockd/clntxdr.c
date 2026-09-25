@@ -71,6 +71,7 @@ static void nlm_compute_offsets(const struct nlm_lock *lock,
 }
 
 /*
+<<<<<<< HEAD
  * Handle decode buffer overflows out-of-line.
  */
 static void print_overflow_msg(const char *func, const struct xdr_stream *xdr)
@@ -82,6 +83,8 @@ static void print_overflow_msg(const char *func, const struct xdr_stream *xdr)
 
 
 /*
+=======
+>>>>>>> origin/android16-base
  * Encode/decode NLMv3 basic data types
  *
  * Basic NLMv3 data types are not defined in an IETF standards
@@ -173,7 +176,10 @@ out_size:
 	dprintk("NFS: returned cookie was too long: %u\n", length);
 	return -EIO;
 out_overflow:
+<<<<<<< HEAD
 	print_overflow_msg(__func__, xdr);
+=======
+>>>>>>> origin/android16-base
 	return -EIO;
 }
 
@@ -231,7 +237,10 @@ out_enum:
 		__func__, be32_to_cpup(p));
 	return -EIO;
 out_overflow:
+<<<<<<< HEAD
 	print_overflow_msg(__func__, xdr);
+=======
+>>>>>>> origin/android16-base
 	return -EIO;
 }
 
@@ -303,7 +312,10 @@ static int decode_nlm_holder(struct xdr_stream *xdr, struct nlm_res *result)
 out:
 	return error;
 out_overflow:
+<<<<<<< HEAD
 	print_overflow_msg(__func__, xdr);
+=======
+>>>>>>> origin/android16-base
 	return -EIO;
 }
 

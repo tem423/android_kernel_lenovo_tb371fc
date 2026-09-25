@@ -14,10 +14,17 @@
 	};
 };
 
+<<<<<<< HEAD
 &nand {
 	status = "okay";
 
 	nandcs@1 {
+=======
+&nand_controller {
+	status = "okay";
+
+	nand@1 {
+>>>>>>> origin/android16-base
 		compatible = "brcm,nandcs";
 		reg = <1>;
 		nand-ecc-step-size = <512>;

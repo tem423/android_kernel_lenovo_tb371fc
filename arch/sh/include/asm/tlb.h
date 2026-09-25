@@ -11,6 +11,7 @@
 
 #ifdef CONFIG_MMU
 #include <linux/swap.h>
+<<<<<<< HEAD
 #include <asm/pgalloc.h>
 #include <asm/tlbflush.h>
 #include <asm/mmu_context.h>
@@ -138,6 +139,10 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
 #define pud_free_tlb(tlb, pudp, addr)	pud_free((tlb)->mm, pudp)
 
 #define tlb_migrate_finish(mm)		do { } while (0)
+=======
+
+#include <asm-generic/tlb.h>
+>>>>>>> origin/android16-base
 
 #if defined(CONFIG_CPU_SH4) || defined(CONFIG_SUPERH64)
 extern void tlb_wire_entry(struct vm_area_struct *, unsigned long, pte_t);
@@ -157,11 +162,14 @@ static inline void tlb_unwire_entry(void)
 
 #else /* CONFIG_MMU */
 
+<<<<<<< HEAD
 #define tlb_start_vma(tlb, vma)				do { } while (0)
 #define tlb_end_vma(tlb, vma)				do { } while (0)
 #define __tlb_remove_tlb_entry(tlb, pte, address)	do { } while (0)
 #define tlb_flush(tlb)					do { } while (0)
 
+=======
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 #endif /* CONFIG_MMU */

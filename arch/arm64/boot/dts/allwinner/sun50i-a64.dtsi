@@ -264,7 +264,11 @@
 			resets = <&ccu RST_BUS_MMC2>;
 			reset-names = "ahb";
 			interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+<<<<<<< HEAD
 			max-frequency = <200000000>;
+=======
+			max-frequency = <150000000>;
+>>>>>>> origin/android16-base
 			status = "disabled";
 			#address-cells = <1>;
 			#size-cells = <0>;
@@ -312,6 +316,11 @@
 				 <&ccu CLK_USB_OHCI0>;
 			resets = <&ccu RST_BUS_OHCI0>,
 				 <&ccu RST_BUS_EHCI0>;
+<<<<<<< HEAD
+=======
+			phys = <&usbphy 0>;
+			phy-names = "usb";
+>>>>>>> origin/android16-base
 			status = "disabled";
 		};
 
@@ -322,6 +331,11 @@
 			clocks = <&ccu CLK_BUS_OHCI0>,
 				 <&ccu CLK_USB_OHCI0>;
 			resets = <&ccu RST_BUS_OHCI0>;
+<<<<<<< HEAD
+=======
+			phys = <&usbphy 0>;
+			phy-names = "usb";
+>>>>>>> origin/android16-base
 			status = "disabled";
 		};
 

@@ -840,7 +840,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(mt312_attach);
+=======
+EXPORT_SYMBOL_GPL(mt312_attach);
+>>>>>>> origin/android16-base
 
 module_param(debug, int, 0644);
 MODULE_PARM_DESC(debug, "Turn on/off frontend debugging (default:off).");

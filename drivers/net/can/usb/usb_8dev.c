@@ -148,7 +148,12 @@ struct usb_8dev_priv {
 	u8 *cmd_msg_buffer;
 
 	struct mutex usb_8dev_cmd_lock;
+<<<<<<< HEAD
 
+=======
+	void *rxbuf[MAX_RX_URBS];
+	dma_addr_t rxbuf_dma[MAX_RX_URBS];
+>>>>>>> origin/android16-base
 };
 
 /* tx frame */
@@ -452,9 +457,16 @@ static void usb_8dev_rx_err_msg(struct usb_8dev_priv *priv,
 
 	if (rx_errors)
 		stats->rx_errors++;
+<<<<<<< HEAD
 
 	cf->data[6] = txerr;
 	cf->data[7] = rxerr;
+=======
+	if (priv->can.state != CAN_STATE_BUS_OFF) {
+		cf->data[6] = txerr;
+		cf->data[7] = rxerr;
+	}
+>>>>>>> origin/android16-base
 
 	priv->bec.txerr = txerr;
 	priv->bec.rxerr = rxerr;
@@ -680,9 +692,26 @@ static netdev_tx_t usb_8dev_start_xmit(struct sk_buff *skb,
 	atomic_inc(&priv->active_tx_urbs);
 
 	err = usb_submit_urb(urb, GFP_ATOMIC);
+<<<<<<< HEAD
 	if (unlikely(err))
 		goto failed;
 	else if (atomic_read(&priv->active_tx_urbs) >= MAX_TX_URBS)
+=======
+	if (unlikely(err)) {
+		can_free_echo_skb(netdev, context->echo_index);
+
+		usb_unanchor_urb(urb);
+		usb_free_coherent(priv->udev, size, buf, urb->transfer_dma);
+
+		atomic_dec(&priv->active_tx_urbs);
+
+		if (err == -ENODEV)
+			netif_device_detach(netdev);
+		else
+			netdev_warn(netdev, "failed tx_urb %d\n", err);
+		stats->tx_dropped++;
+	} else if (atomic_read(&priv->active_tx_urbs) >= MAX_TX_URBS)
+>>>>>>> origin/android16-base
 		/* Slow down tx path */
 		netif_stop_queue(netdev);
 
@@ -701,6 +730,7 @@ nofreecontext:
 
 	return NETDEV_TX_BUSY;
 
+<<<<<<< HEAD
 failed:
 	can_free_echo_skb(netdev, context->echo_index);
 
@@ -714,6 +744,8 @@ failed:
 	else
 		netdev_warn(netdev, "failed tx_urb %d\n", err);
 
+=======
+>>>>>>> origin/android16-base
 nomembuf:
 	usb_free_urb(urb);
 
@@ -744,6 +776,10 @@ static int usb_8dev_start(struct usb_8dev_priv *priv)
 	for (i = 0; i < MAX_RX_URBS; i++) {
 		struct urb *urb = NULL;
 		u8 *buf;
+<<<<<<< HEAD
+=======
+		dma_addr_t buf_dma;
+>>>>>>> origin/android16-base
 
 		/* create a URB, and a buffer for it */
 		urb = usb_alloc_urb(0, GFP_KERNEL);
@@ -753,7 +789,11 @@ static int usb_8dev_start(struct usb_8dev_priv *priv)
 		}
 
 		buf = usb_alloc_coherent(priv->udev, RX_BUFFER_SIZE, GFP_KERNEL,
+<<<<<<< HEAD
 					 &urb->transfer_dma);
+=======
+					 &buf_dma);
+>>>>>>> origin/android16-base
 		if (!buf) {
 			netdev_err(netdev, "No memory left for USB buffer\n");
 			usb_free_urb(urb);
@@ -761,6 +801,11 @@ static int usb_8dev_start(struct usb_8dev_priv *priv)
 			break;
 		}
 
+<<<<<<< HEAD
+=======
+		urb->transfer_dma = buf_dma;
+
+>>>>>>> origin/android16-base
 		usb_fill_bulk_urb(urb, priv->udev,
 				  usb_rcvbulkpipe(priv->udev,
 						  USB_8DEV_ENDP_DATA_RX),
@@ -778,6 +823,12 @@ static int usb_8dev_start(struct usb_8dev_priv *priv)
 			break;
 		}
 
+<<<<<<< HEAD
+=======
+		priv->rxbuf[i] = buf;
+		priv->rxbuf_dma[i] = buf_dma;
+
+>>>>>>> origin/android16-base
 		/* Drop reference, USB core will take care of freeing it */
 		usb_free_urb(urb);
 	}
@@ -847,6 +898,13 @@ static void unlink_all_urbs(struct usb_8dev_priv *priv)
 
 	usb_kill_anchored_urbs(&priv->rx_submitted);
 
+<<<<<<< HEAD
+=======
+	for (i = 0; i < MAX_RX_URBS; ++i)
+		usb_free_coherent(priv->udev, RX_BUFFER_SIZE,
+				  priv->rxbuf[i], priv->rxbuf_dma[i]);
+
+>>>>>>> origin/android16-base
 	usb_kill_anchored_urbs(&priv->tx_submitted);
 	atomic_set(&priv->active_tx_urbs, 0);
 

@@ -271,7 +271,11 @@ static void ak5558_power_off(struct ak5558_priv *ak5558)
 	if (!ak5558->reset_gpiod)
 		return;
 
+<<<<<<< HEAD
 	gpiod_set_value_cansleep(ak5558->reset_gpiod, 0);
+=======
+	gpiod_set_value_cansleep(ak5558->reset_gpiod, 1);
+>>>>>>> origin/android16-base
 	usleep_range(1000, 2000);
 }
 
@@ -280,7 +284,11 @@ static void ak5558_power_on(struct ak5558_priv *ak5558)
 	if (!ak5558->reset_gpiod)
 		return;
 
+<<<<<<< HEAD
 	gpiod_set_value_cansleep(ak5558->reset_gpiod, 1);
+=======
+	gpiod_set_value_cansleep(ak5558->reset_gpiod, 0);
+>>>>>>> origin/android16-base
 	usleep_range(1000, 2000);
 }
 
@@ -396,6 +404,10 @@ static const struct of_device_id ak5558_i2c_dt_ids[] = {
 	{ .compatible = "asahi-kasei,ak5558"},
 	{ }
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(of, ak5558_i2c_dt_ids);
+>>>>>>> origin/android16-base
 
 static struct i2c_driver ak5558_i2c_driver = {
 	.driver = {

@@ -29,6 +29,10 @@ static inline size_t f2fs_acl_size(int count)
 static inline int f2fs_acl_count(size_t size)
 {
 	ssize_t s;
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 	size -= sizeof(struct f2fs_acl_header);
 	s = size - 4 * sizeof(struct f2fs_acl_entry_short);
 	if (s < 0) {
@@ -160,7 +164,11 @@ static void *f2fs_acl_to_disk(struct f2fs_sb_info *sbi,
 	return (void *)f2fs_acl;
 
 fail:
+<<<<<<< HEAD
 	kvfree(f2fs_acl);
+=======
+	kfree(f2fs_acl);
+>>>>>>> origin/android16-base
 	return ERR_PTR(-EINVAL);
 }
 
@@ -190,7 +198,11 @@ static struct posix_acl *__f2fs_get_acl(struct inode *inode, int type,
 		acl = NULL;
 	else
 		acl = ERR_PTR(retval);
+<<<<<<< HEAD
 	kvfree(value);
+=======
+	kfree(value);
+>>>>>>> origin/android16-base
 
 	return acl;
 }
@@ -200,6 +212,30 @@ struct posix_acl *f2fs_get_acl(struct inode *inode, int type)
 	return __f2fs_get_acl(inode, type, NULL);
 }
 
+<<<<<<< HEAD
+=======
+static int f2fs_acl_update_mode(struct inode *inode, umode_t *mode_p,
+			  struct posix_acl **acl)
+{
+	umode_t mode = inode->i_mode;
+	int error;
+
+	if (is_inode_flag_set(inode, FI_ACL_MODE))
+		mode = F2FS_I(inode)->i_acl_mode;
+
+	error = posix_acl_equiv_mode(*acl, &mode);
+	if (error < 0)
+		return error;
+	if (error == 0)
+		*acl = NULL;
+	if (!in_group_p(inode->i_gid) &&
+	    !capable_wrt_inode_uidgid(inode, CAP_FSETID))
+		mode &= ~S_ISGID;
+	*mode_p = mode;
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static int __f2fs_set_acl(struct inode *inode, int type,
 			struct posix_acl *acl, struct page *ipage)
 {
@@ -213,7 +249,11 @@ static int __f2fs_set_acl(struct inode *inode, int type,
 	case ACL_TYPE_ACCESS:
 		name_index = F2FS_XATTR_INDEX_POSIX_ACL_ACCESS;
 		if (acl && !ipage) {
+<<<<<<< HEAD
 			error = posix_acl_update_mode(inode, &mode, &acl);
+=======
+			error = f2fs_acl_update_mode(inode, &mode, &acl);
+>>>>>>> origin/android16-base
 			if (error)
 				return error;
 			set_acl_inode(inode, mode);
@@ -240,7 +280,11 @@ static int __f2fs_set_acl(struct inode *inode, int type,
 
 	error = f2fs_setxattr(inode, name_index, "", value, size, ipage, 0);
 
+<<<<<<< HEAD
 	kvfree(value);
+=======
+	kfree(value);
+>>>>>>> origin/android16-base
 	if (!error)
 		set_cached_acl(inode, type, acl);
 
@@ -384,7 +428,11 @@ int f2fs_init_acl(struct inode *inode, struct inode *dir, struct page *ipage,
 							struct page *dpage)
 {
 	struct posix_acl *default_acl = NULL, *acl = NULL;
+<<<<<<< HEAD
 	int error = 0;
+=======
+	int error;
+>>>>>>> origin/android16-base
 
 	error = f2fs_acl_create(dir, &inode->i_mode, &default_acl, &acl, dpage);
 	if (error)

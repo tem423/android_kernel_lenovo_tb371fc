@@ -177,8 +177,12 @@ source "drivers/usb/pd/Kconfig"
 
 config USB_LED_TRIG
 	bool "USB LED Triggers"
+<<<<<<< HEAD
 	depends on LEDS_CLASS && LEDS_TRIGGERS
 	select USB_COMMON
+=======
+	depends on LEDS_CLASS && USB_COMMON && LEDS_TRIGGERS
+>>>>>>> origin/android16-base
 	help
 	  This option adds LED triggers for USB host and/or gadget activity.
 

@@ -25,6 +25,10 @@
 
 #define ODEBUG_POOL_SIZE	1024
 #define ODEBUG_POOL_MIN_LEVEL	256
+<<<<<<< HEAD
+=======
+#define ODEBUG_POOL_PERCPU_SIZE	64
+>>>>>>> origin/android16-base
 
 #define ODEBUG_CHUNK_SHIFT	PAGE_SHIFT
 #define ODEBUG_CHUNK_SIZE	(1 << ODEBUG_CHUNK_SHIFT)
@@ -35,6 +39,20 @@ struct debug_bucket {
 	raw_spinlock_t		lock;
 };
 
+<<<<<<< HEAD
+=======
+/*
+ * Debug object percpu free list
+ * Access is protected by disabling irq
+ */
+struct debug_percpu_free {
+	struct hlist_head	free_objs;
+	int			obj_free;
+};
+
+static DEFINE_PER_CPU(struct debug_percpu_free, percpu_obj_pool);
+
+>>>>>>> origin/android16-base
 static struct debug_bucket	obj_hash[ODEBUG_HASH_SIZE];
 
 static struct debug_obj		obj_static_pool[ODEBUG_POOL_SIZE] __initdata;
@@ -44,13 +62,26 @@ static DEFINE_RAW_SPINLOCK(pool_lock);
 static HLIST_HEAD(obj_pool);
 static HLIST_HEAD(obj_to_free);
 
+<<<<<<< HEAD
+=======
+/*
+ * Because of the presence of percpu free pools, obj_pool_free will
+ * under-count those in the percpu free pools. Similarly, obj_pool_used
+ * will over-count those in the percpu free pools. Adjustments will be
+ * made at debug_stats_show(). Both obj_pool_min_free and obj_pool_max_used
+ * can be off.
+ */
+>>>>>>> origin/android16-base
 static int			obj_pool_min_free = ODEBUG_POOL_SIZE;
 static int			obj_pool_free = ODEBUG_POOL_SIZE;
 static int			obj_pool_used;
 static int			obj_pool_max_used;
 /* The number of objs on the global free list */
 static int			obj_nr_tofree;
+<<<<<<< HEAD
 static struct kmem_cache	*obj_cache;
+=======
+>>>>>>> origin/android16-base
 
 static int			debug_objects_maxchain __read_mostly;
 static int __maybe_unused	debug_objects_maxchecked __read_mostly;
@@ -63,6 +94,10 @@ static int			debug_objects_pool_size __read_mostly
 static int			debug_objects_pool_min_level __read_mostly
 				= ODEBUG_POOL_MIN_LEVEL;
 static struct debug_obj_descr	*descr_test  __read_mostly;
+<<<<<<< HEAD
+=======
+static struct kmem_cache	*obj_cache __read_mostly;
+>>>>>>> origin/android16-base
 
 /*
  * Track numbers of kmem_cache_alloc()/free() calls done.
@@ -163,6 +198,7 @@ static struct debug_obj *lookup_object(void *addr, struct debug_bucket *b)
 }
 
 /*
+<<<<<<< HEAD
  * Allocate a new object. If the pool is empty, switch off the debugger.
  * Must be called with interrupts disabled.
  */
@@ -183,6 +219,40 @@ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
 
 		hlist_add_head(&obj->node, &b->list);
 
+=======
+ * Allocate a new object from the hlist
+ */
+static struct debug_obj *__alloc_object(struct hlist_head *list)
+{
+	struct debug_obj *obj = NULL;
+
+	if (list->first) {
+		obj = hlist_entry(list->first, typeof(*obj), node);
+		hlist_del(&obj->node);
+	}
+
+	return obj;
+}
+
+static struct debug_obj *
+alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
+{
+	struct debug_percpu_free *percpu_pool;
+	struct debug_obj *obj;
+
+	if (likely(obj_cache)) {
+		percpu_pool = this_cpu_ptr(&percpu_obj_pool);
+		obj = __alloc_object(&percpu_pool->free_objs);
+		if (obj) {
+			percpu_pool->obj_free--;
+			goto init_obj;
+		}
+	}
+
+	raw_spin_lock(&pool_lock);
+	obj = __alloc_object(&obj_pool);
+	if (obj) {
+>>>>>>> origin/android16-base
 		obj_pool_used++;
 		if (obj_pool_used > obj_pool_max_used)
 			obj_pool_max_used = obj_pool_used;
@@ -193,6 +263,17 @@ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
 	}
 	raw_spin_unlock(&pool_lock);
 
+<<<<<<< HEAD
+=======
+init_obj:
+	if (obj) {
+		obj->object = addr;
+		obj->descr  = descr;
+		obj->state  = ODEBUG_STATE_NONE;
+		obj->astate = 0;
+		hlist_add_head(&obj->node, &b->list);
+	}
+>>>>>>> origin/android16-base
 	return obj;
 }
 
@@ -247,8 +328,26 @@ static bool __free_object(struct debug_obj *obj)
 {
 	unsigned long flags;
 	bool work;
+<<<<<<< HEAD
 
 	raw_spin_lock_irqsave(&pool_lock, flags);
+=======
+	struct debug_percpu_free *percpu_pool;
+
+	local_irq_save(flags);
+	/*
+	 * Try to free it into the percpu pool first.
+	 */
+	percpu_pool = this_cpu_ptr(&percpu_obj_pool);
+	if (obj_cache && percpu_pool->obj_free < ODEBUG_POOL_PERCPU_SIZE) {
+		hlist_add_head(&obj->node, &percpu_pool->free_objs);
+		percpu_pool->obj_free++;
+		local_irq_restore(flags);
+		return false;
+	}
+
+	raw_spin_lock(&pool_lock);
+>>>>>>> origin/android16-base
 	work = (obj_pool_free > debug_objects_pool_size) && obj_cache;
 	obj_pool_used--;
 
@@ -259,7 +358,12 @@ static bool __free_object(struct debug_obj *obj)
 		obj_pool_free++;
 		hlist_add_head(&obj->node, &obj_pool);
 	}
+<<<<<<< HEAD
 	raw_spin_unlock_irqrestore(&pool_lock, flags);
+=======
+	raw_spin_unlock(&pool_lock);
+	local_irq_restore(flags);
+>>>>>>> origin/android16-base
 	return work;
 }
 
@@ -318,6 +422,18 @@ static void debug_print_object(struct debug_obj *obj, char *msg)
 	struct debug_obj_descr *descr = obj->descr;
 	static int limit;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Don't report if lookup_object_or_alloc() by the current thread
+	 * failed because lookup_object_or_alloc()/debug_objects_oom() by a
+	 * concurrent thread turned off debug_objects_enabled and cleared
+	 * the hash buckets.
+	 */
+	if (!debug_objects_enabled)
+		return;
+
+>>>>>>> origin/android16-base
 	if (limit < 5 && descr != descr_test) {
 		void *hint = descr->debug_hint ?
 			descr->debug_hint(obj->object) : NULL;
@@ -368,6 +484,58 @@ static void debug_object_is_on_stack(void *addr, int onstack)
 	WARN_ON(1);
 }
 
+<<<<<<< HEAD
+=======
+static struct debug_obj *lookup_object_or_alloc(void *addr, struct debug_bucket *b,
+						struct debug_obj_descr *descr,
+						bool onstack, bool alloc_ifstatic)
+{
+	struct debug_obj *obj = lookup_object(addr, b);
+	enum debug_obj_state state = ODEBUG_STATE_NONE;
+
+	if (likely(obj))
+		return obj;
+
+	/*
+	 * debug_object_init() unconditionally allocates untracked
+	 * objects. It does not matter whether it is a static object or
+	 * not.
+	 *
+	 * debug_object_assert_init() and debug_object_activate() allow
+	 * allocation only if the descriptor callback confirms that the
+	 * object is static and considered initialized. For non-static
+	 * objects the allocation needs to be done from the fixup callback.
+	 */
+	if (unlikely(alloc_ifstatic)) {
+		if (!descr->is_static_object || !descr->is_static_object(addr))
+			return ERR_PTR(-ENOENT);
+		/* Statically allocated objects are considered initialized */
+		state = ODEBUG_STATE_INIT;
+	}
+
+	obj = alloc_object(addr, b, descr);
+	if (likely(obj)) {
+		obj->state = state;
+		debug_object_is_on_stack(addr, onstack);
+		return obj;
+	}
+
+	/* Out of memory. Do the cleanup outside of the locked region */
+	debug_objects_enabled = 0;
+	return NULL;
+}
+
+static void debug_objects_fill_pool(void)
+{
+	/*
+	 * On RT enabled kernels the pool refill must happen in preemptible
+	 * context:
+	 */
+	if (!IS_ENABLED(CONFIG_PREEMPT_RT) || preemptible())
+		fill_pool();
+}
+
+>>>>>>> origin/android16-base
 static void
 __debug_object_init(void *addr, struct debug_obj_descr *descr, int onstack)
 {
@@ -376,12 +544,17 @@ __debug_object_init(void *addr, struct debug_obj_descr *descr, int onstack)
 	struct debug_obj *obj;
 	unsigned long flags;
 
+<<<<<<< HEAD
 	fill_pool();
+=======
+	debug_objects_fill_pool();
+>>>>>>> origin/android16-base
 
 	db = get_bucket((unsigned long) addr);
 
 	raw_spin_lock_irqsave(&db->lock, flags);
 
+<<<<<<< HEAD
 	obj = lookup_object(addr, db);
 	if (!obj) {
 		obj = alloc_object(addr, db, descr);
@@ -392,6 +565,13 @@ __debug_object_init(void *addr, struct debug_obj_descr *descr, int onstack)
 			return;
 		}
 		debug_object_is_on_stack(addr, onstack);
+=======
+	obj = lookup_object_or_alloc(addr, db, descr, onstack, false);
+	if (unlikely(!obj)) {
+		raw_spin_unlock_irqrestore(&db->lock, flags);
+		debug_objects_oom();
+		return;
+>>>>>>> origin/android16-base
 	}
 
 	switch (obj->state) {
@@ -402,15 +582,27 @@ __debug_object_init(void *addr, struct debug_obj_descr *descr, int onstack)
 		break;
 
 	case ODEBUG_STATE_ACTIVE:
+<<<<<<< HEAD
 		debug_print_object(obj, "init");
 		state = obj->state;
 		raw_spin_unlock_irqrestore(&db->lock, flags);
+=======
+		state = obj->state;
+		raw_spin_unlock_irqrestore(&db->lock, flags);
+		debug_print_object(obj, "init");
+>>>>>>> origin/android16-base
 		debug_object_fixup(descr->fixup_init, addr, state);
 		return;
 
 	case ODEBUG_STATE_DESTROYED:
+<<<<<<< HEAD
 		debug_print_object(obj, "init");
 		break;
+=======
+		raw_spin_unlock_irqrestore(&db->lock, flags);
+		debug_print_object(obj, "init");
+		return;
+>>>>>>> origin/android16-base
 	default:
 		break;
 	}
@@ -455,24 +647,43 @@ EXPORT_SYMBOL_GPL(debug_object_init_on_stack);
  */
 int debug_object_activate(void *addr, struct debug_obj_descr *descr)
 {
+<<<<<<< HEAD
+=======
+	struct debug_obj o = { .object = addr, .state = ODEBUG_STATE_NOTAVAILABLE, .descr = descr };
+>>>>>>> origin/android16-base
 	enum debug_obj_state state;
 	struct debug_bucket *db;
 	struct debug_obj *obj;
 	unsigned long flags;
 	int ret;
+<<<<<<< HEAD
 	struct debug_obj o = { .object = addr,
 			       .state = ODEBUG_STATE_NOTAVAILABLE,
 			       .descr = descr };
+=======
+>>>>>>> origin/android16-base
 
 	if (!debug_objects_enabled)
 		return 0;
 
+<<<<<<< HEAD
+=======
+	debug_objects_fill_pool();
+
+>>>>>>> origin/android16-base
 	db = get_bucket((unsigned long) addr);
 
 	raw_spin_lock_irqsave(&db->lock, flags);
 
+<<<<<<< HEAD
 	obj = lookup_object(addr, db);
 	if (obj) {
+=======
+	obj = lookup_object_or_alloc(addr, db, descr, false, true);
+	if (likely(!IS_ERR_OR_NULL(obj))) {
+		bool print_object = false;
+
+>>>>>>> origin/android16-base
 		switch (obj->state) {
 		case ODEBUG_STATE_INIT:
 		case ODEBUG_STATE_INACTIVE:
@@ -481,14 +692,24 @@ int debug_object_activate(void *addr, struct debug_obj_descr *descr)
 			break;
 
 		case ODEBUG_STATE_ACTIVE:
+<<<<<<< HEAD
 			debug_print_object(obj, "activate");
 			state = obj->state;
 			raw_spin_unlock_irqrestore(&db->lock, flags);
+=======
+			state = obj->state;
+			raw_spin_unlock_irqrestore(&db->lock, flags);
+			debug_print_object(obj, "activate");
+>>>>>>> origin/android16-base
 			ret = debug_object_fixup(descr->fixup_activate, addr, state);
 			return ret ? 0 : -EINVAL;
 
 		case ODEBUG_STATE_DESTROYED:
+<<<<<<< HEAD
 			debug_print_object(obj, "activate");
+=======
+			print_object = true;
+>>>>>>> origin/android16-base
 			ret = -EINVAL;
 			break;
 		default:
@@ -496,10 +717,16 @@ int debug_object_activate(void *addr, struct debug_obj_descr *descr)
 			break;
 		}
 		raw_spin_unlock_irqrestore(&db->lock, flags);
+<<<<<<< HEAD
+=======
+		if (print_object)
+			debug_print_object(obj, "activate");
+>>>>>>> origin/android16-base
 		return ret;
 	}
 
 	raw_spin_unlock_irqrestore(&db->lock, flags);
+<<<<<<< HEAD
 	/*
 	 * We are here when a static object is activated. We
 	 * let the type specific code confirm whether this is
@@ -518,6 +745,19 @@ int debug_object_activate(void *addr, struct debug_obj_descr *descr)
 		return ret ? 0 : -EINVAL;
 	}
 	return 0;
+=======
+
+	/* If NULL the allocation has hit OOM */
+	if (!obj) {
+		debug_objects_oom();
+		return 0;
+	}
+
+	/* Object is neither static nor tracked. It's not initialized */
+	debug_print_object(&o, "activate");
+	ret = debug_object_fixup(descr->fixup_activate, addr, ODEBUG_STATE_NOTAVAILABLE);
+	return ret ? 0 : -EINVAL;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(debug_object_activate);
 
@@ -531,6 +771,10 @@ void debug_object_deactivate(void *addr, struct debug_obj_descr *descr)
 	struct debug_bucket *db;
 	struct debug_obj *obj;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	bool print_object = false;
+>>>>>>> origin/android16-base
 
 	if (!debug_objects_enabled)
 		return;
@@ -548,24 +792,45 @@ void debug_object_deactivate(void *addr, struct debug_obj_descr *descr)
 			if (!obj->astate)
 				obj->state = ODEBUG_STATE_INACTIVE;
 			else
+<<<<<<< HEAD
 				debug_print_object(obj, "deactivate");
 			break;
 
 		case ODEBUG_STATE_DESTROYED:
 			debug_print_object(obj, "deactivate");
+=======
+				print_object = true;
+			break;
+
+		case ODEBUG_STATE_DESTROYED:
+			print_object = true;
+>>>>>>> origin/android16-base
 			break;
 		default:
 			break;
 		}
+<<<<<<< HEAD
 	} else {
+=======
+	}
+
+	raw_spin_unlock_irqrestore(&db->lock, flags);
+	if (!obj) {
+>>>>>>> origin/android16-base
 		struct debug_obj o = { .object = addr,
 				       .state = ODEBUG_STATE_NOTAVAILABLE,
 				       .descr = descr };
 
 		debug_print_object(&o, "deactivate");
+<<<<<<< HEAD
 	}
 
 	raw_spin_unlock_irqrestore(&db->lock, flags);
+=======
+	} else if (print_object) {
+		debug_print_object(obj, "deactivate");
+	}
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(debug_object_deactivate);
 
@@ -580,6 +845,10 @@ void debug_object_destroy(void *addr, struct debug_obj_descr *descr)
 	struct debug_bucket *db;
 	struct debug_obj *obj;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	bool print_object = false;
+>>>>>>> origin/android16-base
 
 	if (!debug_objects_enabled)
 		return;
@@ -599,20 +868,35 @@ void debug_object_destroy(void *addr, struct debug_obj_descr *descr)
 		obj->state = ODEBUG_STATE_DESTROYED;
 		break;
 	case ODEBUG_STATE_ACTIVE:
+<<<<<<< HEAD
 		debug_print_object(obj, "destroy");
 		state = obj->state;
 		raw_spin_unlock_irqrestore(&db->lock, flags);
+=======
+		state = obj->state;
+		raw_spin_unlock_irqrestore(&db->lock, flags);
+		debug_print_object(obj, "destroy");
+>>>>>>> origin/android16-base
 		debug_object_fixup(descr->fixup_destroy, addr, state);
 		return;
 
 	case ODEBUG_STATE_DESTROYED:
+<<<<<<< HEAD
 		debug_print_object(obj, "destroy");
+=======
+		print_object = true;
+>>>>>>> origin/android16-base
 		break;
 	default:
 		break;
 	}
 out_unlock:
 	raw_spin_unlock_irqrestore(&db->lock, flags);
+<<<<<<< HEAD
+=======
+	if (print_object)
+		debug_print_object(obj, "destroy");
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(debug_object_destroy);
 
@@ -641,9 +925,15 @@ void debug_object_free(void *addr, struct debug_obj_descr *descr)
 
 	switch (obj->state) {
 	case ODEBUG_STATE_ACTIVE:
+<<<<<<< HEAD
 		debug_print_object(obj, "free");
 		state = obj->state;
 		raw_spin_unlock_irqrestore(&db->lock, flags);
+=======
+		state = obj->state;
+		raw_spin_unlock_irqrestore(&db->lock, flags);
+		debug_print_object(obj, "free");
+>>>>>>> origin/android16-base
 		debug_object_fixup(descr->fixup_free, addr, state);
 		return;
 	default:
@@ -664,6 +954,10 @@ EXPORT_SYMBOL_GPL(debug_object_free);
  */
 void debug_object_assert_init(void *addr, struct debug_obj_descr *descr)
 {
+<<<<<<< HEAD
+=======
+	struct debug_obj o = { .object = addr, .state = ODEBUG_STATE_NOTAVAILABLE, .descr = descr };
+>>>>>>> origin/android16-base
 	struct debug_bucket *db;
 	struct debug_obj *obj;
 	unsigned long flags;
@@ -671,6 +965,7 @@ void debug_object_assert_init(void *addr, struct debug_obj_descr *descr)
 	if (!debug_objects_enabled)
 		return;
 
+<<<<<<< HEAD
 	db = get_bucket((unsigned long) addr);
 
 	raw_spin_lock_irqsave(&db->lock, flags);
@@ -699,6 +994,27 @@ void debug_object_assert_init(void *addr, struct debug_obj_descr *descr)
 	}
 
 	raw_spin_unlock_irqrestore(&db->lock, flags);
+=======
+	debug_objects_fill_pool();
+
+	db = get_bucket((unsigned long) addr);
+
+	raw_spin_lock_irqsave(&db->lock, flags);
+	obj = lookup_object_or_alloc(addr, db, descr, false, true);
+	raw_spin_unlock_irqrestore(&db->lock, flags);
+	if (likely(!IS_ERR_OR_NULL(obj)))
+		return;
+
+	/* If NULL the allocation has hit OOM */
+	if (!obj) {
+		debug_objects_oom();
+		return;
+	}
+
+	/* Object is neither tracked nor static. It's not initialized. */
+	debug_print_object(&o, "assert_init");
+	debug_object_fixup(descr->fixup_assert_init, addr, ODEBUG_STATE_NOTAVAILABLE);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(debug_object_assert_init);
 
@@ -716,6 +1032,10 @@ debug_object_active_state(void *addr, struct debug_obj_descr *descr,
 	struct debug_bucket *db;
 	struct debug_obj *obj;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	bool print_object = false;
+>>>>>>> origin/android16-base
 
 	if (!debug_objects_enabled)
 		return;
@@ -731,6 +1051,7 @@ debug_object_active_state(void *addr, struct debug_obj_descr *descr,
 			if (obj->astate == expect)
 				obj->astate = next;
 			else
+<<<<<<< HEAD
 				debug_print_object(obj, "active_state");
 			break;
 
@@ -739,14 +1060,33 @@ debug_object_active_state(void *addr, struct debug_obj_descr *descr,
 			break;
 		}
 	} else {
+=======
+				print_object = true;
+			break;
+
+		default:
+			print_object = true;
+			break;
+		}
+	}
+
+	raw_spin_unlock_irqrestore(&db->lock, flags);
+	if (!obj) {
+>>>>>>> origin/android16-base
 		struct debug_obj o = { .object = addr,
 				       .state = ODEBUG_STATE_NOTAVAILABLE,
 				       .descr = descr };
 
 		debug_print_object(&o, "active_state");
+<<<<<<< HEAD
 	}
 
 	raw_spin_unlock_irqrestore(&db->lock, flags);
+=======
+	} else if (print_object) {
+		debug_print_object(obj, "active_state");
+	}
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(debug_object_active_state);
 
@@ -782,10 +1122,17 @@ repeat:
 
 			switch (obj->state) {
 			case ODEBUG_STATE_ACTIVE:
+<<<<<<< HEAD
 				debug_print_object(obj, "free");
 				descr = obj->descr;
 				state = obj->state;
 				raw_spin_unlock_irqrestore(&db->lock, flags);
+=======
+				descr = obj->descr;
+				state = obj->state;
+				raw_spin_unlock_irqrestore(&db->lock, flags);
+				debug_print_object(obj, "free");
+>>>>>>> origin/android16-base
 				debug_object_fixup(descr->fixup_free,
 						   (void *) oaddr, state);
 				goto repeat;
@@ -822,13 +1169,28 @@ void debug_check_no_obj_freed(const void *address, unsigned long size)
 
 static int debug_stats_show(struct seq_file *m, void *v)
 {
+<<<<<<< HEAD
+=======
+	int cpu, obj_percpu_free = 0;
+
+	for_each_possible_cpu(cpu)
+		obj_percpu_free += per_cpu(percpu_obj_pool.obj_free, cpu);
+
+>>>>>>> origin/android16-base
 	seq_printf(m, "max_chain     :%d\n", debug_objects_maxchain);
 	seq_printf(m, "max_checked   :%d\n", debug_objects_maxchecked);
 	seq_printf(m, "warnings      :%d\n", debug_objects_warnings);
 	seq_printf(m, "fixups        :%d\n", debug_objects_fixups);
+<<<<<<< HEAD
 	seq_printf(m, "pool_free     :%d\n", obj_pool_free);
 	seq_printf(m, "pool_min_free :%d\n", obj_pool_min_free);
 	seq_printf(m, "pool_used     :%d\n", obj_pool_used);
+=======
+	seq_printf(m, "pool_free     :%d\n", obj_pool_free + obj_percpu_free);
+	seq_printf(m, "pool_pcp_free :%d\n", obj_percpu_free);
+	seq_printf(m, "pool_min_free :%d\n", obj_pool_min_free);
+	seq_printf(m, "pool_used     :%d\n", obj_pool_used - obj_percpu_free);
+>>>>>>> origin/android16-base
 	seq_printf(m, "pool_max_used :%d\n", obj_pool_max_used);
 	seq_printf(m, "on_free_list  :%d\n", obj_nr_tofree);
 	seq_printf(m, "objs_allocated:%d\n", debug_objects_allocated);
@@ -1177,9 +1539,26 @@ free:
  */
 void __init debug_objects_mem_init(void)
 {
+<<<<<<< HEAD
 	if (!debug_objects_enabled)
 		return;
 
+=======
+	int cpu;
+
+	if (!debug_objects_enabled)
+		return;
+
+	/*
+	 * Initialize the percpu object pools
+	 *
+	 * Initialization is not strictly necessary, but was done for
+	 * completeness.
+	 */
+	for_each_possible_cpu(cpu)
+		INIT_HLIST_HEAD(&per_cpu(percpu_obj_pool.free_objs, cpu));
+
+>>>>>>> origin/android16-base
 	obj_cache = kmem_cache_create("debug_objects_cache",
 				      sizeof (struct debug_obj), 0,
 				      SLAB_DEBUG_OBJECTS | SLAB_NOLEAKTRACE,
@@ -1191,6 +1570,7 @@ void __init debug_objects_mem_init(void)
 		pr_warn("out of memory.\n");
 	} else
 		debug_objects_selftest();
+<<<<<<< HEAD
 
 	/*
 	 * Increase the thresholds for allocating and freeing objects
@@ -1198,4 +1578,6 @@ void __init debug_objects_mem_init(void)
 	 */
 	debug_objects_pool_size += num_possible_cpus() * 32;
 	debug_objects_pool_min_level += num_possible_cpus() * 4;
+=======
+>>>>>>> origin/android16-base
 }

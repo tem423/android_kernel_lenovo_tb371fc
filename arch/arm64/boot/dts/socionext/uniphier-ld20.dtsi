@@ -610,7 +610,11 @@
 			clocks = <&sys_clk 6>;
 			reset-names = "ether";
 			resets = <&sys_rst 6>;
+<<<<<<< HEAD
 			phy-mode = "rgmii";
+=======
+			phy-mode = "rgmii-id";
+>>>>>>> origin/android16-base
 			local-mac-address = [00 00 00 00 00 00];
 			socionext,syscon-phy-mode = <&soc_glue 0>;
 

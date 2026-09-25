@@ -99,8 +99,15 @@ static void pvr2_context_destroy(struct pvr2_context *mp)
 }
 
 
+<<<<<<< HEAD
 static void pvr2_context_notify(struct pvr2_context *mp)
 {
+=======
+static void pvr2_context_notify(void *ptr)
+{
+	struct pvr2_context *mp = ptr;
+
+>>>>>>> origin/android16-base
 	pvr2_context_set_notify(mp,!0);
 }
 
@@ -115,9 +122,13 @@ static void pvr2_context_check(struct pvr2_context *mp)
 		pvr2_trace(PVR2_TRACE_CTXT,
 			   "pvr2_context %p (initialize)", mp);
 		/* Finish hardware initialization */
+<<<<<<< HEAD
 		if (pvr2_hdw_initialize(mp->hdw,
 					(void (*)(void *))pvr2_context_notify,
 					mp)) {
+=======
+		if (pvr2_hdw_initialize(mp->hdw, pvr2_context_notify, mp)) {
+>>>>>>> origin/android16-base
 			mp->video_stream.stream =
 				pvr2_hdw_get_video_stream(mp->hdw);
 			/* Trigger interface initialization.  By doing this
@@ -276,8 +287,14 @@ static void pvr2_context_exit(struct pvr2_context *mp)
 void pvr2_context_disconnect(struct pvr2_context *mp)
 {
 	pvr2_hdw_disconnect(mp->hdw);
+<<<<<<< HEAD
 	mp->disconnect_flag = !0;
 	pvr2_context_notify(mp);
+=======
+	if (!pvr2_context_shutok())
+		pvr2_context_notify(mp);
+	mp->disconnect_flag = !0;
+>>>>>>> origin/android16-base
 }
 
 

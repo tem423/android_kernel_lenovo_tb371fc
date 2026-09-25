@@ -523,7 +523,13 @@ static int mmphw_probe(struct platform_device *pdev)
 		ret = -ENOENT;
 		goto failed;
 	}
+<<<<<<< HEAD
 	clk_prepare_enable(ctrl->clk);
+=======
+	ret = clk_prepare_enable(ctrl->clk);
+	if (ret)
+		goto failed;
+>>>>>>> origin/android16-base
 
 	/* init global regs */
 	ctrl_set_default(ctrl);

@@ -178,6 +178,10 @@ void scsi_remove_host(struct Scsi_Host *shost)
 	scsi_forget_host(shost);
 	mutex_unlock(&shost->scan_mutex);
 	scsi_proc_host_rm(shost);
+<<<<<<< HEAD
+=======
+	scsi_proc_hostdir_rm(shost->hostt);
+>>>>>>> origin/android16-base
 
 	spin_lock_irqsave(shost->host_lock, flags);
 	if (scsi_host_set_state(shost, SHOST_DEL))
@@ -218,6 +222,13 @@ int scsi_add_host_with_dma(struct Scsi_Host *shost, struct device *dev,
 		goto fail;
 	}
 
+<<<<<<< HEAD
+=======
+	/* Use min_t(int, ...) in case shost->can_queue exceeds SHRT_MAX */
+	shost->cmd_per_lun = min_t(int, shost->cmd_per_lun,
+				   shost->can_queue);
+
+>>>>>>> origin/android16-base
 	error = scsi_init_sense_cache(shost);
 	if (error)
 		goto fail;
@@ -261,12 +272,19 @@ int scsi_add_host_with_dma(struct Scsi_Host *shost, struct device *dev,
 
 	device_enable_async_suspend(&shost->shost_dev);
 
+<<<<<<< HEAD
+=======
+	get_device(&shost->shost_gendev);
+>>>>>>> origin/android16-base
 	error = device_add(&shost->shost_dev);
 	if (error)
 		goto out_del_gendev;
 
+<<<<<<< HEAD
 	get_device(&shost->shost_gendev);
 
+=======
+>>>>>>> origin/android16-base
 	if (shost->transportt->host_size) {
 		shost->shost_data = kzalloc(shost->transportt->host_size,
 					 GFP_KERNEL);
@@ -303,6 +321,14 @@ int scsi_add_host_with_dma(struct Scsi_Host *shost, struct device *dev,
  out_del_dev:
 	device_del(&shost->shost_dev);
  out_del_gendev:
+<<<<<<< HEAD
+=======
+	/*
+	 * Host state is SHOST_RUNNING so we have to explicitly release
+	 * ->shost_dev.
+	 */
+	put_device(&shost->shost_dev);
+>>>>>>> origin/android16-base
 	device_del(&shost->shost_gendev);
  out_disable_runtime_pm:
 	device_disable_async_suspend(&shost->shost_gendev);
@@ -321,6 +347,10 @@ static void scsi_host_dev_release(struct device *dev)
 	struct Scsi_Host *shost = dev_to_shost(dev);
 	struct device *parent = dev->parent;
 
+<<<<<<< HEAD
+=======
+	/* In case scsi_remove_host() has not been called. */
+>>>>>>> origin/android16-base
 	scsi_proc_hostdir_rm(shost->hostt);
 
 	/* Wait for functions invoked through call_rcu(&shost->rcu, ...) */
@@ -356,7 +386,11 @@ static void scsi_host_dev_release(struct device *dev)
 
 	ida_simple_remove(&host_index_ida, shost->host_no);
 
+<<<<<<< HEAD
 	if (parent)
+=======
+	if (shost->shost_state != SHOST_CREATED)
+>>>>>>> origin/android16-base
 		put_device(parent);
 	kfree(shost);
 }
@@ -403,8 +437,15 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
 	mutex_init(&shost->scan_mutex);
 
 	index = ida_simple_get(&host_index_ida, 0, 0, GFP_KERNEL);
+<<<<<<< HEAD
 	if (index < 0)
 		goto fail_kfree;
+=======
+	if (index < 0) {
+		kfree(shost);
+		return NULL;
+	}
+>>>>>>> origin/android16-base
 	shost->host_no = index;
 
 	shost->dma_channel = 0xff;
@@ -491,7 +532,12 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
 		shost_printk(KERN_WARNING, shost,
 			"error handler thread failed to spawn, error = %ld\n",
 			PTR_ERR(shost->ehandler));
+<<<<<<< HEAD
 		goto fail_index_remove;
+=======
+		shost->ehandler = NULL;
+		goto fail;
+>>>>>>> origin/android16-base
 	}
 
 	shost->tmf_work_q = alloc_workqueue("scsi_tmf_%d",
@@ -500,6 +546,7 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
 	if (!shost->tmf_work_q) {
 		shost_printk(KERN_WARNING, shost,
 			     "failed to create tmf workq\n");
+<<<<<<< HEAD
 		goto fail_kthread;
 	}
 	scsi_proc_hostdir_add(shost->hostt);
@@ -511,6 +558,20 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
 	ida_simple_remove(&host_index_ida, shost->host_no);
  fail_kfree:
 	kfree(shost);
+=======
+		goto fail;
+	}
+	scsi_proc_hostdir_add(shost->hostt);
+	return shost;
+ fail:
+	/*
+	 * Host state is still SHOST_CREATED and that is enough to release
+	 * ->shost_gendev. scsi_host_dev_release() will free
+	 * dev_name(&shost->shost_dev).
+	 */
+	put_device(&shost->shost_gendev);
+
+>>>>>>> origin/android16-base
 	return NULL;
 }
 EXPORT_SYMBOL(scsi_host_alloc);
@@ -518,7 +579,11 @@ EXPORT_SYMBOL(scsi_host_alloc);
 static int __scsi_host_match(struct device *dev, const void *data)
 {
 	struct Scsi_Host *p;
+<<<<<<< HEAD
 	const unsigned short *hostnum = data;
+=======
+	const unsigned int *hostnum = data;
+>>>>>>> origin/android16-base
 
 	p = class_to_shost(dev);
 	return p->host_no == *hostnum;
@@ -535,7 +600,11 @@ static int __scsi_host_match(struct device *dev, const void *data)
  *	that scsi_host_get() took. The put_device() below dropped
  *	the reference from class_find_device().
  **/
+<<<<<<< HEAD
 struct Scsi_Host *scsi_host_lookup(unsigned short hostnum)
+=======
+struct Scsi_Host *scsi_host_lookup(unsigned int hostnum)
+>>>>>>> origin/android16-base
 {
 	struct device *cdev;
 	struct Scsi_Host *shost = NULL;

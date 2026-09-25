@@ -59,6 +59,10 @@ struct l1oip {
 	int			bundle;		/* bundle channels in one frm */
 	int			codec;		/* codec to use for transmis. */
 	int			limit;		/* limit number of bchannels */
+<<<<<<< HEAD
+=======
+	bool			shutdown;	/* if card is released */
+>>>>>>> origin/android16-base
 
 	/* timer */
 	struct timer_list	keep_tl;

@@ -70,6 +70,10 @@ static void __init realview_smp_prepare_cpus(unsigned int max_cpus)
 		return;
 	}
 	map = syscon_node_to_regmap(np);
+<<<<<<< HEAD
+=======
+	of_node_put(np);
+>>>>>>> origin/android16-base
 	if (IS_ERR(map)) {
 		pr_err("PLATSMP: No syscon regmap\n");
 		return;

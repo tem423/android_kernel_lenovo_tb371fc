@@ -238,6 +238,10 @@ struct waiting_dir_move {
 	 * after this directory is moved, we can try to rmdir the ino rmdir_ino.
 	 */
 	u64 rmdir_ino;
+<<<<<<< HEAD
+=======
+	u64 rmdir_gen;
+>>>>>>> origin/android16-base
 	bool orphanized;
 };
 
@@ -308,7 +312,11 @@ static int is_waiting_for_move(struct send_ctx *sctx, u64 ino);
 static struct waiting_dir_move *
 get_waiting_dir_move(struct send_ctx *sctx, u64 ino);
 
+<<<<<<< HEAD
 static int is_waiting_for_rm(struct send_ctx *sctx, u64 dir_ino);
+=======
+static int is_waiting_for_rm(struct send_ctx *sctx, u64 dir_ino, u64 gen);
+>>>>>>> origin/android16-base
 
 static int need_send_hole(struct send_ctx *sctx)
 {
@@ -676,7 +684,16 @@ static int begin_cmd(struct send_ctx *sctx, int cmd)
 	if (WARN_ON(!sctx->send_buf))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	BUG_ON(sctx->send_size);
+=======
+	if (unlikely(sctx->send_size != 0)) {
+		btrfs_err(sctx->send_root->fs_info,
+			  "send: command header buffer not empty cmd %d offset %llu",
+			  cmd, sctx->send_off);
+		return -EINVAL;
+	}
+>>>>>>> origin/android16-base
 
 	sctx->send_size += sizeof(*hdr);
 	hdr = (struct btrfs_cmd_header *)sctx->send_buf;
@@ -957,7 +974,19 @@ static int iterate_inode_ref(struct btrfs_root *root, struct btrfs_path *path,
 					ret = PTR_ERR(start);
 					goto out;
 				}
+<<<<<<< HEAD
 				BUG_ON(start < p->buf);
+=======
+				if (unlikely(start < p->buf)) {
+					btrfs_err(root->fs_info,
+			"send: path ref buffer underflow for key (%llu %u %llu)",
+						  found_key->objectid,
+						  found_key->type,
+						  found_key->offset);
+					ret = -EINVAL;
+					goto out;
+				}
+>>>>>>> origin/android16-base
 			}
 			p->start = start;
 		} else {
@@ -1305,6 +1334,10 @@ static int find_extent_clone(struct send_ctx *sctx,
 	u64 disk_byte;
 	u64 num_bytes;
 	u64 extent_item_pos;
+<<<<<<< HEAD
+=======
+	u64 extent_refs;
+>>>>>>> origin/android16-base
 	u64 flags = 0;
 	struct btrfs_file_extent_item *fi;
 	struct extent_buffer *eb = path->nodes[0];
@@ -1372,14 +1405,30 @@ static int find_extent_clone(struct send_ctx *sctx,
 
 	ei = btrfs_item_ptr(tmp_path->nodes[0], tmp_path->slots[0],
 			    struct btrfs_extent_item);
+<<<<<<< HEAD
+=======
+	extent_refs = btrfs_extent_refs(tmp_path->nodes[0], ei);
+>>>>>>> origin/android16-base
 	/*
 	 * Backreference walking (iterate_extent_inodes() below) is currently
 	 * too expensive when an extent has a large number of references, both
 	 * in time spent and used memory. So for now just fallback to write
 	 * operations instead of clone operations when an extent has more than
 	 * a certain amount of references.
+<<<<<<< HEAD
 	 */
 	if (btrfs_extent_refs(tmp_path->nodes[0], ei) > SEND_MAX_EXTENT_REFS) {
+=======
+	 *
+	 * Also, if we have only one reference and only the send root as a clone
+	 * source - meaning no clone roots were given in the struct
+	 * btrfs_ioctl_send_args passed to the send ioctl - then it's our
+	 * reference and there's no point in doing backref walking which is
+	 * expensive, so exit early.
+	 */
+	if ((extent_refs == 1 && sctx->clone_roots_cnt == 1) ||
+	    extent_refs > SEND_MAX_EXTENT_REFS) {
+>>>>>>> origin/android16-base
 		ret = -ENOENT;
 		goto out;
 	}
@@ -2304,7 +2353,11 @@ static int get_cur_path(struct send_ctx *sctx, u64 ino, u64 gen,
 
 		fs_path_reset(name);
 
+<<<<<<< HEAD
 		if (is_waiting_for_rm(sctx, ino)) {
+=======
+		if (is_waiting_for_rm(sctx, ino, gen)) {
+>>>>>>> origin/android16-base
 			ret = gen_unique_name(sctx, ino, gen, name);
 			if (ret < 0)
 				goto out;
@@ -2863,8 +2916,13 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
 static struct orphan_dir_info *
 add_orphan_dir_info(struct send_ctx *sctx, u64 dir_ino)
+=======
+static struct orphan_dir_info *add_orphan_dir_info(struct send_ctx *sctx,
+						   u64 dir_ino, u64 dir_gen)
+>>>>>>> origin/android16-base
 {
 	struct rb_node **p = &sctx->orphan_dirs.rb_node;
 	struct rb_node *parent = NULL;
@@ -2873,6 +2931,7 @@ add_orphan_dir_info(struct send_ctx *sctx, u64 dir_ino)
 	while (*p) {
 		parent = *p;
 		entry = rb_entry(parent, struct orphan_dir_info, node);
+<<<<<<< HEAD
 		if (dir_ino < entry->ino) {
 			p = &(*p)->rb_left;
 		} else if (dir_ino > entry->ino) {
@@ -2880,13 +2939,29 @@ add_orphan_dir_info(struct send_ctx *sctx, u64 dir_ino)
 		} else {
 			return entry;
 		}
+=======
+		if (dir_ino < entry->ino)
+			p = &(*p)->rb_left;
+		else if (dir_ino > entry->ino)
+			p = &(*p)->rb_right;
+		else if (dir_gen < entry->gen)
+			p = &(*p)->rb_left;
+		else if (dir_gen > entry->gen)
+			p = &(*p)->rb_right;
+		else
+			return entry;
+>>>>>>> origin/android16-base
 	}
 
 	odi = kmalloc(sizeof(*odi), GFP_KERNEL);
 	if (!odi)
 		return ERR_PTR(-ENOMEM);
 	odi->ino = dir_ino;
+<<<<<<< HEAD
 	odi->gen = 0;
+=======
+	odi->gen = dir_gen;
+>>>>>>> origin/android16-base
 	odi->last_dir_index_offset = 0;
 
 	rb_link_node(&odi->node, parent, p);
@@ -2894,8 +2969,13 @@ add_orphan_dir_info(struct send_ctx *sctx, u64 dir_ino)
 	return odi;
 }
 
+<<<<<<< HEAD
 static struct orphan_dir_info *
 get_orphan_dir_info(struct send_ctx *sctx, u64 dir_ino)
+=======
+static struct orphan_dir_info *get_orphan_dir_info(struct send_ctx *sctx,
+						   u64 dir_ino, u64 gen)
+>>>>>>> origin/android16-base
 {
 	struct rb_node *n = sctx->orphan_dirs.rb_node;
 	struct orphan_dir_info *entry;
@@ -2906,15 +2986,28 @@ get_orphan_dir_info(struct send_ctx *sctx, u64 dir_ino)
 			n = n->rb_left;
 		else if (dir_ino > entry->ino)
 			n = n->rb_right;
+<<<<<<< HEAD
+=======
+		else if (gen < entry->gen)
+			n = n->rb_left;
+		else if (gen > entry->gen)
+			n = n->rb_right;
+>>>>>>> origin/android16-base
 		else
 			return entry;
 	}
 	return NULL;
 }
 
+<<<<<<< HEAD
 static int is_waiting_for_rm(struct send_ctx *sctx, u64 dir_ino)
 {
 	struct orphan_dir_info *odi = get_orphan_dir_info(sctx, dir_ino);
+=======
+static int is_waiting_for_rm(struct send_ctx *sctx, u64 dir_ino, u64 gen)
+{
+	struct orphan_dir_info *odi = get_orphan_dir_info(sctx, dir_ino, gen);
+>>>>>>> origin/android16-base
 
 	return odi != NULL;
 }
@@ -2959,7 +3052,11 @@ static int can_rmdir(struct send_ctx *sctx, u64 dir, u64 dir_gen,
 	key.type = BTRFS_DIR_INDEX_KEY;
 	key.offset = 0;
 
+<<<<<<< HEAD
 	odi = get_orphan_dir_info(sctx, dir);
+=======
+	odi = get_orphan_dir_info(sctx, dir, dir_gen);
+>>>>>>> origin/android16-base
 	if (odi)
 		key.offset = odi->last_dir_index_offset;
 
@@ -2990,7 +3087,11 @@ static int can_rmdir(struct send_ctx *sctx, u64 dir, u64 dir_gen,
 
 		dm = get_waiting_dir_move(sctx, loc.objectid);
 		if (dm) {
+<<<<<<< HEAD
 			odi = add_orphan_dir_info(sctx, dir);
+=======
+			odi = add_orphan_dir_info(sctx, dir, dir_gen);
+>>>>>>> origin/android16-base
 			if (IS_ERR(odi)) {
 				ret = PTR_ERR(odi);
 				goto out;
@@ -2998,12 +3099,20 @@ static int can_rmdir(struct send_ctx *sctx, u64 dir, u64 dir_gen,
 			odi->gen = dir_gen;
 			odi->last_dir_index_offset = found_key.offset;
 			dm->rmdir_ino = dir;
+<<<<<<< HEAD
+=======
+			dm->rmdir_gen = dir_gen;
+>>>>>>> origin/android16-base
 			ret = 0;
 			goto out;
 		}
 
 		if (loc.objectid > send_progress) {
+<<<<<<< HEAD
 			odi = add_orphan_dir_info(sctx, dir);
+=======
+			odi = add_orphan_dir_info(sctx, dir, dir_gen);
+>>>>>>> origin/android16-base
 			if (IS_ERR(odi)) {
 				ret = PTR_ERR(odi);
 				goto out;
@@ -3043,6 +3152,10 @@ static int add_waiting_dir_move(struct send_ctx *sctx, u64 ino, bool orphanized)
 		return -ENOMEM;
 	dm->ino = ino;
 	dm->rmdir_ino = 0;
+<<<<<<< HEAD
+=======
+	dm->rmdir_gen = 0;
+>>>>>>> origin/android16-base
 	dm->orphanized = orphanized;
 
 	while (*p) {
@@ -3188,7 +3301,11 @@ static int path_loop(struct send_ctx *sctx, struct fs_path *name,
 	while (ino != BTRFS_FIRST_FREE_OBJECTID) {
 		fs_path_reset(name);
 
+<<<<<<< HEAD
 		if (is_waiting_for_rm(sctx, ino))
+=======
+		if (is_waiting_for_rm(sctx, ino, gen))
+>>>>>>> origin/android16-base
 			break;
 		if (is_waiting_for_move(sctx, ino)) {
 			if (*ancestor_ino == 0)
@@ -3228,6 +3345,10 @@ static int apply_dir_move(struct send_ctx *sctx, struct pending_dir_move *pm)
 	u64 parent_ino, parent_gen;
 	struct waiting_dir_move *dm = NULL;
 	u64 rmdir_ino = 0;
+<<<<<<< HEAD
+=======
+	u64 rmdir_gen;
+>>>>>>> origin/android16-base
 	u64 ancestor;
 	bool is_orphan;
 	int ret;
@@ -3242,6 +3363,10 @@ static int apply_dir_move(struct send_ctx *sctx, struct pending_dir_move *pm)
 	dm = get_waiting_dir_move(sctx, pm->ino);
 	ASSERT(dm);
 	rmdir_ino = dm->rmdir_ino;
+<<<<<<< HEAD
+=======
+	rmdir_gen = dm->rmdir_gen;
+>>>>>>> origin/android16-base
 	is_orphan = dm->orphanized;
 	free_waiting_dir_move(sctx, dm);
 
@@ -3278,6 +3403,10 @@ static int apply_dir_move(struct send_ctx *sctx, struct pending_dir_move *pm)
 			dm = get_waiting_dir_move(sctx, pm->ino);
 			ASSERT(dm);
 			dm->rmdir_ino = rmdir_ino;
+<<<<<<< HEAD
+=======
+			dm->rmdir_gen = rmdir_gen;
+>>>>>>> origin/android16-base
 		}
 		goto out;
 	}
@@ -3296,7 +3425,11 @@ static int apply_dir_move(struct send_ctx *sctx, struct pending_dir_move *pm)
 		struct orphan_dir_info *odi;
 		u64 gen;
 
+<<<<<<< HEAD
 		odi = get_orphan_dir_info(sctx, rmdir_ino);
+=======
+		odi = get_orphan_dir_info(sctx, rmdir_ino, rmdir_gen);
+>>>>>>> origin/android16-base
 		if (!odi) {
 			/* already deleted */
 			goto finish;
@@ -4068,6 +4201,20 @@ static int process_recorded_refs(struct send_ctx *sctx, int *pending_move)
 				if (ret < 0)
 					goto out;
 			} else {
+<<<<<<< HEAD
+=======
+				/*
+				 * If we previously orphanized a directory that
+				 * collided with a new reference that we already
+				 * processed, recompute the current path because
+				 * that directory may be part of the path.
+				 */
+				if (orphanized_dir) {
+					ret = refresh_ref_path(sctx, cur);
+					if (ret < 0)
+						goto out;
+				}
+>>>>>>> origin/android16-base
 				ret = send_unlink(sctx, cur->full_path);
 				if (ret < 0)
 					goto out;
@@ -4932,6 +5079,13 @@ static ssize_t fill_read_buf(struct send_ctx *sctx, u64 offset, u32 len)
 			lock_page(page);
 			if (!PageUptodate(page)) {
 				unlock_page(page);
+<<<<<<< HEAD
+=======
+				btrfs_err(fs_info,
+			"send: IO error at offset %llu for inode %llu root %llu",
+					page_offset(page), sctx->cur_ino,
+					sctx->send_root->root_key.objectid);
+>>>>>>> origin/android16-base
 				put_page(page);
 				ret = -EIO;
 				break;
@@ -6789,10 +6943,17 @@ long btrfs_ioctl_send(struct file *mnt_file, struct btrfs_ioctl_send_args *arg)
 	/*
 	 * Check that we don't overflow at later allocations, we request
 	 * clone_sources_count + 1 items, and compare to unsigned long inside
+<<<<<<< HEAD
 	 * access_ok.
 	 */
 	if (arg->clone_sources_count >
 	    ULONG_MAX / sizeof(struct clone_root) - 1) {
+=======
+	 * access_ok. Also set an upper limit for allocation size so this can't
+	 * easily exhaust memory. Max number of clone sources is about 200K.
+	 */
+	if (arg->clone_sources_count > SZ_8M / sizeof(struct clone_root)) {
+>>>>>>> origin/android16-base
 		ret = -EINVAL;
 		goto out;
 	}
@@ -6805,7 +6966,11 @@ long btrfs_ioctl_send(struct file *mnt_file, struct btrfs_ioctl_send_args *arg)
 	}
 
 	if (arg->flags & ~BTRFS_SEND_FLAG_MASK) {
+<<<<<<< HEAD
 		ret = -EINVAL;
+=======
+		ret = -EOPNOTSUPP;
+>>>>>>> origin/android16-base
 		goto out;
 	}
 
@@ -6823,7 +6988,11 @@ long btrfs_ioctl_send(struct file *mnt_file, struct btrfs_ioctl_send_args *arg)
 	sctx->flags = arg->flags;
 
 	sctx->send_filp = fget(arg->send_fd);
+<<<<<<< HEAD
 	if (!sctx->send_filp) {
+=======
+	if (!sctx->send_filp || !(sctx->send_filp->f_mode & FMODE_WRITE)) {
+>>>>>>> origin/android16-base
 		ret = -EBADF;
 		goto out;
 	}

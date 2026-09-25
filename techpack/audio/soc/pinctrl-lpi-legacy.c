@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
+=======
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/gpio.h>
@@ -95,6 +99,10 @@ struct lpi_gpio_state {
 	char __iomem	*base;
 	struct clk *lpass_core_hw_vote;
 	bool core_hw_vote_status;
+<<<<<<< HEAD
+=======
+	struct mutex lpi_mutex;
+>>>>>>> origin/android16-base
 };
 
 static const char *const lpi_gpio_groups[] = {
@@ -120,12 +128,25 @@ static const char *const lpi_gpio_functions[] = {
 static int lpi_gpio_read(struct lpi_gpio_pad *pad, unsigned int addr)
 {
 	int ret;
+<<<<<<< HEAD
 
 	if (!lpi_dev_up) {
 		pr_err_ratelimited("%s: ADSP is down due to SSR, return\n",
 				   __func__);
 		return 0;
 	}
+=======
+	struct lpi_gpio_state *state = dev_get_drvdata(lpi_dev);
+
+	mutex_lock(&state->lpi_mutex);
+	if (!lpi_dev_up) {
+		pr_err_ratelimited("%s: ADSP is down due to SSR, return\n",
+				   __func__);
+		mutex_unlock(&state->lpi_mutex);
+		return 0;
+	}
+
+>>>>>>> origin/android16-base
 	pm_runtime_get_sync(lpi_dev);
 
 	ret = ioread32(pad->base + pad->offset + addr);
@@ -134,15 +155,29 @@ static int lpi_gpio_read(struct lpi_gpio_pad *pad, unsigned int addr)
 
 	pm_runtime_mark_last_busy(lpi_dev);
 	pm_runtime_put_autosuspend(lpi_dev);
+<<<<<<< HEAD
+=======
+	mutex_unlock(&state->lpi_mutex);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
 static int lpi_gpio_write(struct lpi_gpio_pad *pad, unsigned int addr,
 			  unsigned int val)
 {
+<<<<<<< HEAD
 	if (!lpi_dev_up) {
 		pr_err_ratelimited("%s: ADSP is down due to SSR, return\n",
 				   __func__);
+=======
+	struct lpi_gpio_state *state = dev_get_drvdata(lpi_dev);
+
+	mutex_lock(&state->lpi_mutex);
+	if (!lpi_dev_up) {
+		pr_err_ratelimited("%s: ADSP is down due to SSR, return\n",
+				   __func__);
+		mutex_unlock(&state->lpi_mutex);
+>>>>>>> origin/android16-base
 		return 0;
 	}
 	pm_runtime_get_sync(lpi_dev);
@@ -151,6 +186,10 @@ static int lpi_gpio_write(struct lpi_gpio_pad *pad, unsigned int addr,
 
 	pm_runtime_mark_last_busy(lpi_dev);
 	pm_runtime_put_autosuspend(lpi_dev);
+<<<<<<< HEAD
+=======
+	mutex_unlock(&state->lpi_mutex);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -213,12 +252,23 @@ static int lpi_gpio_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
 
 	pad = pctldev->desc->pins[pin].drv_data;
 
+<<<<<<< HEAD
 	pad->function = function;
 
 	val = lpi_gpio_read(pad, LPI_GPIO_REG_VAL_CTL);
 	val &= ~(LPI_GPIO_REG_FUNCTION_MASK);
 	val |= pad->function << LPI_GPIO_REG_FUNCTION_SHIFT;
 	lpi_gpio_write(pad, LPI_GPIO_REG_VAL_CTL, val);
+=======
+        if (pad != NULL) {
+	        pad->function = function;
+
+	        val = lpi_gpio_read(pad, LPI_GPIO_REG_VAL_CTL);
+	        val &= ~(LPI_GPIO_REG_FUNCTION_MASK);
+	        val |= pad->function << LPI_GPIO_REG_FUNCTION_SHIFT;
+	        lpi_gpio_write(pad, LPI_GPIO_REG_VAL_CTL, val);
+        }
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -382,8 +432,15 @@ static int lpi_notifier_service_cb(struct notifier_block *this,
 				   unsigned long opcode, void *ptr)
 {
 	static bool initial_boot = true;
+<<<<<<< HEAD
 
 	pr_debug("%s: Service opcode 0x%lx\n", __func__, opcode);
+=======
+	struct lpi_gpio_state *state = dev_get_drvdata(lpi_dev);
+
+	pr_debug("%s: Service opcode 0x%lx\n", __func__, opcode);
+	mutex_lock(&state->lpi_mutex);
+>>>>>>> origin/android16-base
 
 	switch (opcode) {
 	case AUDIO_NOTIFIER_SERVICE_DOWN:
@@ -403,6 +460,10 @@ static int lpi_notifier_service_cb(struct notifier_block *this,
 	default:
 		break;
 	}
+<<<<<<< HEAD
+=======
+	mutex_unlock(&state->lpi_mutex);
+>>>>>>> origin/android16-base
 	return NOTIFY_OK;
 }
 
@@ -643,6 +704,10 @@ static int lpi_pinctrl_probe(struct platform_device *pdev)
 	pm_runtime_use_autosuspend(&pdev->dev);
 	pm_runtime_set_suspended(&pdev->dev);
 	pm_runtime_enable(&pdev->dev);
+<<<<<<< HEAD
+=======
+	mutex_init(&state->lpi_mutex);
+>>>>>>> origin/android16-base
 
 	return 0;
 
@@ -658,6 +723,10 @@ static int lpi_pinctrl_remove(struct platform_device *pdev)
 {
 	struct lpi_gpio_state *state = platform_get_drvdata(pdev);
 
+<<<<<<< HEAD
+=======
+	mutex_destroy(&state->lpi_mutex);
+>>>>>>> origin/android16-base
 	pm_runtime_disable(&pdev->dev);
 	pm_runtime_set_suspended(&pdev->dev);
 

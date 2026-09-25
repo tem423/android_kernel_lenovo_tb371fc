@@ -96,8 +96,15 @@ void teedev_ctx_put(struct tee_context *ctx)
 
 static void teedev_close_context(struct tee_context *ctx)
 {
+<<<<<<< HEAD
 	tee_device_put(ctx->teedev);
 	teedev_ctx_put(ctx);
+=======
+	struct tee_device *teedev = ctx->teedev;
+
+	teedev_ctx_put(ctx);
+	tee_device_put(teedev);
+>>>>>>> origin/android16-base
 }
 
 static int tee_release(struct inode *inode, struct file *filp)
@@ -173,6 +180,13 @@ tee_ioctl_shm_register(struct tee_context *ctx,
 	if (data.flags)
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	if (!access_ok(VERIFY_WRITE, (void __user *)(unsigned long)data.addr,
+		       data.length))
+		return -EFAULT;
+
+>>>>>>> origin/android16-base
 	shm = tee_shm_register(ctx, data.addr, data.length,
 			       TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED);
 	if (IS_ERR(shm))

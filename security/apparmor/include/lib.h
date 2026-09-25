@@ -25,6 +25,14 @@
  */
 
 #define DEBUG_ON (aa_g_debug)
+<<<<<<< HEAD
+=======
+/*
+ * split individual debug cases out in preparation for finer grained
+ * debug controls in the future.
+ */
+#define AA_DEBUG_LABEL DEBUG_ON
+>>>>>>> origin/android16-base
 #define dbg_printk(__fmt, __args...) pr_debug(__fmt, ##__args)
 #define AA_DEBUG(fmt, args...)						\
 	do {								\

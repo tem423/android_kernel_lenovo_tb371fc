@@ -434,6 +434,7 @@ int rtl_regd_init(struct ieee80211_hw *hw,
 	rtlpriv->regd.country_code =
 		channel_plan_to_country_code(rtlpriv->efuse.channel_plan);
 
+<<<<<<< HEAD
 	RT_TRACE(rtlpriv, COMP_REGD, DBG_DMESG,
 		 "rtl: EEPROM regdomain: 0x%0x country code: %d\n",
 		 rtlpriv->efuse.channel_plan, rtlpriv->regd.country_code);
@@ -441,6 +442,15 @@ int rtl_regd_init(struct ieee80211_hw *hw,
 	if (rtlpriv->regd.country_code >= COUNTRY_CODE_MAX) {
 		RT_TRACE(rtlpriv, COMP_REGD, DBG_DMESG,
 			 "rtl: EEPROM indicates invalid country code, world wide 13 should be used\n");
+=======
+	rtl_dbg(rtlpriv, COMP_REGD, DBG_DMESG,
+		"rtl: EEPROM regdomain: 0x%0x country code: %d\n",
+		rtlpriv->efuse.channel_plan, rtlpriv->regd.country_code);
+
+	if (rtlpriv->regd.country_code >= COUNTRY_CODE_MAX) {
+		rtl_dbg(rtlpriv, COMP_REGD, DBG_DMESG,
+			"rtl: EEPROM indicates invalid country code, world wide 13 should be used\n");
+>>>>>>> origin/android16-base
 
 		rtlpriv->regd.country_code = COUNTRY_CODE_WORLD_WIDE_13;
 	}
@@ -455,9 +465,15 @@ int rtl_regd_init(struct ieee80211_hw *hw,
 		rtlpriv->regd.alpha2[1] = '0';
 	}
 
+<<<<<<< HEAD
 	RT_TRACE(rtlpriv, COMP_REGD, DBG_TRACE,
 		 "rtl: Country alpha2 being used: %c%c\n",
 		  rtlpriv->regd.alpha2[0], rtlpriv->regd.alpha2[1]);
+=======
+	rtl_dbg(rtlpriv, COMP_REGD, DBG_TRACE,
+		"rtl: Country alpha2 being used: %c%c\n",
+		rtlpriv->regd.alpha2[0], rtlpriv->regd.alpha2[1]);
+>>>>>>> origin/android16-base
 
 	_rtl_regd_init_wiphy(&rtlpriv->regd, wiphy, reg_notifier);
 
@@ -469,7 +485,11 @@ void rtl_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request)
 	struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
+<<<<<<< HEAD
 	RT_TRACE(rtlpriv, COMP_REGD, DBG_LOUD, "\n");
+=======
+	rtl_dbg(rtlpriv, COMP_REGD, DBG_LOUD, "\n");
+>>>>>>> origin/android16-base
 
 	_rtl_reg_notifier_apply(wiphy, request, &rtlpriv->regd);
 }

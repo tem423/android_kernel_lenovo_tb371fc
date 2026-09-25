@@ -253,15 +253,25 @@ int __must_check media_devnode_register(struct media_device *mdev,
 	devnode->cdev.owner = owner;
 
 	/* Part 3: Add the media and char device */
+<<<<<<< HEAD
 	ret = cdev_device_add(&devnode->cdev, &devnode->dev);
 	if (ret < 0) {
+=======
+	set_bit(MEDIA_FLAG_REGISTERED, &devnode->flags);
+	ret = cdev_device_add(&devnode->cdev, &devnode->dev);
+	if (ret < 0) {
+		clear_bit(MEDIA_FLAG_REGISTERED, &devnode->flags);
+>>>>>>> origin/android16-base
 		pr_err("%s: cdev_device_add failed\n", __func__);
 		goto cdev_add_error;
 	}
 
+<<<<<<< HEAD
 	/* Part 4: Activate this minor. The char device can now be used. */
 	set_bit(MEDIA_FLAG_REGISTERED, &devnode->flags);
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 
 cdev_add_error:

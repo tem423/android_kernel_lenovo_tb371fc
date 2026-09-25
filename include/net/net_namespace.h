@@ -173,6 +173,11 @@ struct net *copy_net_ns(unsigned long flags, struct user_namespace *user_ns,
 void net_ns_get_ownership(const struct net *net, kuid_t *uid, kgid_t *gid);
 
 void net_ns_barrier(void);
+<<<<<<< HEAD
+=======
+
+struct ns_common *get_net_ns(struct ns_common *ns);
+>>>>>>> origin/android16-base
 #else /* CONFIG_NET_NS */
 #include <linux/sched.h>
 #include <linux/nsproxy.h>
@@ -192,6 +197,14 @@ static inline void net_ns_get_ownership(const struct net *net,
 }
 
 static inline void net_ns_barrier(void) {}
+<<<<<<< HEAD
+=======
+
+static inline struct ns_common *get_net_ns(struct ns_common *ns)
+{
+	return ERR_PTR(-EINVAL);
+}
+>>>>>>> origin/android16-base
 #endif /* CONFIG_NET_NS */
 
 
@@ -344,8 +357,18 @@ struct pernet_operations {
 	 * synchronize_rcu() related to these pernet_operations,
 	 * instead of separate synchronize_rcu() for every net.
 	 * Please, avoid synchronize_rcu() at all, where it's possible.
+<<<<<<< HEAD
 	 */
 	int (*init)(struct net *net);
+=======
+	 *
+	 * Note that a combination of pre_exit() and exit() can
+	 * be used, since a synchronize_rcu() is guaranteed between
+	 * the calls.
+	 */
+	int (*init)(struct net *net);
+	void (*pre_exit)(struct net *net);
+>>>>>>> origin/android16-base
 	void (*exit)(struct net *net);
 	void (*exit_batch)(struct list_head *net_exit_list);
 	unsigned int *id;

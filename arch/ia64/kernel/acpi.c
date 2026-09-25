@@ -537,7 +537,12 @@ void __init acpi_numa_fixup(void)
 	if (srat_num_cpus == 0) {
 		node_set_online(0);
 		node_cpuid[0].phys_id = hard_smp_processor_id();
+<<<<<<< HEAD
 		return;
+=======
+		node_distance(0, 0) = LOCAL_DISTANCE;
+		goto out;
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -580,7 +585,11 @@ void __init acpi_numa_fixup(void)
 			for (j = 0; j < MAX_NUMNODES; j++)
 				node_distance(i, j) = i == j ? LOCAL_DISTANCE :
 							REMOTE_DISTANCE;
+<<<<<<< HEAD
 		return;
+=======
+		goto out;
+>>>>>>> origin/android16-base
 	}
 
 	memset(numa_slit, -1, sizeof(numa_slit));
@@ -605,6 +614,11 @@ void __init acpi_numa_fixup(void)
 		printk("\n");
 	}
 #endif
+<<<<<<< HEAD
+=======
+out:
+	node_possible_map = node_online_map;
+>>>>>>> origin/android16-base
 }
 #endif				/* CONFIG_ACPI_NUMA */
 

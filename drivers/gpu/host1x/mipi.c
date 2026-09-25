@@ -206,9 +206,15 @@ static int tegra_mipi_power_down(struct tegra_mipi *mipi)
 	return 0;
 }
 
+<<<<<<< HEAD
 struct tegra_mipi_device *tegra_mipi_request(struct device *device)
 {
 	struct device_node *np = device->of_node;
+=======
+struct tegra_mipi_device *tegra_mipi_request(struct device *device,
+					     struct device_node *np)
+{
+>>>>>>> origin/android16-base
 	struct tegra_mipi_device *dev;
 	struct of_phandle_args args;
 	int err;

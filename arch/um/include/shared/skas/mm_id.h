@@ -14,4 +14,9 @@ struct mm_id {
 	unsigned long stack;
 };
 
+<<<<<<< HEAD
+=======
+void __switch_mm(struct mm_id *mm_idp);
+
+>>>>>>> origin/android16-base
 #endif

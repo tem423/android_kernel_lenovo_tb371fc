@@ -70,11 +70,14 @@ config ARM_UNWIND
 	  the performance is not affected. Currently, this feature
 	  only works with EABI compilers. If unsure say Y.
 
+<<<<<<< HEAD
 config OLD_MCOUNT
 	bool
 	depends on FUNCTION_TRACER && FRAME_POINTER
 	default y
 
+=======
+>>>>>>> origin/android16-base
 config DEBUG_USER
 	bool "Verbose user fault messages"
 	help

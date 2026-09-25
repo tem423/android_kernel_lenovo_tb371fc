@@ -102,7 +102,13 @@ static int __must_check __smsc75xx_read_reg(struct usbnet *dev, u32 index,
 	ret = fn(dev, USB_VENDOR_REQUEST_READ_REGISTER, USB_DIR_IN
 		 | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
 		 0, index, &buf, 4);
+<<<<<<< HEAD
 	if (unlikely(ret < 0)) {
+=======
+	if (unlikely(ret < 4)) {
+		ret = ret < 0 ? ret : -ENODATA;
+
+>>>>>>> origin/android16-base
 		netdev_warn(dev->net, "Failed to read reg index 0x%08x: %d\n",
 			    index, ret);
 		return ret;
@@ -1495,7 +1501,11 @@ static int smsc75xx_bind(struct usbnet *dev, struct usb_interface *intf)
 	ret = smsc75xx_wait_ready(dev, 0);
 	if (ret < 0) {
 		netdev_warn(dev->net, "device not ready in smsc75xx_bind\n");
+<<<<<<< HEAD
 		return ret;
+=======
+		goto free_pdata;
+>>>>>>> origin/android16-base
 	}
 
 	smsc75xx_init_mac_address(dev);
@@ -1504,7 +1514,11 @@ static int smsc75xx_bind(struct usbnet *dev, struct usb_interface *intf)
 	ret = smsc75xx_reset(dev);
 	if (ret < 0) {
 		netdev_warn(dev->net, "smsc75xx_reset error %d\n", ret);
+<<<<<<< HEAD
 		return ret;
+=======
+		goto cancel_work;
+>>>>>>> origin/android16-base
 	}
 
 	dev->net->netdev_ops = &smsc75xx_netdev_ops;
@@ -1514,6 +1528,16 @@ static int smsc75xx_bind(struct usbnet *dev, struct usb_interface *intf)
 	dev->hard_mtu = dev->net->mtu + dev->net->hard_header_len;
 	dev->net->max_mtu = MAX_SINGLE_PACKET_SIZE;
 	return 0;
+<<<<<<< HEAD
+=======
+
+cancel_work:
+	cancel_work_sync(&pdata->set_multicast);
+free_pdata:
+	kfree(pdata);
+	dev->data[0] = 0;
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static void smsc75xx_unbind(struct usbnet *dev, struct usb_interface *intf)
@@ -1523,7 +1547,10 @@ static void smsc75xx_unbind(struct usbnet *dev, struct usb_interface *intf)
 		cancel_work_sync(&pdata->set_multicast);
 		netif_dbg(dev, ifdown, dev->net, "free pdata\n");
 		kfree(pdata);
+<<<<<<< HEAD
 		pdata = NULL;
+=======
+>>>>>>> origin/android16-base
 		dev->data[0] = 0;
 	}
 }
@@ -2207,6 +2234,16 @@ static int smsc75xx_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 		size = (rx_cmd_a & RX_CMD_A_LEN) - RXW_PADDING;
 		align_count = (4 - ((size + RXW_PADDING) % 4)) % 4;
 
+<<<<<<< HEAD
+=======
+		if (unlikely(size > skb->len)) {
+			netif_dbg(dev, rx_err, dev->net,
+				  "size err rx_cmd_a=0x%08x\n",
+				  rx_cmd_a);
+			return 0;
+		}
+
+>>>>>>> origin/android16-base
 		if (unlikely(rx_cmd_a & RX_CMD_A_RED)) {
 			netif_dbg(dev, rx_err, dev->net,
 				  "Error rx_cmd_a=0x%08x\n", rx_cmd_a);

@@ -288,6 +288,15 @@ static int ehci_platform_probe(struct platform_device *dev)
 					  "has-transaction-translator"))
 			hcd->has_tt = 1;
 
+<<<<<<< HEAD
+=======
+		if (of_device_is_compatible(dev->dev.of_node,
+					    "aspeed,ast2500-ehci") ||
+		    of_device_is_compatible(dev->dev.of_node,
+					    "aspeed,ast2600-ehci"))
+			ehci->is_aspeed = 1;
+
+>>>>>>> origin/android16-base
 		if (soc_device_match(quirk_poll_match))
 			priv->quirk_poll = true;
 

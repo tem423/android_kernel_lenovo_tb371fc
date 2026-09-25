@@ -826,6 +826,10 @@
 			 <&tegra_car 128>, /* hda2hdmi */
 			 <&tegra_car 111>; /* hda2codec_2x */
 		reset-names = "hda", "hda2hdmi", "hda2codec_2x";
+<<<<<<< HEAD
+=======
+		power-domains = <&pd_sor>;
+>>>>>>> origin/android16-base
 		status = "disabled";
 	};
 

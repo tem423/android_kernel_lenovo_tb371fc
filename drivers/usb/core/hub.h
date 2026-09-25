@@ -139,15 +139,26 @@ static inline int hub_is_superspeedplus(struct usb_device *hdev)
 {
 	return (hdev->descriptor.bDeviceProtocol == USB_HUB_PR_SS &&
 		le16_to_cpu(hdev->descriptor.bcdUSB) >= 0x0310 &&
+<<<<<<< HEAD
 		hdev->bos->ssp_cap);
+=======
+		hdev->bos && hdev->bos->ssp_cap);
+>>>>>>> origin/android16-base
 }
 
 static inline unsigned hub_power_on_good_delay(struct usb_hub *hub)
 {
 	unsigned delay = hub->descriptor->bPwrOn2PwrGood * 2;
 
+<<<<<<< HEAD
 	/* Wait at least 100 msec for power to become stable */
 	return max(delay, 100U);
+=======
+	if (!hub->hdev->parent)	/* root hub */
+		return delay;
+	else /* Wait at least 100 msec for power to become stable */
+		return max(delay, 100U);
+>>>>>>> origin/android16-base
 }
 
 static inline int hub_port_debounce_be_connected(struct usb_hub *hub,

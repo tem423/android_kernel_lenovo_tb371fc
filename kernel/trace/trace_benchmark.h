@@ -35,7 +35,11 @@ TRACE_EVENT_FN(benchmark_event,
 
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../kernel/trace
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE trace_benchmark
 
 /* This part must be outside protection */

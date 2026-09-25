@@ -574,21 +574,53 @@ static int start_transfer(struct fsg_dev *fsg, struct usb_ep *ep,
 
 static bool start_in_transfer(struct fsg_common *common, struct fsg_buffhd *bh)
 {
+<<<<<<< HEAD
 	if (!fsg_is_set(common))
 		return false;
 	bh->state = BUF_STATE_SENDING;
 	if (start_transfer(common->fsg, common->fsg->bulk_in, bh->inreq))
 		bh->state = BUF_STATE_EMPTY;
+=======
+	int rc;
+
+	if (!fsg_is_set(common))
+		return false;
+	bh->state = BUF_STATE_SENDING;
+	rc = start_transfer(common->fsg, common->fsg->bulk_in, bh->inreq);
+	if (rc) {
+		bh->state = BUF_STATE_EMPTY;
+		if (rc == -ESHUTDOWN) {
+			common->running = 0;
+			return false;
+		}
+	}
+>>>>>>> origin/android16-base
 	return true;
 }
 
 static bool start_out_transfer(struct fsg_common *common, struct fsg_buffhd *bh)
 {
+<<<<<<< HEAD
 	if (!fsg_is_set(common))
 		return false;
 	bh->state = BUF_STATE_RECEIVING;
 	if (start_transfer(common->fsg, common->fsg->bulk_out, bh->outreq))
 		bh->state = BUF_STATE_FULL;
+=======
+	int rc;
+
+	if (!fsg_is_set(common))
+		return false;
+	bh->state = BUF_STATE_RECEIVING;
+	rc = start_transfer(common->fsg, common->fsg->bulk_out, bh->outreq);
+	if (rc) {
+		bh->state = BUF_STATE_FULL;
+		if (rc == -ESHUTDOWN) {
+			common->running = 0;
+			return false;
+		}
+	}
+>>>>>>> origin/android16-base
 	return true;
 }
 
@@ -950,7 +982,11 @@ static void invalidate_sub(struct fsg_lun *curlun)
 {
 	struct file	*filp = curlun->filp;
 	struct inode	*inode = file_inode(filp);
+<<<<<<< HEAD
 	unsigned long	rc;
+=======
+	unsigned long __maybe_unused	rc;
+>>>>>>> origin/android16-base
 
 	rc = invalidate_mapping_pages(inode->i_mapping, 0, -1);
 	VLDBG(curlun, "invalidate_mapping_pages -> %ld\n", rc);

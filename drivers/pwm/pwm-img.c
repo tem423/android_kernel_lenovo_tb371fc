@@ -332,6 +332,7 @@ err_pm_disable:
 static int img_pwm_remove(struct platform_device *pdev)
 {
 	struct img_pwm_chip *pwm_chip = platform_get_drvdata(pdev);
+<<<<<<< HEAD
 	u32 val;
 	unsigned int i;
 	int ret;
@@ -349,6 +350,9 @@ static int img_pwm_remove(struct platform_device *pdev)
 	}
 
 	pm_runtime_put(&pdev->dev);
+=======
+
+>>>>>>> origin/android16-base
 	pm_runtime_disable(&pdev->dev);
 	if (!pm_runtime_status_suspended(&pdev->dev))
 		img_pwm_runtime_suspend(&pdev->dev);

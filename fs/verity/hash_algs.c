@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
+<<<<<<< HEAD
  * fs/verity/hash_algs.c: fs-verity hash algorithms
+=======
+ * fs-verity hash algorithms
+>>>>>>> origin/android16-base
  *
  * Copyright 2019 Google LLC
  */

@@ -120,6 +120,7 @@ void sn_migrate(struct task_struct *task)
 		cpu_relax();
 }
 
+<<<<<<< HEAD
 void sn_tlb_migrate_finish(struct mm_struct *mm)
 {
 	/* flush_tlb_mm is inefficient if more than 1 users of mm */
@@ -127,6 +128,8 @@ void sn_tlb_migrate_finish(struct mm_struct *mm)
 		flush_tlb_mm(mm);
 }
 
+=======
+>>>>>>> origin/android16-base
 static void
 sn2_ipi_flush_all_tlb(struct mm_struct *mm)
 {

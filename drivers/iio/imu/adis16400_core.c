@@ -288,8 +288,12 @@ static int adis16400_initial_setup(struct iio_dev *indio_dev)
 		if (ret)
 			goto err_ret;
 
+<<<<<<< HEAD
 		ret = sscanf(indio_dev->name, "adis%u\n", &device_id);
 		if (ret != 1) {
+=======
+		if (sscanf(indio_dev->name, "adis%u\n", &device_id) != 1) {
+>>>>>>> origin/android16-base
 			ret = -EINVAL;
 			goto err_ret;
 		}

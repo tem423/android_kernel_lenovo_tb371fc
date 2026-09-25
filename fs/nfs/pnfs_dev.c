@@ -152,7 +152,11 @@ nfs4_get_device_info(struct nfs_server *server,
 		set_bit(NFS_DEVICEID_NOCACHE, &d->flags);
 
 out_free_pages:
+<<<<<<< HEAD
 	for (i = 0; i < max_pages; i++)
+=======
+	while (--i >= 0)
+>>>>>>> origin/android16-base
 		__free_page(pages[i]);
 	kfree(pages);
 out_free_pdev:

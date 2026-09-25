@@ -80,6 +80,21 @@ static int lan743x_csr_light_reset(struct lan743x_adapter *adapter)
 				  !(data & HW_CFG_LRST_), 100000, 10000000);
 }
 
+<<<<<<< HEAD
+=======
+static int lan743x_csr_wait_for_bit_atomic(struct lan743x_adapter *adapter,
+					   int offset, u32 bit_mask,
+					   int target_value, int udelay_min,
+					   int udelay_max, int count)
+{
+	u32 data;
+
+	return readx_poll_timeout_atomic(LAN743X_CSR_READ_OP, offset, data,
+					 target_value == !!(data & bit_mask),
+					 udelay_max, udelay_min * count);
+}
+
+>>>>>>> origin/android16-base
 static int lan743x_csr_wait_for_bit(struct lan743x_adapter *adapter,
 				    int offset, u32 bit_mask,
 				    int target_value, int usleep_min,
@@ -145,7 +160,12 @@ static void lan743x_intr_software_isr(void *context)
 
 	int_sts = lan743x_csr_read(adapter, INT_STS);
 	if (int_sts & INT_BIT_SW_GP_) {
+<<<<<<< HEAD
 		lan743x_csr_write(adapter, INT_STS, INT_BIT_SW_GP_);
+=======
+		/* disable the interrupt to prevent repeated re-triggering */
+		lan743x_csr_write(adapter, INT_EN_CLR, INT_BIT_SW_GP_);
+>>>>>>> origin/android16-base
 		intr->software_isr_flag = 1;
 	}
 }
@@ -155,9 +175,14 @@ static void lan743x_tx_isr(void *context, u32 int_sts, u32 flags)
 	struct lan743x_tx *tx = context;
 	struct lan743x_adapter *adapter = tx->adapter;
 	bool enable_flag = true;
+<<<<<<< HEAD
 	u32 int_en = 0;
 
 	int_en = lan743x_csr_read(adapter, INT_EN_SET);
+=======
+
+	lan743x_csr_read(adapter, INT_EN_SET);
+>>>>>>> origin/android16-base
 	if (flags & LAN743X_VECTOR_FLAG_SOURCE_ENABLE_CLEAR) {
 		lan743x_csr_write(adapter, INT_EN_CLR,
 				  INT_BIT_DMA_TX_(tx->channel_number));
@@ -672,6 +697,7 @@ clean_up:
 static int lan743x_dp_write(struct lan743x_adapter *adapter,
 			    u32 select, u32 addr, u32 length, u32 *buf)
 {
+<<<<<<< HEAD
 	int ret = -EIO;
 	u32 dp_sel;
 	int i;
@@ -680,6 +706,14 @@ static int lan743x_dp_write(struct lan743x_adapter *adapter,
 	if (lan743x_csr_wait_for_bit(adapter, DP_SEL, DP_SEL_DPRDY_,
 				     1, 40, 100, 100))
 		goto unlock;
+=======
+	u32 dp_sel;
+	int i;
+
+	if (lan743x_csr_wait_for_bit_atomic(adapter, DP_SEL, DP_SEL_DPRDY_,
+					    1, 40, 100, 100))
+		return -EIO;
+>>>>>>> origin/android16-base
 	dp_sel = lan743x_csr_read(adapter, DP_SEL);
 	dp_sel &= ~DP_SEL_MASK_;
 	dp_sel |= select;
@@ -689,6 +723,7 @@ static int lan743x_dp_write(struct lan743x_adapter *adapter,
 		lan743x_csr_write(adapter, DP_ADDR, addr + i);
 		lan743x_csr_write(adapter, DP_DATA_0, buf[i]);
 		lan743x_csr_write(adapter, DP_CMD, DP_CMD_WRITE_);
+<<<<<<< HEAD
 		if (lan743x_csr_wait_for_bit(adapter, DP_SEL, DP_SEL_DPRDY_,
 					     1, 40, 100, 100))
 			goto unlock;
@@ -698,6 +733,15 @@ static int lan743x_dp_write(struct lan743x_adapter *adapter,
 unlock:
 	mutex_unlock(&adapter->dp_lock);
 	return ret;
+=======
+		if (lan743x_csr_wait_for_bit_atomic(adapter, DP_SEL,
+						    DP_SEL_DPRDY_,
+						    1, 40, 100, 100))
+			return -EIO;
+	}
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static u32 lan743x_mac_mii_access(u16 id, u16 index, int read)
@@ -1250,13 +1294,21 @@ clean_up_data_descriptor:
 		goto clear_active;
 
 	if (!(buffer_info->flags & TX_BUFFER_INFO_FLAG_TIMESTAMP_REQUESTED)) {
+<<<<<<< HEAD
 		dev_kfree_skb(buffer_info->skb);
+=======
+		dev_kfree_skb_any(buffer_info->skb);
+>>>>>>> origin/android16-base
 		goto clear_skb;
 	}
 
 	if (cleanup) {
 		lan743x_ptp_unrequest_tx_timestamp(tx->adapter);
+<<<<<<< HEAD
 		dev_kfree_skb(buffer_info->skb);
+=======
+		dev_kfree_skb_any(buffer_info->skb);
+>>>>>>> origin/android16-base
 	} else {
 		ignore_sync = (buffer_info->flags &
 			       TX_BUFFER_INFO_FLAG_IGNORE_SYNC) != 0;
@@ -1566,7 +1618,11 @@ static netdev_tx_t lan743x_tx_xmit_frame(struct lan743x_tx *tx,
 	if (required_number_of_descriptors >
 		lan743x_tx_get_avail_desc(tx)) {
 		if (required_number_of_descriptors > (tx->ring_size - 1)) {
+<<<<<<< HEAD
 			dev_kfree_skb(skb);
+=======
+			dev_kfree_skb_irq(skb);
+>>>>>>> origin/android16-base
 		} else {
 			/* save to overflow buffer */
 			tx->overflow_skb = skb;
@@ -1599,7 +1655,11 @@ static netdev_tx_t lan743x_tx_xmit_frame(struct lan743x_tx *tx,
 				   start_frame_length,
 				   do_timestamp,
 				   skb->ip_summed == CHECKSUM_PARTIAL)) {
+<<<<<<< HEAD
 		dev_kfree_skb(skb);
+=======
+		dev_kfree_skb_irq(skb);
+>>>>>>> origin/android16-base
 		goto unlock;
 	}
 
@@ -1619,7 +1679,11 @@ static netdev_tx_t lan743x_tx_xmit_frame(struct lan743x_tx *tx,
 			 * frame assembler clean up was performed inside
 			 *	lan743x_tx_frame_add_fragment
 			 */
+<<<<<<< HEAD
 			dev_kfree_skb(skb);
+=======
+			dev_kfree_skb_irq(skb);
+>>>>>>> origin/android16-base
 			goto unlock;
 		}
 	}
@@ -1639,10 +1703,16 @@ static int lan743x_tx_napi_poll(struct napi_struct *napi, int weight)
 	bool start_transmitter = false;
 	unsigned long irq_flags = 0;
 	u32 ioc_bit = 0;
+<<<<<<< HEAD
 	u32 int_sts = 0;
 
 	ioc_bit = DMAC_INT_BIT_TX_IOC_(tx->channel_number);
 	int_sts = lan743x_csr_read(adapter, DMAC_INT_STS);
+=======
+
+	ioc_bit = DMAC_INT_BIT_TX_IOC_(tx->channel_number);
+	lan743x_csr_read(adapter, DMAC_INT_STS);
+>>>>>>> origin/android16-base
 	if (tx->vector_flags & LAN743X_VECTOR_FLAG_SOURCE_STATUS_W2C)
 		lan743x_csr_write(adapter, DMAC_INT_STS, ioc_bit);
 	spin_lock_irqsave(&tx->ring_lock, irq_flags);
@@ -1716,6 +1786,19 @@ static int lan743x_tx_ring_init(struct lan743x_tx *tx)
 		ret = -EINVAL;
 		goto cleanup;
 	}
+<<<<<<< HEAD
+=======
+	if (dma_set_mask_and_coherent(&tx->adapter->pdev->dev,
+				      DMA_BIT_MASK(64))) {
+		if (dma_set_mask_and_coherent(&tx->adapter->pdev->dev,
+					      DMA_BIT_MASK(32))) {
+			dev_warn(&tx->adapter->pdev->dev,
+				 "lan743x_: No suitable DMA available\n");
+			ret = -ENOMEM;
+			goto cleanup;
+		}
+	}
+>>>>>>> origin/android16-base
 	ring_allocation_size = ALIGN(tx->ring_size *
 				     sizeof(struct lan743x_tx_descriptor),
 				     PAGE_SIZE);
@@ -2264,6 +2347,19 @@ static int lan743x_rx_ring_init(struct lan743x_rx *rx)
 		ret = -EINVAL;
 		goto cleanup;
 	}
+<<<<<<< HEAD
+=======
+	if (dma_set_mask_and_coherent(&rx->adapter->pdev->dev,
+				      DMA_BIT_MASK(64))) {
+		if (dma_set_mask_and_coherent(&rx->adapter->pdev->dev,
+					      DMA_BIT_MASK(32))) {
+			dev_warn(&rx->adapter->pdev->dev,
+				 "lan743x_: No suitable DMA available\n");
+			ret = -ENOMEM;
+			goto cleanup;
+		}
+	}
+>>>>>>> origin/android16-base
 	ring_allocation_size = ALIGN(rx->ring_size *
 				     sizeof(struct lan743x_rx_descriptor),
 				     PAGE_SIZE);
@@ -2679,7 +2775,10 @@ static int lan743x_hardware_init(struct lan743x_adapter *adapter,
 
 	adapter->intr.irq = adapter->pdev->irq;
 	lan743x_csr_write(adapter, INT_EN_CLR, 0xFFFFFFFF);
+<<<<<<< HEAD
 	mutex_init(&adapter->dp_lock);
+=======
+>>>>>>> origin/android16-base
 
 	ret = lan743x_gpio_init(adapter);
 	if (ret)
@@ -3010,6 +3109,11 @@ static int lan743x_pm_resume(struct device *dev)
 	if (ret) {
 		netif_err(adapter, probe, adapter->netdev,
 			  "lan743x_hardware_init returned %d\n", ret);
+<<<<<<< HEAD
+=======
+		lan743x_pci_cleanup(adapter);
+		return ret;
+>>>>>>> origin/android16-base
 	}
 
 	/* open netdev when netdev is at running state while resume.

@@ -71,6 +71,17 @@ static bool migrate_one_irq(struct irq_desc *desc)
 	}
 
 	/*
+<<<<<<< HEAD
+=======
+	 * Complete an eventually pending irq move cleanup. If this
+	 * interrupt was moved in hard irq context, then the vectors need
+	 * to be cleaned up. It can't wait until this interrupt actually
+	 * happens and this CPU was involved.
+	 */
+	irq_force_complete_move(desc);
+
+	/*
+>>>>>>> origin/android16-base
 	 * No move required, if:
 	 * - Interrupt is per cpu
 	 * - Interrupt is not started
@@ -89,6 +100,7 @@ static bool migrate_one_irq(struct irq_desc *desc)
 	}
 
 	/*
+<<<<<<< HEAD
 	 * Complete an eventually pending irq move cleanup. If this
 	 * interrupt was moved in hard irq context, then the vectors need
 	 * to be cleaned up. It can't wait until this interrupt actually
@@ -97,6 +109,8 @@ static bool migrate_one_irq(struct irq_desc *desc)
 	irq_force_complete_move(desc);
 
 	/*
+=======
+>>>>>>> origin/android16-base
 	 * If there is a setaffinity pending, then try to reuse the pending
 	 * mask, so the last change of the affinity does not get lost. If
 	 * there is no move pending or the pending mask does not contain

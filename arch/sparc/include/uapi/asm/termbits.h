@@ -13,6 +13,7 @@ typedef unsigned int    tcflag_t;
 typedef unsigned long   tcflag_t;
 #endif
 
+<<<<<<< HEAD
 #define NCC 8
 struct termio {
 	unsigned short c_iflag;		/* input mode flags */
@@ -23,6 +24,8 @@ struct termio {
 	unsigned char c_cc[NCC];	/* control characters */
 };
 
+=======
+>>>>>>> origin/android16-base
 #define NCCS 17
 struct termios {
 	tcflag_t c_iflag;		/* input mode flags */

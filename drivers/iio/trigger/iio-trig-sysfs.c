@@ -198,6 +198,10 @@ static int iio_sysfs_trigger_remove(int id)
 	}
 
 	iio_trigger_unregister(t->trig);
+<<<<<<< HEAD
+=======
+	irq_work_sync(&t->work);
+>>>>>>> origin/android16-base
 	iio_trigger_free(t->trig);
 
 	list_del(&t->l);
@@ -210,9 +214,19 @@ static int iio_sysfs_trigger_remove(int id)
 
 static int __init iio_sysfs_trig_init(void)
 {
+<<<<<<< HEAD
 	device_initialize(&iio_sysfs_trig_dev);
 	dev_set_name(&iio_sysfs_trig_dev, "iio_sysfs_trigger");
 	return device_add(&iio_sysfs_trig_dev);
+=======
+	int ret;
+	device_initialize(&iio_sysfs_trig_dev);
+	dev_set_name(&iio_sysfs_trig_dev, "iio_sysfs_trigger");
+	ret = device_add(&iio_sysfs_trig_dev);
+	if (ret)
+		put_device(&iio_sysfs_trig_dev);
+	return ret;
+>>>>>>> origin/android16-base
 }
 module_init(iio_sysfs_trig_init);
 

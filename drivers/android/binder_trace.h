@@ -409,6 +409,10 @@ TRACE_EVENT(binder_return,
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/android
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE binder_trace
 #include <trace/define_trace.h>

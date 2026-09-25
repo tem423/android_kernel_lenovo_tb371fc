@@ -2638,7 +2638,10 @@ wlc_lcnphy_tx_iqlo_cal(struct brcms_phy *pi,
 
 	struct lcnphy_txgains cal_gains, temp_gains;
 	u16 hash;
+<<<<<<< HEAD
 	u8 band_idx;
+=======
+>>>>>>> origin/android16-base
 	int j;
 	u16 ncorr_override[5];
 	u16 syst_coeffs[] = { 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -2670,6 +2673,12 @@ wlc_lcnphy_tx_iqlo_cal(struct brcms_phy *pi,
 	u16 *values_to_save;
 	struct brcms_phy_lcnphy *pi_lcn = pi->u.pi_lcnphy;
 
+<<<<<<< HEAD
+=======
+	if (WARN_ON(CHSPEC_IS5G(pi->radio_chanspec)))
+		return;
+
+>>>>>>> origin/android16-base
 	values_to_save = kmalloc_array(20, sizeof(u16), GFP_ATOMIC);
 	if (NULL == values_to_save)
 		return;
@@ -2733,6 +2742,7 @@ wlc_lcnphy_tx_iqlo_cal(struct brcms_phy *pi,
 	hash = (target_gains->gm_gain << 8) |
 	       (target_gains->pga_gain << 4) | (target_gains->pad_gain);
 
+<<<<<<< HEAD
 	band_idx = (CHSPEC_IS5G(pi->radio_chanspec) ? 1 : 0);
 
 	cal_gains = *target_gains;
@@ -2747,6 +2757,20 @@ wlc_lcnphy_tx_iqlo_cal(struct brcms_phy *pi,
 				tbl_iqcal_gainparams_lcnphy[band_idx][j][3];
 			memcpy(ncorr_override,
 			       &tbl_iqcal_gainparams_lcnphy[band_idx][j][3],
+=======
+	cal_gains = *target_gains;
+	memset(ncorr_override, 0, sizeof(ncorr_override));
+	for (j = 0; j < iqcal_gainparams_numgains_lcnphy[0]; j++) {
+		if (hash == tbl_iqcal_gainparams_lcnphy[0][j][0]) {
+			cal_gains.gm_gain =
+				tbl_iqcal_gainparams_lcnphy[0][j][1];
+			cal_gains.pga_gain =
+				tbl_iqcal_gainparams_lcnphy[0][j][2];
+			cal_gains.pad_gain =
+				tbl_iqcal_gainparams_lcnphy[0][j][3];
+			memcpy(ncorr_override,
+			       &tbl_iqcal_gainparams_lcnphy[0][j][3],
+>>>>>>> origin/android16-base
 			       sizeof(ncorr_override));
 			break;
 		}

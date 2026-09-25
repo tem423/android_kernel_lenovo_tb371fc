@@ -1498,7 +1498,11 @@ void *radix_tree_tag_clear(struct radix_tree_root *root,
 {
 	struct radix_tree_node *node, *parent;
 	unsigned long maxindex;
+<<<<<<< HEAD
 	int uninitialized_var(offset);
+=======
+	int offset;
+>>>>>>> origin/android16-base
 
 	radix_tree_load_root(root, &node, &maxindex);
 	if (index > maxindex)

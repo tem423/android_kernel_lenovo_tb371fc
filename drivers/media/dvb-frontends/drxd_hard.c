@@ -2972,7 +2972,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(drxd_attach);
+=======
+EXPORT_SYMBOL_GPL(drxd_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("DRXD driver");
 MODULE_AUTHOR("Micronas");

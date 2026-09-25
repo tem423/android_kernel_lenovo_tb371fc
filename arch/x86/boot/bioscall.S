@@ -35,7 +35,11 @@ intcall:
 	movw	%dx, %si
 	movw	%sp, %di
 	movw	$11, %cx
+<<<<<<< HEAD
 	rep; movsd
+=======
+	rep; movsl
+>>>>>>> origin/android16-base
 
 	/* Pop full state from the stack */
 	popal
@@ -70,7 +74,11 @@ intcall:
 	jz	4f
 	movw	%sp, %si
 	movw	$11, %cx
+<<<<<<< HEAD
 	rep; movsd
+=======
+	rep; movsl
+>>>>>>> origin/android16-base
 4:	addw	$44, %sp
 
 	/* Restore state and return */

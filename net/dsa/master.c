@@ -87,8 +87,12 @@ static void dsa_master_get_strings(struct net_device *dev, uint32_t stringset,
 	struct dsa_switch *ds = cpu_dp->ds;
 	int port = cpu_dp->index;
 	int len = ETH_GSTRING_LEN;
+<<<<<<< HEAD
 	int mcount = 0, count;
 	unsigned int i;
+=======
+	int mcount = 0, count, i;
+>>>>>>> origin/android16-base
 	uint8_t pfx[4];
 	uint8_t *ndata;
 
@@ -118,6 +122,11 @@ static void dsa_master_get_strings(struct net_device *dev, uint32_t stringset,
 		 */
 		ds->ops->get_strings(ds, port, stringset, ndata);
 		count = ds->ops->get_sset_count(ds, port, stringset);
+<<<<<<< HEAD
+=======
+		if (count < 0)
+			return;
+>>>>>>> origin/android16-base
 		for (i = 0; i < count; i++) {
 			memmove(ndata + (i * len + sizeof(pfx)),
 				ndata + i * len, len - sizeof(pfx));

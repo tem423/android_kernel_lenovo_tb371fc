@@ -426,14 +426,22 @@ static bool trap_bvr(struct kvm_vcpu *vcpu,
 		     struct sys_reg_params *p,
 		     const struct sys_reg_desc *rd)
 {
+<<<<<<< HEAD
 	u64 *dbg_reg = &vcpu->arch.vcpu_debug_state.dbg_bvr[rd->reg];
+=======
+	u64 *dbg_reg = &vcpu->arch.vcpu_debug_state.dbg_bvr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (p->is_write)
 		reg_to_dbg(vcpu, p, dbg_reg);
 	else
 		dbg_to_reg(vcpu, p, dbg_reg);
 
+<<<<<<< HEAD
 	trace_trap_reg(__func__, rd->reg, p->is_write, *dbg_reg);
+=======
+	trace_trap_reg(__func__, rd->CRm, p->is_write, *dbg_reg);
+>>>>>>> origin/android16-base
 
 	return true;
 }
@@ -441,7 +449,11 @@ static bool trap_bvr(struct kvm_vcpu *vcpu,
 static int set_bvr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 		const struct kvm_one_reg *reg, void __user *uaddr)
 {
+<<<<<<< HEAD
 	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_bvr[rd->reg];
+=======
+	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_bvr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (copy_from_user(r, uaddr, KVM_REG_SIZE(reg->id)) != 0)
 		return -EFAULT;
@@ -451,7 +463,11 @@ static int set_bvr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 static int get_bvr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 	const struct kvm_one_reg *reg, void __user *uaddr)
 {
+<<<<<<< HEAD
 	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_bvr[rd->reg];
+=======
+	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_bvr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (copy_to_user(uaddr, r, KVM_REG_SIZE(reg->id)) != 0)
 		return -EFAULT;
@@ -461,21 +477,33 @@ static int get_bvr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 static void reset_bvr(struct kvm_vcpu *vcpu,
 		      const struct sys_reg_desc *rd)
 {
+<<<<<<< HEAD
 	vcpu->arch.vcpu_debug_state.dbg_bvr[rd->reg] = rd->val;
+=======
+	vcpu->arch.vcpu_debug_state.dbg_bvr[rd->CRm] = rd->val;
+>>>>>>> origin/android16-base
 }
 
 static bool trap_bcr(struct kvm_vcpu *vcpu,
 		     struct sys_reg_params *p,
 		     const struct sys_reg_desc *rd)
 {
+<<<<<<< HEAD
 	u64 *dbg_reg = &vcpu->arch.vcpu_debug_state.dbg_bcr[rd->reg];
+=======
+	u64 *dbg_reg = &vcpu->arch.vcpu_debug_state.dbg_bcr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (p->is_write)
 		reg_to_dbg(vcpu, p, dbg_reg);
 	else
 		dbg_to_reg(vcpu, p, dbg_reg);
 
+<<<<<<< HEAD
 	trace_trap_reg(__func__, rd->reg, p->is_write, *dbg_reg);
+=======
+	trace_trap_reg(__func__, rd->CRm, p->is_write, *dbg_reg);
+>>>>>>> origin/android16-base
 
 	return true;
 }
@@ -483,7 +511,11 @@ static bool trap_bcr(struct kvm_vcpu *vcpu,
 static int set_bcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 		const struct kvm_one_reg *reg, void __user *uaddr)
 {
+<<<<<<< HEAD
 	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_bcr[rd->reg];
+=======
+	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_bcr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (copy_from_user(r, uaddr, KVM_REG_SIZE(reg->id)) != 0)
 		return -EFAULT;
@@ -494,7 +526,11 @@ static int set_bcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 static int get_bcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 	const struct kvm_one_reg *reg, void __user *uaddr)
 {
+<<<<<<< HEAD
 	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_bcr[rd->reg];
+=======
+	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_bcr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (copy_to_user(uaddr, r, KVM_REG_SIZE(reg->id)) != 0)
 		return -EFAULT;
@@ -504,22 +540,35 @@ static int get_bcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 static void reset_bcr(struct kvm_vcpu *vcpu,
 		      const struct sys_reg_desc *rd)
 {
+<<<<<<< HEAD
 	vcpu->arch.vcpu_debug_state.dbg_bcr[rd->reg] = rd->val;
+=======
+	vcpu->arch.vcpu_debug_state.dbg_bcr[rd->CRm] = rd->val;
+>>>>>>> origin/android16-base
 }
 
 static bool trap_wvr(struct kvm_vcpu *vcpu,
 		     struct sys_reg_params *p,
 		     const struct sys_reg_desc *rd)
 {
+<<<<<<< HEAD
 	u64 *dbg_reg = &vcpu->arch.vcpu_debug_state.dbg_wvr[rd->reg];
+=======
+	u64 *dbg_reg = &vcpu->arch.vcpu_debug_state.dbg_wvr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (p->is_write)
 		reg_to_dbg(vcpu, p, dbg_reg);
 	else
 		dbg_to_reg(vcpu, p, dbg_reg);
 
+<<<<<<< HEAD
 	trace_trap_reg(__func__, rd->reg, p->is_write,
 		vcpu->arch.vcpu_debug_state.dbg_wvr[rd->reg]);
+=======
+	trace_trap_reg(__func__, rd->CRm, p->is_write,
+		vcpu->arch.vcpu_debug_state.dbg_wvr[rd->CRm]);
+>>>>>>> origin/android16-base
 
 	return true;
 }
@@ -527,7 +576,11 @@ static bool trap_wvr(struct kvm_vcpu *vcpu,
 static int set_wvr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 		const struct kvm_one_reg *reg, void __user *uaddr)
 {
+<<<<<<< HEAD
 	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_wvr[rd->reg];
+=======
+	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_wvr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (copy_from_user(r, uaddr, KVM_REG_SIZE(reg->id)) != 0)
 		return -EFAULT;
@@ -537,7 +590,11 @@ static int set_wvr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 static int get_wvr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 	const struct kvm_one_reg *reg, void __user *uaddr)
 {
+<<<<<<< HEAD
 	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_wvr[rd->reg];
+=======
+	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_wvr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (copy_to_user(uaddr, r, KVM_REG_SIZE(reg->id)) != 0)
 		return -EFAULT;
@@ -547,21 +604,33 @@ static int get_wvr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 static void reset_wvr(struct kvm_vcpu *vcpu,
 		      const struct sys_reg_desc *rd)
 {
+<<<<<<< HEAD
 	vcpu->arch.vcpu_debug_state.dbg_wvr[rd->reg] = rd->val;
+=======
+	vcpu->arch.vcpu_debug_state.dbg_wvr[rd->CRm] = rd->val;
+>>>>>>> origin/android16-base
 }
 
 static bool trap_wcr(struct kvm_vcpu *vcpu,
 		     struct sys_reg_params *p,
 		     const struct sys_reg_desc *rd)
 {
+<<<<<<< HEAD
 	u64 *dbg_reg = &vcpu->arch.vcpu_debug_state.dbg_wcr[rd->reg];
+=======
+	u64 *dbg_reg = &vcpu->arch.vcpu_debug_state.dbg_wcr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (p->is_write)
 		reg_to_dbg(vcpu, p, dbg_reg);
 	else
 		dbg_to_reg(vcpu, p, dbg_reg);
 
+<<<<<<< HEAD
 	trace_trap_reg(__func__, rd->reg, p->is_write, *dbg_reg);
+=======
+	trace_trap_reg(__func__, rd->CRm, p->is_write, *dbg_reg);
+>>>>>>> origin/android16-base
 
 	return true;
 }
@@ -569,7 +638,11 @@ static bool trap_wcr(struct kvm_vcpu *vcpu,
 static int set_wcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 		const struct kvm_one_reg *reg, void __user *uaddr)
 {
+<<<<<<< HEAD
 	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_wcr[rd->reg];
+=======
+	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_wcr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (copy_from_user(r, uaddr, KVM_REG_SIZE(reg->id)) != 0)
 		return -EFAULT;
@@ -579,7 +652,11 @@ static int set_wcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 static int get_wcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 	const struct kvm_one_reg *reg, void __user *uaddr)
 {
+<<<<<<< HEAD
 	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_wcr[rd->reg];
+=======
+	__u64 *r = &vcpu->arch.vcpu_debug_state.dbg_wcr[rd->CRm];
+>>>>>>> origin/android16-base
 
 	if (copy_to_user(uaddr, r, KVM_REG_SIZE(reg->id)) != 0)
 		return -EFAULT;
@@ -589,7 +666,11 @@ static int get_wcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
 static void reset_wcr(struct kvm_vcpu *vcpu,
 		      const struct sys_reg_desc *rd)
 {
+<<<<<<< HEAD
 	vcpu->arch.vcpu_debug_state.dbg_wcr[rd->reg] = rd->val;
+=======
+	vcpu->arch.vcpu_debug_state.dbg_wcr[rd->CRm] = rd->val;
+>>>>>>> origin/android16-base
 }
 
 static void reset_amair_el1(struct kvm_vcpu *vcpu, const struct sys_reg_desc *r)
@@ -619,6 +700,13 @@ static void reset_pmcr(struct kvm_vcpu *vcpu, const struct sys_reg_desc *r)
 {
 	u64 pmcr, val;
 
+<<<<<<< HEAD
+=======
+	/* No PMU available, PMCR_EL0 may UNDEF... */
+	if (!kvm_arm_support_pmu_v3())
+		return;
+
+>>>>>>> origin/android16-base
 	pmcr = read_sysreg(pmcr_el0);
 	/*
 	 * Writable bits of PMCR_EL0 (ARMV8_PMU_PMCR_MASK) are reset to UNKNOWN
@@ -1045,6 +1133,19 @@ static u64 read_id_reg(struct sys_reg_desc const *r, bool raz)
 			kvm_debug("LORegions unsupported for guests, suppressing\n");
 
 		val &= ~(0xfUL << ID_AA64MMFR1_LOR_SHIFT);
+<<<<<<< HEAD
+=======
+	} else if (id == SYS_ID_AA64DFR0_EL1) {
+		/* Limit guests to PMUv3 for ARMv8.1 */
+		val = cpuid_feature_cap_perfmon_field(val,
+						ID_AA64DFR0_PMUVER_SHIFT,
+						ID_AA64DFR0_PMUVER_8_1);
+	} else if (id == SYS_ID_DFR0_EL1) {
+		/* Limit guests to PMUv3 for ARMv8.1 */
+		val = cpuid_feature_cap_perfmon_field(val,
+						ID_DFR0_PERFMON_SHIFT,
+						ID_DFR0_PERFMON_8_1);
+>>>>>>> origin/android16-base
 	}
 
 	return val;
@@ -1661,6 +1762,10 @@ static const struct sys_reg_desc cp15_regs[] = {
 	{ Op1( 0), CRn( 2), CRm( 0), Op2( 0), access_vm_reg, NULL, c2_TTBR0 },
 	{ Op1( 0), CRn( 2), CRm( 0), Op2( 1), access_vm_reg, NULL, c2_TTBR1 },
 	{ Op1( 0), CRn( 2), CRm( 0), Op2( 2), access_vm_reg, NULL, c2_TTBCR },
+<<<<<<< HEAD
+=======
+	{ Op1( 0), CRn( 2), CRm( 0), Op2( 3), access_vm_reg, NULL, c2_TTBCR2 },
+>>>>>>> origin/android16-base
 	{ Op1( 0), CRn( 3), CRm( 0), Op2( 0), access_vm_reg, NULL, c3_DACR },
 	{ Op1( 0), CRn( 5), CRm( 0), Op2( 0), access_vm_reg, NULL, c5_DFSR },
 	{ Op1( 0), CRn( 5), CRm( 0), Op2( 1), access_vm_reg, NULL, c5_IFSR },

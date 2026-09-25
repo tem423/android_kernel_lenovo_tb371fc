@@ -22,7 +22,11 @@
 
 static inline unsigned long arch_local_save_flags(void)
 {
+<<<<<<< HEAD
 	return RDCTL(CTL_STATUS);
+=======
+	return RDCTL(CTL_FSTATUS);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -31,7 +35,11 @@ static inline unsigned long arch_local_save_flags(void)
  */
 static inline void arch_local_irq_restore(unsigned long flags)
 {
+<<<<<<< HEAD
 	WRCTL(CTL_STATUS, flags);
+=======
+	WRCTL(CTL_FSTATUS, flags);
+>>>>>>> origin/android16-base
 }
 
 static inline void arch_local_irq_disable(void)

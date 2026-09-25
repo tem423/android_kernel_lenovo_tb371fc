@@ -338,7 +338,11 @@ static void amdgpu_i2c_put_byte(struct amdgpu_i2c_chan *i2c_bus,
 void
 amdgpu_i2c_router_select_ddc_port(const struct amdgpu_connector *amdgpu_connector)
 {
+<<<<<<< HEAD
 	u8 val;
+=======
+	u8 val = 0;
+>>>>>>> origin/android16-base
 
 	if (!amdgpu_connector->router.ddc_valid)
 		return;

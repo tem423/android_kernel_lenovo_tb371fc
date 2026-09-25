@@ -454,7 +454,11 @@ static int otm8009a_probe(struct mipi_dsi_device *dsi)
 	ctx->panel.funcs = &otm8009a_drm_funcs;
 
 	ctx->bl_dev = devm_backlight_device_register(dev, dev_name(dev),
+<<<<<<< HEAD
 						     dsi->host->dev, ctx,
+=======
+						     dev, ctx,
+>>>>>>> origin/android16-base
 						     &otm8009a_backlight_ops,
 						     NULL);
 	if (IS_ERR(ctx->bl_dev)) {

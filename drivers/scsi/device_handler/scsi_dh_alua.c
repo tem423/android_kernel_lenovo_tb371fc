@@ -522,7 +522,12 @@ static int alua_rtpg(struct scsi_device *sdev, struct alua_port_group *pg)
 	struct alua_port_group *tmp_pg;
 	int len, k, off, bufflen = ALUA_RTPG_SIZE;
 	unsigned char *desc, *buff;
+<<<<<<< HEAD
 	unsigned err, retval;
+=======
+	unsigned err;
+	int retval;
+>>>>>>> origin/android16-base
 	unsigned int tpg_desc_tbl_off;
 	unsigned char orig_transition_tmo;
 	unsigned long flags;
@@ -562,12 +567,20 @@ static int alua_rtpg(struct scsi_device *sdev, struct alua_port_group *pg)
 			kfree(buff);
 			return SCSI_DH_OK;
 		}
+<<<<<<< HEAD
 		if (!scsi_sense_valid(&sense_hdr)) {
+=======
+		if (retval < 0 || !scsi_sense_valid(&sense_hdr)) {
+>>>>>>> origin/android16-base
 			sdev_printk(KERN_INFO, sdev,
 				    "%s: rtpg failed, result %d\n",
 				    ALUA_DH_NAME, retval);
 			kfree(buff);
+<<<<<<< HEAD
 			if (driver_byte(retval) == DRIVER_ERROR)
+=======
+			if (retval < 0)
+>>>>>>> origin/android16-base
 				return SCSI_DH_DEV_TEMP_BUSY;
 			return SCSI_DH_IO;
 		}
@@ -579,10 +592,18 @@ static int alua_rtpg(struct scsi_device *sdev, struct alua_port_group *pg)
 		 * even though it shouldn't according to T10.
 		 * The retry without rtpg_ext_hdr_req set
 		 * handles this.
+<<<<<<< HEAD
 		 */
 		if (!(pg->flags & ALUA_RTPG_EXT_HDR_UNSUPP) &&
 		    sense_hdr.sense_key == ILLEGAL_REQUEST &&
 		    sense_hdr.asc == 0x24 && sense_hdr.ascq == 0) {
+=======
+		 * Note:  some arrays return a sense key of ILLEGAL_REQUEST
+		 * with ASC 00h if they don't support the extended header.
+		 */
+		if (!(pg->flags & ALUA_RTPG_EXT_HDR_UNSUPP) &&
+		    sense_hdr.sense_key == ILLEGAL_REQUEST) {
+>>>>>>> origin/android16-base
 			pg->flags |= ALUA_RTPG_EXT_HDR_UNSUPP;
 			goto retry;
 		}
@@ -672,8 +693,13 @@ static int alua_rtpg(struct scsi_device *sdev, struct alua_port_group *pg)
 					rcu_read_lock();
 					list_for_each_entry_rcu(h,
 						&tmp_pg->dh_list, node) {
+<<<<<<< HEAD
 						/* h->sdev should always be valid */
 						BUG_ON(!h->sdev);
+=======
+						if (!h->sdev)
+							continue;
+>>>>>>> origin/android16-base
 						h->sdev->access_state = desc[0];
 					}
 					rcu_read_unlock();
@@ -719,7 +745,12 @@ static int alua_rtpg(struct scsi_device *sdev, struct alua_port_group *pg)
 			pg->expiry = 0;
 			rcu_read_lock();
 			list_for_each_entry_rcu(h, &pg->dh_list, node) {
+<<<<<<< HEAD
 				BUG_ON(!h->sdev);
+=======
+				if (!h->sdev)
+					continue;
+>>>>>>> origin/android16-base
 				h->sdev->access_state =
 					(pg->state & SCSI_ACCESS_STATE_MASK);
 				if (pg->pref)
@@ -787,11 +818,19 @@ static unsigned alua_stpg(struct scsi_device *sdev, struct alua_port_group *pg)
 	retval = submit_stpg(sdev, pg->group_id, &sense_hdr);
 
 	if (retval) {
+<<<<<<< HEAD
 		if (!scsi_sense_valid(&sense_hdr)) {
 			sdev_printk(KERN_INFO, sdev,
 				    "%s: stpg failed, result %d",
 				    ALUA_DH_NAME, retval);
 			if (driver_byte(retval) == DRIVER_ERROR)
+=======
+		if (retval < 0 || !scsi_sense_valid(&sense_hdr)) {
+			sdev_printk(KERN_INFO, sdev,
+				    "%s: stpg failed, result %d",
+				    ALUA_DH_NAME, retval);
+			if (retval < 0)
+>>>>>>> origin/android16-base
 				return SCSI_DH_DEV_TEMP_BUSY;
 		} else {
 			sdev_printk(KERN_INFO, sdev, "%s: stpg failed\n",
@@ -1047,10 +1086,19 @@ static int alua_activate(struct scsi_device *sdev,
 	rcu_read_unlock();
 	mutex_unlock(&h->init_mutex);
 
+<<<<<<< HEAD
 	if (alua_rtpg_queue(pg, sdev, qdata, true))
 		fn = NULL;
 	else
 		err = SCSI_DH_DEV_OFFLINED;
+=======
+	if (alua_rtpg_queue(pg, sdev, qdata, true)) {
+		fn = NULL;
+	} else {
+		kfree(qdata);
+		err = SCSI_DH_DEV_OFFLINED;
+	}
+>>>>>>> origin/android16-base
 	kref_put(&pg->kref, release_port_group);
 out:
 	if (fn)
@@ -1160,7 +1208,10 @@ static void alua_bus_detach(struct scsi_device *sdev)
 	spin_lock(&h->pg_lock);
 	pg = rcu_dereference_protected(h->pg, lockdep_is_held(&h->pg_lock));
 	rcu_assign_pointer(h->pg, NULL);
+<<<<<<< HEAD
 	h->sdev = NULL;
+=======
+>>>>>>> origin/android16-base
 	spin_unlock(&h->pg_lock);
 	if (pg) {
 		spin_lock_irq(&pg->lock);
@@ -1169,6 +1220,10 @@ static void alua_bus_detach(struct scsi_device *sdev)
 		kref_put(&pg->kref, release_port_group);
 	}
 	sdev->handler_data = NULL;
+<<<<<<< HEAD
+=======
+	synchronize_rcu();
+>>>>>>> origin/android16-base
 	kfree(h);
 }
 

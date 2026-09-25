@@ -16,7 +16,11 @@
 
 #include <linux/string.h>
 
+<<<<<<< HEAD
 #if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_MDA_CONSOLE)
+=======
+#if IS_ENABLED(CONFIG_VGA_CONSOLE) || IS_ENABLED(CONFIG_MDA_CONSOLE)
+>>>>>>> origin/android16-base
 #include <asm/vga.h>
 #endif
 

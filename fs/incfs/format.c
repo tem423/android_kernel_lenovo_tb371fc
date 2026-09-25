@@ -42,7 +42,11 @@ void incfs_free_bfc(struct backing_file_context *bfc)
 	kfree(bfc);
 }
 
+<<<<<<< HEAD
 loff_t incfs_get_end_offset(struct file *f)
+=======
+static loff_t incfs_get_end_offset(struct file *f)
+>>>>>>> origin/android16-base
 {
 	/*
 	 * This function assumes that file size and the end-offset
@@ -91,11 +95,48 @@ static int truncate_backing_file(struct backing_file_context *bfc,
 	return result;
 }
 
+<<<<<<< HEAD
+=======
+static int write_to_bf(struct backing_file_context *bfc, const void *buf,
+			size_t count, loff_t pos)
+{
+	ssize_t res = incfs_kwrite(bfc, buf, count, pos);
+
+	if (res < 0)
+		return res;
+	if (res != count)
+		return -EIO;
+	return 0;
+}
+
+static int append_zeros_no_fallocate(struct backing_file_context *bfc,
+				     size_t file_size, size_t len)
+{
+	u8 buffer[256] = {};
+	size_t i;
+
+	for (i = 0; i < len; i += sizeof(buffer)) {
+		int to_write = len - i > sizeof(buffer)
+			? sizeof(buffer) : len - i;
+		int err = write_to_bf(bfc, buffer, to_write, file_size + i);
+
+		if (err)
+			return err;
+	}
+
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 /* Append a given number of zero bytes to the end of the backing file. */
 static int append_zeros(struct backing_file_context *bfc, size_t len)
 {
 	loff_t file_size = 0;
 	loff_t new_last_byte_offset = 0;
+<<<<<<< HEAD
+=======
+	int result;
+>>>>>>> origin/android16-base
 
 	if (!bfc)
 		return -EFAULT;
@@ -112,6 +153,7 @@ static int append_zeros(struct backing_file_context *bfc, size_t len)
 	 */
 	file_size = incfs_get_end_offset(bfc->bc_file);
 	new_last_byte_offset = file_size + len - 1;
+<<<<<<< HEAD
 	return vfs_fallocate(bfc->bc_file, 0, new_last_byte_offset, 1);
 }
 
@@ -145,6 +187,13 @@ static u32 calc_md_crc(struct incfs_md_header *record)
 	record->h_next_md_offset = saved_md_offset;
 
 	return result;
+=======
+	result = vfs_fallocate(bfc->bc_file, 0, new_last_byte_offset, 1);
+	if (result != -EOPNOTSUPP)
+		return result;
+
+	return append_zeros_no_fallocate(bfc, file_size, len);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -170,9 +219,13 @@ static int append_md_to_backing_file(struct backing_file_context *bfc,
 
 	record_size = le16_to_cpu(record->h_record_size);
 	file_pos = incfs_get_end_offset(bfc->bc_file);
+<<<<<<< HEAD
 	record->h_prev_md_offset = cpu_to_le64(bfc->bc_last_md_record_offset);
 	record->h_next_md_offset = 0;
 	record->h_record_crc = cpu_to_le32(calc_md_crc(record));
+=======
+	record->h_next_md_offset = 0;
+>>>>>>> origin/android16-base
 
 	/* Write the metadata record to the end of the backing file */
 	record_offset = file_pos;
@@ -206,6 +259,7 @@ static int append_md_to_backing_file(struct backing_file_context *bfc,
 	return result;
 }
 
+<<<<<<< HEAD
 int incfs_write_file_header_flags(struct backing_file_context *bfc, u32 flags)
 {
 	if (!bfc)
@@ -216,6 +270,8 @@ int incfs_write_file_header_flags(struct backing_file_context *bfc, u32 flags)
 				    fh_file_header_flags));
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Reserve 0-filled space for the blockmap body, and append
  * incfs_blockmap metadata record pointing to it.
@@ -254,6 +310,7 @@ int incfs_write_blockmap_to_backing_file(struct backing_file_context *bfc,
 	return result;
 }
 
+<<<<<<< HEAD
 /*
  * Write file attribute data and metadata record to the backing file.
  */
@@ -299,6 +356,11 @@ int incfs_write_file_attr_to_backing_file(struct backing_file_context *bfc,
 
 int incfs_write_signature_to_backing_file(struct backing_file_context *bfc,
 					  struct mem_range sig, u32 tree_size)
+=======
+int incfs_write_signature_to_backing_file(struct backing_file_context *bfc,
+					struct mem_range sig, u32 tree_size,
+					loff_t *tree_offset, loff_t *sig_offset)
+>>>>>>> origin/android16-base
 {
 	struct incfs_file_signature sg = {};
 	int result = 0;
@@ -317,12 +379,19 @@ int incfs_write_signature_to_backing_file(struct backing_file_context *bfc,
 	sg.sg_header.h_record_size = cpu_to_le16(sizeof(sg));
 	sg.sg_header.h_next_md_offset = cpu_to_le64(0);
 	if (sig.data != NULL && sig.len > 0) {
+<<<<<<< HEAD
 		loff_t pos = incfs_get_end_offset(bfc->bc_file);
 
 		sg.sg_sig_size = cpu_to_le32(sig.len);
 		sg.sg_sig_offset = cpu_to_le64(pos);
 
 		result = write_to_bf(bfc, sig.data, sig.len, pos);
+=======
+		sg.sg_sig_size = cpu_to_le32(sig.len);
+		sg.sg_sig_offset = cpu_to_le64(rollback_pos);
+
+		result = write_to_bf(bfc, sig.data, sig.len, rollback_pos);
+>>>>>>> origin/android16-base
 		if (result)
 			goto err;
 	}
@@ -358,13 +427,119 @@ err:
 	if (result)
 		/* Error, rollback file changes */
 		truncate_backing_file(bfc, rollback_pos);
+<<<<<<< HEAD
+=======
+	else {
+		if (tree_offset)
+			*tree_offset = tree_area_pos;
+		if (sig_offset)
+			*sig_offset = rollback_pos;
+	}
+
+	return result;
+}
+
+static int write_new_status_to_backing_file(struct backing_file_context *bfc,
+				       u32 data_blocks_written,
+				       u32 hash_blocks_written)
+{
+	int result;
+	loff_t rollback_pos;
+	struct incfs_status is = {
+		.is_header = {
+			.h_md_entry_type = INCFS_MD_STATUS,
+			.h_record_size = cpu_to_le16(sizeof(is)),
+		},
+		.is_data_blocks_written = cpu_to_le32(data_blocks_written),
+		.is_hash_blocks_written = cpu_to_le32(hash_blocks_written),
+	};
+
+	LOCK_REQUIRED(bfc->bc_mutex);
+	rollback_pos = incfs_get_end_offset(bfc->bc_file);
+	result = append_md_to_backing_file(bfc, &is.is_header);
+	if (result)
+		truncate_backing_file(bfc, rollback_pos);
+
+	return result;
+}
+
+int incfs_write_status_to_backing_file(struct backing_file_context *bfc,
+				       loff_t status_offset,
+				       u32 data_blocks_written,
+				       u32 hash_blocks_written)
+{
+	struct incfs_status is;
+	int result;
+
+	if (!bfc)
+		return -EFAULT;
+
+	if (status_offset == 0)
+		return write_new_status_to_backing_file(bfc,
+				data_blocks_written, hash_blocks_written);
+
+	result = incfs_kread(bfc, &is, sizeof(is), status_offset);
+	if (result != sizeof(is))
+		return -EIO;
+
+	is.is_data_blocks_written = cpu_to_le32(data_blocks_written);
+	is.is_hash_blocks_written = cpu_to_le32(hash_blocks_written);
+	result = incfs_kwrite(bfc, &is, sizeof(is), status_offset);
+	if (result != sizeof(is))
+		return -EIO;
+
+	return 0;
+}
+
+int incfs_write_verity_signature_to_backing_file(
+		struct backing_file_context *bfc, struct mem_range signature,
+		loff_t *offset)
+{
+	struct incfs_file_verity_signature vs = {};
+	int result;
+	loff_t pos;
+
+	/* No verity signature section is equivalent to an empty section */
+	if (signature.data == NULL || signature.len == 0)
+		return 0;
+
+	pos = incfs_get_end_offset(bfc->bc_file);
+
+	vs = (struct incfs_file_verity_signature) {
+		.vs_header = (struct incfs_md_header) {
+			.h_md_entry_type = INCFS_MD_VERITY_SIGNATURE,
+			.h_record_size = cpu_to_le16(sizeof(vs)),
+			.h_next_md_offset = cpu_to_le64(0),
+		},
+		.vs_size = cpu_to_le32(signature.len),
+		.vs_offset = cpu_to_le64(pos),
+	};
+
+	result = write_to_bf(bfc, signature.data, signature.len, pos);
+	if (result)
+		goto err;
+
+	result = append_md_to_backing_file(bfc, &vs.vs_header);
+	if (result)
+		goto err;
+
+	*offset = pos;
+err:
+	if (result)
+		/* Error, rollback file changes */
+		truncate_backing_file(bfc, pos);
+>>>>>>> origin/android16-base
 	return result;
 }
 
 /*
  * Write a backing file header
  * It should always be called only on empty file.
+<<<<<<< HEAD
  * incfs_super_block.s_first_md_offset is 0 for now, but will be updated
+=======
+ * fh.fh_first_md_offset is 0 for now, but will be updated
+>>>>>>> origin/android16-base
  * once first metadata record is added.
  */
 int incfs_write_fh_to_backing_file(struct backing_file_context *bfc,
@@ -394,6 +569,41 @@ int incfs_write_fh_to_backing_file(struct backing_file_context *bfc,
 	return write_to_bf(bfc, &fh, sizeof(fh), file_pos);
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * Write a backing file header for a mapping file
+ * It should always be called only on empty file.
+ */
+int incfs_write_mapping_fh_to_backing_file(struct backing_file_context *bfc,
+				incfs_uuid_t *uuid, u64 file_size, u64 offset)
+{
+	struct incfs_file_header fh = {};
+	loff_t file_pos = 0;
+
+	if (!bfc)
+		return -EFAULT;
+
+	fh.fh_magic = cpu_to_le64(INCFS_MAGIC_NUMBER);
+	fh.fh_version = cpu_to_le64(INCFS_FORMAT_CURRENT_VER);
+	fh.fh_header_size = cpu_to_le16(sizeof(fh));
+	fh.fh_original_offset = cpu_to_le64(offset);
+	fh.fh_data_block_size = cpu_to_le16(INCFS_DATA_FILE_BLOCK_SIZE);
+
+	fh.fh_mapped_file_size = cpu_to_le64(file_size);
+	fh.fh_original_uuid = *uuid;
+	fh.fh_flags = cpu_to_le32(INCFS_FILE_MAPPED);
+
+	LOCK_REQUIRED(bfc->bc_mutex);
+
+	file_pos = incfs_get_end_offset(bfc->bc_file);
+	if (file_pos != 0)
+		return -EEXIST;
+
+	return write_to_bf(bfc, &fh, sizeof(fh), file_pos);
+}
+
+>>>>>>> origin/android16-base
 /* Write a given data block and update file's blockmap to point it. */
 int incfs_write_data_block_to_backing_file(struct backing_file_context *bfc,
 				     struct mem_range block, int block_index,
@@ -469,11 +679,15 @@ int incfs_write_hash_block_to_backing_file(struct backing_file_context *bfc,
 	bm_entry.me_data_offset_lo = cpu_to_le32((u32)data_offset);
 	bm_entry.me_data_offset_hi = cpu_to_le16((u16)(data_offset >> 32));
 	bm_entry.me_data_size = cpu_to_le16(INCFS_DATA_FILE_BLOCK_SIZE);
+<<<<<<< HEAD
 	bm_entry.me_flags = cpu_to_le16(INCFS_BLOCK_HASH);
+=======
+>>>>>>> origin/android16-base
 
 	return write_to_bf(bfc, &bm_entry, sizeof(bm_entry), bm_entry_off);
 }
 
+<<<<<<< HEAD
 /* Initialize a new image in a given backing file. */
 int incfs_make_empty_backing_file(struct backing_file_context *bfc,
 				  incfs_uuid_t *uuid, u64 file_size)
@@ -497,6 +711,8 @@ out:
 	return result;
 }
 
+=======
+>>>>>>> origin/android16-base
 int incfs_read_blockmap_entry(struct backing_file_context *bfc, int block_index,
 			loff_t bm_base_off,
 			struct incfs_blockmap_entry *bm_entry)
@@ -575,7 +791,11 @@ int incfs_read_file_header(struct backing_file_context *bfc,
 	if (file_size)
 		*file_size = le64_to_cpu(fh.fh_file_size);
 	if (flags)
+<<<<<<< HEAD
 		*flags = le32_to_cpu(fh.fh_file_header_flags);
+=======
+		*flags = le32_to_cpu(fh.fh_flags);
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -590,15 +810,21 @@ int incfs_read_next_metadata_record(struct backing_file_context *bfc,
 	ssize_t bytes_read = 0;
 	size_t md_record_size = 0;
 	loff_t next_record = 0;
+<<<<<<< HEAD
 	loff_t prev_record = 0;
+=======
+>>>>>>> origin/android16-base
 	int res = 0;
 	struct incfs_md_header *md_hdr = NULL;
 
 	if (!bfc || !handler)
 		return -EFAULT;
 
+<<<<<<< HEAD
 	LOCK_REQUIRED(bfc->bc_mutex);
 
+=======
+>>>>>>> origin/android16-base
 	if (handler->md_record_offset == 0)
 		return -EPERM;
 
@@ -612,11 +838,18 @@ int incfs_read_next_metadata_record(struct backing_file_context *bfc,
 
 	md_hdr = &handler->md_buffer.md_header;
 	next_record = le64_to_cpu(md_hdr->h_next_md_offset);
+<<<<<<< HEAD
 	prev_record = le64_to_cpu(md_hdr->h_prev_md_offset);
 	md_record_size = le16_to_cpu(md_hdr->h_record_size);
 
 	if (md_record_size > max_md_size) {
 		pr_warn("incfs: The record is too large. Size: %ld",
+=======
+	md_record_size = le16_to_cpu(md_hdr->h_record_size);
+
+	if (md_record_size > max_md_size) {
+		pr_warn("incfs: The record is too large. Size: %zu",
+>>>>>>> origin/android16-base
 				md_record_size);
 		return -EBADMSG;
 	}
@@ -632,6 +865,7 @@ int incfs_read_next_metadata_record(struct backing_file_context *bfc,
 		return -EBADMSG;
 	}
 
+<<<<<<< HEAD
 	if (prev_record != handler->md_prev_record_offset) {
 		pr_warn("incfs: Metadata chain has been corrupted.");
 		return -EBADMSG;
@@ -642,6 +876,8 @@ int incfs_read_next_metadata_record(struct backing_file_context *bfc,
 		return -EBADMSG;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	switch (md_hdr->h_md_entry_type) {
 	case INCFS_MD_NONE:
 		break;
@@ -651,15 +887,35 @@ int incfs_read_next_metadata_record(struct backing_file_context *bfc,
 				&handler->md_buffer.blockmap, handler);
 		break;
 	case INCFS_MD_FILE_ATTR:
+<<<<<<< HEAD
 		if (handler->handle_file_attr)
 			res = handler->handle_file_attr(
 				&handler->md_buffer.file_attr, handler);
+=======
+		/*
+		 * File attrs no longer supported, ignore section for
+		 * compatibility
+		 */
+>>>>>>> origin/android16-base
 		break;
 	case INCFS_MD_SIGNATURE:
 		if (handler->handle_signature)
 			res = handler->handle_signature(
 				&handler->md_buffer.signature, handler);
 		break;
+<<<<<<< HEAD
+=======
+	case INCFS_MD_STATUS:
+		if (handler->handle_status)
+			res = handler->handle_status(
+				&handler->md_buffer.status, handler);
+		break;
+	case INCFS_MD_VERITY_SIGNATURE:
+		if (handler->handle_verity_signature)
+			res = handler->handle_verity_signature(
+				&handler->md_buffer.verity_signature, handler);
+		break;
+>>>>>>> origin/android16-base
 	default:
 		res = -ENOTSUPP;
 		break;

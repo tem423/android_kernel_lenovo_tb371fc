@@ -237,12 +237,22 @@ static void esp_output_fill_trailer(u8 *tail, int tfclen, int plen, __u8 proto)
 int esp6_output_head(struct xfrm_state *x, struct sk_buff *skb, struct esp_info *esp)
 {
 	u8 *tail;
+<<<<<<< HEAD
 	u8 *vaddr;
+=======
+>>>>>>> origin/android16-base
 	int nfrags;
 	struct page *page;
 	struct sk_buff *trailer;
 	int tailen = esp->tailen;
 
+<<<<<<< HEAD
+=======
+	if (ALIGN(tailen, L1_CACHE_BYTES) > PAGE_SIZE ||
+	    ALIGN(skb->data_len, L1_CACHE_BYTES) > PAGE_SIZE)
+		goto cow;
+
+>>>>>>> origin/android16-base
 	if (!skb_cloned(skb)) {
 		if (tailen <= skb_tailroom(skb)) {
 			nfrags = 1;
@@ -270,6 +280,7 @@ int esp6_output_head(struct xfrm_state *x, struct sk_buff *skb, struct esp_info 
 			page = pfrag->page;
 			get_page(page);
 
+<<<<<<< HEAD
 			vaddr = kmap_atomic(page);
 
 			tail = vaddr + pfrag->offset;
@@ -278,6 +289,12 @@ int esp6_output_head(struct xfrm_state *x, struct sk_buff *skb, struct esp_info 
 
 			kunmap_atomic(vaddr);
 
+=======
+			tail = page_address(page) + pfrag->offset;
+
+			esp_output_fill_trailer(tail, esp->tfclen, esp->plen, esp->proto);
+
+>>>>>>> origin/android16-base
 			nfrags = skb_shinfo(skb)->nr_frags;
 
 			__skb_fill_page_desc(skb, nfrags, page, pfrag->offset,
@@ -518,7 +535,13 @@ static inline int esp_remove_trailer(struct sk_buff *skb)
 		skb->csum = csum_block_sub(skb->csum, csumdiff,
 					   skb->len - trimlen);
 	}
+<<<<<<< HEAD
 	pskb_trim(skb, skb->len - trimlen);
+=======
+	ret = pskb_trim(skb, skb->len - trimlen);
+	if (unlikely(ret))
+		return ret;
+>>>>>>> origin/android16-base
 
 	ret = nexthdr[1];
 

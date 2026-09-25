@@ -138,7 +138,11 @@ function_trace_call(unsigned long ip, unsigned long parent_ip,
 	pc = preempt_count();
 	preempt_disable_notrace();
 
+<<<<<<< HEAD
 	bit = trace_test_and_set_recursion(TRACE_FTRACE_START, TRACE_FTRACE_MAX);
+=======
+	bit = trace_test_and_set_recursion(TRACE_FTRACE_START);
+>>>>>>> origin/android16-base
 	if (bit < 0)
 		goto out;
 

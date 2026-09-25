@@ -14,7 +14,11 @@ CFLAGS_rodata.o			+= $(DISABLE_LTO)
 
 OBJCOPYFLAGS :=
 OBJCOPYFLAGS_rodata_objcopy.o	:= \
+<<<<<<< HEAD
 			--rename-section .text=.rodata,alloc,readonly,load
+=======
+			--rename-section .noinstr.text=.rodata,alloc,readonly,load,contents
+>>>>>>> origin/android16-base
 targets += rodata.o rodata_objcopy.o
 $(obj)/rodata_objcopy.o: $(obj)/rodata.o FORCE
 	$(call if_changed,objcopy)

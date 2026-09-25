@@ -138,6 +138,10 @@ void dm_bufio_set_minimum_buffers(struct dm_bufio_client *c, unsigned n);
 
 unsigned dm_bufio_get_block_size(struct dm_bufio_client *c);
 sector_t dm_bufio_get_device_size(struct dm_bufio_client *c);
+<<<<<<< HEAD
+=======
+struct dm_io_client *dm_bufio_get_dm_io_client(struct dm_bufio_client *c);
+>>>>>>> origin/android16-base
 sector_t dm_bufio_get_block_number(struct dm_buffer *b);
 void *dm_bufio_get_block_data(struct dm_buffer *b);
 void *dm_bufio_get_aux_data(struct dm_buffer *b);

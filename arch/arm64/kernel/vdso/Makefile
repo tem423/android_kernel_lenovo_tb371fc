@@ -17,14 +17,27 @@ obj-vdso := vgettimeofday.o note.o sigreturn.o
 targets := $(obj-vdso) vdso.so vdso.so.dbg
 obj-vdso := $(addprefix $(obj)/, $(obj-vdso))
 
+<<<<<<< HEAD
 ldflags-y := -shared -nostdlib -soname=linux-vdso.so.1 --hash-style=sysv \
 		--build-id -n -T
+=======
+# -Bsymbolic has been added for consistency with arm, the compat vDSO and
+# potential future proofing if we end up with internal calls to the exported
+# routines, as x86 does (see 6f121e548f83 ("x86, vdso: Reimplement vdso.so
+# preparation in build-time C")).
+ldflags-y := -shared -nostdlib -soname=linux-vdso.so.1 --hash-style=sysv \
+		-Bsymbolic --eh-frame-hdr --build-id -n -T
+
+>>>>>>> origin/android16-base
 ccflags-y += $(DISABLE_LTO)
 
 ccflags-y := -fno-common -fno-builtin -fno-stack-protector -ffixed-x18
 ccflags-y += -DDISABLE_BRANCH_PROFILING
 
+<<<<<<< HEAD
 VDSO_LDFLAGS := -Bsymbolic
+=======
+>>>>>>> origin/android16-base
 
 CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_FTRACE) -Os $(CC_FLAGS_SCS)
 KBUILD_CFLAGS			+= $(DISABLE_LTO)
@@ -33,7 +46,11 @@ UBSAN_SANITIZE			:= n
 OBJECT_FILES_NON_STANDARD	:= y
 KCOV_INSTRUMENT			:= n
 
+<<<<<<< HEAD
 CFLAGS_vgettimeofday.o = -O2 -mcmodel=tiny
+=======
+CFLAGS_vgettimeofday.o = -O2 -mcmodel=tiny -fasynchronous-unwind-tables
+>>>>>>> origin/android16-base
 
 ifneq ($(c-gettimeofday-y),)
   CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)

@@ -349,7 +349,11 @@ int selinux_xfrm_state_alloc_acquire(struct xfrm_state *x,
 	int rc;
 	struct xfrm_sec_ctx *ctx;
 	char *ctx_str = NULL;
+<<<<<<< HEAD
 	int str_len;
+=======
+	u32 str_len;
+>>>>>>> origin/android16-base
 
 	if (!polsec)
 		return 0;

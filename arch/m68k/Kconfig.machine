@@ -185,6 +185,10 @@ config INIT_LCD
 config MEMORY_RESERVE
 	int "Memory reservation (MiB)"
 	depends on (UCSIMM || UCDIMM)
+<<<<<<< HEAD
+=======
+	default 0
+>>>>>>> origin/android16-base
 	help
 	  Reserve certain memory regions on 68x328 based boards.
 
@@ -314,6 +318,10 @@ comment "Machine Options"
 
 config UBOOT
 	bool "Support for U-Boot command line parameters"
+<<<<<<< HEAD
+=======
+	depends on COLDFIRE
+>>>>>>> origin/android16-base
 	help
 	  If you say Y here kernel will try to collect command
 	  line parameters from the initial u-boot stack.

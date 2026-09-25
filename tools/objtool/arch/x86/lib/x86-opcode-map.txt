@@ -148,7 +148,11 @@ AVXcode:
 65: SEG=GS (Prefix)
 66: Operand-Size (Prefix)
 67: Address-Size (Prefix)
+<<<<<<< HEAD
 68: PUSH Iz (d64)
+=======
+68: PUSH Iz
+>>>>>>> origin/android16-base
 69: IMUL Gv,Ev,Iz
 6a: PUSH Ib (d64)
 6b: IMUL Gv,Ev,Ib

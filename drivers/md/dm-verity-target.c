@@ -34,7 +34,11 @@
 #define DM_VERITY_OPT_IGN_ZEROES	"ignore_zero_blocks"
 #define DM_VERITY_OPT_AT_MOST_ONCE	"check_at_most_once"
 
+<<<<<<< HEAD
 #define DM_VERITY_OPTS_MAX		(2 + DM_VERITY_OPTS_FEC)
+=======
+#define DM_VERITY_OPTS_MAX		(3 + DM_VERITY_OPTS_FEC)
+>>>>>>> origin/android16-base
 
 static unsigned dm_verity_prefetch_cluster = DM_VERITY_DEFAULT_PREFETCH_SIZE;
 
@@ -62,6 +66,7 @@ struct dm_verity_prefetch_work {
 struct buffer_aux {
 	int hash_verified;
 };
+<<<<<<< HEAD
 /*
  * While system shutdown, skip verity work for I/O error.
  */
@@ -70,6 +75,8 @@ static inline bool verity_is_system_shutting_down(void)
 	return system_state == SYSTEM_HALT || system_state == SYSTEM_POWER_OFF
 		|| system_state == SYSTEM_RESTART;
 }
+=======
+>>>>>>> origin/android16-base
 
 /*
  * Initialize struct buffer_aux for a freshly created buffer.
@@ -483,13 +490,21 @@ static int verity_verify_io(struct dm_verity_io *io)
 	struct bvec_iter start;
 	unsigned b;
 	struct crypto_wait wait;
+<<<<<<< HEAD
+=======
+	struct bio *bio = dm_bio_from_per_bio_data(io, v->ti->per_io_data_size);
+>>>>>>> origin/android16-base
 
 	for (b = 0; b < io->n_blocks; b++) {
 		int r;
 		sector_t cur_block = io->block + b;
 		struct ahash_request *req = verity_io_hash_req(v, io);
 
+<<<<<<< HEAD
 		if (v->validated_blocks &&
+=======
+		if (v->validated_blocks && bio->bi_status == BLK_STS_OK &&
+>>>>>>> origin/android16-base
 		    likely(test_bit(cur_block, v->validated_blocks))) {
 			verity_bv_skip_block(v, io, &io->iter);
 			continue;
@@ -537,15 +552,41 @@ static int verity_verify_io(struct dm_verity_io *io)
 		else if (verity_fec_decode(v, io, DM_VERITY_BLOCK_TYPE_DATA,
 					   cur_block, NULL, &start) == 0)
 			continue;
+<<<<<<< HEAD
 		else if (verity_handle_err(v, DM_VERITY_BLOCK_TYPE_DATA,
 					   cur_block))
 			return -EIO;
+=======
+		else {
+			if (bio->bi_status) {
+				/*
+				 * Error correction failed; Just return error
+				 */
+				return -EIO;
+			}
+			if (verity_handle_err(v, DM_VERITY_BLOCK_TYPE_DATA,
+					      cur_block))
+				return -EIO;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	return 0;
 }
 
 /*
+<<<<<<< HEAD
+=======
+ * Skip verity work in response to I/O error when system is shutting down.
+ */
+static inline bool verity_is_system_shutting_down(void)
+{
+	return system_state == SYSTEM_HALT || system_state == SYSTEM_POWER_OFF
+		|| system_state == SYSTEM_RESTART;
+}
+
+/*
+>>>>>>> origin/android16-base
  * End one "io" structure with a given error.
  */
 static void verity_finish_io(struct dm_verity_io *io, blk_status_t status)
@@ -573,7 +614,13 @@ static void verity_end_io(struct bio *bio)
 	struct dm_verity_io *io = bio->bi_private;
 
 	if (bio->bi_status &&
+<<<<<<< HEAD
 		(!verity_fec_is_enabled(io->v) || verity_is_system_shutting_down())) {
+=======
+	    (!verity_fec_is_enabled(io->v) ||
+	     verity_is_system_shutting_down() ||
+	     (bio->bi_opf & REQ_RAHEAD))) {
+>>>>>>> origin/android16-base
 		verity_finish_io(io, bio->bi_status);
 		return;
 	}
@@ -1203,6 +1250,10 @@ bad:
 
 static struct target_type verity_target = {
 	.name		= "verity",
+<<<<<<< HEAD
+=======
+	.features	= DM_TARGET_IMMUTABLE,
+>>>>>>> origin/android16-base
 	.version	= {1, 4, 0},
 	.module		= THIS_MODULE,
 	.ctr		= verity_ctr,

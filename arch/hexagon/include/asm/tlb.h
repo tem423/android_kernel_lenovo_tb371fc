@@ -22,6 +22,7 @@
 #include <linux/pagemap.h>
 #include <asm/tlbflush.h>
 
+<<<<<<< HEAD
 /*
  * We don't need any special per-pte or per-vma handling...
  */
@@ -34,6 +35,8 @@
  */
 #define tlb_flush(tlb)		flush_tlb_mm((tlb)->mm)
 
+=======
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 #endif

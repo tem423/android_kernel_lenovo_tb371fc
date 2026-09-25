@@ -776,6 +776,7 @@ handle_signal(struct ksignal *ksig, struct pt_regs *regs)
 
 static inline unsigned long get_nr_restart_syscall(const struct pt_regs *regs)
 {
+<<<<<<< HEAD
 	/*
 	 * This function is fundamentally broken as currently
 	 * implemented.
@@ -800,6 +801,10 @@ static inline unsigned long get_nr_restart_syscall(const struct pt_regs *regs)
 	 */
 #ifdef CONFIG_IA32_EMULATION
 	if (current_thread_info()->status & (TS_COMPAT|TS_I386_REGS_POKED))
+=======
+#ifdef CONFIG_IA32_EMULATION
+	if (current_thread_info()->status & TS_COMPAT_RESTART)
+>>>>>>> origin/android16-base
 		return __NR_ia32_restart_syscall;
 #endif
 #ifdef CONFIG_X86_X32_ABI

@@ -81,7 +81,11 @@
 #define	AT91_SAMA5D2_MR_ANACH		BIT(23)
 /* Tracking Time */
 #define	AT91_SAMA5D2_MR_TRACKTIM(v)	((v) << 24)
+<<<<<<< HEAD
 #define	AT91_SAMA5D2_MR_TRACKTIM_MAX	0xff
+=======
+#define	AT91_SAMA5D2_MR_TRACKTIM_MAX	0xf
+>>>>>>> origin/android16-base
 /* Transfer Time */
 #define	AT91_SAMA5D2_MR_TRANSFER(v)	((v) << 28)
 #define	AT91_SAMA5D2_MR_TRANSFER_MAX	0x3
@@ -989,7 +993,11 @@ static struct iio_trigger *at91_adc_allocate_trigger(struct iio_dev *indio,
 	trig = devm_iio_trigger_alloc(&indio->dev, "%s-dev%d-%s", indio->name,
 				      indio->id, trigger_name);
 	if (!trig)
+<<<<<<< HEAD
 		return NULL;
+=======
+		return ERR_PTR(-ENOMEM);
+>>>>>>> origin/android16-base
 
 	trig->dev.parent = indio->dev.parent;
 	iio_trigger_set_drvdata(trig, indio);
@@ -1329,8 +1337,15 @@ static int at91_adc_read_info_raw(struct iio_dev *indio_dev,
 		*val = tmp_val;
 		mutex_unlock(&st->lock);
 		iio_device_release_direct_mode(indio_dev);
+<<<<<<< HEAD
 
 		return at91_adc_adjust_val_osr(st, val);
+=======
+		if (ret > 0)
+			ret = at91_adc_adjust_val_osr(st, val);
+
+		return ret;
+>>>>>>> origin/android16-base
 	}
 	if (chan->type == IIO_PRESSURE) {
 		ret = iio_device_claim_direct_mode(indio_dev);
@@ -1343,8 +1358,15 @@ static int at91_adc_read_info_raw(struct iio_dev *indio_dev,
 		*val = tmp_val;
 		mutex_unlock(&st->lock);
 		iio_device_release_direct_mode(indio_dev);
+<<<<<<< HEAD
 
 		return at91_adc_adjust_val_osr(st, val);
+=======
+		if (ret > 0)
+			ret = at91_adc_adjust_val_osr(st, val);
+
+		return ret;
+>>>>>>> origin/android16-base
 	}
 
 	/* in this case we have a voltage channel */
@@ -1375,7 +1397,12 @@ static int at91_adc_read_info_raw(struct iio_dev *indio_dev,
 		*val = st->conversion_value;
 		ret = at91_adc_adjust_val_osr(st, val);
 		if (chan->scan_type.sign == 's')
+<<<<<<< HEAD
 			*val = sign_extend32(*val, 11);
+=======
+			*val = sign_extend32(*val,
+					     chan->scan_type.realbits - 1);
+>>>>>>> origin/android16-base
 		st->conversion_done = false;
 	}
 

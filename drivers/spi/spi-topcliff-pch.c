@@ -584,8 +584,15 @@ static void pch_spi_set_tx(struct pch_spi_data *data, int *bpw)
 	data->pkt_tx_buff = kzalloc(size, GFP_KERNEL);
 	if (data->pkt_tx_buff != NULL) {
 		data->pkt_rx_buff = kzalloc(size, GFP_KERNEL);
+<<<<<<< HEAD
 		if (!data->pkt_rx_buff)
 			kfree(data->pkt_tx_buff);
+=======
+		if (!data->pkt_rx_buff) {
+			kfree(data->pkt_tx_buff);
+			data->pkt_tx_buff = NULL;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	if (!data->pkt_rx_buff) {

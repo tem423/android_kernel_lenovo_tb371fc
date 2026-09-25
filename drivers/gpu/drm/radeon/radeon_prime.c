@@ -92,9 +92,25 @@ int radeon_gem_prime_pin(struct drm_gem_object *obj)
 
 	/* pin buffer into GTT */
 	ret = radeon_bo_pin(bo, RADEON_GEM_DOMAIN_GTT, NULL);
+<<<<<<< HEAD
 	if (likely(ret == 0))
 		bo->prime_shared_count++;
 
+=======
+	if (unlikely(ret))
+		goto error;
+
+	if (bo->tbo.moving) {
+		ret = dma_fence_wait(bo->tbo.moving, false);
+		if (unlikely(ret)) {
+			radeon_bo_unpin(bo);
+			goto error;
+		}
+	}
+
+	bo->prime_shared_count++;
+error:
+>>>>>>> origin/android16-base
 	radeon_bo_unreserve(bo);
 	return ret;
 }

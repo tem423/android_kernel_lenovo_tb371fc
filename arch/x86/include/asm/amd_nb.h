@@ -115,7 +115,14 @@ static inline bool amd_gart_present(void)
 
 #define amd_nb_num(x)		0
 #define amd_nb_has_feature(x)	false
+<<<<<<< HEAD
 #define node_to_amd_nb(x)	NULL
+=======
+static inline struct amd_northbridge *node_to_amd_nb(int node)
+{
+	return NULL;
+}
+>>>>>>> origin/android16-base
 #define amd_gart_present(x)	false
 
 #endif

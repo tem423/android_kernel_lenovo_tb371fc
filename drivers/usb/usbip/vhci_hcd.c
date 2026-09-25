@@ -396,6 +396,11 @@ static int vhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 		default:
 			usbip_dbg_vhci_rh(" ClearPortFeature: default %x\n",
 					  wValue);
+<<<<<<< HEAD
+=======
+			if (wValue >= 32)
+				goto error;
+>>>>>>> origin/android16-base
 			vhci_hcd->port_status[rhport] &= ~(1 << wValue);
 			break;
 		}
@@ -453,8 +458,19 @@ static int vhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 			vhci_hcd->port_status[rhport] &= ~(1 << USB_PORT_FEAT_RESET);
 			vhci_hcd->re_timeout = 0;
 
+<<<<<<< HEAD
 			if (vhci_hcd->vdev[rhport].ud.status ==
 			    VDEV_ST_NOTASSIGNED) {
+=======
+			/*
+			 * A few drivers do usb reset during probe when
+			 * the device could be in VDEV_ST_USED state
+			 */
+			if (vhci_hcd->vdev[rhport].ud.status ==
+				VDEV_ST_NOTASSIGNED ||
+			    vhci_hcd->vdev[rhport].ud.status ==
+				VDEV_ST_USED) {
+>>>>>>> origin/android16-base
 				usbip_dbg_vhci_rh(
 					" enable rhport %d (status %u)\n",
 					rhport,
@@ -592,6 +608,11 @@ static int vhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 				pr_err("invalid port number %d\n", wIndex);
 				goto error;
 			}
+<<<<<<< HEAD
+=======
+			if (wValue >= 32)
+				goto error;
+>>>>>>> origin/android16-base
 			if (hcd->speed == HCD_USB3) {
 				if ((vhci_hcd->port_status[rhport] &
 				     USB_SS_PORT_STAT_POWER) != 0) {
@@ -741,6 +762,10 @@ static int vhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
 	 *
 	 */
 	if (usb_pipedevice(urb->pipe) == 0) {
+<<<<<<< HEAD
+=======
+		struct usb_device *old;
+>>>>>>> origin/android16-base
 		__u8 type = usb_pipetype(urb->pipe);
 		struct usb_ctrlrequest *ctrlreq =
 			(struct usb_ctrlrequest *) urb->setup_packet;
@@ -751,14 +776,23 @@ static int vhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
 			goto no_need_xmit;
 		}
 
+<<<<<<< HEAD
+=======
+		old = vdev->udev;
+>>>>>>> origin/android16-base
 		switch (ctrlreq->bRequest) {
 		case USB_REQ_SET_ADDRESS:
 			/* set_address may come when a device is reset */
 			dev_info(dev, "SetAddress Request (%d) to port %d\n",
 				 ctrlreq->wValue, vdev->rhport);
 
+<<<<<<< HEAD
 			usb_put_dev(vdev->udev);
 			vdev->udev = usb_get_dev(urb->dev);
+=======
+			vdev->udev = usb_get_dev(urb->dev);
+			usb_put_dev(old);
+>>>>>>> origin/android16-base
 
 			spin_lock(&vdev->ud.lock);
 			vdev->ud.status = VDEV_ST_USED;
@@ -777,8 +811,13 @@ static int vhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
 				usbip_dbg_vhci_hc(
 					"Not yet?:Get_Descriptor to device 0 (get max pipe size)\n");
 
+<<<<<<< HEAD
 			usb_put_dev(vdev->udev);
 			vdev->udev = usb_get_dev(urb->dev);
+=======
+			vdev->udev = usb_get_dev(urb->dev);
+			usb_put_dev(old);
+>>>>>>> origin/android16-base
 			goto out;
 
 		default:
@@ -953,8 +992,37 @@ static void vhci_device_unlink_cleanup(struct vhci_device *vdev)
 	spin_lock(&vdev->priv_lock);
 
 	list_for_each_entry_safe(unlink, tmp, &vdev->unlink_tx, list) {
+<<<<<<< HEAD
 		pr_info("unlink cleanup tx %lu\n", unlink->unlink_seqnum);
 		list_del(&unlink->list);
+=======
+		struct urb *urb;
+
+		/* give back urb of unsent unlink request */
+		pr_info("unlink cleanup tx %lu\n", unlink->unlink_seqnum);
+
+		urb = pickup_urb_and_free_priv(vdev, unlink->unlink_seqnum);
+		if (!urb) {
+			list_del(&unlink->list);
+			kfree(unlink);
+			continue;
+		}
+
+		urb->status = -ENODEV;
+
+		usb_hcd_unlink_urb_from_ep(hcd, urb);
+
+		list_del(&unlink->list);
+
+		spin_unlock(&vdev->priv_lock);
+		spin_unlock_irqrestore(&vhci->lock, flags);
+
+		usb_hcd_giveback_urb(hcd, urb, urb->status);
+
+		spin_lock_irqsave(&vhci->lock, flags);
+		spin_lock(&vdev->priv_lock);
+
+>>>>>>> origin/android16-base
 		kfree(unlink);
 	}
 
@@ -1061,6 +1129,10 @@ static void vhci_shutdown_connection(struct usbip_device *ud)
 static void vhci_device_reset(struct usbip_device *ud)
 {
 	struct vhci_device *vdev = container_of(ud, struct vhci_device, ud);
+<<<<<<< HEAD
+=======
+	struct usb_device *old = vdev->udev;
+>>>>>>> origin/android16-base
 	unsigned long flags;
 
 	spin_lock_irqsave(&ud->lock, flags);
@@ -1068,8 +1140,13 @@ static void vhci_device_reset(struct usbip_device *ud)
 	vdev->speed  = 0;
 	vdev->devid  = 0;
 
+<<<<<<< HEAD
 	usb_put_dev(vdev->udev);
 	vdev->udev = NULL;
+=======
+	vdev->udev = NULL;
+	usb_put_dev(old);
+>>>>>>> origin/android16-base
 
 	if (ud->tcp_socket) {
 		sockfd_put(ud->tcp_socket);
@@ -1097,6 +1174,10 @@ static void vhci_device_init(struct vhci_device *vdev)
 	vdev->ud.side   = USBIP_VHCI;
 	vdev->ud.status = VDEV_ST_NULL;
 	spin_lock_init(&vdev->ud.lock);
+<<<<<<< HEAD
+=======
+	mutex_init(&vdev->ud.sysfs_lock);
+>>>>>>> origin/android16-base
 
 	INIT_LIST_HEAD(&vdev->priv_rx);
 	INIT_LIST_HEAD(&vdev->priv_tx);

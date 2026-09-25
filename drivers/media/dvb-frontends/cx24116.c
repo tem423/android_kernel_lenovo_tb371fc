@@ -753,6 +753,10 @@ static int cx24116_read_snr_pct(struct dvb_frontend *fe, u16 *snr)
 {
 	struct cx24116_state *state = fe->demodulator_priv;
 	u8 snr_reading;
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 	static const u32 snr_tab[] = { /* 10 x Table (rounded up) */
 		0x00000, 0x0199A, 0x03333, 0x04ccD, 0x06667,
 		0x08000, 0x0999A, 0x0b333, 0x0cccD, 0x0e667,
@@ -761,7 +765,15 @@ static int cx24116_read_snr_pct(struct dvb_frontend *fe, u16 *snr)
 
 	dprintk("%s()\n", __func__);
 
+<<<<<<< HEAD
 	snr_reading = cx24116_readreg(state, CX24116_REG_QUALITY0);
+=======
+	ret = cx24116_readreg(state, CX24116_REG_QUALITY0);
+	if (ret  < 0)
+		return ret;
+
+	snr_reading = ret;
+>>>>>>> origin/android16-base
 
 	if (snr_reading >= 0xa0 /* 100% */)
 		*snr = 0xffff;
@@ -1145,7 +1157,11 @@ struct dvb_frontend *cx24116_attach(const struct cx24116_config *config,
 	state->frontend.demodulator_priv = state;
 	return &state->frontend;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(cx24116_attach);
+=======
+EXPORT_SYMBOL_GPL(cx24116_attach);
+>>>>>>> origin/android16-base
 
 /*
  * Initialise or wake up device

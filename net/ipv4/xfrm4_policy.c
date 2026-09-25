@@ -17,6 +17,10 @@
 #include <net/xfrm.h>
 #include <net/ip.h>
 #include <net/l3mdev.h>
+<<<<<<< HEAD
+=======
+#include <net/inet_ecn.h>
+>>>>>>> origin/android16-base
 
 static struct dst_entry *__xfrm4_dst_lookup(struct net *net, struct flowi4 *fl4,
 					    int tos, int oif,
@@ -126,7 +130,11 @@ _decode_session4(struct sk_buff *skb, struct flowi *fl, int reverse)
 	fl4->flowi4_proto = iph->protocol;
 	fl4->daddr = reverse ? iph->saddr : iph->daddr;
 	fl4->saddr = reverse ? iph->daddr : iph->saddr;
+<<<<<<< HEAD
 	fl4->flowi4_tos = iph->tos;
+=======
+	fl4->flowi4_tos = iph->tos & ~INET_ECN_MASK;
+>>>>>>> origin/android16-base
 
 	if (!ip_is_fragment(iph)) {
 		switch (iph->protocol) {

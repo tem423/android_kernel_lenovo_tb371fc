@@ -450,7 +450,12 @@ static const struct address_space_operations minix_aops = {
 	.writepage = minix_writepage,
 	.write_begin = minix_write_begin,
 	.write_end = generic_write_end,
+<<<<<<< HEAD
 	.bmap = minix_bmap
+=======
+	.bmap = minix_bmap,
+	.direct_IO = noop_direct_IO
+>>>>>>> origin/android16-base
 };
 
 static const struct inode_operations minix_symlink_inode_operations = {

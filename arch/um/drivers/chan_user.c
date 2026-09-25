@@ -26,10 +26,17 @@ int generic_read(int fd, char *c_out, void *unused)
 	n = read(fd, c_out, sizeof(*c_out));
 	if (n > 0)
 		return n;
+<<<<<<< HEAD
 	else if (errno == EAGAIN)
 		return 0;
 	else if (n == 0)
 		return -EIO;
+=======
+	else if (n == 0)
+		return -EIO;
+	else if (errno == EAGAIN)
+		return 0;
+>>>>>>> origin/android16-base
 	return -errno;
 }
 
@@ -220,7 +227,11 @@ static int winch_tramp(int fd, struct tty_port *port, int *fd_out,
 		       unsigned long *stack_out)
 {
 	struct winch_data data;
+<<<<<<< HEAD
 	int fds[2], n, err;
+=======
+	int fds[2], n, err, pid;
+>>>>>>> origin/android16-base
 	char c;
 
 	err = os_pipe(fds, 1, 1);
@@ -238,8 +249,14 @@ static int winch_tramp(int fd, struct tty_port *port, int *fd_out,
 	 * problem with /dev/net/tun, which if held open by this
 	 * thread, prevents the TUN/TAP device from being reused.
 	 */
+<<<<<<< HEAD
 	err = run_helper_thread(winch_thread, &data, CLONE_FILES, stack_out);
 	if (err < 0) {
+=======
+	pid = run_helper_thread(winch_thread, &data, CLONE_FILES, stack_out);
+	if (pid < 0) {
+		err = pid;
+>>>>>>> origin/android16-base
 		printk(UM_KERN_ERR "fork of winch_thread failed - errno = %d\n",
 		       -err);
 		goto out_close;
@@ -256,13 +273,22 @@ static int winch_tramp(int fd, struct tty_port *port, int *fd_out,
 		goto out_close;
 	}
 
+<<<<<<< HEAD
 	if (os_set_fd_block(*fd_out, 0)) {
+=======
+	err = os_set_fd_block(*fd_out, 0);
+	if (err) {
+>>>>>>> origin/android16-base
 		printk(UM_KERN_ERR "winch_tramp: failed to set thread_fd "
 		       "non-blocking.\n");
 		goto out_close;
 	}
 
+<<<<<<< HEAD
 	return err;
+=======
+	return pid;
+>>>>>>> origin/android16-base
 
  out_close:
 	close(fds[1]);

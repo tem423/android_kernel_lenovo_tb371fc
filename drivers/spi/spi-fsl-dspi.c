@@ -430,6 +430,10 @@ static int dspi_request_dma(struct fsl_dspi *dspi, phys_addr_t phy_addr)
 		goto err_rx_dma_buf;
 	}
 
+<<<<<<< HEAD
+=======
+	memset(&cfg, 0, sizeof(cfg));
+>>>>>>> origin/android16-base
 	cfg.src_addr = phy_addr + SPI_POPR;
 	cfg.dst_addr = phy_addr + SPI_PUSHR;
 	cfg.src_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
@@ -1124,11 +1128,20 @@ static int dspi_probe(struct platform_device *pdev)
 	ret = spi_register_master(master);
 	if (ret != 0) {
 		dev_err(&pdev->dev, "Problem registering DSPI master\n");
+<<<<<<< HEAD
 		goto out_free_irq;
+=======
+		goto out_release_dma;
+>>>>>>> origin/android16-base
 	}
 
 	return ret;
 
+<<<<<<< HEAD
+=======
+out_release_dma:
+	dspi_release_dma(dspi);
+>>>>>>> origin/android16-base
 out_free_irq:
 	if (dspi->irq)
 		free_irq(dspi->irq, dspi);

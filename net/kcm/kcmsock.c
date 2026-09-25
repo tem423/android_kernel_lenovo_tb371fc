@@ -164,7 +164,12 @@ static void kcm_rcv_ready(struct kcm_sock *kcm)
 	/* Buffer limit is okay now, add to ready list */
 	list_add_tail(&kcm->wait_rx_list,
 		      &kcm->mux->kcm_rx_waiters);
+<<<<<<< HEAD
 	kcm->rx_wait = true;
+=======
+	/* paired with lockless reads in kcm_rfree() */
+	WRITE_ONCE(kcm->rx_wait, true);
+>>>>>>> origin/android16-base
 }
 
 static void kcm_rfree(struct sk_buff *skb)
@@ -180,7 +185,11 @@ static void kcm_rfree(struct sk_buff *skb)
 	/* For reading rx_wait and rx_psock without holding lock */
 	smp_mb__after_atomic();
 
+<<<<<<< HEAD
 	if (!kcm->rx_wait && !kcm->rx_psock &&
+=======
+	if (!READ_ONCE(kcm->rx_wait) && !READ_ONCE(kcm->rx_psock) &&
+>>>>>>> origin/android16-base
 	    sk_rmem_alloc_get(sk) < sk->sk_rcvlowat) {
 		spin_lock_bh(&mux->rx_lock);
 		kcm_rcv_ready(kcm);
@@ -223,7 +232,11 @@ static void requeue_rx_msgs(struct kcm_mux *mux, struct sk_buff_head *head)
 	struct sk_buff *skb;
 	struct kcm_sock *kcm;
 
+<<<<<<< HEAD
 	while ((skb = __skb_dequeue(head))) {
+=======
+	while ((skb = skb_dequeue(head))) {
+>>>>>>> origin/android16-base
 		/* Reset destructor to avoid calling kcm_rcv_ready */
 		skb->destructor = sock_rfree;
 		skb_orphan(skb);
@@ -239,7 +252,12 @@ try_again:
 		if (kcm_queue_rcv_skb(&kcm->sk, skb)) {
 			/* Should mean socket buffer full */
 			list_del(&kcm->wait_rx_list);
+<<<<<<< HEAD
 			kcm->rx_wait = false;
+=======
+			/* paired with lockless reads in kcm_rfree() */
+			WRITE_ONCE(kcm->rx_wait, false);
+>>>>>>> origin/android16-base
 
 			/* Commit rx_wait to read in kcm_free */
 			smp_wmb();
@@ -282,10 +300,19 @@ static struct kcm_sock *reserve_rx_kcm(struct kcm_psock *psock,
 	kcm = list_first_entry(&mux->kcm_rx_waiters,
 			       struct kcm_sock, wait_rx_list);
 	list_del(&kcm->wait_rx_list);
+<<<<<<< HEAD
 	kcm->rx_wait = false;
 
 	psock->rx_kcm = kcm;
 	kcm->rx_psock = psock;
+=======
+	/* paired with lockless reads in kcm_rfree() */
+	WRITE_ONCE(kcm->rx_wait, false);
+
+	psock->rx_kcm = kcm;
+	/* paired with lockless reads in kcm_rfree() */
+	WRITE_ONCE(kcm->rx_psock, psock);
+>>>>>>> origin/android16-base
 
 	spin_unlock_bh(&mux->rx_lock);
 
@@ -312,7 +339,12 @@ static void unreserve_rx_kcm(struct kcm_psock *psock,
 	spin_lock_bh(&mux->rx_lock);
 
 	psock->rx_kcm = NULL;
+<<<<<<< HEAD
 	kcm->rx_psock = NULL;
+=======
+	/* paired with lockless reads in kcm_rfree() */
+	WRITE_ONCE(kcm->rx_psock, NULL);
+>>>>>>> origin/android16-base
 
 	/* Commit kcm->rx_psock before sk_rmem_alloc_get to sync with
 	 * kcm_rfree
@@ -381,8 +413,17 @@ static int kcm_parse_func_strparser(struct strparser *strp, struct sk_buff *skb)
 {
 	struct kcm_psock *psock = container_of(strp, struct kcm_psock, strp);
 	struct bpf_prog *prog = psock->bpf_prog;
+<<<<<<< HEAD
 
 	return BPF_PROG_RUN(prog, skb);
+=======
+	int res;
+
+	preempt_disable();
+	res = BPF_PROG_RUN(prog, skb);
+	preempt_enable();
+	return res;
+>>>>>>> origin/android16-base
 }
 
 static int kcm_read_sock_done(struct strparser *strp, int err)
@@ -907,6 +948,10 @@ static int kcm_sendmsg(struct socket *sock, struct msghdr *msg, size_t len)
 		  !(msg->msg_flags & MSG_MORE) : !!(msg->msg_flags & MSG_EOR);
 	int err = -EPIPE;
 
+<<<<<<< HEAD
+=======
+	mutex_lock(&kcm->tx_mutex);
+>>>>>>> origin/android16-base
 	lock_sock(sk);
 
 	/* Per tcp_sendmsg this should be in poll */
@@ -1055,11 +1100,16 @@ partial_message:
 	KCM_STATS_ADD(kcm->stats.tx_bytes, copied);
 
 	release_sock(sk);
+<<<<<<< HEAD
+=======
+	mutex_unlock(&kcm->tx_mutex);
+>>>>>>> origin/android16-base
 	return copied;
 
 out_error:
 	kcm_push(kcm);
 
+<<<<<<< HEAD
 	if (copied && sock->type == SOCK_SEQPACKET) {
 		/* Wrote some bytes before encountering an
 		 * error, return partial success.
@@ -1069,6 +1119,20 @@ out_error:
 
 	if (head != kcm->seq_skb)
 		kfree_skb(head);
+=======
+	if (sock->type == SOCK_SEQPACKET) {
+		/* Wrote some bytes before encountering an
+		 * error, return partial success.
+		 */
+		if (copied)
+			goto partial_message;
+		if (head != kcm->seq_skb)
+			kfree_skb(head);
+	} else {
+		kfree_skb(head);
+		kcm->seq_skb = NULL;
+	}
+>>>>>>> origin/android16-base
 
 	err = sk_stream_error(sk, msg->msg_flags, err);
 
@@ -1077,6 +1141,7 @@ out_error:
 		sk->sk_write_space(sk);
 
 	release_sock(sk);
+<<<<<<< HEAD
 	return err;
 }
 
@@ -1118,15 +1183,32 @@ static int kcm_recvmsg(struct socket *sock, struct msghdr *msg,
 	struct kcm_sock *kcm = kcm_sk(sk);
 	int err = 0;
 	long timeo;
+=======
+	mutex_unlock(&kcm->tx_mutex);
+	return err;
+}
+
+static int kcm_recvmsg(struct socket *sock, struct msghdr *msg,
+		       size_t len, int flags)
+{
+	int noblock = flags & MSG_DONTWAIT;
+	struct sock *sk = sock->sk;
+	struct kcm_sock *kcm = kcm_sk(sk);
+	int err = 0;
+>>>>>>> origin/android16-base
 	struct strp_msg *stm;
 	int copied = 0;
 	struct sk_buff *skb;
 
+<<<<<<< HEAD
 	timeo = sock_rcvtimeo(sk, flags & MSG_DONTWAIT);
 
 	lock_sock(sk);
 
 	skb = kcm_wait_data(sk, flags, timeo, &err);
+=======
+	skb = skb_recv_datagram(sk, flags, noblock, &err);
+>>>>>>> origin/android16-base
 	if (!skb)
 		goto out;
 
@@ -1157,14 +1239,21 @@ msg_finished:
 			/* Finished with message */
 			msg->msg_flags |= MSG_EOR;
 			KCM_STATS_INCR(kcm->stats.rx_msgs);
+<<<<<<< HEAD
 			skb_unlink(skb, &sk->sk_receive_queue);
 			kfree_skb(skb);
+=======
+>>>>>>> origin/android16-base
 		}
 	}
 
 out:
+<<<<<<< HEAD
 	release_sock(sk);
 
+=======
+	skb_free_datagram(sk, skb);
+>>>>>>> origin/android16-base
 	return copied ? : err;
 }
 
@@ -1172,9 +1261,15 @@ static ssize_t kcm_splice_read(struct socket *sock, loff_t *ppos,
 			       struct pipe_inode_info *pipe, size_t len,
 			       unsigned int flags)
 {
+<<<<<<< HEAD
 	struct sock *sk = sock->sk;
 	struct kcm_sock *kcm = kcm_sk(sk);
 	long timeo;
+=======
+	int noblock = flags & MSG_DONTWAIT;
+	struct sock *sk = sock->sk;
+	struct kcm_sock *kcm = kcm_sk(sk);
+>>>>>>> origin/android16-base
 	struct strp_msg *stm;
 	int err = 0;
 	ssize_t copied;
@@ -1182,11 +1277,15 @@ static ssize_t kcm_splice_read(struct socket *sock, loff_t *ppos,
 
 	/* Only support splice for SOCKSEQPACKET */
 
+<<<<<<< HEAD
 	timeo = sock_rcvtimeo(sk, flags & MSG_DONTWAIT);
 
 	lock_sock(sk);
 
 	skb = kcm_wait_data(sk, flags, timeo, &err);
+=======
+	skb = skb_recv_datagram(sk, flags, noblock, &err);
+>>>>>>> origin/android16-base
 	if (!skb)
 		goto err_out;
 
@@ -1214,6 +1313,7 @@ static ssize_t kcm_splice_read(struct socket *sock, loff_t *ppos,
 	 * finish reading the message.
 	 */
 
+<<<<<<< HEAD
 	release_sock(sk);
 
 	return copied;
@@ -1221,6 +1321,13 @@ static ssize_t kcm_splice_read(struct socket *sock, loff_t *ppos,
 err_out:
 	release_sock(sk);
 
+=======
+	skb_free_datagram(sk, skb);
+	return copied;
+
+err_out:
+	skb_free_datagram(sk, skb);
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -1240,7 +1347,12 @@ static void kcm_recv_disable(struct kcm_sock *kcm)
 	if (!kcm->rx_psock) {
 		if (kcm->rx_wait) {
 			list_del(&kcm->wait_rx_list);
+<<<<<<< HEAD
 			kcm->rx_wait = false;
+=======
+			/* paired with lockless reads in kcm_rfree() */
+			WRITE_ONCE(kcm->rx_wait, false);
+>>>>>>> origin/android16-base
 		}
 
 		requeue_rx_msgs(mux, &kcm->sk.sk_receive_queue);
@@ -1311,10 +1423,18 @@ static int kcm_getsockopt(struct socket *sock, int level, int optname,
 	if (get_user(len, optlen))
 		return -EFAULT;
 
+<<<<<<< HEAD
 	len = min_t(unsigned int, len, sizeof(int));
 	if (len < 0)
 		return -EINVAL;
 
+=======
+	if (len < 0)
+		return -EINVAL;
+
+	len = min_t(unsigned int, len, sizeof(int));
+
+>>>>>>> origin/android16-base
 	switch (optname) {
 	case KCM_RECV_DISABLE:
 		val = kcm->rx_disabled;
@@ -1361,6 +1481,10 @@ static void init_kcm_sock(struct kcm_sock *kcm, struct kcm_mux *mux)
 	spin_unlock_bh(&mux->lock);
 
 	INIT_WORK(&kcm->tx_work, kcm_tx_work);
+<<<<<<< HEAD
+=======
+	mutex_init(&kcm->tx_mutex);
+>>>>>>> origin/android16-base
 
 	spin_lock_bh(&mux->rx_lock);
 	kcm_rcv_ready(kcm);
@@ -1412,12 +1536,15 @@ static int kcm_attach(struct socket *sock, struct socket *csock,
 	psock->sk = csk;
 	psock->bpf_prog = prog;
 
+<<<<<<< HEAD
 	err = strp_init(&psock->strp, csk, &cb);
 	if (err) {
 		kmem_cache_free(kcm_psockp, psock);
 		goto out;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	write_lock_bh(&csk->sk_callback_lock);
 
 	/* Check if sk_user_data is aready by KCM or someone else.
@@ -1425,13 +1552,26 @@ static int kcm_attach(struct socket *sock, struct socket *csock,
 	 */
 	if (csk->sk_user_data) {
 		write_unlock_bh(&csk->sk_callback_lock);
+<<<<<<< HEAD
 		strp_stop(&psock->strp);
 		strp_done(&psock->strp);
+=======
+>>>>>>> origin/android16-base
 		kmem_cache_free(kcm_psockp, psock);
 		err = -EALREADY;
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	err = strp_init(&psock->strp, csk, &cb);
+	if (err) {
+		write_unlock_bh(&csk->sk_callback_lock);
+		kmem_cache_free(kcm_psockp, psock);
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	psock->save_data_ready = csk->sk_data_ready;
 	psock->save_write_space = csk->sk_write_space;
 	psock->save_state_change = csk->sk_state_change;
@@ -1794,7 +1934,12 @@ static void kcm_done(struct kcm_sock *kcm)
 
 	if (kcm->rx_wait) {
 		list_del(&kcm->wait_rx_list);
+<<<<<<< HEAD
 		kcm->rx_wait = false;
+=======
+		/* paired with lockless reads in kcm_rfree() */
+		WRITE_ONCE(kcm->rx_wait, false);
+>>>>>>> origin/android16-base
 	}
 	/* Move any pending receive messages to other kcm sockets */
 	requeue_rx_msgs(mux, &sk->sk_receive_queue);
@@ -1839,10 +1984,17 @@ static int kcm_release(struct socket *sock)
 	kcm = kcm_sk(sk);
 	mux = kcm->mux;
 
+<<<<<<< HEAD
 	sock_orphan(sk);
 	kfree_skb(kcm->seq_skb);
 
 	lock_sock(sk);
+=======
+	lock_sock(sk);
+	sock_orphan(sk);
+	kfree_skb(kcm->seq_skb);
+
+>>>>>>> origin/android16-base
 	/* Purge queue under lock to avoid race condition with tx_work trying
 	 * to act when queue is nonempty. If tx_work runs after this point
 	 * it will just return.
@@ -2021,6 +2173,11 @@ static __net_exit void kcm_exit_net(struct net *net)
 	 * that all multiplexors and psocks have been destroyed.
 	 */
 	WARN_ON(!list_empty(&knet->mux_list));
+<<<<<<< HEAD
+=======
+
+	mutex_destroy(&knet->mutex);
+>>>>>>> origin/android16-base
 }
 
 static struct pernet_operations kcm_net_ops = {

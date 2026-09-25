@@ -94,9 +94,15 @@ struct hx711_data {
 	struct mutex		lock;
 	/*
 	 * triggered buffer
+<<<<<<< HEAD
 	 * 2x32-bit channel + 64-bit timestamp
 	 */
 	u32			buffer[4];
+=======
+	 * 2x32-bit channel + 64-bit naturally aligned timestamp
+	 */
+	u32			buffer[4] __aligned(8);
+>>>>>>> origin/android16-base
 	/*
 	 * delay after a rising edge on SCK until the data is ready DOUT
 	 * this is dependent on the hx711 where the datasheet tells a

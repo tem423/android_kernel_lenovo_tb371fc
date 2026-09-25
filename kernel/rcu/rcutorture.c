@@ -1334,7 +1334,12 @@ static bool rcu_torture_one_read(struct torture_random_state *trsp)
 	preempt_disable();
 	pipe_count = p->rtort_pipe_count;
 	if (pipe_count > RCU_TORTURE_PIPE_LEN) {
+<<<<<<< HEAD
 		/* Should not happen, but... */
+=======
+		// Should not happen in a correct RCU implementation,
+		// happens quite often for torture_type=busted.
+>>>>>>> origin/android16-base
 		pipe_count = RCU_TORTURE_PIPE_LEN;
 	}
 	completed = cur_ops->get_gp_seq();

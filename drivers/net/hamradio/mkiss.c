@@ -41,6 +41,11 @@
 
 #define AX_MTU		236
 
+<<<<<<< HEAD
+=======
+/* some arch define END as assembly function ending, just undef it */
+#undef	END
+>>>>>>> origin/android16-base
 /* SLIP/KISS protocol characters. */
 #define END             0300		/* indicates end of frame	*/
 #define ESC             0333		/* indicates byte stuffing	*/
@@ -803,13 +808,23 @@ static void mkiss_close(struct tty_struct *tty)
 	 */
 	netif_stop_queue(ax->dev);
 
+<<<<<<< HEAD
 	/* Free all AX25 frame buffers. */
+=======
+	unregister_netdev(ax->dev);
+
+	/* Free all AX25 frame buffers after unreg. */
+>>>>>>> origin/android16-base
 	kfree(ax->rbuff);
 	kfree(ax->xbuff);
 
 	ax->tty = NULL;
 
+<<<<<<< HEAD
 	unregister_netdev(ax->dev);
+=======
+	free_netdev(ax->dev);
+>>>>>>> origin/android16-base
 }
 
 /* Perform I/O control on an active ax25 channel. */

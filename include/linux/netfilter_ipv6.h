@@ -36,7 +36,11 @@ struct nf_ipv6_ops {
 };
 
 #ifdef CONFIG_NETFILTER
+<<<<<<< HEAD
 int ip6_route_me_harder(struct net *net, struct sk_buff *skb);
+=======
+int ip6_route_me_harder(struct net *net, struct sock *sk, struct sk_buff *skb);
+>>>>>>> origin/android16-base
 __sum16 nf_ip6_checksum(struct sk_buff *skb, unsigned int hook,
 			unsigned int dataoff, u_int8_t protocol);
 

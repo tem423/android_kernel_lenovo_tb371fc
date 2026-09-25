@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 $(warning DBG audio-make: KONA=$(CONFIG_ARCH_KONA))
 # auto-detect subdirs
 ifeq ($(CONFIG_ARCH_SDXPOORWILLS), y)
@@ -18,6 +19,36 @@ export
 endif
 ifeq ($(CONFIG_ARCH_SDM660), y)
 include $(srctree)/techpack/audio/config/sdm660auto.conf
+=======
+# auto-detect subdirs
+ifeq ($(CONFIG_ARCH_SDXPOORWILLS), y)
+include $(srctree)/techpack/audio/config/sdxpoorwillsauto.conf
+export $(shell sed 's/=.*//' $(srctree)/techpack/audio/config/sdxpoorwillsauto.conf)
+endif
+ifeq ($(CONFIG_ARCH_SM8150), y)
+include $(srctree)/techpack/audio/config/sm8150auto.conf
+export $(shell sed 's/=.*//' $(srctree)/techpack/audio/config/sm8150auto.conf)
+endif
+ifeq ($(CONFIG_ARCH_SDMSHRIKE), y)
+include $(srctree)/techpack/audio/config/sm8150auto.conf
+export $(shell sed 's/=.*//' $(srctree)/techpack/audio/config/sm8150auto.conf)
+endif
+ifeq ($(CONFIG_ARCH_KONA), y)
+include $(srctree)/techpack/audio/config/konaauto.conf
+export $(shell sed 's/=.*//' $(srctree)/techpack/audio/config/konaauto.conf)
+endif
+ifeq ($(CONFIG_ARCH_LITO), y)
+include $(srctree)/techpack/audio/config/litoauto.conf
+export $(shell sed 's/=.*//' $(srctree)/techpack/audio/config/litoauto.conf)
+endif
+ifeq ($(CONFIG_ARCH_BENGAL), y)
+include $(srctree)/techpack/audio/config/bengalauto.conf
+export $(shell sed 's/=.*//' $(srctree)/techpack/audio/config/bengalauto.conf)
+endif
+ifeq ($(CONFIG_ARCH_SDM660), y)
+include $(srctree)/techpack/audio/config/sdm660auto.conf
+export $(shell sed 's/=.*//' $(srctree)/techpack/audio/config/sdm660auto.conf)
+>>>>>>> origin/android16-base
 endif
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
@@ -47,6 +78,17 @@ ifeq ($(CONFIG_ARCH_KONA), y)
 LINUXINCLUDE    += \
                 -include $(srctree)/techpack/audio/config/konaautoconf.h
 endif
+<<<<<<< HEAD
+=======
+ifeq ($(CONFIG_ARCH_LITO), y)
+LINUXINCLUDE    += \
+                -include $(srctree)/techpack/audio/config/litoautoconf.h
+endif
+ifeq ($(CONFIG_ARCH_BENGAL), y)
+LINUXINCLUDE    += \
+                -include $(srctree)/techpack/audio/config/bengalautoconf.h
+endif
+>>>>>>> origin/android16-base
 ifeq ($(CONFIG_ARCH_SDM660), y)
 LINUXINCLUDE    += \
                 -include $(srctree)/techpack/audio/config/sdm660autoconf.h

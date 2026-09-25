@@ -3348,6 +3348,10 @@ DEFINE_TRANS_EVENT(xfs_trans_free_items);
 #endif /* _TRACE_XFS_H */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../.
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE xfs_trace
 #include <trace/define_trace.h>

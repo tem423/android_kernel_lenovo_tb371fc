@@ -245,9 +245,19 @@ int mls_context_to_sid(struct policydb *pol,
 	char *rangep[2];
 
 	if (!pol->mls_enabled) {
+<<<<<<< HEAD
 		if ((def_sid != SECSID_NULL && oldc) || (*scontext) == '\0')
 			return 0;
 		return -EINVAL;
+=======
+		/*
+		 * With no MLS, only return -EINVAL if there is a MLS field
+		 * and it did not come from an xattr.
+		 */
+		if (oldc && def_sid == SECSID_NULL)
+			return -EINVAL;
+		return 0;
+>>>>>>> origin/android16-base
 	}
 
 	/*

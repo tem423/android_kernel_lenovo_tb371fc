@@ -59,7 +59,11 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 
 		vma = find_vma(mm, addr);
 		if (TASK_SIZE - len >= addr &&
+<<<<<<< HEAD
 		    (!vma || addr + len <= vma->vm_start))
+=======
+		    (!vma || addr + len <= vm_start_gap(vma)))
+>>>>>>> origin/android16-base
 			return addr;
 	}
 

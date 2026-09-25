@@ -214,9 +214,17 @@ static u32 fb_cvt_aspect_ratio(struct fb_cvt_data *cvt)
 static void fb_cvt_print_name(struct fb_cvt_data *cvt)
 {
 	u32 pixcount, pixcount_mod;
+<<<<<<< HEAD
 	int cnt = 255, offset = 0, read = 0;
 	u8 *buf = kzalloc(256, GFP_KERNEL);
 
+=======
+	int size = 256;
+	int off = 0;
+	u8 *buf;
+
+	buf = kzalloc(size, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!buf)
 		return;
 
@@ -224,6 +232,7 @@ static void fb_cvt_print_name(struct fb_cvt_data *cvt)
 	pixcount_mod = (cvt->xres * (cvt->yres/cvt->interlace)) % 1000000;
 	pixcount_mod /= 1000;
 
+<<<<<<< HEAD
 	read = snprintf(buf+offset, cnt, "fbcvt: %dx%d@%d: CVT Name - ",
 			cvt->xres, cvt->yres, cvt->refresh);
 	offset += read;
@@ -261,6 +270,32 @@ static void fb_cvt_print_name(struct fb_cvt_data *cvt)
 			cnt -= read;
 			offset += read;
 		}
+=======
+	off += scnprintf(buf + off, size - off, "fbcvt: %dx%d@%d: CVT Name - ",
+			    cvt->xres, cvt->yres, cvt->refresh);
+
+	if (cvt->status) {
+		off += scnprintf(buf + off, size - off,
+				 "Not a CVT standard - %d.%03d Mega Pixel Image\n",
+				 pixcount, pixcount_mod);
+	} else {
+		if (pixcount)
+			off += scnprintf(buf + off, size - off, "%d", pixcount);
+
+		off += scnprintf(buf + off, size - off, ".%03dM", pixcount_mod);
+
+		if (cvt->aspect_ratio == 0)
+			off += scnprintf(buf + off, size - off, "3");
+		else if (cvt->aspect_ratio == 3)
+			off += scnprintf(buf + off, size - off, "4");
+		else if (cvt->aspect_ratio == 1 || cvt->aspect_ratio == 4)
+			off += scnprintf(buf + off, size - off, "9");
+		else if (cvt->aspect_ratio == 2)
+			off += scnprintf(buf + off, size - off, "A");
+
+		if (cvt->flags & FB_CVT_FLAG_REDUCED_BLANK)
+			off += scnprintf(buf + off, size - off, "-R");
+>>>>>>> origin/android16-base
 	}
 
 	printk(KERN_INFO "%s\n", buf);

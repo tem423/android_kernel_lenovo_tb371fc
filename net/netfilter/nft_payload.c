@@ -84,7 +84,11 @@ static void nft_payload_eval(const struct nft_expr *expr,
 
 	switch (priv->base) {
 	case NFT_PAYLOAD_LL_HEADER:
+<<<<<<< HEAD
 		if (!skb_mac_header_was_set(skb))
+=======
+		if (!skb_mac_header_was_set(skb) || skb_mac_header_len(skb) == 0)
+>>>>>>> origin/android16-base
 			goto err;
 
 		if (skb_vlan_tag_present(skb)) {
@@ -135,10 +139,17 @@ static int nft_payload_init(const struct nft_ctx *ctx,
 	priv->base   = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_BASE]));
 	priv->offset = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_OFFSET]));
 	priv->len    = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_LEN]));
+<<<<<<< HEAD
 	priv->dreg   = nft_parse_register(tb[NFTA_PAYLOAD_DREG]);
 
 	return nft_validate_register_store(ctx, priv->dreg, NULL,
 					   NFT_DATA_VALUE, priv->len);
+=======
+
+	return nft_parse_register_store(ctx, tb[NFTA_PAYLOAD_DREG],
+					&priv->dreg, NULL, NFT_DATA_VALUE,
+					priv->len);
+>>>>>>> origin/android16-base
 }
 
 static int nft_payload_dump(struct sk_buff *skb, const struct nft_expr *expr)
@@ -194,6 +205,12 @@ static int nft_payload_l4csum_offset(const struct nft_pktinfo *pkt,
 				     struct sk_buff *skb,
 				     unsigned int *l4csum_offset)
 {
+<<<<<<< HEAD
+=======
+	if (pkt->xt.fragoff)
+		return -1;
+
+>>>>>>> origin/android16-base
 	switch (pkt->tprot) {
 	case IPPROTO_TCP:
 		*l4csum_offset = offsetof(struct tcphdr, check);
@@ -303,6 +320,12 @@ static void nft_payload_set_eval(const struct nft_expr *expr,
 	if ((priv->csum_type == NFT_PAYLOAD_CSUM_INET || priv->csum_flags) &&
 	    (priv->base != NFT_PAYLOAD_TRANSPORT_HEADER ||
 	     skb->ip_summed != CHECKSUM_PARTIAL)) {
+<<<<<<< HEAD
+=======
+		if (offset + priv->len > skb->len)
+			goto err;
+
+>>>>>>> origin/android16-base
 		fsum = skb_checksum(skb, offset, priv->len, 0);
 		tsum = csum_partial(src, priv->len, 0);
 
@@ -329,10 +352,16 @@ static int nft_payload_set_init(const struct nft_ctx *ctx,
 				const struct nlattr * const tb[])
 {
 	struct nft_payload_set *priv = nft_expr_priv(expr);
+<<<<<<< HEAD
+=======
+	u32 csum_offset, csum_type = NFT_PAYLOAD_CSUM_NONE;
+	int err;
+>>>>>>> origin/android16-base
 
 	priv->base        = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_BASE]));
 	priv->offset      = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_OFFSET]));
 	priv->len         = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_LEN]));
+<<<<<<< HEAD
 	priv->sreg        = nft_parse_register(tb[NFTA_PAYLOAD_SREG]);
 
 	if (tb[NFTA_PAYLOAD_CSUM_TYPE])
@@ -341,6 +370,19 @@ static int nft_payload_set_init(const struct nft_ctx *ctx,
 	if (tb[NFTA_PAYLOAD_CSUM_OFFSET])
 		priv->csum_offset =
 			ntohl(nla_get_be32(tb[NFTA_PAYLOAD_CSUM_OFFSET]));
+=======
+
+	if (tb[NFTA_PAYLOAD_CSUM_TYPE])
+		csum_type = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_CSUM_TYPE]));
+	if (tb[NFTA_PAYLOAD_CSUM_OFFSET]) {
+		err = nft_parse_u32_check(tb[NFTA_PAYLOAD_CSUM_OFFSET], U8_MAX,
+					  &csum_offset);
+		if (err < 0)
+			return err;
+
+		priv->csum_offset = csum_offset;
+	}
+>>>>>>> origin/android16-base
 	if (tb[NFTA_PAYLOAD_CSUM_FLAGS]) {
 		u32 flags;
 
@@ -351,15 +393,26 @@ static int nft_payload_set_init(const struct nft_ctx *ctx,
 		priv->csum_flags = flags;
 	}
 
+<<<<<<< HEAD
 	switch (priv->csum_type) {
+=======
+	switch (csum_type) {
+>>>>>>> origin/android16-base
 	case NFT_PAYLOAD_CSUM_NONE:
 	case NFT_PAYLOAD_CSUM_INET:
 		break;
 	default:
 		return -EOPNOTSUPP;
 	}
+<<<<<<< HEAD
 
 	return nft_validate_register_load(priv->sreg, priv->len);
+=======
+	priv->csum_type = csum_type;
+
+	return nft_parse_register_load(tb[NFTA_PAYLOAD_SREG], &priv->sreg,
+				       priv->len);
+>>>>>>> origin/android16-base
 }
 
 static int nft_payload_set_dump(struct sk_buff *skb, const struct nft_expr *expr)
@@ -395,6 +448,10 @@ nft_payload_select_ops(const struct nft_ctx *ctx,
 {
 	enum nft_payload_bases base;
 	unsigned int offset, len;
+<<<<<<< HEAD
+=======
+	int err;
+>>>>>>> origin/android16-base
 
 	if (tb[NFTA_PAYLOAD_BASE] == NULL ||
 	    tb[NFTA_PAYLOAD_OFFSET] == NULL ||
@@ -420,8 +477,18 @@ nft_payload_select_ops(const struct nft_ctx *ctx,
 	if (tb[NFTA_PAYLOAD_DREG] == NULL)
 		return ERR_PTR(-EINVAL);
 
+<<<<<<< HEAD
 	offset = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_OFFSET]));
 	len    = ntohl(nla_get_be32(tb[NFTA_PAYLOAD_LEN]));
+=======
+	err = nft_parse_u32_check(tb[NFTA_PAYLOAD_OFFSET], U8_MAX, &offset);
+	if (err < 0)
+		return ERR_PTR(err);
+
+	err = nft_parse_u32_check(tb[NFTA_PAYLOAD_LEN], U8_MAX, &len);
+	if (err < 0)
+		return ERR_PTR(err);
+>>>>>>> origin/android16-base
 
 	if (len <= 4 && is_power_of_2(len) && IS_ALIGNED(offset, len) &&
 	    base != NFT_PAYLOAD_LL_HEADER)

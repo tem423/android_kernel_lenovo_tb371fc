@@ -556,7 +556,11 @@ static void cyy_chip_rx(struct cyclades_card *cinfo, int chip,
 		}
 		info->idle_stats.recv_idle = jiffies;
 	}
+<<<<<<< HEAD
 	tty_schedule_flip(port);
+=======
+	tty_flip_buffer_push(port);
+>>>>>>> origin/android16-base
 
 	/* end of service */
 	cyy_writeb(info, CyRIR, save_xir & 0x3f);
@@ -996,7 +1000,11 @@ static void cyz_handle_rx(struct cyclades_port *info)
 		mod_timer(&info->rx_full_timer, jiffies + 1);
 #endif
 	info->idle_stats.recv_idle = jiffies;
+<<<<<<< HEAD
 	tty_schedule_flip(&info->port);
+=======
+	tty_flip_buffer_push(&info->port);
+>>>>>>> origin/android16-base
 
 	/* Update rx_get */
 	cy_writel(&buf_ctrl->rx_get, new_rx_get);
@@ -1172,7 +1180,11 @@ static void cyz_handle_cmd(struct cyclades_card *cinfo)
 		if (delta_count)
 			wake_up_interruptible(&info->port.delta_msr_wait);
 		if (special_count)
+<<<<<<< HEAD
 			tty_schedule_flip(&info->port);
+=======
+			tty_flip_buffer_push(&info->port);
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -3648,7 +3660,11 @@ static int cy_pci_probe(struct pci_dev *pdev,
 	struct cyclades_card *card;
 	void __iomem *addr0 = NULL, *addr2 = NULL;
 	char *card_name = NULL;
+<<<<<<< HEAD
 	u32 uninitialized_var(mailbox);
+=======
+	u32 mailbox;
+>>>>>>> origin/android16-base
 	unsigned int device_id, nchan = 0, card_no, i, j;
 	unsigned char plx_ver;
 	int retval, irq;

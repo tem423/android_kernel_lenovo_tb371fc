@@ -819,7 +819,11 @@ error:
 
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(m88rs2000_attach);
+=======
+EXPORT_SYMBOL_GPL(m88rs2000_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("M88RS2000 DVB-S Demodulator driver");
 MODULE_AUTHOR("Malcolm Priestley tvboxspy@gmail.com");

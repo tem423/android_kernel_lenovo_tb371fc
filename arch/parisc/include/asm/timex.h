@@ -12,9 +12,17 @@
 
 typedef unsigned long cycles_t;
 
+<<<<<<< HEAD
 static inline cycles_t get_cycles (void)
 {
 	return mfctl(16);
 }
+=======
+static inline cycles_t get_cycles(void)
+{
+	return mfctl(16);
+}
+#define get_cycles get_cycles
+>>>>>>> origin/android16-base
 
 #endif

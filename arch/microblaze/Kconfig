@@ -40,6 +40,10 @@ config MICROBLAZE
 	select TRACING_SUPPORT
 	select VIRT_TO_BUS
 	select CPU_NO_EFFICIENT_FFS
+<<<<<<< HEAD
+=======
+	select MMU_GATHER_NO_RANGE if MMU
+>>>>>>> origin/android16-base
 
 # Endianness selection
 choice

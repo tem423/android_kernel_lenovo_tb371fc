@@ -170,6 +170,14 @@ struct slave {
 	struct rtnl_link_stats64 slave_stats;
 };
 
+<<<<<<< HEAD
+=======
+static inline struct slave *to_slave(struct kobject *kobj)
+{
+	return container_of(kobj, struct slave, kobj);
+}
+
+>>>>>>> origin/android16-base
 struct bond_up_slave {
 	unsigned int	count;
 	struct rcu_head rcu;
@@ -670,14 +678,19 @@ static inline struct slave *bond_slave_has_mac(struct bonding *bond,
 }
 
 /* Caller must hold rcu_read_lock() for read */
+<<<<<<< HEAD
 static inline struct slave *bond_slave_has_mac_rcu(struct bonding *bond,
 					       const u8 *mac)
+=======
+static inline bool bond_slave_has_mac_rcu(struct bonding *bond, const u8 *mac)
+>>>>>>> origin/android16-base
 {
 	struct list_head *iter;
 	struct slave *tmp;
 
 	bond_for_each_slave_rcu(bond, tmp, iter)
 		if (ether_addr_equal_64bits(mac, tmp->dev->dev_addr))
+<<<<<<< HEAD
 			return tmp;
 
 	return NULL;
@@ -701,6 +714,9 @@ static inline bool bond_slave_has_mac_rx(struct bonding *bond, const u8 *mac)
 		if (ether_addr_equal_64bits(mac, ha->addr))
 			return true;
 
+=======
+			return true;
+>>>>>>> origin/android16-base
 	return false;
 }
 
@@ -733,6 +749,12 @@ extern struct bond_parm_tbl ad_select_tbl[];
 /* exported from bond_netlink.c */
 extern struct rtnl_link_ops bond_link_ops;
 
+<<<<<<< HEAD
+=======
+/* exported from bond_sysfs_slave.c */
+extern const struct sysfs_ops slave_sysfs_ops;
+
+>>>>>>> origin/android16-base
 static inline void bond_tx_drop(struct net_device *dev, struct sk_buff *skb)
 {
 	atomic_long_inc(&dev->tx_dropped);

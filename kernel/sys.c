@@ -1538,6 +1538,11 @@ int do_prlimit(struct task_struct *tsk, unsigned int resource,
 
 	if (resource >= RLIM_NLIMITS)
 		return -EINVAL;
+<<<<<<< HEAD
+=======
+	resource = array_index_nospec(resource, RLIM_NLIMITS);
+
+>>>>>>> origin/android16-base
 	if (new_rlim) {
 		if (new_rlim->rlim_cur > new_rlim->rlim_max)
 			return -EINVAL;
@@ -1723,24 +1728,45 @@ void getrusage(struct task_struct *p, int who, struct rusage *r)
 	struct task_struct *t;
 	unsigned long flags;
 	u64 tgutime, tgstime, utime, stime;
+<<<<<<< HEAD
 	unsigned long maxrss = 0;
 
 	memset((char *)r, 0, sizeof (*r));
 	utime = stime = 0;
+=======
+	unsigned long maxrss;
+	struct mm_struct *mm;
+	struct signal_struct *sig = p->signal;
+	unsigned int seq = 0;
+
+retry:
+	memset(r, 0, sizeof(*r));
+	utime = stime = 0;
+	maxrss = 0;
+>>>>>>> origin/android16-base
 
 	if (who == RUSAGE_THREAD) {
 		task_cputime_adjusted(current, &utime, &stime);
 		accumulate_thread_rusage(p, r);
+<<<<<<< HEAD
 		maxrss = p->signal->maxrss;
 		goto out;
 	}
 
 	if (!lock_task_sighand(p, &flags))
 		return;
+=======
+		maxrss = sig->maxrss;
+		goto out_thread;
+	}
+
+	flags = read_seqbegin_or_lock_irqsave(&sig->stats_lock, &seq);
+>>>>>>> origin/android16-base
 
 	switch (who) {
 	case RUSAGE_BOTH:
 	case RUSAGE_CHILDREN:
+<<<<<<< HEAD
 		utime = p->signal->cutime;
 		stime = p->signal->cstime;
 		r->ru_nvcsw = p->signal->cnvcsw;
@@ -1750,11 +1776,23 @@ void getrusage(struct task_struct *p, int who, struct rusage *r)
 		r->ru_inblock = p->signal->cinblock;
 		r->ru_oublock = p->signal->coublock;
 		maxrss = p->signal->cmaxrss;
+=======
+		utime = sig->cutime;
+		stime = sig->cstime;
+		r->ru_nvcsw = sig->cnvcsw;
+		r->ru_nivcsw = sig->cnivcsw;
+		r->ru_minflt = sig->cmin_flt;
+		r->ru_majflt = sig->cmaj_flt;
+		r->ru_inblock = sig->cinblock;
+		r->ru_oublock = sig->coublock;
+		maxrss = sig->cmaxrss;
+>>>>>>> origin/android16-base
 
 		if (who == RUSAGE_CHILDREN)
 			break;
 
 	case RUSAGE_SELF:
+<<<<<<< HEAD
 		thread_group_cputime_adjusted(p, &tgutime, &tgstime);
 		utime += tgutime;
 		stime += tgstime;
@@ -1770,11 +1808,28 @@ void getrusage(struct task_struct *p, int who, struct rusage *r)
 		do {
 			accumulate_thread_rusage(t, r);
 		} while_each_thread(p, t);
+=======
+		r->ru_nvcsw += sig->nvcsw;
+		r->ru_nivcsw += sig->nivcsw;
+		r->ru_minflt += sig->min_flt;
+		r->ru_majflt += sig->maj_flt;
+		r->ru_inblock += sig->inblock;
+		r->ru_oublock += sig->oublock;
+		if (maxrss < sig->maxrss)
+			maxrss = sig->maxrss;
+
+		rcu_read_lock();
+		__for_each_thread(sig, t)
+			accumulate_thread_rusage(t, r);
+		rcu_read_unlock();
+
+>>>>>>> origin/android16-base
 		break;
 
 	default:
 		BUG();
 	}
+<<<<<<< HEAD
 	unlock_task_sighand(p, &flags);
 
 out:
@@ -1790,6 +1845,33 @@ out:
 		}
 	}
 	r->ru_maxrss = maxrss * (PAGE_SIZE / 1024); /* convert pages to KBs */
+=======
+
+	if (need_seqretry(&sig->stats_lock, seq)) {
+		seq = 1;
+		goto retry;
+	}
+	done_seqretry_irqrestore(&sig->stats_lock, seq, flags);
+
+	if (who == RUSAGE_CHILDREN)
+		goto out_children;
+
+	thread_group_cputime_adjusted(p, &tgutime, &tgstime);
+	utime += tgutime;
+	stime += tgstime;
+
+out_thread:
+	mm = get_task_mm(p);
+	if (mm) {
+		setmax_mm_hiwater_rss(&maxrss, mm);
+		mmput(mm);
+	}
+
+out_children:
+	r->ru_maxrss = maxrss * (PAGE_SIZE / 1024); /* convert pages to KBs */
+	r->ru_utime = ns_to_timeval(utime);
+	r->ru_stime = ns_to_timeval(stime);
+>>>>>>> origin/android16-base
 }
 
 SYSCALL_DEFINE2(getrusage, int, who, struct rusage __user *, ru)
@@ -1940,6 +2022,7 @@ static int validate_prctl_map(struct prctl_mm_map *prctl_map)
 	error = -EINVAL;
 
 	/*
+<<<<<<< HEAD
 	 * @brk should be after @end_data in traditional maps.
 	 */
 	if (prctl_map->start_brk <= prctl_map->end_data ||
@@ -1947,6 +2030,8 @@ static int validate_prctl_map(struct prctl_mm_map *prctl_map)
 		goto out;
 
 	/*
+=======
+>>>>>>> origin/android16-base
 	 * Neither we should allow to override limits if they set.
 	 */
 	if (check_data_rlimit(rlimit(RLIMIT_DATA), prctl_map->brk,

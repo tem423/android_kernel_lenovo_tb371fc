@@ -306,7 +306,11 @@ static uint32_t atom_get_src_int(atom_exec_context *ctx, uint8_t attr,
 				DEBUG("IMM 0x%02X\n", val);
 			return val;
 		}
+<<<<<<< HEAD
 		return 0;
+=======
+		break;
+>>>>>>> origin/android16-base
 	case ATOM_ARG_PLL:
 		idx = U8(*ptr);
 		(*ptr)++;

@@ -67,12 +67,18 @@ struct merkle_tree_params {
  * When a verity file is first opened, an instance of this struct is allocated
  * and stored in ->i_verity_info; it remains until the inode is evicted.  It
  * caches information about the Merkle tree that's needed to efficiently verify
+<<<<<<< HEAD
  * data read from the file.  It also caches the file measurement.  The Merkle
  * tree pages themselves are not cached here, but the filesystem may cache them.
+=======
+ * data read from the file.  It also caches the file digest.  The Merkle tree
+ * pages themselves are not cached here, but the filesystem may cache them.
+>>>>>>> origin/android16-base
  */
 struct fsverity_info {
 	struct merkle_tree_params tree_params;
 	u8 root_hash[FS_VERITY_MAX_DIGEST_SIZE];
+<<<<<<< HEAD
 	u8 measurement[FS_VERITY_MAX_DIGEST_SIZE];
 	const struct inode *inode;
 };
@@ -94,12 +100,19 @@ struct fsverity_descriptor {
 	__u8 signature[];	/* optional PKCS#7 signature */
 };
 
+=======
+	u8 file_digest[FS_VERITY_MAX_DIGEST_SIZE];
+	const struct inode *inode;
+};
+
+>>>>>>> origin/android16-base
 /* Arbitrary limit to bound the kmalloc() size.  Can be changed. */
 #define FS_VERITY_MAX_DESCRIPTOR_SIZE	16384
 
 #define FS_VERITY_MAX_SIGNATURE_SIZE	(FS_VERITY_MAX_DESCRIPTOR_SIZE - \
 					 sizeof(struct fsverity_descriptor))
 
+<<<<<<< HEAD
 /*
  * Format in which verity file measurements are signed.  This is the same as
  * 'struct fsverity_digest', except here some magic bytes are prepended to
@@ -113,6 +126,8 @@ struct fsverity_signed_digest {
 	__u8 digest[];
 };
 
+=======
+>>>>>>> origin/android16-base
 /* hash_algs.c */
 
 extern struct fsverity_hash_alg fsverity_hash_algs[];
@@ -152,12 +167,24 @@ int fsverity_init_merkle_tree_params(struct merkle_tree_params *params,
 				     const u8 *salt, size_t salt_size);
 
 struct fsverity_info *fsverity_create_info(const struct inode *inode,
+<<<<<<< HEAD
 					   void *desc, size_t desc_size);
+=======
+					   struct fsverity_descriptor *desc,
+					   size_t desc_size);
+>>>>>>> origin/android16-base
 
 void fsverity_set_info(struct inode *inode, struct fsverity_info *vi);
 
 void fsverity_free_info(struct fsverity_info *vi);
 
+<<<<<<< HEAD
+=======
+int fsverity_get_descriptor(struct inode *inode,
+			    struct fsverity_descriptor **desc_ret,
+			    size_t *desc_size_ret);
+
+>>>>>>> origin/android16-base
 int __init fsverity_init_info_cache(void);
 void __init fsverity_exit_info_cache(void);
 
@@ -165,15 +192,23 @@ void __init fsverity_exit_info_cache(void);
 
 #ifdef CONFIG_FS_VERITY_BUILTIN_SIGNATURES
 int fsverity_verify_signature(const struct fsverity_info *vi,
+<<<<<<< HEAD
 			      const struct fsverity_descriptor *desc,
 			      size_t desc_size);
+=======
+			      const u8 *signature, size_t sig_size);
+>>>>>>> origin/android16-base
 
 int __init fsverity_init_signature(void);
 #else /* !CONFIG_FS_VERITY_BUILTIN_SIGNATURES */
 static inline int
 fsverity_verify_signature(const struct fsverity_info *vi,
+<<<<<<< HEAD
 			  const struct fsverity_descriptor *desc,
 			  size_t desc_size)
+=======
+			  const u8 *signature, size_t sig_size)
+>>>>>>> origin/android16-base
 {
 	return 0;
 }

@@ -15,6 +15,10 @@
 #ifndef __MIPS_ASM_MIPS_CM_H__
 #define __MIPS_ASM_MIPS_CM_H__
 
+<<<<<<< HEAD
+=======
+#include <linux/bitfield.h>
+>>>>>>> origin/android16-base
 #include <linux/bitops.h>
 #include <linux/errno.h>
 
@@ -157,8 +161,13 @@ GCR_ACCESSOR_RO(32, 0x030, rev)
 #define CM_GCR_REV_MINOR			GENMASK(7, 0)
 
 #define CM_ENCODE_REV(major, minor) \
+<<<<<<< HEAD
 		(((major) << __ffs(CM_GCR_REV_MAJOR)) | \
 		 ((minor) << __ffs(CM_GCR_REV_MINOR)))
+=======
+		(FIELD_PREP(CM_GCR_REV_MAJOR, major) | \
+		 FIELD_PREP(CM_GCR_REV_MINOR, minor))
+>>>>>>> origin/android16-base
 
 #define CM_REV_CM2				CM_ENCODE_REV(6, 0)
 #define CM_REV_CM2_5				CM_ENCODE_REV(7, 0)
@@ -231,6 +240,13 @@ GCR_ACCESSOR_RO(32, 0x0d0, gic_status)
 GCR_ACCESSOR_RO(32, 0x0f0, cpc_status)
 #define CM_GCR_CPC_STATUS_EX			BIT(0)
 
+<<<<<<< HEAD
+=======
+/* GCR_ACCESS - Controls core/IOCU access to GCRs */
+GCR_ACCESSOR_RW(32, 0x120, access_cm3)
+#define CM_GCR_ACCESS_ACCESSEN			GENMASK(7, 0)
+
+>>>>>>> origin/android16-base
 /* GCR_L2_CONFIG - Indicates L2 cache configuration when Config5.L2C=1 */
 GCR_ACCESSOR_RW(32, 0x130, l2_config)
 #define CM_GCR_L2_CONFIG_BYPASS			BIT(20)
@@ -366,10 +382,17 @@ static inline int mips_cm_revision(void)
 static inline unsigned int mips_cm_max_vp_width(void)
 {
 	extern int smp_num_siblings;
+<<<<<<< HEAD
 	uint32_t cfg;
 
 	if (mips_cm_revision() >= CM_REV_CM3)
 		return read_gcr_sys_config2() & CM_GCR_SYS_CONFIG2_MAXVPW;
+=======
+
+	if (mips_cm_revision() >= CM_REV_CM3)
+		return FIELD_GET(CM_GCR_SYS_CONFIG2_MAXVPW,
+				 read_gcr_sys_config2());
+>>>>>>> origin/android16-base
 
 	if (mips_cm_present()) {
 		/*
@@ -377,8 +400,12 @@ static inline unsigned int mips_cm_max_vp_width(void)
 		 * number of VP(E)s, and if that ever changes then this will
 		 * need revisiting.
 		 */
+<<<<<<< HEAD
 		cfg = read_gcr_cl_config() & CM_GCR_Cx_CONFIG_PVPE;
 		return (cfg >> __ffs(CM_GCR_Cx_CONFIG_PVPE)) + 1;
+=======
+		return FIELD_GET(CM_GCR_Cx_CONFIG_PVPE, read_gcr_cl_config()) + 1;
+>>>>>>> origin/android16-base
 	}
 
 	if (IS_ENABLED(CONFIG_SMP))

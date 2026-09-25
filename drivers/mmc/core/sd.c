@@ -28,6 +28,7 @@
 #include "mmc_ops.h"
 #include "sd.h"
 #include "sd_ops.h"
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 #include "../host/sdhci-bh201.h"
@@ -40,6 +41,8 @@
 #endif
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+=======
+>>>>>>> origin/android16-base
 
 static const unsigned int tran_exp[] = {
 	10000,		100000,		1000000,	10000000,
@@ -150,6 +153,12 @@ static int mmc_decode_csd(struct mmc_card *card)
 			csd->erase_size = UNSTUFF_BITS(resp, 39, 7) + 1;
 			csd->erase_size <<= csd->write_blkbits - 9;
 		}
+<<<<<<< HEAD
+=======
+
+		if (UNSTUFF_BITS(resp, 13, 1))
+			mmc_card_set_readonly(card);
+>>>>>>> origin/android16-base
 		break;
 	case 1:
 		/*
@@ -184,6 +193,12 @@ static int mmc_decode_csd(struct mmc_card *card)
 		csd->write_blkbits = 9;
 		csd->write_partial = 0;
 		csd->erase_size = 1;
+<<<<<<< HEAD
+=======
+
+		if (UNSTUFF_BITS(resp, 13, 1))
+			mmc_card_set_readonly(card);
+>>>>>>> origin/android16-base
 		break;
 	default:
 		pr_err("%s: unrecognised CSD structure version %d\n",
@@ -408,7 +423,11 @@ static int sd_select_driver_type(struct mmc_card *card, u8 *status)
 						   card_drv_type, &drv_type);
 
 	if (drive_strength) {
+<<<<<<< HEAD
 		err = mmc_sd_switch(card, 1, 2, SD_DRIVER_TYPE_A, status);
+=======
+		err = mmc_sd_switch(card, 1, 2, drive_strength, status);
+>>>>>>> origin/android16-base
 		if (err)
 			return err;
 		if ((status[15] & 0xF) != drive_strength) {
@@ -647,6 +666,7 @@ out:
 	return err;
 }
 
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 int mmc_app_acmd42(struct mmc_card *card)
@@ -670,6 +690,8 @@ int mmc_app_acmd42(struct mmc_card *card)
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
 
 
+=======
+>>>>>>> origin/android16-base
 static int mmc_sd_change_bus_speed_deferred(struct mmc_host *host,
 							unsigned long *freq)
 {
@@ -734,16 +756,20 @@ static int mmc_sd_init_uhs_card(struct mmc_card *card)
 
 	mmc_set_bus_width(card->host, MMC_BUS_WIDTH_4);
 
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 	mmc_app_acmd42(card);//wangpengpeng@wind-mobi.com add for sd at 20180223
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Select the bus speed mode depending on host
 	 * and card capability.
 	 */
 	sd_update_bus_speed_mode(card);
+<<<<<<< HEAD
 // bayhub chevron.li add for degrade code at 2019/8/30 start
 #ifdef CONFIG_MMC_SDHCI_BH201
 	/* 
@@ -774,6 +800,8 @@ static int mmc_sd_init_uhs_card(struct mmc_card *card)
 							mmc_hostname(card->host),card->sd_bus_speed);
 #endif
 // bayhub chevron.li add for degrade code at 2019/8/30 end
+=======
+>>>>>>> origin/android16-base
 
 	/* Set the driver strength for the card */
 	err = sd_select_driver_type(card, status);
@@ -903,6 +931,7 @@ try_again:
 		pr_warn("%s: Skipping voltage switch\n", mmc_hostname(host));
 	}
 
+<<<<<<< HEAD
 // bayhub chevron.li add for degrade code at 2019/8/30 start
 #ifdef CONFIG_MMC_SDHCI_BH201
 	/* Skip change 1.8V */
@@ -915,6 +944,8 @@ try_again:
 	}
 #endif
 // bayhub chevron.li add for degrade code at 2019/8/30 end
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Since we're changing the OCR value, we seem to
 	 * need to tell some cards to go back to the idle
@@ -954,11 +985,22 @@ try_again:
 		return err;
 
 	/*
+<<<<<<< HEAD
 	 * In case CCS and S18A in the response is set, start Signal Voltage
 	 * Switch procedure. SPI mode doesn't support CMD11.
 	 */
 	if (!mmc_host_is_spi(host) && rocr &&
 	   ((*rocr & 0x41000000) == 0x41000000)) {
+=======
+	 * In case the S18A bit is set in the response, let's start the signal
+	 * voltage switch procedure. SPI mode doesn't support CMD11.
+	 * Note that, according to the spec, the S18A bit is not valid unless
+	 * the CCS bit is set as well. We deliberately deviate from the spec in
+	 * regards to this, which allows UHS-I to be supported for SDSC cards.
+	 */
+	if (!mmc_host_is_spi(host) && (ocr & SD_OCR_S18R) &&
+	    rocr && (*rocr & SD_ROCR_S18A)) {
+>>>>>>> origin/android16-base
 		err = mmc_set_uhs_voltage(host, pocr);
 		if (err == -EAGAIN) {
 			retries--;
@@ -1092,6 +1134,7 @@ unsigned mmc_sd_get_max_clock(struct mmc_card *card)
 	return max_dtr;
 }
 
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 static int driver_send_command(struct sdhci_host *host)
@@ -1279,6 +1322,8 @@ void bht_load(struct mmc_host *mmc_host, struct mmc_card *card)
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
 
+=======
+>>>>>>> origin/android16-base
 static bool mmc_sd_card_using_v18(struct mmc_card *card)
 {
 	/*
@@ -1329,6 +1374,7 @@ retry:
 		card->type = MMC_TYPE_SD;
 		memcpy(card->raw_cid, cid, sizeof(card->raw_cid));
 	}
+<<<<<<< HEAD
 // bayhub chevron.li add for degrade code at 2019/8/30 start
 #ifdef CONFIG_MMC_SDHCI_BH201
 	/* clear degrade flag after card remove and insert */
@@ -1340,6 +1386,9 @@ retry:
 	pr_err("### Bayhub debug: degrade count is %d ###\n", host->degrade_count);
 #endif
 // bayhub chevron.li add for degrade code at 2019/8/30 end
+=======
+
+>>>>>>> origin/android16-base
 	/*
 	 * Call the optional HC's init_card function to handle quirks.
 	 */
@@ -1364,6 +1413,7 @@ retry:
 		mmc_decode_cid(card);
 	}
 
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 	{
@@ -1374,6 +1424,8 @@ retry:
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * handling only for cards supporting DSR and hosts requesting
 	 * DSR configuration
@@ -1430,6 +1482,7 @@ retry:
 		if (err)
 			goto free_card;
 	} else {
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 		/*
@@ -1446,6 +1499,8 @@ retry:
 		mmc_app_acmd42(card);
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+=======
+>>>>>>> origin/android16-base
 		/*
 		 * Attempt to change to high-speed (if supported)
 		 */
@@ -1459,8 +1514,12 @@ retry:
 		 * Set bus speed.
 		 */
 		mmc_set_clock(host, mmc_sd_get_max_clock(card));
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifndef CONFIG_MMC_SDHCI_BH201
+=======
+
+>>>>>>> origin/android16-base
 		/*
 		 * Switch to wider bus (if supported).
 		 */
@@ -1472,8 +1531,12 @@ retry:
 
 			mmc_set_bus_width(host, MMC_BUS_WIDTH_4);
 		}
+<<<<<<< HEAD
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */	}
+=======
+	}
+>>>>>>> origin/android16-base
 
 	if (host->caps2 & MMC_CAP2_AVOID_3_3V &&
 	    host->ios.signal_voltage == MMC_SIGNAL_VOLTAGE_330) {
@@ -1485,6 +1548,7 @@ retry:
 done:
 	card->clk_scaling_highest = mmc_sd_get_max_clock(card);
 	card->clk_scaling_lowest = host->f_min;
+<<<<<<< HEAD
 // bayhub chevron.li add for degrade code at 2019/8/30 start
 #ifdef CONFIG_MMC_SDHCI_BH201
 	/* Clear the degrade flag when the card init success */
@@ -1497,6 +1561,9 @@ done:
 	host->card = card;
 #endif
 // bayhub chevron.li add for degrade code at 2020/4/24 end
+=======
+
+>>>>>>> origin/android16-base
 	return 0;
 
 free_card:
@@ -1558,6 +1625,7 @@ out:
 
 	if (err) {
 		mmc_sd_remove(host);
+<<<<<<< HEAD
 // bayhub chevron.li add for degrade code at 2019/8/30 start
 #ifdef CONFIG_MMC_SDHCI_BH201
 		/* set the degrade clear flag */
@@ -1574,6 +1642,9 @@ out:
 	#endif
 #endif
 // bayhub chevron.li add for degrade code at 2019/8/30 end
+=======
+
+>>>>>>> origin/android16-base
 		mmc_claim_host(host);
 		mmc_detach_bus(host);
 		mmc_power_off(host);
@@ -1813,6 +1884,7 @@ int mmc_attach_sd(struct mmc_host *host)
 {
 	int err;
 	u32 ocr, rocr;
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifndef CONFIG_MMC_SDHCI_BH201
 #ifdef CONFIG_MMC_PARANOID_SD_INIT
@@ -1823,6 +1895,8 @@ int mmc_attach_sd(struct mmc_host *host)
 #ifdef CONFIG_MMC_SDHCI_BH201
 bool bretry =  false;
 #endif
+=======
+>>>>>>> origin/android16-base
 
 	WARN_ON(!host->claimed);
 
@@ -1864,6 +1938,7 @@ bool bretry =  false;
 	/*
 	 * Detect and init the card.
 	 */
+<<<<<<< HEAD
 
 //#ifdef CONFIG_MMC_PARANOID_SD_INIT
 
@@ -1945,6 +2020,11 @@ retry:	if (bht_target_host(mmc_priv(host))) {
 		goto err;
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+=======
+	err = mmc_sd_init_card(host, rocr, NULL);
+	if (err)
+		goto err;
+>>>>>>> origin/android16-base
 
 	mmc_release_host(host);
 	err = mmc_add_card(host->card);

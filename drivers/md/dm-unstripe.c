@@ -84,8 +84,13 @@ static int unstripe_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	}
 	uc->physical_start = start;
 
+<<<<<<< HEAD
 	uc->unstripe_offset = uc->unstripe * uc->chunk_size;
 	uc->unstripe_width = (uc->stripes - 1) * uc->chunk_size;
+=======
+	uc->unstripe_offset = (sector_t)uc->unstripe * uc->chunk_size;
+	uc->unstripe_width = (sector_t)(uc->stripes - 1) * uc->chunk_size;
+>>>>>>> origin/android16-base
 	uc->chunk_shift = is_power_of_2(uc->chunk_size) ? fls(uc->chunk_size) - 1 : 0;
 
 	tmp_len = ti->len;

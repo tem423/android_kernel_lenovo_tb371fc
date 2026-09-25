@@ -71,12 +71,21 @@ static ssize_t evm_read_key(struct file *filp, char __user *buf,
 static ssize_t evm_write_key(struct file *file, const char __user *buf,
 			     size_t count, loff_t *ppos)
 {
+<<<<<<< HEAD
 	int i, ret;
+=======
+	unsigned int i;
+	int ret;
+>>>>>>> origin/android16-base
 
 	if (!capable(CAP_SYS_ADMIN) || (evm_initialized & EVM_SETUP_COMPLETE))
 		return -EPERM;
 
+<<<<<<< HEAD
 	ret = kstrtoint_from_user(buf, count, 0, &i);
+=======
+	ret = kstrtouint_from_user(buf, count, 0, &i);
+>>>>>>> origin/android16-base
 
 	if (ret)
 		return ret;
@@ -85,12 +94,21 @@ static ssize_t evm_write_key(struct file *file, const char __user *buf,
 	if (!i || (i & ~EVM_INIT_MASK) != 0)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	/* Don't allow a request to freshly enable metadata writes if
 	 * keys are loaded.
 	 */
 	if ((i & EVM_ALLOW_METADATA_WRITES) &&
 	    ((evm_initialized & EVM_KEY_MASK) != 0) &&
 	    !(evm_initialized & EVM_ALLOW_METADATA_WRITES))
+=======
+	/*
+	 * Don't allow a request to enable metadata writes if
+	 * an HMAC key is loaded.
+	 */
+	if ((i & EVM_ALLOW_METADATA_WRITES) &&
+	    (evm_initialized & EVM_INIT_HMAC) != 0)
+>>>>>>> origin/android16-base
 		return -EPERM;
 
 	if (i & EVM_INIT_HMAC) {

@@ -451,12 +451,21 @@ void lru_cache_add(struct page *page)
  * directly back onto it's zone's unevictable list, it does NOT use a
  * per cpu pagevec.
  */
+<<<<<<< HEAD
 void __lru_cache_add_active_or_unevictable(struct page *page,
 					   unsigned long vma_flags)
 {
 	VM_BUG_ON_PAGE(PageLRU(page), page);
 
 	if (likely((vma_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
+=======
+void lru_cache_add_active_or_unevictable(struct page *page,
+					 struct vm_area_struct *vma)
+{
+	VM_BUG_ON_PAGE(PageLRU(page), page);
+
+	if (likely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
+>>>>>>> origin/android16-base
 		SetPageActive(page);
 	else if (!TestSetPageMlocked(page)) {
 		/*
@@ -721,8 +730,13 @@ void release_pages(struct page **pages, int nr)
 	LIST_HEAD(pages_to_free);
 	struct pglist_data *locked_pgdat = NULL;
 	struct lruvec *lruvec;
+<<<<<<< HEAD
 	unsigned long uninitialized_var(flags);
 	unsigned int uninitialized_var(lock_batch);
+=======
+	unsigned long flags;
+	unsigned int lock_batch;
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < nr; i++) {
 		struct page *page = pages[i];

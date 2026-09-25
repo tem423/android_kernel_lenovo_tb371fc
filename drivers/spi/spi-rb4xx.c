@@ -148,7 +148,11 @@ static int rb4xx_spi_probe(struct platform_device *pdev)
 	if (IS_ERR(spi_base))
 		return PTR_ERR(spi_base);
 
+<<<<<<< HEAD
 	master = spi_alloc_master(&pdev->dev, sizeof(*rbspi));
+=======
+	master = devm_spi_alloc_master(&pdev->dev, sizeof(*rbspi));
+>>>>>>> origin/android16-base
 	if (!master)
 		return -ENOMEM;
 

@@ -31,6 +31,10 @@ _GLOBAL(store_vr_state)
 	mfvscr	v0
 	li	r4, VRSTATE_VSCR
 	stvx	v0, r4, r3
+<<<<<<< HEAD
+=======
+	lvx	v0, 0, r3
+>>>>>>> origin/android16-base
 	blr
 EXPORT_SYMBOL(store_vr_state)
 
@@ -101,6 +105,10 @@ _GLOBAL(save_altivec)
 	mfvscr	v0
 	li	r4,VRSTATE_VSCR
 	stvx	v0,r4,r7
+<<<<<<< HEAD
+=======
+	lvx	v0,0,r7
+>>>>>>> origin/android16-base
 	blr
 
 #ifdef CONFIG_VSX

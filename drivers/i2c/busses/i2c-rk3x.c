@@ -82,7 +82,11 @@ enum {
 #define DEFAULT_SCL_RATE  (100 * 1000) /* Hz */
 
 /**
+<<<<<<< HEAD
  * struct i2c_spec_values:
+=======
+ * struct i2c_spec_values - I2C specification values for various modes
+>>>>>>> origin/android16-base
  * @min_hold_start_ns: min hold time (repeated) START condition
  * @min_low_ns: min LOW period of the SCL clock
  * @min_high_ns: min HIGH period of the SCL cloc
@@ -138,7 +142,11 @@ static const struct i2c_spec_values fast_mode_plus_spec = {
 };
 
 /**
+<<<<<<< HEAD
  * struct rk3x_i2c_calced_timings:
+=======
+ * struct rk3x_i2c_calced_timings - calculated V1 timings
+>>>>>>> origin/android16-base
  * @div_low: Divider output for low
  * @div_high: Divider output for high
  * @tuning: Used to adjust setup/hold data time,
@@ -161,7 +169,11 @@ enum rk3x_i2c_state {
 };
 
 /**
+<<<<<<< HEAD
  * struct rk3x_i2c_soc_data:
+=======
+ * struct rk3x_i2c_soc_data - SOC-specific data
+>>>>>>> origin/android16-base
  * @grf_offset: offset inside the grf regmap for setting the i2c type
  * @calc_timings: Callback function for i2c timing information calculated
  */
@@ -241,7 +253,12 @@ static inline void rk3x_i2c_clean_ipd(struct rk3x_i2c *i2c)
 }
 
 /**
+<<<<<<< HEAD
  * Generate a START condition, which triggers a REG_INT_START interrupt.
+=======
+ * rk3x_i2c_start - Generate a START condition, which triggers a REG_INT_START interrupt.
+ * @i2c: target controller data
+>>>>>>> origin/android16-base
  */
 static void rk3x_i2c_start(struct rk3x_i2c *i2c)
 {
@@ -260,8 +277,13 @@ static void rk3x_i2c_start(struct rk3x_i2c *i2c)
 }
 
 /**
+<<<<<<< HEAD
  * Generate a STOP condition, which triggers a REG_INT_STOP interrupt.
  *
+=======
+ * rk3x_i2c_stop - Generate a STOP condition, which triggers a REG_INT_STOP interrupt.
+ * @i2c: target controller data
+>>>>>>> origin/android16-base
  * @error: Error code to return in rk3x_i2c_xfer
  */
 static void rk3x_i2c_stop(struct rk3x_i2c *i2c, int error)
@@ -300,7 +322,12 @@ static void rk3x_i2c_stop(struct rk3x_i2c *i2c, int error)
 }
 
 /**
+<<<<<<< HEAD
  * Setup a read according to i2c->msg
+=======
+ * rk3x_i2c_prepare_read - Setup a read according to i2c->msg
+ * @i2c: target controller data
+>>>>>>> origin/android16-base
  */
 static void rk3x_i2c_prepare_read(struct rk3x_i2c *i2c)
 {
@@ -331,7 +358,12 @@ static void rk3x_i2c_prepare_read(struct rk3x_i2c *i2c)
 }
 
 /**
+<<<<<<< HEAD
  * Fill the transmit buffer with data from i2c->msg
+=======
+ * rk3x_i2c_fill_transmit_buf - Fill the transmit buffer with data from i2c->msg
+ * @i2c: target controller data
+>>>>>>> origin/android16-base
  */
 static void rk3x_i2c_fill_transmit_buf(struct rk3x_i2c *i2c)
 {
@@ -418,15 +450,24 @@ static void rk3x_i2c_handle_read(struct rk3x_i2c *i2c, unsigned int ipd)
 {
 	unsigned int i;
 	unsigned int len = i2c->msg->len - i2c->processed;
+<<<<<<< HEAD
 	u32 uninitialized_var(val);
+=======
+	u32 val;
+>>>>>>> origin/android16-base
 	u8 byte;
 
 	/* we only care for MBRF here. */
 	if (!(ipd & REG_INT_MBRF))
 		return;
 
+<<<<<<< HEAD
 	/* ack interrupt */
 	i2c_writel(i2c, REG_INT_MBRF, REG_IPD);
+=======
+	/* ack interrupt (read also produces a spurious START flag, clear it too) */
+	i2c_writel(i2c, REG_INT_MBRF | REG_INT_START, REG_IPD);
+>>>>>>> origin/android16-base
 
 	/* Can only handle a maximum of 32 bytes at a time */
 	if (len > 32)
@@ -534,11 +575,18 @@ out:
 }
 
 /**
+<<<<<<< HEAD
  * Get timing values of I2C specification
  *
  * @speed: Desired SCL frequency
  *
  * Returns: Matched i2c spec values.
+=======
+ * rk3x_i2c_get_spec - Get timing values of I2C specification
+ * @speed: Desired SCL frequency
+ *
+ * Return: Matched i2c_spec_values.
+>>>>>>> origin/android16-base
  */
 static const struct i2c_spec_values *rk3x_i2c_get_spec(unsigned int speed)
 {
@@ -551,13 +599,21 @@ static const struct i2c_spec_values *rk3x_i2c_get_spec(unsigned int speed)
 }
 
 /**
+<<<<<<< HEAD
  * Calculate divider values for desired SCL frequency
  *
+=======
+ * rk3x_i2c_v0_calc_timings - Calculate divider values for desired SCL frequency
+>>>>>>> origin/android16-base
  * @clk_rate: I2C input clock rate
  * @t: Known I2C timing information
  * @t_calc: Caculated rk3x private timings that would be written into regs
  *
+<<<<<<< HEAD
  * Returns: 0 on success, -EINVAL if the goal SCL rate is too slow. In that case
+=======
+ * Return: %0 on success, -%EINVAL if the goal SCL rate is too slow. In that case
+>>>>>>> origin/android16-base
  * a best-effort divider value is returned in divs. If the target rate is
  * too high, we silently use the highest possible rate.
  */
@@ -712,13 +768,21 @@ static int rk3x_i2c_v0_calc_timings(unsigned long clk_rate,
 }
 
 /**
+<<<<<<< HEAD
  * Calculate timing values for desired SCL frequency
  *
+=======
+ * rk3x_i2c_v1_calc_timings - Calculate timing values for desired SCL frequency
+>>>>>>> origin/android16-base
  * @clk_rate: I2C input clock rate
  * @t: Known I2C timing information
  * @t_calc: Caculated rk3x private timings that would be written into regs
  *
+<<<<<<< HEAD
  * Returns: 0 on success, -EINVAL if the goal SCL rate is too slow. In that case
+=======
+ * Return: %0 on success, -%EINVAL if the goal SCL rate is too slow. In that case
+>>>>>>> origin/android16-base
  * a best-effort divider value is returned in divs. If the target rate is
  * too high, we silently use the highest possible rate.
  * The following formulas are v1's method to calculate timings.
@@ -962,6 +1026,7 @@ static int rk3x_i2c_clk_notifier_cb(struct notifier_block *nb, unsigned long
 }
 
 /**
+<<<<<<< HEAD
  * Setup I2C registers for an I2C operation specified by msgs, num.
  *
  * Must be called with i2c->lock held.
@@ -970,6 +1035,16 @@ static int rk3x_i2c_clk_notifier_cb(struct notifier_block *nb, unsigned long
  * @num: Number of msgs
  *
  * returns: Number of I2C msgs processed or negative in case of error
+=======
+ * rk3x_i2c_setup - Setup I2C registers for an I2C operation specified by msgs, num.
+ * @i2c: target controller data
+ * @msgs: I2C msgs to process
+ * @num: Number of msgs
+ *
+ * Must be called with i2c->lock held.
+ *
+ * Return: Number of I2C msgs processed or negative in case of error
+>>>>>>> origin/android16-base
  */
 static int rk3x_i2c_setup(struct rk3x_i2c *i2c, struct i2c_msg *msgs, int num)
 {

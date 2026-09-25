@@ -101,7 +101,11 @@ static void meson_plane_atomic_update(struct drm_plane *plane,
 
 	/* Enable OSD and BLK0, set max global alpha */
 	priv->viu.osd1_ctrl_stat = OSD_ENABLE |
+<<<<<<< HEAD
 				   (0xFF << OSD_GLOBAL_ALPHA_SHIFT) |
+=======
+				   (0x100 << OSD_GLOBAL_ALPHA_SHIFT) |
+>>>>>>> origin/android16-base
 				   OSD_BLK0_ENABLE;
 
 	/* Set up BLK0 to point to the right canvas */

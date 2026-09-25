@@ -118,7 +118,11 @@ struct report_list {
  * @multi_packet_cnt:	Count of fragmented packet count
  *
  * This structure is used to store completion flags and per client data like
+<<<<<<< HEAD
  * like report description, number of HID devices etc.
+=======
+ * report description, number of HID devices etc.
+>>>>>>> origin/android16-base
  */
 struct ishtp_cl_data {
 	/* completion flags */

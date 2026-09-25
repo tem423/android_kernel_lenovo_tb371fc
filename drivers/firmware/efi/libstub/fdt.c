@@ -301,6 +301,7 @@ efi_status_t allocate_new_fdt_and_exit_boot(efi_system_table_t *sys_table,
 		goto fail;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * Now that we have done our final memory allocation (and free)
 	 * we can get the memory map key needed for exit_boot_services().
@@ -309,6 +310,8 @@ efi_status_t allocate_new_fdt_and_exit_boot(efi_system_table_t *sys_table,
 	if (status != EFI_SUCCESS)
 		goto fail_free_new_fdt;
 
+=======
+>>>>>>> origin/android16-base
 	status = update_fdt(sys_table, (void *)fdt_addr, fdt_size,
 			    (void *)*new_fdt_addr, MAX_FDT_SIZE, cmdline_ptr,
 			    initrd_addr, initrd_size);

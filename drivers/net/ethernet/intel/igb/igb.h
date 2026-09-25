@@ -32,11 +32,19 @@ struct igb_adapter;
 /* TX/RX descriptor defines */
 #define IGB_DEFAULT_TXD		256
 #define IGB_DEFAULT_TX_WORK	128
+<<<<<<< HEAD
 #define IGB_MIN_TXD		80
 #define IGB_MAX_TXD		4096
 
 #define IGB_DEFAULT_RXD		256
 #define IGB_MIN_RXD		80
+=======
+#define IGB_MIN_TXD		64
+#define IGB_MAX_TXD		4096
+
+#define IGB_DEFAULT_RXD		256
+#define IGB_MIN_RXD		64
+>>>>>>> origin/android16-base
 #define IGB_MAX_RXD		4096
 
 #define IGB_DEFAULT_ITR		3 /* dynamic */
@@ -594,6 +602,11 @@ struct igb_adapter {
 	struct igb_mac_addr *mac_table;
 	struct vf_mac_filter vf_macs;
 	struct vf_mac_filter *vf_mac_list;
+<<<<<<< HEAD
+=======
+	/* lock for VF resources */
+	spinlock_t vfs_lock;
+>>>>>>> origin/android16-base
 };
 
 /* flags controlling PTP/1588 function */

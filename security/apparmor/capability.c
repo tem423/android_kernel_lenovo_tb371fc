@@ -98,6 +98,11 @@ static int audit_caps(struct common_audit_data *sa, struct aa_profile *profile,
 		return error;
 	} else {
 		aa_put_profile(ent->profile);
+<<<<<<< HEAD
+=======
+		if (profile != ent->profile)
+			cap_clear(ent->caps);
+>>>>>>> origin/android16-base
 		ent->profile = aa_get_profile(profile);
 		cap_raise(ent->caps, cap);
 	}

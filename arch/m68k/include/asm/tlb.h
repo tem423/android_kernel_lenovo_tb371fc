@@ -2,6 +2,7 @@
 #ifndef _M68K_TLB_H
 #define _M68K_TLB_H
 
+<<<<<<< HEAD
 /*
  * m68k doesn't need any special per-pte or
  * per-vma handling..
@@ -16,6 +17,8 @@
  */
 #define tlb_flush(tlb)		flush_tlb_mm((tlb)->mm)
 
+=======
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 #endif /* _M68K_TLB_H */

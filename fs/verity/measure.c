@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
+<<<<<<< HEAD
  * fs/verity/measure.c: ioctl to get a verity file's measurement
+=======
+ * Ioctl to get a verity file's digest
+>>>>>>> origin/android16-base
  *
  * Copyright 2019 Google LLC
  */
@@ -10,12 +14,21 @@
 #include <linux/uaccess.h>
 
 /**
+<<<<<<< HEAD
  * fsverity_ioctl_measure() - get a verity file's measurement
  * @filp: file to get measurement of
  * @_uarg: user pointer to fsverity_digest
  *
  * Retrieve the file measurement that the kernel is enforcing for reads from a
  * verity file.  See the "FS_IOC_MEASURE_VERITY" section of
+=======
+ * fsverity_ioctl_measure() - get a verity file's digest
+ * @filp: file to get digest of
+ * @_uarg: user pointer to fsverity_digest
+ *
+ * Retrieve the file digest that the kernel is enforcing for reads from a verity
+ * file.  See the "FS_IOC_MEASURE_VERITY" section of
+>>>>>>> origin/android16-base
  * Documentation/filesystems/fsverity.rst for the documentation.
  *
  * Return: 0 on success, -errno on failure
@@ -51,7 +64,11 @@ int fsverity_ioctl_measure(struct file *filp, void __user *_uarg)
 	if (copy_to_user(uarg, &arg, sizeof(arg)))
 		return -EFAULT;
 
+<<<<<<< HEAD
 	if (copy_to_user(uarg->digest, vi->measurement, hash_alg->digest_size))
+=======
+	if (copy_to_user(uarg->digest, vi->file_digest, hash_alg->digest_size))
+>>>>>>> origin/android16-base
 		return -EFAULT;
 
 	return 0;

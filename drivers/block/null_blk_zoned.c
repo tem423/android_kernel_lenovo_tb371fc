@@ -1,9 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/vmalloc.h>
+<<<<<<< HEAD
 #include "null_blk.h"
 
 /* zone_size in MBs to sectors. */
 #define ZONE_SIZE_SHIFT		11
+=======
+#include <linux/sizes.h>
+#include "null_blk.h"
+
+#define MB_TO_SECTS(mb) (((sector_t)mb * SZ_1M) >> SECTOR_SHIFT)
+>>>>>>> origin/android16-base
 
 static inline unsigned int null_zone_no(struct nullb_device *dev, sector_t sect)
 {
@@ -12,7 +19,11 @@ static inline unsigned int null_zone_no(struct nullb_device *dev, sector_t sect)
 
 int null_zone_init(struct nullb_device *dev)
 {
+<<<<<<< HEAD
 	sector_t dev_size = (sector_t)dev->size * 1024 * 1024;
+=======
+	sector_t dev_capacity_sects;
+>>>>>>> origin/android16-base
 	sector_t sector = 0;
 	unsigned int i;
 
@@ -25,9 +36,18 @@ int null_zone_init(struct nullb_device *dev)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	dev->zone_size_sects = dev->zone_size << ZONE_SIZE_SHIFT;
 	dev->nr_zones = dev_size >>
 				(SECTOR_SHIFT + ilog2(dev->zone_size_sects));
+=======
+	dev_capacity_sects = MB_TO_SECTS(dev->size);
+	dev->zone_size_sects = MB_TO_SECTS(dev->zone_size);
+	dev->nr_zones = dev_capacity_sects >> ilog2(dev->zone_size_sects);
+	if (dev_capacity_sects & (dev->zone_size_sects - 1))
+		dev->nr_zones++;
+
+>>>>>>> origin/android16-base
 	dev->zones = kvmalloc_array(dev->nr_zones, sizeof(struct blk_zone),
 			GFP_KERNEL | __GFP_ZERO);
 	if (!dev->zones)
@@ -37,7 +57,14 @@ int null_zone_init(struct nullb_device *dev)
 		struct blk_zone *zone = &dev->zones[i];
 
 		zone->start = zone->wp = sector;
+<<<<<<< HEAD
 		zone->len = dev->zone_size_sects;
+=======
+		if (zone->start + dev->zone_size_sects > dev_capacity_sects)
+			zone->len = dev_capacity_sects - zone->start;
+		else
+			zone->len = dev->zone_size_sects;
+>>>>>>> origin/android16-base
 		zone->type = BLK_ZONE_TYPE_SEQWRITE_REQ;
 		zone->cond = BLK_ZONE_COND_EMPTY;
 
@@ -50,6 +77,10 @@ int null_zone_init(struct nullb_device *dev)
 void null_zone_exit(struct nullb_device *dev)
 {
 	kvfree(dev->zones);
+<<<<<<< HEAD
+=======
+	dev->zones = NULL;
+>>>>>>> origin/android16-base
 }
 
 static void null_zone_fill_bio(struct nullb_device *dev, struct bio *bio,

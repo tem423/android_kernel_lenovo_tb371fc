@@ -540,10 +540,21 @@ static int mac_sonic_platform_probe(struct platform_device *pdev)
 
 	err = register_netdev(dev);
 	if (err)
+<<<<<<< HEAD
 		goto out;
 
 	return 0;
 
+=======
+		goto undo_probe;
+
+	return 0;
+
+undo_probe:
+	dma_free_coherent(lp->device,
+			  SIZEOF_SONIC_DESC * SONIC_BUS_SCALE(lp->dma_bitmode),
+			  lp->descriptors, lp->descriptors_laddr);
+>>>>>>> origin/android16-base
 out:
 	free_netdev(dev);
 
@@ -618,12 +629,23 @@ static int mac_sonic_nubus_probe(struct nubus_board *board)
 
 	err = register_netdev(ndev);
 	if (err)
+<<<<<<< HEAD
 		goto out;
+=======
+		goto undo_probe;
+>>>>>>> origin/android16-base
 
 	nubus_set_drvdata(board, ndev);
 
 	return 0;
 
+<<<<<<< HEAD
+=======
+undo_probe:
+	dma_free_coherent(lp->device,
+			  SIZEOF_SONIC_DESC * SONIC_BUS_SCALE(lp->dma_bitmode),
+			  lp->descriptors, lp->descriptors_laddr);
+>>>>>>> origin/android16-base
 out:
 	free_netdev(ndev);
 	return err;

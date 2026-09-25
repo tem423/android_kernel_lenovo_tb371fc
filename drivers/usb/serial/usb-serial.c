@@ -251,7 +251,11 @@ static int serial_open(struct tty_struct *tty, struct file *filp)
  *
  * Shut down a USB serial port. Serialized against activate by the
  * tport mutex and kept to matching open/close pairs
+<<<<<<< HEAD
  * of calls by the initialized flag.
+=======
+ * of calls by the tty-port initialized flag.
+>>>>>>> origin/android16-base
  *
  * Not called if tty is console.
  */

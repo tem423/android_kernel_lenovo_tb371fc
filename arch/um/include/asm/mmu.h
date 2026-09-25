@@ -15,8 +15,11 @@ typedef struct mm_context {
 	struct page *stub_pages[2];
 } mm_context_t;
 
+<<<<<<< HEAD
 extern void __switch_mm(struct mm_id * mm_idp);
 
+=======
+>>>>>>> origin/android16-base
 /* Avoid tangled inclusion with asm/ldt.h */
 extern long init_new_ldt(struct mm_context *to_mm, struct mm_context *from_mm);
 extern void free_ldt(struct mm_context *mm);

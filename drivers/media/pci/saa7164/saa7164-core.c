@@ -1237,7 +1237,11 @@ static int saa7164_initdev(struct pci_dev *pci_dev,
 
 	if (saa7164_dev_setup(dev) < 0) {
 		err = -EINVAL;
+<<<<<<< HEAD
 		goto fail_free;
+=======
+		goto fail_dev;
+>>>>>>> origin/android16-base
 	}
 
 	/* print pci info */
@@ -1405,6 +1409,11 @@ fail_fw:
 
 fail_irq:
 	saa7164_dev_unregister(dev);
+<<<<<<< HEAD
+=======
+fail_dev:
+	pci_disable_device(pci_dev);
+>>>>>>> origin/android16-base
 fail_free:
 	v4l2_device_unregister(&dev->v4l2_dev);
 	kfree(dev);

@@ -396,7 +396,11 @@ static int evergreen_cs_track_validate_cb(struct radeon_cs_parser *p, unsigned i
 	struct evergreen_cs_track *track = p->track;
 	struct eg_surface surf;
 	unsigned pitch, slice, mslice;
+<<<<<<< HEAD
 	unsigned long offset;
+=======
+	u64 offset;
+>>>>>>> origin/android16-base
 	int r;
 
 	mslice = G_028C6C_SLICE_MAX(track->cb_color_view[id]) + 1;
@@ -434,14 +438,24 @@ static int evergreen_cs_track_validate_cb(struct radeon_cs_parser *p, unsigned i
 		return r;
 	}
 
+<<<<<<< HEAD
 	offset = track->cb_color_bo_offset[id] << 8;
 	if (offset & (surf.base_align - 1)) {
 		dev_warn(p->dev, "%s:%d cb[%d] bo base %ld not aligned with %ld\n",
+=======
+	offset = (u64)track->cb_color_bo_offset[id] << 8;
+	if (offset & (surf.base_align - 1)) {
+		dev_warn(p->dev, "%s:%d cb[%d] bo base %llu not aligned with %ld\n",
+>>>>>>> origin/android16-base
 			 __func__, __LINE__, id, offset, surf.base_align);
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	offset += surf.layer_size * mslice;
+=======
+	offset += (u64)surf.layer_size * mslice;
+>>>>>>> origin/android16-base
 	if (offset > radeon_bo_size(track->cb_color_bo[id])) {
 		/* old ddx are broken they allocate bo with w*h*bpp but
 		 * program slice with ALIGN(h, 8), catch this and patch
@@ -449,14 +463,22 @@ static int evergreen_cs_track_validate_cb(struct radeon_cs_parser *p, unsigned i
 		 */
 		if (!surf.mode) {
 			uint32_t *ib = p->ib.ptr;
+<<<<<<< HEAD
 			unsigned long tmp, nby, bsize, size, min = 0;
+=======
+			u64 tmp, nby, bsize, size, min = 0;
+>>>>>>> origin/android16-base
 
 			/* find the height the ddx wants */
 			if (surf.nby > 8) {
 				min = surf.nby - 8;
 			}
 			bsize = radeon_bo_size(track->cb_color_bo[id]);
+<<<<<<< HEAD
 			tmp = track->cb_color_bo_offset[id] << 8;
+=======
+			tmp = (u64)track->cb_color_bo_offset[id] << 8;
+>>>>>>> origin/android16-base
 			for (nby = surf.nby; nby > min; nby--) {
 				size = nby * surf.nbx * surf.bpe * surf.nsamples;
 				if ((tmp + size * mslice) <= bsize) {
@@ -468,7 +490,11 @@ static int evergreen_cs_track_validate_cb(struct radeon_cs_parser *p, unsigned i
 				slice = ((nby * surf.nbx) / 64) - 1;
 				if (!evergreen_surface_check(p, &surf, "cb")) {
 					/* check if this one works */
+<<<<<<< HEAD
 					tmp += surf.layer_size * mslice;
+=======
+					tmp += (u64)surf.layer_size * mslice;
+>>>>>>> origin/android16-base
 					if (tmp <= bsize) {
 						ib[track->cb_color_slice_idx[id]] = slice;
 						goto old_ddx_ok;
@@ -477,9 +503,15 @@ static int evergreen_cs_track_validate_cb(struct radeon_cs_parser *p, unsigned i
 			}
 		}
 		dev_warn(p->dev, "%s:%d cb[%d] bo too small (layer size %d, "
+<<<<<<< HEAD
 			 "offset %d, max layer %d, bo size %ld, slice %d)\n",
 			 __func__, __LINE__, id, surf.layer_size,
 			track->cb_color_bo_offset[id] << 8, mslice,
+=======
+			 "offset %llu, max layer %d, bo size %ld, slice %d)\n",
+			 __func__, __LINE__, id, surf.layer_size,
+			(u64)track->cb_color_bo_offset[id] << 8, mslice,
+>>>>>>> origin/android16-base
 			radeon_bo_size(track->cb_color_bo[id]), slice);
 		dev_warn(p->dev, "%s:%d problematic surf: (%d %d) (%d %d %d %d %d %d %d)\n",
 			 __func__, __LINE__, surf.nbx, surf.nby,
@@ -563,7 +595,11 @@ static int evergreen_cs_track_validate_stencil(struct radeon_cs_parser *p)
 	struct evergreen_cs_track *track = p->track;
 	struct eg_surface surf;
 	unsigned pitch, slice, mslice;
+<<<<<<< HEAD
 	unsigned long offset;
+=======
+	u64 offset;
+>>>>>>> origin/android16-base
 	int r;
 
 	mslice = G_028008_SLICE_MAX(track->db_depth_view) + 1;
@@ -609,6 +645,7 @@ static int evergreen_cs_track_validate_stencil(struct radeon_cs_parser *p)
 		return r;
 	}
 
+<<<<<<< HEAD
 	offset = track->db_s_read_offset << 8;
 	if (offset & (surf.base_align - 1)) {
 		dev_warn(p->dev, "%s:%d stencil read bo base %ld not aligned with %ld\n",
@@ -621,6 +658,20 @@ static int evergreen_cs_track_validate_stencil(struct radeon_cs_parser *p)
 			 "offset %ld, max layer %d, bo size %ld)\n",
 			 __func__, __LINE__, surf.layer_size,
 			(unsigned long)track->db_s_read_offset << 8, mslice,
+=======
+	offset = (u64)track->db_s_read_offset << 8;
+	if (offset & (surf.base_align - 1)) {
+		dev_warn(p->dev, "%s:%d stencil read bo base %llu not aligned with %ld\n",
+			 __func__, __LINE__, offset, surf.base_align);
+		return -EINVAL;
+	}
+	offset += (u64)surf.layer_size * mslice;
+	if (offset > radeon_bo_size(track->db_s_read_bo)) {
+		dev_warn(p->dev, "%s:%d stencil read bo too small (layer size %d, "
+			 "offset %llu, max layer %d, bo size %ld)\n",
+			 __func__, __LINE__, surf.layer_size,
+			(u64)track->db_s_read_offset << 8, mslice,
+>>>>>>> origin/android16-base
 			radeon_bo_size(track->db_s_read_bo));
 		dev_warn(p->dev, "%s:%d stencil invalid (0x%08x 0x%08x 0x%08x 0x%08x)\n",
 			 __func__, __LINE__, track->db_depth_size,
@@ -628,6 +679,7 @@ static int evergreen_cs_track_validate_stencil(struct radeon_cs_parser *p)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	offset = track->db_s_write_offset << 8;
 	if (offset & (surf.base_align - 1)) {
 		dev_warn(p->dev, "%s:%d stencil write bo base %ld not aligned with %ld\n",
@@ -640,6 +692,20 @@ static int evergreen_cs_track_validate_stencil(struct radeon_cs_parser *p)
 			 "offset %ld, max layer %d, bo size %ld)\n",
 			 __func__, __LINE__, surf.layer_size,
 			(unsigned long)track->db_s_write_offset << 8, mslice,
+=======
+	offset = (u64)track->db_s_write_offset << 8;
+	if (offset & (surf.base_align - 1)) {
+		dev_warn(p->dev, "%s:%d stencil write bo base %llu not aligned with %ld\n",
+			 __func__, __LINE__, offset, surf.base_align);
+		return -EINVAL;
+	}
+	offset += (u64)surf.layer_size * mslice;
+	if (offset > radeon_bo_size(track->db_s_write_bo)) {
+		dev_warn(p->dev, "%s:%d stencil write bo too small (layer size %d, "
+			 "offset %llu, max layer %d, bo size %ld)\n",
+			 __func__, __LINE__, surf.layer_size,
+			(u64)track->db_s_write_offset << 8, mslice,
+>>>>>>> origin/android16-base
 			radeon_bo_size(track->db_s_write_bo));
 		return -EINVAL;
 	}
@@ -660,7 +726,11 @@ static int evergreen_cs_track_validate_depth(struct radeon_cs_parser *p)
 	struct evergreen_cs_track *track = p->track;
 	struct eg_surface surf;
 	unsigned pitch, slice, mslice;
+<<<<<<< HEAD
 	unsigned long offset;
+=======
+	u64 offset;
+>>>>>>> origin/android16-base
 	int r;
 
 	mslice = G_028008_SLICE_MAX(track->db_depth_view) + 1;
@@ -707,6 +777,7 @@ static int evergreen_cs_track_validate_depth(struct radeon_cs_parser *p)
 		return r;
 	}
 
+<<<<<<< HEAD
 	offset = track->db_z_read_offset << 8;
 	if (offset & (surf.base_align - 1)) {
 		dev_warn(p->dev, "%s:%d stencil read bo base %ld not aligned with %ld\n",
@@ -719,10 +790,25 @@ static int evergreen_cs_track_validate_depth(struct radeon_cs_parser *p)
 			 "offset %ld, max layer %d, bo size %ld)\n",
 			 __func__, __LINE__, surf.layer_size,
 			(unsigned long)track->db_z_read_offset << 8, mslice,
+=======
+	offset = (u64)track->db_z_read_offset << 8;
+	if (offset & (surf.base_align - 1)) {
+		dev_warn(p->dev, "%s:%d stencil read bo base %llu not aligned with %ld\n",
+			 __func__, __LINE__, offset, surf.base_align);
+		return -EINVAL;
+	}
+	offset += (u64)surf.layer_size * mslice;
+	if (offset > radeon_bo_size(track->db_z_read_bo)) {
+		dev_warn(p->dev, "%s:%d depth read bo too small (layer size %d, "
+			 "offset %llu, max layer %d, bo size %ld)\n",
+			 __func__, __LINE__, surf.layer_size,
+			(u64)track->db_z_read_offset << 8, mslice,
+>>>>>>> origin/android16-base
 			radeon_bo_size(track->db_z_read_bo));
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	offset = track->db_z_write_offset << 8;
 	if (offset & (surf.base_align - 1)) {
 		dev_warn(p->dev, "%s:%d stencil write bo base %ld not aligned with %ld\n",
@@ -735,6 +821,20 @@ static int evergreen_cs_track_validate_depth(struct radeon_cs_parser *p)
 			 "offset %ld, max layer %d, bo size %ld)\n",
 			 __func__, __LINE__, surf.layer_size,
 			(unsigned long)track->db_z_write_offset << 8, mslice,
+=======
+	offset = (u64)track->db_z_write_offset << 8;
+	if (offset & (surf.base_align - 1)) {
+		dev_warn(p->dev, "%s:%d stencil write bo base %llu not aligned with %ld\n",
+			 __func__, __LINE__, offset, surf.base_align);
+		return -EINVAL;
+	}
+	offset += (u64)surf.layer_size * mslice;
+	if (offset > radeon_bo_size(track->db_z_write_bo)) {
+		dev_warn(p->dev, "%s:%d depth write bo too small (layer size %d, "
+			 "offset %llu, max layer %d, bo size %ld)\n",
+			 __func__, __LINE__, surf.layer_size,
+			(u64)track->db_z_write_offset << 8, mslice,
+>>>>>>> origin/android16-base
 			radeon_bo_size(track->db_z_write_bo));
 		return -EINVAL;
 	}

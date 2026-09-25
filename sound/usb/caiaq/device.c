@@ -402,6 +402,20 @@ static void setup_card(struct snd_usb_caiaqdev *cdev)
 		dev_err(dev, "Unable to set up control system (ret=%d)\n", ret);
 }
 
+<<<<<<< HEAD
+=======
+static void card_free(struct snd_card *card)
+{
+	struct snd_usb_caiaqdev *cdev = caiaqdev(card);
+
+#ifdef CONFIG_SND_USB_CAIAQ_INPUT
+	snd_usb_caiaq_input_free(cdev);
+#endif
+	snd_usb_caiaq_audio_free(cdev);
+	usb_reset_device(cdev->chip.dev);
+}
+
+>>>>>>> origin/android16-base
 static int create_card(struct usb_device *usb_dev,
 		       struct usb_interface *intf,
 		       struct snd_card **cardp)
@@ -515,6 +529,10 @@ static int init_card(struct snd_usb_caiaqdev *cdev)
 		       cdev->vendor_name, cdev->product_name, usbpath);
 
 	setup_card(cdev);
+<<<<<<< HEAD
+=======
+	card->private_free = card_free;
+>>>>>>> origin/android16-base
 	return 0;
 
  err_kill_urb:
@@ -560,15 +578,25 @@ static void snd_disconnect(struct usb_interface *intf)
 	snd_card_disconnect(card);
 
 #ifdef CONFIG_SND_USB_CAIAQ_INPUT
+<<<<<<< HEAD
 	snd_usb_caiaq_input_free(cdev);
 #endif
 	snd_usb_caiaq_audio_free(cdev);
+=======
+	snd_usb_caiaq_input_disconnect(cdev);
+#endif
+	snd_usb_caiaq_audio_disconnect(cdev);
+>>>>>>> origin/android16-base
 
 	usb_kill_urb(&cdev->ep1_in_urb);
 	usb_kill_urb(&cdev->midi_out_urb);
 
+<<<<<<< HEAD
 	snd_card_free(card);
 	usb_reset_device(interface_to_usbdev(intf));
+=======
+	snd_card_free_when_closed(card);
+>>>>>>> origin/android16-base
 }
 
 

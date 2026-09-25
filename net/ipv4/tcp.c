@@ -441,7 +441,11 @@ void tcp_init_sock(struct sock *sk)
 	tp->snd_cwnd_clamp = ~0;
 	tp->mss_cache = TCP_MSS_DEFAULT;
 
+<<<<<<< HEAD
 	tp->reordering = sock_net(sk)->ipv4.sysctl_tcp_reordering;
+=======
+	tp->reordering = READ_ONCE(sock_net(sk)->ipv4.sysctl_tcp_reordering);
+>>>>>>> origin/android16-base
 	tcp_assign_congestion_control(sk);
 
 	tp->tsoffset = 0;
@@ -572,7 +576,11 @@ __poll_t tcp_poll(struct file *file, struct socket *sock, poll_table *wait)
 	    (state != TCP_SYN_RECV || tp->fastopen_rsk)) {
 		int target = sock_rcvlowat(sk, 0, INT_MAX);
 
+<<<<<<< HEAD
 		if (tp->urg_seq == tp->copied_seq &&
+=======
+		if (tp->urg_seq == READ_ONCE(tp->copied_seq) &&
+>>>>>>> origin/android16-base
 		    !sock_flag(sk, SOCK_URGINLINE) &&
 		    tp->urg_data)
 			target++;
@@ -633,7 +641,11 @@ int tcp_ioctl(struct sock *sk, int cmd, unsigned long arg)
 		unlock_sock_fast(sk, slow);
 		break;
 	case SIOCATMARK:
+<<<<<<< HEAD
 		answ = tp->urg_data && tp->urg_seq == tp->copied_seq;
+=======
+		answ = tp->urg_data && tp->urg_seq == READ_ONCE(tp->copied_seq);
+>>>>>>> origin/android16-base
 		break;
 	case SIOCOUTQ:
 		if (sk->sk_state == TCP_LISTEN)
@@ -642,7 +654,11 @@ int tcp_ioctl(struct sock *sk, int cmd, unsigned long arg)
 		if ((1 << sk->sk_state) & (TCPF_SYN_SENT | TCPF_SYN_RECV))
 			answ = 0;
 		else
+<<<<<<< HEAD
 			answ = tp->write_seq - tp->snd_una;
+=======
+			answ = READ_ONCE(tp->write_seq) - tp->snd_una;
+>>>>>>> origin/android16-base
 		break;
 	case SIOCOUTQNSD:
 		if (sk->sk_state == TCP_LISTEN)
@@ -651,7 +667,11 @@ int tcp_ioctl(struct sock *sk, int cmd, unsigned long arg)
 		if ((1 << sk->sk_state) & (TCPF_SYN_SENT | TCPF_SYN_RECV))
 			answ = 0;
 		else
+<<<<<<< HEAD
 			answ = tp->write_seq - tp->snd_nxt;
+=======
+			answ = READ_ONCE(tp->write_seq) - tp->snd_nxt;
+>>>>>>> origin/android16-base
 		break;
 	default:
 		return -ENOIOCTLCMD;
@@ -711,7 +731,11 @@ static bool tcp_should_autocork(struct sock *sk, struct sk_buff *skb,
 				int size_goal)
 {
 	return skb->len < size_goal &&
+<<<<<<< HEAD
 	       sock_net(sk)->ipv4.sysctl_tcp_autocorking &&
+=======
+	       READ_ONCE(sock_net(sk)->ipv4.sysctl_tcp_autocorking) &&
+>>>>>>> origin/android16-base
 	       !tcp_rtx_queue_empty(sk) &&
 	       refcount_read(&sk->sk_wmem_alloc) > skb->truesize;
 }
@@ -736,6 +760,10 @@ static void tcp_push(struct sock *sk, int flags, int mss_now,
 		if (!test_bit(TSQ_THROTTLED, &sk->sk_tsq_flags)) {
 			NET_INC_STATS(sock_net(sk), LINUX_MIB_TCPAUTOCORKING);
 			set_bit(TSQ_THROTTLED, &sk->sk_tsq_flags);
+<<<<<<< HEAD
+=======
+			smp_mb__after_atomic();
+>>>>>>> origin/android16-base
 		}
 		/* It is possible TX completion already happened
 		 * before we set TSQ_THROTTLED.
@@ -957,7 +985,11 @@ static int tcp_send_mss(struct sock *sk, int *size_goal, int flags)
  */
 static void tcp_remove_empty_skb(struct sock *sk, struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	if (skb && !skb->len) {
+=======
+	if (skb && TCP_SKB_CB(skb)->seq == TCP_SKB_CB(skb)->end_seq) {
+>>>>>>> origin/android16-base
 		tcp_unlink_write_queue(skb, sk);
 		if (tcp_write_queue_empty(sk))
 			tcp_chrono_stop(sk, TCP_CHRONO_BUSY);
@@ -1042,7 +1074,11 @@ new_segment:
 		sk->sk_wmem_queued += copy;
 		sk_mem_charge(sk, copy);
 		skb->ip_summed = CHECKSUM_PARTIAL;
+<<<<<<< HEAD
 		tp->write_seq += copy;
+=======
+		WRITE_ONCE(tp->write_seq, tp->write_seq + copy);
+>>>>>>> origin/android16-base
 		TCP_SKB_CB(skb)->end_seq += copy;
 		tcp_skb_pcount_set(skb, 0);
 
@@ -1165,7 +1201,12 @@ static int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 	struct sockaddr *uaddr = msg->msg_name;
 	int err, flags;
 
+<<<<<<< HEAD
 	if (!(sock_net(sk)->ipv4.sysctl_tcp_fastopen & TFO_CLIENT_ENABLE) ||
+=======
+	if (!(READ_ONCE(sock_net(sk)->ipv4.sysctl_tcp_fastopen) &
+	      TFO_CLIENT_ENABLE) ||
+>>>>>>> origin/android16-base
 	    (uaddr && msg->msg_namelen >= sizeof(uaddr->sa_family) &&
 	     uaddr->sa_family == AF_UNSPEC))
 		return -EOPNOTSUPP;
@@ -1396,7 +1437,11 @@ new_segment:
 		if (!copied)
 			TCP_SKB_CB(skb)->tcp_flags &= ~TCPHDR_PSH;
 
+<<<<<<< HEAD
 		tp->write_seq += copy;
+=======
+		WRITE_ONCE(tp->write_seq, tp->write_seq + copy);
+>>>>>>> origin/android16-base
 		TCP_SKB_CB(skb)->end_seq += copy;
 		tcp_skb_pcount_set(skb, 0);
 
@@ -1677,11 +1722,21 @@ int tcp_read_sock(struct sock *sk, read_descriptor_t *desc,
 				if (!copied)
 					copied = used;
 				break;
+<<<<<<< HEAD
 			} else if (used <= len) {
 				seq += used;
 				copied += used;
 				offset += used;
 			}
+=======
+			}
+			if (WARN_ON_ONCE(used > len))
+				used = len;
+			seq += used;
+			copied += used;
+			offset += used;
+
+>>>>>>> origin/android16-base
 			/* If recv_actor drops the lock (e.g. TCP splice
 			 * receive) the skb pointer might be invalid when
 			 * getting here: tcp_collapse might have deleted it
@@ -1704,9 +1759,15 @@ int tcp_read_sock(struct sock *sk, read_descriptor_t *desc,
 		sk_eat_skb(sk, skb);
 		if (!desc->count)
 			break;
+<<<<<<< HEAD
 		tp->copied_seq = seq;
 	}
 	tp->copied_seq = seq;
+=======
+		WRITE_ONCE(tp->copied_seq, seq);
+	}
+	WRITE_ONCE(tp->copied_seq, seq);
+>>>>>>> origin/android16-base
 
 	tcp_rcv_space_adjust(sk);
 
@@ -1843,7 +1904,11 @@ static int tcp_zerocopy_receive(struct sock *sk,
 out:
 	up_read(&current->mm->mmap_sem);
 	if (length) {
+<<<<<<< HEAD
 		tp->copied_seq = seq;
+=======
+		WRITE_ONCE(tp->copied_seq, seq);
+>>>>>>> origin/android16-base
 		tcp_rcv_space_adjust(sk);
 
 		/* Clean up data we have read: This will do ACK frames. */
@@ -2120,7 +2185,11 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 			if (urg_offset < used) {
 				if (!urg_offset) {
 					if (!sock_flag(sk, SOCK_URGINLINE)) {
+<<<<<<< HEAD
 						++*seq;
+=======
+						WRITE_ONCE(*seq, *seq + 1);
+>>>>>>> origin/android16-base
 						urg_hole++;
 						offset++;
 						used--;
@@ -2142,7 +2211,11 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 			}
 		}
 
+<<<<<<< HEAD
 		*seq += used;
+=======
+		WRITE_ONCE(*seq, *seq + used);
+>>>>>>> origin/android16-base
 		copied += used;
 		len -= used;
 
@@ -2171,7 +2244,11 @@ skip_copy:
 
 	found_fin_ok:
 		/* Process the FIN. */
+<<<<<<< HEAD
 		++*seq;
+=======
+		WRITE_ONCE(*seq, *seq + 1);
+>>>>>>> origin/android16-base
 		if (!(flags & MSG_PEEK))
 			sk_eat_skb(sk, skb);
 		break;
@@ -2244,6 +2321,13 @@ void tcp_set_state(struct sock *sk, int state)
 		if (oldstate != TCP_ESTABLISHED)
 			TCP_INC_STATS(sock_net(sk), TCP_MIB_CURRESTAB);
 		break;
+<<<<<<< HEAD
+=======
+	case TCP_CLOSE_WAIT:
+		if (oldstate == TCP_SYN_RECV)
+			TCP_INC_STATS(sock_net(sk), TCP_MIB_CURRESTAB);
+		break;
+>>>>>>> origin/android16-base
 
 	case TCP_CLOSE:
 		if (oldstate == TCP_CLOSE_WAIT || oldstate == TCP_ESTABLISHED)
@@ -2255,7 +2339,11 @@ void tcp_set_state(struct sock *sk, int state)
 			inet_put_port(sk);
 		/* fall through */
 	default:
+<<<<<<< HEAD
 		if (oldstate == TCP_ESTABLISHED)
+=======
+		if (oldstate == TCP_ESTABLISHED || oldstate == TCP_CLOSE_WAIT)
+>>>>>>> origin/android16-base
 			TCP_DEC_STATS(sock_net(sk), TCP_MIB_CURRESTAB);
 	}
 
@@ -2321,7 +2409,11 @@ void tcp_shutdown(struct sock *sk, int how)
 	/* If we've already sent a FIN, or it's a closed state, skip this. */
 	if ((1 << sk->sk_state) &
 	    (TCPF_ESTABLISHED | TCPF_SYN_SENT |
+<<<<<<< HEAD
 	     TCPF_SYN_RECV | TCPF_CLOSE_WAIT)) {
+=======
+	     TCPF_CLOSE_WAIT)) {
+>>>>>>> origin/android16-base
 		/* Clear out any half completed packets.  FIN if needed. */
 		if (tcp_close_state(sk))
 			tcp_send_fin(sk);
@@ -2407,7 +2499,11 @@ void tcp_close(struct sock *sk, long timeout)
 		 * machine. State transitions:
 		 *
 		 * TCP_ESTABLISHED -> TCP_FIN_WAIT1
+<<<<<<< HEAD
 		 * TCP_SYN_RECV	-> TCP_FIN_WAIT1 (forget it, it's impossible)
+=======
+		 * TCP_SYN_RECV	-> TCP_FIN_WAIT1 (it is difficult)
+>>>>>>> origin/android16-base
 		 * TCP_CLOSE_WAIT -> TCP_LAST_ACK
 		 *
 		 * are legal only when FIN has been sent (i.e. in window),
@@ -2511,6 +2607,11 @@ out:
 	bh_unlock_sock(sk);
 	local_bh_enable();
 	release_sock(sk);
+<<<<<<< HEAD
+=======
+	if (!sk->sk_net_refcnt)
+		inet_csk_clear_xmit_timers_sync(sk);
+>>>>>>> origin/android16-base
 	sock_put(sk);
 }
 EXPORT_SYMBOL(tcp_close);
@@ -2567,6 +2668,10 @@ int tcp_disconnect(struct sock *sk, int flags)
 	struct inet_connection_sock *icsk = inet_csk(sk);
 	struct tcp_sock *tp = tcp_sk(sk);
 	int old_state = sk->sk_state;
+<<<<<<< HEAD
+=======
+	u32 seq;
+>>>>>>> origin/android16-base
 
 	if (old_state != TCP_CLOSE)
 		tcp_set_state(sk, TCP_CLOSE);
@@ -2588,7 +2693,11 @@ int tcp_disconnect(struct sock *sk, int flags)
 
 	tcp_clear_xmit_timers(sk);
 	__skb_queue_purge(&sk->sk_receive_queue);
+<<<<<<< HEAD
 	tp->copied_seq = tp->rcv_nxt;
+=======
+	WRITE_ONCE(tp->copied_seq, tp->rcv_nxt);
+>>>>>>> origin/android16-base
 	tp->urg_data = 0;
 	tcp_write_queue_purge(sk);
 	tcp_fastopen_active_disable_ofo_check(sk);
@@ -2603,13 +2712,27 @@ int tcp_disconnect(struct sock *sk, int flags)
 	sock_reset_flag(sk, SOCK_DONE);
 	tp->srtt_us = 0;
 	tp->rcv_rtt_last_tsecr = 0;
+<<<<<<< HEAD
 	tp->write_seq += tp->max_window + 2;
 	if (tp->write_seq == 0)
 		tp->write_seq = 1;
+=======
+
+	seq = tp->write_seq + tp->max_window + 2;
+	if (!seq)
+		seq = 1;
+	WRITE_ONCE(tp->write_seq, seq);
+
+>>>>>>> origin/android16-base
 	tp->snd_cwnd = 2;
 	icsk->icsk_probes_out = 0;
 	tp->snd_ssthresh = TCP_INFINITE_SSTHRESH;
 	tp->snd_cwnd_cnt = 0;
+<<<<<<< HEAD
+=======
+	tp->is_cwnd_limited = 0;
+	tp->max_packets_out = 0;
+>>>>>>> origin/android16-base
 	tp->window_clamp = 0;
 	tp->delivered = 0;
 	tp->delivered_ce = 0;
@@ -2627,8 +2750,12 @@ int tcp_disconnect(struct sock *sk, int flags)
 	icsk->icsk_ack.rcv_mss = TCP_MIN_MSS;
 	memset(&tp->rx_opt, 0, sizeof(tp->rx_opt));
 	__sk_dst_reset(sk);
+<<<<<<< HEAD
 	dst_release(sk->sk_rx_dst);
 	sk->sk_rx_dst = NULL;
+=======
+	dst_release(xchg((__force struct dst_entry **)&sk->sk_rx_dst, NULL));
+>>>>>>> origin/android16-base
 	tcp_saved_syn_free(tp);
 	tp->compressed_ack = 0;
 	tp->segs_in = 0;
@@ -2892,6 +3019,7 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 		break;
 
 	case TCP_QUEUE_SEQ:
+<<<<<<< HEAD
 		if (sk->sk_state != TCP_CLOSE)
 			err = -EPERM;
 		else if (tp->repair_queue == TCP_SEND_QUEUE)
@@ -2902,6 +3030,25 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 		}
 		else
 			err = -EINVAL;
+=======
+		if (sk->sk_state != TCP_CLOSE) {
+			err = -EPERM;
+		} else if (tp->repair_queue == TCP_SEND_QUEUE) {
+			if (!tcp_rtx_queue_empty(sk))
+				err = -EPERM;
+			else
+				WRITE_ONCE(tp->write_seq, val);
+		} else if (tp->repair_queue == TCP_RECV_QUEUE) {
+			if (tp->rcv_nxt != tp->copied_seq) {
+				err = -EPERM;
+			} else {
+				WRITE_ONCE(tp->rcv_nxt, val);
+				WRITE_ONCE(tp->copied_seq, val);
+			}
+		} else {
+			err = -EINVAL;
+		}
+>>>>>>> origin/android16-base
 		break;
 
 	case TCP_REPAIR_OPTIONS:
@@ -2982,18 +3129,32 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 
 	case TCP_LINGER2:
 		if (val < 0)
+<<<<<<< HEAD
 			tp->linger2 = -1;
 		else if (val > net->ipv4.sysctl_tcp_fin_timeout / HZ)
 			tp->linger2 = 0;
 		else
 			tp->linger2 = val * HZ;
+=======
+			WRITE_ONCE(tp->linger2, -1);
+		else if (val > TCP_FIN_TIMEOUT_MAX / HZ)
+			WRITE_ONCE(tp->linger2, TCP_FIN_TIMEOUT_MAX);
+		else
+			WRITE_ONCE(tp->linger2, val * HZ);
+>>>>>>> origin/android16-base
 		break;
 
 	case TCP_DEFER_ACCEPT:
 		/* Translate value in seconds to number of retransmits */
+<<<<<<< HEAD
 		icsk->icsk_accept_queue.rskq_defer_accept =
 			secs_to_retrans(val, TCP_TIMEOUT_INIT / HZ,
 					TCP_RTO_MAX / HZ);
+=======
+		WRITE_ONCE(icsk->icsk_accept_queue.rskq_defer_accept,
+			   secs_to_retrans(val, TCP_TIMEOUT_INIT / HZ,
+					   TCP_RTO_MAX / HZ));
+>>>>>>> origin/android16-base
 		break;
 
 	case TCP_WINDOW_CLAMP:
@@ -3053,7 +3214,12 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 	case TCP_FASTOPEN_CONNECT:
 		if (val > 1 || val < 0) {
 			err = -EINVAL;
+<<<<<<< HEAD
 		} else if (net->ipv4.sysctl_tcp_fastopen & TFO_CLIENT_ENABLE) {
+=======
+		} else if (READ_ONCE(net->ipv4.sysctl_tcp_fastopen) &
+			   TFO_CLIENT_ENABLE) {
+>>>>>>> origin/android16-base
 			if (sk->sk_state == TCP_CLOSE)
 				tp->fastopen_connect = val;
 			else
@@ -3080,7 +3246,11 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 		err = tcp_repair_set_window(tp, optval, optlen);
 		break;
 	case TCP_NOTSENT_LOWAT:
+<<<<<<< HEAD
 		tp->notsent_lowat = val;
+=======
+		WRITE_ONCE(tp->notsent_lowat, val);
+>>>>>>> origin/android16-base
 		sk->sk_write_space(sk);
 		break;
 	case TCP_INQ:
@@ -3104,8 +3274,14 @@ int tcp_setsockopt(struct sock *sk, int level, int optname, char __user *optval,
 	const struct inet_connection_sock *icsk = inet_csk(sk);
 
 	if (level != SOL_TCP)
+<<<<<<< HEAD
 		return icsk->icsk_af_ops->setsockopt(sk, level, optname,
 						     optval, optlen);
+=======
+		/* Paired with WRITE_ONCE() in do_ipv6_setsockopt() and tcp_v6_connect() */
+		return READ_ONCE(icsk->icsk_af_ops)->setsockopt(sk, level, optname,
+								optval, optlen);
+>>>>>>> origin/android16-base
 	return do_tcp_setsockopt(sk, level, optname, optval, optlen);
 }
 EXPORT_SYMBOL(tcp_setsockopt);
@@ -3349,6 +3525,7 @@ static int do_tcp_getsockopt(struct sock *sk, int level,
 	if (get_user(len, optlen))
 		return -EFAULT;
 
+<<<<<<< HEAD
 	len = min_t(unsigned int, len, sizeof(int));
 
 	if (len < 0)
@@ -3358,6 +3535,18 @@ static int do_tcp_getsockopt(struct sock *sk, int level,
 	case TCP_MAXSEG:
 		val = tp->mss_cache;
 		if (!val && ((1 << sk->sk_state) & (TCPF_CLOSE | TCPF_LISTEN)))
+=======
+	if (len < 0)
+		return -EINVAL;
+
+	len = min_t(unsigned int, len, sizeof(int));
+
+	switch (optname) {
+	case TCP_MAXSEG:
+		val = tp->mss_cache;
+		if (tp->rx_opt.user_mss &&
+		    ((1 << sk->sk_state) & (TCPF_CLOSE | TCPF_LISTEN)))
+>>>>>>> origin/android16-base
 			val = tp->rx_opt.user_mss;
 		if (tp->repair)
 			val = tp->rx_opt.mss_clamp;
@@ -3381,6 +3570,7 @@ static int do_tcp_getsockopt(struct sock *sk, int level,
 		val = icsk->icsk_syn_retries ? : net->ipv4.sysctl_tcp_syn_retries;
 		break;
 	case TCP_LINGER2:
+<<<<<<< HEAD
 		val = tp->linger2;
 		if (val >= 0)
 			val = (val ? : net->ipv4.sysctl_tcp_fin_timeout) / HZ;
@@ -3388,6 +3578,16 @@ static int do_tcp_getsockopt(struct sock *sk, int level,
 	case TCP_DEFER_ACCEPT:
 		val = retrans_to_secs(icsk->icsk_accept_queue.rskq_defer_accept,
 				      TCP_TIMEOUT_INIT / HZ, TCP_RTO_MAX / HZ);
+=======
+		val = READ_ONCE(tp->linger2);
+		if (val >= 0)
+			val = (val ? : READ_ONCE(net->ipv4.sysctl_tcp_fin_timeout)) / HZ;
+		break;
+	case TCP_DEFER_ACCEPT:
+		val = READ_ONCE(icsk->icsk_accept_queue.rskq_defer_accept);
+		val = retrans_to_secs(val, TCP_TIMEOUT_INIT / HZ,
+				      TCP_RTO_MAX / HZ);
+>>>>>>> origin/android16-base
 		break;
 	case TCP_WINDOW_CLAMP:
 		val = tp->window_clamp;
@@ -3533,7 +3733,11 @@ static int do_tcp_getsockopt(struct sock *sk, int level,
 		break;
 
 	case TCP_FASTOPEN:
+<<<<<<< HEAD
 		val = icsk->icsk_accept_queue.fastopenq.max_qlen;
+=======
+		val = READ_ONCE(icsk->icsk_accept_queue.fastopenq.max_qlen);
+>>>>>>> origin/android16-base
 		break;
 
 	case TCP_FASTOPEN_CONNECT:
@@ -3548,7 +3752,11 @@ static int do_tcp_getsockopt(struct sock *sk, int level,
 		val = tcp_time_stamp_raw() + tp->tsoffset;
 		break;
 	case TCP_NOTSENT_LOWAT:
+<<<<<<< HEAD
 		val = tp->notsent_lowat;
+=======
+		val = READ_ONCE(tp->notsent_lowat);
+>>>>>>> origin/android16-base
 		break;
 	case TCP_INQ:
 		val = tp->recvmsg_inq;
@@ -3625,8 +3833,14 @@ int tcp_getsockopt(struct sock *sk, int level, int optname, char __user *optval,
 	struct inet_connection_sock *icsk = inet_csk(sk);
 
 	if (level != SOL_TCP)
+<<<<<<< HEAD
 		return icsk->icsk_af_ops->getsockopt(sk, level, optname,
 						     optval, optlen);
+=======
+		/* Paired with WRITE_ONCE() in do_ipv6_setsockopt() and tcp_v6_connect() */
+		return READ_ONCE(icsk->icsk_af_ops)->getsockopt(sk, level, optname,
+								optval, optlen);
+>>>>>>> origin/android16-base
 	return do_tcp_getsockopt(sk, level, optname, optval, optlen);
 }
 EXPORT_SYMBOL(tcp_getsockopt);
@@ -3685,12 +3899,24 @@ static void __tcp_alloc_md5sig_pool(void)
 	 * to memory. See smp_rmb() in tcp_get_md5sig_pool()
 	 */
 	smp_wmb();
+<<<<<<< HEAD
 	tcp_md5sig_pool_populated = true;
+=======
+	/* Paired with READ_ONCE() from tcp_alloc_md5sig_pool()
+	 * and tcp_get_md5sig_pool().
+	*/
+	WRITE_ONCE(tcp_md5sig_pool_populated, true);
+>>>>>>> origin/android16-base
 }
 
 bool tcp_alloc_md5sig_pool(void)
 {
+<<<<<<< HEAD
 	if (unlikely(!tcp_md5sig_pool_populated)) {
+=======
+	/* Paired with WRITE_ONCE() from __tcp_alloc_md5sig_pool() */
+	if (unlikely(!READ_ONCE(tcp_md5sig_pool_populated))) {
+>>>>>>> origin/android16-base
 		mutex_lock(&tcp_md5sig_mutex);
 
 		if (!tcp_md5sig_pool_populated)
@@ -3698,7 +3924,12 @@ bool tcp_alloc_md5sig_pool(void)
 
 		mutex_unlock(&tcp_md5sig_mutex);
 	}
+<<<<<<< HEAD
 	return tcp_md5sig_pool_populated;
+=======
+	/* Paired with WRITE_ONCE() from __tcp_alloc_md5sig_pool() */
+	return READ_ONCE(tcp_md5sig_pool_populated);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(tcp_alloc_md5sig_pool);
 
@@ -3714,7 +3945,12 @@ struct tcp_md5sig_pool *tcp_get_md5sig_pool(void)
 {
 	local_bh_disable();
 
+<<<<<<< HEAD
 	if (tcp_md5sig_pool_populated) {
+=======
+	/* Paired with WRITE_ONCE() from __tcp_alloc_md5sig_pool() */
+	if (READ_ONCE(tcp_md5sig_pool_populated)) {
+>>>>>>> origin/android16-base
 		/* coupled with smp_wmb() in __tcp_alloc_md5sig_pool() */
 		smp_rmb();
 		return this_cpu_ptr(&tcp_md5sig_pool);

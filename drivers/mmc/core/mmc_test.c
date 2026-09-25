@@ -3101,6 +3101,7 @@ static ssize_t mtf_test_write(struct file *file, const char __user *buf,
 	test->buffer = kzalloc(BUFFER_SIZE, GFP_KERNEL);
 #ifdef CONFIG_HIGHMEM
 	test->highmem = alloc_pages(GFP_KERNEL | __GFP_HIGHMEM, BUFFER_ORDER);
+<<<<<<< HEAD
 #endif
 
 #ifdef CONFIG_HIGHMEM
@@ -3108,14 +3109,28 @@ static ssize_t mtf_test_write(struct file *file, const char __user *buf,
 #else
 	if (test->buffer) {
 #endif
+=======
+	if (!test->highmem) {
+		count = -ENOMEM;
+		goto free_test_buffer;
+	}
+#endif
+
+	if (test->buffer) {
+>>>>>>> origin/android16-base
 		mutex_lock(&mmc_test_lock);
 		mmc_test_run(test, testcase);
 		mutex_unlock(&mmc_test_lock);
 	}
 
 #ifdef CONFIG_HIGHMEM
+<<<<<<< HEAD
 	if (test->highmem)
 		__free_pages(test->highmem, BUFFER_ORDER);
+=======
+	__free_pages(test->highmem, BUFFER_ORDER);
+free_test_buffer:
+>>>>>>> origin/android16-base
 #endif
 	kfree(test->buffer);
 	kfree(test);

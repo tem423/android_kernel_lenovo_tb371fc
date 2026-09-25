@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
+<<<<<<< HEAD
 /* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2012-2019, 2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/init.h>
@@ -29,6 +33,11 @@
 
 static struct msm_voice voice_info[VOICE_SESSION_INDEX_MAX];
 
+<<<<<<< HEAD
+=======
+static int voice_probe_done;
+
+>>>>>>> origin/android16-base
 static struct snd_pcm_hardware msm_pcm_hardware = {
 
 	.info =                 (SNDRV_PCM_INFO_INTERLEAVED |
@@ -778,6 +787,10 @@ static int msm_pcm_probe(struct platform_device *pdev)
 	bool destroy_cvd = false;
 	const char *is_destroy_cvd = "qcom,destroy-cvd";
 
+<<<<<<< HEAD
+=======
+	voice_probe_done = 0;
+>>>>>>> origin/android16-base
 	if (!is_voc_initialized()) {
 		pr_debug("%s: voice module not initialized yet, deferring probe()\n",
 		       __func__);
@@ -806,11 +819,37 @@ static int msm_pcm_probe(struct platform_device *pdev)
 	rc = snd_soc_register_component(&pdev->dev,
 				       &msm_soc_component,
 					NULL, 0);
+<<<<<<< HEAD
+=======
+	if (!rc) {
+		pr_debug("%s msm_pcm_voice probe success! \n", __func__);
+		voice_probe_done = 1;
+	}
+>>>>>>> origin/android16-base
 
 done:
 	return rc;
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * msm_voice_get_probe_status - Returns the probe
+ * status of msm-pcm-voice.
+ *
+ * Function that returns the probe status of msm-pcm-voice
+ * driver.
+ *
+ * Returns: 1 on probe success, 0 otherwise.
+ */
+int msm_voice_get_probe_status(void)
+{
+	return voice_probe_done;
+}
+
+EXPORT_SYMBOL(msm_voice_get_probe_status);
+
+>>>>>>> origin/android16-base
 static int msm_pcm_remove(struct platform_device *pdev)
 {
 	snd_soc_unregister_component(&pdev->dev);

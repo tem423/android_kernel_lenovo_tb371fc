@@ -2006,7 +2006,11 @@ void snd_usb_preallocate_buffer(struct snd_usb_substream *subs)
 {
 	struct snd_pcm *pcm = subs->stream->pcm;
 	struct snd_pcm_substream *s = pcm->streams[subs->direction].substream;
+<<<<<<< HEAD
 	struct device *dev = subs->dev->bus->controller;
+=======
+	struct device *dev = subs->dev->bus->sysdev;
+>>>>>>> origin/android16-base
 
 	if (!snd_usb_use_vmalloc)
 		snd_pcm_lib_preallocate_pages(s, SNDRV_DMA_TYPE_DEV_SG,

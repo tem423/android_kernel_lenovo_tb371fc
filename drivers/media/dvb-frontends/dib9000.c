@@ -2547,7 +2547,11 @@ error:
 	kfree(st);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(dib9000_attach);
+=======
+EXPORT_SYMBOL_GPL(dib9000_attach);
+>>>>>>> origin/android16-base
 
 static const struct dvb_frontend_ops dib9000_ops = {
 	.delsys = { SYS_DVBT },

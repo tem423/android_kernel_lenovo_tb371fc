@@ -343,6 +343,10 @@ static int lm3639_probe(struct i2c_client *client,
 	}
 
 	/* backlight */
+<<<<<<< HEAD
+=======
+	memset(&props, 0, sizeof(struct backlight_properties));
+>>>>>>> origin/android16-base
 	props.type = BACKLIGHT_RAW;
 	props.brightness = pdata->init_brt_led;
 	props.max_brightness = pdata->max_brt_led;

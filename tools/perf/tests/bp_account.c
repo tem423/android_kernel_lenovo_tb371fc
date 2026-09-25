@@ -22,7 +22,11 @@
 #include "perf.h"
 #include "cloexec.h"
 
+<<<<<<< HEAD
 volatile long the_var;
+=======
+static volatile long the_var;
+>>>>>>> origin/android16-base
 
 static noinline int test_function(void)
 {

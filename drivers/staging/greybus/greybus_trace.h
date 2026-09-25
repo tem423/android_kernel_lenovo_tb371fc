@@ -491,7 +491,11 @@ DEFINE_HD_EVENT(gb_hd_in);
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/staging/greybus
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 
 /*
  * TRACE_INCLUDE_FILE is not needed if the filename and TRACE_SYSTEM are equal

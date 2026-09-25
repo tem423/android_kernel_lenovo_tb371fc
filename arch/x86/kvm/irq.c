@@ -52,6 +52,7 @@ static int pending_userspace_extint(struct kvm_vcpu *v)
  * check if there is pending interrupt from
  * non-APIC source without intack.
  */
+<<<<<<< HEAD
 static int kvm_cpu_has_extint(struct kvm_vcpu *v)
 {
 	u8 accept = kvm_apic_accept_pic_intr(v);
@@ -75,6 +76,12 @@ int kvm_cpu_has_injectable_intr(struct kvm_vcpu *v)
 {
 	/*
 	 * FIXME: interrupt.injected represents an interrupt that it's
+=======
+int kvm_cpu_has_extint(struct kvm_vcpu *v)
+{
+	/*
+	 * FIXME: interrupt.injected represents an interrupt whose
+>>>>>>> origin/android16-base
 	 * side-effects have already been applied (e.g. bit from IRR
 	 * already moved to ISR). Therefore, it is incorrect to rely
 	 * on interrupt.injected to know if there is a pending
@@ -87,6 +94,26 @@ int kvm_cpu_has_injectable_intr(struct kvm_vcpu *v)
 	if (!lapic_in_kernel(v))
 		return v->arch.interrupt.injected;
 
+<<<<<<< HEAD
+=======
+	if (!kvm_apic_accept_pic_intr(v))
+		return 0;
+
+	if (irqchip_split(v->kvm))
+		return pending_userspace_extint(v);
+	else
+		return v->kvm->arch.vpic->output;
+}
+
+/*
+ * check if there is injectable interrupt:
+ * when virtual interrupt delivery enabled,
+ * interrupt from apic will handled by hardware,
+ * we don't need to check it here.
+ */
+int kvm_cpu_has_injectable_intr(struct kvm_vcpu *v)
+{
+>>>>>>> origin/android16-base
 	if (kvm_cpu_has_extint(v))
 		return 1;
 
@@ -102,6 +129,7 @@ int kvm_cpu_has_injectable_intr(struct kvm_vcpu *v)
  */
 int kvm_cpu_has_interrupt(struct kvm_vcpu *v)
 {
+<<<<<<< HEAD
 	/*
 	 * FIXME: interrupt.injected represents an interrupt that it's
 	 * side-effects have already been applied (e.g. bit from IRR
@@ -116,6 +144,8 @@ int kvm_cpu_has_interrupt(struct kvm_vcpu *v)
 	if (!lapic_in_kernel(v))
 		return v->arch.interrupt.injected;
 
+=======
+>>>>>>> origin/android16-base
 	if (kvm_cpu_has_extint(v))
 		return 1;
 
@@ -129,6 +159,7 @@ EXPORT_SYMBOL_GPL(kvm_cpu_has_interrupt);
  */
 static int kvm_cpu_get_extint(struct kvm_vcpu *v)
 {
+<<<<<<< HEAD
 	if (kvm_cpu_has_extint(v)) {
 		if (irqchip_split(v->kvm)) {
 			int vector = v->arch.pending_external_vector;
@@ -139,6 +170,23 @@ static int kvm_cpu_get_extint(struct kvm_vcpu *v)
 			return kvm_pic_read_irq(v->kvm); /* PIC */
 	} else
 		return -1;
+=======
+	if (!kvm_cpu_has_extint(v)) {
+		WARN_ON(!lapic_in_kernel(v));
+		return -1;
+	}
+
+	if (!lapic_in_kernel(v))
+		return v->arch.interrupt.nr;
+
+	if (irqchip_split(v->kvm)) {
+		int vector = v->arch.pending_external_vector;
+
+		v->arch.pending_external_vector = -1;
+		return vector;
+	} else
+		return kvm_pic_read_irq(v->kvm); /* PIC */
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -146,6 +194,7 @@ static int kvm_cpu_get_extint(struct kvm_vcpu *v)
  */
 int kvm_cpu_get_interrupt(struct kvm_vcpu *v)
 {
+<<<<<<< HEAD
 	int vector;
 
 	if (!lapic_in_kernel(v))
@@ -153,6 +202,9 @@ int kvm_cpu_get_interrupt(struct kvm_vcpu *v)
 
 	vector = kvm_cpu_get_extint(v);
 
+=======
+	int vector = kvm_cpu_get_extint(v);
+>>>>>>> origin/android16-base
 	if (vector != -1)
 		return vector;			/* PIC */
 

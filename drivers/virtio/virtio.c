@@ -165,6 +165,7 @@ void virtio_add_status(struct virtio_device *dev, unsigned int status)
 }
 EXPORT_SYMBOL_GPL(virtio_add_status);
 
+<<<<<<< HEAD
 int virtio_finalize_features(struct virtio_device *dev)
 {
 	int ret = dev->config->finalize_features(dev);
@@ -173,6 +174,13 @@ int virtio_finalize_features(struct virtio_device *dev)
 	if (ret)
 		return ret;
 
+=======
+/* Do some validation, then set FEATURES_OK */
+static int virtio_features_ok(struct virtio_device *dev)
+{
+	unsigned status;
+
+>>>>>>> origin/android16-base
 	if (!virtio_has_feature(dev, VIRTIO_F_VERSION_1))
 		return 0;
 
@@ -185,7 +193,10 @@ int virtio_finalize_features(struct virtio_device *dev)
 	}
 	return 0;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(virtio_finalize_features);
+=======
+>>>>>>> origin/android16-base
 
 static int virtio_dev_probe(struct device *_d)
 {
@@ -232,6 +243,7 @@ static int virtio_dev_probe(struct device *_d)
 		if (device_features & (1ULL << i))
 			__virtio_set_bit(dev, i);
 
+<<<<<<< HEAD
 	if (drv->validate) {
 		err = drv->validate(dev);
 		if (err)
@@ -239,6 +251,28 @@ static int virtio_dev_probe(struct device *_d)
 	}
 
 	err = virtio_finalize_features(dev);
+=======
+	err = dev->config->finalize_features(dev);
+	if (err)
+		goto err;
+
+	if (drv->validate) {
+		u64 features = dev->features;
+
+		err = drv->validate(dev);
+		if (err)
+			goto err;
+
+		/* Did validation change any features? Then write them again. */
+		if (features != dev->features) {
+			err = dev->config->finalize_features(dev);
+			if (err)
+				goto err;
+		}
+	}
+
+	err = virtio_features_ok(dev);
+>>>>>>> origin/android16-base
 	if (err)
 		goto err;
 
@@ -367,13 +401,27 @@ EXPORT_SYMBOL_GPL(unregister_virtio_device);
 int virtio_device_freeze(struct virtio_device *dev)
 {
 	struct virtio_driver *drv = drv_to_virtio(dev->dev.driver);
+<<<<<<< HEAD
+=======
+	int ret;
+>>>>>>> origin/android16-base
 
 	virtio_config_disable(dev);
 
 	dev->failed = dev->config->get_status(dev) & VIRTIO_CONFIG_S_FAILED;
 
+<<<<<<< HEAD
 	if (drv && drv->freeze)
 		return drv->freeze(dev);
+=======
+	if (drv && drv->freeze) {
+		ret = drv->freeze(dev);
+		if (ret) {
+			virtio_config_enable(dev);
+			return ret;
+		}
+	}
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -402,7 +450,15 @@ int virtio_device_restore(struct virtio_device *dev)
 	/* We have a driver! */
 	virtio_add_status(dev, VIRTIO_CONFIG_S_DRIVER);
 
+<<<<<<< HEAD
 	ret = virtio_finalize_features(dev);
+=======
+	ret = dev->config->finalize_features(dev);
+	if (ret)
+		goto err;
+
+	ret = virtio_features_ok(dev);
+>>>>>>> origin/android16-base
 	if (ret)
 		goto err;
 

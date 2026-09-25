@@ -4,7 +4,11 @@
  */
 
 #include <linux/kernel.h>
+<<<<<<< HEAD
 #include <linux/hw_random.h>
+=======
+#include <linux/random.h>
+>>>>>>> origin/android16-base
 #include <linux/io.h>
 
 #include <soc/qcom/scm.h>
@@ -48,8 +52,12 @@ void __init init_random_pool(void)
 						RANDOM_BUFFER_SIZE);
 		bytes_received = (bytes_received <= RANDOM_BUFFER_SIZE) ?
 					bytes_received : RANDOM_BUFFER_SIZE;
+<<<<<<< HEAD
 		add_hwgenerator_randomness(random_buffer, bytes_received,
 					   bytes_received << 3);
+=======
+		add_bootloader_randomness(random_buffer, bytes_received);
+>>>>>>> origin/android16-base
 	}
 }
 

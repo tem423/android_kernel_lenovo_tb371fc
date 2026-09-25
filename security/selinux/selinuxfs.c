@@ -536,6 +536,19 @@ static ssize_t sel_write_load(struct file *file, const char __user *buf,
 	ssize_t length;
 	void *data = NULL;
 
+<<<<<<< HEAD
+=======
+	/* no partial writes */
+	if (*ppos)
+		return -EINVAL;
+	/* no empty policies */
+	if (!count)
+		return -EINVAL;
+
+	if (count > 64 * 1024 * 1024)
+		return -EFBIG;
+
+>>>>>>> origin/android16-base
 	mutex_lock(&fsi->mutex);
 
 	length = avc_has_perm(&selinux_state,
@@ -544,6 +557,7 @@ static ssize_t sel_write_load(struct file *file, const char __user *buf,
 	if (length)
 		goto out;
 
+<<<<<<< HEAD
 	/* No partial writes. */
 	length = -EINVAL;
 	if (*ppos != 0)
@@ -561,6 +575,17 @@ static ssize_t sel_write_load(struct file *file, const char __user *buf,
 	length = -EFAULT;
 	if (copy_from_user(data, buf, count) != 0)
 		goto out;
+=======
+	data = vmalloc(count);
+	if (!data) {
+		length = -ENOMEM;
+		goto out;
+	}
+	if (copy_from_user(data, buf, count) != 0) {
+		length = -EFAULT;
+		goto out;
+	}
+>>>>>>> origin/android16-base
 
 	length = security_load_policy(fsi->state, data, count);
 	if (length) {
@@ -579,6 +604,10 @@ out1:
 		"auid=%u ses=%u lsm=selinux res=1",
 		from_kuid(&init_user_ns, audit_get_loginuid(current)),
 		audit_get_sessionid(current));
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 out:
 	mutex_unlock(&fsi->mutex);
 	vfree(data);
@@ -2026,6 +2055,11 @@ static int sel_fill_super(struct super_block *sb, void *data, int silent)
 	}
 
 	ret = sel_make_avc_files(dentry);
+<<<<<<< HEAD
+=======
+	if (ret)
+		goto err;
+>>>>>>> origin/android16-base
 
 	dentry = sel_make_dir(sb->s_root, "ss", &fsi->last_ino);
 	if (IS_ERR(dentry)) {

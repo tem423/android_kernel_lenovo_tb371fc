@@ -797,7 +797,11 @@ static struct cluster_pmu *l2_cache_associate_cpu_with_cluster(
 {
 	u64 mpidr;
 	int cpu_cluster_id;
+<<<<<<< HEAD
 	struct cluster_pmu *cluster = NULL;
+=======
+	struct cluster_pmu *cluster;
+>>>>>>> origin/android16-base
 
 	/*
 	 * This assumes that the cluster_id is in MPIDR[aff1] for
@@ -819,10 +823,17 @@ static struct cluster_pmu *l2_cache_associate_cpu_with_cluster(
 			 cluster->cluster_id);
 		cpumask_set_cpu(cpu, &cluster->cluster_cpus);
 		*per_cpu_ptr(l2cache_pmu->pmu_cluster, cpu) = cluster;
+<<<<<<< HEAD
 		break;
 	}
 
 	return cluster;
+=======
+		return cluster;
+	}
+
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 static int l2cache_pmu_online_cpu(unsigned int cpu, struct hlist_node *node)

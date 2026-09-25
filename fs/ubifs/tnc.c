@@ -56,6 +56,36 @@ enum {
 	NOT_ON_MEDIA = 3,
 };
 
+<<<<<<< HEAD
+=======
+static void do_insert_old_idx(struct ubifs_info *c,
+			      struct ubifs_old_idx *old_idx)
+{
+	struct ubifs_old_idx *o;
+	struct rb_node **p, *parent = NULL;
+
+	p = &c->old_idx.rb_node;
+	while (*p) {
+		parent = *p;
+		o = rb_entry(parent, struct ubifs_old_idx, rb);
+		if (old_idx->lnum < o->lnum)
+			p = &(*p)->rb_left;
+		else if (old_idx->lnum > o->lnum)
+			p = &(*p)->rb_right;
+		else if (old_idx->offs < o->offs)
+			p = &(*p)->rb_left;
+		else if (old_idx->offs > o->offs)
+			p = &(*p)->rb_right;
+		else {
+			ubifs_err(c, "old idx added twice!");
+			kfree(old_idx);
+		}
+	}
+	rb_link_node(&old_idx->rb, parent, p);
+	rb_insert_color(&old_idx->rb, &c->old_idx);
+}
+
+>>>>>>> origin/android16-base
 /**
  * insert_old_idx - record an index node obsoleted since the last commit start.
  * @c: UBIFS file-system description object
@@ -81,14 +111,19 @@ enum {
  */
 static int insert_old_idx(struct ubifs_info *c, int lnum, int offs)
 {
+<<<<<<< HEAD
 	struct ubifs_old_idx *old_idx, *o;
 	struct rb_node **p, *parent = NULL;
+=======
+	struct ubifs_old_idx *old_idx;
+>>>>>>> origin/android16-base
 
 	old_idx = kmalloc(sizeof(struct ubifs_old_idx), GFP_NOFS);
 	if (unlikely(!old_idx))
 		return -ENOMEM;
 	old_idx->lnum = lnum;
 	old_idx->offs = offs;
+<<<<<<< HEAD
 
 	p = &c->old_idx.rb_node;
 	while (*p) {
@@ -110,6 +145,10 @@ static int insert_old_idx(struct ubifs_info *c, int lnum, int offs)
 	}
 	rb_link_node(&old_idx->rb, parent, p);
 	rb_insert_color(&old_idx->rb, &c->old_idx);
+=======
+	do_insert_old_idx(c, old_idx);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -211,6 +250,7 @@ static struct ubifs_znode *copy_znode(struct ubifs_info *c,
 	__set_bit(DIRTY_ZNODE, &zn->flags);
 	__clear_bit(COW_ZNODE, &zn->flags);
 
+<<<<<<< HEAD
 	ubifs_assert(c, !ubifs_zn_obsolete(znode));
 	__set_bit(OBSOLETE_ZNODE, &znode->flags);
 
@@ -228,6 +268,8 @@ static struct ubifs_znode *copy_znode(struct ubifs_info *c,
 	}
 
 	atomic_long_inc(&c->dirty_zn_cnt);
+=======
+>>>>>>> origin/android16-base
 	return zn;
 }
 
@@ -246,6 +288,45 @@ static int add_idx_dirt(struct ubifs_info *c, int lnum, int dirt)
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * replace_znode - replace old znode with new znode.
+ * @c: UBIFS file-system description object
+ * @new_zn: new znode
+ * @old_zn: old znode
+ * @zbr: the branch of parent znode
+ *
+ * Replace old znode with new znode in TNC.
+ */
+static void replace_znode(struct ubifs_info *c, struct ubifs_znode *new_zn,
+			  struct ubifs_znode *old_zn, struct ubifs_zbranch *zbr)
+{
+	ubifs_assert(c, !ubifs_zn_obsolete(old_zn));
+	__set_bit(OBSOLETE_ZNODE, &old_zn->flags);
+
+	if (old_zn->level != 0) {
+		int i;
+		const int n = new_zn->child_cnt;
+
+		/* The children now have new parent */
+		for (i = 0; i < n; i++) {
+			struct ubifs_zbranch *child = &new_zn->zbranch[i];
+
+			if (child->znode)
+				child->znode->parent = new_zn;
+		}
+	}
+
+	zbr->znode = new_zn;
+	zbr->lnum = 0;
+	zbr->offs = 0;
+	zbr->len = 0;
+
+	atomic_long_inc(&c->dirty_zn_cnt);
+}
+
+/**
+>>>>>>> origin/android16-base
  * dirty_cow_znode - ensure a znode is not being committed.
  * @c: UBIFS file-system description object
  * @zbr: branch of znode to check
@@ -277,6 +358,7 @@ static struct ubifs_znode *dirty_cow_znode(struct ubifs_info *c,
 		return zn;
 
 	if (zbr->len) {
+<<<<<<< HEAD
 		err = insert_old_idx(c, zbr->lnum, zbr->offs);
 		if (unlikely(err))
 			return ERR_PTR(err);
@@ -292,6 +374,34 @@ static struct ubifs_znode *dirty_cow_znode(struct ubifs_info *c,
 	if (unlikely(err))
 		return ERR_PTR(err);
 	return zn;
+=======
+		struct ubifs_old_idx *old_idx;
+
+		old_idx = kmalloc(sizeof(struct ubifs_old_idx), GFP_NOFS);
+		if (unlikely(!old_idx)) {
+			err = -ENOMEM;
+			goto out;
+		}
+		old_idx->lnum = zbr->lnum;
+		old_idx->offs = zbr->offs;
+
+		err = add_idx_dirt(c, zbr->lnum, zbr->len);
+		if (err) {
+			kfree(old_idx);
+			goto out;
+		}
+
+		do_insert_old_idx(c, old_idx);
+	}
+
+	replace_znode(c, zn, znode, zbr);
+
+	return zn;
+
+out:
+	kfree(zn);
+	return ERR_PTR(err);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -899,7 +1009,11 @@ static int fallible_resolve_collision(struct ubifs_info *c,
 				      int adding)
 {
 	struct ubifs_znode *o_znode = NULL, *znode = *zn;
+<<<<<<< HEAD
 	int uninitialized_var(o_n), err, cmp, unsure = 0, nn = *n;
+=======
+	int o_n, err, cmp, unsure = 0, nn = *n;
+>>>>>>> origin/android16-base
 
 	cmp = fallible_matches_name(c, &znode->zbranch[nn], nm);
 	if (unlikely(cmp < 0))
@@ -1521,8 +1635,13 @@ out:
  */
 int ubifs_tnc_get_bu_keys(struct ubifs_info *c, struct bu_info *bu)
 {
+<<<<<<< HEAD
 	int n, err = 0, lnum = -1, uninitialized_var(offs);
 	int uninitialized_var(len);
+=======
+	int n, err = 0, lnum = -1, offs;
+	int len;
+>>>>>>> origin/android16-base
 	unsigned int block = key_block(c, &bu->key);
 	struct ubifs_znode *znode;
 
@@ -3046,6 +3165,24 @@ static void tnc_destroy_cnext(struct ubifs_info *c)
 		cnext = cnext->cnext;
 		if (ubifs_zn_obsolete(znode))
 			kfree(znode);
+<<<<<<< HEAD
+=======
+		else if (!ubifs_zn_cow(znode)) {
+			/*
+			 * Don't forget to update clean znode count after
+			 * committing failed, because ubifs will check this
+			 * count while closing tnc. Non-obsolete znode could
+			 * be re-dirtied during committing process, so dirty
+			 * flag is untrustable. The flag 'COW_ZNODE' is set
+			 * for each dirty znode before committing, and it is
+			 * cleared as long as the znode become clean, so we
+			 * can statistic clean znode count according to this
+			 * flag.
+			 */
+			atomic_long_inc(&c->clean_zn_cnt);
+			atomic_long_inc(&ubifs_clean_zn_cnt);
+		}
+>>>>>>> origin/android16-base
 	} while (cnext && cnext != c->cnext);
 }
 

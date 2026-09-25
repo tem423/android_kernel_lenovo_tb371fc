@@ -426,7 +426,11 @@ retry:
 			}
 		}
 
+<<<<<<< HEAD
 		inst = match ? inst : NULL;
+=======
+		inst = match && kref_get_unless_zero(&inst->kref) ? inst : NULL;
+>>>>>>> origin/android16-base
 		mutex_unlock(&core->lock);
 	} else {
 		if (core->state == CVP_CORE_UNINIT)
@@ -504,6 +508,10 @@ static int hfi_process_session_cvp_msg(u32 device_id,
 			|| pkt->packet_type == HFI_MSG_SESSION_CVP_FD) {
 			u64 ktid;
 			u32 kdata1, kdata2;
+<<<<<<< HEAD
+=======
+			int rc;
+>>>>>>> origin/android16-base
 
 			kdata1 = pkt->client_data.kdata1;
 			kdata2 = pkt->client_data.kdata2;
@@ -515,8 +523,15 @@ static int hfi_process_session_cvp_msg(u32 device_id,
 
 			msm_cvp_unmap_buf_cpu(inst, ktid);
 
+<<<<<<< HEAD
 			return _deprecated_hfi_msg_process(device_id,
 				pkt, info, inst);
+=======
+			rc = _deprecated_hfi_msg_process(device_id, pkt, info,
+							 inst);
+			cvp_put_inst(inst);
+			return rc;
+>>>>>>> origin/android16-base
 		}
 		dprintk(CVP_ERR, "Invalid deprecate_bitmask %#x\n",
 					inst->deprecate_bitmask);
@@ -525,7 +540,11 @@ static int hfi_process_session_cvp_msg(u32 device_id,
 	sess_msg = kmem_cache_alloc(cvp_driver->msg_cache, GFP_KERNEL);
 	if (sess_msg == NULL) {
 		dprintk(CVP_ERR, "%s runs out msg cache memory\n", __func__);
+<<<<<<< HEAD
 		return -ENOMEM;
+=======
+		goto error_no_mem;
+>>>>>>> origin/android16-base
 	}
 
 	memcpy(&sess_msg->pkt, pkt, get_msg_size());
@@ -548,11 +567,20 @@ static int hfi_process_session_cvp_msg(u32 device_id,
 
 	info->response_type = HAL_NO_RESP;
 
+<<<<<<< HEAD
+=======
+	cvp_put_inst(inst);
+>>>>>>> origin/android16-base
 	return 0;
 
 error_handle_msg:
 	spin_unlock(&inst->session_queue.lock);
 	kmem_cache_free(cvp_driver->msg_cache, sess_msg);
+<<<<<<< HEAD
+=======
+error_no_mem:
+	cvp_put_inst(inst);
+>>>>>>> origin/android16-base
 	return -ENOMEM;
 }
 

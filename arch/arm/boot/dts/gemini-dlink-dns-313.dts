@@ -140,7 +140,11 @@
 		};
 	};
 
+<<<<<<< HEAD
 	mdio0: ethernet-phy {
+=======
+	mdio0: mdio {
+>>>>>>> origin/android16-base
 		compatible = "virtual,mdio-gpio";
 		/* Uses MDC and MDIO */
 		gpios = <&gpio0 22 GPIO_ACTIVE_HIGH>, /* MDC */

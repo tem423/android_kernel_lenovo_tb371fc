@@ -151,6 +151,10 @@ __hfi1_trace_def(IOCTL);
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/infiniband/hw/hfi1
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE trace_dbg
 #include <trace/define_trace.h>

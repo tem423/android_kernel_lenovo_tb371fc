@@ -39,7 +39,11 @@ config DISABLE_VHPT
 
 config IA64_DEBUG_CMPXCHG
 	bool "Turn on compare-and-exchange bug checking (slow!)"
+<<<<<<< HEAD
 	depends on DEBUG_KERNEL
+=======
+	depends on DEBUG_KERNEL && PRINTK
+>>>>>>> origin/android16-base
 	help
 	  Selecting this option turns on bug checking for the IA-64
 	  compare-and-exchange instructions.  This is slow!  Itaniums

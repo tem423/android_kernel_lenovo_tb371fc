@@ -1380,6 +1380,7 @@ EXPORT_SYMBOL(__sb_end_write);
  */
 int __sb_start_write(struct super_block *sb, int level, bool wait)
 {
+<<<<<<< HEAD
 	bool force_trylock = false;
 	int ret = 1;
 
@@ -1410,6 +1411,13 @@ int __sb_start_write(struct super_block *sb, int level, bool wait)
 
 	WARN_ON(force_trylock && !ret);
 	return ret;
+=======
+	if (!wait)
+		return percpu_down_read_trylock(sb->s_writers.rw_sem + level-1);
+
+	percpu_down_read(sb->s_writers.rw_sem + level-1);
+	return 1;
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(__sb_start_write);
 
@@ -1449,11 +1457,17 @@ static void lockdep_sb_freeze_acquire(struct super_block *sb)
 		percpu_rwsem_acquire(sb->s_writers.rw_sem + level, 0, _THIS_IP_);
 }
 
+<<<<<<< HEAD
 static void sb_freeze_unlock(struct super_block *sb)
 {
 	int level;
 
 	for (level = SB_FREEZE_LEVELS - 1; level >= 0; level--)
+=======
+static void sb_freeze_unlock(struct super_block *sb, int level)
+{
+	for (level--; level >= 0; level--)
+>>>>>>> origin/android16-base
 		percpu_up_write(sb->s_writers.rw_sem + level);
 }
 
@@ -1524,7 +1538,18 @@ int freeze_super(struct super_block *sb)
 	sb_wait_write(sb, SB_FREEZE_PAGEFAULT);
 
 	/* All writers are done so after syncing there won't be dirty data */
+<<<<<<< HEAD
 	sync_filesystem(sb);
+=======
+	ret = sync_filesystem(sb);
+	if (ret) {
+		sb->s_writers.frozen = SB_UNFROZEN;
+		sb_freeze_unlock(sb, SB_FREEZE_PAGEFAULT);
+		wake_up(&sb->s_writers.wait_unfrozen);
+		deactivate_locked_super(sb);
+		return ret;
+	}
+>>>>>>> origin/android16-base
 
 	/* Now wait for internal filesystem counter */
 	sb->s_writers.frozen = SB_FREEZE_FS;
@@ -1536,7 +1561,11 @@ int freeze_super(struct super_block *sb)
 			printk(KERN_ERR
 				"VFS:Filesystem freeze failed\n");
 			sb->s_writers.frozen = SB_UNFROZEN;
+<<<<<<< HEAD
 			sb_freeze_unlock(sb);
+=======
+			sb_freeze_unlock(sb, SB_FREEZE_FS);
+>>>>>>> origin/android16-base
 			wake_up(&sb->s_writers.wait_unfrozen);
 			deactivate_locked_super(sb);
 			return ret;
@@ -1587,7 +1616,11 @@ static int thaw_super_locked(struct super_block *sb)
 	}
 
 	sb->s_writers.frozen = SB_UNFROZEN;
+<<<<<<< HEAD
 	sb_freeze_unlock(sb);
+=======
+	sb_freeze_unlock(sb, SB_FREEZE_FS);
+>>>>>>> origin/android16-base
 out:
 	wake_up(&sb->s_writers.wait_unfrozen);
 	deactivate_locked_super(sb);

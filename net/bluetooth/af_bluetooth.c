@@ -108,6 +108,7 @@ void bt_sock_unregister(int proto)
 }
 EXPORT_SYMBOL(bt_sock_unregister);
 
+<<<<<<< HEAD
 #ifdef CONFIG_PARANOID_NETWORK
 static inline int current_has_bt_admin(void)
 {
@@ -130,11 +131,14 @@ static inline int current_has_bt(void)
 }
 #endif
 
+=======
+>>>>>>> origin/android16-base
 static int bt_sock_create(struct net *net, struct socket *sock, int proto,
 			  int kern)
 {
 	int err;
 
+<<<<<<< HEAD
 	if (proto == BTPROTO_RFCOMM || proto == BTPROTO_SCO ||
 			proto == BTPROTO_L2CAP) {
 		if (!current_has_bt())
@@ -142,6 +146,8 @@ static int bt_sock_create(struct net *net, struct socket *sock, int proto,
 	} else if (!current_has_bt_admin())
 		return -EPERM;
 
+=======
+>>>>>>> origin/android16-base
 	if (net != &init_net)
 		return -EAFNOSUPPORT;
 
@@ -772,7 +778,11 @@ static int __init bt_init(void)
 
 	err = bt_sysfs_init();
 	if (err < 0)
+<<<<<<< HEAD
 		return err;
+=======
+		goto cleanup_led;
+>>>>>>> origin/android16-base
 
 	err = sock_register(&bt_sock_family_ops);
 	if (err)
@@ -808,6 +818,12 @@ unregister_socket:
 	sock_unregister(PF_BLUETOOTH);
 cleanup_sysfs:
 	bt_sysfs_cleanup();
+<<<<<<< HEAD
+=======
+cleanup_led:
+	bt_leds_cleanup();
+	debugfs_remove_recursive(bt_debugfs);
+>>>>>>> origin/android16-base
 	return err;
 }
 

@@ -48,8 +48,11 @@ module_param(pm_save_enable, int, 0444);
 MODULE_PARM_DESC(pm_save_enable,
 	"Save/restore state on power down: 1 = never, 2 = self-hosted");
 
+<<<<<<< HEAD
 /* The number of ETMv4 currently registered */
 static int etm4_count;
+=======
+>>>>>>> origin/android16-base
 static struct etmv4_drvdata *etmdrvdata[NR_CPUS];
 static void etm4_set_default_config(struct etmv4_config *config);
 static int etm4_set_event_filters(struct etmv4_drvdata *drvdata,
@@ -173,7 +176,11 @@ static int etm4_enable_hw(struct etmv4_drvdata *drvdata)
 		writel_relaxed(config->ss_pe_cmp[i],
 			       drvdata->base + TRCSSPCICRn(i));
 	}
+<<<<<<< HEAD
 	for (i = 0; i < drvdata->nr_addr_cmp; i++) {
+=======
+	for (i = 0; i < drvdata->nr_addr_cmp * 2; i++) {
+>>>>>>> origin/android16-base
 		writeq_relaxed(config->addr_val[i],
 			       drvdata->base + TRCACVRn(i));
 		writeq_relaxed(config->addr_acc[i],
@@ -1106,7 +1113,10 @@ static void etm4_init_trace_id(struct etmv4_drvdata *drvdata)
 	drvdata->trcid = coresight_get_trace_id(drvdata->cpu);
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_CPU_PM
+=======
+>>>>>>> origin/android16-base
 static int etm4_cpu_save(struct etmv4_drvdata *drvdata)
 {
 	int i, ret = 0;
@@ -1159,7 +1169,11 @@ static int etm4_cpu_save(struct etmv4_drvdata *drvdata)
 	state->trcvdsacctlr = readl(drvdata->base + TRCVDSACCTLR);
 	state->trcvdarcctlr = readl(drvdata->base + TRCVDARCCTLR);
 
+<<<<<<< HEAD
 	for (i = 0; i < drvdata->nrseqstate; i++)
+=======
+	for (i = 0; i < drvdata->nrseqstate - 1; i++)
+>>>>>>> origin/android16-base
 		state->trcseqevr[i] = readl(drvdata->base + TRCSEQEVRn(i));
 
 	state->trcseqrstevr = readl(drvdata->base + TRCSEQRSTEVR);
@@ -1182,8 +1196,13 @@ static int etm4_cpu_save(struct etmv4_drvdata *drvdata)
 	}
 
 	for (i = 0; i < drvdata->nr_addr_cmp * 2; i++) {
+<<<<<<< HEAD
 		state->trcacvr[i] = readl(drvdata->base + TRCACVRn(i));
 		state->trcacatr[i] = readl(drvdata->base + TRCACATRn(i));
+=======
+		state->trcacvr[i] = readq(drvdata->base + TRCACVRn(i));
+		state->trcacatr[i] = readq(drvdata->base + TRCACATRn(i));
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -1194,16 +1213,27 @@ static int etm4_cpu_save(struct etmv4_drvdata *drvdata)
 	 */
 
 	for (i = 0; i < drvdata->numcidc; i++)
+<<<<<<< HEAD
 		state->trccidcvr[i] = readl(drvdata->base + TRCCIDCVRn(i));
 
 	for (i = 0; i < drvdata->numvmidc; i++)
 		state->trcvmidcvr[i] = readl(drvdata->base + TRCVMIDCVRn(i));
+=======
+		state->trccidcvr[i] = readq(drvdata->base + TRCCIDCVRn(i));
+
+	for (i = 0; i < drvdata->numvmidc; i++)
+		state->trcvmidcvr[i] = readq(drvdata->base + TRCVMIDCVRn(i));
+>>>>>>> origin/android16-base
 
 	state->trccidcctlr0 = readl(drvdata->base + TRCCIDCCTLR0);
 	state->trccidcctlr1 = readl(drvdata->base + TRCCIDCCTLR1);
 
 	state->trcvmidcctlr0 = readl(drvdata->base + TRCVMIDCCTLR0);
+<<<<<<< HEAD
 	state->trcvmidcctlr0 = readl(drvdata->base + TRCVMIDCCTLR1);
+=======
+	state->trcvmidcctlr1 = readl(drvdata->base + TRCVMIDCCTLR1);
+>>>>>>> origin/android16-base
 
 	state->trcclaimset = readl(drvdata->base + TRCCLAIMCLR);
 
@@ -1264,7 +1294,11 @@ static void etm4_cpu_restore(struct etmv4_drvdata *drvdata)
 	writel_relaxed(state->trcvdsacctlr, drvdata->base + TRCVDSACCTLR);
 	writel_relaxed(state->trcvdarcctlr, drvdata->base + TRCVDARCCTLR);
 
+<<<<<<< HEAD
 	for (i = 0; i < drvdata->nrseqstate; i++)
+=======
+	for (i = 0; i < drvdata->nrseqstate - 1; i++)
+>>>>>>> origin/android16-base
 		writel_relaxed(state->trcseqevr[i],
 			       drvdata->base + TRCSEQEVRn(i));
 
@@ -1295,25 +1329,43 @@ static void etm4_cpu_restore(struct etmv4_drvdata *drvdata)
 	}
 
 	for (i = 0; i < drvdata->nr_addr_cmp * 2; i++) {
+<<<<<<< HEAD
 		writel_relaxed(state->trcacvr[i],
 			       drvdata->base + TRCACVRn(i));
 		writel_relaxed(state->trcacatr[i],
+=======
+		writeq_relaxed(state->trcacvr[i],
+			       drvdata->base + TRCACVRn(i));
+		writeq_relaxed(state->trcacatr[i],
+>>>>>>> origin/android16-base
 			       drvdata->base + TRCACATRn(i));
 	}
 
 	for (i = 0; i < drvdata->numcidc; i++)
+<<<<<<< HEAD
 		writel_relaxed(state->trccidcvr[i],
 			       drvdata->base + TRCCIDCVRn(i));
 
 	for (i = 0; i < drvdata->numvmidc; i++)
 		writel_relaxed(state->trcvmidcvr[i],
+=======
+		writeq_relaxed(state->trccidcvr[i],
+			       drvdata->base + TRCCIDCVRn(i));
+
+	for (i = 0; i < drvdata->numvmidc; i++)
+		writeq_relaxed(state->trcvmidcvr[i],
+>>>>>>> origin/android16-base
 			       drvdata->base + TRCVMIDCVRn(i));
 
 	writel_relaxed(state->trccidcctlr0, drvdata->base + TRCCIDCCTLR0);
 	writel_relaxed(state->trccidcctlr1, drvdata->base + TRCCIDCCTLR1);
 
 	writel_relaxed(state->trcvmidcctlr0, drvdata->base + TRCVMIDCCTLR0);
+<<<<<<< HEAD
 	writel_relaxed(state->trcvmidcctlr0, drvdata->base + TRCVMIDCCTLR1);
+=======
+	writel_relaxed(state->trcvmidcctlr1, drvdata->base + TRCVMIDCCTLR1);
+>>>>>>> origin/android16-base
 
 	writel_relaxed(state->trcclaimset, drvdata->base + TRCCLAIMSET);
 
@@ -1374,6 +1426,7 @@ static struct notifier_block etm4_cpu_pm_nb = {
 	.notifier_call = etm4_cpu_pm_notify,
 };
 
+<<<<<<< HEAD
 static int etm4_cpu_pm_register(void)
 {
 	return cpu_pm_register_notifier(&etm4_cpu_pm_nb);
@@ -1387,6 +1440,51 @@ static void etm4_cpu_pm_unregister(void)
 static int etm4_cpu_pm_register(void) { return 0; }
 static void etm4_cpu_pm_unregister(void) { }
 #endif
+=======
+/* Setup PM. Deals with error conditions and counts */
+static int __init etm4_pm_setup(void)
+{
+	int ret;
+
+	ret = cpu_pm_register_notifier(&etm4_cpu_pm_nb);
+	if (ret)
+		return ret;
+
+	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ARM_CORESIGHT_STARTING,
+					"arm/coresight4:starting",
+					etm4_starting_cpu, etm4_dying_cpu);
+
+	if (ret)
+		goto unregister_notifier;
+
+	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
+					"arm/coresight4:online",
+					etm4_online_cpu, NULL);
+
+	/* HP dyn state ID returned in ret on success */
+	if (ret > 0) {
+		hp_online = ret;
+		return 0;
+	}
+
+	/* failed dyn state - remove others */
+	cpuhp_remove_state_nocalls(CPUHP_AP_ARM_CORESIGHT_STARTING);
+
+unregister_notifier:
+	cpu_pm_unregister_notifier(&etm4_cpu_pm_nb);
+	return ret;
+}
+
+static void __init etm4_pm_clear(void)
+{
+	cpu_pm_unregister_notifier(&etm4_cpu_pm_nb);
+	cpuhp_remove_state_nocalls(CPUHP_AP_ARM_CORESIGHT_STARTING);
+	if (hp_online) {
+		cpuhp_remove_state_nocalls(hp_online);
+		hp_online = 0;
+	}
+}
+>>>>>>> origin/android16-base
 
 static int etm4_probe(struct amba_device *adev, const struct amba_id *id)
 {
@@ -1439,11 +1537,15 @@ static int etm4_probe(struct amba_device *adev, const struct amba_id *id)
 		return -ENODEV;
 	}
 
+<<<<<<< HEAD
 	cpus_read_lock();
+=======
+>>>>>>> origin/android16-base
 	ret = smp_call_function_single(drvdata->cpu,
 					etm4_init_arch_data, drvdata, 1);
 	if (ret) {
 		dev_err(dev, "ETM arch init failed\n");
+<<<<<<< HEAD
 		cpus_read_unlock();
 		return ret;
 	} else if (!etm4_arch_supported(drvdata->arch)) {
@@ -1467,6 +1569,12 @@ static int etm4_probe(struct amba_device *adev, const struct amba_id *id)
 	}
 
 	cpus_read_unlock();
+=======
+		return ret;
+	} else if (!etm4_arch_supported(drvdata->arch)) {
+		return -EINVAL;
+	}
+>>>>>>> origin/android16-base
 
 	etm4_init_trace_id(drvdata);
 	etm4_set_default(&drvdata->config);
@@ -1508,6 +1616,7 @@ static int etm4_probe(struct amba_device *adev, const struct amba_id *id)
 	return 0;
 
 err_arch_supported:
+<<<<<<< HEAD
 	if (--etm4_count == 0) {
 		etm4_cpu_pm_unregister();
 
@@ -1515,6 +1624,9 @@ err_arch_supported:
 		if (hp_online)
 			cpuhp_remove_state_nocalls(hp_online);
 	}
+=======
+	etmdrvdata[drvdata->cpu] = NULL;
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -1541,4 +1653,27 @@ static struct amba_driver etm4x_driver = {
 	.probe		= etm4_probe,
 	.id_table	= etm4_ids,
 };
+<<<<<<< HEAD
 builtin_amba_driver(etm4x_driver);
+=======
+
+static int __init etm4x_init(void)
+{
+	int ret;
+
+	ret = etm4_pm_setup();
+
+	/* etm4_pm_setup() does its own cleanup - exit on error */
+	if (ret)
+		return ret;
+
+	ret = amba_driver_register(&etm4x_driver);
+	if (ret) {
+		pr_err("Error registering etm4x driver\n");
+		etm4_pm_clear();
+	}
+
+	return ret;
+}
+device_initcall(etm4x_init);
+>>>>>>> origin/android16-base

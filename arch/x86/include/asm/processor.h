@@ -523,6 +523,7 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 }
 
 /*
+<<<<<<< HEAD
  * Thread-synchronous status.
  *
  * This is different from the flags in that nobody else
@@ -532,6 +533,8 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 #define TS_COMPAT		0x0002	/* 32bit syscall active (64BIT)*/
 
 /*
+=======
+>>>>>>> origin/android16-base
  * Set IOPL bits in EFLAGS from given mask
  */
 static inline void native_set_iopl_mask(unsigned mask)
@@ -1000,4 +1003,9 @@ enum taa_mitigations {
 	TAA_MITIGATION_TSX_DISABLED,
 };
 
+<<<<<<< HEAD
+=======
+extern bool gds_ucode_mitigated(void);
+
+>>>>>>> origin/android16-base
 #endif /* _ASM_X86_PROCESSOR_H */

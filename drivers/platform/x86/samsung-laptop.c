@@ -1125,8 +1125,11 @@ static void kbd_led_set(struct led_classdev *led_cdev,
 
 	if (value > samsung->kbd_led.max_brightness)
 		value = samsung->kbd_led.max_brightness;
+<<<<<<< HEAD
 	else if (value < 0)
 		value = 0;
+=======
+>>>>>>> origin/android16-base
 
 	samsung->kbd_led_wk = value;
 	queue_work(samsung->led_workqueue, &samsung->kbd_led_work);

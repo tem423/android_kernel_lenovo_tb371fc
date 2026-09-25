@@ -260,7 +260,11 @@ do {								\
 	might_fault();						\
 	access_ok(VERIFY_READ, __p, sizeof(*__p)) ?		\
 		__get_user((x), __p) :				\
+<<<<<<< HEAD
 		((x) = 0, -EFAULT);				\
+=======
+		((x) = (__force __typeof__(x))0, -EFAULT);	\
+>>>>>>> origin/android16-base
 })
 
 #define __put_user_asm(insn, x, ptr, err)			\

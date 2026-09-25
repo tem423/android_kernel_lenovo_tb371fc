@@ -208,7 +208,11 @@ TRACE_EVENT(iwlwifi_dev_ict_read,
 #endif /* __IWLWIFI_DEVICE_TRACE_IO */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/wireless/intel/iwlwifi
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE iwl-devtrace-io
 #include <trace/define_trace.h>

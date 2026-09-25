@@ -20,6 +20,10 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/usb.h>
+<<<<<<< HEAD
+=======
+#include <linux/workqueue.h>
+>>>>>>> origin/android16-base
 
 #include <linux/can.h>
 #include <linux/can/dev.h>
@@ -28,10 +32,13 @@
 
 #include "kvaser_usb.h"
 
+<<<<<<< HEAD
 /* Forward declaration */
 static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_dev_cfg;
 
 #define CAN_USB_CLOCK			8000000
+=======
+>>>>>>> origin/android16-base
 #define MAX_USBCAN_NET_DEVICES		2
 
 /* Command header size */
@@ -59,6 +66,12 @@ static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_dev_cfg;
 #define CMD_RX_EXT_MESSAGE		14
 #define CMD_TX_EXT_MESSAGE		15
 #define CMD_SET_BUS_PARAMS		16
+<<<<<<< HEAD
+=======
+#define CMD_GET_BUS_PARAMS		17
+#define CMD_GET_BUS_PARAMS_REPLY	18
+#define CMD_GET_CHIP_STATE		19
+>>>>>>> origin/android16-base
 #define CMD_CHIP_STATE_EVENT		20
 #define CMD_SET_CTRL_MODE		21
 #define CMD_RESET_CHIP			24
@@ -73,13 +86,33 @@ static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_dev_cfg;
 #define CMD_GET_CARD_INFO_REPLY		35
 #define CMD_GET_SOFTWARE_INFO		38
 #define CMD_GET_SOFTWARE_INFO_REPLY	39
+<<<<<<< HEAD
+=======
+#define CMD_ERROR_EVENT			45
+>>>>>>> origin/android16-base
 #define CMD_FLUSH_QUEUE			48
 #define CMD_TX_ACKNOWLEDGE		50
 #define CMD_CAN_ERROR_EVENT		51
 #define CMD_FLUSH_QUEUE_REPLY		68
+<<<<<<< HEAD
 
 #define CMD_LEAF_LOG_MESSAGE		106
 
+=======
+#define CMD_GET_CAPABILITIES_REQ	95
+#define CMD_GET_CAPABILITIES_RESP	96
+
+#define CMD_LEAF_LOG_MESSAGE		106
+
+/* Leaf frequency options */
+#define KVASER_USB_LEAF_SWOPTION_FREQ_MASK 0x60
+#define KVASER_USB_LEAF_SWOPTION_FREQ_16_MHZ_CLK 0
+#define KVASER_USB_LEAF_SWOPTION_FREQ_32_MHZ_CLK BIT(5)
+#define KVASER_USB_LEAF_SWOPTION_FREQ_24_MHZ_CLK BIT(6)
+
+#define KVASER_USB_LEAF_SWOPTION_EXT_CAP BIT(12)
+
+>>>>>>> origin/android16-base
 /* error factors */
 #define M16C_EF_ACKE			BIT(0)
 #define M16C_EF_CRCE			BIT(1)
@@ -98,6 +131,7 @@ static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_dev_cfg;
 #define USBCAN_ERROR_STATE_RX_ERROR	BIT(1)
 #define USBCAN_ERROR_STATE_BUSERROR	BIT(2)
 
+<<<<<<< HEAD
 /* bittiming parameters */
 #define KVASER_USB_TSEG1_MIN		1
 #define KVASER_USB_TSEG1_MAX		16
@@ -108,6 +142,8 @@ static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_dev_cfg;
 #define KVASER_USB_BRP_MAX		64
 #define KVASER_USB_BRP_INC		1
 
+=======
+>>>>>>> origin/android16-base
 /* ctrl modes */
 #define KVASER_CTRL_MODE_NORMAL		1
 #define KVASER_CTRL_MODE_SILENT		2
@@ -164,11 +200,15 @@ struct usbcan_cmd_softinfo {
 struct kvaser_cmd_busparams {
 	u8 tid;
 	u8 channel;
+<<<<<<< HEAD
 	__le32 bitrate;
 	u8 tseg1;
 	u8 tseg2;
 	u8 sjw;
 	u8 no_samp;
+=======
+	struct kvaser_usb_busparams busparams;
+>>>>>>> origin/android16-base
 } __packed;
 
 struct kvaser_cmd_tx_can {
@@ -237,7 +277,11 @@ struct kvaser_cmd_tx_acknowledge_header {
 	u8 tid;
 } __packed;
 
+<<<<<<< HEAD
 struct leaf_cmd_error_event {
+=======
+struct leaf_cmd_can_error_event {
+>>>>>>> origin/android16-base
 	u8 tid;
 	u8 flags;
 	__le16 time[3];
@@ -249,7 +293,11 @@ struct leaf_cmd_error_event {
 	u8 error_factor;
 } __packed;
 
+<<<<<<< HEAD
 struct usbcan_cmd_error_event {
+=======
+struct usbcan_cmd_can_error_event {
+>>>>>>> origin/android16-base
 	u8 tid;
 	u8 padding;
 	u8 tx_errors_count_ch0;
@@ -261,6 +309,31 @@ struct usbcan_cmd_error_event {
 	__le16 time;
 } __packed;
 
+<<<<<<< HEAD
+=======
+/* CMD_ERROR_EVENT error codes */
+#define KVASER_USB_LEAF_ERROR_EVENT_TX_QUEUE_FULL 0x8
+#define KVASER_USB_LEAF_ERROR_EVENT_PARAM 0x9
+
+struct leaf_cmd_error_event {
+	u8 tid;
+	u8 error_code;
+	__le16 timestamp[3];
+	__le16 padding;
+	__le16 info1;
+	__le16 info2;
+} __packed;
+
+struct usbcan_cmd_error_event {
+	u8 tid;
+	u8 error_code;
+	__le16 info1;
+	__le16 info2;
+	__le16 timestamp;
+	__le16 padding;
+} __packed;
+
+>>>>>>> origin/android16-base
 struct kvaser_cmd_ctrl_mode {
 	u8 tid;
 	u8 channel;
@@ -285,6 +358,31 @@ struct leaf_cmd_log_message {
 	u8 data[8];
 } __packed;
 
+<<<<<<< HEAD
+=======
+/* Sub commands for cap_req and cap_res */
+#define KVASER_USB_LEAF_CAP_CMD_LISTEN_MODE 0x02
+#define KVASER_USB_LEAF_CAP_CMD_ERR_REPORT 0x05
+struct kvaser_cmd_cap_req {
+	__le16 padding0;
+	__le16 cap_cmd;
+	__le16 padding1;
+	__le16 channel;
+} __packed;
+
+/* Status codes for cap_res */
+#define KVASER_USB_LEAF_CAP_STAT_OK 0x00
+#define KVASER_USB_LEAF_CAP_STAT_NOT_IMPL 0x01
+#define KVASER_USB_LEAF_CAP_STAT_UNAVAIL 0x02
+struct kvaser_cmd_cap_res {
+	__le16 padding;
+	__le16 cap_cmd;
+	__le16 status;
+	__le32 mask;
+	__le32 value;
+} __packed;
+
+>>>>>>> origin/android16-base
 struct kvaser_cmd {
 	u8 len;
 	u8 id;
@@ -300,14 +398,26 @@ struct kvaser_cmd {
 			struct leaf_cmd_softinfo softinfo;
 			struct leaf_cmd_rx_can rx_can;
 			struct leaf_cmd_chip_state_event chip_state_event;
+<<<<<<< HEAD
 			struct leaf_cmd_error_event error_event;
 			struct leaf_cmd_log_message log_message;
+=======
+			struct leaf_cmd_can_error_event can_error_event;
+			struct leaf_cmd_log_message log_message;
+			struct leaf_cmd_error_event error_event;
+			struct kvaser_cmd_cap_req cap_req;
+			struct kvaser_cmd_cap_res cap_res;
+>>>>>>> origin/android16-base
 		} __packed leaf;
 
 		union {
 			struct usbcan_cmd_softinfo softinfo;
 			struct usbcan_cmd_rx_can rx_can;
 			struct usbcan_cmd_chip_state_event chip_state_event;
+<<<<<<< HEAD
+=======
+			struct usbcan_cmd_can_error_event can_error_event;
+>>>>>>> origin/android16-base
 			struct usbcan_cmd_error_event error_event;
 		} __packed usbcan;
 
@@ -317,6 +427,45 @@ struct kvaser_cmd {
 	} u;
 } __packed;
 
+<<<<<<< HEAD
+=======
+#define CMD_SIZE_ANY 0xff
+#define kvaser_fsize(field) sizeof_field(struct kvaser_cmd, field)
+
+static const u8 kvaser_usb_leaf_cmd_sizes_leaf[] = {
+	[CMD_START_CHIP_REPLY]		= kvaser_fsize(u.simple),
+	[CMD_STOP_CHIP_REPLY]		= kvaser_fsize(u.simple),
+	[CMD_GET_CARD_INFO_REPLY]	= kvaser_fsize(u.cardinfo),
+	[CMD_TX_ACKNOWLEDGE]		= kvaser_fsize(u.tx_acknowledge_header),
+	[CMD_GET_SOFTWARE_INFO_REPLY]	= kvaser_fsize(u.leaf.softinfo),
+	[CMD_RX_STD_MESSAGE]		= kvaser_fsize(u.leaf.rx_can),
+	[CMD_RX_EXT_MESSAGE]		= kvaser_fsize(u.leaf.rx_can),
+	[CMD_LEAF_LOG_MESSAGE]		= kvaser_fsize(u.leaf.log_message),
+	[CMD_CHIP_STATE_EVENT]		= kvaser_fsize(u.leaf.chip_state_event),
+	[CMD_CAN_ERROR_EVENT]		= kvaser_fsize(u.leaf.can_error_event),
+	[CMD_GET_CAPABILITIES_RESP]	= kvaser_fsize(u.leaf.cap_res),
+	[CMD_GET_BUS_PARAMS_REPLY]	= kvaser_fsize(u.busparams),
+	[CMD_ERROR_EVENT]		= kvaser_fsize(u.leaf.error_event),
+	/* ignored events: */
+	[CMD_FLUSH_QUEUE_REPLY]		= CMD_SIZE_ANY,
+};
+
+static const u8 kvaser_usb_leaf_cmd_sizes_usbcan[] = {
+	[CMD_START_CHIP_REPLY]		= kvaser_fsize(u.simple),
+	[CMD_STOP_CHIP_REPLY]		= kvaser_fsize(u.simple),
+	[CMD_GET_CARD_INFO_REPLY]	= kvaser_fsize(u.cardinfo),
+	[CMD_TX_ACKNOWLEDGE]		= kvaser_fsize(u.tx_acknowledge_header),
+	[CMD_GET_SOFTWARE_INFO_REPLY]	= kvaser_fsize(u.usbcan.softinfo),
+	[CMD_RX_STD_MESSAGE]		= kvaser_fsize(u.usbcan.rx_can),
+	[CMD_RX_EXT_MESSAGE]		= kvaser_fsize(u.usbcan.rx_can),
+	[CMD_CHIP_STATE_EVENT]		= kvaser_fsize(u.usbcan.chip_state_event),
+	[CMD_CAN_ERROR_EVENT]		= kvaser_fsize(u.usbcan.can_error_event),
+	[CMD_ERROR_EVENT]		= kvaser_fsize(u.usbcan.error_event),
+	/* ignored events: */
+	[CMD_USBCAN_CLOCK_OVERFLOW_EVENT] = CMD_SIZE_ANY,
+};
+
+>>>>>>> origin/android16-base
 /* Summary of a kvaser error event, for a unified Leaf/Usbcan error
  * handling. Some discrepancies between the two families exist:
  *
@@ -340,6 +489,116 @@ struct kvaser_usb_err_summary {
 	};
 };
 
+<<<<<<< HEAD
+=======
+struct kvaser_usb_net_leaf_priv {
+	struct kvaser_usb_net_priv *net;
+
+	struct delayed_work chip_state_req_work;
+};
+
+static const struct can_bittiming_const kvaser_usb_leaf_m16c_bittiming_const = {
+	.name = "kvaser_usb_ucii",
+	.tseg1_min = 4,
+	.tseg1_max = 16,
+	.tseg2_min = 2,
+	.tseg2_max = 8,
+	.sjw_max = 4,
+	.brp_min = 1,
+	.brp_max = 16,
+	.brp_inc = 1,
+};
+
+static const struct can_bittiming_const kvaser_usb_leaf_m32c_bittiming_const = {
+	.name = "kvaser_usb_leaf",
+	.tseg1_min = 3,
+	.tseg1_max = 16,
+	.tseg2_min = 2,
+	.tseg2_max = 8,
+	.sjw_max = 4,
+	.brp_min = 2,
+	.brp_max = 128,
+	.brp_inc = 2,
+};
+
+static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_usbcan_dev_cfg = {
+	.clock = {
+		.freq = 8000000,
+	},
+	.timestamp_freq = 1,
+	.bittiming_const = &kvaser_usb_leaf_m16c_bittiming_const,
+};
+
+static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_m32c_dev_cfg = {
+	.clock = {
+		.freq = 16000000,
+	},
+	.timestamp_freq = 1,
+	.bittiming_const = &kvaser_usb_leaf_m32c_bittiming_const,
+};
+
+static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_imx_dev_cfg_16mhz = {
+	.clock = {
+		.freq = 16000000,
+	},
+	.timestamp_freq = 1,
+	.bittiming_const = &kvaser_usb_flexc_bittiming_const,
+};
+
+static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_imx_dev_cfg_24mhz = {
+	.clock = {
+		.freq = 24000000,
+	},
+	.timestamp_freq = 1,
+	.bittiming_const = &kvaser_usb_flexc_bittiming_const,
+};
+
+static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_imx_dev_cfg_32mhz = {
+	.clock = {
+		.freq = 32000000,
+	},
+	.timestamp_freq = 1,
+	.bittiming_const = &kvaser_usb_flexc_bittiming_const,
+};
+
+static int kvaser_usb_leaf_verify_size(const struct kvaser_usb *dev,
+				       const struct kvaser_cmd *cmd)
+{
+	/* buffer size >= cmd->len ensured by caller */
+	u8 min_size = 0;
+
+	switch (dev->driver_info->family) {
+	case KVASER_LEAF:
+		if (cmd->id < ARRAY_SIZE(kvaser_usb_leaf_cmd_sizes_leaf))
+			min_size = kvaser_usb_leaf_cmd_sizes_leaf[cmd->id];
+		break;
+	case KVASER_USBCAN:
+		if (cmd->id < ARRAY_SIZE(kvaser_usb_leaf_cmd_sizes_usbcan))
+			min_size = kvaser_usb_leaf_cmd_sizes_usbcan[cmd->id];
+		break;
+	}
+
+	if (min_size == CMD_SIZE_ANY)
+		return 0;
+
+	if (min_size) {
+		min_size += CMD_HEADER_LEN;
+		if (cmd->len >= min_size)
+			return 0;
+
+		dev_err_ratelimited(&dev->intf->dev,
+				    "Received command %u too short (size %u, needed %u)",
+				    cmd->id, cmd->len, min_size);
+		return -EIO;
+	}
+
+	dev_warn_ratelimited(&dev->intf->dev,
+			     "Unhandled command (%d, size %d)\n",
+			     cmd->id, cmd->len);
+	return -EINVAL;
+}
+
+>>>>>>> origin/android16-base
 static void *
 kvaser_usb_leaf_frame_to_cmd(const struct kvaser_usb_net_priv *priv,
 			     const struct sk_buff *skb, int *frame_len,
@@ -359,7 +618,11 @@ kvaser_usb_leaf_frame_to_cmd(const struct kvaser_usb_net_priv *priv,
 				      sizeof(struct kvaser_cmd_tx_can);
 		cmd->u.tx_can.channel = priv->channel;
 
+<<<<<<< HEAD
 		switch (dev->card_data.leaf.family) {
+=======
+		switch (dev->driver_info->family) {
+>>>>>>> origin/android16-base
 		case KVASER_LEAF:
 			cmd_tx_can_flags = &cmd->u.tx_can.leaf.flags;
 			break;
@@ -447,6 +710,12 @@ static int kvaser_usb_leaf_wait_cmd(const struct kvaser_usb *dev, u8 id,
 end:
 	kfree(buf);
 
+<<<<<<< HEAD
+=======
+	if (err == 0)
+		err = kvaser_usb_leaf_verify_size(dev, cmd);
+
+>>>>>>> origin/android16-base
 	return err;
 }
 
@@ -471,6 +740,40 @@ static int kvaser_usb_leaf_send_simple_cmd(const struct kvaser_usb *dev,
 	return rc;
 }
 
+<<<<<<< HEAD
+=======
+static void kvaser_usb_leaf_get_software_info_leaf(struct kvaser_usb *dev,
+						   const struct leaf_cmd_softinfo *softinfo)
+{
+	u32 sw_options = le32_to_cpu(softinfo->sw_options);
+
+	dev->fw_version = le32_to_cpu(softinfo->fw_version);
+	dev->max_tx_urbs = le16_to_cpu(softinfo->max_outstanding_tx);
+
+	if (sw_options & KVASER_USB_LEAF_SWOPTION_EXT_CAP)
+		dev->card_data.capabilities |= KVASER_USB_CAP_EXT_CAP;
+
+	if (dev->driver_info->quirks & KVASER_USB_QUIRK_IGNORE_CLK_FREQ) {
+		/* Firmware expects bittiming parameters calculated for 16MHz
+		 * clock, regardless of the actual clock
+		 */
+		dev->cfg = &kvaser_usb_leaf_m32c_dev_cfg;
+	} else {
+		switch (sw_options & KVASER_USB_LEAF_SWOPTION_FREQ_MASK) {
+		case KVASER_USB_LEAF_SWOPTION_FREQ_16_MHZ_CLK:
+			dev->cfg = &kvaser_usb_leaf_imx_dev_cfg_16mhz;
+			break;
+		case KVASER_USB_LEAF_SWOPTION_FREQ_24_MHZ_CLK:
+			dev->cfg = &kvaser_usb_leaf_imx_dev_cfg_24mhz;
+			break;
+		case KVASER_USB_LEAF_SWOPTION_FREQ_32_MHZ_CLK:
+			dev->cfg = &kvaser_usb_leaf_imx_dev_cfg_32mhz;
+			break;
+		}
+	}
+}
+
+>>>>>>> origin/android16-base
 static int kvaser_usb_leaf_get_software_info_inner(struct kvaser_usb *dev)
 {
 	struct kvaser_cmd cmd;
@@ -484,16 +787,26 @@ static int kvaser_usb_leaf_get_software_info_inner(struct kvaser_usb *dev)
 	if (err)
 		return err;
 
+<<<<<<< HEAD
 	switch (dev->card_data.leaf.family) {
 	case KVASER_LEAF:
 		dev->fw_version = le32_to_cpu(cmd.u.leaf.softinfo.fw_version);
 		dev->max_tx_urbs =
 			le16_to_cpu(cmd.u.leaf.softinfo.max_outstanding_tx);
+=======
+	switch (dev->driver_info->family) {
+	case KVASER_LEAF:
+		kvaser_usb_leaf_get_software_info_leaf(dev, &cmd.u.leaf.softinfo);
+>>>>>>> origin/android16-base
 		break;
 	case KVASER_USBCAN:
 		dev->fw_version = le32_to_cpu(cmd.u.usbcan.softinfo.fw_version);
 		dev->max_tx_urbs =
 			le16_to_cpu(cmd.u.usbcan.softinfo.max_outstanding_tx);
+<<<<<<< HEAD
+=======
+		dev->cfg = &kvaser_usb_leaf_usbcan_dev_cfg;
+>>>>>>> origin/android16-base
 		break;
 	}
 
@@ -532,13 +845,130 @@ static int kvaser_usb_leaf_get_card_info(struct kvaser_usb *dev)
 
 	dev->nchannels = cmd.u.cardinfo.nchannels;
 	if (dev->nchannels > KVASER_USB_MAX_NET_DEVICES ||
+<<<<<<< HEAD
 	    (dev->card_data.leaf.family == KVASER_USBCAN &&
+=======
+	    (dev->driver_info->family == KVASER_USBCAN &&
+>>>>>>> origin/android16-base
 	     dev->nchannels > MAX_USBCAN_NET_DEVICES))
 		return -EINVAL;
 
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int kvaser_usb_leaf_get_single_capability(struct kvaser_usb *dev,
+						 u16 cap_cmd_req, u16 *status)
+{
+	struct kvaser_usb_dev_card_data *card_data = &dev->card_data;
+	struct kvaser_cmd *cmd;
+	u32 value = 0;
+	u32 mask = 0;
+	u16 cap_cmd_res;
+	int err;
+	int i;
+
+	cmd = kzalloc(sizeof(*cmd), GFP_KERNEL);
+	if (!cmd)
+		return -ENOMEM;
+
+	cmd->id = CMD_GET_CAPABILITIES_REQ;
+	cmd->u.leaf.cap_req.cap_cmd = cpu_to_le16(cap_cmd_req);
+	cmd->len = CMD_HEADER_LEN + sizeof(struct kvaser_cmd_cap_req);
+
+	err = kvaser_usb_send_cmd(dev, cmd, cmd->len);
+	if (err)
+		goto end;
+
+	err = kvaser_usb_leaf_wait_cmd(dev, CMD_GET_CAPABILITIES_RESP, cmd);
+	if (err)
+		goto end;
+
+	*status = le16_to_cpu(cmd->u.leaf.cap_res.status);
+
+	if (*status != KVASER_USB_LEAF_CAP_STAT_OK)
+		goto end;
+
+	cap_cmd_res = le16_to_cpu(cmd->u.leaf.cap_res.cap_cmd);
+	switch (cap_cmd_res) {
+	case KVASER_USB_LEAF_CAP_CMD_LISTEN_MODE:
+	case KVASER_USB_LEAF_CAP_CMD_ERR_REPORT:
+		value = le32_to_cpu(cmd->u.leaf.cap_res.value);
+		mask = le32_to_cpu(cmd->u.leaf.cap_res.mask);
+		break;
+	default:
+		dev_warn(&dev->intf->dev, "Unknown capability command %u\n",
+			 cap_cmd_res);
+		break;
+	}
+
+	for (i = 0; i < dev->nchannels; i++) {
+		if (BIT(i) & (value & mask)) {
+			switch (cap_cmd_res) {
+			case KVASER_USB_LEAF_CAP_CMD_LISTEN_MODE:
+				card_data->ctrlmode_supported |=
+						CAN_CTRLMODE_LISTENONLY;
+				break;
+			case KVASER_USB_LEAF_CAP_CMD_ERR_REPORT:
+				card_data->capabilities |=
+						KVASER_USB_CAP_BERR_CAP;
+				break;
+			}
+		}
+	}
+
+end:
+	kfree(cmd);
+
+	return err;
+}
+
+static int kvaser_usb_leaf_get_capabilities_leaf(struct kvaser_usb *dev)
+{
+	int err;
+	u16 status;
+
+	if (!(dev->card_data.capabilities & KVASER_USB_CAP_EXT_CAP)) {
+		dev_info(&dev->intf->dev,
+			 "No extended capability support. Upgrade device firmware.\n");
+		return 0;
+	}
+
+	err = kvaser_usb_leaf_get_single_capability(dev,
+						    KVASER_USB_LEAF_CAP_CMD_LISTEN_MODE,
+						    &status);
+	if (err)
+		return err;
+	if (status)
+		dev_info(&dev->intf->dev,
+			 "KVASER_USB_LEAF_CAP_CMD_LISTEN_MODE failed %u\n",
+			 status);
+
+	err = kvaser_usb_leaf_get_single_capability(dev,
+						    KVASER_USB_LEAF_CAP_CMD_ERR_REPORT,
+						    &status);
+	if (err)
+		return err;
+	if (status)
+		dev_info(&dev->intf->dev,
+			 "KVASER_USB_LEAF_CAP_CMD_ERR_REPORT failed %u\n",
+			 status);
+
+	return 0;
+}
+
+static int kvaser_usb_leaf_get_capabilities(struct kvaser_usb *dev)
+{
+	int err = 0;
+
+	if (dev->driver_info->family == KVASER_LEAF)
+		err = kvaser_usb_leaf_get_capabilities_leaf(dev);
+
+	return err;
+}
+
+>>>>>>> origin/android16-base
 static void kvaser_usb_leaf_tx_acknowledge(const struct kvaser_usb *dev,
 					   const struct kvaser_cmd *cmd)
 {
@@ -567,7 +997,11 @@ static void kvaser_usb_leaf_tx_acknowledge(const struct kvaser_usb *dev,
 	context = &priv->tx_contexts[tid % dev->max_tx_urbs];
 
 	/* Sometimes the state change doesn't come after a bus-off event */
+<<<<<<< HEAD
 	if (priv->can.restart_ms && priv->can.state >= CAN_STATE_BUS_OFF) {
+=======
+	if (priv->can.restart_ms && priv->can.state == CAN_STATE_BUS_OFF) {
+>>>>>>> origin/android16-base
 		struct sk_buff *skb;
 		struct can_frame *cf;
 
@@ -623,6 +1057,19 @@ static int kvaser_usb_leaf_simple_cmd_async(struct kvaser_usb_net_priv *priv,
 	return err;
 }
 
+<<<<<<< HEAD
+=======
+static void kvaser_usb_leaf_chip_state_req_work(struct work_struct *work)
+{
+	struct kvaser_usb_net_leaf_priv *leaf =
+		container_of(work, struct kvaser_usb_net_leaf_priv,
+			     chip_state_req_work.work);
+	struct kvaser_usb_net_priv *priv = leaf->net;
+
+	kvaser_usb_leaf_simple_cmd_async(priv, CMD_GET_CHIP_STATE);
+}
+
+>>>>>>> origin/android16-base
 static void
 kvaser_usb_leaf_rx_error_update_can_state(struct kvaser_usb_net_priv *priv,
 					const struct kvaser_usb_err_summary *es,
@@ -641,6 +1088,7 @@ kvaser_usb_leaf_rx_error_update_can_state(struct kvaser_usb_net_priv *priv,
 		new_state = CAN_STATE_BUS_OFF;
 	} else if (es->status & M16C_STATE_BUS_PASSIVE) {
 		new_state = CAN_STATE_ERROR_PASSIVE;
+<<<<<<< HEAD
 	} else if (es->status & M16C_STATE_BUS_ERROR) {
 		/* Guard against spurious error events after a busoff */
 		if (cur_state < CAN_STATE_BUS_OFF) {
@@ -655,6 +1103,18 @@ kvaser_usb_leaf_rx_error_update_can_state(struct kvaser_usb_net_priv *priv,
 
 	if (!es->status)
 		new_state = CAN_STATE_ERROR_ACTIVE;
+=======
+	} else if ((es->status & M16C_STATE_BUS_ERROR) &&
+		   cur_state >= CAN_STATE_BUS_OFF) {
+		/* Guard against spurious error events after a busoff */
+	} else if (es->txerr >= 128 || es->rxerr >= 128) {
+		new_state = CAN_STATE_ERROR_PASSIVE;
+	} else if (es->txerr >= 96 || es->rxerr >= 96) {
+		new_state = CAN_STATE_ERROR_WARNING;
+	} else {
+		new_state = CAN_STATE_ERROR_ACTIVE;
+	}
+>>>>>>> origin/android16-base
 
 	if (new_state != cur_state) {
 		tx_state = (es->txerr >= es->rxerr) ? new_state : 0;
@@ -664,11 +1124,19 @@ kvaser_usb_leaf_rx_error_update_can_state(struct kvaser_usb_net_priv *priv,
 	}
 
 	if (priv->can.restart_ms &&
+<<<<<<< HEAD
 	    cur_state >= CAN_STATE_BUS_OFF &&
 	    new_state < CAN_STATE_BUS_OFF)
 		priv->can.can_stats.restarts++;
 
 	switch (dev->card_data.leaf.family) {
+=======
+	    cur_state == CAN_STATE_BUS_OFF &&
+	    new_state < CAN_STATE_BUS_OFF)
+		priv->can.can_stats.restarts++;
+
+	switch (dev->driver_info->family) {
+>>>>>>> origin/android16-base
 	case KVASER_LEAF:
 		if (es->leaf.error_factor) {
 			priv->can.can_stats.bus_error++;
@@ -698,6 +1166,10 @@ static void kvaser_usb_leaf_rx_error(const struct kvaser_usb *dev,
 	struct sk_buff *skb;
 	struct net_device_stats *stats;
 	struct kvaser_usb_net_priv *priv;
+<<<<<<< HEAD
+=======
+	struct kvaser_usb_net_leaf_priv *leaf;
+>>>>>>> origin/android16-base
 	enum can_state old_state, new_state;
 
 	if (es->channel >= dev->nchannels) {
@@ -707,8 +1179,18 @@ static void kvaser_usb_leaf_rx_error(const struct kvaser_usb *dev,
 	}
 
 	priv = dev->nets[es->channel];
+<<<<<<< HEAD
 	stats = &priv->netdev->stats;
 
+=======
+	leaf = priv->sub_priv;
+	stats = &priv->netdev->stats;
+
+	/* Ignore e.g. state change to bus-off reported just after stopping */
+	if (!netif_running(priv->netdev))
+		return;
+
+>>>>>>> origin/android16-base
 	/* Update all of the CAN interface's state and error counters before
 	 * trying any memory allocation that can actually fail with -ENOMEM.
 	 *
@@ -723,6 +1205,17 @@ static void kvaser_usb_leaf_rx_error(const struct kvaser_usb *dev,
 	kvaser_usb_leaf_rx_error_update_can_state(priv, es, &tmp_cf);
 	new_state = priv->can.state;
 
+<<<<<<< HEAD
+=======
+	/* If there are errors, request status updates periodically as we do
+	 * not get automatic notifications of improved state.
+	 */
+	if (new_state < CAN_STATE_BUS_OFF &&
+	    (es->rxerr || es->txerr || new_state == CAN_STATE_ERROR_PASSIVE))
+		schedule_delayed_work(&leaf->chip_state_req_work,
+				      msecs_to_jiffies(500));
+
+>>>>>>> origin/android16-base
 	skb = alloc_can_err_skb(priv->netdev, &cf);
 	if (!skb) {
 		stats->rx_dropped++;
@@ -740,14 +1233,22 @@ static void kvaser_usb_leaf_rx_error(const struct kvaser_usb *dev,
 		}
 
 		if (priv->can.restart_ms &&
+<<<<<<< HEAD
 		    old_state >= CAN_STATE_BUS_OFF &&
+=======
+		    old_state == CAN_STATE_BUS_OFF &&
+>>>>>>> origin/android16-base
 		    new_state < CAN_STATE_BUS_OFF) {
 			cf->can_id |= CAN_ERR_RESTARTED;
 			netif_carrier_on(priv->netdev);
 		}
 	}
 
+<<<<<<< HEAD
 	switch (dev->card_data.leaf.family) {
+=======
+	switch (dev->driver_info->family) {
+>>>>>>> origin/android16-base
 	case KVASER_LEAF:
 		if (es->leaf.error_factor) {
 			cf->can_id |= CAN_ERR_BUSERROR | CAN_ERR_PROT;
@@ -774,8 +1275,15 @@ static void kvaser_usb_leaf_rx_error(const struct kvaser_usb *dev,
 		break;
 	}
 
+<<<<<<< HEAD
 	cf->data[6] = es->txerr;
 	cf->data[7] = es->rxerr;
+=======
+	if (new_state != CAN_STATE_BUS_OFF) {
+		cf->data[6] = es->txerr;
+		cf->data[7] = es->rxerr;
+	}
+>>>>>>> origin/android16-base
 
 	stats->rx_packets++;
 	stats->rx_bytes += cf->can_dlc;
@@ -838,11 +1346,19 @@ static void kvaser_usb_leaf_usbcan_rx_error(const struct kvaser_usb *dev,
 
 	case CMD_CAN_ERROR_EVENT:
 		es.channel = 0;
+<<<<<<< HEAD
 		es.status = cmd->u.usbcan.error_event.status_ch0;
 		es.txerr = cmd->u.usbcan.error_event.tx_errors_count_ch0;
 		es.rxerr = cmd->u.usbcan.error_event.rx_errors_count_ch0;
 		es.usbcan.other_ch_status =
 			cmd->u.usbcan.error_event.status_ch1;
+=======
+		es.status = cmd->u.usbcan.can_error_event.status_ch0;
+		es.txerr = cmd->u.usbcan.can_error_event.tx_errors_count_ch0;
+		es.rxerr = cmd->u.usbcan.can_error_event.rx_errors_count_ch0;
+		es.usbcan.other_ch_status =
+			cmd->u.usbcan.can_error_event.status_ch1;
+>>>>>>> origin/android16-base
 		kvaser_usb_leaf_usbcan_conditionally_rx_error(dev, &es);
 
 		/* The USBCAN firmware supports up to 2 channels.
@@ -850,6 +1366,7 @@ static void kvaser_usb_leaf_usbcan_rx_error(const struct kvaser_usb *dev,
 		 */
 		if (dev->nchannels == MAX_USBCAN_NET_DEVICES) {
 			es.channel = 1;
+<<<<<<< HEAD
 			es.status = cmd->u.usbcan.error_event.status_ch1;
 			es.txerr =
 				cmd->u.usbcan.error_event.tx_errors_count_ch1;
@@ -857,6 +1374,15 @@ static void kvaser_usb_leaf_usbcan_rx_error(const struct kvaser_usb *dev,
 				cmd->u.usbcan.error_event.rx_errors_count_ch1;
 			es.usbcan.other_ch_status =
 				cmd->u.usbcan.error_event.status_ch0;
+=======
+			es.status = cmd->u.usbcan.can_error_event.status_ch1;
+			es.txerr =
+				cmd->u.usbcan.can_error_event.tx_errors_count_ch1;
+			es.rxerr =
+				cmd->u.usbcan.can_error_event.rx_errors_count_ch1;
+			es.usbcan.other_ch_status =
+				cmd->u.usbcan.can_error_event.status_ch0;
+>>>>>>> origin/android16-base
 			kvaser_usb_leaf_usbcan_conditionally_rx_error(dev, &es);
 		}
 		break;
@@ -873,11 +1399,19 @@ static void kvaser_usb_leaf_leaf_rx_error(const struct kvaser_usb *dev,
 
 	switch (cmd->id) {
 	case CMD_CAN_ERROR_EVENT:
+<<<<<<< HEAD
 		es.channel = cmd->u.leaf.error_event.channel;
 		es.status = cmd->u.leaf.error_event.status;
 		es.txerr = cmd->u.leaf.error_event.tx_errors_count;
 		es.rxerr = cmd->u.leaf.error_event.rx_errors_count;
 		es.leaf.error_factor = cmd->u.leaf.error_event.error_factor;
+=======
+		es.channel = cmd->u.leaf.can_error_event.channel;
+		es.status = cmd->u.leaf.can_error_event.status;
+		es.txerr = cmd->u.leaf.can_error_event.tx_errors_count;
+		es.rxerr = cmd->u.leaf.can_error_event.rx_errors_count;
+		es.leaf.error_factor = cmd->u.leaf.can_error_event.error_factor;
+>>>>>>> origin/android16-base
 		break;
 	case CMD_LEAF_LOG_MESSAGE:
 		es.channel = cmd->u.leaf.log_message.channel;
@@ -939,7 +1473,11 @@ static void kvaser_usb_leaf_rx_can_msg(const struct kvaser_usb *dev,
 	stats = &priv->netdev->stats;
 
 	if ((cmd->u.rx_can_header.flag & MSG_FLAG_ERROR_FRAME) &&
+<<<<<<< HEAD
 	    (dev->card_data.leaf.family == KVASER_LEAF &&
+=======
+	    (dev->driver_info->family == KVASER_LEAF &&
+>>>>>>> origin/android16-base
 	     cmd->id == CMD_LEAF_LOG_MESSAGE)) {
 		kvaser_usb_leaf_leaf_rx_error(dev, cmd);
 		return;
@@ -955,7 +1493,11 @@ static void kvaser_usb_leaf_rx_can_msg(const struct kvaser_usb *dev,
 		return;
 	}
 
+<<<<<<< HEAD
 	switch (dev->card_data.leaf.family) {
+=======
+	switch (dev->driver_info->family) {
+>>>>>>> origin/android16-base
 	case KVASER_LEAF:
 		rx_data = cmd->u.leaf.rx_can.data;
 		break;
@@ -970,7 +1512,11 @@ static void kvaser_usb_leaf_rx_can_msg(const struct kvaser_usb *dev,
 		return;
 	}
 
+<<<<<<< HEAD
 	if (dev->card_data.leaf.family == KVASER_LEAF && cmd->id ==
+=======
+	if (dev->driver_info->family == KVASER_LEAF && cmd->id ==
+>>>>>>> origin/android16-base
 	    CMD_LEAF_LOG_MESSAGE) {
 		cf->can_id = le32_to_cpu(cmd->u.leaf.log_message.id);
 		if (cf->can_id & KVASER_EXTENDED_FRAME)
@@ -1009,6 +1555,77 @@ static void kvaser_usb_leaf_rx_can_msg(const struct kvaser_usb *dev,
 	netif_rx(skb);
 }
 
+<<<<<<< HEAD
+=======
+static void kvaser_usb_leaf_error_event_parameter(const struct kvaser_usb *dev,
+						  const struct kvaser_cmd *cmd)
+{
+	u16 info1 = 0;
+
+	switch (dev->driver_info->family) {
+	case KVASER_LEAF:
+		info1 = le16_to_cpu(cmd->u.leaf.error_event.info1);
+		break;
+	case KVASER_USBCAN:
+		info1 = le16_to_cpu(cmd->u.usbcan.error_event.info1);
+		break;
+	}
+
+	/* info1 will contain the offending cmd_no */
+	switch (info1) {
+	case CMD_SET_CTRL_MODE:
+		dev_warn(&dev->intf->dev,
+			 "CMD_SET_CTRL_MODE error in parameter\n");
+		break;
+
+	case CMD_SET_BUS_PARAMS:
+		dev_warn(&dev->intf->dev,
+			 "CMD_SET_BUS_PARAMS error in parameter\n");
+		break;
+
+	default:
+		dev_warn(&dev->intf->dev,
+			 "Unhandled parameter error event cmd_no (%u)\n",
+			 info1);
+		break;
+	}
+}
+
+static void kvaser_usb_leaf_error_event(const struct kvaser_usb *dev,
+					const struct kvaser_cmd *cmd)
+{
+	u8 error_code = 0;
+
+	switch (dev->driver_info->family) {
+	case KVASER_LEAF:
+		error_code = cmd->u.leaf.error_event.error_code;
+		break;
+	case KVASER_USBCAN:
+		error_code = cmd->u.usbcan.error_event.error_code;
+		break;
+	}
+
+	switch (error_code) {
+	case KVASER_USB_LEAF_ERROR_EVENT_TX_QUEUE_FULL:
+		/* Received additional CAN message, when firmware TX queue is
+		 * already full. Something is wrong with the driver.
+		 * This should never happen!
+		 */
+		dev_err(&dev->intf->dev,
+			"Received error event TX_QUEUE_FULL\n");
+		break;
+	case KVASER_USB_LEAF_ERROR_EVENT_PARAM:
+		kvaser_usb_leaf_error_event_parameter(dev, cmd);
+		break;
+
+	default:
+		dev_warn(&dev->intf->dev,
+			 "Unhandled error event (%d)\n", error_code);
+		break;
+	}
+}
+
+>>>>>>> origin/android16-base
 static void kvaser_usb_leaf_start_chip_reply(const struct kvaser_usb *dev,
 					     const struct kvaser_cmd *cmd)
 {
@@ -1049,9 +1666,37 @@ static void kvaser_usb_leaf_stop_chip_reply(const struct kvaser_usb *dev,
 	complete(&priv->stop_comp);
 }
 
+<<<<<<< HEAD
 static void kvaser_usb_leaf_handle_command(const struct kvaser_usb *dev,
 					   const struct kvaser_cmd *cmd)
 {
+=======
+static void kvaser_usb_leaf_get_busparams_reply(const struct kvaser_usb *dev,
+						const struct kvaser_cmd *cmd)
+{
+	struct kvaser_usb_net_priv *priv;
+	u8 channel = cmd->u.busparams.channel;
+
+	if (channel >= dev->nchannels) {
+		dev_err(&dev->intf->dev,
+			"Invalid channel number (%d)\n", channel);
+		return;
+	}
+
+	priv = dev->nets[channel];
+	memcpy(&priv->busparams_nominal, &cmd->u.busparams.busparams,
+	       sizeof(priv->busparams_nominal));
+
+	complete(&priv->get_busparams_comp);
+}
+
+static void kvaser_usb_leaf_handle_command(const struct kvaser_usb *dev,
+					   const struct kvaser_cmd *cmd)
+{
+	if (kvaser_usb_leaf_verify_size(dev, cmd) < 0)
+		return;
+
+>>>>>>> origin/android16-base
 	switch (cmd->id) {
 	case CMD_START_CHIP_REPLY:
 		kvaser_usb_leaf_start_chip_reply(dev, cmd);
@@ -1067,14 +1712,22 @@ static void kvaser_usb_leaf_handle_command(const struct kvaser_usb *dev,
 		break;
 
 	case CMD_LEAF_LOG_MESSAGE:
+<<<<<<< HEAD
 		if (dev->card_data.leaf.family != KVASER_LEAF)
+=======
+		if (dev->driver_info->family != KVASER_LEAF)
+>>>>>>> origin/android16-base
 			goto warn;
 		kvaser_usb_leaf_rx_can_msg(dev, cmd);
 		break;
 
 	case CMD_CHIP_STATE_EVENT:
 	case CMD_CAN_ERROR_EVENT:
+<<<<<<< HEAD
 		if (dev->card_data.leaf.family == KVASER_LEAF)
+=======
+		if (dev->driver_info->family == KVASER_LEAF)
+>>>>>>> origin/android16-base
 			kvaser_usb_leaf_leaf_rx_error(dev, cmd);
 		else
 			kvaser_usb_leaf_usbcan_rx_error(dev, cmd);
@@ -1084,14 +1737,32 @@ static void kvaser_usb_leaf_handle_command(const struct kvaser_usb *dev,
 		kvaser_usb_leaf_tx_acknowledge(dev, cmd);
 		break;
 
+<<<<<<< HEAD
 	/* Ignored commands */
 	case CMD_USBCAN_CLOCK_OVERFLOW_EVENT:
 		if (dev->card_data.leaf.family != KVASER_USBCAN)
+=======
+	case CMD_ERROR_EVENT:
+		kvaser_usb_leaf_error_event(dev, cmd);
+		break;
+
+	case CMD_GET_BUS_PARAMS_REPLY:
+		kvaser_usb_leaf_get_busparams_reply(dev, cmd);
+		break;
+
+	/* Ignored commands */
+	case CMD_USBCAN_CLOCK_OVERFLOW_EVENT:
+		if (dev->driver_info->family != KVASER_USBCAN)
+>>>>>>> origin/android16-base
 			goto warn;
 		break;
 
 	case CMD_FLUSH_QUEUE_REPLY:
+<<<<<<< HEAD
 		if (dev->card_data.leaf.family != KVASER_LEAF)
+=======
+		if (dev->driver_info->family != KVASER_LEAF)
+>>>>>>> origin/android16-base
 			goto warn;
 		break;
 
@@ -1164,7 +1835,11 @@ static int kvaser_usb_leaf_start_chip(struct kvaser_usb_net_priv *priv)
 {
 	int err;
 
+<<<<<<< HEAD
 	init_completion(&priv->start_comp);
+=======
+	reinit_completion(&priv->start_comp);
+>>>>>>> origin/android16-base
 
 	err = kvaser_usb_leaf_send_simple_cmd(priv->dev, CMD_START_CHIP,
 					      priv->channel);
@@ -1180,9 +1855,18 @@ static int kvaser_usb_leaf_start_chip(struct kvaser_usb_net_priv *priv)
 
 static int kvaser_usb_leaf_stop_chip(struct kvaser_usb_net_priv *priv)
 {
+<<<<<<< HEAD
 	int err;
 
 	init_completion(&priv->stop_comp);
+=======
+	struct kvaser_usb_net_leaf_priv *leaf = priv->sub_priv;
+	int err;
+
+	reinit_completion(&priv->stop_comp);
+
+	cancel_delayed_work(&leaf->chip_state_req_work);
+>>>>>>> origin/android16-base
 
 	err = kvaser_usb_leaf_send_simple_cmd(priv->dev, CMD_STOP_CHIP,
 					      priv->channel);
@@ -1225,12 +1909,16 @@ static int kvaser_usb_leaf_init_card(struct kvaser_usb *dev)
 {
 	struct kvaser_usb_dev_card_data *card_data = &dev->card_data;
 
+<<<<<<< HEAD
 	dev->cfg = &kvaser_usb_leaf_dev_cfg;
+=======
+>>>>>>> origin/android16-base
 	card_data->ctrlmode_supported |= CAN_CTRLMODE_3_SAMPLES;
 
 	return 0;
 }
 
+<<<<<<< HEAD
 static const struct can_bittiming_const kvaser_usb_leaf_bittiming_const = {
 	.name = "kvaser_usb",
 	.tseg1_min = KVASER_USB_TSEG1_MIN,
@@ -1247,6 +1935,37 @@ static int kvaser_usb_leaf_set_bittiming(struct net_device *netdev)
 {
 	struct kvaser_usb_net_priv *priv = netdev_priv(netdev);
 	struct can_bittiming *bt = &priv->can.bittiming;
+=======
+static int kvaser_usb_leaf_init_channel(struct kvaser_usb_net_priv *priv)
+{
+	struct kvaser_usb_net_leaf_priv *leaf;
+
+	leaf = devm_kzalloc(&priv->dev->intf->dev, sizeof(*leaf), GFP_KERNEL);
+	if (!leaf)
+		return -ENOMEM;
+
+	leaf->net = priv;
+	INIT_DELAYED_WORK(&leaf->chip_state_req_work,
+			  kvaser_usb_leaf_chip_state_req_work);
+
+	priv->sub_priv = leaf;
+
+	return 0;
+}
+
+static void kvaser_usb_leaf_remove_channel(struct kvaser_usb_net_priv *priv)
+{
+	struct kvaser_usb_net_leaf_priv *leaf = priv->sub_priv;
+
+	if (leaf)
+		cancel_delayed_work_sync(&leaf->chip_state_req_work);
+}
+
+static int kvaser_usb_leaf_set_bittiming(const struct net_device *netdev,
+					 const struct kvaser_usb_busparams *busparams)
+{
+	struct kvaser_usb_net_priv *priv = netdev_priv(netdev);
+>>>>>>> origin/android16-base
 	struct kvaser_usb *dev = priv->dev;
 	struct kvaser_cmd *cmd;
 	int rc;
@@ -1259,6 +1978,7 @@ static int kvaser_usb_leaf_set_bittiming(struct net_device *netdev)
 	cmd->len = CMD_HEADER_LEN + sizeof(struct kvaser_cmd_busparams);
 	cmd->u.busparams.channel = priv->channel;
 	cmd->u.busparams.tid = 0xff;
+<<<<<<< HEAD
 	cmd->u.busparams.bitrate = cpu_to_le32(bt->bitrate);
 	cmd->u.busparams.sjw = bt->sjw;
 	cmd->u.busparams.tseg1 = bt->prop_seg + bt->phase_seg1;
@@ -1268,6 +1988,10 @@ static int kvaser_usb_leaf_set_bittiming(struct net_device *netdev)
 		cmd->u.busparams.no_samp = 3;
 	else
 		cmd->u.busparams.no_samp = 1;
+=======
+	memcpy(&cmd->u.busparams.busparams, busparams,
+	       sizeof(cmd->u.busparams.busparams));
+>>>>>>> origin/android16-base
 
 	rc = kvaser_usb_send_cmd(dev, cmd, cmd->len);
 
@@ -1275,6 +1999,30 @@ static int kvaser_usb_leaf_set_bittiming(struct net_device *netdev)
 	return rc;
 }
 
+<<<<<<< HEAD
+=======
+static int kvaser_usb_leaf_get_busparams(struct kvaser_usb_net_priv *priv)
+{
+	int err;
+
+	if (priv->dev->driver_info->family == KVASER_USBCAN)
+		return -EOPNOTSUPP;
+
+	reinit_completion(&priv->get_busparams_comp);
+
+	err = kvaser_usb_leaf_send_simple_cmd(priv->dev, CMD_GET_BUS_PARAMS,
+					      priv->channel);
+	if (err)
+		return err;
+
+	if (!wait_for_completion_timeout(&priv->get_busparams_comp,
+					 msecs_to_jiffies(KVASER_USB_TIMEOUT)))
+		return -ETIMEDOUT;
+
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static int kvaser_usb_leaf_set_mode(struct net_device *netdev,
 				    enum can_mode mode)
 {
@@ -1283,9 +2031,19 @@ static int kvaser_usb_leaf_set_mode(struct net_device *netdev,
 
 	switch (mode) {
 	case CAN_MODE_START:
+<<<<<<< HEAD
 		err = kvaser_usb_leaf_simple_cmd_async(priv, CMD_START_CHIP);
 		if (err)
 			return err;
+=======
+		kvaser_usb_unlink_tx_urbs(priv);
+
+		err = kvaser_usb_leaf_simple_cmd_async(priv, CMD_START_CHIP);
+		if (err)
+			return err;
+
+		priv->can.state = CAN_STATE_ERROR_ACTIVE;
+>>>>>>> origin/android16-base
 		break;
 	default:
 		return -EOPNOTSUPP;
@@ -1332,6 +2090,7 @@ static int kvaser_usb_leaf_setup_endpoints(struct kvaser_usb *dev)
 const struct kvaser_usb_dev_ops kvaser_usb_leaf_dev_ops = {
 	.dev_set_mode = kvaser_usb_leaf_set_mode,
 	.dev_set_bittiming = kvaser_usb_leaf_set_bittiming,
+<<<<<<< HEAD
 	.dev_set_data_bittiming = NULL,
 	.dev_get_berr_counter = kvaser_usb_leaf_get_berr_counter,
 	.dev_setup_endpoints = kvaser_usb_leaf_setup_endpoints,
@@ -1340,6 +2099,20 @@ const struct kvaser_usb_dev_ops kvaser_usb_leaf_dev_ops = {
 	.dev_get_software_details = NULL,
 	.dev_get_card_info = kvaser_usb_leaf_get_card_info,
 	.dev_get_capabilities = NULL,
+=======
+	.dev_get_busparams = kvaser_usb_leaf_get_busparams,
+	.dev_set_data_bittiming = NULL,
+	.dev_get_data_busparams = NULL,
+	.dev_get_berr_counter = kvaser_usb_leaf_get_berr_counter,
+	.dev_setup_endpoints = kvaser_usb_leaf_setup_endpoints,
+	.dev_init_card = kvaser_usb_leaf_init_card,
+	.dev_init_channel = kvaser_usb_leaf_init_channel,
+	.dev_remove_channel = kvaser_usb_leaf_remove_channel,
+	.dev_get_software_info = kvaser_usb_leaf_get_software_info,
+	.dev_get_software_details = NULL,
+	.dev_get_card_info = kvaser_usb_leaf_get_card_info,
+	.dev_get_capabilities = kvaser_usb_leaf_get_capabilities,
+>>>>>>> origin/android16-base
 	.dev_set_opt_mode = kvaser_usb_leaf_set_opt_mode,
 	.dev_start_chip = kvaser_usb_leaf_start_chip,
 	.dev_stop_chip = kvaser_usb_leaf_stop_chip,
@@ -1348,6 +2121,7 @@ const struct kvaser_usb_dev_ops kvaser_usb_leaf_dev_ops = {
 	.dev_read_bulk_callback = kvaser_usb_leaf_read_bulk_callback,
 	.dev_frame_to_cmd = kvaser_usb_leaf_frame_to_cmd,
 };
+<<<<<<< HEAD
 
 static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_dev_cfg = {
 	.clock = {
@@ -1356,3 +2130,5 @@ static const struct kvaser_usb_dev_cfg kvaser_usb_leaf_dev_cfg = {
 	.timestamp_freq = 1,
 	.bittiming_const = &kvaser_usb_leaf_bittiming_const,
 };
+=======
+>>>>>>> origin/android16-base

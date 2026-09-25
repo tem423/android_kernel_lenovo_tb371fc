@@ -352,7 +352,11 @@ nf_nat_ipv6_local_fn(void *priv, struct sk_buff *skb,
 
 		if (!nf_inet_addr_cmp(&ct->tuplehash[dir].tuple.dst.u3,
 				      &ct->tuplehash[!dir].tuple.src.u3)) {
+<<<<<<< HEAD
 			err = ip6_route_me_harder(state->net, skb);
+=======
+			err = ip6_route_me_harder(state->net, state->sk, skb);
+>>>>>>> origin/android16-base
 			if (err < 0)
 				ret = NF_DROP_ERR(err);
 		}

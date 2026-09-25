@@ -114,8 +114,16 @@ static void *simple_realloc(void *ptr, unsigned long size)
 		return ptr;
 
 	new = simple_malloc(size);
+<<<<<<< HEAD
 	memcpy(new, ptr, p->size);
 	simple_free(ptr);
+=======
+	if (new) {
+		memcpy(new, ptr, p->size);
+		simple_free(ptr);
+	}
+
+>>>>>>> origin/android16-base
 	return new;
 }
 

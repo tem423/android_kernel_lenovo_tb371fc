@@ -961,12 +961,19 @@ static bool tbnet_xmit_csum_and_map(struct tbnet *net, struct sk_buff *skb,
 		*tucso = ~csum_tcpudp_magic(ip_hdr(skb)->saddr,
 					    ip_hdr(skb)->daddr, 0,
 					    ip_hdr(skb)->protocol, 0);
+<<<<<<< HEAD
 	} else if (skb_is_gso_v6(skb)) {
+=======
+	} else if (skb_is_gso(skb) && skb_is_gso_v6(skb)) {
+>>>>>>> origin/android16-base
 		tucso = dest + ((void *)&(tcp_hdr(skb)->check) - data);
 		*tucso = ~csum_ipv6_magic(&ipv6_hdr(skb)->saddr,
 					  &ipv6_hdr(skb)->daddr, 0,
 					  IPPROTO_TCP, 0);
+<<<<<<< HEAD
 		return false;
+=======
+>>>>>>> origin/android16-base
 	} else if (protocol == htons(ETH_P_IPV6)) {
 		tucso = dest + skb_checksum_start_offset(skb) + skb->csum_offset;
 		*tucso = ~csum_ipv6_magic(&ipv6_hdr(skb)->saddr,
@@ -1342,12 +1349,30 @@ static int __init tbnet_init(void)
 				  TBNET_MATCH_FRAGS_ID);
 
 	ret = tb_register_property_dir("network", tbnet_dir);
+<<<<<<< HEAD
 	if (ret) {
 		tb_property_free_dir(tbnet_dir);
 		return ret;
 	}
 
 	return tb_register_service_driver(&tbnet_driver);
+=======
+	if (ret)
+		goto err_free_dir;
+
+	ret = tb_register_service_driver(&tbnet_driver);
+	if (ret)
+		goto err_unregister;
+
+	return 0;
+
+err_unregister:
+	tb_unregister_property_dir("network", tbnet_dir);
+err_free_dir:
+	tb_property_free_dir(tbnet_dir);
+
+	return ret;
+>>>>>>> origin/android16-base
 }
 module_init(tbnet_init);
 

@@ -1459,7 +1459,11 @@ out_ech:
 	return err;
 }
 
+<<<<<<< HEAD
 static struct ubi_attach_info *alloc_ai(void)
+=======
+static struct ubi_attach_info *alloc_ai(const char *slab_name)
+>>>>>>> origin/android16-base
 {
 	struct ubi_attach_info *ai;
 
@@ -1473,7 +1477,11 @@ static struct ubi_attach_info *alloc_ai(void)
 	INIT_LIST_HEAD(&ai->alien);
 	INIT_LIST_HEAD(&ai->fastmap);
 	ai->volumes = RB_ROOT;
+<<<<<<< HEAD
 	ai->aeb_slab_cache = kmem_cache_create("ubi_aeb_slab_cache",
+=======
+	ai->aeb_slab_cache = kmem_cache_create(slab_name,
+>>>>>>> origin/android16-base
 					       sizeof(struct ubi_ainf_peb),
 					       0, 0, NULL);
 	if (!ai->aeb_slab_cache) {
@@ -1503,7 +1511,11 @@ static int scan_fast(struct ubi_device *ubi, struct ubi_attach_info **ai)
 
 	err = -ENOMEM;
 
+<<<<<<< HEAD
 	scan_ai = alloc_ai();
+=======
+	scan_ai = alloc_ai("ubi_aeb_slab_cache_fastmap");
+>>>>>>> origin/android16-base
 	if (!scan_ai)
 		goto out;
 
@@ -1569,7 +1581,11 @@ int ubi_attach(struct ubi_device *ubi, int force_scan)
 	int err;
 	struct ubi_attach_info *ai;
 
+<<<<<<< HEAD
 	ai = alloc_ai();
+=======
+	ai = alloc_ai("ubi_aeb_slab_cache");
+>>>>>>> origin/android16-base
 	if (!ai)
 		return -ENOMEM;
 
@@ -1587,7 +1603,11 @@ int ubi_attach(struct ubi_device *ubi, int force_scan)
 		if (err > 0 || mtd_is_eccerr(err)) {
 			if (err != UBI_NO_FASTMAP) {
 				destroy_ai(ai);
+<<<<<<< HEAD
 				ai = alloc_ai();
+=======
+				ai = alloc_ai("ubi_aeb_slab_cache");
+>>>>>>> origin/android16-base
 				if (!ai)
 					return -ENOMEM;
 
@@ -1626,7 +1646,11 @@ int ubi_attach(struct ubi_device *ubi, int force_scan)
 	if (ubi->fm && ubi_dbg_chk_fastmap(ubi)) {
 		struct ubi_attach_info *scan_ai;
 
+<<<<<<< HEAD
 		scan_ai = alloc_ai();
+=======
+		scan_ai = alloc_ai("ubi_aeb_slab_cache_dbg_chk_fastmap");
+>>>>>>> origin/android16-base
 		if (!scan_ai) {
 			err = -ENOMEM;
 			goto out_wl;

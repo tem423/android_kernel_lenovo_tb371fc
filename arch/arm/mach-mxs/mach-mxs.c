@@ -393,8 +393,15 @@ static void __init mxs_machine_init(void)
 
 	root = of_find_node_by_path("/");
 	ret = of_property_read_string(root, "model", &soc_dev_attr->machine);
+<<<<<<< HEAD
 	if (ret)
 		return;
+=======
+	if (ret) {
+		kfree(soc_dev_attr);
+		return;
+	}
+>>>>>>> origin/android16-base
 
 	soc_dev_attr->family = "Freescale MXS Family";
 	soc_dev_attr->soc_id = mxs_get_soc_id();

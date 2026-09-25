@@ -57,7 +57,11 @@ run_all() {
 	run_udp "${ipv4_args}"
 
 	echo "ipv6"
+<<<<<<< HEAD
 	run_tcp "${ipv4_args}"
+=======
+	run_tcp "${ipv6_args}"
+>>>>>>> origin/android16-base
 	run_udp "${ipv6_args}"
 }
 

@@ -192,7 +192,11 @@ die_if_kernel(char * str, struct pt_regs *regs, long err, unsigned long *r9_15)
 		local_irq_enable();
 		while (1);
 	}
+<<<<<<< HEAD
 	do_exit(SIGSEGV);
+=======
+	make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 }
 
 #ifndef CONFIG_MATHEMU
@@ -235,7 +239,25 @@ do_entIF(unsigned long type, struct pt_regs *regs)
 {
 	int signo, code;
 
+<<<<<<< HEAD
 	if ((regs->ps & ~IPL_MAX) == 0) {
+=======
+	if (type == 3) { /* FEN fault */
+		/* Irritating users can call PAL_clrfen to disable the
+		   FPU for the process.  The kernel will then trap in
+		   do_switch_stack and undo_switch_stack when we try
+		   to save and restore the FP registers.
+
+		   Given that GCC by default generates code that uses the
+		   FP registers, PAL_clrfen is not useful except for DoS
+		   attacks.  So turn the bleeding FPU back on and be done
+		   with it.  */
+		current_thread_info()->pcb.flags |= 1;
+		__reload_thread(&current_thread_info()->pcb);
+		return;
+	}
+	if (!user_mode(regs)) {
+>>>>>>> origin/android16-base
 		if (type == 1) {
 			const unsigned int *data
 			  = (const unsigned int *) regs->pc;
@@ -368,6 +390,7 @@ do_entIF(unsigned long type, struct pt_regs *regs)
 		}
 		break;
 
+<<<<<<< HEAD
 	      case 3: /* FEN fault */
 		/* Irritating users can call PAL_clrfen to disable the
 		   FPU for the process.  The kernel will then trap in
@@ -382,6 +405,8 @@ do_entIF(unsigned long type, struct pt_regs *regs)
 		__reload_thread(&current_thread_info()->pcb);
 		return;
 
+=======
+>>>>>>> origin/android16-base
 	      case 5: /* illoc */
 	      default: /* unexpected instruction-fault type */
 		      ;
@@ -577,7 +602,11 @@ do_entUna(void * va, unsigned long opcode, unsigned long reg,
 
 	printk("Bad unaligned kernel access at %016lx: %p %lx %lu\n",
 		pc, va, opcode, reg);
+<<<<<<< HEAD
 	do_exit(SIGSEGV);
+=======
+	make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 
 got_exception:
 	/* Ok, we caught the exception, but we don't want it.  Is there
@@ -632,7 +661,11 @@ got_exception:
 		local_irq_enable();
 		while (1);
 	}
+<<<<<<< HEAD
 	do_exit(SIGSEGV);
+=======
+	make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 }
 
 /*

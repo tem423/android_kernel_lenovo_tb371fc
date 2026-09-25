@@ -22,8 +22,13 @@ struct nft_exthdr {
 	u8			offset;
 	u8			len;
 	u8			op;
+<<<<<<< HEAD
 	enum nft_registers	dreg:8;
 	enum nft_registers	sreg:8;
+=======
+	u8			dreg;
+	u8			sreg;
+>>>>>>> origin/android16-base
 	u8			flags;
 };
 
@@ -36,6 +41,17 @@ static unsigned int optlen(const u8 *opt, unsigned int offset)
 		return opt[offset + 1];
 }
 
+<<<<<<< HEAD
+=======
+static int nft_skb_copy_to_reg(const struct sk_buff *skb, int offset, u32 *dest, unsigned int len)
+{
+	if (len % NFT_REG32_SIZE)
+		dest[len / NFT_REG32_SIZE] = 0;
+
+	return skb_copy_bits(skb, offset, dest, len);
+}
+
+>>>>>>> origin/android16-base
 static void nft_exthdr_ipv6_eval(const struct nft_expr *expr,
 				 struct nft_regs *regs,
 				 const struct nft_pktinfo *pkt)
@@ -45,6 +61,12 @@ static void nft_exthdr_ipv6_eval(const struct nft_expr *expr,
 	unsigned int offset = 0;
 	int err;
 
+<<<<<<< HEAD
+=======
+	if (pkt->skb->protocol != htons(ETH_P_IPV6))
+		goto err;
+
+>>>>>>> origin/android16-base
 	err = ipv6_find_hdr(pkt->skb, &offset, priv->type, NULL, NULL);
 	if (priv->flags & NFT_EXTHDR_F_PRESENT) {
 		*dest = (err >= 0);
@@ -54,8 +76,12 @@ static void nft_exthdr_ipv6_eval(const struct nft_expr *expr,
 	}
 	offset += priv->offset;
 
+<<<<<<< HEAD
 	dest[priv->len / NFT_REG32_SIZE] = 0;
 	if (skb_copy_bits(pkt->skb, offset, dest, priv->len) < 0)
+=======
+	if (nft_skb_copy_to_reg(pkt->skb, offset, dest, priv->len) < 0)
+>>>>>>> origin/android16-base
 		goto err;
 	return;
 err:
@@ -111,7 +137,12 @@ static void nft_exthdr_tcp_eval(const struct nft_expr *expr,
 		if (priv->flags & NFT_EXTHDR_F_PRESENT) {
 			*dest = 1;
 		} else {
+<<<<<<< HEAD
 			dest[priv->len / NFT_REG32_SIZE] = 0;
+=======
+			if (priv->len % NFT_REG32_SIZE)
+				dest[priv->len / NFT_REG32_SIZE] = 0;
+>>>>>>> origin/android16-base
 			memcpy(dest, opt + offset, priv->len);
 		}
 
@@ -134,7 +165,10 @@ static void nft_exthdr_tcp_set_eval(const struct nft_expr *expr,
 	unsigned int i, optl, tcphdr_len, offset;
 	struct tcphdr *tcph;
 	u8 *opt;
+<<<<<<< HEAD
 	u32 src;
+=======
+>>>>>>> origin/android16-base
 
 	tcph = nft_tcp_header_pointer(pkt, sizeof(buff), buff, &tcphdr_len);
 	if (!tcph)
@@ -143,7 +177,10 @@ static void nft_exthdr_tcp_set_eval(const struct nft_expr *expr,
 	opt = (u8 *)tcph;
 	for (i = sizeof(*tcph); i < tcphdr_len - 1; i += optl) {
 		union {
+<<<<<<< HEAD
 			u8 octet;
+=======
+>>>>>>> origin/android16-base
 			__be16 v16;
 			__be32 v32;
 		} old, new;
@@ -164,13 +201,21 @@ static void nft_exthdr_tcp_set_eval(const struct nft_expr *expr,
 		if (!tcph)
 			return;
 
+<<<<<<< HEAD
 		src = regs->data[priv->sreg];
+=======
+>>>>>>> origin/android16-base
 		offset = i + priv->offset;
 
 		switch (priv->len) {
 		case 2:
 			old.v16 = get_unaligned((u16 *)(opt + offset));
+<<<<<<< HEAD
 			new.v16 = src;
+=======
+			new.v16 = (__force __be16)nft_reg_load16(
+				&regs->data[priv->sreg]);
+>>>>>>> origin/android16-base
 
 			switch (priv->type) {
 			case TCPOPT_MSS:
@@ -188,7 +233,11 @@ static void nft_exthdr_tcp_set_eval(const struct nft_expr *expr,
 						 old.v16, new.v16, false);
 			break;
 		case 4:
+<<<<<<< HEAD
 			new.v32 = src;
+=======
+			new.v32 = regs->data[priv->sreg];
+>>>>>>> origin/android16-base
 			old.v32 = get_unaligned((u32 *)(opt + offset));
 
 			if (old.v32 == new.v32)
@@ -257,12 +306,21 @@ static int nft_exthdr_init(const struct nft_ctx *ctx,
 	priv->type   = nla_get_u8(tb[NFTA_EXTHDR_TYPE]);
 	priv->offset = offset;
 	priv->len    = len;
+<<<<<<< HEAD
 	priv->dreg   = nft_parse_register(tb[NFTA_EXTHDR_DREG]);
 	priv->flags  = flags;
 	priv->op     = op;
 
 	return nft_validate_register_store(ctx, priv->dreg, NULL,
 					   NFT_DATA_VALUE, priv->len);
+=======
+	priv->flags  = flags;
+	priv->op     = op;
+
+	return nft_parse_register_store(ctx, tb[NFTA_EXTHDR_DREG],
+					&priv->dreg, NULL, NFT_DATA_VALUE,
+					priv->len);
+>>>>>>> origin/android16-base
 }
 
 static int nft_exthdr_tcp_set_init(const struct nft_ctx *ctx,
@@ -307,11 +365,19 @@ static int nft_exthdr_tcp_set_init(const struct nft_ctx *ctx,
 	priv->type   = nla_get_u8(tb[NFTA_EXTHDR_TYPE]);
 	priv->offset = offset;
 	priv->len    = len;
+<<<<<<< HEAD
 	priv->sreg   = nft_parse_register(tb[NFTA_EXTHDR_SREG]);
 	priv->flags  = flags;
 	priv->op     = op;
 
 	return nft_validate_register_load(priv->sreg, priv->len);
+=======
+	priv->flags  = flags;
+	priv->op     = op;
+
+	return nft_parse_register_load(tb[NFTA_EXTHDR_SREG], &priv->sreg,
+				       priv->len);
+>>>>>>> origin/android16-base
 }
 
 static int nft_exthdr_dump_common(struct sk_buff *skb, const struct nft_exthdr *priv)

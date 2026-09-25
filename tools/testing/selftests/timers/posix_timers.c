@@ -67,7 +67,11 @@ static int check_diff(struct timeval start, struct timeval end)
 	diff = end.tv_usec - start.tv_usec;
 	diff += (end.tv_sec - start.tv_sec) * USECS_PER_SEC;
 
+<<<<<<< HEAD
 	if (abs(diff - DELAY * USECS_PER_SEC) > USECS_PER_SEC / 2) {
+=======
+	if (llabs(diff - DELAY * USECS_PER_SEC) > USECS_PER_SEC / 2) {
+>>>>>>> origin/android16-base
 		printf("Diff too high: %lld..", diff);
 		return -1;
 	}

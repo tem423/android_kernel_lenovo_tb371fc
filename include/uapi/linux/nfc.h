@@ -263,7 +263,11 @@ enum nfc_sdp_attr {
 #define NFC_SE_ENABLED  0x1
 
 struct sockaddr_nfc {
+<<<<<<< HEAD
 	sa_family_t sa_family;
+=======
+	__kernel_sa_family_t sa_family;
+>>>>>>> origin/android16-base
 	__u32 dev_idx;
 	__u32 target_idx;
 	__u32 nfc_protocol;
@@ -271,14 +275,22 @@ struct sockaddr_nfc {
 
 #define NFC_LLCP_MAX_SERVICE_NAME 63
 struct sockaddr_nfc_llcp {
+<<<<<<< HEAD
 	sa_family_t sa_family;
+=======
+	__kernel_sa_family_t sa_family;
+>>>>>>> origin/android16-base
 	__u32 dev_idx;
 	__u32 target_idx;
 	__u32 nfc_protocol;
 	__u8 dsap; /* Destination SAP, if known */
 	__u8 ssap; /* Source SAP to be bound to */
 	char service_name[NFC_LLCP_MAX_SERVICE_NAME]; /* Service name URI */;
+<<<<<<< HEAD
 	size_t service_name_len;
+=======
+	__kernel_size_t service_name_len;
+>>>>>>> origin/android16-base
 };
 
 /* NFC socket protocols */

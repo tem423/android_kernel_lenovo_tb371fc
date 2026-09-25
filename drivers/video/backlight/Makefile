@@ -60,5 +60,8 @@ obj-$(CONFIG_BACKLIGHT_TPS65217)	+= tps65217_bl.o
 obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
 obj-$(CONFIG_BACKLIGHT_ARCXCNN) 	+= arcxcnn_bl.o
 obj-$(CONFIG_BACKLIGHT_RAVE_SP)		+= rave-sp-backlight.o
+<<<<<<< HEAD
 obj-$(CONFIG_BACKLIGHT_KTZ8866A) += ktz8866a.o
 obj-$(CONFIG_BACKLIGHT_KTZ8866B) += ktz8866b.o
+=======
+>>>>>>> origin/android16-base

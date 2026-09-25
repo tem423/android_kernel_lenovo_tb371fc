@@ -97,6 +97,12 @@ struct calipso_map_cache_entry {
 
 static struct calipso_map_cache_bkt *calipso_cache;
 
+<<<<<<< HEAD
+=======
+static void calipso_cache_invalidate(void);
+static void calipso_doi_putdef(struct calipso_doi *doi_def);
+
+>>>>>>> origin/android16-base
 /* Label Mapping Cache Functions
  */
 
@@ -458,6 +464,7 @@ static int calipso_doi_remove(u32 doi, struct netlbl_audit *audit_info)
 		ret_val = -ENOENT;
 		goto doi_remove_return;
 	}
+<<<<<<< HEAD
 	if (!refcount_dec_and_test(&doi_def->refcount)) {
 		spin_unlock(&calipso_doi_list_lock);
 		ret_val = -EBUSY;
@@ -467,6 +474,12 @@ static int calipso_doi_remove(u32 doi, struct netlbl_audit *audit_info)
 	spin_unlock(&calipso_doi_list_lock);
 
 	call_rcu(&doi_def->rcu, calipso_doi_free_rcu);
+=======
+	list_del_rcu(&doi_def->list);
+	spin_unlock(&calipso_doi_list_lock);
+
+	calipso_doi_putdef(doi_def);
+>>>>>>> origin/android16-base
 	ret_val = 0;
 
 doi_remove_return:
@@ -522,10 +535,15 @@ static void calipso_doi_putdef(struct calipso_doi *doi_def)
 
 	if (!refcount_dec_and_test(&doi_def->refcount))
 		return;
+<<<<<<< HEAD
 	spin_lock(&calipso_doi_list_lock);
 	list_del_rcu(&doi_def->list);
 	spin_unlock(&calipso_doi_list_lock);
 
+=======
+
+	calipso_cache_invalidate();
+>>>>>>> origin/android16-base
 	call_rcu(&doi_def->rcu, calipso_doi_free_rcu);
 }
 

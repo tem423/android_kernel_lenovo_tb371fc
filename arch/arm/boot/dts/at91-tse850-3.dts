@@ -269,7 +269,11 @@
 &macb1 {
 	status = "okay";
 
+<<<<<<< HEAD
 	phy-mode = "rgmii";
+=======
+	phy-mode = "rmii";
+>>>>>>> origin/android16-base
 
 	#address-cells = <1>;
 	#size-cells = <0>;

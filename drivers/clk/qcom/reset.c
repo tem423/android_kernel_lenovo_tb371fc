@@ -21,14 +21,26 @@
 
 static int qcom_reset(struct reset_controller_dev *rcdev, unsigned long id)
 {
+<<<<<<< HEAD
 	rcdev->ops->assert(rcdev, id);
 	udelay(1);
+=======
+	struct qcom_reset_controller *rst = to_qcom_reset_controller(rcdev);
+
+	rcdev->ops->assert(rcdev, id);
+	udelay(rst->reset_map[id].udelay ?: 1); /* use 1 us as default */
+>>>>>>> origin/android16-base
 	rcdev->ops->deassert(rcdev, id);
 	return 0;
 }
 
+<<<<<<< HEAD
 static int
 qcom_reset_assert(struct reset_controller_dev *rcdev, unsigned long id)
+=======
+static int qcom_reset_set_assert(struct reset_controller_dev *rcdev,
+				 unsigned long id, bool assert)
+>>>>>>> origin/android16-base
 {
 	struct qcom_reset_controller *rst;
 	const struct qcom_reset_map *map;
@@ -36,6 +48,7 @@ qcom_reset_assert(struct reset_controller_dev *rcdev, unsigned long id)
 
 	rst = to_qcom_reset_controller(rcdev);
 	map = &rst->reset_map[id];
+<<<<<<< HEAD
 	mask = BIT(map->bit);
 
 	return regmap_update_bits(rst->regmap, map->reg, mask, mask);
@@ -53,6 +66,26 @@ qcom_reset_deassert(struct reset_controller_dev *rcdev, unsigned long id)
 	mask = BIT(map->bit);
 
 	return regmap_update_bits(rst->regmap, map->reg, mask, 0);
+=======
+	mask = map->bitmask ? map->bitmask : BIT(map->bit);
+
+	regmap_update_bits(rst->regmap, map->reg, mask, assert ? mask : 0);
+
+	/* Read back the register to ensure write completion, ignore the value */
+	regmap_read(rst->regmap, map->reg, &mask);
+
+	return 0;
+}
+
+static int qcom_reset_assert(struct reset_controller_dev *rcdev, unsigned long id)
+{
+	return qcom_reset_set_assert(rcdev, id, true);
+}
+
+static int qcom_reset_deassert(struct reset_controller_dev *rcdev, unsigned long id)
+{
+	return qcom_reset_set_assert(rcdev, id, false);
+>>>>>>> origin/android16-base
 }
 
 const struct reset_control_ops qcom_reset_ops = {

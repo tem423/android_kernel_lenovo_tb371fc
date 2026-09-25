@@ -48,6 +48,11 @@ struct amdgpu_vf_error_buffer {
 	uint64_t data[AMDGPU_VF_ERROR_ENTRY_SIZE];
 };
 
+<<<<<<< HEAD
+=======
+enum idh_request;
+
+>>>>>>> origin/android16-base
 /**
  * struct amdgpu_virt_ops - amdgpu device virt operations
  */
@@ -56,7 +61,12 @@ struct amdgpu_virt_ops {
 	int (*rel_full_gpu)(struct amdgpu_device *adev, bool init);
 	int (*reset_gpu)(struct amdgpu_device *adev);
 	int (*wait_reset)(struct amdgpu_device *adev);
+<<<<<<< HEAD
 	void (*trans_msg)(struct amdgpu_device *adev, u32 req, u32 data1, u32 data2, u32 data3);
+=======
+	void (*trans_msg)(struct amdgpu_device *adev, enum idh_request req,
+			  u32 data1, u32 data2, u32 data3);
+>>>>>>> origin/android16-base
 };
 
 /*

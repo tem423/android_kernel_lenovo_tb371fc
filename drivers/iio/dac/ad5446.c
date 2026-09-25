@@ -171,7 +171,11 @@ static int ad5446_read_raw(struct iio_dev *indio_dev,
 
 	switch (m) {
 	case IIO_CHAN_INFO_RAW:
+<<<<<<< HEAD
 		*val = st->cached_val;
+=======
+		*val = st->cached_val >> chan->scan_type.shift;
+>>>>>>> origin/android16-base
 		return IIO_VAL_INT;
 	case IIO_CHAN_INFO_SCALE:
 		*val = st->vref_mv;
@@ -528,8 +532,20 @@ static int ad5622_write(struct ad5446_state *st, unsigned val)
 {
 	struct i2c_client *client = to_i2c_client(st->dev);
 	__be16 data = cpu_to_be16(val);
+<<<<<<< HEAD
 
 	return i2c_master_send(client, (char *)&data, sizeof(data));
+=======
+	int ret;
+
+	ret = i2c_master_send(client, (char *)&data, sizeof(data));
+	if (ret < 0)
+		return ret;
+	if (ret != sizeof(data))
+		return -EIO;
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 /**

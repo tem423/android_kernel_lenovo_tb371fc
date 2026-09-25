@@ -1677,8 +1677,15 @@ static int hns_nic_clear_all_rx_fetch(struct net_device *ndev)
 			for (j = 0; j < fetch_num; j++) {
 				/* alloc one skb and init */
 				skb = hns_assemble_skb(ndev);
+<<<<<<< HEAD
 				if (!skb)
 					goto out;
+=======
+				if (!skb) {
+					ret = -ENOMEM;
+					goto out;
+				}
+>>>>>>> origin/android16-base
 				rd = &tx_ring_data(priv, skb->queue_mapping);
 				hns_nic_net_xmit_hw(ndev, skb, rd);
 

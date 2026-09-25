@@ -5,6 +5,10 @@
 #include <asm/cpu.h>
 #include <linux/earlycpio.h>
 #include <linux/initrd.h>
+<<<<<<< HEAD
+=======
+#include <asm/microcode_amd.h>
+>>>>>>> origin/android16-base
 
 struct ucode_patch {
 	struct list_head plist;
@@ -130,14 +134,26 @@ static inline unsigned int x86_cpuid_family(void)
 int __init microcode_init(void);
 extern void __init load_ucode_bsp(void);
 extern void load_ucode_ap(void);
+<<<<<<< HEAD
 void reload_early_microcode(void);
 extern bool get_builtin_firmware(struct cpio_data *cd, const char *name);
 extern bool initrd_gone;
+=======
+void reload_early_microcode(unsigned int cpu);
+extern bool get_builtin_firmware(struct cpio_data *cd, const char *name);
+extern bool initrd_gone;
+void microcode_bsp_resume(void);
+>>>>>>> origin/android16-base
 #else
 static inline int __init microcode_init(void)			{ return 0; };
 static inline void __init load_ucode_bsp(void)			{ }
 static inline void load_ucode_ap(void)				{ }
+<<<<<<< HEAD
 static inline void reload_early_microcode(void)			{ }
+=======
+static inline void reload_early_microcode(unsigned int cpu)	{ }
+static inline void microcode_bsp_resume(void)			{ }
+>>>>>>> origin/android16-base
 static inline bool
 get_builtin_firmware(struct cpio_data *cd, const char *name)	{ return false; }
 #endif

@@ -610,6 +610,11 @@ static struct sh_eth_cpu_data r7s72100_data = {
 			  EESR_TDE,
 	.fdr_value	= 0x0000070f,
 
+<<<<<<< HEAD
+=======
+	.trscer_err_mask = DESC_I_RINT8 | DESC_I_RINT5,
+
+>>>>>>> origin/android16-base
 	.no_psr		= 1,
 	.apr		= 1,
 	.mpr		= 1,
@@ -825,6 +830,11 @@ static struct sh_eth_cpu_data r7s9210_data = {
 
 	.fdr_value	= 0x0000070f,
 
+<<<<<<< HEAD
+=======
+	.trscer_err_mask = DESC_I_RINT8 | DESC_I_RINT5,
+
+>>>>>>> origin/android16-base
 	.apr		= 1,
 	.mpr		= 1,
 	.tpauser	= 1,
@@ -1126,6 +1136,12 @@ static struct sh_eth_cpu_data sh771x_data = {
 			  EESIPR_CEEFIP | EESIPR_CELFIP |
 			  EESIPR_RRFIP | EESIPR_RTLFIP | EESIPR_RTSFIP |
 			  EESIPR_PREIP | EESIPR_CERFIP,
+<<<<<<< HEAD
+=======
+
+	.trscer_err_mask = DESC_I_RINT8,
+
+>>>>>>> origin/android16-base
 	.tsu		= 1,
 	.dual_port	= 1,
 };
@@ -2295,7 +2311,11 @@ static void sh_eth_get_strings(struct net_device *ndev, u32 stringset, u8 *data)
 {
 	switch (stringset) {
 	case ETH_SS_STATS:
+<<<<<<< HEAD
 		memcpy(data, *sh_eth_gstrings_stats,
+=======
+		memcpy(data, sh_eth_gstrings_stats,
+>>>>>>> origin/android16-base
 		       sizeof(sh_eth_gstrings_stats));
 		break;
 	}
@@ -2540,6 +2560,10 @@ static int sh_eth_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	else
 		txdesc->status |= cpu_to_le32(TD_TACT);
 
+<<<<<<< HEAD
+=======
+	wmb(); /* cur_tx must be incremented after TACT bit was set */
+>>>>>>> origin/android16-base
 	mdp->cur_tx++;
 
 	if (!(sh_eth_read(ndev, EDTRR) & mdp->cd->edtrr_trns))
@@ -2620,10 +2644,17 @@ static int sh_eth_close(struct net_device *ndev)
 	/* Free all the skbuffs in the Rx queue and the DMA buffer. */
 	sh_eth_ring_free(ndev);
 
+<<<<<<< HEAD
 	pm_runtime_put_sync(&mdp->pdev->dev);
 
 	mdp->is_opened = 0;
 
+=======
+	mdp->is_opened = 0;
+
+	pm_runtime_put(&mdp->pdev->dev);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 

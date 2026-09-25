@@ -521,12 +521,20 @@ static void bq25890_handle_state_change(struct bq25890_device *bq,
 
 	if (!new_state->online) {			     /* power removed */
 		/* disable ADC */
+<<<<<<< HEAD
 		ret = bq25890_field_write(bq, F_CONV_START, 0);
+=======
+		ret = bq25890_field_write(bq, F_CONV_RATE, 0);
+>>>>>>> origin/android16-base
 		if (ret < 0)
 			goto error;
 	} else if (!old_state.online) {			    /* power inserted */
 		/* enable ADC, to have control of charge current/voltage */
+<<<<<<< HEAD
 		ret = bq25890_field_write(bq, F_CONV_START, 1);
+=======
+		ret = bq25890_field_write(bq, F_CONV_RATE, 1);
+>>>>>>> origin/android16-base
 		if (ret < 0)
 			goto error;
 	}

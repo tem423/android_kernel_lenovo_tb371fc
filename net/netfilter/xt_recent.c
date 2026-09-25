@@ -155,7 +155,12 @@ static void recent_entry_remove(struct recent_table *t, struct recent_entry *e)
 /*
  * Drop entries with timestamps older then 'time'.
  */
+<<<<<<< HEAD
 static void recent_entry_reap(struct recent_table *t, unsigned long time)
+=======
+static void recent_entry_reap(struct recent_table *t, unsigned long time,
+			      struct recent_entry *working, bool update)
+>>>>>>> origin/android16-base
 {
 	struct recent_entry *e;
 
@@ -165,6 +170,15 @@ static void recent_entry_reap(struct recent_table *t, unsigned long time)
 	e = list_entry(t->lru_list.next, struct recent_entry, lru_list);
 
 	/*
+<<<<<<< HEAD
+=======
+	 * Do not reap the entry which are going to be updated.
+	 */
+	if (e == working && update)
+		return;
+
+	/*
+>>>>>>> origin/android16-base
 	 * The last time stamp is the most recent.
 	 */
 	if (time_after(time, e->stamps[e->index-1]))
@@ -306,7 +320,12 @@ recent_mt(const struct sk_buff *skb, struct xt_action_param *par)
 
 		/* info->seconds must be non-zero */
 		if (info->check_set & XT_RECENT_REAP)
+<<<<<<< HEAD
 			recent_entry_reap(t, time);
+=======
+			recent_entry_reap(t, time, e,
+				info->check_set & XT_RECENT_UPDATE && ret);
+>>>>>>> origin/android16-base
 	}
 
 	if (info->check_set & XT_RECENT_SET ||
@@ -558,7 +577,11 @@ recent_mt_proc_write(struct file *file, const char __user *input,
 {
 	struct recent_table *t = PDE_DATA(file_inode(file));
 	struct recent_entry *e;
+<<<<<<< HEAD
 	char buf[sizeof("+b335:1d35:1e55:dead:c0de:1715:5afe:c0de")];
+=======
+	char buf[sizeof("+b335:1d35:1e55:dead:c0de:1715:255.255.255.255")];
+>>>>>>> origin/android16-base
 	const char *c = buf;
 	union nf_inet_addr addr = {};
 	u_int16_t family;

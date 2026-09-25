@@ -294,6 +294,12 @@ static void __cqhci_enable(struct cqhci_host *cq_host)
 	cqcfg |= CQHCI_ENABLE;
 	cqhci_writel(cq_host, cqcfg, CQHCI_CFG);
 
+<<<<<<< HEAD
+=======
+	if (cqhci_readl(cq_host, CQHCI_CTL) & CQHCI_HALT)
+		cqhci_writel(cq_host, 0, CQHCI_CTL);
+
+>>>>>>> origin/android16-base
 	cqhci_writel(cq_host, lower_32_bits(cq_host->desc_dma_base),
 		     CQHCI_TDLBA);
 	cqhci_writel(cq_host, upper_32_bits(cq_host->desc_dma_base),
@@ -1056,8 +1062,13 @@ static bool cqhci_clear_all_tasks(struct mmc_host *mmc, unsigned int timeout)
 	ret = cqhci_tasks_cleared(cq_host);
 
 	if (!ret)
+<<<<<<< HEAD
 		pr_debug("%s: cqhci: Failed to clear tasks\n",
 			 mmc_hostname(mmc));
+=======
+		pr_warn("%s: cqhci: Failed to clear tasks\n",
+			mmc_hostname(mmc));
+>>>>>>> origin/android16-base
 
 	return ret;
 }
@@ -1092,7 +1103,11 @@ static bool cqhci_halt(struct mmc_host *mmc, unsigned int timeout)
 	ret = cqhci_halted(cq_host);
 
 	if (!ret)
+<<<<<<< HEAD
 		pr_err("%s: cqhci: Failed to halt\n", mmc_hostname(mmc));
+=======
+		pr_warn("%s: cqhci: Failed to halt\n", mmc_hostname(mmc));
+>>>>>>> origin/android16-base
 
 	mmc_log_string(mmc, "halt done with ret %d\n", ret);
 	return ret;
@@ -1101,8 +1116,13 @@ static bool cqhci_halt(struct mmc_host *mmc, unsigned int timeout)
 /*
  * After halting we expect to be able to use the command line. We interpret the
  * failure to halt to mean the data lines might still be in use (and the upper
+<<<<<<< HEAD
  * layers will need to send a STOP command), so we set the timeout based on a
  * generous command timeout.
+=======
+ * layers will need to send a STOP command), however failing to halt complicates
+ * the recovery, so set a timeout that would reasonably allow I/O to complete.
+>>>>>>> origin/android16-base
  */
 #define CQHCI_START_HALT_TIMEOUT	5000
 
@@ -1194,15 +1214,19 @@ static void cqhci_recovery_finish(struct mmc_host *mmc)
 
 	ok = cqhci_halt(mmc, CQHCI_FINISH_HALT_TIMEOUT);
 
+<<<<<<< HEAD
 	if (!cqhci_clear_all_tasks(mmc, CQHCI_CLEAR_TIMEOUT))
 		ok = false;
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * The specification contradicts itself, by saying that tasks cannot be
 	 * cleared if CQHCI does not halt, but if CQHCI does not halt, it should
 	 * be disabled/re-enabled, but not to disable before clearing tasks.
 	 * Have a go anyway.
 	 */
+<<<<<<< HEAD
 	if (!ok) {
 		pr_debug("%s: cqhci: disable / re-enable\n", mmc_hostname(mmc));
 		cqcfg = cqhci_readl(cq_host, CQHCI_CFG);
@@ -1216,6 +1240,24 @@ static void cqhci_recovery_finish(struct mmc_host *mmc)
 			ok = false;
 		WARN_ON(!ok);
 	}
+=======
+	if (!cqhci_clear_all_tasks(mmc, CQHCI_CLEAR_TIMEOUT))
+		ok = false;
+
+	/* Disable to make sure tasks really are cleared */
+	cqcfg = cqhci_readl(cq_host, CQHCI_CFG);
+	cqcfg &= ~CQHCI_ENABLE;
+	cqhci_writel(cq_host, cqcfg, CQHCI_CFG);
+
+	cqcfg = cqhci_readl(cq_host, CQHCI_CFG);
+	cqcfg |= CQHCI_ENABLE;
+	cqhci_writel(cq_host, cqcfg, CQHCI_CFG);
+
+	cqhci_halt(mmc, CQHCI_FINISH_HALT_TIMEOUT);
+
+	if (!ok)
+		cqhci_clear_all_tasks(mmc, CQHCI_CLEAR_TIMEOUT);
+>>>>>>> origin/android16-base
 
 	cqhci_recover_mrqs(cq_host);
 

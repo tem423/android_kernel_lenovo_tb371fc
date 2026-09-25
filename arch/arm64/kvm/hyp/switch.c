@@ -564,6 +564,10 @@ int __hyp_text __kvm_vcpu_run_nvhe(struct kvm_vcpu *vcpu)
 	guest_ctxt = &vcpu->arch.ctxt;
 
 	__sysreg_save_state_nvhe(host_ctxt);
+<<<<<<< HEAD
+=======
+	__debug_save_host_buffers_nvhe(vcpu);
+>>>>>>> origin/android16-base
 
 	__activate_traps(vcpu);
 	__activate_vm(kern_hyp_va(vcpu->kvm));
@@ -603,11 +607,19 @@ int __hyp_text __kvm_vcpu_run_nvhe(struct kvm_vcpu *vcpu)
 	if (vcpu->arch.flags & KVM_ARM64_FP_ENABLED)
 		__fpsimd_save_fpexc32(vcpu);
 
+<<<<<<< HEAD
+=======
+	__debug_switch_to_host(vcpu);
+>>>>>>> origin/android16-base
 	/*
 	 * This must come after restoring the host sysregs, since a non-VHE
 	 * system may enable SPE here and make use of the TTBRs.
 	 */
+<<<<<<< HEAD
 	__debug_switch_to_host(vcpu);
+=======
+	__debug_restore_host_buffers_nvhe(vcpu);
+>>>>>>> origin/android16-base
 
 	return exit_code;
 }

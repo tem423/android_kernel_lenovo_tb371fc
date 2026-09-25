@@ -399,5 +399,9 @@ TRACE_EVENT(sde_perf_uidle_status,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../techpack/display/msm/sde
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #include <trace/define_trace.h>

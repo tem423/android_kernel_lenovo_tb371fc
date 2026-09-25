@@ -115,6 +115,7 @@ static struct notifier_block hsr_nb = {
 
 static int __init hsr_init(void)
 {
+<<<<<<< HEAD
 	int res;
 
 	BUILD_BUG_ON(sizeof(struct hsr_tag) != HSR_HLEN);
@@ -123,6 +124,23 @@ static int __init hsr_init(void)
 	res = hsr_netlink_init();
 
 	return res;
+=======
+	int err;
+
+	BUILD_BUG_ON(sizeof(struct hsr_tag) != HSR_HLEN);
+
+	err = register_netdevice_notifier(&hsr_nb);
+	if (err)
+		return err;
+
+	err = hsr_netlink_init();
+	if (err) {
+		unregister_netdevice_notifier(&hsr_nb);
+		return err;
+	}
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static void __exit hsr_exit(void)

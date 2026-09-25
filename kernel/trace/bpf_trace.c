@@ -11,12 +11,22 @@
 #include <linux/uaccess.h>
 #include <linux/ctype.h>
 #include <linux/kprobes.h>
+<<<<<<< HEAD
+=======
+#include <linux/spinlock.h>
+>>>>>>> origin/android16-base
 #include <linux/syscalls.h>
 #include <linux/error-injection.h>
 
 #include "trace_probe.h"
 #include "trace.h"
 
+<<<<<<< HEAD
+=======
+#define CREATE_TRACE_POINTS
+#include "bpf_trace.h"
+
+>>>>>>> origin/android16-base
 u64 bpf_get_stackid(u64 r1, u64 r2, u64 r3, u64 r4, u64 r5);
 u64 bpf_get_stack(u64 r1, u64 r2, u64 r3, u64 r4, u64 r5);
 
@@ -156,6 +166,33 @@ static const struct bpf_func_proto *bpf_get_probe_write_proto(void)
 	return &bpf_probe_write_user_proto;
 }
 
+<<<<<<< HEAD
+=======
+static DEFINE_RAW_SPINLOCK(trace_printk_lock);
+
+#define BPF_TRACE_PRINTK_SIZE   1024
+
+static inline __printf(1, 0) int bpf_do_trace_printk(const char *fmt, ...)
+{
+	static char buf[BPF_TRACE_PRINTK_SIZE];
+	unsigned long flags;
+	va_list ap;
+	int ret;
+
+	raw_spin_lock_irqsave(&trace_printk_lock, flags);
+	va_start(ap, fmt);
+	ret = vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+	/* vsnprintf() will not append null for zero-length strings */
+	if (ret == 0)
+		buf[0] = '\0';
+	trace_bpf_trace_printk(buf);
+	raw_spin_unlock_irqrestore(&trace_printk_lock, flags);
+
+	return ret;
+}
+
+>>>>>>> origin/android16-base
 /*
  * Only limited trace_printk() conversion specifiers allowed:
  * %d %i %u %x %ld %li %lu %lx %lld %lli %llu %llx %p %s
@@ -246,8 +283,12 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
  */
 #define __BPF_TP_EMIT()	__BPF_ARG3_TP()
 #define __BPF_TP(...)							\
+<<<<<<< HEAD
 	__trace_printk(0 /* Fake ip */,					\
 		       fmt, ##__VA_ARGS__)
+=======
+	bpf_do_trace_printk(fmt, ##__VA_ARGS__)
+>>>>>>> origin/android16-base
 
 #define __BPF_ARG1_TP(...)						\
 	((mod[0] == 2 || (mod[0] == 1 && __BITS_PER_LONG == 64))	\
@@ -284,10 +325,22 @@ static const struct bpf_func_proto bpf_trace_printk_proto = {
 const struct bpf_func_proto *bpf_get_trace_printk_proto(void)
 {
 	/*
+<<<<<<< HEAD
 	 * this program might be calling bpf_trace_printk,
 	 * so allocate per-cpu printk buffers
 	 */
 	trace_printk_init_buffers();
+=======
+	 * This program might be calling bpf_trace_printk,
+	 * so enable the associated bpf_trace/bpf_trace_printk event.
+	 * Repeat this each time as it is possible a user has
+	 * disabled bpf_trace_printk events.  By loading a program
+	 * calling bpf_trace_printk() however the user has expressed
+	 * the intent to see such events.
+	 */
+	if (trace_set_clr_event("bpf_trace", "bpf_trace_printk", 1))
+		pr_warn_ratelimited("could not enable bpf_trace_printk events");
+>>>>>>> origin/android16-base
 
 	return &bpf_trace_printk_proto;
 }
@@ -1223,7 +1276,12 @@ static int __bpf_probe_register(struct bpf_raw_event_map *btp, struct bpf_prog *
 	if (prog->aux->max_ctx_offset > btp->num_args * sizeof(u64))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	return tracepoint_probe_register(tp, (void *)btp->bpf_func, prog);
+=======
+	return tracepoint_probe_register_may_exist(tp, (void *)btp->bpf_func,
+						   prog);
+>>>>>>> origin/android16-base
 }
 
 int bpf_probe_register(struct bpf_raw_event_map *btp, struct bpf_prog *prog)
@@ -1275,7 +1333,11 @@ int bpf_get_perf_event_info(const struct perf_event *event, u32 *prog_id,
 #ifdef CONFIG_UPROBE_EVENTS
 		if (flags & TRACE_EVENT_FL_UPROBE)
 			err = bpf_get_uprobe_info(event, fd_type, buf,
+<<<<<<< HEAD
 						  probe_offset,
+=======
+						  probe_offset, probe_addr,
+>>>>>>> origin/android16-base
 						  event->attr.type == PERF_TYPE_TRACEPOINT);
 #endif
 	}

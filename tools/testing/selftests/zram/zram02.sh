@@ -45,7 +45,10 @@ zram_set_memlimit
 zram_makeswap
 zram_swapoff
 zram_cleanup
+<<<<<<< HEAD
 zram_unload
+=======
+>>>>>>> origin/android16-base
 
 if [ $ERR_CODE -ne 0 ]; then
 	echo "$TCID : [FAIL]"

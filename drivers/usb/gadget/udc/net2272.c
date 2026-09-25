@@ -2638,7 +2638,11 @@ net2272_plat_probe(struct platform_device *pdev)
 		goto err_req;
 	}
 
+<<<<<<< HEAD
 	ret = net2272_probe_fin(dev, IRQF_TRIGGER_LOW);
+=======
+	ret = net2272_probe_fin(dev, irqflags);
+>>>>>>> origin/android16-base
 	if (ret)
 		goto err_io;
 

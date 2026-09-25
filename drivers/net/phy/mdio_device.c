@@ -176,6 +176,19 @@ static int mdio_remove(struct device *dev)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static void mdio_shutdown(struct device *dev)
+{
+	struct mdio_device *mdiodev = to_mdio_device(dev);
+	struct device_driver *drv = mdiodev->dev.driver;
+	struct mdio_driver *mdiodrv = to_mdio_driver(drv);
+
+	if (mdiodrv->shutdown)
+		mdiodrv->shutdown(mdiodev);
+}
+
+>>>>>>> origin/android16-base
 /**
  * mdio_driver_register - register an mdio_driver with the MDIO layer
  * @new_driver: new mdio_driver to register
@@ -190,6 +203,10 @@ int mdio_driver_register(struct mdio_driver *drv)
 	mdiodrv->driver.bus = &mdio_bus_type;
 	mdiodrv->driver.probe = mdio_probe;
 	mdiodrv->driver.remove = mdio_remove;
+<<<<<<< HEAD
+=======
+	mdiodrv->driver.shutdown = mdio_shutdown;
+>>>>>>> origin/android16-base
 
 	retval = driver_register(&mdiodrv->driver);
 	if (retval) {

@@ -101,7 +101,11 @@ static int p9mode2perm(struct v9fs_session_info *v9ses,
 	int res;
 	int mode = stat->mode;
 
+<<<<<<< HEAD
 	res = mode & S_IALLUGO;
+=======
+	res = mode & 0777; /* S_IRWXUGO */
+>>>>>>> origin/android16-base
 	if (v9fs_proto_dotu(v9ses)) {
 		if ((mode & P9_DMSETUID) == P9_DMSETUID)
 			res |= S_ISUID;
@@ -192,6 +196,12 @@ int v9fs_uflags2omode(int uflags, int extended)
 		break;
 	}
 
+<<<<<<< HEAD
+=======
+	if (uflags & O_TRUNC)
+		ret |= P9_OTRUNC;
+
+>>>>>>> origin/android16-base
 	if (extended) {
 		if (uflags & O_EXCL)
 			ret |= P9_OEXCL;

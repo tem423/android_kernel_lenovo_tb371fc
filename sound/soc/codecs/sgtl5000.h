@@ -80,6 +80,10 @@
 /*
  * SGTL5000_CHIP_DIG_POWER
  */
+<<<<<<< HEAD
+=======
+#define SGTL5000_DIG_POWER_DEFAULT		0x0000
+>>>>>>> origin/android16-base
 #define SGTL5000_ADC_EN				0x0040
 #define SGTL5000_DAC_EN				0x0020
 #define SGTL5000_DAP_POWERUP			0x0010

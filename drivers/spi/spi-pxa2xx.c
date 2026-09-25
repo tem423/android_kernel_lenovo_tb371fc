@@ -1572,7 +1572,11 @@ static int pxa2xx_spi_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
+<<<<<<< HEAD
 	master = spi_alloc_master(dev, sizeof(struct driver_data));
+=======
+	master = devm_spi_alloc_master(dev, sizeof(*drv_data));
+>>>>>>> origin/android16-base
 	if (!master) {
 		dev_err(&pdev->dev, "cannot alloc spi_master\n");
 		pxa_ssp_free(ssp);
@@ -1759,7 +1763,10 @@ out_error_dma_irq_alloc:
 	free_irq(ssp->irq, drv_data);
 
 out_error_master_alloc:
+<<<<<<< HEAD
 	spi_controller_put(master);
+=======
+>>>>>>> origin/android16-base
 	pxa_ssp_free(ssp);
 	return status;
 }

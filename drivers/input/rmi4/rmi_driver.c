@@ -981,12 +981,21 @@ static int rmi_driver_remove(struct device *dev)
 
 	rmi_disable_irq(rmi_dev, false);
 
+<<<<<<< HEAD
 	irq_domain_remove(data->irqdomain);
 	data->irqdomain = NULL;
 
 	rmi_f34_remove_sysfs(rmi_dev);
 	rmi_free_function_list(rmi_dev);
 
+=======
+	rmi_f34_remove_sysfs(rmi_dev);
+	rmi_free_function_list(rmi_dev);
+
+	irq_domain_remove(data->irqdomain);
+	data->irqdomain = NULL;
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -1199,7 +1208,15 @@ static int rmi_driver_probe(struct device *dev)
 		}
 		rmi_driver_set_input_params(rmi_dev, data->input);
 		data->input->phys = devm_kasprintf(dev, GFP_KERNEL,
+<<<<<<< HEAD
 						"%s/input0", dev_name(dev));
+=======
+						   "%s/input0", dev_name(dev));
+		if (!data->input->phys) {
+			retval = -ENOMEM;
+			goto err;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	retval = rmi_init_functions(data);

@@ -37,7 +37,10 @@ get_ext_path(struct inode *inode, ext4_lblk_t lblock,
 		*ppath = NULL;
 		return -ENODATA;
 	}
+<<<<<<< HEAD
 	*ppath = path;
+=======
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -615,6 +618,10 @@ ext4_move_extents(struct file *o_filp, struct file *d_filp, __u64 orig_blk,
 		goto out;
 	o_end = o_start + len;
 
+<<<<<<< HEAD
+=======
+	*moved_len = 0;
+>>>>>>> origin/android16-base
 	while (o_start < o_end) {
 		struct ext4_extent *ex;
 		ext4_lblk_t cur_blk, next_blk;
@@ -670,7 +677,11 @@ ext4_move_extents(struct file *o_filp, struct file *d_filp, __u64 orig_blk,
 		 */
 		ext4_double_up_write_data_sem(orig_inode, donor_inode);
 		/* Swap original branches with new branches */
+<<<<<<< HEAD
 		move_extent_per_page(o_filp, donor_inode,
+=======
+		*moved_len += move_extent_per_page(o_filp, donor_inode,
+>>>>>>> origin/android16-base
 				     orig_page_index, donor_page_index,
 				     offset_in_page, cur_len,
 				     unwritten, &ret);
@@ -680,9 +691,12 @@ ext4_move_extents(struct file *o_filp, struct file *d_filp, __u64 orig_blk,
 		o_start += cur_len;
 		d_start += cur_len;
 	}
+<<<<<<< HEAD
 	*moved_len = o_start - orig_blk;
 	if (*moved_len > len)
 		*moved_len = len;
+=======
+>>>>>>> origin/android16-base
 
 out:
 	if (*moved_len) {

@@ -1120,6 +1120,10 @@ static int ks_wlan_set_scan(struct net_device *dev,
 {
 	struct ks_wlan_private *priv = netdev_priv(dev);
 	struct iw_scan_req *req = NULL;
+<<<<<<< HEAD
+=======
+	int len;
+>>>>>>> origin/android16-base
 
 	if (priv->sleep_mode == SLP_SLEEP)
 		return -EPERM;
@@ -1129,8 +1133,14 @@ static int ks_wlan_set_scan(struct net_device *dev,
 	if (wrqu->data.length == sizeof(struct iw_scan_req) &&
 	    wrqu->data.flags & IW_SCAN_THIS_ESSID) {
 		req = (struct iw_scan_req *)extra;
+<<<<<<< HEAD
 		priv->scan_ssid_len = req->essid_len;
 		memcpy(priv->scan_ssid, req->essid, priv->scan_ssid_len);
+=======
+		len = min_t(int, req->essid_len, IW_ESSID_MAX_SIZE);
+		priv->scan_ssid_len = len;
+		memcpy(priv->scan_ssid, req->essid, len);
+>>>>>>> origin/android16-base
 	} else {
 		priv->scan_ssid_len = 0;
 	}
@@ -1582,8 +1592,15 @@ static int ks_wlan_set_encode_ext(struct net_device *dev,
 			commit |= SME_WEP_FLAG;
 		}
 		if (enc->key_len) {
+<<<<<<< HEAD
 			memcpy(&key->key_val[0], &enc->key[0], enc->key_len);
 			key->key_len = enc->key_len;
+=======
+			int key_len = clamp_val(enc->key_len, 0, IW_ENCODING_TOKEN_MAX);
+
+			memcpy(&key->key_val[0], &enc->key[0], key_len);
+			key->key_len = key_len;
+>>>>>>> origin/android16-base
 			commit |= (SME_WEP_VAL1 << index);
 		}
 		break;

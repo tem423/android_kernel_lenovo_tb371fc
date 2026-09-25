@@ -31,10 +31,13 @@
 #include <linux/binfmts.h>
 #include <linux/personality.h>
 
+<<<<<<< HEAD
 #ifdef CONFIG_ANDROID_PARANOID_NETWORK
 #include <linux/android_aid.h>
 #endif
 
+=======
+>>>>>>> origin/android16-base
 /*
  * If a non-root user executes a setuid-root binary in
  * !secure(SECURE_NOROOT) mode, then we raise capabilities.
@@ -381,10 +384,18 @@ int cap_inode_getsecurity(struct inode *inode, const char *name, void **buffer,
 {
 	int size, ret;
 	kuid_t kroot;
+<<<<<<< HEAD
 	uid_t root, mappedroot;
 	char *tmpbuf = NULL;
 	struct vfs_cap_data *cap;
 	struct vfs_ns_cap_data *nscap;
+=======
+	u32 nsmagic, magic;
+	uid_t root, mappedroot;
+	char *tmpbuf = NULL;
+	struct vfs_cap_data *cap;
+	struct vfs_ns_cap_data *nscap = NULL;
+>>>>>>> origin/android16-base
 	struct dentry *dentry;
 	struct user_namespace *fs_ns;
 
@@ -400,12 +411,20 @@ int cap_inode_getsecurity(struct inode *inode, const char *name, void **buffer,
 				 &tmpbuf, size, GFP_NOFS);
 	dput(dentry);
 
+<<<<<<< HEAD
 	if (ret < 0)
 		return ret;
+=======
+	if (ret < 0 || !tmpbuf) {
+		size = ret;
+		goto out_free;
+	}
+>>>>>>> origin/android16-base
 
 	fs_ns = inode->i_sb->s_user_ns;
 	cap = (struct vfs_cap_data *) tmpbuf;
 	if (is_v2header((size_t) ret, cap)) {
+<<<<<<< HEAD
 		/* If this is sizeof(vfs_cap_data) then we're ok with the
 		 * on-disk value, so return that.  */
 		if (alloc)
@@ -420,12 +439,24 @@ int cap_inode_getsecurity(struct inode *inode, const char *name, void **buffer,
 
 	nscap = (struct vfs_ns_cap_data *) tmpbuf;
 	root = le32_to_cpu(nscap->rootid);
+=======
+		root = 0;
+	} else if (is_v3header((size_t) ret, cap)) {
+		nscap = (struct vfs_ns_cap_data *) tmpbuf;
+		root = le32_to_cpu(nscap->rootid);
+	} else {
+		size = -EINVAL;
+		goto out_free;
+	}
+
+>>>>>>> origin/android16-base
 	kroot = make_kuid(fs_ns, root);
 
 	/* If the root kuid maps to a valid uid in current ns, then return
 	 * this as a nscap. */
 	mappedroot = from_kuid(current_user_ns(), kroot);
 	if (mappedroot != (uid_t)-1 && mappedroot != (uid_t)0) {
+<<<<<<< HEAD
 		if (alloc) {
 			*buffer = tmpbuf;
 			nscap->rootid = cpu_to_le32(mappedroot);
@@ -437,15 +468,55 @@ int cap_inode_getsecurity(struct inode *inode, const char *name, void **buffer,
 	if (!rootid_owns_currentns(kroot)) {
 		kfree(tmpbuf);
 		return -EOPNOTSUPP;
+=======
+		size = sizeof(struct vfs_ns_cap_data);
+		if (alloc) {
+			if (!nscap) {
+				/* v2 -> v3 conversion */
+				nscap = kzalloc(size, GFP_ATOMIC);
+				if (!nscap) {
+					size = -ENOMEM;
+					goto out_free;
+				}
+				nsmagic = VFS_CAP_REVISION_3;
+				magic = le32_to_cpu(cap->magic_etc);
+				if (magic & VFS_CAP_FLAGS_EFFECTIVE)
+					nsmagic |= VFS_CAP_FLAGS_EFFECTIVE;
+				memcpy(&nscap->data, &cap->data, sizeof(__le32) * 2 * VFS_CAP_U32);
+				nscap->magic_etc = cpu_to_le32(nsmagic);
+			} else {
+				/* use allocated v3 buffer */
+				tmpbuf = NULL;
+			}
+			nscap->rootid = cpu_to_le32(mappedroot);
+			*buffer = nscap;
+		}
+		goto out_free;
+	}
+
+	if (!rootid_owns_currentns(kroot)) {
+		size = -EOVERFLOW;
+		goto out_free;
+>>>>>>> origin/android16-base
 	}
 
 	/* This comes from a parent namespace.  Return as a v2 capability */
 	size = sizeof(struct vfs_cap_data);
 	if (alloc) {
+<<<<<<< HEAD
 		*buffer = kmalloc(size, GFP_ATOMIC);
 		if (*buffer) {
 			struct vfs_cap_data *cap = *buffer;
 			__le32 nsmagic, magic;
+=======
+		if (nscap) {
+			/* v3 -> v2 conversion */
+			cap = kzalloc(size, GFP_ATOMIC);
+			if (!cap) {
+				size = -ENOMEM;
+				goto out_free;
+			}
+>>>>>>> origin/android16-base
 			magic = VFS_CAP_REVISION_2;
 			nsmagic = le32_to_cpu(nscap->magic_etc);
 			if (nsmagic & VFS_CAP_FLAGS_EFFECTIVE)
@@ -453,9 +524,18 @@ int cap_inode_getsecurity(struct inode *inode, const char *name, void **buffer,
 			memcpy(&cap->data, &nscap->data, sizeof(__le32) * 2 * VFS_CAP_U32);
 			cap->magic_etc = cpu_to_le32(magic);
 		} else {
+<<<<<<< HEAD
 			size = -ENOMEM;
 		}
 	}
+=======
+			/* use unconverted v2 */
+			tmpbuf = NULL;
+		}
+		*buffer = cap;
+	}
+out_free:
+>>>>>>> origin/android16-base
 	kfree(tmpbuf);
 	return size;
 }

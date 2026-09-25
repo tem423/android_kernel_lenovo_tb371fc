@@ -3,7 +3,11 @@
 #define _NFT_FIB_H_
 
 struct nft_fib {
+<<<<<<< HEAD
 	enum nft_registers	dreg:8;
+=======
+	u8			dreg;
+>>>>>>> origin/android16-base
 	u8			result;
 	u32			flags;
 };

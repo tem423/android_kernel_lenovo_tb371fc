@@ -75,7 +75,11 @@ shadow_image(struct nvkm_bios *bios, int idx, u32 offset, struct shadow *mthd)
 	nvkm_debug(subdev, "%08x: type %02x, %d bytes\n",
 		   image.base, image.type, image.size);
 
+<<<<<<< HEAD
 	if (!shadow_fetch(bios, mthd, image.size)) {
+=======
+	if (!shadow_fetch(bios, mthd, image.base + image.size)) {
+>>>>>>> origin/android16-base
 		nvkm_debug(subdev, "%08x: fetch failed\n", image.base);
 		return 0;
 	}
@@ -154,11 +158,24 @@ shadow_fw_init(struct nvkm_bios *bios, const char *name)
 	return (void *)fw;
 }
 
+<<<<<<< HEAD
+=======
+static void
+shadow_fw_release(void *fw)
+{
+	release_firmware(fw);
+}
+
+>>>>>>> origin/android16-base
 static const struct nvbios_source
 shadow_fw = {
 	.name = "firmware",
 	.init = shadow_fw_init,
+<<<<<<< HEAD
 	.fini = (void(*)(void *))release_firmware,
+=======
+	.fini = shadow_fw_release,
+>>>>>>> origin/android16-base
 	.read = shadow_fw_read,
 	.rw = false,
 };

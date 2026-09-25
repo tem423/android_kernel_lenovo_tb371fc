@@ -35,6 +35,13 @@
 #include "clock.h"
 #include "quirks.h"
 
+<<<<<<< HEAD
+=======
+/* check whether the descriptor bLength has the minimal length */
+#define DESC_LENGTH_CHECK(p) \
+	 (p->bLength >= sizeof(*p))
+
+>>>>>>> origin/android16-base
 static void *find_uac_clock_desc(struct usb_host_interface *iface, int id,
 				 bool (*validator)(void *, int), u8 type)
 {
@@ -52,36 +59,80 @@ static void *find_uac_clock_desc(struct usb_host_interface *iface, int id,
 static bool validate_clock_source_v2(void *p, int id)
 {
 	struct uac_clock_source_descriptor *cs = p;
+<<<<<<< HEAD
+=======
+	if (!DESC_LENGTH_CHECK(cs))
+		return false;
+>>>>>>> origin/android16-base
 	return cs->bClockID == id;
 }
 
 static bool validate_clock_source_v3(void *p, int id)
 {
 	struct uac3_clock_source_descriptor *cs = p;
+<<<<<<< HEAD
+=======
+	if (!DESC_LENGTH_CHECK(cs))
+		return false;
+>>>>>>> origin/android16-base
 	return cs->bClockID == id;
 }
 
 static bool validate_clock_selector_v2(void *p, int id)
 {
 	struct uac_clock_selector_descriptor *cs = p;
+<<<<<<< HEAD
 	return cs->bClockID == id;
+=======
+	if (!DESC_LENGTH_CHECK(cs))
+		return false;
+	if (cs->bClockID != id)
+		return false;
+	/* additional length check for baCSourceID array (in bNrInPins size)
+	 * and two more fields (which sizes depend on the protocol)
+	 */
+	return cs->bLength >= sizeof(*cs) + cs->bNrInPins +
+		1 /* bmControls */ + 1 /* iClockSelector */;
+>>>>>>> origin/android16-base
 }
 
 static bool validate_clock_selector_v3(void *p, int id)
 {
 	struct uac3_clock_selector_descriptor *cs = p;
+<<<<<<< HEAD
 	return cs->bClockID == id;
+=======
+	if (!DESC_LENGTH_CHECK(cs))
+		return false;
+	if (cs->bClockID != id)
+		return false;
+	/* additional length check for baCSourceID array (in bNrInPins size)
+	 * and two more fields (which sizes depend on the protocol)
+	 */
+	return cs->bLength >= sizeof(*cs) + cs->bNrInPins +
+		4 /* bmControls */ + 2 /* wCSelectorDescrStr */;
+>>>>>>> origin/android16-base
 }
 
 static bool validate_clock_multiplier_v2(void *p, int id)
 {
 	struct uac_clock_multiplier_descriptor *cs = p;
+<<<<<<< HEAD
+=======
+	if (!DESC_LENGTH_CHECK(cs))
+		return false;
+>>>>>>> origin/android16-base
 	return cs->bClockID == id;
 }
 
 static bool validate_clock_multiplier_v3(void *p, int id)
 {
 	struct uac3_clock_multiplier_descriptor *cs = p;
+<<<<<<< HEAD
+=======
+	if (!DESC_LENGTH_CHECK(cs))
+		return false;
+>>>>>>> origin/android16-base
 	return cs->bClockID == id;
 }
 
@@ -273,7 +324,11 @@ static int __uac_clock_find_source(struct snd_usb_audio *chip,
 
 	selector = snd_usb_find_clock_selector(chip->ctrl_intf, entity_id);
 	if (selector) {
+<<<<<<< HEAD
 		int ret, i, cur;
+=======
+		int ret, i, cur, err;
+>>>>>>> origin/android16-base
 
 		/* the entity ID we are looking for is a selector.
 		 * find out what it currently selects */
@@ -295,13 +350,31 @@ static int __uac_clock_find_source(struct snd_usb_audio *chip,
 		ret = __uac_clock_find_source(chip, fmt,
 					      selector->baCSourceID[ret - 1],
 					      visited, validate);
+<<<<<<< HEAD
+=======
+		if (ret > 0) {
+			/*
+			 * For Samsung USBC Headset (AKG), setting clock selector again
+			 * will result in incorrect default clock setting problems
+			 */
+			if (chip->usb_id == USB_ID(0x04e8, 0xa051))
+				return ret;
+			err = uac_clock_selector_set_val(chip, entity_id, cur);
+			if (err < 0)
+				return err;
+		}
+
+>>>>>>> origin/android16-base
 		if (!validate || ret > 0 || !chip->autoclock)
 			return ret;
 
 		/* The current clock source is invalid, try others. */
 		for (i = 1; i <= selector->bNrInPins; i++) {
+<<<<<<< HEAD
 			int err;
 
+=======
+>>>>>>> origin/android16-base
 			if (i == cur)
 				continue;
 
@@ -367,7 +440,11 @@ static int __uac3_clock_find_source(struct snd_usb_audio *chip,
 
 	selector = snd_usb_find_clock_selector_v3(chip->ctrl_intf, entity_id);
 	if (selector) {
+<<<<<<< HEAD
 		int ret, i, cur;
+=======
+		int ret, i, cur, err;
+>>>>>>> origin/android16-base
 
 		/* the entity ID we are looking for is a selector.
 		 * find out what it currently selects */
@@ -389,6 +466,15 @@ static int __uac3_clock_find_source(struct snd_usb_audio *chip,
 		ret = __uac3_clock_find_source(chip, fmt,
 					       selector->baCSourceID[ret - 1],
 					       visited, validate);
+<<<<<<< HEAD
+=======
+		if (ret > 0) {
+			err = uac_clock_selector_set_val(chip, entity_id, cur);
+			if (err < 0)
+				return err;
+		}
+
+>>>>>>> origin/android16-base
 		if (!validate || ret > 0 || !chip->autoclock)
 			return ret;
 
@@ -508,6 +594,15 @@ static int set_sample_rate_v1(struct snd_usb_audio *chip, int iface,
 	}
 
 	crate = data[0] | (data[1] << 8) | (data[2] << 16);
+<<<<<<< HEAD
+=======
+	if (!crate) {
+		dev_info(&dev->dev, "failed to read current rate; disabling the check\n");
+		chip->sample_rate_read_error = 3; /* three strikes, see above */
+		return 0;
+	}
+
+>>>>>>> origin/android16-base
 	if (crate != rate) {
 		dev_warn(&dev->dev, "current rate %d is different from the runtime rate %d\n", crate, rate);
 		// runtime->rate = crate;

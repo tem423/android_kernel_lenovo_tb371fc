@@ -16,7 +16,10 @@ config BITREVERSE
 config HAVE_ARCH_BITREVERSE
 	bool
 	default n
+<<<<<<< HEAD
 	depends on BITREVERSE
+=======
+>>>>>>> origin/android16-base
 	help
 	  This option enables the use of hardware bit-reversal instructions on
 	  architectures which support such operations.
@@ -71,6 +74,14 @@ config INDIRECT_PIO
 
 	  When in doubt, say N.
 
+<<<<<<< HEAD
+=======
+source "lib/crypto/Kconfig"
+
+config LIB_MEMNEQ
+	bool
+
+>>>>>>> origin/android16-base
 config CRC_CCITT
 	tristate "CRC-CCITT functions"
 	help

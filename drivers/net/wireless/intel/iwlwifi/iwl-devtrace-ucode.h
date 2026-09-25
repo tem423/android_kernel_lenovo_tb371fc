@@ -75,7 +75,11 @@ TRACE_EVENT(iwlwifi_dev_ucode_wrap_event,
 #endif /* __IWLWIFI_DEVICE_TRACE_UCODE */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/wireless/intel/iwlwifi
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE iwl-devtrace-ucode
 #include <trace/define_trace.h>

@@ -72,6 +72,7 @@ static int nfs4_encode_void(struct svc_rqst *rqstp, __be32 *p)
 	return xdr_ressize_check(rqstp, p);
 }
 
+<<<<<<< HEAD
 static __be32 *read_buf(struct xdr_stream *xdr, size_t nbytes)
 {
 	__be32 *p;
@@ -82,6 +83,8 @@ static __be32 *read_buf(struct xdr_stream *xdr, size_t nbytes)
 	return p;
 }
 
+=======
+>>>>>>> origin/android16-base
 static __be32 decode_string(struct xdr_stream *xdr, unsigned int *len,
 		const char **str, size_t maxlen)
 {
@@ -98,13 +101,21 @@ static __be32 decode_fh(struct xdr_stream *xdr, struct nfs_fh *fh)
 {
 	__be32 *p;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, 4);
+=======
+	p = xdr_inline_decode(xdr, 4);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 	fh->size = ntohl(*p);
 	if (fh->size > NFS4_FHSIZE)
 		return htonl(NFS4ERR_BADHANDLE);
+<<<<<<< HEAD
 	p = read_buf(xdr, fh->size);
+=======
+	p = xdr_inline_decode(xdr, fh->size);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 	memcpy(&fh->data[0], p, fh->size);
@@ -117,11 +128,19 @@ static __be32 decode_bitmap(struct xdr_stream *xdr, uint32_t *bitmap)
 	__be32 *p;
 	unsigned int attrlen;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, 4);
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 	attrlen = ntohl(*p);
 	p = read_buf(xdr, attrlen << 2);
+=======
+	p = xdr_inline_decode(xdr, 4);
+	if (unlikely(p == NULL))
+		return htonl(NFS4ERR_RESOURCE);
+	attrlen = ntohl(*p);
+	p = xdr_inline_decode(xdr, attrlen << 2);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 	if (likely(attrlen > 0))
@@ -135,7 +154,11 @@ static __be32 decode_stateid(struct xdr_stream *xdr, nfs4_stateid *stateid)
 {
 	__be32 *p;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, NFS4_STATEID_SIZE);
+=======
+	p = xdr_inline_decode(xdr, NFS4_STATEID_SIZE);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 	memcpy(stateid->data, p, NFS4_STATEID_SIZE);
@@ -156,7 +179,11 @@ static __be32 decode_compound_hdr_arg(struct xdr_stream *xdr, struct cb_compound
 	status = decode_string(xdr, &hdr->taglen, &hdr->tag, CB_OP_TAGLEN_MAXSZ);
 	if (unlikely(status != 0))
 		return status;
+<<<<<<< HEAD
 	p = read_buf(xdr, 12);
+=======
+	p = xdr_inline_decode(xdr, 12);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 	hdr->minorversion = ntohl(*p++);
@@ -176,7 +203,11 @@ static __be32 decode_compound_hdr_arg(struct xdr_stream *xdr, struct cb_compound
 static __be32 decode_op_hdr(struct xdr_stream *xdr, unsigned int *op)
 {
 	__be32 *p;
+<<<<<<< HEAD
 	p = read_buf(xdr, 4);
+=======
+	p = xdr_inline_decode(xdr, 4);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE_HDR);
 	*op = ntohl(*p);
@@ -205,7 +236,11 @@ static __be32 decode_recall_args(struct svc_rqst *rqstp,
 	status = decode_delegation_stateid(xdr, &args->stateid);
 	if (unlikely(status != 0))
 		return status;
+<<<<<<< HEAD
 	p = read_buf(xdr, 4);
+=======
+	p = xdr_inline_decode(xdr, 4);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 	args->truncate = ntohl(*p);
@@ -227,7 +262,11 @@ static __be32 decode_layoutrecall_args(struct svc_rqst *rqstp,
 	__be32 status = 0;
 	uint32_t iomode;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, 4 * sizeof(uint32_t));
+=======
+	p = xdr_inline_decode(xdr, 4 * sizeof(uint32_t));
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_BADXDR);
 
@@ -245,14 +284,22 @@ static __be32 decode_layoutrecall_args(struct svc_rqst *rqstp,
 		if (unlikely(status != 0))
 			return status;
 
+<<<<<<< HEAD
 		p = read_buf(xdr, 2 * sizeof(uint64_t));
+=======
+		p = xdr_inline_decode(xdr, 2 * sizeof(uint64_t));
+>>>>>>> origin/android16-base
 		if (unlikely(p == NULL))
 			return htonl(NFS4ERR_BADXDR);
 		p = xdr_decode_hyper(p, &args->cbl_range.offset);
 		p = xdr_decode_hyper(p, &args->cbl_range.length);
 		return decode_layout_stateid(xdr, &args->cbl_stateid);
 	} else if (args->cbl_recall_type == RETURN_FSID) {
+<<<<<<< HEAD
 		p = read_buf(xdr, 2 * sizeof(uint64_t));
+=======
+		p = xdr_inline_decode(xdr, 2 * sizeof(uint64_t));
+>>>>>>> origin/android16-base
 		if (unlikely(p == NULL))
 			return htonl(NFS4ERR_BADXDR);
 		p = xdr_decode_hyper(p, &args->cbl_fsid.major);
@@ -268,6 +315,7 @@ __be32 decode_devicenotify_args(struct svc_rqst *rqstp,
 				void *argp)
 {
 	struct cb_devicenotifyargs *args = argp;
+<<<<<<< HEAD
 	__be32 *p;
 	__be32 status = 0;
 	u32 tmp;
@@ -276,17 +324,30 @@ __be32 decode_devicenotify_args(struct svc_rqst *rqstp,
 
 	/* Num of device notifications */
 	p = read_buf(xdr, sizeof(uint32_t));
+=======
+	uint32_t tmp, n, i;
+	__be32 *p;
+	__be32 status = 0;
+
+	/* Num of device notifications */
+	p = xdr_inline_decode(xdr, sizeof(uint32_t));
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL)) {
 		status = htonl(NFS4ERR_BADXDR);
 		goto out;
 	}
 	n = ntohl(*p++);
+<<<<<<< HEAD
 	if (n <= 0)
 		goto out;
 	if (n > ULONG_MAX / sizeof(*args->devs)) {
 		status = htonl(NFS4ERR_BADXDR);
 		goto out;
 	}
+=======
+	if (n == 0)
+		goto out;
+>>>>>>> origin/android16-base
 
 	args->devs = kmalloc_array(n, sizeof(*args->devs), GFP_KERNEL);
 	if (!args->devs) {
@@ -298,7 +359,12 @@ __be32 decode_devicenotify_args(struct svc_rqst *rqstp,
 	for (i = 0; i < n; i++) {
 		struct cb_devicenotifyitem *dev = &args->devs[i];
 
+<<<<<<< HEAD
 		p = read_buf(xdr, (4 * sizeof(uint32_t)) + NFS4_DEVICEID4_SIZE);
+=======
+		p = xdr_inline_decode(xdr, (4 * sizeof(uint32_t)) +
+				      NFS4_DEVICEID4_SIZE);
+>>>>>>> origin/android16-base
 		if (unlikely(p == NULL)) {
 			status = htonl(NFS4ERR_BADXDR);
 			goto err;
@@ -329,7 +395,11 @@ __be32 decode_devicenotify_args(struct svc_rqst *rqstp,
 		p += XDR_QUADLEN(NFS4_DEVICEID4_SIZE);
 
 		if (dev->cbd_layout_type == NOTIFY_DEVICEID4_CHANGE) {
+<<<<<<< HEAD
 			p = read_buf(xdr, sizeof(uint32_t));
+=======
+			p = xdr_inline_decode(xdr, sizeof(uint32_t));
+>>>>>>> origin/android16-base
 			if (unlikely(p == NULL)) {
 				status = htonl(NFS4ERR_BADXDR);
 				goto err;
@@ -339,12 +409,16 @@ __be32 decode_devicenotify_args(struct svc_rqst *rqstp,
 			dev->cbd_immediate = 0;
 		}
 
+<<<<<<< HEAD
 		args->ndevs++;
 
+=======
+>>>>>>> origin/android16-base
 		dprintk("%s: type %d layout 0x%x immediate %d\n",
 			__func__, dev->cbd_notify_type, dev->cbd_layout_type,
 			dev->cbd_immediate);
 	}
+<<<<<<< HEAD
 out:
 	dprintk("%s: status %d ndevs %d\n",
 		__func__, ntohl(status), args->ndevs);
@@ -352,6 +426,19 @@ out:
 err:
 	kfree(args->devs);
 	goto out;
+=======
+	args->ndevs = n;
+	dprintk("%s: ndevs %d\n", __func__, args->ndevs);
+	return 0;
+err:
+	kfree(args->devs);
+out:
+	args->devs = NULL;
+	args->ndevs = 0;
+	dprintk("%s: status %d ndevs %d\n",
+		__func__, ntohl(status), args->ndevs);
+	return status;
+>>>>>>> origin/android16-base
 }
 
 static __be32 decode_sessionid(struct xdr_stream *xdr,
@@ -359,7 +446,11 @@ static __be32 decode_sessionid(struct xdr_stream *xdr,
 {
 	__be32 *p;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, NFS4_MAX_SESSIONID_LEN);
+=======
+	p = xdr_inline_decode(xdr, NFS4_MAX_SESSIONID_LEN);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 
@@ -379,13 +470,23 @@ static __be32 decode_rc_list(struct xdr_stream *xdr,
 		goto out;
 
 	status = htonl(NFS4ERR_RESOURCE);
+<<<<<<< HEAD
 	p = read_buf(xdr, sizeof(uint32_t));
+=======
+	p = xdr_inline_decode(xdr, sizeof(uint32_t));
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		goto out;
 
 	rc_list->rcl_nrefcalls = ntohl(*p++);
 	if (rc_list->rcl_nrefcalls) {
+<<<<<<< HEAD
 		p = read_buf(xdr,
+=======
+		if (unlikely(rc_list->rcl_nrefcalls > xdr->buf->len))
+			goto out;
+		p = xdr_inline_decode(xdr,
+>>>>>>> origin/android16-base
 			     rc_list->rcl_nrefcalls * 2 * sizeof(uint32_t));
 		if (unlikely(p == NULL))
 			goto out;
@@ -418,7 +519,11 @@ static __be32 decode_cb_sequence_args(struct svc_rqst *rqstp,
 	if (status)
 		return status;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, 5 * sizeof(uint32_t));
+=======
+	p = xdr_inline_decode(xdr, 5 * sizeof(uint32_t));
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_RESOURCE);
 
@@ -461,7 +566,11 @@ static __be32 decode_recallany_args(struct svc_rqst *rqstp,
 	uint32_t bitmap[2];
 	__be32 *p, status;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, 4);
+=======
+	p = xdr_inline_decode(xdr, 4);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_BADXDR);
 	args->craa_objs_to_keep = ntohl(*p++);
@@ -480,7 +589,11 @@ static __be32 decode_recallslot_args(struct svc_rqst *rqstp,
 	struct cb_recallslotargs *args = argp;
 	__be32 *p;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, 4);
+=======
+	p = xdr_inline_decode(xdr, 4);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_BADXDR);
 	args->crsa_target_highest_slotid = ntohl(*p++);
@@ -492,14 +605,22 @@ static __be32 decode_lockowner(struct xdr_stream *xdr, struct cb_notify_lock_arg
 	__be32		*p;
 	unsigned int	len;
 
+<<<<<<< HEAD
 	p = read_buf(xdr, 12);
+=======
+	p = xdr_inline_decode(xdr, 12);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_BADXDR);
 
 	p = xdr_decode_hyper(p, &args->cbnl_owner.clientid);
 	len = be32_to_cpu(*p);
 
+<<<<<<< HEAD
 	p = read_buf(xdr, len);
+=======
+	p = xdr_inline_decode(xdr, len);
+>>>>>>> origin/android16-base
 	if (unlikely(p == NULL))
 		return htonl(NFS4ERR_BADXDR);
 
@@ -537,7 +658,11 @@ static __be32 decode_write_response(struct xdr_stream *xdr,
 	__be32 *p;
 
 	/* skip the always zero field */
+<<<<<<< HEAD
 	p = read_buf(xdr, 4);
+=======
+	p = xdr_inline_decode(xdr, 4);
+>>>>>>> origin/android16-base
 	if (unlikely(!p))
 		goto out;
 	p++;
@@ -577,7 +702,11 @@ static __be32 decode_offload_args(struct svc_rqst *rqstp,
 		return status;
 
 	/* decode status */
+<<<<<<< HEAD
 	p = read_buf(xdr, 4);
+=======
+	p = xdr_inline_decode(xdr, 4);
+>>>>>>> origin/android16-base
 	if (unlikely(!p))
 		goto out;
 	args->error = ntohl(*p++);
@@ -991,7 +1120,11 @@ static __be32 nfs4_callback_compound(struct svc_rqst *rqstp)
 
 out_invalidcred:
 	pr_warn_ratelimited("NFS: NFSv4 callback contains invalid cred\n");
+<<<<<<< HEAD
 	return rpc_autherr_badcred;
+=======
+	return svc_return_autherr(rqstp, rpc_autherr_badcred);
+>>>>>>> origin/android16-base
 }
 
 /*

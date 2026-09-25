@@ -396,7 +396,13 @@ static int tahvo_usb_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, tu);
 
+<<<<<<< HEAD
 	tu->irq = platform_get_irq(pdev, 0);
+=======
+	tu->irq = ret = platform_get_irq(pdev, 0);
+	if (ret < 0)
+		goto err_remove_phy;
+>>>>>>> origin/android16-base
 	ret = request_threaded_irq(tu->irq, NULL, tahvo_usb_vbus_interrupt,
 				   IRQF_ONESHOT,
 				   "tahvo-vbus", tu);

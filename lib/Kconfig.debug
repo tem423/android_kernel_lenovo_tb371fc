@@ -245,8 +245,15 @@ config FRAME_WARN
 	int "Warn for stack frames larger than (needs gcc 4.4)"
 	range 0 8192
 	default 2048 if GCC_PLUGIN_LATENT_ENTROPY
+<<<<<<< HEAD
 	default 1280 if (!64BIT && PARISC)
 	default 1024 if (!64BIT && !PARISC)
+=======
+	default 2048 if PARISC
+	default 1536 if (!64BIT && XTENSA)
+	default 1280 if KASAN && !64BIT
+	default 1024 if !64BIT
+>>>>>>> origin/android16-base
 	default 2048 if 64BIT
 	help
 	  Tell gcc to warn at build time for stack frames larger than this.
@@ -885,7 +892,10 @@ config HARDLOCKUP_DETECTOR
 	depends on HAVE_HARDLOCKUP_DETECTOR_PERF || HAVE_HARDLOCKUP_DETECTOR_ARCH
 	select LOCKUP_DETECTOR
 	select HARDLOCKUP_DETECTOR_PERF if HAVE_HARDLOCKUP_DETECTOR_PERF
+<<<<<<< HEAD
 	select HARDLOCKUP_DETECTOR_ARCH if HAVE_HARDLOCKUP_DETECTOR_ARCH
+=======
+>>>>>>> origin/android16-base
 	help
 	  Say Y here to enable the kernel to act as a watchdog to detect
 	  hard lockups.
@@ -1361,8 +1371,12 @@ config WARN_ALL_UNSEEDED_RANDOM
 	  so architecture maintainers really need to do what they can
 	  to get the CRNG seeded sooner after the system is booted.
 	  However, since users cannot do anything actionable to
+<<<<<<< HEAD
 	  address this, by default the kernel will issue only a single
 	  warning for the first use of unseeded randomness.
+=======
+	  address this, by default this option is disabled.
+>>>>>>> origin/android16-base
 
 	  Say Y here if you want to receive warnings for all uses of
 	  unseeded randomness.  This will be of use primarily for
@@ -1595,8 +1609,19 @@ config NETDEV_NOTIFIER_ERROR_INJECT
 	  If unsure, say N.
 
 config FUNCTION_ERROR_INJECTION
+<<<<<<< HEAD
 	def_bool y
 	depends on HAVE_FUNCTION_ERROR_INJECTION && KPROBES
+=======
+	bool "Fault-injections of functions"
+	depends on HAVE_FUNCTION_ERROR_INJECTION && KPROBES
+	help
+	  Add fault injections into various functions that are annotated with
+	  ALLOW_ERROR_INJECTION() in the kernel. BPF may also modify the return
+	  value of theses functions. This is useful to test error paths of code.
+
+	  If unsure, say N
+>>>>>>> origin/android16-base
 
 config FAULT_INJECTION
 	bool "Fault-injection framework"
@@ -2112,6 +2137,19 @@ config PANIC_ON_DATA_CORRUPTION
 	 recoverable data corruption scenarios to system-halting panics,
 	 for easier detection and debug.
 
+<<<<<<< HEAD
+=======
+config CC_WERROR
+	bool "Treat all compile warnings as errors"
+	default n
+	help
+	 Select this option to set compiler warnings as errors,
+	 to prevent easily-fixable problems from creeping into
+	 the codebase.
+
+	 If unsure, say N.
+
+>>>>>>> origin/android16-base
 source "samples/Kconfig"
 
 source "lib/Kconfig.kgdb"

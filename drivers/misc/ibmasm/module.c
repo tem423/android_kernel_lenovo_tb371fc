@@ -125,7 +125,11 @@ static int ibmasm_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
 	result = ibmasm_init_remote_input_dev(sp);
 	if (result) {
 		dev_err(sp->dev, "Failed to initialize remote queue\n");
+<<<<<<< HEAD
 		goto error_send_message;
+=======
+		goto error_init_remote;
+>>>>>>> origin/android16-base
 	}
 
 	result = ibmasm_send_driver_vpd(sp);
@@ -145,8 +149,14 @@ static int ibmasm_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
 	return 0;
 
 error_send_message:
+<<<<<<< HEAD
 	disable_sp_interrupts(sp->base_address);
 	ibmasm_free_remote_input_dev(sp);
+=======
+	ibmasm_free_remote_input_dev(sp);
+error_init_remote:
+	disable_sp_interrupts(sp->base_address);
+>>>>>>> origin/android16-base
 	free_irq(sp->irq, (void *)sp);
 error_request_irq:
 	iounmap(sp->base_address);

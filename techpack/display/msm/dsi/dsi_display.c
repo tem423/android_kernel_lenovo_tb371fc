@@ -7,15 +7,22 @@
 #include <linux/of.h>
 #include <linux/of_gpio.h>
 #include <linux/err.h>
+<<<<<<< HEAD
 #include <drm/drm_notifier_mi.h>
+=======
+>>>>>>> origin/android16-base
 
 #include "msm_drv.h"
 #include "sde_connector.h"
 #include "msm_mmu.h"
 #include "dsi_display.h"
+<<<<<<< HEAD
 #include <drm/drm_panel.h>
 #include "dsi_panel.h"
 #include "dsi_panel_mi.h"
+=======
+#include "dsi_panel.h"
+>>>>>>> origin/android16-base
 #include "dsi_ctrl.h"
 #include "dsi_ctrl_hw.h"
 #include "dsi_drm.h"
@@ -36,10 +43,13 @@
 #define DSI_CLOCK_BITRATE_RADIX 10
 #define MAX_TE_SOURCE_ID  2
 
+<<<<<<< HEAD
 DEFINE_MUTEX(dsi_display_clk_mutex);
 
 extern int mi_disp_lhbm_attach_primary_dsi_display(struct dsi_display *display);
 
+=======
+>>>>>>> origin/android16-base
 static char dsi_display_primary[MAX_CMDLINE_PARAM_LEN];
 static char dsi_display_secondary[MAX_CMDLINE_PARAM_LEN];
 static struct dsi_display_boot_param boot_displays[MAX_DSI_ACTIVE_DISPLAY] = {
@@ -52,8 +62,11 @@ static const struct of_device_id dsi_display_dt_match[] = {
 	{}
 };
 
+<<<<<<< HEAD
 struct dsi_display *primary_display;
 
+=======
+>>>>>>> origin/android16-base
 static void dsi_display_mask_ctrl_error_interrupts(struct dsi_display *display,
 			u32 mask, bool enable)
 {
@@ -238,6 +251,7 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 		goto error;
 	}
 
+<<<<<<< HEAD
 		/* TB371FC: prevent SF hang if panel backlight path blocks. If
 	 * panel is not ready (bl_enable false or not initialized), skip
 	 * actual write and just record the level to avoid SF hang.
@@ -256,6 +270,9 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 	}
 
 rc = dsi_panel_set_backlight(panel, (u32)bl_temp);
+=======
+	rc = dsi_panel_set_backlight(panel, (u32)bl_temp);
+>>>>>>> origin/android16-base
 	if (rc)
 		DSI_ERR("unable to set backlight\n");
 
@@ -272,7 +289,11 @@ error:
 	return rc;
 }
 
+<<<<<<< HEAD
 int dsi_display_cmd_engine_enable(struct dsi_display *display)
+=======
+static int dsi_display_cmd_engine_enable(struct dsi_display *display)
+>>>>>>> origin/android16-base
 {
 	int rc = 0;
 	int i;
@@ -316,7 +337,11 @@ done:
 	return rc;
 }
 
+<<<<<<< HEAD
 int dsi_display_cmd_engine_disable(struct dsi_display *display)
+=======
+static int dsi_display_cmd_engine_disable(struct dsi_display *display)
+>>>>>>> origin/android16-base
 {
 	int rc = 0;
 	int i;
@@ -502,7 +527,11 @@ error:
 }
 
 /* Allocate memory for cmd dma tx buffer */
+<<<<<<< HEAD
 int dsi_host_alloc_cmd_tx_buffer(struct dsi_display *display)
+=======
+static int dsi_host_alloc_cmd_tx_buffer(struct dsi_display *display)
+>>>>>>> origin/android16-base
 {
 	int rc = 0, cnt = 0;
 	struct dsi_display_ctrl *display_ctrl;
@@ -672,10 +701,15 @@ static int dsi_display_read_status(struct dsi_display_ctrl *ctrl,
 	lenp = config->status_valid_params ?: config->status_cmds_rlen;
 	count = config->status_cmd.count;
 	cmds = config->status_cmd.cmds;
+<<<<<<< HEAD
 	flags |= (DSI_CTRL_CMD_FETCH_MEMORY | DSI_CTRL_CMD_READ);
 
 	if (ctrl->ctrl->host_config.panel_mode == DSI_OP_VIDEO_MODE)
 		flags |= DSI_CTRL_CMD_CUSTOM_DMA_SCHED;
+=======
+	flags |= (DSI_CTRL_CMD_FETCH_MEMORY | DSI_CTRL_CMD_READ |
+		  DSI_CTRL_CMD_CUSTOM_DMA_SCHED);
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < count; ++i) {
 		memset(config->status_buf, 0x0, SZ_4K);
@@ -683,10 +717,13 @@ static int dsi_display_read_status(struct dsi_display_ctrl *ctrl,
 			cmds[i].msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
 			flags |= DSI_CTRL_CMD_LAST_COMMAND;
 		}
+<<<<<<< HEAD
 		if ((cmds[i].msg.flags & MIPI_DSI_MSG_CMD_DMA_SCHED) &&
 			(panel->panel_initialized))
 			flags |= DSI_CTRL_CMD_CUSTOM_DMA_SCHED;
 
+=======
+>>>>>>> origin/android16-base
 		if (config->status_cmd.state == DSI_CMD_SET_STATE_LP)
 			cmds[i].msg.flags |= MIPI_DSI_MSG_USE_LPM;
 		cmds[i].msg.rx_buf = config->status_buf;
@@ -813,7 +850,10 @@ int dsi_display_check_status(struct drm_connector *connector, void *display,
 					bool te_check_override)
 {
 	struct dsi_display *dsi_display = display;
+<<<<<<< HEAD
 	struct drm_panel_esd_config *config;
+=======
+>>>>>>> origin/android16-base
 	struct dsi_panel *panel;
 	u32 status_mode;
 	int rc = 0x1, ret;
@@ -865,11 +905,14 @@ int dsi_display_check_status(struct drm_connector *connector, void *display,
 	dsi_display_mask_ctrl_error_interrupts(dsi_display, mask, true);
 
 	if (status_mode == ESD_MODE_REG_READ) {
+<<<<<<< HEAD
 		config = &(panel->esd_config);
 		if (config->offset_cmd.count != 0) {
 			rc = dsi_panel_write_cmd_set(panel, &config->offset_cmd);
 		}
 
+=======
+>>>>>>> origin/android16-base
 		rc = dsi_display_status_reg_read(dsi_display);
 	} else if (status_mode == ESD_MODE_SW_BTA) {
 		rc = dsi_display_status_bta_request(dsi_display);
@@ -1083,15 +1126,20 @@ int dsi_display_set_power(struct drm_connector *connector,
 		int power_mode, void *disp)
 {
 	struct dsi_display *display = disp;
+<<<<<<< HEAD
 	struct dsi_panel_mi_cfg *mi_cfg;
 	int rc = 0;
 	struct mi_drm_notifier notify_data;
+=======
+	int rc = 0;
+>>>>>>> origin/android16-base
 
 	if (!display || !display->panel) {
 		DSI_ERR("invalid display/panel\n");
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	mi_cfg = &display->panel->mi_cfg;
 
 	notify_data.data = &power_mode;
@@ -1123,6 +1171,19 @@ int dsi_display_set_power(struct drm_connector *connector,
 			rc = dsi_panel_set_nolp(display->panel);
 			mi_drm_notifier_call_chain(MI_DRM_EVENT_BLANK, &notify_data);
 		}
+=======
+	switch (power_mode) {
+	case SDE_MODE_DPMS_LP1:
+		rc = dsi_panel_set_lp1(display->panel);
+		break;
+	case SDE_MODE_DPMS_LP2:
+		rc = dsi_panel_set_lp2(display->panel);
+		break;
+	case SDE_MODE_DPMS_ON:
+		if ((display->panel->power_mode == SDE_MODE_DPMS_LP1) ||
+			(display->panel->power_mode == SDE_MODE_DPMS_LP2))
+			rc = dsi_panel_set_nolp(display->panel);
+>>>>>>> origin/android16-base
 		break;
 	case SDE_MODE_DPMS_OFF:
 	default:
@@ -2820,12 +2881,15 @@ static int dsi_display_broadcast_cmd(struct dsi_display *display,
 		m_flags |= DSI_CTRL_CMD_LAST_COMMAND;
 	}
 
+<<<<<<< HEAD
 	if ((msg->flags & MIPI_DSI_MSG_CMD_DMA_SCHED) &&
 			(display->panel->panel_initialized)) {
 		flags |= DSI_CTRL_CMD_CUSTOM_DMA_SCHED;
 		m_flags |= DSI_CTRL_CMD_CUSTOM_DMA_SCHED;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (display->queue_cmd_waits ||
 			msg->flags & MIPI_DSI_MSG_ASYNC_OVERRIDE) {
 		flags |= DSI_CTRL_CMD_ASYNC_WAIT;
@@ -3006,10 +3070,13 @@ static ssize_t dsi_host_transfer(struct mipi_dsi_host *host,
 				msg->flags & MIPI_DSI_MSG_ASYNC_OVERRIDE)
 			cmd_flags |= DSI_CTRL_CMD_ASYNC_WAIT;
 
+<<<<<<< HEAD
 		if ((msg->flags & MIPI_DSI_MSG_CMD_DMA_SCHED) &&
 				(display->panel->panel_initialized))
 			cmd_flags |= DSI_CTRL_CMD_CUSTOM_DMA_SCHED;
 
+=======
+>>>>>>> origin/android16-base
 		rc = dsi_ctrl_cmd_transfer(display->ctrl[ctrl_idx].ctrl, msg,
 				&cmd_flags);
 		if (rc) {
@@ -5021,6 +5088,7 @@ int dsi_display_splash_res_cleanup(struct  dsi_display *display)
 
 static int dsi_display_force_update_dsi_clk(struct dsi_display *display)
 {
+<<<<<<< HEAD
 	int rc = 0, i = 0;
 	struct dsi_display_ctrl *ctrl;
 
@@ -5038,6 +5106,9 @@ static int dsi_display_force_update_dsi_clk(struct dsi_display *display)
 		cancel_work_sync(&ctrl->ctrl->dma_cmd_wait);
 		ctrl->ctrl->dma_wait_queued = false;
 	}
+=======
+	int rc = 0;
+>>>>>>> origin/android16-base
 
 	rc = dsi_display_link_clk_force_update_ctrl(display->dsi_clk_handle);
 
@@ -5090,6 +5161,7 @@ error:
 	return rc;
 }
 
+<<<<<<< HEAD
 static ssize_t sysfs_fod_ui_read(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
@@ -5149,6 +5221,8 @@ void dsi_display_set_fod_ui(struct dsi_display *display, bool status)
 	sysfs_notify(&dev->kobj, NULL, "fod_ui");
 }
 
+=======
+>>>>>>> origin/android16-base
 /**
  * dsi_display_bind - bind dsi device with controlling device
  * @dev:        Pointer to base of platform device
@@ -5220,6 +5294,7 @@ static int dsi_display_bind(struct device *dev,
 	atomic_set(&display->clkrate_change_pending, 0);
 	display->cached_clk_rate = 0;
 
+<<<<<<< HEAD
 	rc = dsi_display_sysfs_init(display);
 	if (rc) {
 		pr_err("[%s] sysfs init failed, rc=%d\n", display->name, rc);
@@ -5228,6 +5303,8 @@ static int dsi_display_bind(struct device *dev,
 
 	atomic_set(&display->fod_ui, false);
 
+=======
+>>>>>>> origin/android16-base
 	memset(&info, 0x0, sizeof(info));
 
 	display_for_each_ctrl(i, display) {
@@ -5363,10 +5440,13 @@ static int dsi_display_bind(struct device *dev,
 	/* register te irq handler */
 	dsi_display_register_te_irq(display);
 
+<<<<<<< HEAD
 	rc = mi_disp_lhbm_attach_primary_dsi_display(display);
 	if (rc)
 		DSI_ERR("lhbm attach primary_dsi_display fail\n");
 
+=======
+>>>>>>> origin/android16-base
 	goto error;
 
 error_host_deinit:
@@ -5381,7 +5461,10 @@ error_ctrl_deinit:
 		(void)dsi_phy_drv_deinit(display_ctrl->phy);
 		(void)dsi_ctrl_drv_deinit(display_ctrl->ctrl);
 	}
+<<<<<<< HEAD
 	(void)dsi_display_sysfs_deinit(display);
+=======
+>>>>>>> origin/android16-base
 	(void)dsi_display_debugfs_deinit(display);
 error:
 	mutex_unlock(&display->display_lock);
@@ -5442,7 +5525,10 @@ static void dsi_display_unbind(struct device *dev,
 	}
 
 	atomic_set(&display->clkrate_change_pending, 0);
+<<<<<<< HEAD
 	(void)dsi_display_sysfs_deinit(display);
+=======
+>>>>>>> origin/android16-base
 	(void)dsi_display_debugfs_deinit(display);
 
 	mutex_unlock(&display->display_lock);
@@ -5575,7 +5661,10 @@ int dsi_display_dev_probe(struct platform_device *pdev)
 	display->panel_node = panel_node;
 	display->pdev = pdev;
 	display->boot_disp = boot_disp;
+<<<<<<< HEAD
 	display->is_prim_display = true;
+=======
+>>>>>>> origin/android16-base
 
 	dsi_display_parse_cmdline_topology(display, index);
 
@@ -5622,6 +5711,13 @@ int dsi_display_dev_remove(struct platform_device *pdev)
 	}
 
 	display = platform_get_drvdata(pdev);
+<<<<<<< HEAD
+=======
+	if (!display || !display->panel_node) {
+		DSI_ERR("invalid display\n");
+		return -EINVAL;
+	}
+>>>>>>> origin/android16-base
 
 	/* decrement ref count */
 	of_node_put(display->panel_node);
@@ -6582,7 +6678,10 @@ int dsi_display_get_modes(struct dsi_display *display,
 exit:
 	*out_modes = display->modes;
 	rc = 0;
+<<<<<<< HEAD
 	primary_display = display;
+=======
+>>>>>>> origin/android16-base
 
 error:
 	if (rc)
@@ -6943,11 +7042,14 @@ int dsi_display_set_mode(struct dsi_display *display,
 			timing.h_active, timing.v_active,
 			timing.refresh_rate);
 
+<<<<<<< HEAD
 	if (display->panel->cur_mode->timing.refresh_rate != timing.refresh_rate) {
 		if (display->drm_conn && display->drm_conn->kdev)
 			sysfs_notify(&display->drm_conn->kdev->kobj, NULL, "dynamic_fps");
 	}
 
+=======
+>>>>>>> origin/android16-base
 	memcpy(display->panel->cur_mode, &adj_mode, sizeof(adj_mode));
 error:
 	mutex_unlock(&display->display_lock);
@@ -7742,6 +7844,7 @@ int dsi_display_enable(struct dsi_display *display)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	/* TB371FC p174: notify drm_panel listeners (nt36532 wake gesture)
 	 * BEFORE the panel work. The touch recovery (full fw download,
 	 * ~190ms) must complete BEFORE the panel-on commands: a panel
@@ -7754,6 +7857,8 @@ int dsi_display_enable(struct dsi_display *display)
 			DRM_PANEL_EVENT_BLANK, &p174_ev);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (!display->panel->cur_mode) {
 		DSI_ERR("no valid mode set for the display\n");
 		return -EINVAL;
@@ -7776,6 +7881,7 @@ int dsi_display_enable(struct dsi_display *display)
 
 		display->panel->panel_initialized = true;
 		DSI_DEBUG("cont splash enabled, display enable not required\n");
+<<<<<<< HEAD
 
 		rc = dsi_panel_update_elvss_dimming(display->panel);
 		if (rc) {
@@ -7839,6 +7945,8 @@ int dsi_display_enable(struct dsi_display *display)
 			}
 		}
 
+=======
+>>>>>>> origin/android16-base
 		return 0;
 	}
 
@@ -7877,6 +7985,7 @@ int dsi_display_enable(struct dsi_display *display)
 
 	if (mode->dsi_mode_flags & DSI_MODE_FLAG_DMS) {
 		rc = dsi_panel_switch(display->panel);
+<<<<<<< HEAD
 		if (rc) {
 			DSI_ERR("[%s] failed to switch DSI panel mode, rc=%d\n",
 				   display->name, rc);
@@ -7899,6 +8008,12 @@ int dsi_display_enable(struct dsi_display *display)
 				   display->name, rc);
 			goto error;
 		}
+=======
+		if (rc)
+			DSI_ERR("[%s] failed to switch DSI panel mode, rc=%d\n",
+				   display->name, rc);
+
+>>>>>>> origin/android16-base
 		goto error;
 	}
 
@@ -7931,7 +8046,10 @@ error_disable_panel:
 error:
 	mutex_unlock(&display->display_lock);
 	SDE_EVT32(SDE_EVTLOG_FUNC_EXIT);
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -8069,6 +8187,7 @@ int dsi_display_disable(struct dsi_display *display)
 	}
 	mutex_unlock(&display->display_lock);
 	SDE_EVT32(SDE_EVTLOG_FUNC_EXIT);
+<<<<<<< HEAD
 
 	/* TB371FC p140: notify drm_panel listeners (nt36532 wake gesture)
 	 * before the panel powers down (TASK-022). */
@@ -8078,6 +8197,8 @@ int dsi_display_disable(struct dsi_display *display)
 		drm_panel_notifier_call_chain(&display->panel->drm_panel,
 			DRM_PANEL_EARLY_EVENT_BLANK, &p140_ev);
 	}
+=======
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -8187,10 +8308,13 @@ int dsi_display_unprepare(struct dsi_display *display)
 	return rc;
 }
 
+<<<<<<< HEAD
 struct dsi_display *get_main_display(void) {
 	return primary_display;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int __init dsi_display_register(void)
 {
 	dsi_phy_drv_register();

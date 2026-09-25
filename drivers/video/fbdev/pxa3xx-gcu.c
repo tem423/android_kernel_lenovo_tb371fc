@@ -394,7 +394,11 @@ pxa3xx_gcu_write(struct file *file, const char *buff,
 	struct pxa3xx_gcu_batch	*buffer;
 	struct pxa3xx_gcu_priv *priv = to_pxa3xx_gcu_priv(file);
 
+<<<<<<< HEAD
 	int words = count / 4;
+=======
+	size_t words = count / 4;
+>>>>>>> origin/android16-base
 
 	/* Does not need to be atomic. There's a lock in user space,
 	 * but anyhow, this is just for statistics. */
@@ -663,6 +667,10 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
 	for (i = 0; i < 8; i++) {
 		ret = pxa3xx_gcu_add_buffer(dev, priv);
 		if (ret) {
+<<<<<<< HEAD
+=======
+			pxa3xx_gcu_free_buffers(dev, priv);
+>>>>>>> origin/android16-base
 			dev_err(dev, "failed to allocate DMA memory\n");
 			goto err_disable_clk;
 		}
@@ -678,15 +686,26 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
 			SHARED_SIZE, irq);
 	return 0;
 
+<<<<<<< HEAD
 err_free_dma:
 	dma_free_coherent(dev, SHARED_SIZE,
 			priv->shared, priv->shared_phys);
+=======
+err_disable_clk:
+	clk_disable_unprepare(priv->clk);
+>>>>>>> origin/android16-base
 
 err_misc_deregister:
 	misc_deregister(&priv->misc_dev);
 
+<<<<<<< HEAD
 err_disable_clk:
 	clk_disable_unprepare(priv->clk);
+=======
+err_free_dma:
+	dma_free_coherent(dev, SHARED_SIZE,
+			  priv->shared, priv->shared_phys);
+>>>>>>> origin/android16-base
 
 	return ret;
 }
@@ -699,6 +718,10 @@ static int pxa3xx_gcu_remove(struct platform_device *pdev)
 	pxa3xx_gcu_wait_idle(priv);
 	misc_deregister(&priv->misc_dev);
 	dma_free_coherent(dev, SHARED_SIZE, priv->shared, priv->shared_phys);
+<<<<<<< HEAD
+=======
+	clk_disable_unprepare(priv->clk);
+>>>>>>> origin/android16-base
 	pxa3xx_gcu_free_buffers(dev, priv);
 
 	return 0;

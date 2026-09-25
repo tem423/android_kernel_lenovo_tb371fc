@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * CFI (Control Flow Integrity) error and slowpath handling
  *
@@ -11,6 +12,22 @@
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
 #include <asm/bug.h>
+=======
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Clang Control Flow Integrity (CFI) error and slowpath handling.
+ *
+ * Copyright (C) 2019 Google LLC
+ */
+
+#include <linux/gfp.h>
+#include <linux/hardirq.h>
+#include <linux/module.h>
+#include <linux/mutex.h>
+#include <linux/printk.h>
+#include <linux/ratelimit.h>
+#include <linux/rcupdate.h>
+>>>>>>> origin/android16-base
 #include <asm/cacheflush.h>
 #include <asm/set_memory.h>
 
@@ -25,12 +42,19 @@
 
 static inline void handle_cfi_failure(void *ptr)
 {
+<<<<<<< HEAD
 #ifdef CONFIG_CFI_PERMISSIVE
 	WARN_RATELIMIT(1, "CFI failure (target: %pF):\n", ptr);
 #else
 	pr_err("CFI failure (target: %pF):\n", ptr);
 	BUG();
 #endif
+=======
+	if (IS_ENABLED(CONFIG_CFI_PERMISSIVE))
+		WARN_RATELIMIT(1, "CFI failure (target: %pS):\n", ptr);
+	else
+		panic("CFI failure (target: %pS)\n", ptr);
+>>>>>>> origin/android16-base
 }
 
 #ifdef CONFIG_MODULES
@@ -44,7 +68,11 @@ struct shadow_range {
 	unsigned long max_page;
 };
 
+<<<<<<< HEAD
 #define SHADOW_ORDER	1
+=======
+#define SHADOW_ORDER	2
+>>>>>>> origin/android16-base
 #define SHADOW_PAGES	(1 << SHADOW_ORDER)
 #define SHADOW_SIZE \
 	((SHADOW_PAGES * PAGE_SIZE - sizeof(struct shadow_range)) / sizeof(u16))
@@ -57,8 +85,13 @@ struct cfi_shadow {
 	u16 shadow[SHADOW_SIZE];
 };
 
+<<<<<<< HEAD
 static DEFINE_SPINLOCK(shadow_update_lock);
 static struct cfi_shadow __rcu *cfi_shadow __read_mostly = NULL;
+=======
+static DEFINE_MUTEX(shadow_update_lock);
+static struct cfi_shadow __rcu *cfi_shadow __read_mostly;
+>>>>>>> origin/android16-base
 
 static inline int ptr_to_shadow(const struct cfi_shadow *s, unsigned long ptr)
 {
@@ -79,7 +112,12 @@ static inline int ptr_to_shadow(const struct cfi_shadow *s, unsigned long ptr)
 static inline unsigned long shadow_to_ptr(const struct cfi_shadow *s,
 	int index)
 {
+<<<<<<< HEAD
 	BUG_ON(index < 0 || index >= SHADOW_SIZE);
+=======
+	if (unlikely(index < 0 || index >= SHADOW_SIZE))
+		return 0;
+>>>>>>> origin/android16-base
 
 	if (unlikely(s->shadow[index] == SHADOW_INVALID))
 		return 0;
@@ -90,7 +128,12 @@ static inline unsigned long shadow_to_ptr(const struct cfi_shadow *s,
 static inline unsigned long shadow_to_page(const struct cfi_shadow *s,
 	int index)
 {
+<<<<<<< HEAD
 	BUG_ON(index < 0 || index >= SHADOW_SIZE);
+=======
+	if (unlikely(index < 0 || index >= SHADOW_SIZE))
+		return 0;
+>>>>>>> origin/android16-base
 
 	return (s->r.min_page + index) << PAGE_SHIFT;
 }
@@ -138,7 +181,12 @@ static void add_module_to_shadow(struct cfi_shadow *s, struct module *mod)
 	unsigned long check = (unsigned long)mod->cfi_check;
 	int check_index = ptr_to_shadow(s, check);
 
+<<<<<<< HEAD
 	BUG_ON((check & PAGE_MASK) != check); /* Must be page aligned */
+=======
+	if (unlikely((check & PAGE_MASK) != check))
+		return; /* Must be page aligned */
+>>>>>>> origin/android16-base
 
 	if (check_index < 0)
 		return; /* Module not addressable with shadow */
@@ -151,9 +199,16 @@ static void add_module_to_shadow(struct cfi_shadow *s, struct module *mod)
 	/* For each page, store the check function index in the shadow */
 	for (ptr = min_page_addr; ptr <= max_page_addr; ptr += PAGE_SIZE) {
 		int index = ptr_to_shadow(s, ptr);
+<<<<<<< HEAD
 		if (index >= 0) {
 			/* Assume a page only contains code for one module */
 			BUG_ON(s->shadow[index] != SHADOW_INVALID);
+=======
+
+		if (index >= 0) {
+			/* Each page must only contain one module */
+			WARN_ON(s->shadow[index] != SHADOW_INVALID);
+>>>>>>> origin/android16-base
 			s->shadow[index] = (u16)check_index;
 		}
 	}
@@ -172,6 +227,10 @@ static void remove_module_from_shadow(struct cfi_shadow *s, struct module *mod)
 
 	for (ptr = min_page_addr; ptr <= max_page_addr; ptr += PAGE_SIZE) {
 		int index = ptr_to_shadow(s, ptr);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 		if (index >= 0)
 			s->shadow[index] = SHADOW_INVALID;
 	}
@@ -186,14 +245,21 @@ static void update_shadow(struct module *mod, unsigned long min_addr,
 	struct cfi_shadow *next = (struct cfi_shadow *)
 		__get_free_pages(GFP_KERNEL, SHADOW_ORDER);
 
+<<<<<<< HEAD
 	BUG_ON(!next);
 
+=======
+>>>>>>> origin/android16-base
 	next->r.mod_min_addr = min_addr;
 	next->r.mod_max_addr = max_addr;
 	next->r.min_page = min_addr >> PAGE_SHIFT;
 	next->r.max_page = max_addr >> PAGE_SHIFT;
 
+<<<<<<< HEAD
 	spin_lock(&shadow_update_lock);
+=======
+	mutex_lock(&shadow_update_lock);
+>>>>>>> origin/android16-base
 	prev = rcu_dereference_protected(cfi_shadow, 1);
 	prepare_next_shadow(prev, next);
 
@@ -201,7 +267,11 @@ static void update_shadow(struct module *mod, unsigned long min_addr,
 	set_memory_ro((unsigned long)next, SHADOW_PAGES);
 	rcu_assign_pointer(cfi_shadow, next);
 
+<<<<<<< HEAD
 	spin_unlock(&shadow_update_lock);
+=======
+	mutex_unlock(&shadow_update_lock);
+>>>>>>> origin/android16-base
 	synchronize_rcu();
 
 	if (prev) {
@@ -245,20 +315,33 @@ static inline cfi_check_fn ptr_to_check_fn(const struct cfi_shadow __rcu *s,
 
 static inline cfi_check_fn find_module_cfi_check(void *ptr)
 {
+<<<<<<< HEAD
+=======
+	cfi_check_fn f = CFI_CHECK_FN;
+>>>>>>> origin/android16-base
 	struct module *mod;
 
 	preempt_disable();
 	mod = __module_address((unsigned long)ptr);
+<<<<<<< HEAD
 	preempt_enable();
 
 	if (mod)
 		return mod->cfi_check;
 
 	return CFI_CHECK_FN;
+=======
+	if (mod)
+		f = mod->cfi_check;
+	preempt_enable();
+
+	return f;
+>>>>>>> origin/android16-base
 }
 
 static inline cfi_check_fn find_cfi_check(void *ptr)
 {
+<<<<<<< HEAD
 #ifdef CONFIG_CFI_CLANG_SHADOW
 	cfi_check_fn f;
 
@@ -272,6 +355,24 @@ static inline cfi_check_fn find_cfi_check(void *ptr)
 
 	if (f)
 		return f;
+=======
+	bool rcu;
+	cfi_check_fn f;
+
+	rcu = rcu_is_watching();
+	if (!rcu)
+		rcu_nmi_enter();
+
+#ifdef CONFIG_CFI_CLANG_SHADOW
+	/* Look up the __cfi_check function to use */
+	rcu_read_lock_sched();
+	f = ptr_to_check_fn(rcu_dereference_sched(cfi_shadow),
+			    (unsigned long)ptr);
+	rcu_read_unlock_sched();
+
+	if (f)
+		goto out;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Fall back to find_module_cfi_check, which works also for a larger
@@ -279,7 +380,17 @@ static inline cfi_check_fn find_cfi_check(void *ptr)
 	 */
 #endif /* CONFIG_CFI_CLANG_SHADOW */
 
+<<<<<<< HEAD
 	return find_module_cfi_check(ptr);
+=======
+	f = find_module_cfi_check(ptr);
+
+out:
+	if (!rcu)
+		rcu_nmi_exit();
+
+	return f;
+>>>>>>> origin/android16-base
 }
 
 void cfi_slowpath_handler(uint64_t id, void *ptr, void *diag)

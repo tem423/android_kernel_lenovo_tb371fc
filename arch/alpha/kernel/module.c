@@ -158,10 +158,15 @@ apply_relocate_add(Elf64_Shdr *sechdrs, const char *strtab,
 	base = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr;
 	symtab = (Elf64_Sym *)sechdrs[symindex].sh_addr;
 
+<<<<<<< HEAD
 	/* The small sections were sorted to the end of the segment.
 	   The following should definitely cover them.  */
 	gp = (u64)me->core_layout.base + me->core_layout.size - 0x8000;
 	got = sechdrs[me->arch.gotsecindex].sh_addr;
+=======
+	got = sechdrs[me->arch.gotsecindex].sh_addr;
+	gp = got + 0x8000;
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < n; i++) {
 		unsigned long r_sym = ELF64_R_SYM (rela[i].r_info);

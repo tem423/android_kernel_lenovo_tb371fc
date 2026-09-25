@@ -680,7 +680,11 @@ struct dvb_device *dst_ca_attach(struct dst_state *dst, struct dvb_adapter *dvb_
 	return NULL;
 }
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(dst_ca_attach);
+=======
+EXPORT_SYMBOL_GPL(dst_ca_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("DST DVB-S/T/C Combo CA driver");
 MODULE_AUTHOR("Manu Abraham");

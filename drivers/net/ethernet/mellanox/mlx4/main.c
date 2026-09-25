@@ -498,6 +498,10 @@ static int mlx4_dev_cap(struct mlx4_dev *dev, struct mlx4_dev_cap *dev_cap)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	dev->caps.map_clock_to_user  = dev_cap->map_clock_to_user;
+>>>>>>> origin/android16-base
 	dev->caps.uar_page_size	     = PAGE_SIZE;
 	dev->caps.num_uars	     = dev_cap->uar_size / PAGE_SIZE;
 	dev->caps.local_ca_ack_delay = dev_cap->local_ca_ack_delay;
@@ -1949,6 +1953,14 @@ int mlx4_get_internal_clock_params(struct mlx4_dev *dev,
 	if (mlx4_is_slave(dev))
 		return -EOPNOTSUPP;
 
+<<<<<<< HEAD
+=======
+	if (!dev->caps.map_clock_to_user) {
+		mlx4_dbg(dev, "Map clock to user is not supported.\n");
+		return -EOPNOTSUPP;
+	}
+
+>>>>>>> origin/android16-base
 	if (!params)
 		return -EINVAL;
 
@@ -3509,6 +3521,10 @@ slave_start:
 
 		if (!SRIOV_VALID_STATE(dev->flags)) {
 			mlx4_err(dev, "Invalid SRIOV state\n");
+<<<<<<< HEAD
+=======
+			err = -EINVAL;
+>>>>>>> origin/android16-base
 			goto err_close;
 		}
 	}

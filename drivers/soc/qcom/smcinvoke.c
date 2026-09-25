@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2016-2021, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+ * Copyright (c) 2022, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #define pr_fmt(fmt) "smcinvoke: %s: " fmt, __func__
@@ -559,30 +563,53 @@ static struct smcinvoke_cb_txn *find_cbtxn_locked(
 }
 
 /*
+<<<<<<< HEAD
  * size_add saturates at SIZE_MAX. If integer overflow is detected,
  * this function would return SIZE_MAX otherwise normal a+b is returned.
  */
 static inline size_t size_add(size_t a, size_t b)
+=======
+ * smci_size_add saturates at SIZE_MAX. If integer overflow is detected,
+ * this function would return SIZE_MAX otherwise normal a+b is returned.
+ */
+static inline size_t smci_size_add(size_t a, size_t b)
+>>>>>>> origin/android16-base
 {
 	return (b > (SIZE_MAX - a)) ? SIZE_MAX : a + b;
 }
 
 /*
+<<<<<<< HEAD
  * pad_size is used along with size_align to define a buffer overflow
  * protected version of ALIGN
  */
 static inline size_t pad_size(size_t a, size_t b)
+=======
+ * smci_pad_size is used along with smci_size_align to define a buffer overflow
+ * protected version of ALIGN
+ */
+static inline size_t smci_pad_size(size_t a, size_t b)
+>>>>>>> origin/android16-base
 {
 	return (~a + 1) % b;
 }
 
 /*
+<<<<<<< HEAD
  * size_align saturates at SIZE_MAX. If integer overflow is detected, this
  * function would return SIZE_MAX otherwise next aligned size is returned.
  */
 static inline size_t size_align(size_t a, size_t b)
 {
 	return size_add(a, pad_size(a, b));
+=======
+ * smci_size_align saturates at SIZE_MAX. If integer overflow is detected, this
+ * function would return SIZE_MAX otherwise next aligned size is returned.
+ */
+static inline size_t smci_size_align(size_t a, size_t b)
+{
+	return smci_size_add(a, smci_pad_size(a, b));
+>>>>>>> origin/android16-base
 }
 
 static uint16_t get_server_id(int cb_server_fd)
@@ -1216,9 +1243,15 @@ static size_t compute_in_msg_size(const struct smcinvoke_cmd_req *req,
 
 	/* each buffer has to be 8 bytes aligned */
 	while (i < OBJECT_COUNTS_NUM_buffers(req->counts))
+<<<<<<< HEAD
 		total_size = size_add(total_size,
 		size_align(args_buf[i++].b.size, SMCINVOKE_ARGS_ALIGN_SIZE));
 
+=======
+		total_size = smci_size_add(total_size,
+				smci_size_align(args_buf[i++].b.size,
+				SMCINVOKE_ARGS_ALIGN_SIZE));
+>>>>>>> origin/android16-base
 	return PAGE_ALIGN(total_size);
 }
 
@@ -1246,7 +1279,11 @@ static int marshal_in_invoke_req(const struct smcinvoke_cmd_req *req,
 		return 0;
 
 	FOR_ARGS(i, req->counts, BI) {
+<<<<<<< HEAD
 		offset = size_align(offset, SMCINVOKE_ARGS_ALIGN_SIZE);
+=======
+		offset = smci_size_align(offset, SMCINVOKE_ARGS_ALIGN_SIZE);
+>>>>>>> origin/android16-base
 		if ((offset > buf_size) ||
 			(args_buf[i].b.size > (buf_size - offset)))
 			goto out;
@@ -1262,7 +1299,11 @@ static int marshal_in_invoke_req(const struct smcinvoke_cmd_req *req,
 		offset += args_buf[i].b.size;
 	}
 	FOR_ARGS(i, req->counts, BO) {
+<<<<<<< HEAD
 		offset = size_align(offset, SMCINVOKE_ARGS_ALIGN_SIZE);
+=======
+		offset = smci_size_align(offset, SMCINVOKE_ARGS_ALIGN_SIZE);
+>>>>>>> origin/android16-base
 		if ((offset > buf_size) ||
 			(args_buf[i].b.size > (buf_size - offset)))
 			goto out;
@@ -1313,8 +1354,13 @@ static int marshal_in_tzcb_req(const struct smcinvoke_cb_txn *cb_txn,
 	user_req->argsize = sizeof(union smcinvoke_arg);
 
 	FOR_ARGS(i, tzcb_req->hdr.counts, BI) {
+<<<<<<< HEAD
 		user_req_buf_offset = size_align(user_req_buf_offset,
 					 SMCINVOKE_ARGS_ALIGN_SIZE);
+=======
+		user_req_buf_offset = smci_size_align(user_req_buf_offset,
+				SMCINVOKE_ARGS_ALIGN_SIZE);
+>>>>>>> origin/android16-base
 		tmp_arg.b.size = tz_args[i].b.size;
 		if ((tz_args[i].b.offset > tzcb_req_len) ||
 		    (tz_args[i].b.size > tzcb_req_len - tz_args[i].b.offset) ||
@@ -1339,8 +1385,13 @@ static int marshal_in_tzcb_req(const struct smcinvoke_cb_txn *cb_txn,
 		user_req_buf_offset += tmp_arg.b.size;
 	}
 	FOR_ARGS(i, tzcb_req->hdr.counts, BO) {
+<<<<<<< HEAD
 		user_req_buf_offset = size_align(user_req_buf_offset,
 					SMCINVOKE_ARGS_ALIGN_SIZE);
+=======
+		user_req_buf_offset = smci_size_align(user_req_buf_offset,
+				SMCINVOKE_ARGS_ALIGN_SIZE);
+>>>>>>> origin/android16-base
 
 		tmp_arg.b.size = tz_args[i].b.size;
 		if ((user_req_buf_offset > user_req->buf_len) ||
@@ -1672,8 +1723,16 @@ static long process_accept_req(struct file *filp, unsigned int cmd,
 		}
 	} while (!cb_txn);
 out:
+<<<<<<< HEAD
 	if (server_info)
 		kref_put(&server_info->ref_cnt, destroy_cb_server);
+=======
+	if (server_info) {
+		mutex_lock(&g_smcinvoke_lock);
+		kref_put(&server_info->ref_cnt, destroy_cb_server);
+		mutex_unlock(&g_smcinvoke_lock);
+	}
+>>>>>>> origin/android16-base
 
 	if (ret && ret != -ERESTARTSYS)
 		pr_err("accept thread returning with ret: %d\n", ret);

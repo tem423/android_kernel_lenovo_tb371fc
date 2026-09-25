@@ -167,7 +167,11 @@ static const struct of_device_id rockchip_mbox_of_match[] = {
 	{ .compatible = "rockchip,rk3368-mailbox", .data = &rk3368_drv_data},
 	{ },
 };
+<<<<<<< HEAD
 MODULE_DEVICE_TABLE(of, rockchp_mbox_of_match);
+=======
+MODULE_DEVICE_TABLE(of, rockchip_mbox_of_match);
+>>>>>>> origin/android16-base
 
 static int rockchip_mbox_probe(struct platform_device *pdev)
 {

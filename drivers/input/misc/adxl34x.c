@@ -696,7 +696,11 @@ struct adxl34x *adxl34x_probe(struct device *dev, int irq,
 	struct input_dev *input_dev;
 	const struct adxl34x_platform_data *pdata;
 	int err, range, i;
+<<<<<<< HEAD
 	unsigned char revid;
+=======
+	int revid;
+>>>>>>> origin/android16-base
 
 	if (!irq) {
 		dev_err(dev, "no IRQ?\n");
@@ -811,8 +815,12 @@ struct adxl34x *adxl34x_probe(struct device *dev, int irq,
 	AC_WRITE(ac, POWER_CTL, 0);
 
 	err = request_threaded_irq(ac->irq, NULL, adxl34x_irq,
+<<<<<<< HEAD
 				   IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
 				   dev_name(dev), ac);
+=======
+				   IRQF_ONESHOT, dev_name(dev), ac);
+>>>>>>> origin/android16-base
 	if (err) {
 		dev_err(dev, "irq %d busy?\n", ac->irq);
 		goto err_free_mem;

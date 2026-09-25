@@ -28,6 +28,10 @@
 #include <linux/input/mt.h>
 #include <linux/input/touchscreen.h>
 #include <linux/pm.h>
+<<<<<<< HEAD
+=======
+#include <linux/pm_runtime.h>
+>>>>>>> origin/android16-base
 #include <linux/irq.h>
 #include <linux/regulator/consumer.h>
 
@@ -77,7 +81,10 @@ struct silead_ts_data {
 	struct regulator_bulk_data regulators[2];
 	char fw_name[64];
 	struct touchscreen_properties prop;
+<<<<<<< HEAD
 	u32 max_fingers;
+=======
+>>>>>>> origin/android16-base
 	u32 chip_id;
 	struct input_mt_pos pos[SILEAD_MAX_FINGERS];
 	int slots[SILEAD_MAX_FINGERS];
@@ -105,7 +112,11 @@ static int silead_ts_request_input_dev(struct silead_ts_data *data)
 	input_set_abs_params(data->input, ABS_MT_POSITION_Y, 0, 4095, 0, 0);
 	touchscreen_parse_properties(data->input, true, &data->prop);
 
+<<<<<<< HEAD
 	input_mt_init_slots(data->input, data->max_fingers,
+=======
+	input_mt_init_slots(data->input, SILEAD_MAX_FINGERS,
+>>>>>>> origin/android16-base
 			    INPUT_MT_DIRECT | INPUT_MT_DROP_UNUSED |
 			    INPUT_MT_TRACK);
 
@@ -152,10 +163,17 @@ static void silead_ts_read_data(struct i2c_client *client)
 		return;
 	}
 
+<<<<<<< HEAD
 	if (buf[0] > data->max_fingers) {
 		dev_warn(dev, "More touches reported then supported %d > %d\n",
 			 buf[0], data->max_fingers);
 		buf[0] = data->max_fingers;
+=======
+	if (buf[0] > SILEAD_MAX_FINGERS) {
+		dev_warn(dev, "More touches reported then supported %d > %d\n",
+			 buf[0], SILEAD_MAX_FINGERS);
+		buf[0] = SILEAD_MAX_FINGERS;
+>>>>>>> origin/android16-base
 	}
 
 	touch_nr = 0;
@@ -207,7 +225,10 @@ static void silead_ts_read_data(struct i2c_client *client)
 
 static int silead_ts_init(struct i2c_client *client)
 {
+<<<<<<< HEAD
 	struct silead_ts_data *data = i2c_get_clientdata(client);
+=======
+>>>>>>> origin/android16-base
 	int error;
 
 	error = i2c_smbus_write_byte_data(client, SILEAD_REG_RESET,
@@ -217,7 +238,11 @@ static int silead_ts_init(struct i2c_client *client)
 	usleep_range(SILEAD_CMD_SLEEP_MIN, SILEAD_CMD_SLEEP_MAX);
 
 	error = i2c_smbus_write_byte_data(client, SILEAD_REG_TOUCH_NR,
+<<<<<<< HEAD
 					data->max_fingers);
+=======
+					  SILEAD_MAX_FINGERS);
+>>>>>>> origin/android16-base
 	if (error)
 		goto i2c_write_err;
 	usleep_range(SILEAD_CMD_SLEEP_MIN, SILEAD_CMD_SLEEP_MAX);
@@ -343,10 +368,15 @@ static int silead_ts_get_id(struct i2c_client *client)
 
 	error = i2c_smbus_read_i2c_block_data(client, SILEAD_REG_ID,
 					      sizeof(chip_id), (u8 *)&chip_id);
+<<<<<<< HEAD
 	if (error < 0) {
 		dev_err(&client->dev, "Chip ID read error %d\n", error);
 		return error;
 	}
+=======
+	if (error < 0)
+		return error;
+>>>>>>> origin/android16-base
 
 	data->chip_id = le32_to_cpu(chip_id);
 	dev_info(&client->dev, "Silead chip ID: 0x%8X", data->chip_id);
@@ -359,12 +389,57 @@ static int silead_ts_setup(struct i2c_client *client)
 	int error;
 	u32 status;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Some buggy BIOS-es bring up the chip in a stuck state where it
+	 * blocks the I2C bus. The following steps are necessary to
+	 * unstuck the chip / bus:
+	 * 1. Turn off the Silead chip.
+	 * 2. Try to do an I2C transfer with the chip, this will fail in
+	 *    response to which the I2C-bus-driver will call:
+	 *    i2c_recover_bus() which will unstuck the I2C-bus. Note the
+	 *    unstuck-ing of the I2C bus only works if we first drop the
+	 *    chip off the bus by turning it off.
+	 * 3. Turn the chip back on.
+	 *
+	 * On the x86/ACPI systems were this problem is seen, step 1. and
+	 * 3. require making ACPI calls and dealing with ACPI Power
+	 * Resources. The workaround below runtime-suspends the chip to
+	 * turn it off, leaving it up to the ACPI subsystem to deal with
+	 * this.
+	 */
+
+	if (device_property_read_bool(&client->dev,
+				      "silead,stuck-controller-bug")) {
+		pm_runtime_set_active(&client->dev);
+		pm_runtime_enable(&client->dev);
+		pm_runtime_allow(&client->dev);
+
+		pm_runtime_suspend(&client->dev);
+
+		dev_warn(&client->dev, FW_BUG "Stuck I2C bus: please ignore the next 'controller timed out' error\n");
+		silead_ts_get_id(client);
+
+		/* The forbid will also resume the device */
+		pm_runtime_forbid(&client->dev);
+		pm_runtime_disable(&client->dev);
+	}
+
+>>>>>>> origin/android16-base
 	silead_ts_set_power(client, SILEAD_POWER_OFF);
 	silead_ts_set_power(client, SILEAD_POWER_ON);
 
 	error = silead_ts_get_id(client);
+<<<<<<< HEAD
 	if (error)
 		return error;
+=======
+	if (error) {
+		dev_err(&client->dev, "Chip ID read error %d\n", error);
+		return error;
+	}
+>>>>>>> origin/android16-base
 
 	error = silead_ts_init(client);
 	if (error)
@@ -409,6 +484,7 @@ static void silead_ts_read_props(struct i2c_client *client)
 	const char *str;
 	int error;
 
+<<<<<<< HEAD
 	error = device_property_read_u32(dev, "silead,max-fingers",
 					 &data->max_fingers);
 	if (error) {
@@ -416,6 +492,8 @@ static void silead_ts_read_props(struct i2c_client *client)
 		data->max_fingers = 5; /* Most devices handle up-to 5 fingers */
 	}
 
+=======
+>>>>>>> origin/android16-base
 	error = device_property_read_string(dev, "firmware-name", &str);
 	if (!error)
 		snprintf(data->fw_name, sizeof(data->fw_name),

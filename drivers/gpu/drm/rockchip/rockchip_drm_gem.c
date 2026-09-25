@@ -270,9 +270,12 @@ static int rockchip_drm_gem_object_mmap(struct drm_gem_object *obj,
 	else
 		ret = rockchip_drm_gem_object_mmap_dma(obj, vma);
 
+<<<<<<< HEAD
 	if (ret)
 		drm_gem_vm_close(vma);
 
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 

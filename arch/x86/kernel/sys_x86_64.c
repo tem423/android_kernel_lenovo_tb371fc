@@ -70,9 +70,12 @@ static int __init control_va_addr_alignment(char *str)
 	if (*str == 0)
 		return 1;
 
+<<<<<<< HEAD
 	if (*str == '=')
 		str++;
 
+=======
+>>>>>>> origin/android16-base
 	if (!strcmp(str, "32"))
 		va_align.flags = ALIGN_VA_32;
 	else if (!strcmp(str, "64"))
@@ -82,11 +85,19 @@ static int __init control_va_addr_alignment(char *str)
 	else if (!strcmp(str, "on"))
 		va_align.flags = ALIGN_VA_32 | ALIGN_VA_64;
 	else
+<<<<<<< HEAD
 		return 0;
 
 	return 1;
 }
 __setup("align_va_addr", control_va_addr_alignment);
+=======
+		pr_warn("invalid option value: 'align_va_addr=%s'\n", str);
+
+	return 1;
+}
+__setup("align_va_addr=", control_va_addr_alignment);
+>>>>>>> origin/android16-base
 
 SYSCALL_DEFINE6(mmap, unsigned long, addr, unsigned long, len,
 		unsigned long, prot, unsigned long, flags,

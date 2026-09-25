@@ -1063,7 +1063,11 @@ static int s5p_mfc_set_enc_params_h264(struct s5p_mfc_ctx *ctx)
 	}
 
 	/* aspect ratio VUI */
+<<<<<<< HEAD
 	readl(mfc_regs->e_h264_options);
+=======
+	reg = readl(mfc_regs->e_h264_options);
+>>>>>>> origin/android16-base
 	reg &= ~(0x1 << 5);
 	reg |= ((p_h264->vui_sar & 0x1) << 5);
 	writel(reg, mfc_regs->e_h264_options);
@@ -1086,7 +1090,11 @@ static int s5p_mfc_set_enc_params_h264(struct s5p_mfc_ctx *ctx)
 
 	/* intra picture period for H.264 open GOP */
 	/* control */
+<<<<<<< HEAD
 	readl(mfc_regs->e_h264_options);
+=======
+	reg = readl(mfc_regs->e_h264_options);
+>>>>>>> origin/android16-base
 	reg &= ~(0x1 << 4);
 	reg |= ((p_h264->open_gop & 0x1) << 4);
 	writel(reg, mfc_regs->e_h264_options);
@@ -1100,23 +1108,39 @@ static int s5p_mfc_set_enc_params_h264(struct s5p_mfc_ctx *ctx)
 	}
 
 	/* 'WEIGHTED_BI_PREDICTION' for B is disable */
+<<<<<<< HEAD
 	readl(mfc_regs->e_h264_options);
+=======
+	reg = readl(mfc_regs->e_h264_options);
+>>>>>>> origin/android16-base
 	reg &= ~(0x3 << 9);
 	writel(reg, mfc_regs->e_h264_options);
 
 	/* 'CONSTRAINED_INTRA_PRED_ENABLE' is disable */
+<<<<<<< HEAD
 	readl(mfc_regs->e_h264_options);
+=======
+	reg = readl(mfc_regs->e_h264_options);
+>>>>>>> origin/android16-base
 	reg &= ~(0x1 << 14);
 	writel(reg, mfc_regs->e_h264_options);
 
 	/* ASO */
+<<<<<<< HEAD
 	readl(mfc_regs->e_h264_options);
+=======
+	reg = readl(mfc_regs->e_h264_options);
+>>>>>>> origin/android16-base
 	reg &= ~(0x1 << 6);
 	reg |= ((p_h264->aso & 0x1) << 6);
 	writel(reg, mfc_regs->e_h264_options);
 
 	/* hier qp enable */
+<<<<<<< HEAD
 	readl(mfc_regs->e_h264_options);
+=======
+	reg = readl(mfc_regs->e_h264_options);
+>>>>>>> origin/android16-base
 	reg &= ~(0x1 << 8);
 	reg |= ((p_h264->open_gop & 0x1) << 8);
 	writel(reg, mfc_regs->e_h264_options);
@@ -1137,7 +1161,11 @@ static int s5p_mfc_set_enc_params_h264(struct s5p_mfc_ctx *ctx)
 	writel(reg, mfc_regs->e_h264_num_t_layer);
 
 	/* frame packing SEI generation */
+<<<<<<< HEAD
 	readl(mfc_regs->e_h264_options);
+=======
+	reg = readl(mfc_regs->e_h264_options);
+>>>>>>> origin/android16-base
 	reg &= ~(0x1 << 25);
 	reg |= ((p_h264->sei_frame_packing & 0x1) << 25);
 	writel(reg, mfc_regs->e_h264_options);

@@ -720,8 +720,13 @@ static void xen_write_idt_entry(gate_desc *dt, int entrynum, const gate_desc *g)
 	preempt_enable();
 }
 
+<<<<<<< HEAD
 static void xen_convert_trap_info(const struct desc_ptr *desc,
 				  struct trap_info *traps)
+=======
+static unsigned xen_convert_trap_info(const struct desc_ptr *desc,
+				      struct trap_info *traps, bool full)
+>>>>>>> origin/android16-base
 {
 	unsigned in, out, count;
 
@@ -731,17 +736,29 @@ static void xen_convert_trap_info(const struct desc_ptr *desc,
 	for (in = out = 0; in < count; in++) {
 		gate_desc *entry = (gate_desc *)(desc->address) + in;
 
+<<<<<<< HEAD
 		if (cvt_gate_to_trap(in, entry, &traps[out]))
 			out++;
 	}
 	traps[out].address = 0;
+=======
+		if (cvt_gate_to_trap(in, entry, &traps[out]) || full)
+			out++;
+	}
+
+	return out;
+>>>>>>> origin/android16-base
 }
 
 void xen_copy_trap_info(struct trap_info *traps)
 {
 	const struct desc_ptr *desc = this_cpu_ptr(&idt_desc);
 
+<<<<<<< HEAD
 	xen_convert_trap_info(desc, traps);
+=======
+	xen_convert_trap_info(desc, traps, true);
+>>>>>>> origin/android16-base
 }
 
 /* Load a new IDT into Xen.  In principle this can be per-CPU, so we
@@ -751,6 +768,10 @@ static void xen_load_idt(const struct desc_ptr *desc)
 {
 	static DEFINE_SPINLOCK(lock);
 	static struct trap_info traps[257];
+<<<<<<< HEAD
+=======
+	unsigned out;
+>>>>>>> origin/android16-base
 
 	trace_xen_cpu_load_idt(desc);
 
@@ -758,7 +779,12 @@ static void xen_load_idt(const struct desc_ptr *desc)
 
 	memcpy(this_cpu_ptr(&idt_desc), desc, sizeof(idt_desc));
 
+<<<<<<< HEAD
 	xen_convert_trap_info(desc, traps);
+=======
+	out = xen_convert_trap_info(desc, traps, false);
+	memset(&traps[out], 0, sizeof(traps[0]));
+>>>>>>> origin/android16-base
 
 	xen_mc_flush();
 	if (HYPERVISOR_set_trap_table(traps))
@@ -1187,6 +1213,14 @@ static void __init xen_dom0_set_legacy_features(void)
 	x86_platform.legacy.rtc = 1;
 }
 
+<<<<<<< HEAD
+=======
+static void __init xen_domu_set_legacy_features(void)
+{
+	x86_platform.legacy.rtc = 0;
+}
+
+>>>>>>> origin/android16-base
 /* First C function to be called on Xen boot */
 asmlinkage __visible void __init xen_start_kernel(void)
 {
@@ -1354,6 +1388,11 @@ asmlinkage __visible void __init xen_start_kernel(void)
 		add_preferred_console("xenboot", 0, NULL);
 		if (pci_xen)
 			x86_init.pci.arch_init = pci_xen_init;
+<<<<<<< HEAD
+=======
+		x86_platform.set_legacy_features =
+				xen_domu_set_legacy_features;
+>>>>>>> origin/android16-base
 	} else {
 		const struct dom0_vga_console_info *info =
 			(void *)((char *)xen_start_info +
@@ -1409,7 +1448,11 @@ asmlinkage __visible void __init xen_start_kernel(void)
 	/* We need this for printk timestamps */
 	xen_setup_runstate_info(0);
 
+<<<<<<< HEAD
 	xen_efi_init();
+=======
+	xen_efi_init(&boot_params);
+>>>>>>> origin/android16-base
 
 	/* Start the world */
 #ifdef CONFIG_X86_32

@@ -383,7 +383,11 @@ static int rockchip_saradc_resume(struct device *dev)
 
 	ret = clk_prepare_enable(info->clk);
 	if (ret)
+<<<<<<< HEAD
 		return ret;
+=======
+		clk_disable_unprepare(info->pclk);
+>>>>>>> origin/android16-base
 
 	return ret;
 }

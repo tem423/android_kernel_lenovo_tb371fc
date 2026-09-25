@@ -2059,7 +2059,14 @@ static int efx_ef10_try_update_nic_stats_vf(struct efx_nic *efx)
 
 	efx_update_sw_stats(efx, stats);
 out:
+<<<<<<< HEAD
 	efx_nic_free_buffer(efx, &stats_buf);
+=======
+	/* releasing a DMA coherent buffer with BH disabled can panic */
+	spin_unlock_bh(&efx->stats_lock);
+	efx_nic_free_buffer(efx, &stats_buf);
+	spin_lock_bh(&efx->stats_lock);
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -6146,6 +6153,14 @@ static int efx_ef10_mtd_probe(struct efx_nic *efx)
 		n_parts++;
 	}
 
+<<<<<<< HEAD
+=======
+	if (!n_parts) {
+		kfree(parts);
+		return 0;
+	}
+
+>>>>>>> origin/android16-base
 	rc = efx_mtd_add(efx, &parts[0].common, n_parts, sizeof(*parts));
 fail:
 	if (rc)

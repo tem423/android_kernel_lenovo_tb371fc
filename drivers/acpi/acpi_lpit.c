@@ -106,7 +106,11 @@ static void lpit_update_residency(struct lpit_residency_info *info,
 				 struct acpi_lpit_native *lpit_native)
 {
 	info->frequency = lpit_native->counter_frequency ?
+<<<<<<< HEAD
 				lpit_native->counter_frequency : tsc_khz * 1000;
+=======
+				lpit_native->counter_frequency : mul_u32_u32(tsc_khz, 1000U);
+>>>>>>> origin/android16-base
 	if (!info->frequency)
 		info->frequency = 1;
 

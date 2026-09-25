@@ -17,6 +17,11 @@
 #include <linux/etherdevice.h>
 #include <linux/ethtool.h>
 #include <linux/if_vlan.h>
+<<<<<<< HEAD
+=======
+#include <linux/string_helpers.h>
+#include <linux/usb/composite.h>
+>>>>>>> origin/android16-base
 
 #include "u_ether.h"
 
@@ -45,9 +50,16 @@
 #define UETH__VERSION	"29-May-2008"
 
 /* Experiments show that both Linux and Windows hosts allow up to 16k
+<<<<<<< HEAD
  * frame sizes. Set the max size to 15k+52 to prevent allocating 32k
  * blocks and still have efficient handling. */
 #define GETHER_MAX_ETH_FRAME_LEN 15412
+=======
+ * frame sizes. Set the max MTU size to 15k+52 to prevent allocating 32k
+ * blocks and still have efficient handling. */
+#define GETHER_MAX_MTU_SIZE 15412
+#define GETHER_MAX_ETH_FRAME_LEN (GETHER_MAX_MTU_SIZE + ETH_HLEN)
+>>>>>>> origin/android16-base
 
 struct eth_dev {
 	/* lock is held while accessing port_usb
@@ -80,6 +92,10 @@ struct eth_dev {
 
 	bool			zlp;
 	bool			no_skb_reserve;
+<<<<<<< HEAD
+=======
+	bool			ifname_set;
+>>>>>>> origin/android16-base
 	u8			host_mac[ETH_ALEN];
 	u8			dev_mac[ETH_ALEN];
 };
@@ -102,6 +118,7 @@ static inline int qlen(struct usb_gadget *gadget, unsigned qmult)
 
 /*-------------------------------------------------------------------------*/
 
+<<<<<<< HEAD
 /* REVISIT there must be a better way than having two sets
  * of debug calls ...
  */
@@ -137,6 +154,8 @@ static inline int qlen(struct usb_gadget *gadget, unsigned qmult)
 
 /*-------------------------------------------------------------------------*/
 
+=======
+>>>>>>> origin/android16-base
 /* NETWORK DRIVER HOOKUP (to the layer above this driver) */
 
 static void eth_get_drvinfo(struct net_device *net, struct ethtool_drvinfo *p)
@@ -495,8 +514,14 @@ static netdev_tx_t eth_start_xmit(struct sk_buff *skb,
 	}
 	spin_unlock_irqrestore(&dev->lock, flags);
 
+<<<<<<< HEAD
 	if (skb && !in) {
 		dev_kfree_skb_any(skb);
+=======
+	if (!in) {
+		if (skb)
+			dev_kfree_skb_any(skb);
+>>>>>>> origin/android16-base
 		return NETDEV_TX_OK;
 	}
 
@@ -775,9 +800,19 @@ struct eth_dev *gether_setup_name(struct usb_gadget *g,
 	dev->qmult = qmult;
 	snprintf(net->name, sizeof(net->name), "%s%%d", netname);
 
+<<<<<<< HEAD
 	if (get_ether_addr(dev_addr, net->dev_addr))
 		dev_warn(&g->dev,
 			"using random %s ethernet address\n", "self");
+=======
+	if (get_ether_addr(dev_addr, net->dev_addr)) {
+		net->addr_assign_type = NET_ADDR_RANDOM;
+		dev_warn(&g->dev,
+			"using random %s ethernet address\n", "self");
+	} else {
+		net->addr_assign_type = NET_ADDR_SET;
+	}
+>>>>>>> origin/android16-base
 	if (get_ether_addr(host_addr, dev->host_mac))
 		dev_warn(&g->dev,
 			"using random %s ethernet address\n", "host");
@@ -791,7 +826,11 @@ struct eth_dev *gether_setup_name(struct usb_gadget *g,
 
 	/* MTU range: 14 - 15412 */
 	net->min_mtu = ETH_HLEN;
+<<<<<<< HEAD
 	net->max_mtu = GETHER_MAX_ETH_FRAME_LEN;
+=======
+	net->max_mtu = GETHER_MAX_MTU_SIZE;
+>>>>>>> origin/android16-base
 
 	dev->gadget = g;
 	SET_NETDEV_DEV(net, &g->dev);
@@ -834,6 +873,12 @@ struct net_device *gether_setup_name_default(const char *netname)
 	INIT_LIST_HEAD(&dev->tx_reqs);
 	INIT_LIST_HEAD(&dev->rx_reqs);
 
+<<<<<<< HEAD
+=======
+	/* by default we always have a random MAC address */
+	net->addr_assign_type = NET_ADDR_RANDOM;
+
+>>>>>>> origin/android16-base
 	skb_queue_head_init(&dev->rx_frames);
 
 	/* network device setup */
@@ -853,7 +898,11 @@ struct net_device *gether_setup_name_default(const char *netname)
 
 	/* MTU range: 14 - 15412 */
 	net->min_mtu = ETH_HLEN;
+<<<<<<< HEAD
 	net->max_mtu = GETHER_MAX_ETH_FRAME_LEN;
+=======
+	net->max_mtu = GETHER_MAX_MTU_SIZE;
+>>>>>>> origin/android16-base
 
 	return net;
 }
@@ -863,19 +912,32 @@ int gether_register_netdev(struct net_device *net)
 {
 	struct eth_dev *dev;
 	struct usb_gadget *g;
+<<<<<<< HEAD
 	struct sockaddr sa;
+=======
+>>>>>>> origin/android16-base
 	int status;
 
 	if (!net->dev.parent)
 		return -EINVAL;
 	dev = netdev_priv(net);
 	g = dev->gadget;
+<<<<<<< HEAD
+=======
+
+	memcpy(net->dev_addr, dev->dev_mac, ETH_ALEN);
+
+>>>>>>> origin/android16-base
 	status = register_netdev(net);
 	if (status < 0) {
 		dev_dbg(&g->dev, "register_netdev failed, %d\n", status);
 		return status;
 	} else {
 		INFO(dev, "HOST MAC %pM\n", dev->host_mac);
+<<<<<<< HEAD
+=======
+		INFO(dev, "MAC %pM\n", dev->dev_mac);
+>>>>>>> origin/android16-base
 
 		/* two kinds of host-initiated state changes:
 		 *  - iff DATA transfer is active, carrier is "on"
@@ -883,6 +945,7 @@ int gether_register_netdev(struct net_device *net)
 		 */
 		netif_carrier_off(net);
 	}
+<<<<<<< HEAD
 	sa.sa_family = net->type;
 	memcpy(sa.sa_data, dev->dev_mac, ETH_ALEN);
 	rtnl_lock();
@@ -892,6 +955,8 @@ int gether_register_netdev(struct net_device *net)
 		pr_warn("cannot set self ethernet address: %d\n", status);
 	else
 		INFO(dev, "MAC %pM\n", dev->dev_mac);
+=======
+>>>>>>> origin/android16-base
 
 	return status;
 }
@@ -916,6 +981,10 @@ int gether_set_dev_addr(struct net_device *net, const char *dev_addr)
 	if (get_ether_addr(dev_addr, new_addr))
 		return -EINVAL;
 	memcpy(dev->dev_mac, new_addr, ETH_ALEN);
+<<<<<<< HEAD
+=======
+	net->addr_assign_type = NET_ADDR_SET;
+>>>>>>> origin/android16-base
 	return 0;
 }
 EXPORT_SYMBOL_GPL(gether_set_dev_addr);
@@ -975,6 +1044,11 @@ int gether_get_host_addr_cdc(struct net_device *net, char *host_addr, int len)
 	dev = netdev_priv(net);
 	snprintf(host_addr, len, "%pm", dev->host_mac);
 
+<<<<<<< HEAD
+=======
+	string_upper(host_addr, host_addr);
+
+>>>>>>> origin/android16-base
 	return strlen(host_addr);
 }
 EXPORT_SYMBOL_GPL(gether_get_host_addr_cdc);
@@ -1008,6 +1082,7 @@ EXPORT_SYMBOL_GPL(gether_get_qmult);
 
 int gether_get_ifname(struct net_device *net, char *name, int len)
 {
+<<<<<<< HEAD
 	int ret;
 
 	rtnl_lock();
@@ -1017,6 +1092,47 @@ int gether_get_ifname(struct net_device *net, char *name, int len)
 }
 EXPORT_SYMBOL_GPL(gether_get_ifname);
 
+=======
+	struct eth_dev *dev = netdev_priv(net);
+	int ret;
+
+	rtnl_lock();
+	ret = scnprintf(name, len, "%s\n",
+			dev->ifname_set ? net->name : netdev_name(net));
+	rtnl_unlock();
+	return ret;
+}
+EXPORT_SYMBOL_GPL(gether_get_ifname);
+
+int gether_set_ifname(struct net_device *net, const char *name, int len)
+{
+	struct eth_dev *dev = netdev_priv(net);
+	char tmp[IFNAMSIZ];
+	const char *p;
+
+	if (name[len - 1] == '\n')
+		len--;
+
+	if (len >= sizeof(tmp))
+		return -E2BIG;
+
+	strscpy(tmp, name, len + 1);
+	if (!dev_valid_name(tmp))
+		return -EINVAL;
+
+	/* Require exactly one %d, so binding will not fail with EEXIST. */
+	p = strchr(name, '%');
+	if (!p || p[1] != 'd' || strchr(p + 2, '%'))
+		return -EINVAL;
+
+	strncpy(net->name, tmp, sizeof(net->name));
+	dev->ifname_set = true;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(gether_set_ifname);
+
+>>>>>>> origin/android16-base
 unsigned int gether_get_ul_max_pkts_per_xfer(struct net_device *net)
 {
 	struct eth_dev *dev;

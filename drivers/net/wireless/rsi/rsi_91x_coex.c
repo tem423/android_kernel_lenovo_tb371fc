@@ -160,6 +160,10 @@ int rsi_coex_attach(struct rsi_common *common)
 			       rsi_coex_scheduler_thread,
 			       "Coex-Tx-Thread")) {
 		rsi_dbg(ERR_ZONE, "%s: Unable to init tx thrd\n", __func__);
+<<<<<<< HEAD
+=======
+		kfree(coex_cb);
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 	return 0;

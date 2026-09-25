@@ -160,6 +160,7 @@ static int vendor_resource_matches(struct pnp_dev *dev,
 static void pnpacpi_parse_allocated_vendor(struct pnp_dev *dev,
 				    struct acpi_resource_vendor_typed *vendor)
 {
+<<<<<<< HEAD
 	if (vendor_resource_matches(dev, vendor, &hp_ccsr_uuid, 16)) {
 		u64 start, length;
 
@@ -167,6 +168,15 @@ static void pnpacpi_parse_allocated_vendor(struct pnp_dev *dev,
 		memcpy(&length, vendor->byte_data + 8, sizeof(length));
 
 		pnp_add_mem_resource(dev, start, start + length - 1, 0);
+=======
+	struct { u64 start, length; } range;
+
+	if (vendor_resource_matches(dev, vendor, &hp_ccsr_uuid,
+				    sizeof(range))) {
+		memcpy(&range, vendor->byte_data, sizeof(range));
+		pnp_add_mem_resource(dev, range.start, range.start +
+				     range.length - 1, 0);
+>>>>>>> origin/android16-base
 	}
 }
 

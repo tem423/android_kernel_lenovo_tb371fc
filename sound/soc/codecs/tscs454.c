@@ -3129,6 +3129,7 @@ static int set_aif_sample_format(struct snd_soc_component *component,
 	unsigned int width;
 	int ret;
 
+<<<<<<< HEAD
 	switch (format) {
 	case SNDRV_PCM_FORMAT_S16_LE:
 		width = FV_WL_16;
@@ -3141,6 +3142,19 @@ static int set_aif_sample_format(struct snd_soc_component *component,
 		break;
 	case SNDRV_PCM_FORMAT_S24_LE:
 	case SNDRV_PCM_FORMAT_S32_LE:
+=======
+	switch (snd_pcm_format_width(format)) {
+	case 16:
+		width = FV_WL_16;
+		break;
+	case 20:
+		width = FV_WL_20;
+		break;
+	case 24:
+		width = FV_WL_24;
+		break;
+	case 32:
+>>>>>>> origin/android16-base
 		width = FV_WL_32;
 		break;
 	default:
@@ -3338,6 +3352,10 @@ static const struct snd_soc_component_driver soc_component_dev_tscs454 = {
 	.num_dapm_routes = ARRAY_SIZE(tscs454_intercon),
 	.controls =	tscs454_snd_controls,
 	.num_controls = ARRAY_SIZE(tscs454_snd_controls),
+<<<<<<< HEAD
+=======
+	.endianness = 1,
+>>>>>>> origin/android16-base
 };
 
 #define TSCS454_RATES SNDRV_PCM_RATE_8000_96000

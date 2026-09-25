@@ -394,7 +394,11 @@ static int s3c_adc_bat_remove(struct platform_device *pdev)
 		gpio_free(pdata->gpio_charge_finished);
 	}
 
+<<<<<<< HEAD
 	cancel_delayed_work(&bat_work);
+=======
+	cancel_delayed_work_sync(&bat_work);
+>>>>>>> origin/android16-base
 
 	if (pdata->exit)
 		pdata->exit();

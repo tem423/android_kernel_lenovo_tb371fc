@@ -552,7 +552,11 @@ ia64_get_irr(unsigned int vector)
 {
 	unsigned int reg = vector / 64;
 	unsigned int bit = vector % 64;
+<<<<<<< HEAD
 	u64 irr;
+=======
+	unsigned long irr;
+>>>>>>> origin/android16-base
 
 	switch (reg) {
 	case 0: irr = ia64_getreg(_IA64_REG_CR_IRR0); break;

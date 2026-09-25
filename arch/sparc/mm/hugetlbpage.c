@@ -273,7 +273,11 @@ static unsigned long huge_tte_to_size(pte_t pte)
 	return size;
 }
 
+<<<<<<< HEAD
 pte_t *huge_pte_alloc(struct mm_struct *mm,
+=======
+pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
+>>>>>>> origin/android16-base
 			unsigned long addr, unsigned long sz)
 {
 	pgd_t *pgd;

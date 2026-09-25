@@ -450,6 +450,7 @@ xchk_btree_check_minrecs(
 	int			level,
 	struct xfs_btree_block	*block)
 {
+<<<<<<< HEAD
 	unsigned int		numrecs;
 	int			ok_level;
 
@@ -476,6 +477,43 @@ xchk_btree_check_minrecs(
 		return;
 
 	xchk_btree_set_corrupt(bs->sc, bs->cur, level);
+=======
+	struct xfs_btree_cur	*cur = bs->cur;
+	unsigned int		root_level = cur->bc_nlevels - 1;
+	unsigned int		numrecs = be16_to_cpu(block->bb_numrecs);
+
+	/* More records than minrecs means the block is ok. */
+	if (numrecs >= cur->bc_ops->get_minrecs(cur, level))
+		return;
+
+	/*
+	 * For btrees rooted in the inode, it's possible that the root block
+	 * contents spilled into a regular ondisk block because there wasn't
+	 * enough space in the inode root.  The number of records in that
+	 * child block might be less than the standard minrecs, but that's ok
+	 * provided that there's only one direct child of the root.
+	 */
+	if ((cur->bc_flags & XFS_BTREE_ROOT_IN_INODE) &&
+	    level == cur->bc_nlevels - 2) {
+		struct xfs_btree_block	*root_block;
+		struct xfs_buf		*root_bp;
+		int			root_maxrecs;
+
+		root_block = xfs_btree_get_block(cur, root_level, &root_bp);
+		root_maxrecs = cur->bc_ops->get_dmaxrecs(cur, root_level);
+		if (be16_to_cpu(root_block->bb_numrecs) != 1 ||
+		    numrecs <= root_maxrecs)
+			xchk_btree_set_corrupt(bs->sc, cur, level);
+		return;
+	}
+
+	/*
+	 * Otherwise, only the root level is allowed to have fewer than minrecs
+	 * records or keyptrs.
+	 */
+	if (level < root_level)
+		xchk_btree_set_corrupt(bs->sc, cur, level);
+>>>>>>> origin/android16-base
 }
 
 /*

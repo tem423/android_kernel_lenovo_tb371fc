@@ -44,6 +44,7 @@ extern struct drbd_state_change *remember_old_state(struct drbd_resource *, gfp_
 extern void copy_old_to_new_state_change(struct drbd_state_change *);
 extern void forget_state_change(struct drbd_state_change *);
 
+<<<<<<< HEAD
 extern void notify_resource_state_change(struct sk_buff *,
 					 unsigned int,
 					 struct drbd_resource_state_change *,
@@ -57,6 +58,21 @@ extern void notify_device_state_change(struct sk_buff *,
 				       struct drbd_device_state_change *,
 				       enum drbd_notification_type type);
 extern void notify_peer_device_state_change(struct sk_buff *,
+=======
+extern int notify_resource_state_change(struct sk_buff *,
+					 unsigned int,
+					 struct drbd_resource_state_change *,
+					 enum drbd_notification_type type);
+extern int notify_connection_state_change(struct sk_buff *,
+					   unsigned int,
+					   struct drbd_connection_state_change *,
+					   enum drbd_notification_type type);
+extern int notify_device_state_change(struct sk_buff *,
+				       unsigned int,
+				       struct drbd_device_state_change *,
+				       enum drbd_notification_type type);
+extern int notify_peer_device_state_change(struct sk_buff *,
+>>>>>>> origin/android16-base
 					    unsigned int,
 					    struct drbd_peer_device_state_change *,
 					    enum drbd_notification_type type);

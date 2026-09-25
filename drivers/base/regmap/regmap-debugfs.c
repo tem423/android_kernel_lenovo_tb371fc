@@ -53,7 +53,11 @@ static ssize_t regmap_name_read_file(struct file *file,
 		name = map->dev->driver->name;
 
 	ret = snprintf(buf, PAGE_SIZE, "%s\n", name);
+<<<<<<< HEAD
 	if (ret < 0) {
+=======
+	if (ret >= PAGE_SIZE) {
+>>>>>>> origin/android16-base
 		kfree(buf);
 		return ret;
 	}
@@ -642,8 +646,17 @@ void regmap_debugfs_init(struct regmap *map, const char *name)
 		devname = dev_name(map->dev);
 
 	if (name) {
+<<<<<<< HEAD
 		map->debugfs_name = kasprintf(GFP_KERNEL, "%s-%s",
 					      devname, name);
+=======
+		if (!map->debugfs_name) {
+			map->debugfs_name = kasprintf(GFP_KERNEL, "%s-%s",
+					      devname, name);
+			if (!map->debugfs_name)
+				return;
+		}
+>>>>>>> origin/android16-base
 		name = map->debugfs_name;
 	} else {
 		name = devname;
@@ -651,9 +664,16 @@ void regmap_debugfs_init(struct regmap *map, const char *name)
 
 	if (!strcmp(name, "dummy")) {
 		kfree(map->debugfs_name);
+<<<<<<< HEAD
 
 		map->debugfs_name = kasprintf(GFP_KERNEL, "dummy%d",
 						dummy_index);
+=======
+		map->debugfs_name = kasprintf(GFP_KERNEL, "dummy%d",
+						dummy_index);
+		if (!map->debugfs_name)
+				return;
+>>>>>>> origin/android16-base
 		name = map->debugfs_name;
 		dummy_index++;
 	}
@@ -732,6 +752,10 @@ void regmap_debugfs_exit(struct regmap *map)
 		regmap_debugfs_free_dump_cache(map);
 		mutex_unlock(&map->cache_lock);
 		kfree(map->debugfs_name);
+<<<<<<< HEAD
+=======
+		map->debugfs_name = NULL;
+>>>>>>> origin/android16-base
 	} else {
 		struct regmap_debugfs_node *node, *tmp;
 

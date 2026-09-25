@@ -107,6 +107,12 @@ nouveau_vma_new(struct nouveau_bo *nvbo, struct nouveau_vmm *vmm,
 	} else {
 		ret = nvif_vmm_get(&vmm->vmm, PTES, false, mem->mem.page, 0,
 				   mem->mem.size, &tmp);
+<<<<<<< HEAD
+=======
+		if (ret)
+			goto done;
+
+>>>>>>> origin/android16-base
 		vma->addr = tmp.addr;
 	}
 

@@ -108,7 +108,11 @@
 		compatible = "samsung,s5m8767-pmic";
 		reg = <0x66>;
 		interrupt-parent = <&gpx3>;
+<<<<<<< HEAD
 		interrupts = <2 IRQ_TYPE_NONE>;
+=======
+		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
+>>>>>>> origin/android16-base
 		pinctrl-names = "default";
 		pinctrl-0 = <&s5m8767_irq &s5m8767_dvs &s5m8767_ds>;
 		wakeup-source;

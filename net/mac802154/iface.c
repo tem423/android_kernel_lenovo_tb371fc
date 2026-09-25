@@ -669,6 +669,10 @@ ieee802154_if_add(struct ieee802154_local *local, const char *name,
 	sdata->dev = ndev;
 	sdata->wpan_dev.wpan_phy = local->hw.phy;
 	sdata->local = local;
+<<<<<<< HEAD
+=======
+	INIT_LIST_HEAD(&sdata->wpan_dev.list);
+>>>>>>> origin/android16-base
 
 	/* setup type-dependent data */
 	ret = ieee802154_setup_sdata(sdata, type);

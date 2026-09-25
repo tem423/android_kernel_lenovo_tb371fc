@@ -88,8 +88,12 @@ struct rpc_task {
 #endif
 	unsigned char		tk_priority : 2,/* Task priority */
 				tk_garb_retry : 2,
+<<<<<<< HEAD
 				tk_cred_retry : 2,
 				tk_rebind_retry : 2;
+=======
+				tk_cred_retry : 2;
+>>>>>>> origin/android16-base
 };
 
 typedef void			(*rpc_action)(struct rpc_task *);
@@ -191,7 +195,11 @@ struct rpc_wait_queue {
 	unsigned char		maxpriority;		/* maximum priority (0 if queue is not a priority queue) */
 	unsigned char		priority;		/* current priority */
 	unsigned char		nr;			/* # tasks remaining for cookie */
+<<<<<<< HEAD
 	unsigned short		qlen;			/* total # tasks waiting in queue */
+=======
+	unsigned int		qlen;			/* total # tasks waiting in queue */
+>>>>>>> origin/android16-base
 	struct rpc_timer	timer_list;
 #if IS_ENABLED(CONFIG_SUNRPC_DEBUG) || IS_ENABLED(CONFIG_TRACEPOINTS)
 	const char *		name;

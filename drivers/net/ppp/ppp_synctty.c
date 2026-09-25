@@ -467,6 +467,13 @@ ppp_sync_ioctl(struct ppp_channel *chan, unsigned int cmd, unsigned long arg)
 	case PPPIOCSMRU:
 		if (get_user(val, (int __user *) argp))
 			break;
+<<<<<<< HEAD
+=======
+		if (val > U16_MAX) {
+			err = -EINVAL;
+			break;
+		}
+>>>>>>> origin/android16-base
 		if (val < PPP_MRU)
 			val = PPP_MRU;
 		ap->mru = val;
@@ -702,7 +709,11 @@ ppp_sync_input(struct syncppp *ap, const unsigned char *buf,
 
 	/* strip address/control field if present */
 	p = skb->data;
+<<<<<<< HEAD
 	if (p[0] == PPP_ALLSTATIONS && p[1] == PPP_UI) {
+=======
+	if (skb->len >= 2 && p[0] == PPP_ALLSTATIONS && p[1] == PPP_UI) {
+>>>>>>> origin/android16-base
 		/* chop off address/control */
 		if (skb->len < 3)
 			goto err;

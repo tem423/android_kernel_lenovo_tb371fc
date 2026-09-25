@@ -887,7 +887,11 @@ err1:
 	return err;
 }
 
+<<<<<<< HEAD
 static const struct of_device_id grpci2_of_match[] __initconst = {
+=======
+static const struct of_device_id grpci2_of_match[] = {
+>>>>>>> origin/android16-base
 	{
 	 .name = "GAISLER_GRPCI2",
 	 },

@@ -127,7 +127,11 @@ static int rt2880_pmx_group_enable(struct pinctrl_dev *pctrldev,
 	if (p->groups[group].enabled) {
 		dev_err(p->dev, "%s is already enabled\n",
 			p->groups[group].name);
+<<<<<<< HEAD
 		return -EBUSY;
+=======
+		return 0;
+>>>>>>> origin/android16-base
 	}
 
 	p->groups[group].enabled = 1;
@@ -267,6 +271,11 @@ static int rt2880_pinmux_pins(struct rt2880_priv *p)
 						p->func[i]->pin_count,
 						sizeof(int),
 						GFP_KERNEL);
+<<<<<<< HEAD
+=======
+		if (!p->func[i]->pins)
+			return -ENOMEM;
+>>>>>>> origin/android16-base
 		for (j = 0; j < p->func[i]->pin_count; j++)
 			p->func[i]->pins[j] = p->func[i]->pin_first + j;
 

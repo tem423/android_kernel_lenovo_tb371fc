@@ -302,6 +302,12 @@ static const bool has_smb2_data_area[NUMBER_OF_SMB2_COMMANDS] = {
 char *
 smb2_get_data_area_len(int *off, int *len, struct smb2_sync_hdr *shdr)
 {
+<<<<<<< HEAD
+=======
+	const int max_off = 4096;
+	const int max_len = 128 * 1024;
+
+>>>>>>> origin/android16-base
 	*off = 0;
 	*len = 0;
 
@@ -369,6 +375,7 @@ smb2_get_data_area_len(int *off, int *len, struct smb2_sync_hdr *shdr)
 	 * Invalid length or offset probably means data area is invalid, but
 	 * we have little choice but to ignore the data area in this case.
 	 */
+<<<<<<< HEAD
 	if (*off > 4096) {
 		cifs_dbg(VFS, "offset %d too large, data area ignored\n", *off);
 		*len = 0;
@@ -384,14 +391,29 @@ smb2_get_data_area_len(int *off, int *len, struct smb2_sync_hdr *shdr)
 		*len = 0;
 	} else if (*len > 128 * 1024) {
 		cifs_dbg(VFS, "data area larger than 128K: %d\n", *len);
+=======
+	if (unlikely(*off < 0 || *off > max_off ||
+		     *len < 0 || *len > max_len)) {
+		cifs_dbg(VFS, "%s: invalid data area (off=%d len=%d)\n",
+			 __func__, *off, *len);
+		*off = 0;
+		*len = 0;
+	} else if (*off == 0) {
+>>>>>>> origin/android16-base
 		*len = 0;
 	}
 
 	/* return pointer to beginning of data area, ie offset from SMB start */
+<<<<<<< HEAD
 	if ((*off != 0) && (*len != 0))
 		return (char *)shdr + *off;
 	else
 		return NULL;
+=======
+	if (*off > 0 && *len > 0)
+		return (char *)shdr + *off;
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -738,8 +760,13 @@ smb2_is_valid_oplock_break(char *buffer, struct TCP_Server_Info *server)
 		}
 	}
 	spin_unlock(&cifs_tcp_ses_lock);
+<<<<<<< HEAD
 	cifs_dbg(FYI, "Can not process oplock break for non-existent connection\n");
 	return false;
+=======
+	cifs_dbg(FYI, "No file id matched, oplock break ignored\n");
+	return true;
+>>>>>>> origin/android16-base
 }
 
 void

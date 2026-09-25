@@ -3,7 +3,11 @@
 #define _UAPI_LINUX_SWAB_H
 
 #include <linux/types.h>
+<<<<<<< HEAD
 #include <linux/compiler.h>
+=======
+#include <linux/stddef.h>
+>>>>>>> origin/android16-base
 #include <asm/bitsperlong.h>
 #include <asm/swab.h>
 

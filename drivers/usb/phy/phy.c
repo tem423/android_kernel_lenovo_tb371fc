@@ -579,7 +579,11 @@ void devm_usb_put_phy(struct device *dev, struct usb_phy *phy)
 {
 	int r;
 
+<<<<<<< HEAD
 	r = devres_destroy(dev, devm_usb_phy_release, devm_usb_phy_match, phy);
+=======
+	r = devres_release(dev, devm_usb_phy_release, devm_usb_phy_match, phy);
+>>>>>>> origin/android16-base
 	dev_WARN_ONCE(dev, r, "couldn't find PHY resource\n");
 }
 EXPORT_SYMBOL_GPL(devm_usb_put_phy);

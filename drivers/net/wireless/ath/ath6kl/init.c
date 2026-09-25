@@ -1575,7 +1575,11 @@ static int ath6kl_init_upload(struct ath6kl *ar)
 
 int ath6kl_init_hw_params(struct ath6kl *ar)
 {
+<<<<<<< HEAD
 	const struct ath6kl_hw *uninitialized_var(hw);
+=======
+	const struct ath6kl_hw *hw;
+>>>>>>> origin/android16-base
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(hw_list); i++) {

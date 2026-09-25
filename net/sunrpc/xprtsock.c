@@ -2466,6 +2466,16 @@ static void xs_tcp_setup_socket(struct work_struct *work)
 	case -EALREADY:
 		xprt_unlock_connect(xprt, transport);
 		return;
+<<<<<<< HEAD
+=======
+	case -EPERM:
+		/* Happens, for instance, if a BPF program is preventing
+		 * the connect. Remap the error so upper layers can better
+		 * deal with it.
+		 */
+		status = -ECONNREFUSED;
+		/* fall through */
+>>>>>>> origin/android16-base
 	case -EINVAL:
 		/* Happens, for instance, if the user specified a link
 		 * local IPv6 address without a scope-id.
@@ -2974,9 +2984,12 @@ static struct rpc_xprt *xs_setup_local(struct xprt_create *args)
 		}
 		xprt_set_bound(xprt);
 		xs_format_peer_addresses(xprt, "local", RPCBIND_NETID_LOCAL);
+<<<<<<< HEAD
 		ret = ERR_PTR(xs_local_setup_socket(transport));
 		if (ret)
 			goto out_err;
+=======
+>>>>>>> origin/android16-base
 		break;
 	default:
 		ret = ERR_PTR(-EAFNOSUPPORT);
@@ -3241,6 +3254,10 @@ static struct xprt_class	xs_local_transport = {
 	.owner		= THIS_MODULE,
 	.ident		= XPRT_TRANSPORT_LOCAL,
 	.setup		= xs_setup_local,
+<<<<<<< HEAD
+=======
+	.netid		= { "" },
+>>>>>>> origin/android16-base
 };
 
 static struct xprt_class	xs_udp_transport = {
@@ -3249,6 +3266,10 @@ static struct xprt_class	xs_udp_transport = {
 	.owner		= THIS_MODULE,
 	.ident		= XPRT_TRANSPORT_UDP,
 	.setup		= xs_setup_udp,
+<<<<<<< HEAD
+=======
+	.netid		= { "udp", "udp6", "" },
+>>>>>>> origin/android16-base
 };
 
 static struct xprt_class	xs_tcp_transport = {
@@ -3257,6 +3278,10 @@ static struct xprt_class	xs_tcp_transport = {
 	.owner		= THIS_MODULE,
 	.ident		= XPRT_TRANSPORT_TCP,
 	.setup		= xs_setup_tcp,
+<<<<<<< HEAD
+=======
+	.netid		= { "tcp", "tcp6", "" },
+>>>>>>> origin/android16-base
 };
 
 static struct xprt_class	xs_bc_tcp_transport = {
@@ -3265,6 +3290,10 @@ static struct xprt_class	xs_bc_tcp_transport = {
 	.owner		= THIS_MODULE,
 	.ident		= XPRT_TRANSPORT_BC_TCP,
 	.setup		= xs_setup_bc_tcp,
+<<<<<<< HEAD
+=======
+	.netid		= { "" },
+>>>>>>> origin/android16-base
 };
 
 /**
@@ -3305,6 +3334,7 @@ void cleanup_socket_xprt(void)
 	xprt_unregister_transport(&xs_bc_tcp_transport);
 }
 
+<<<<<<< HEAD
 static int param_set_uint_minmax(const char *val,
 		const struct kernel_param *kp,
 		unsigned int min, unsigned int max)
@@ -3323,6 +3353,8 @@ static int param_set_uint_minmax(const char *val,
 	return 0;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int param_set_portnr(const char *val, const struct kernel_param *kp)
 {
 	return param_set_uint_minmax(val, kp,

@@ -20,12 +20,17 @@
 #include <linux/extcon-provider.h>
 #include <linux/usb/typec.h>
 #include <linux/usb/usbpd.h>
+<<<<<<< HEAD
 #include <linux/get_otg_id.h>
 
 #include "usbpd.h"
 
 atomic_t otg_registered;
 
+=======
+#include "usbpd.h"
+
+>>>>>>> origin/android16-base
 enum usbpd_state {
 	PE_UNKNOWN,
 	PE_ERROR_RECOVERY,
@@ -489,8 +494,11 @@ struct usbpd {
 	bool			send_get_battery_status;
 	u32			battery_sts_dobj;
 	bool			typec_analog_audio_connected;
+<<<<<<< HEAD
 	bool			in_soft_reset;
 	bool			smb_flag;
+=======
+>>>>>>> origin/android16-base
 };
 
 static LIST_HEAD(_usbpd);	/* useful for debugging */
@@ -547,10 +555,14 @@ static unsigned int get_connector_type(struct usbpd *pd)
 
 static inline void stop_usb_host(struct usbpd *pd)
 {
+<<<<<<< HEAD
     if (!atomic_read(&otg_registered))
         return;
 	extcon_set_state_sync(pd->extcon, EXTCON_USB_HOST, 0);
     atomic_set(&otg_registered, 0);
+=======
+	extcon_set_state_sync(pd->extcon, EXTCON_USB_HOST, 0);
+>>>>>>> origin/android16-base
 }
 
 static inline void start_usb_host(struct usbpd *pd, bool ss)
@@ -559,7 +571,10 @@ static inline void start_usb_host(struct usbpd *pd, bool ss)
 	union extcon_property_value val;
 	int ret = 0;
 
+<<<<<<< HEAD
 	/* TB371FC: drop Lenovo's otg_state gate so sink attach auto-hosts */
+=======
+>>>>>>> origin/android16-base
 	val.intval = (cc == ORIENTATION_CC2);
 	extcon_set_property(pd->extcon, EXTCON_USB_HOST,
 			EXTCON_PROP_USB_TYPEC_POLARITY, val);
@@ -576,7 +591,10 @@ static inline void start_usb_host(struct usbpd *pd, bool ss)
 		usbpd_err(&pd->dev, "err(%d) starting host", ret);
 		return;
 	}
+<<<<<<< HEAD
     atomic_set(&otg_registered, 1);
+=======
+>>>>>>> origin/android16-base
 }
 
 static inline void stop_usb_peripheral(struct usbpd *pd)
@@ -859,6 +877,7 @@ static int pd_select_pdo(struct usbpd *pd, int pdo_pos, int uv, int ua)
 	int max_current;
 	bool mismatch = false;
 	u8 type;
+<<<<<<< HEAD
 	union power_supply_propval val;
 	u32 pdo = pd->received_pdos[pdo_pos - 1];
 
@@ -867,6 +886,10 @@ static int pd_select_pdo(struct usbpd *pd, int pdo_pos, int uv, int ua)
 		power_supply_set_property(pd->usb_psy, POWER_SUPPLY_PROP_CP_ENABLE, &val);
 		pd->smb_flag = 0;
 	}
+=======
+	u32 pdo = pd->received_pdos[pdo_pos - 1];
+
+>>>>>>> origin/android16-base
 	type = PD_SRC_PDO_TYPE(pdo);
 	if (type == PD_SRC_PDO_TYPE_FIXED) {
 		curr = max_current = PD_SRC_PDO_FIXED_MAX_CURR(pdo) * 10;
@@ -879,12 +902,17 @@ static int pd_select_pdo(struct usbpd *pd, int pdo_pos, int uv, int ua)
 			mismatch = true;
 			max_current = PD_MIN_SINK_CURRENT;
 		}
+<<<<<<< HEAD
 		if(pd->requested_voltage > 7000000)
 			pd->smb_flag = 1;
+=======
+
+>>>>>>> origin/android16-base
 		pd->requested_voltage =
 			PD_SRC_PDO_FIXED_VOLTAGE(pdo) * 50 * 1000;
 		pd->rdo = PD_RDO_FIXED(pdo_pos, 0, mismatch, 1, 1, curr / 10,
 				max_current / 10);
+<<<<<<< HEAD
 		if(curr > 18000/(pd->requested_voltage/1000000)){
 			curr = 18000/(pd->requested_voltage/1000000);
 			usbpd_err(&pd->dev, "fix curr:%d\n", curr);
@@ -894,6 +922,8 @@ static int pd_select_pdo(struct usbpd *pd, int pdo_pos, int uv, int ua)
 			power_supply_set_property(pd->usb_psy, POWER_SUPPLY_PROP_CP_ENABLE, &val);
 		}
 		usbpd_err(&pd->dev, "fix pdo requested_voltage:%d\n", pd->requested_voltage);
+=======
+>>>>>>> origin/android16-base
 	} else if (type == PD_SRC_PDO_TYPE_AUGMENTED) {
 		if ((uv / 100000) > PD_APDO_MAX_VOLT(pdo) ||
 			(uv / 100000) < PD_APDO_MIN_VOLT(pdo) ||
@@ -904,12 +934,15 @@ static int pd_select_pdo(struct usbpd *pd, int pdo_pos, int uv, int ua)
 		}
 
 		curr = ua / 1000;
+<<<<<<< HEAD
 		if(uv == 7000000){
 			if(curr > 18000/(pd->requested_voltage/1000000)){
 				curr = 18000/(pd->requested_voltage/1000000);
 			}
 			ua = curr * 1000;
 		}
+=======
+>>>>>>> origin/android16-base
 		pd->requested_voltage = uv;
 		pd->rdo = PD_RDO_AUGMENTED(pdo_pos, mismatch, 1, 1,
 				uv / 20000, ua / 50000);
@@ -1224,10 +1257,13 @@ static void phy_msg_received(struct usbpd *pd, enum pd_sop_type sop,
 			msg_to_string(msg_type, num_objs,
 				PD_MSG_HDR_IS_EXTENDED(header)),
 			msg_type, num_objs);
+<<<<<<< HEAD
 	if (strcmp(msg_to_string(msg_type, num_objs, PD_MSG_HDR_IS_EXTENDED(header)), "Alert") == 0) {
 		  usbpd_err(&pd->dev, "if Alert message receied,return\n");
                return;
        }
+=======
+>>>>>>> origin/android16-base
 
 	if (!PD_MSG_HDR_IS_EXTENDED(header)) {
 		rx_msg = kzalloc(sizeof(*rx_msg) + len, GFP_ATOMIC);
@@ -2798,6 +2834,7 @@ static void enter_state_snk_evaluate_capability(struct usbpd *pd)
 	pd->hard_reset_count = 0;
 
 	/* evaluate PDOs and select one */
+<<<<<<< HEAD
 	if(!pd->in_soft_reset){
 		ret = pd_eval_src_caps(pd);
 		if (ret < 0) {
@@ -2806,6 +2843,14 @@ static void enter_state_snk_evaluate_capability(struct usbpd *pd)
 		}
 	}
 	pd->in_soft_reset = 0;
+=======
+	ret = pd_eval_src_caps(pd);
+	if (ret < 0) {
+		usbpd_err(&pd->dev, "Invalid src_caps received. Skipping request\n");
+		return;
+	}
+
+>>>>>>> origin/android16-base
 	pd->pd_connected = true; /* we know peer is PD capable */
 	usbpd_set_state(pd, PE_SNK_SELECT_CAPABILITY);
 }
@@ -3400,7 +3445,11 @@ static void enter_state_send_soft_reset(struct usbpd *pd)
 				PE_SRC_HARD_RESET : PE_SNK_HARD_RESET);
 		return;
 	}
+<<<<<<< HEAD
 	//pd->in_soft_reset = 1;
+=======
+
+>>>>>>> origin/android16-base
 	/* wait for ACCEPT */
 	kick_sm(pd, SENDER_RESPONSE_TIME);
 }
@@ -4465,6 +4514,7 @@ static ssize_t hard_reset_store(struct device *dev,
 	return size;
 }
 static DEVICE_ATTR_WO(hard_reset);
+<<<<<<< HEAD
 static ssize_t soft_reset_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
@@ -4480,6 +4530,8 @@ static ssize_t soft_reset_store(struct device *dev,
 	return size;
 }
 static DEVICE_ATTR_WO(soft_reset);
+=======
+>>>>>>> origin/android16-base
 
 static int trigger_tx_msg(struct usbpd *pd, bool *msg_tx_flag)
 {
@@ -4662,7 +4714,10 @@ static struct attribute *usbpd_attrs[] = {
 	&dev_attr_rdo.attr,
 	&dev_attr_rdo_h.attr,
 	&dev_attr_hard_reset.attr,
+<<<<<<< HEAD
 	&dev_attr_soft_reset.attr,
+=======
+>>>>>>> origin/android16-base
 	&dev_attr_get_src_cap_ext.attr,
 	&dev_attr_get_status.attr,
 	&dev_attr_get_pps_status.attr,
@@ -4978,7 +5033,10 @@ EXPORT_SYMBOL(usbpd_destroy);
 
 static int __init usbpd_init(void)
 {
+<<<<<<< HEAD
     atomic_set(&otg_registered, 0);
+=======
+>>>>>>> origin/android16-base
 	usbpd_ipc_log = ipc_log_context_create(NUM_LOG_PAGES, "usb_pd", 0);
 	return class_register(&usbpd_class);
 }
@@ -4986,9 +5044,13 @@ module_init(usbpd_init);
 
 static void __exit usbpd_exit(void)
 {
+<<<<<<< HEAD
     if (atomic_read(&otg_registered))
         atomic_set(&otg_registered, 0);
 	class_unregister(&usbpd_class); 
+=======
+	class_unregister(&usbpd_class);
+>>>>>>> origin/android16-base
 }
 module_exit(usbpd_exit);
 

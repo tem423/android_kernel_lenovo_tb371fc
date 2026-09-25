@@ -39,6 +39,10 @@
 	14470:	.long 14471f - 14470b;			\
 _BUGVERBOSE_LOCATION(__FILE__, __LINE__)		\
 		.short flags; 				\
+<<<<<<< HEAD
+=======
+		.align 2;				\
+>>>>>>> origin/android16-base
 		.popsection;				\
 	14471:
 #else

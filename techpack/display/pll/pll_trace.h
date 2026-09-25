@@ -105,5 +105,9 @@ TRACE_EVENT(mdss_pll_trace_counter,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../techpack/display/pll
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #include <trace/define_trace.h>

@@ -391,6 +391,10 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
 	rc = get_phb_index(np, phb_index);
 	if (rc) {
 		pr_err("cxl: invalid phb index\n");
+<<<<<<< HEAD
+=======
+		of_node_put(np);
+>>>>>>> origin/android16-base
 		return rc;
 	}
 
@@ -1168,10 +1172,17 @@ static int pci_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
 	 * if it returns an error!
 	 */
 	if ((rc = cxl_register_afu(afu)))
+<<<<<<< HEAD
 		goto err_put1;
 
 	if ((rc = cxl_sysfs_afu_add(afu)))
 		goto err_put1;
+=======
+		goto err_put_dev;
+
+	if ((rc = cxl_sysfs_afu_add(afu)))
+		goto err_del_dev;
+>>>>>>> origin/android16-base
 
 	adapter->afu[afu->slice] = afu;
 
@@ -1180,10 +1191,19 @@ static int pci_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
 
 	return 0;
 
+<<<<<<< HEAD
 err_put1:
 	pci_deconfigure_afu(afu);
 	cxl_debugfs_afu_remove(afu);
 	device_unregister(&afu->dev);
+=======
+err_del_dev:
+	device_del(&afu->dev);
+err_put_dev:
+	pci_deconfigure_afu(afu);
+	cxl_debugfs_afu_remove(afu);
+	put_device(&afu->dev);
+>>>>>>> origin/android16-base
 	return rc;
 
 err_free_native:
@@ -1671,23 +1691,40 @@ static struct cxl *cxl_pci_init_adapter(struct pci_dev *dev)
 	 * even if it returns an error!
 	 */
 	if ((rc = cxl_register_adapter(adapter)))
+<<<<<<< HEAD
 		goto err_put1;
 
 	if ((rc = cxl_sysfs_adapter_add(adapter)))
 		goto err_put1;
+=======
+		goto err_put_dev;
+
+	if ((rc = cxl_sysfs_adapter_add(adapter)))
+		goto err_del_dev;
+>>>>>>> origin/android16-base
 
 	/* Release the context lock as adapter is configured */
 	cxl_adapter_context_unlock(adapter);
 
 	return adapter;
 
+<<<<<<< HEAD
 err_put1:
+=======
+err_del_dev:
+	device_del(&adapter->dev);
+err_put_dev:
+>>>>>>> origin/android16-base
 	/* This should mirror cxl_remove_adapter, except without the
 	 * sysfs parts
 	 */
 	cxl_debugfs_adapter_remove(adapter);
 	cxl_deconfigure_adapter(adapter);
+<<<<<<< HEAD
 	device_unregister(&adapter->dev);
+=======
+	put_device(&adapter->dev);
+>>>>>>> origin/android16-base
 	return ERR_PTR(rc);
 
 err_release:

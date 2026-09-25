@@ -35,8 +35,13 @@
 #define SCLP_VT220_MINOR		65
 #define SCLP_VT220_DRIVER_NAME		"sclp_vt220"
 #define SCLP_VT220_DEVICE_NAME		"ttysclp"
+<<<<<<< HEAD
 #define SCLP_VT220_CONSOLE_NAME		"ttyS"
 #define SCLP_VT220_CONSOLE_INDEX	1	/* console=ttyS1 */
+=======
+#define SCLP_VT220_CONSOLE_NAME		"ttysclp"
+#define SCLP_VT220_CONSOLE_INDEX	0	/* console=ttysclp0 */
+>>>>>>> origin/android16-base
 
 /* Representation of a single write request */
 struct sclp_vt220_request {
@@ -325,7 +330,11 @@ sclp_vt220_add_msg(struct sclp_vt220_request *request,
 	buffer = (void *) ((addr_t) sccb + sccb->header.length);
 
 	if (convertlf) {
+<<<<<<< HEAD
 		/* Perform Linefeed conversion (0x0a -> 0x0a 0x0d)*/
+=======
+		/* Perform Linefeed conversion (0x0a -> 0x0d 0x0a)*/
+>>>>>>> origin/android16-base
 		for (from=0, to=0;
 		     (from < count) && (to < sclp_vt220_space_left(request));
 		     from++) {
@@ -334,8 +343,13 @@ sclp_vt220_add_msg(struct sclp_vt220_request *request,
 			/* Perform conversion */
 			if (c == 0x0a) {
 				if (to + 1 < sclp_vt220_space_left(request)) {
+<<<<<<< HEAD
 					((unsigned char *) buffer)[to++] = c;
 					((unsigned char *) buffer)[to++] = 0x0d;
+=======
+					((unsigned char *) buffer)[to++] = 0x0d;
+					((unsigned char *) buffer)[to++] = c;
+>>>>>>> origin/android16-base
 				} else
 					break;
 

@@ -136,6 +136,10 @@ struct share_check {
 	u64 root_objectid;
 	u64 inum;
 	int share_count;
+<<<<<<< HEAD
+=======
+	bool have_delayed_delete_refs;
+>>>>>>> origin/android16-base
 };
 
 static inline int extent_is_shared(struct share_check *sc)
@@ -588,6 +592,21 @@ unode_aux_to_inode_list(struct ulist_node *node)
 	return (struct extent_inode_elem *)(uintptr_t)node->aux;
 }
 
+<<<<<<< HEAD
+=======
+static void free_leaf_list(struct ulist *ulist)
+{
+	struct ulist_node *node;
+	struct ulist_iterator uiter;
+
+	ULIST_ITER_INIT(&uiter);
+	while ((node = ulist_next(ulist, &uiter)))
+		free_inode_elem_list(unode_aux_to_inode_list(node));
+
+	ulist_free(ulist);
+}
+
+>>>>>>> origin/android16-base
 /*
  * We maintain three seperate rbtrees: one for direct refs, one for
  * indirect refs which have a key, and one for indirect refs which do not
@@ -702,7 +721,15 @@ static int resolve_indirect_refs(struct btrfs_fs_info *fs_info,
 		cond_resched();
 	}
 out:
+<<<<<<< HEAD
 	ulist_free(parents);
+=======
+	/*
+	 * We may have inode lists attached to refs in the parents ulist, so we
+	 * must free them before freeing the ulist and its refs.
+	 */
+	free_leaf_list(parents);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -760,16 +787,23 @@ static int add_delayed_refs(const struct btrfs_fs_info *fs_info,
 			    struct share_check *sc)
 {
 	struct btrfs_delayed_ref_node *node;
+<<<<<<< HEAD
 	struct btrfs_delayed_extent_op *extent_op = head->extent_op;
 	struct btrfs_key key;
 	struct btrfs_key tmp_op_key;
+=======
+	struct btrfs_key key;
+>>>>>>> origin/android16-base
 	struct rb_node *n;
 	int count;
 	int ret = 0;
 
+<<<<<<< HEAD
 	if (extent_op && extent_op->update_key)
 		btrfs_disk_key_to_cpu(&tmp_op_key, &extent_op->key);
 
+=======
+>>>>>>> origin/android16-base
 	spin_lock(&head->lock);
 	for (n = rb_first(&head->ref_tree); n; n = rb_next(n)) {
 		node = rb_entry(n, struct btrfs_delayed_ref_node,
@@ -796,10 +830,23 @@ static int add_delayed_refs(const struct btrfs_fs_info *fs_info,
 		case BTRFS_TREE_BLOCK_REF_KEY: {
 			/* NORMAL INDIRECT METADATA backref */
 			struct btrfs_delayed_tree_ref *ref;
+<<<<<<< HEAD
 
 			ref = btrfs_delayed_node_to_tree_ref(node);
 			ret = add_indirect_ref(fs_info, preftrees, ref->root,
 					       &tmp_op_key, ref->level + 1,
+=======
+			struct btrfs_key *key_ptr = NULL;
+
+			if (head->extent_op && head->extent_op->update_key) {
+				btrfs_disk_key_to_cpu(&key, &head->extent_op->key);
+				key_ptr = &key;
+			}
+
+			ref = btrfs_delayed_node_to_tree_ref(node);
+			ret = add_indirect_ref(fs_info, preftrees, ref->root,
+					       key_ptr, ref->level + 1,
+>>>>>>> origin/android16-base
 					       node->bytenr, count, sc,
 					       GFP_ATOMIC);
 			break;
@@ -825,6 +872,7 @@ static int add_delayed_refs(const struct btrfs_fs_info *fs_info,
 			key.offset = ref->offset;
 
 			/*
+<<<<<<< HEAD
 			 * Found a inum that doesn't match our known inum, we
 			 * know it's shared.
 			 */
@@ -832,6 +880,24 @@ static int add_delayed_refs(const struct btrfs_fs_info *fs_info,
 				ret = BACKREF_FOUND_SHARED;
 				goto out;
 			}
+=======
+			 * If we have a share check context and a reference for
+			 * another inode, we can't exit immediately. This is
+			 * because even if this is a BTRFS_ADD_DELAYED_REF
+			 * reference we may find next a BTRFS_DROP_DELAYED_REF
+			 * which cancels out this ADD reference.
+			 *
+			 * If this is a DROP reference and there was no previous
+			 * ADD reference, then we need to signal that when we
+			 * process references from the extent tree (through
+			 * add_inline_refs() and add_keyed_refs()), we should
+			 * not exit early if we find a reference for another
+			 * inode, because one of the delayed DROP references
+			 * may cancel that reference in the extent tree.
+			 */
+			if (sc && count < 0)
+				sc->have_delayed_delete_refs = true;
+>>>>>>> origin/android16-base
 
 			ret = add_indirect_ref(fs_info, preftrees, ref->root,
 					       &key, 0, node->bytenr, count, sc,
@@ -861,7 +927,11 @@ static int add_delayed_refs(const struct btrfs_fs_info *fs_info,
 	}
 	if (!ret)
 		ret = extent_is_shared(sc);
+<<<<<<< HEAD
 out:
+=======
+
+>>>>>>> origin/android16-base
 	spin_unlock(&head->lock);
 	return ret;
 }
@@ -965,7 +1035,12 @@ static int add_inline_refs(const struct btrfs_fs_info *fs_info,
 			key.type = BTRFS_EXTENT_DATA_KEY;
 			key.offset = btrfs_extent_data_ref_offset(leaf, dref);
 
+<<<<<<< HEAD
 			if (sc && sc->inum && key.objectid != sc->inum) {
+=======
+			if (sc && sc->inum && key.objectid != sc->inum &&
+			    !sc->have_delayed_delete_refs) {
+>>>>>>> origin/android16-base
 				ret = BACKREF_FOUND_SHARED;
 				break;
 			}
@@ -975,6 +1050,10 @@ static int add_inline_refs(const struct btrfs_fs_info *fs_info,
 			ret = add_indirect_ref(fs_info, preftrees, root,
 					       &key, 0, bytenr, count,
 					       sc, GFP_NOFS);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 			break;
 		}
 		default:
@@ -1064,7 +1143,12 @@ static int add_keyed_refs(struct btrfs_fs_info *fs_info,
 			key.type = BTRFS_EXTENT_DATA_KEY;
 			key.offset = btrfs_extent_data_ref_offset(leaf, dref);
 
+<<<<<<< HEAD
 			if (sc && sc->inum && key.objectid != sc->inum) {
+=======
+			if (sc && sc->inum && key.objectid != sc->inum &&
+			    !sc->have_delayed_delete_refs) {
+>>>>>>> origin/android16-base
 				ret = BACKREF_FOUND_SHARED;
 				break;
 			}
@@ -1160,7 +1244,16 @@ again:
 	ret = btrfs_search_slot(trans, fs_info->extent_root, &key, path, 0, 0);
 	if (ret < 0)
 		goto out;
+<<<<<<< HEAD
 	BUG_ON(ret == 0);
+=======
+	if (ret == 0) {
+		/* This shouldn't happen, indicates a bug or fs corruption. */
+		ASSERT(ret != 0);
+		ret = -EUCLEAN;
+		goto out;
+	}
+>>>>>>> origin/android16-base
 
 #ifdef CONFIG_BTRFS_FS_RUN_SANITY_TESTS
 	if (trans && likely(trans->type != __TRANS_DUMMY) &&
@@ -1308,10 +1401,25 @@ again:
 				goto out;
 			if (!ret && extent_item_pos) {
 				/*
+<<<<<<< HEAD
 				 * we've recorded that parent, so we must extend
 				 * its inode list here
 				 */
 				BUG_ON(!eie);
+=======
+				 * We've recorded that parent, so we must extend
+				 * its inode list here.
+				 *
+				 * However if there was corruption we may not
+				 * have found an eie, return an error in this
+				 * case.
+				 */
+				ASSERT(eie);
+				if (!eie) {
+					ret = -EUCLEAN;
+					goto out;
+				}
+>>>>>>> origin/android16-base
 				while (eie->next)
 					eie = eie->next;
 				eie->next = ref->inode_list;
@@ -1333,6 +1441,7 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
 static void free_leaf_list(struct ulist *blocks)
 {
 	struct ulist_node *node = NULL;
@@ -1351,6 +1460,8 @@ static void free_leaf_list(struct ulist *blocks)
 	ulist_free(blocks);
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Finds all leafs with a reference to the specified combination of bytenr and
  * offset. key_list_head will point to a list of corresponding keys (caller must
@@ -1477,6 +1588,10 @@ int btrfs_check_shared(struct btrfs_root *root, u64 inum, u64 bytenr)
 		.root_objectid = root->objectid,
 		.inum = inum,
 		.share_count = 0,
+<<<<<<< HEAD
+=======
+		.have_delayed_delete_refs = false,
+>>>>>>> origin/android16-base
 	};
 
 	tmp = ulist_alloc(GFP_NOFS);
@@ -1515,6 +1630,10 @@ int btrfs_check_shared(struct btrfs_root *root, u64 inum, u64 bytenr)
 			break;
 		bytenr = node->val;
 		shared.share_count = 0;
+<<<<<<< HEAD
+=======
+		shared.have_delayed_delete_refs = false;
+>>>>>>> origin/android16-base
 		cond_resched();
 	}
 
@@ -2209,6 +2328,7 @@ struct btrfs_data_container *init_data_container(u32 total_bytes)
 	size_t alloc_bytes;
 
 	alloc_bytes = max_t(size_t, total_bytes, sizeof(*data));
+<<<<<<< HEAD
 	data = kvmalloc(alloc_bytes, GFP_KERNEL);
 	if (!data)
 		return ERR_PTR(-ENOMEM);
@@ -2223,6 +2343,16 @@ struct btrfs_data_container *init_data_container(u32 total_bytes)
 
 	data->elem_cnt = 0;
 	data->elem_missed = 0;
+=======
+	data = kvzalloc(alloc_bytes, GFP_KERNEL);
+	if (!data)
+		return ERR_PTR(-ENOMEM);
+
+	if (total_bytes >= sizeof(*data))
+		data->bytes_left = total_bytes - sizeof(*data);
+	else
+		data->bytes_missing = sizeof(*data) - total_bytes;
+>>>>>>> origin/android16-base
 
 	return data;
 }

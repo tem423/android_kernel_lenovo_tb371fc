@@ -166,8 +166,11 @@ obj-$(CONFIG_ENERGY_MODEL)	+= energy_model/
 obj-$(CONFIG_VIRT_DRIVERS)	+= virt/
 obj-$(CONFIG_HYPERV)		+= hv/
 
+<<<<<<< HEAD
 obj-$(CONFIG_KSU) += kernelsu/
 obj-y += ksu_sym.o
+=======
+>>>>>>> origin/android16-base
 obj-$(CONFIG_PM_DEVFREQ)	+= devfreq/
 obj-$(CONFIG_MEMORY)		+= memory/
 obj-$(CONFIG_IIO)		+= iio/

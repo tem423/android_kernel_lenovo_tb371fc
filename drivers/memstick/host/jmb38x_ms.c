@@ -316,7 +316,11 @@ static int jmb38x_ms_transfer_data(struct jmb38x_ms_host *host)
 	}
 
 	while (length) {
+<<<<<<< HEAD
 		unsigned int uninitialized_var(p_off);
+=======
+		unsigned int p_off;
+>>>>>>> origin/android16-base
 
 		if (host->req->long_data) {
 			pg = nth_page(sg_page(&host->req->sg),
@@ -907,7 +911,11 @@ static struct memstick_host *jmb38x_ms_alloc_host(struct jmb38x_ms *jm, int cnt)
 
 	iounmap(host->addr);
 err_out_free:
+<<<<<<< HEAD
 	kfree(msh);
+=======
+	memstick_free_host(msh);
+>>>>>>> origin/android16-base
 	return NULL;
 }
 

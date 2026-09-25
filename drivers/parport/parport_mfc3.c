@@ -324,7 +324,11 @@ static int __init parport_mfc3_init(void)
 		p->dev = &z->dev;
 
 		this_port[pias++] = p;
+<<<<<<< HEAD
 		printk(KERN_INFO "%s: Multiface III port using irq\n", p->name);
+=======
+		pr_info("%s: Multiface III port using irq\n", p->name);
+>>>>>>> origin/android16-base
 		/* XXX: set operating mode */
 
 		p->private_data = (void *)piabase;

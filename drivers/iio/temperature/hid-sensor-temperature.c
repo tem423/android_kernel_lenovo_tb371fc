@@ -28,7 +28,14 @@
 struct temperature_state {
 	struct hid_sensor_common common_attributes;
 	struct hid_sensor_hub_attribute_info temperature_attr;
+<<<<<<< HEAD
 	s32 temperature_data;
+=======
+	struct {
+		s32 temperature_data;
+		u64 timestamp __aligned(8);
+	} scan;
+>>>>>>> origin/android16-base
 	int scale_pre_decml;
 	int scale_post_decml;
 	int scale_precision;
@@ -45,7 +52,11 @@ static const struct iio_chan_spec temperature_channels[] = {
 			BIT(IIO_CHAN_INFO_SAMP_FREQ) |
 			BIT(IIO_CHAN_INFO_HYSTERESIS),
 	},
+<<<<<<< HEAD
 	IIO_CHAN_SOFT_TIMESTAMP(3),
+=======
+	IIO_CHAN_SOFT_TIMESTAMP(1),
+>>>>>>> origin/android16-base
 };
 
 /* Adjust channel real bits based on report descriptor */
@@ -136,9 +147,14 @@ static int temperature_proc_event(struct hid_sensor_hub_device *hsdev,
 	struct temperature_state *temp_st = iio_priv(indio_dev);
 
 	if (atomic_read(&temp_st->common_attributes.data_ready))
+<<<<<<< HEAD
 		iio_push_to_buffers_with_timestamp(indio_dev,
 				&temp_st->temperature_data,
 				iio_get_time_ns(indio_dev));
+=======
+		iio_push_to_buffers_with_timestamp(indio_dev, &temp_st->scan,
+						   iio_get_time_ns(indio_dev));
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -153,7 +169,11 @@ static int temperature_capture_sample(struct hid_sensor_hub_device *hsdev,
 
 	switch (usage_id) {
 	case HID_USAGE_SENSOR_DATA_ENVIRONMENTAL_TEMPERATURE:
+<<<<<<< HEAD
 		temp_st->temperature_data = *(s32 *)raw_data;
+=======
+		temp_st->scan.temperature_data = *(s32 *)raw_data;
+>>>>>>> origin/android16-base
 		return 0;
 	default:
 		return -EINVAL;

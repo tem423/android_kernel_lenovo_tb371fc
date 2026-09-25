@@ -556,7 +556,11 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
 	 */
 	if (page) {
 		for (i = 0; i < count; i++)
+<<<<<<< HEAD
 			page_kasan_tag_reset(page + i);
+=======
+			page_kasan_tag_reset(nth_page(page, i));
+>>>>>>> origin/android16-base
 	}
 
 	if (ret && !no_warn) {

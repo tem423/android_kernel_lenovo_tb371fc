@@ -326,7 +326,11 @@ struct cpio_data find_microcode_in_initrd(const char *path, bool use_pa)
 #endif
 }
 
+<<<<<<< HEAD
 void reload_early_microcode(void)
+=======
+void reload_early_microcode(unsigned int cpu)
+>>>>>>> origin/android16-base
 {
 	int vendor, family;
 
@@ -340,7 +344,11 @@ void reload_early_microcode(void)
 		break;
 	case X86_VENDOR_AMD:
 		if (family >= 0x10)
+<<<<<<< HEAD
 			reload_ucode_amd();
+=======
+			reload_ucode_amd(cpu);
+>>>>>>> origin/android16-base
 		break;
 	default:
 		break;
@@ -627,16 +635,26 @@ static ssize_t reload_store(struct device *dev,
 	if (val != 1)
 		return size;
 
+<<<<<<< HEAD
 	tmp_ret = microcode_ops->request_microcode_fw(bsp, &microcode_pdev->dev, true);
 	if (tmp_ret != UCODE_NEW)
 		return size;
 
+=======
+>>>>>>> origin/android16-base
 	get_online_cpus();
 
 	ret = check_online_cpus();
 	if (ret)
 		goto put;
 
+<<<<<<< HEAD
+=======
+	tmp_ret = microcode_ops->request_microcode_fw(bsp, &microcode_pdev->dev, true);
+	if (tmp_ret != UCODE_NEW)
+		goto put;
+
+>>>>>>> origin/android16-base
 	mutex_lock(&microcode_mutex);
 	ret = microcode_reload_late();
 	mutex_unlock(&microcode_mutex);
@@ -773,9 +791,15 @@ static struct subsys_interface mc_cpu_interface = {
 };
 
 /**
+<<<<<<< HEAD
  * mc_bp_resume - Update boot CPU microcode during resume.
  */
 static void mc_bp_resume(void)
+=======
+ * microcode_bsp_resume - Update boot CPU microcode during resume.
+ */
+void microcode_bsp_resume(void)
+>>>>>>> origin/android16-base
 {
 	int cpu = smp_processor_id();
 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
@@ -783,11 +807,19 @@ static void mc_bp_resume(void)
 	if (uci->valid && uci->mc)
 		microcode_ops->apply_microcode(cpu);
 	else if (!uci->mc)
+<<<<<<< HEAD
 		reload_early_microcode();
 }
 
 static struct syscore_ops mc_syscore_ops = {
 	.resume			= mc_bp_resume,
+=======
+		reload_early_microcode(cpu);
+}
+
+static struct syscore_ops mc_syscore_ops = {
+	.resume			= microcode_bsp_resume,
+>>>>>>> origin/android16-base
 };
 
 static int mc_cpu_starting(unsigned int cpu)

@@ -441,6 +441,7 @@ static int wm8350_rtc_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+<<<<<<< HEAD
 	wm8350_register_irq(wm8350, WM8350_IRQ_RTC_SEC,
 			    wm8350_rtc_update_handler, 0,
 			    "RTC Seconds", wm8350);
@@ -449,6 +450,23 @@ static int wm8350_rtc_probe(struct platform_device *pdev)
 	wm8350_register_irq(wm8350, WM8350_IRQ_RTC_ALM,
 			    wm8350_rtc_alarm_handler, 0,
 			    "RTC Alarm", wm8350);
+=======
+	ret = wm8350_register_irq(wm8350, WM8350_IRQ_RTC_SEC,
+			    wm8350_rtc_update_handler, 0,
+			    "RTC Seconds", wm8350);
+	if (ret)
+		return ret;
+
+	wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_SEC);
+
+	ret = wm8350_register_irq(wm8350, WM8350_IRQ_RTC_ALM,
+			    wm8350_rtc_alarm_handler, 0,
+			    "RTC Alarm", wm8350);
+	if (ret) {
+		wm8350_free_irq(wm8350, WM8350_IRQ_RTC_SEC, wm8350);
+		return ret;
+	}
+>>>>>>> origin/android16-base
 
 	return 0;
 }

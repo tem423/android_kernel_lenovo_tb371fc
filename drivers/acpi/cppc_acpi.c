@@ -122,6 +122,7 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
  */
 #define NUM_RETRIES 500ULL
 
+<<<<<<< HEAD
 struct cppc_attr {
 	struct attribute attr;
 	ssize_t (*show)(struct kobject *kobj,
@@ -132,13 +133,21 @@ struct cppc_attr {
 
 #define define_one_cppc_ro(_name)		\
 static struct cppc_attr _name =			\
+=======
+#define define_one_cppc_ro(_name)		\
+static struct kobj_attribute _name =		\
+>>>>>>> origin/android16-base
 __ATTR(_name, 0444, show_##_name, NULL)
 
 #define to_cpc_desc(a) container_of(a, struct cpc_desc, kobj)
 
 #define show_cppc_data(access_fn, struct_name, member_name)		\
 	static ssize_t show_##member_name(struct kobject *kobj,		\
+<<<<<<< HEAD
 					struct attribute *attr,	char *buf) \
+=======
+				struct kobj_attribute *attr, char *buf)	\
+>>>>>>> origin/android16-base
 	{								\
 		struct cpc_desc *cpc_ptr = to_cpc_desc(kobj);		\
 		struct struct_name st_name = {0};			\
@@ -164,7 +173,11 @@ show_cppc_data(cppc_get_perf_ctrs, cppc_perf_fb_ctrs, reference_perf);
 show_cppc_data(cppc_get_perf_ctrs, cppc_perf_fb_ctrs, wraparound_time);
 
 static ssize_t show_feedback_ctrs(struct kobject *kobj,
+<<<<<<< HEAD
 		struct attribute *attr, char *buf)
+=======
+		struct kobj_attribute *attr, char *buf)
+>>>>>>> origin/android16-base
 {
 	struct cpc_desc *cpc_ptr = to_cpc_desc(kobj);
 	struct cppc_perf_fb_ctrs fb_ctrs = {0};
@@ -638,6 +651,7 @@ int pcc_data_alloc(int pcc_ss_id)
 	return 0;
 }
 
+<<<<<<< HEAD
 /* Check if CPPC revision + num_ent combination is supported */
 static bool is_cppc_supported(int revision, int num_ent)
 {
@@ -665,6 +679,8 @@ static bool is_cppc_supported(int revision, int num_ent)
 	return true;
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * An example CPC table looks like the following.
  *
@@ -750,12 +766,23 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
 	cpc_obj = &out_obj->package.elements[0];
 	if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
 		num_ent = cpc_obj->integer.value;
+<<<<<<< HEAD
+=======
+		if (num_ent <= 1) {
+			pr_debug("Unexpected _CPC NumEntries value (%d) for CPU:%d\n",
+				 num_ent, pr->id);
+			goto out_free;
+		}
+>>>>>>> origin/android16-base
 	} else {
 		pr_debug("Unexpected entry type(%d) for NumEntries\n",
 				cpc_obj->type);
 		goto out_free;
 	}
+<<<<<<< HEAD
 	cpc_ptr->num_entries = num_ent;
+=======
+>>>>>>> origin/android16-base
 
 	/* Second entry should be revision. */
 	cpc_obj = &out_obj->package.elements[1];
@@ -766,10 +793,39 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
 				cpc_obj->type);
 		goto out_free;
 	}
+<<<<<<< HEAD
 	cpc_ptr->version = cpc_rev;
 
 	if (!is_cppc_supported(cpc_rev, num_ent))
 		goto out_free;
+=======
+
+	if (cpc_rev < CPPC_V2_REV) {
+		pr_debug("Unsupported _CPC Revision (%d) for CPU:%d\n", cpc_rev,
+			 pr->id);
+		goto out_free;
+	}
+
+	/*
+	 * Disregard _CPC if the number of entries in the return pachage is not
+	 * as expected, but support future revisions being proper supersets of
+	 * the v3 and only causing more entries to be returned by _CPC.
+	 */
+	if ((cpc_rev == CPPC_V2_REV && num_ent != CPPC_V2_NUM_ENT) ||
+	    (cpc_rev == CPPC_V3_REV && num_ent != CPPC_V3_NUM_ENT) ||
+	    (cpc_rev > CPPC_V3_REV && num_ent <= CPPC_V3_NUM_ENT)) {
+		pr_debug("Unexpected number of _CPC return package entries (%d) for CPU:%d\n",
+			 num_ent, pr->id);
+		goto out_free;
+	}
+	if (cpc_rev > CPPC_V3_REV) {
+		num_ent = CPPC_V3_NUM_ENT;
+		cpc_rev = CPPC_V3_REV;
+	}
+
+	cpc_ptr->num_entries = num_ent;
+	cpc_ptr->version = cpc_rev;
+>>>>>>> origin/android16-base
 
 	/* Iterate through remaining entries in _CPC */
 	for (i = 2; i < num_ent; i++) {

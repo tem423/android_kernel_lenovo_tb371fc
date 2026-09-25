@@ -132,7 +132,11 @@ __arm740_setup:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/android16-base
 	.type	__arm740_proc_info,#object
 __arm740_proc_info:
 	.long	0x41807400

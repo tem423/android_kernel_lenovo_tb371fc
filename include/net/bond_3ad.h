@@ -265,7 +265,11 @@ struct ad_system {
 
 struct ad_bond_info {
 	struct ad_system system;	/* 802.3ad system structure */
+<<<<<<< HEAD
 	u32 agg_select_timer;		/* Timer to select aggregator after all adapter's hand shakes */
+=======
+	atomic_t agg_select_timer;	/* Timer to select aggregator after all adapter's hand shakes */
+>>>>>>> origin/android16-base
 	u16 aggregator_identifier;
 };
 

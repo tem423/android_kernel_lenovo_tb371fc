@@ -875,13 +875,21 @@ static ssize_t tty_read(struct file *file, char __user *buf, size_t count,
 	return i;
 }
 
+<<<<<<< HEAD
 static void tty_write_unlock(struct tty_struct *tty)
+=======
+void tty_write_unlock(struct tty_struct *tty)
+>>>>>>> origin/android16-base
 {
 	mutex_unlock(&tty->atomic_write_lock);
 	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
 }
 
+<<<<<<< HEAD
 static int tty_write_lock(struct tty_struct *tty, int ndelay)
+=======
+int tty_write_lock(struct tty_struct *tty, int ndelay)
+>>>>>>> origin/android16-base
 {
 	if (!mutex_trylock(&tty->atomic_write_lock)) {
 		if (ndelay)
@@ -1155,14 +1163,26 @@ static struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver,
 {
 	struct tty_struct *tty;
 
+<<<<<<< HEAD
 	if (driver->ops->lookup)
+=======
+	if (driver->ops->lookup) {
+>>>>>>> origin/android16-base
 		if (!file)
 			tty = ERR_PTR(-EIO);
 		else
 			tty = driver->ops->lookup(driver, file, idx);
+<<<<<<< HEAD
 	else
 		tty = driver->ttys[idx];
 
+=======
+	} else {
+		if (idx >= driver->num)
+			return ERR_PTR(-EINVAL);
+		tty = driver->ttys[idx];
+	}
+>>>>>>> origin/android16-base
 	if (!IS_ERR(tty))
 		tty_kref_get(tty);
 	return tty;
@@ -2177,8 +2197,11 @@ static int tty_fasync(int fd, struct file *filp, int on)
  *	Locking:
  *		Called functions take tty_ldiscs_lock
  *		current->signal->tty check is safe without locks
+<<<<<<< HEAD
  *
  *	FIXME: may race normal receive processing
+=======
+>>>>>>> origin/android16-base
  */
 
 static int tiocsti(struct tty_struct *tty, char __user *p)
@@ -2194,8 +2217,15 @@ static int tiocsti(struct tty_struct *tty, char __user *p)
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
 		return -EIO;
+<<<<<<< HEAD
 	if (ld->ops->receive_buf)
 		ld->ops->receive_buf(tty, &ch, &mbz, 1);
+=======
+	tty_buffer_lock_exclusive(tty->port);
+	if (ld->ops->receive_buf)
+		ld->ops->receive_buf(tty, &ch, &mbz, 1);
+	tty_buffer_unlock_exclusive(tty->port);
+>>>>>>> origin/android16-base
 	tty_ldisc_deref(ld);
 	return 0;
 }
@@ -2436,14 +2466,22 @@ out:
  *	@p: pointer to result
  *
  *	Obtain the modem status bits from the tty driver if the feature
+<<<<<<< HEAD
  *	is supported. Return -EINVAL if it is not available.
+=======
+ *	is supported. Return -ENOTTY if it is not available.
+>>>>>>> origin/android16-base
  *
  *	Locking: none (up to the driver)
  */
 
 static int tty_tiocmget(struct tty_struct *tty, int __user *p)
 {
+<<<<<<< HEAD
 	int retval = -EINVAL;
+=======
+	int retval = -ENOTTY;
+>>>>>>> origin/android16-base
 
 	if (tty->ops->tiocmget) {
 		retval = tty->ops->tiocmget(tty);
@@ -2461,7 +2499,11 @@ static int tty_tiocmget(struct tty_struct *tty, int __user *p)
  *	@p: pointer to desired bits
  *
  *	Set the modem status bits from the tty driver if the feature
+<<<<<<< HEAD
  *	is supported. Return -EINVAL if it is not available.
+=======
+ *	is supported. Return -ENOTTY if it is not available.
+>>>>>>> origin/android16-base
  *
  *	Locking: none (up to the driver)
  */
@@ -2473,7 +2515,11 @@ static int tty_tiocmset(struct tty_struct *tty, unsigned int cmd,
 	unsigned int set, clear, val;
 
 	if (tty->ops->tiocmset == NULL)
+<<<<<<< HEAD
 		return -EINVAL;
+=======
+		return -ENOTTY;
+>>>>>>> origin/android16-base
 
 	retval = get_user(val, p);
 	if (retval)

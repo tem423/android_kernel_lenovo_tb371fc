@@ -3913,6 +3913,13 @@ retry:
 			if (!ret) {
 				free_extent_buffer(eb);
 				continue;
+<<<<<<< HEAD
+=======
+			} else if (ret < 0) {
+				done = 1;
+				free_extent_buffer(eb);
+				break;
+>>>>>>> origin/android16-base
 			}
 
 			ret = write_one_eb(eb, fs_info, wbc, &epd);
@@ -3924,11 +3931,20 @@ retry:
 			free_extent_buffer(eb);
 
 			/*
+<<<<<<< HEAD
 			 * the filesystem may choose to bump up nr_to_write.
 			 * We have to make sure to honor the new nr_to_write
 			 * at any time
 			 */
 			nr_to_write_done = wbc->nr_to_write <= 0;
+=======
+			 * The filesystem may choose to bump up nr_to_write.
+			 * We have to make sure to honor the new nr_to_write
+			 * at any time.
+			 */
+			nr_to_write_done = (wbc->sync_mode == WB_SYNC_NONE &&
+					    wbc->nr_to_write <= 0);
+>>>>>>> origin/android16-base
 		}
 		pagevec_release(&pvec);
 		cond_resched();

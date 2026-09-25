@@ -23,9 +23,17 @@ static long write_ldt_entry(struct mm_id *mm_idp, int func,
 {
 	long res;
 	void *stub_addr;
+<<<<<<< HEAD
 	res = syscall_stub_data(mm_idp, (unsigned long *)desc,
 				(sizeof(*desc) + sizeof(long) - 1) &
 				    ~(sizeof(long) - 1),
+=======
+
+	BUILD_BUG_ON(sizeof(*desc) % sizeof(long));
+
+	res = syscall_stub_data(mm_idp, (unsigned long *)desc,
+				sizeof(*desc) / sizeof(long),
+>>>>>>> origin/android16-base
 				addr, &stub_addr);
 	if (!res) {
 		unsigned long args[] = { func,

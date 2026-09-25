@@ -63,6 +63,10 @@ static int red_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 	struct Qdisc *child = q->qdisc;
+<<<<<<< HEAD
+=======
+	unsigned int len;
+>>>>>>> origin/android16-base
 	int ret;
 
 	q->vars.qavg = red_calc_qavg(&q->parms,
@@ -98,9 +102,16 @@ static int red_enqueue(struct sk_buff *skb, struct Qdisc *sch,
 		break;
 	}
 
+<<<<<<< HEAD
 	ret = qdisc_enqueue(skb, child, to_free);
 	if (likely(ret == NET_XMIT_SUCCESS)) {
 		qdisc_qstats_backlog_inc(sch, skb);
+=======
+	len = qdisc_pkt_len(skb);
+	ret = qdisc_enqueue(skb, child, to_free);
+	if (likely(ret == NET_XMIT_SUCCESS)) {
+		sch->qstats.backlog += len;
+>>>>>>> origin/android16-base
 		sch->q.qlen++;
 	} else if (net_xmit_drop_count(ret)) {
 		q->stats.pdrop++;
@@ -181,7 +192,11 @@ static void red_destroy(struct Qdisc *sch)
 
 	del_timer_sync(&q->adapt_timer);
 	red_offload(sch, false);
+<<<<<<< HEAD
 	qdisc_destroy(q->qdisc);
+=======
+	qdisc_put(q->qdisc);
+>>>>>>> origin/android16-base
 }
 
 static const struct nla_policy red_policy[TCA_RED_MAX + 1] = {
@@ -199,6 +214,10 @@ static int red_change(struct Qdisc *sch, struct nlattr *opt,
 	struct Qdisc *child = NULL;
 	int err;
 	u32 max_P;
+<<<<<<< HEAD
+=======
+	u8 *stab;
+>>>>>>> origin/android16-base
 
 	if (opt == NULL)
 		return -EINVAL;
@@ -214,7 +233,13 @@ static int red_change(struct Qdisc *sch, struct nlattr *opt,
 	max_P = tb[TCA_RED_MAX_P] ? nla_get_u32(tb[TCA_RED_MAX_P]) : 0;
 
 	ctl = nla_data(tb[TCA_RED_PARMS]);
+<<<<<<< HEAD
 	if (!red_check_params(ctl->qth_min, ctl->qth_max, ctl->Wlog))
+=======
+	stab = nla_data(tb[TCA_RED_STAB]);
+	if (!red_check_params(ctl->qth_min, ctl->qth_max, ctl->Wlog,
+			      ctl->Scell_log, stab))
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	if (ctl->limit > 0) {
@@ -233,14 +258,22 @@ static int red_change(struct Qdisc *sch, struct nlattr *opt,
 	if (child) {
 		qdisc_tree_reduce_backlog(q->qdisc, q->qdisc->q.qlen,
 					  q->qdisc->qstats.backlog);
+<<<<<<< HEAD
 		qdisc_destroy(q->qdisc);
+=======
+		qdisc_put(q->qdisc);
+>>>>>>> origin/android16-base
 		q->qdisc = child;
 	}
 
 	red_set_parms(&q->parms,
 		      ctl->qth_min, ctl->qth_max, ctl->Wlog,
 		      ctl->Plog, ctl->Scell_log,
+<<<<<<< HEAD
 		      nla_data(tb[TCA_RED_STAB]),
+=======
+		      stab,
+>>>>>>> origin/android16-base
 		      max_P);
 	red_set_vars(&q->vars);
 

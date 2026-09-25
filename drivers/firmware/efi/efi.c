@@ -245,7 +245,11 @@ static int __init efivar_ssdt_setup(char *str)
 		memcpy(efivar_ssdt, str, strlen(str));
 	else
 		pr_warn("efivar_ssdt: name too long: %s\n", str);
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 __setup("efivar_ssdt=", efivar_ssdt_setup);
 
@@ -359,8 +363,13 @@ static int __init efisubsys_init(void)
 	efi_kobj = kobject_create_and_add("efi", firmware_kobj);
 	if (!efi_kobj) {
 		pr_err("efi: Firmware registration failed.\n");
+<<<<<<< HEAD
 		destroy_workqueue(efi_rts_wq);
 		return -ENOMEM;
+=======
+		error = -ENOMEM;
+		goto err_destroy_wq;
+>>>>>>> origin/android16-base
 	}
 
 	error = generic_ops_register();
@@ -396,7 +405,14 @@ err_unregister:
 	generic_ops_unregister();
 err_put:
 	kobject_put(efi_kobj);
+<<<<<<< HEAD
 	destroy_workqueue(efi_rts_wq);
+=======
+err_destroy_wq:
+	if (efi_rts_wq)
+		destroy_workqueue(efi_rts_wq);
+
+>>>>>>> origin/android16-base
 	return error;
 }
 
@@ -556,7 +572,11 @@ int __init efi_config_parse_tables(void *config_tables, int count, int sz,
 
 		seed = early_memremap(efi.rng_seed, sizeof(*seed));
 		if (seed != NULL) {
+<<<<<<< HEAD
 			size = seed->size;
+=======
+			size = min(seed->size, EFI_RANDOM_SEED_SIZE);
+>>>>>>> origin/android16-base
 			early_memunmap(seed, sizeof(*seed));
 		} else {
 			pr_err("Could not map UEFI random seed!\n");

@@ -495,6 +495,11 @@ static const struct it87_devices it87_devices[] = {
 #define has_pwm_freq2(data)	((data)->features & FEAT_PWM_FREQ2)
 #define has_six_temp(data)	((data)->features & FEAT_SIX_TEMP)
 #define has_vin3_5v(data)	((data)->features & FEAT_VIN3_5V)
+<<<<<<< HEAD
+=======
+#define has_scaling(data)	((data)->features & (FEAT_12MV_ADC | \
+						     FEAT_10_9MV_ADC))
+>>>>>>> origin/android16-base
 
 struct it87_sio_data {
 	int sioaddr;
@@ -3107,7 +3112,11 @@ static int it87_probe(struct platform_device *pdev)
 			 "Detected broken BIOS defaults, disabling PWM interface\n");
 
 	/* Starting with IT8721F, we handle scaling of internal voltages */
+<<<<<<< HEAD
 	if (has_12mv_adc(data)) {
+=======
+	if (has_scaling(data)) {
+>>>>>>> origin/android16-base
 		if (sio_data->internal & BIT(0))
 			data->in_scaled |= BIT(3);	/* in3 is AVCC */
 		if (sio_data->internal & BIT(1))

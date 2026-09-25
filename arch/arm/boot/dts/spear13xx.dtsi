@@ -290,9 +290,15 @@
 				#size-cells = <0>;
 				interrupts = <0 31 0x4>;
 				status = "disabled";
+<<<<<<< HEAD
 				dmas = <&dwdma0 4 0 0>,
 					<&dwdma0 5 0 0>;
 				dma-names = "tx", "rx";
+=======
+				dmas = <&dwdma0 5 0 0>,
+					<&dwdma0 4 0 0>;
+				dma-names = "rx", "tx";
+>>>>>>> origin/android16-base
 			};
 
 			rtc@e0580000 {

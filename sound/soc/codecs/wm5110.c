@@ -414,6 +414,10 @@ static int wm5110_put_dre(struct snd_kcontrol *kcontrol,
 	unsigned int rnew = (!!ucontrol->value.integer.value[1]) << mc->rshift;
 	unsigned int lold, rold;
 	unsigned int lena, rena;
+<<<<<<< HEAD
+=======
+	bool change = false;
+>>>>>>> origin/android16-base
 	int ret;
 
 	snd_soc_dapm_mutex_lock(dapm);
@@ -441,8 +445,13 @@ static int wm5110_put_dre(struct snd_kcontrol *kcontrol,
 		goto err;
 	}
 
+<<<<<<< HEAD
 	ret = regmap_update_bits(arizona->regmap, ARIZONA_DRE_ENABLE,
 				 mask, lnew | rnew);
+=======
+	ret = regmap_update_bits_check(arizona->regmap, ARIZONA_DRE_ENABLE,
+				       mask, lnew | rnew, &change);
+>>>>>>> origin/android16-base
 	if (ret) {
 		dev_err(arizona->dev, "Failed to set DRE: %d\n", ret);
 		goto err;
@@ -455,6 +464,12 @@ static int wm5110_put_dre(struct snd_kcontrol *kcontrol,
 	if (!rnew && rold)
 		wm5110_clear_pga_volume(arizona, mc->rshift);
 
+<<<<<<< HEAD
+=======
+	if (change)
+		ret = 1;
+
+>>>>>>> origin/android16-base
 err:
 	snd_soc_dapm_mutex_unlock(dapm);
 

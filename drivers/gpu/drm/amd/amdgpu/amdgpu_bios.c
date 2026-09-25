@@ -312,6 +312,10 @@ static bool amdgpu_atrm_get_bios(struct amdgpu_device *adev)
 
 	if (!found)
 		return false;
+<<<<<<< HEAD
+=======
+	pci_dev_put(pdev);
+>>>>>>> origin/android16-base
 
 	adev->bios = kmalloc(size, GFP_KERNEL);
 	if (!adev->bios) {

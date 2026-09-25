@@ -58,7 +58,13 @@ static int ila_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 		return orig_dst->lwtstate->orig_output(net, sk, skb);
 	}
 
+<<<<<<< HEAD
 	dst = dst_cache_get(&ilwt->dst_cache);
+=======
+	local_bh_disable();
+	dst = dst_cache_get(&ilwt->dst_cache);
+	local_bh_enable();
+>>>>>>> origin/android16-base
 	if (unlikely(!dst)) {
 		struct ipv6hdr *ip6h = ipv6_hdr(skb);
 		struct flowi6 fl6;
@@ -86,8 +92,16 @@ static int ila_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 			goto drop;
 		}
 
+<<<<<<< HEAD
 		if (ilwt->connected)
 			dst_cache_set_ip6(&ilwt->dst_cache, dst, &fl6.saddr);
+=======
+		if (ilwt->connected) {
+			local_bh_disable();
+			dst_cache_set_ip6(&ilwt->dst_cache, dst, &fl6.saddr);
+			local_bh_enable();
+		}
+>>>>>>> origin/android16-base
 	}
 
 	skb_dst_set(skb, dst);

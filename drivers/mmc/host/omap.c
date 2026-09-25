@@ -1347,7 +1347,11 @@ static int mmc_omap_probe(struct platform_device *pdev)
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0)
+<<<<<<< HEAD
 		return -ENXIO;
+=======
+		return irq;
+>>>>>>> origin/android16-base
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	host->virt_base = devm_ioremap_resource(&pdev->dev, res);

@@ -144,7 +144,11 @@ nft_do_chain(struct nft_pktinfo *pkt, void *priv)
 	struct nft_rule *const *rules;
 	const struct nft_rule *rule;
 	const struct nft_expr *expr, *last;
+<<<<<<< HEAD
 	struct nft_regs regs;
+=======
+	struct nft_regs regs = {};
+>>>>>>> origin/android16-base
 	unsigned int stackptr = 0;
 	struct nft_jumpstack jumpstack[NFT_JUMP_STACK_SIZE];
 	bool genbit = READ_ONCE(net->nft.gencursor);

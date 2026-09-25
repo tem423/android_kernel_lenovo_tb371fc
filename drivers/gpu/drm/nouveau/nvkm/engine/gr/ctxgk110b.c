@@ -101,4 +101,8 @@ gk110b_grctx = {
 	.gpc_tpc_nr = gk104_grctx_generate_gpc_tpc_nr,
 	.r418800 = gk104_grctx_generate_r418800,
 	.r419eb0 = gk110_grctx_generate_r419eb0,
+<<<<<<< HEAD
+=======
+	.r419f78 = gk110_grctx_generate_r419f78,
+>>>>>>> origin/android16-base
 };

@@ -65,6 +65,10 @@ config USB_SERIAL_SIMPLE
 		- Libtransistor USB console
 		- a number of Motorola phones
 		- Motorola Tetra devices
+<<<<<<< HEAD
+=======
+		- Nokia mobile phones
+>>>>>>> origin/android16-base
 		- Novatel Wireless GPS receivers
 		- Siemens USB/MPI adapter.
 		- ViVOtech ViVOpay USB device.

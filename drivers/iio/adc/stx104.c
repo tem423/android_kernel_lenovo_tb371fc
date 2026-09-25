@@ -23,7 +23,13 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
+<<<<<<< HEAD
 #include <linux/spinlock.h>
+=======
+#include <linux/mutex.h>
+#include <linux/spinlock.h>
+#include <linux/types.h>
+>>>>>>> origin/android16-base
 
 #define STX104_OUT_CHAN(chan) {				\
 	.type = IIO_VOLTAGE,				\
@@ -53,6 +59,7 @@ module_param_hw_array(base, uint, ioport, &num_stx104, 0);
 MODULE_PARM_DESC(base, "Apex Embedded Systems STX104 base addresses");
 
 /**
+<<<<<<< HEAD
  * struct stx104_iio - IIO device private data structure
  * @chan_out_states:	channels' output states
  * @base:		base port address of the IIO device
@@ -60,6 +67,39 @@ MODULE_PARM_DESC(base, "Apex Embedded Systems STX104 base addresses");
 struct stx104_iio {
 	unsigned int chan_out_states[STX104_NUM_OUT_CHAN];
 	unsigned int base;
+=======
+ * struct stx104_reg - device register structure
+ * @ssr_ad:	Software Strobe Register and ADC Data
+ * @achan:	ADC Channel
+ * @dio:	Digital I/O
+ * @dac:	DAC Channels
+ * @cir_asr:	Clear Interrupts and ADC Status
+ * @acr:	ADC Control
+ * @pccr_fsh:	Pacer Clock Control and FIFO Status MSB
+ * @acfg:	ADC Configuration
+ */
+struct stx104_reg {
+	u16 ssr_ad;
+	u8 achan;
+	u8 dio;
+	u16 dac[2];
+	u8 cir_asr;
+	u8 acr;
+	u8 pccr_fsh;
+	u8 acfg;
+};
+
+/**
+ * struct stx104_iio - IIO device private data structure
+ * @lock: synchronization lock to prevent I/O race conditions
+ * @chan_out_states:	channels' output states
+ * @reg:		I/O address offset for the device registers
+ */
+struct stx104_iio {
+	struct mutex lock;
+	unsigned int chan_out_states[STX104_NUM_OUT_CHAN];
+	struct stx104_reg __iomem *reg;
+>>>>>>> origin/android16-base
 };
 
 /**
@@ -72,7 +112,11 @@ struct stx104_iio {
 struct stx104_gpio {
 	struct gpio_chip chip;
 	spinlock_t lock;
+<<<<<<< HEAD
 	unsigned int base;
+=======
+	u8 __iomem *base;
+>>>>>>> origin/android16-base
 	unsigned int out_state;
 };
 
@@ -80,6 +124,10 @@ static int stx104_read_raw(struct iio_dev *indio_dev,
 	struct iio_chan_spec const *chan, int *val, int *val2, long mask)
 {
 	struct stx104_iio *const priv = iio_priv(indio_dev);
+<<<<<<< HEAD
+=======
+	struct stx104_reg __iomem *const reg = priv->reg;
+>>>>>>> origin/android16-base
 	unsigned int adc_config;
 	int adbu;
 	int gain;
@@ -87,7 +135,11 @@ static int stx104_read_raw(struct iio_dev *indio_dev,
 	switch (mask) {
 	case IIO_CHAN_INFO_HARDWAREGAIN:
 		/* get gain configuration */
+<<<<<<< HEAD
 		adc_config = inb(priv->base + 11);
+=======
+		adc_config = ioread8(&reg->acfg);
+>>>>>>> origin/android16-base
 		gain = adc_config & 0x3;
 
 		*val = 1 << gain;
@@ -98,6 +150,7 @@ static int stx104_read_raw(struct iio_dev *indio_dev,
 			return IIO_VAL_INT;
 		}
 
+<<<<<<< HEAD
 		/* select ADC channel */
 		outb(chan->channel | (chan->channel << 4), priv->base + 2);
 
@@ -110,13 +163,37 @@ static int stx104_read_raw(struct iio_dev *indio_dev,
 	case IIO_CHAN_INFO_OFFSET:
 		/* get ADC bipolar/unipolar configuration */
 		adc_config = inb(priv->base + 11);
+=======
+		mutex_lock(&priv->lock);
+
+		/* select ADC channel */
+		iowrite8(chan->channel | (chan->channel << 4), &reg->achan);
+
+		/* trigger ADC sample capture by writing to the 8-bit
+		 * Software Strobe Register and wait for completion
+		 */
+		iowrite8(0, &reg->ssr_ad);
+		while (ioread8(&reg->cir_asr) & BIT(7));
+
+		*val = ioread16(&reg->ssr_ad);
+
+		mutex_unlock(&priv->lock);
+		return IIO_VAL_INT;
+	case IIO_CHAN_INFO_OFFSET:
+		/* get ADC bipolar/unipolar configuration */
+		adc_config = ioread8(&reg->acfg);
+>>>>>>> origin/android16-base
 		adbu = !(adc_config & BIT(2));
 
 		*val = -32768 * adbu;
 		return IIO_VAL_INT;
 	case IIO_CHAN_INFO_SCALE:
 		/* get ADC bipolar/unipolar and gain configuration */
+<<<<<<< HEAD
 		adc_config = inb(priv->base + 11);
+=======
+		adc_config = ioread8(&reg->acfg);
+>>>>>>> origin/android16-base
 		adbu = !(adc_config & BIT(2));
 		gain = adc_config & 0x3;
 
@@ -138,6 +215,7 @@ static int stx104_write_raw(struct iio_dev *indio_dev,
 		/* Only four gain states (x1, x2, x4, x8) */
 		switch (val) {
 		case 1:
+<<<<<<< HEAD
 			outb(0, priv->base + 11);
 			break;
 		case 2:
@@ -148,6 +226,18 @@ static int stx104_write_raw(struct iio_dev *indio_dev,
 			break;
 		case 8:
 			outb(3, priv->base + 11);
+=======
+			iowrite8(0, &priv->reg->acfg);
+			break;
+		case 2:
+			iowrite8(1, &priv->reg->acfg);
+			break;
+		case 4:
+			iowrite8(2, &priv->reg->acfg);
+			break;
+		case 8:
+			iowrite8(3, &priv->reg->acfg);
+>>>>>>> origin/android16-base
 			break;
 		default:
 			return -EINVAL;
@@ -160,9 +250,18 @@ static int stx104_write_raw(struct iio_dev *indio_dev,
 			if ((unsigned int)val > 65535)
 				return -EINVAL;
 
+<<<<<<< HEAD
 			priv->chan_out_states[chan->channel] = val;
 			outw(val, priv->base + 4 + 2 * chan->channel);
 
+=======
+			mutex_lock(&priv->lock);
+
+			priv->chan_out_states[chan->channel] = val;
+			iowrite16(val, &priv->reg->dac[chan->channel]);
+
+			mutex_unlock(&priv->lock);
+>>>>>>> origin/android16-base
 			return 0;
 		}
 		return -EINVAL;
@@ -230,7 +329,11 @@ static int stx104_gpio_get(struct gpio_chip *chip, unsigned int offset)
 	if (offset >= 4)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	return !!(inb(stx104gpio->base) & BIT(offset));
+=======
+	return !!(ioread8(stx104gpio->base) & BIT(offset));
+>>>>>>> origin/android16-base
 }
 
 static int stx104_gpio_get_multiple(struct gpio_chip *chip, unsigned long *mask,
@@ -238,7 +341,11 @@ static int stx104_gpio_get_multiple(struct gpio_chip *chip, unsigned long *mask,
 {
 	struct stx104_gpio *const stx104gpio = gpiochip_get_data(chip);
 
+<<<<<<< HEAD
 	*bits = inb(stx104gpio->base);
+=======
+	*bits = ioread8(stx104gpio->base);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -260,7 +367,11 @@ static void stx104_gpio_set(struct gpio_chip *chip, unsigned int offset,
 	else
 		stx104gpio->out_state &= ~mask;
 
+<<<<<<< HEAD
 	outb(stx104gpio->out_state, stx104gpio->base);
+=======
+	iowrite8(stx104gpio->out_state, stx104gpio->base);
+>>>>>>> origin/android16-base
 
 	spin_unlock_irqrestore(&stx104gpio->lock, flags);
 }
@@ -287,7 +398,11 @@ static void stx104_gpio_set_multiple(struct gpio_chip *chip,
 
 	stx104gpio->out_state &= ~*mask;
 	stx104gpio->out_state |= *mask & *bits;
+<<<<<<< HEAD
 	outb(stx104gpio->out_state, stx104gpio->base);
+=======
+	iowrite8(stx104gpio->out_state, stx104gpio->base);
+>>>>>>> origin/android16-base
 
 	spin_unlock_irqrestore(&stx104gpio->lock, flags);
 }
@@ -314,11 +429,23 @@ static int stx104_probe(struct device *dev, unsigned int id)
 		return -EBUSY;
 	}
 
+<<<<<<< HEAD
+=======
+	priv = iio_priv(indio_dev);
+	priv->reg = devm_ioport_map(dev, base[id], STX104_EXTENT);
+	if (!priv->reg)
+		return -ENOMEM;
+
+>>>>>>> origin/android16-base
 	indio_dev->info = &stx104_info;
 	indio_dev->modes = INDIO_DIRECT_MODE;
 
 	/* determine if differential inputs */
+<<<<<<< HEAD
 	if (inb(base[id] + 8) & BIT(5)) {
+=======
+	if (ioread8(&priv->reg->cir_asr) & BIT(5)) {
+>>>>>>> origin/android16-base
 		indio_dev->num_channels = ARRAY_SIZE(stx104_channels_diff);
 		indio_dev->channels = stx104_channels_diff;
 	} else {
@@ -329,6 +456,7 @@ static int stx104_probe(struct device *dev, unsigned int id)
 	indio_dev->name = dev_name(dev);
 	indio_dev->dev.parent = dev;
 
+<<<<<<< HEAD
 	priv = iio_priv(indio_dev);
 	priv->base = base[id];
 
@@ -341,6 +469,19 @@ static int stx104_probe(struct device *dev, unsigned int id)
 	/* initialize DAC output to 0V */
 	outw(0, base[id] + 4);
 	outw(0, base[id] + 6);
+=======
+	mutex_init(&priv->lock);
+
+	/* configure device for software trigger operation */
+	iowrite8(0, &priv->reg->acr);
+
+	/* initialize gain setting to x1 */
+	iowrite8(0, &priv->reg->acfg);
+
+	/* initialize DAC output to 0V */
+	iowrite16(0, &priv->reg->dac[0]);
+	iowrite16(0, &priv->reg->dac[1]);
+>>>>>>> origin/android16-base
 
 	stx104gpio->chip.label = dev_name(dev);
 	stx104gpio->chip.parent = dev;
@@ -355,7 +496,11 @@ static int stx104_probe(struct device *dev, unsigned int id)
 	stx104gpio->chip.get_multiple = stx104_gpio_get_multiple;
 	stx104gpio->chip.set = stx104_gpio_set;
 	stx104gpio->chip.set_multiple = stx104_gpio_set_multiple;
+<<<<<<< HEAD
 	stx104gpio->base = base[id] + 3;
+=======
+	stx104gpio->base = &priv->reg->dio;
+>>>>>>> origin/android16-base
 	stx104gpio->out_state = 0x0;
 
 	spin_lock_init(&stx104gpio->lock);

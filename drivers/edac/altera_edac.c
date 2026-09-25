@@ -366,7 +366,11 @@ static int altr_sdram_probe(struct platform_device *pdev)
 	if (irq < 0) {
 		edac_printk(KERN_ERR, EDAC_MC,
 			    "No irq %d in DT\n", irq);
+<<<<<<< HEAD
 		return -ENODEV;
+=======
+		return irq;
+>>>>>>> origin/android16-base
 	}
 
 	/* Arria10 has a 2nd IRQ */

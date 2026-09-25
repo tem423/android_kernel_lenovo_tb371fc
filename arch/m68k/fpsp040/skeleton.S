@@ -499,12 +499,20 @@ in_ea:
 	dbf	%d0,morein
 	rts
 
+<<<<<<< HEAD
 	.section .fixup,#alloc,#execinstr
+=======
+	.section .fixup,"ax"
+>>>>>>> origin/android16-base
 	.even
 1:
 	jbra	fpsp040_die
 
+<<<<<<< HEAD
 	.section __ex_table,#alloc
+=======
+	.section __ex_table,"a"
+>>>>>>> origin/android16-base
 	.align	4
 
 	.long	in_ea,1b

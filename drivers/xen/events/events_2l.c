@@ -47,6 +47,14 @@ static unsigned evtchn_2l_max_channels(void)
 	return EVTCHN_2L_NR_CHANNELS;
 }
 
+<<<<<<< HEAD
+=======
+static void evtchn_2l_remove(evtchn_port_t evtchn, unsigned int cpu)
+{
+	clear_bit(evtchn, BM(per_cpu(cpu_evtchn_mask, cpu)));
+}
+
+>>>>>>> origin/android16-base
 static void evtchn_2l_bind_to_cpu(struct irq_info *info, unsigned cpu)
 {
 	clear_bit(info->evtchn, BM(per_cpu(cpu_evtchn_mask, info->cpu)));
@@ -71,12 +79,15 @@ static bool evtchn_2l_is_pending(unsigned port)
 	return sync_test_bit(port, BM(&s->evtchn_pending[0]));
 }
 
+<<<<<<< HEAD
 static bool evtchn_2l_test_and_set_mask(unsigned port)
 {
 	struct shared_info *s = HYPERVISOR_shared_info;
 	return sync_test_and_set_bit(port, BM(&s->evtchn_mask[0]));
 }
 
+=======
+>>>>>>> origin/android16-base
 static void evtchn_2l_mask(unsigned port)
 {
 	struct shared_info *s = HYPERVISOR_shared_info;
@@ -354,18 +365,40 @@ static void evtchn_2l_resume(void)
 				EVTCHN_2L_NR_CHANNELS/BITS_PER_EVTCHN_WORD);
 }
 
+<<<<<<< HEAD
 static const struct evtchn_ops evtchn_ops_2l = {
 	.max_channels      = evtchn_2l_max_channels,
 	.nr_channels       = evtchn_2l_max_channels,
+=======
+static int evtchn_2l_percpu_deinit(unsigned int cpu)
+{
+	memset(per_cpu(cpu_evtchn_mask, cpu), 0, sizeof(xen_ulong_t) *
+			EVTCHN_2L_NR_CHANNELS/BITS_PER_EVTCHN_WORD);
+
+	return 0;
+}
+
+static const struct evtchn_ops evtchn_ops_2l = {
+	.max_channels      = evtchn_2l_max_channels,
+	.nr_channels       = evtchn_2l_max_channels,
+	.remove            = evtchn_2l_remove,
+>>>>>>> origin/android16-base
 	.bind_to_cpu       = evtchn_2l_bind_to_cpu,
 	.clear_pending     = evtchn_2l_clear_pending,
 	.set_pending       = evtchn_2l_set_pending,
 	.is_pending        = evtchn_2l_is_pending,
+<<<<<<< HEAD
 	.test_and_set_mask = evtchn_2l_test_and_set_mask,
+=======
+>>>>>>> origin/android16-base
 	.mask              = evtchn_2l_mask,
 	.unmask            = evtchn_2l_unmask,
 	.handle_events     = evtchn_2l_handle_events,
 	.resume	           = evtchn_2l_resume,
+<<<<<<< HEAD
+=======
+	.percpu_deinit     = evtchn_2l_percpu_deinit,
+>>>>>>> origin/android16-base
 };
 
 void __init xen_evtchn_2l_init(void)

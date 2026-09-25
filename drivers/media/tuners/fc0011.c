@@ -508,7 +508,11 @@ struct dvb_frontend *fc0011_attach(struct dvb_frontend *fe,
 
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(fc0011_attach);
+=======
+EXPORT_SYMBOL_GPL(fc0011_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("Fitipower FC0011 silicon tuner driver");
 MODULE_AUTHOR("Michael Buesch <m@bues.ch>");

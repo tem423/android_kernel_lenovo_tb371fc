@@ -388,10 +388,18 @@ static const struct dmi_system_id reboot_dmi_table[] __initconst = {
 	},
 	{	/* Handle problems with rebooting on the OptiPlex 990. */
 		.callback = set_pci_reboot,
+<<<<<<< HEAD
 		.ident = "Dell OptiPlex 990",
 		.matches = {
 			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
 			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 990"),
+=======
+		.ident = "Dell OptiPlex 990 BIOS A0x",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
+			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 990"),
+			DMI_MATCH(DMI_BIOS_VERSION, "A0"),
+>>>>>>> origin/android16-base
 		},
 	},
 	{	/* Handle problems with rebooting on Dell 300's */
@@ -477,6 +485,18 @@ static const struct dmi_system_id reboot_dmi_table[] __initconst = {
 		},
 	},
 
+<<<<<<< HEAD
+=======
+	{	/* PCIe Wifi card isn't detected after reboot otherwise */
+		.callback = set_pci_reboot,
+		.ident = "Zotac ZBOX CI327 nano",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "NA"),
+			DMI_MATCH(DMI_PRODUCT_NAME, "ZBOX-CI327NANO-GS-01"),
+		},
+	},
+
+>>>>>>> origin/android16-base
 	/* Sony */
 	{	/* Handle problems with rebooting on Sony VGN-Z540N */
 		.callback = set_bios_reboot,
@@ -526,6 +546,7 @@ static inline void kb_wait(void)
 	}
 }
 
+<<<<<<< HEAD
 static void vmxoff_nmi(int cpu, struct pt_regs *regs)
 {
 	cpu_emergency_vmxoff();
@@ -533,11 +554,17 @@ static void vmxoff_nmi(int cpu, struct pt_regs *regs)
 
 /* Use NMIs as IPIs to tell all CPUs to disable virtualization */
 static void emergency_vmx_disable_all(void)
+=======
+static inline void nmi_shootdown_cpus_on_restart(void);
+
+static void emergency_reboot_disable_virtualization(void)
+>>>>>>> origin/android16-base
 {
 	/* Just make sure we won't change CPUs while doing this */
 	local_irq_disable();
 
 	/*
+<<<<<<< HEAD
 	 * We need to disable VMX on all CPUs before rebooting, otherwise
 	 * we risk hanging up the machine, because the CPU ignore INIT
 	 * signals when VMX is enabled.
@@ -562,6 +589,23 @@ static void emergency_vmx_disable_all(void)
 
 		/* Halt and disable VMX on the other CPUs */
 		nmi_shootdown_cpus(vmxoff_nmi);
+=======
+	 * Disable virtualization on all CPUs before rebooting to avoid hanging
+	 * the system, as VMX and SVM block INIT when running in the host.
+	 *
+	 * We can't take any locks and we may be on an inconsistent state, so
+	 * use NMIs as IPIs to tell the other CPUs to disable VMX/SVM and halt.
+	 *
+	 * Do the NMI shootdown even if virtualization is off on _this_ CPU, as
+	 * other CPUs may have virtualization enabled.
+	 */
+	if (cpu_has_vmx() || cpu_has_svm(NULL)) {
+		/* Safely force _this_ CPU out of VMX/SVM operation. */
+		cpu_emergency_disable_virtualization();
+
+		/* Disable VMX/SVM and halt on other CPUs. */
+		nmi_shootdown_cpus_on_restart();
+>>>>>>> origin/android16-base
 
 	}
 }
@@ -598,7 +642,11 @@ static void native_machine_emergency_restart(void)
 	unsigned short mode;
 
 	if (reboot_emergency)
+<<<<<<< HEAD
 		emergency_vmx_disable_all();
+=======
+		emergency_reboot_disable_virtualization();
+>>>>>>> origin/android16-base
 
 	tboot_shutdown(TB_SHUTDOWN_REBOOT);
 
@@ -803,6 +851,20 @@ void machine_crash_shutdown(struct pt_regs *regs)
 /* This is the CPU performing the emergency shutdown work. */
 int crashing_cpu = -1;
 
+<<<<<<< HEAD
+=======
+/*
+ * Disable virtualization, i.e. VMX or SVM, to ensure INIT is recognized during
+ * reboot.  VMX blocks INIT if the CPU is post-VMXON, and SVM blocks INIT if
+ * GIF=0, i.e. if the crash occurred between CLGI and STGI.
+ */
+void cpu_emergency_disable_virtualization(void)
+{
+	cpu_emergency_vmxoff();
+	cpu_emergency_svm_disable();
+}
+
+>>>>>>> origin/android16-base
 #if defined(CONFIG_SMP)
 
 static nmi_shootdown_cb shootdown_callback;
@@ -825,7 +887,18 @@ static int crash_nmi_callback(unsigned int val, struct pt_regs *regs)
 		return NMI_HANDLED;
 	local_irq_disable();
 
+<<<<<<< HEAD
 	shootdown_callback(cpu, regs);
+=======
+	if (shootdown_callback)
+		shootdown_callback(cpu, regs);
+
+	/*
+	 * Prepare the CPU for reboot _after_ invoking the callback so that the
+	 * callback can safely use virtualization instructions, e.g. VMCLEAR.
+	 */
+	cpu_emergency_disable_virtualization();
+>>>>>>> origin/android16-base
 
 	atomic_dec(&waiting_for_crash_ipi);
 	/* Assume hlt works */
@@ -841,18 +914,46 @@ static void smp_send_nmi_allbutself(void)
 	apic->send_IPI_allbutself(NMI_VECTOR);
 }
 
+<<<<<<< HEAD
 /*
  * Halt all other CPUs, calling the specified function on each of them
  *
  * This function can be used to halt all other CPUs on crash
  * or emergency reboot time. The function passed as parameter
  * will be called inside a NMI handler on all CPUs.
+=======
+/**
+ * nmi_shootdown_cpus - Stop other CPUs via NMI
+ * @callback:	Optional callback to be invoked from the NMI handler
+ *
+ * The NMI handler on the remote CPUs invokes @callback, if not
+ * NULL, first and then disables virtualization to ensure that
+ * INIT is recognized during reboot.
+ *
+ * nmi_shootdown_cpus() can only be invoked once. After the first
+ * invocation all other CPUs are stuck in crash_nmi_callback() and
+ * cannot respond to a second NMI.
+>>>>>>> origin/android16-base
  */
 void nmi_shootdown_cpus(nmi_shootdown_cb callback)
 {
 	unsigned long msecs;
+<<<<<<< HEAD
 	local_irq_disable();
 
+=======
+
+	local_irq_disable();
+
+	/*
+	 * Avoid certain doom if a shootdown already occurred; re-registering
+	 * the NMI handler will cause list corruption, modifying the callback
+	 * will do who knows what, etc...
+	 */
+	if (WARN_ON_ONCE(crash_ipi_issued))
+		return;
+
+>>>>>>> origin/android16-base
 	/* Make a note of crashing cpu. Will be used in NMI callback. */
 	crashing_cpu = safe_smp_processor_id();
 
@@ -880,7 +981,21 @@ void nmi_shootdown_cpus(nmi_shootdown_cb callback)
 		msecs--;
 	}
 
+<<<<<<< HEAD
 	/* Leave the nmi callback set */
+=======
+	/*
+	 * Leave the nmi callback set, shootdown is a one-time thing.  Clearing
+	 * the callback could result in a NULL pointer dereference if a CPU
+	 * (finally) responds after the timeout expires.
+	 */
+}
+
+static inline void nmi_shootdown_cpus_on_restart(void)
+{
+	if (!crash_ipi_issued)
+		nmi_shootdown_cpus(NULL);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -910,6 +1025,11 @@ void nmi_shootdown_cpus(nmi_shootdown_cb callback)
 	/* No other CPUs to shoot down */
 }
 
+<<<<<<< HEAD
+=======
+static inline void nmi_shootdown_cpus_on_restart(void) { }
+
+>>>>>>> origin/android16-base
 void run_crash_ipi_callback(struct pt_regs *regs)
 {
 }

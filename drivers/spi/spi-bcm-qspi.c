@@ -520,7 +520,11 @@ static void bcm_qspi_chip_select(struct bcm_qspi *qspi, int cs)
 	u32 rd = 0;
 	u32 wr = 0;
 
+<<<<<<< HEAD
 	if (qspi->base[CHIP_SELECT]) {
+=======
+	if (cs >= 0 && qspi->base[CHIP_SELECT]) {
+>>>>>>> origin/android16-base
 		rd = bcm_qspi_read(qspi, CHIP_SELECT, 0);
 		wr = (rd & ~0xff) | (1 << cs);
 		if (rd == wr)
@@ -970,7 +974,11 @@ static int bcm_qspi_exec_mem_op(struct spi_mem *mem,
 	addr = op->addr.val;
 	len = op->data.nbytes;
 
+<<<<<<< HEAD
 	if (bcm_qspi_bspi_ver_three(qspi) == true) {
+=======
+	if (has_bspi(qspi) && bcm_qspi_bspi_ver_three(qspi) == true) {
+>>>>>>> origin/android16-base
 		/*
 		 * The address coming into this function is a raw flash offset.
 		 * But for BSPI <= V3, we need to convert it to a remapped BSPI
@@ -989,7 +997,11 @@ static int bcm_qspi_exec_mem_op(struct spi_mem *mem,
 	    len < 4)
 		mspi_read = true;
 
+<<<<<<< HEAD
 	if (mspi_read)
+=======
+	if (!has_bspi(qspi) || mspi_read)
+>>>>>>> origin/android16-base
 		return bcm_qspi_mspi_exec_mem_op(spi, op);
 
 	ret = bcm_qspi_bspi_set_mode(qspi, op, 0);
@@ -1223,7 +1235,11 @@ int bcm_qspi_probe(struct platform_device *pdev,
 	if (!of_match_node(bcm_qspi_of_match, dev->of_node))
 		return -ENODEV;
 
+<<<<<<< HEAD
 	master = spi_alloc_master(dev, sizeof(struct bcm_qspi));
+=======
+	master = devm_spi_alloc_master(dev, sizeof(struct bcm_qspi));
+>>>>>>> origin/android16-base
 	if (!master) {
 		dev_err(dev, "error allocating spi_master\n");
 		return -ENOMEM;
@@ -1255,6 +1271,7 @@ int bcm_qspi_probe(struct platform_device *pdev,
 		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 						   "mspi");
 
+<<<<<<< HEAD
 	if (res) {
 		qspi->base[MSPI]  = devm_ioremap_resource(dev, res);
 		if (IS_ERR(qspi->base[MSPI])) {
@@ -1264,14 +1281,24 @@ int bcm_qspi_probe(struct platform_device *pdev,
 	} else {
 		goto qspi_resource_err;
 	}
+=======
+	qspi->base[MSPI]  = devm_ioremap_resource(dev, res);
+	if (IS_ERR(qspi->base[MSPI]))
+		return PTR_ERR(qspi->base[MSPI]);
+>>>>>>> origin/android16-base
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "bspi");
 	if (res) {
 		qspi->base[BSPI]  = devm_ioremap_resource(dev, res);
+<<<<<<< HEAD
 		if (IS_ERR(qspi->base[BSPI])) {
 			ret = PTR_ERR(qspi->base[BSPI]);
 			goto qspi_resource_err;
 		}
+=======
+		if (IS_ERR(qspi->base[BSPI]))
+			return PTR_ERR(qspi->base[BSPI]);
+>>>>>>> origin/android16-base
 		qspi->bspi_mode = true;
 	} else {
 		qspi->bspi_mode = false;
@@ -1282,18 +1309,28 @@ int bcm_qspi_probe(struct platform_device *pdev,
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "cs_reg");
 	if (res) {
 		qspi->base[CHIP_SELECT]  = devm_ioremap_resource(dev, res);
+<<<<<<< HEAD
 		if (IS_ERR(qspi->base[CHIP_SELECT])) {
 			ret = PTR_ERR(qspi->base[CHIP_SELECT]);
 			goto qspi_resource_err;
 		}
+=======
+		if (IS_ERR(qspi->base[CHIP_SELECT]))
+			return PTR_ERR(qspi->base[CHIP_SELECT]);
+>>>>>>> origin/android16-base
 	}
 
 	qspi->dev_ids = kcalloc(num_irqs, sizeof(struct bcm_qspi_dev_id),
 				GFP_KERNEL);
+<<<<<<< HEAD
 	if (!qspi->dev_ids) {
 		ret = -ENOMEM;
 		goto qspi_resource_err;
 	}
+=======
+	if (!qspi->dev_ids)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	for (val = 0; val < num_irqs; val++) {
 		irq = -1;
@@ -1313,7 +1350,11 @@ int bcm_qspi_probe(struct platform_device *pdev,
 					       &qspi->dev_ids[val]);
 			if (ret < 0) {
 				dev_err(&pdev->dev, "IRQ %s not found\n", name);
+<<<<<<< HEAD
 				goto qspi_probe_err;
+=======
+				goto qspi_unprepare_err;
+>>>>>>> origin/android16-base
 			}
 
 			qspi->dev_ids[val].dev = qspi;
@@ -1328,7 +1369,11 @@ int bcm_qspi_probe(struct platform_device *pdev,
 	if (!num_ints) {
 		dev_err(&pdev->dev, "no IRQs registered, cannot init driver\n");
 		ret = -EINVAL;
+<<<<<<< HEAD
 		goto qspi_probe_err;
+=======
+		goto qspi_unprepare_err;
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -1369,7 +1414,11 @@ int bcm_qspi_probe(struct platform_device *pdev,
 	qspi->xfer_mode.addrlen = -1;
 	qspi->xfer_mode.hp = -1;
 
+<<<<<<< HEAD
 	ret = devm_spi_register_master(&pdev->dev, master);
+=======
+	ret = spi_register_master(master);
+>>>>>>> origin/android16-base
 	if (ret < 0) {
 		dev_err(dev, "can't register master\n");
 		goto qspi_reg_err;
@@ -1379,11 +1428,18 @@ int bcm_qspi_probe(struct platform_device *pdev,
 
 qspi_reg_err:
 	bcm_qspi_hw_uninit(qspi);
+<<<<<<< HEAD
 	clk_disable_unprepare(qspi->clk);
 qspi_probe_err:
 	kfree(qspi->dev_ids);
 qspi_resource_err:
 	spi_master_put(master);
+=======
+qspi_unprepare_err:
+	clk_disable_unprepare(qspi->clk);
+qspi_probe_err:
+	kfree(qspi->dev_ids);
+>>>>>>> origin/android16-base
 	return ret;
 }
 /* probe function to be called by SoC specific platform driver probe */
@@ -1393,10 +1449,17 @@ int bcm_qspi_remove(struct platform_device *pdev)
 {
 	struct bcm_qspi *qspi = platform_get_drvdata(pdev);
 
+<<<<<<< HEAD
 	bcm_qspi_hw_uninit(qspi);
 	clk_disable_unprepare(qspi->clk);
 	kfree(qspi->dev_ids);
 	spi_unregister_master(qspi->master);
+=======
+	spi_unregister_master(qspi->master);
+	bcm_qspi_hw_uninit(qspi);
+	clk_disable_unprepare(qspi->clk);
+	kfree(qspi->dev_ids);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

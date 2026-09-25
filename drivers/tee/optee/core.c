@@ -87,6 +87,7 @@ int optee_from_msg_param(struct tee_param *params, size_t num_params,
 				return rc;
 			p->u.memref.shm_offs = mp->u.tmem.buf_ptr - pa;
 			p->u.memref.shm = shm;
+<<<<<<< HEAD
 
 			/* Check that the memref is covered by the shm object */
 			if (p->u.memref.size) {
@@ -97,6 +98,8 @@ int optee_from_msg_param(struct tee_param *params, size_t num_params,
 				if (rc)
 					return rc;
 			}
+=======
+>>>>>>> origin/android16-base
 			break;
 		case OPTEE_MSG_ATTR_TYPE_RMEM_INPUT:
 		case OPTEE_MSG_ATTR_TYPE_RMEM_OUTPUT:
@@ -629,6 +632,18 @@ static struct optee *optee_probe(struct device_node *np)
 	optee->memremaped_shm = memremaped_shm;
 	optee->pool = pool;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Ensure that there are no pre-existing shm objects before enabling
+	 * the shm cache so that there's no chance of receiving an invalid
+	 * address during shutdown. This could occur, for example, if we're
+	 * kexec booting from an older kernel that did not properly cleanup the
+	 * shm cache.
+	 */
+	optee_disable_unmapped_shm_cache(optee);
+
+>>>>>>> origin/android16-base
 	optee_enable_shm_cache(optee);
 
 	pr_info("initialized driver\n");

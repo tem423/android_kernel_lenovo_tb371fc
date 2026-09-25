@@ -14,6 +14,7 @@
 #include <asm/cache.h>
 #include <asm/page.h>
 
+<<<<<<< HEAD
 #if (DCACHE_WAY_SIZE <= PAGE_SIZE)
 
 /* Note, read http://lkml.org/lkml/2004/1/15/6 */
@@ -40,6 +41,8 @@
 #define __tlb_remove_tlb_entry(tlb,pte,addr)	do { } while (0)
 #define tlb_flush(tlb)				flush_tlb_mm((tlb)->mm)
 
+=======
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 #define __pte_free_tlb(tlb, pte, address)	pte_free((tlb)->mm, pte)

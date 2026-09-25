@@ -167,15 +167,29 @@ static struct dcp *global_sdcp;
 
 static int mxs_dcp_start_dma(struct dcp_async_ctx *actx)
 {
+<<<<<<< HEAD
+=======
+	int dma_err;
+>>>>>>> origin/android16-base
 	struct dcp *sdcp = global_sdcp;
 	const int chan = actx->chan;
 	uint32_t stat;
 	unsigned long ret;
 	struct dcp_dma_desc *desc = &sdcp->coh->desc[actx->chan];
+<<<<<<< HEAD
 
 	dma_addr_t desc_phys = dma_map_single(sdcp->dev, desc, sizeof(*desc),
 					      DMA_TO_DEVICE);
 
+=======
+	dma_addr_t desc_phys = dma_map_single(sdcp->dev, desc, sizeof(*desc),
+					      DMA_TO_DEVICE);
+
+	dma_err = dma_mapping_error(sdcp->dev, desc_phys);
+	if (dma_err)
+		return dma_err;
+
+>>>>>>> origin/android16-base
 	reinit_completion(&sdcp->completion[chan]);
 
 	/* Clear status register. */
@@ -213,11 +227,16 @@ static int mxs_dcp_start_dma(struct dcp_async_ctx *actx)
 static int mxs_dcp_run_aes(struct dcp_async_ctx *actx,
 			   struct ablkcipher_request *req, int init)
 {
+<<<<<<< HEAD
+=======
+	dma_addr_t key_phys, src_phys, dst_phys;
+>>>>>>> origin/android16-base
 	struct dcp *sdcp = global_sdcp;
 	struct dcp_dma_desc *desc = &sdcp->coh->desc[actx->chan];
 	struct dcp_aes_req_ctx *rctx = ablkcipher_request_ctx(req);
 	int ret;
 
+<<<<<<< HEAD
 	dma_addr_t key_phys = dma_map_single(sdcp->dev, sdcp->coh->aes_key,
 					     2 * AES_KEYSIZE_128,
 					     DMA_TO_DEVICE);
@@ -225,6 +244,25 @@ static int mxs_dcp_run_aes(struct dcp_async_ctx *actx,
 					     DCP_BUF_SZ, DMA_TO_DEVICE);
 	dma_addr_t dst_phys = dma_map_single(sdcp->dev, sdcp->coh->aes_out_buf,
 					     DCP_BUF_SZ, DMA_FROM_DEVICE);
+=======
+	key_phys = dma_map_single(sdcp->dev, sdcp->coh->aes_key,
+				  2 * AES_KEYSIZE_128, DMA_TO_DEVICE);
+	ret = dma_mapping_error(sdcp->dev, key_phys);
+	if (ret)
+		return ret;
+
+	src_phys = dma_map_single(sdcp->dev, sdcp->coh->aes_in_buf,
+				  DCP_BUF_SZ, DMA_TO_DEVICE);
+	ret = dma_mapping_error(sdcp->dev, src_phys);
+	if (ret)
+		goto err_src;
+
+	dst_phys = dma_map_single(sdcp->dev, sdcp->coh->aes_out_buf,
+				  DCP_BUF_SZ, DMA_FROM_DEVICE);
+	ret = dma_mapping_error(sdcp->dev, dst_phys);
+	if (ret)
+		goto err_dst;
+>>>>>>> origin/android16-base
 
 	if (actx->fill % AES_BLOCK_SIZE) {
 		dev_err(sdcp->dev, "Invalid block size!\n");
@@ -262,10 +300,19 @@ static int mxs_dcp_run_aes(struct dcp_async_ctx *actx,
 	ret = mxs_dcp_start_dma(actx);
 
 aes_done_run:
+<<<<<<< HEAD
 	dma_unmap_single(sdcp->dev, key_phys, 2 * AES_KEYSIZE_128,
 			 DMA_TO_DEVICE);
 	dma_unmap_single(sdcp->dev, src_phys, DCP_BUF_SZ, DMA_TO_DEVICE);
 	dma_unmap_single(sdcp->dev, dst_phys, DCP_BUF_SZ, DMA_FROM_DEVICE);
+=======
+	dma_unmap_single(sdcp->dev, dst_phys, DCP_BUF_SZ, DMA_FROM_DEVICE);
+err_dst:
+	dma_unmap_single(sdcp->dev, src_phys, DCP_BUF_SZ, DMA_TO_DEVICE);
+err_src:
+	dma_unmap_single(sdcp->dev, key_phys, 2 * AES_KEYSIZE_128,
+			 DMA_TO_DEVICE);
+>>>>>>> origin/android16-base
 
 	return ret;
 }
@@ -280,21 +327,34 @@ static int mxs_dcp_aes_block_crypt(struct crypto_async_request *arq)
 
 	struct scatterlist *dst = req->dst;
 	struct scatterlist *src = req->src;
+<<<<<<< HEAD
 	const int nents = sg_nents(req->src);
+=======
+	int dst_nents = sg_nents(dst);
+>>>>>>> origin/android16-base
 
 	const int out_off = DCP_BUF_SZ;
 	uint8_t *in_buf = sdcp->coh->aes_in_buf;
 	uint8_t *out_buf = sdcp->coh->aes_out_buf;
 
+<<<<<<< HEAD
 	uint8_t *out_tmp, *src_buf, *dst_buf = NULL;
 	uint32_t dst_off = 0;
+=======
+	uint32_t dst_off = 0;
+	uint8_t *src_buf = NULL;
+>>>>>>> origin/android16-base
 	uint32_t last_out_len = 0;
 
 	uint8_t *key = sdcp->coh->aes_key;
 
 	int ret = 0;
+<<<<<<< HEAD
 	int split = 0;
 	unsigned int i, len, clen, rem = 0, tlen = 0;
+=======
+	unsigned int i, len, clen, tlen = 0;
+>>>>>>> origin/android16-base
 	int init = 0;
 	bool limit_hit = false;
 
@@ -312,7 +372,11 @@ static int mxs_dcp_aes_block_crypt(struct crypto_async_request *arq)
 		memset(key + AES_KEYSIZE_128, 0, AES_KEYSIZE_128);
 	}
 
+<<<<<<< HEAD
 	for_each_sg(req->src, src, nents, i) {
+=======
+	for_each_sg(req->src, src, sg_nents(req->src), i) {
+>>>>>>> origin/android16-base
 		src_buf = sg_virt(src);
 		len = sg_dma_len(src);
 		tlen += len;
@@ -337,12 +401,17 @@ static int mxs_dcp_aes_block_crypt(struct crypto_async_request *arq)
 			 * submit the buffer.
 			 */
 			if (actx->fill == out_off || sg_is_last(src) ||
+<<<<<<< HEAD
 				limit_hit) {
+=======
+			    limit_hit) {
+>>>>>>> origin/android16-base
 				ret = mxs_dcp_run_aes(actx, req, init);
 				if (ret)
 					return ret;
 				init = 0;
 
+<<<<<<< HEAD
 				out_tmp = out_buf;
 				last_out_len = actx->fill;
 				while (dst && actx->fill) {
@@ -365,6 +434,13 @@ static int mxs_dcp_aes_block_crypt(struct crypto_async_request *arq)
 						split = 1;
 					}
 				}
+=======
+				sg_pcopy_from_buffer(dst, dst_nents, out_buf,
+						     actx->fill, dst_off);
+				dst_off += actx->fill;
+				last_out_len = actx->fill;
+				actx->fill = 0;
+>>>>>>> origin/android16-base
 			}
 		} while (len);
 
@@ -565,6 +641,13 @@ static int mxs_dcp_run_sha(struct ahash_request *req)
 	dma_addr_t buf_phys = dma_map_single(sdcp->dev, sdcp->coh->sha_in_buf,
 					     DCP_BUF_SZ, DMA_TO_DEVICE);
 
+<<<<<<< HEAD
+=======
+	ret = dma_mapping_error(sdcp->dev, buf_phys);
+	if (ret)
+		return ret;
+
+>>>>>>> origin/android16-base
 	/* Fill in the DMA descriptor. */
 	desc->control0 = MXS_DCP_CONTROL0_DECR_SEMAPHORE |
 		    MXS_DCP_CONTROL0_INTERRUPT |
@@ -597,6 +680,13 @@ static int mxs_dcp_run_sha(struct ahash_request *req)
 	if (rctx->fini) {
 		digest_phys = dma_map_single(sdcp->dev, sdcp->coh->sha_out_buf,
 					     DCP_SHA_PAY_SZ, DMA_FROM_DEVICE);
+<<<<<<< HEAD
+=======
+		ret = dma_mapping_error(sdcp->dev, digest_phys);
+		if (ret)
+			goto done_run;
+
+>>>>>>> origin/android16-base
 		desc->control0 |= MXS_DCP_CONTROL0_HASH_TERM;
 		desc->payload = digest_phys;
 	}

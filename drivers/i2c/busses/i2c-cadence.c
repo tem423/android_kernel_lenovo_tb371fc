@@ -203,9 +203,15 @@ static inline bool cdns_is_holdquirk(struct cdns_i2c *id, bool hold_wrkaround)
  */
 static irqreturn_t cdns_i2c_isr(int irq, void *ptr)
 {
+<<<<<<< HEAD
 	unsigned int isr_status, avail_bytes, updatetx;
 	unsigned int bytes_to_send;
 	bool hold_quirk;
+=======
+	unsigned int isr_status, avail_bytes;
+	unsigned int bytes_to_send;
+	bool updatetx;
+>>>>>>> origin/android16-base
 	struct cdns_i2c *id = ptr;
 	/* Signal completion only after everything is updated */
 	int done_flag = 0;
@@ -224,11 +230,15 @@ static irqreturn_t cdns_i2c_isr(int irq, void *ptr)
 	 * Check if transfer size register needs to be updated again for a
 	 * large data receive operation.
 	 */
+<<<<<<< HEAD
 	updatetx = 0;
 	if (id->recv_count > id->curr_recv_count)
 		updatetx = 1;
 
 	hold_quirk = (id->quirks & CDNS_I2C_BROKEN_HOLD_BIT) && updatetx;
+=======
+	updatetx = id->recv_count > id->curr_recv_count;
+>>>>>>> origin/android16-base
 
 	/* When receiving, handle data interrupt and completion interrupt */
 	if (id->p_recv_buf &&
@@ -251,7 +261,11 @@ static irqreturn_t cdns_i2c_isr(int irq, void *ptr)
 			id->recv_count--;
 			id->curr_recv_count--;
 
+<<<<<<< HEAD
 			if (cdns_is_holdquirk(id, hold_quirk))
+=======
+			if (cdns_is_holdquirk(id, updatetx))
+>>>>>>> origin/android16-base
 				break;
 		}
 
@@ -262,7 +276,11 @@ static irqreturn_t cdns_i2c_isr(int irq, void *ptr)
 		 * maintain transfer size non-zero while performing a large
 		 * receive operation.
 		 */
+<<<<<<< HEAD
 		if (cdns_is_holdquirk(id, hold_quirk)) {
+=======
+		if (cdns_is_holdquirk(id, updatetx)) {
+>>>>>>> origin/android16-base
 			/* wait while fifo is full */
 			while (cdns_i2c_readreg(CDNS_I2C_XFER_SIZE_OFFSET) !=
 			       (id->curr_recv_count - CDNS_I2C_FIFO_DEPTH))
@@ -284,6 +302,7 @@ static irqreturn_t cdns_i2c_isr(int irq, void *ptr)
 						  CDNS_I2C_XFER_SIZE_OFFSET);
 				id->curr_recv_count = id->recv_count;
 			}
+<<<<<<< HEAD
 		} else if (id->recv_count && !hold_quirk &&
 						!id->curr_recv_count) {
 
@@ -300,6 +319,8 @@ static irqreturn_t cdns_i2c_isr(int irq, void *ptr)
 						CDNS_I2C_XFER_SIZE_OFFSET);
 				id->curr_recv_count = id->recv_count;
 			}
+=======
+>>>>>>> origin/android16-base
 		}
 
 		/* Clear hold (if not repeated start) and signal completion */
@@ -373,8 +394,18 @@ static void cdns_i2c_mrecv(struct cdns_i2c *id)
 	ctrl_reg = cdns_i2c_readreg(CDNS_I2C_CR_OFFSET);
 	ctrl_reg |= CDNS_I2C_CR_RW | CDNS_I2C_CR_CLR_FIFO;
 
+<<<<<<< HEAD
 	if (id->p_msg->flags & I2C_M_RECV_LEN)
 		id->recv_count = I2C_SMBUS_BLOCK_MAX + 1;
+=======
+	/*
+	 * Receive up to I2C_SMBUS_BLOCK_MAX data bytes, plus one message length
+	 * byte, plus one checksum byte if PEC is enabled. p_msg->len will be 2 if
+	 * PEC is enabled, otherwise 1.
+	 */
+	if (id->p_msg->flags & I2C_M_RECV_LEN)
+		id->recv_count = I2C_SMBUS_BLOCK_MAX + id->p_msg->len;
+>>>>>>> origin/android16-base
 
 	id->curr_recv_count = id->recv_count;
 
@@ -511,7 +542,11 @@ static void cdns_i2c_master_reset(struct i2c_adapter *adap)
 static int cdns_i2c_process_msg(struct cdns_i2c *id, struct i2c_msg *msg,
 		struct i2c_adapter *adap)
 {
+<<<<<<< HEAD
 	unsigned long time_left;
+=======
+	unsigned long time_left, msg_timeout;
+>>>>>>> origin/android16-base
 	u32 reg;
 
 	id->p_msg = msg;
@@ -536,8 +571,21 @@ static int cdns_i2c_process_msg(struct cdns_i2c *id, struct i2c_msg *msg,
 	else
 		cdns_i2c_msend(id);
 
+<<<<<<< HEAD
 	/* Wait for the signal of completion */
 	time_left = wait_for_completion_timeout(&id->xfer_done, adap->timeout);
+=======
+	/* Minimal time to execute this message */
+	msg_timeout = msecs_to_jiffies((1000 * msg->len * BITS_PER_BYTE) / id->i2c_clk);
+	/* Plus some wiggle room */
+	msg_timeout += msecs_to_jiffies(500);
+
+	if (msg_timeout < adap->timeout)
+		msg_timeout = adap->timeout;
+
+	/* Wait for the signal of completion */
+	time_left = wait_for_completion_timeout(&id->xfer_done, msg_timeout);
+>>>>>>> origin/android16-base
 	if (time_left == 0) {
 		cdns_i2c_master_reset(adap);
 		dev_err(id->adap.dev.parent,
@@ -552,6 +600,12 @@ static int cdns_i2c_process_msg(struct cdns_i2c *id, struct i2c_msg *msg,
 	if (id->err_status & CDNS_I2C_IXR_ARB_LOST)
 		return -EAGAIN;
 
+<<<<<<< HEAD
+=======
+	if (msg->flags & I2C_M_RECV_LEN)
+		msg->len += min_t(unsigned int, msg->buf[0], I2C_SMBUS_BLOCK_MAX);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -906,7 +960,14 @@ static int cdns_i2c_probe(struct platform_device *pdev)
 	if (IS_ERR(id->membase))
 		return PTR_ERR(id->membase);
 
+<<<<<<< HEAD
 	id->irq = platform_get_irq(pdev, 0);
+=======
+	ret = platform_get_irq(pdev, 0);
+	if (ret < 0)
+		return ret;
+	id->irq = ret;
+>>>>>>> origin/android16-base
 
 	id->adap.owner = THIS_MODULE;
 	id->adap.dev.of_node = pdev->dev.of_node;
@@ -979,6 +1040,10 @@ static int cdns_i2c_probe(struct platform_device *pdev)
 	return 0;
 
 err_clk_dis:
+<<<<<<< HEAD
+=======
+	clk_notifier_unregister(id->clk, &id->clk_rate_change_nb);
+>>>>>>> origin/android16-base
 	clk_disable_unprepare(id->clk);
 	pm_runtime_set_suspended(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);

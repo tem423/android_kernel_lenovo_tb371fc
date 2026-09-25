@@ -650,7 +650,11 @@ struct xhci_stream_info *xhci_alloc_stream_info(struct xhci_hcd *xhci,
 			num_stream_ctxs, &stream_info->ctx_array_dma,
 			mem_flags);
 	if (!stream_info->stream_ctx_array)
+<<<<<<< HEAD
 		goto cleanup_ctx;
+=======
+		goto cleanup_ring_array;
+>>>>>>> origin/android16-base
 	memset(stream_info->stream_ctx_array, 0,
 			sizeof(struct xhci_stream_ctx)*num_stream_ctxs);
 
@@ -711,6 +715,14 @@ cleanup_rings:
 	}
 	xhci_free_command(xhci, stream_info->free_streams_command);
 cleanup_ctx:
+<<<<<<< HEAD
+=======
+	xhci_free_stream_ctx(xhci,
+		stream_info->num_stream_ctxs,
+		stream_info->stream_ctx_array,
+		stream_info->ctx_array_dma);
+cleanup_ring_array:
+>>>>>>> origin/android16-base
 	kfree(stream_info->stream_rings);
 cleanup_info:
 	kfree(stream_info);
@@ -901,6 +913,7 @@ void xhci_free_virt_device(struct xhci_hcd *xhci, int slot_id)
 		if (dev->eps[i].stream_info)
 			xhci_free_stream_info(xhci,
 					dev->eps[i].stream_info);
+<<<<<<< HEAD
 		/* Endpoints on the TT/root port lists should have been removed
 		 * when usb_disable_device() was called for the device.
 		 * We can't drop them anyway, because the udev might have gone
@@ -910,6 +923,21 @@ void xhci_free_virt_device(struct xhci_hcd *xhci, int slot_id)
 			xhci_warn(xhci, "Slot %u endpoint %u "
 					"not removed from BW list!\n",
 					slot_id, i);
+=======
+		/*
+		 * Endpoints are normally deleted from the bandwidth list when
+		 * endpoints are dropped, before device is freed.
+		 * If host is dying or being removed then endpoints aren't
+		 * dropped cleanly, so delete the endpoint from list here.
+		 * Only applicable for hosts with software bandwidth checking.
+		 */
+
+		if (!list_empty(&dev->eps[i].bw_endpoint_list)) {
+			list_del_init(&dev->eps[i].bw_endpoint_list);
+			xhci_dbg(xhci, "Slot %u endpoint %u not removed from BW list!\n",
+				 slot_id, i);
+		}
+>>>>>>> origin/android16-base
 	}
 	/* If this is a hub, free the TT(s) from the TT list */
 	xhci_free_tt_info(xhci, dev, slot_id);
@@ -2055,6 +2083,10 @@ no_bw:
 	xhci->hw_ports = NULL;
 	xhci->rh_bw = NULL;
 	xhci->ext_caps = NULL;
+<<<<<<< HEAD
+=======
+	xhci->port_caps = NULL;
+>>>>>>> origin/android16-base
 
 	xhci->page_size = 0;
 	xhci->page_shift = 0;
@@ -2236,6 +2268,18 @@ static void xhci_add_in_port(struct xhci_hcd *xhci, unsigned int num_ports,
 
 	if (major_revision == 0x03) {
 		rhub = &xhci->usb3_rhub;
+<<<<<<< HEAD
+=======
+		/*
+		 * Some hosts incorrectly use sub-minor version for minor
+		 * version (i.e. 0x02 instead of 0x20 for bcdUSB 0x320 and 0x01
+		 * for bcdUSB 0x310). Since there is no USB release with sub
+		 * minor version 0x301 to 0x309, we can assume that they are
+		 * incorrect and fix it here.
+		 */
+		if (minor_revision > 0x00 && minor_revision < 0x10)
+			minor_revision <<= 4;
+>>>>>>> origin/android16-base
 	} else if (major_revision <= 0x02) {
 		rhub = &xhci->usb2_rhub;
 	} else {
@@ -2802,7 +2846,11 @@ int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
 
 fail:
 	xhci_halt(xhci);
+<<<<<<< HEAD
 	xhci_reset(xhci);
+=======
+	xhci_reset(xhci, XHCI_RESET_SHORT_USEC);
+>>>>>>> origin/android16-base
 	xhci_mem_cleanup(xhci);
 	return -ENOMEM;
 }

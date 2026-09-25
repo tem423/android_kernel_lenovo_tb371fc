@@ -20,7 +20,10 @@
 #include "dsi_pwr.h"
 #include "dsi_parser.h"
 #include "msm_drv.h"
+<<<<<<< HEAD
 #include "dsi_panel_mi.h"
+=======
+>>>>>>> origin/android16-base
 
 #define MAX_BL_LEVEL 4096
 #define MAX_BL_SCALE_LEVEL 1024
@@ -35,7 +38,10 @@
  * Override to use async transfer
  */
 #define MIPI_DSI_MSG_ASYNC_OVERRIDE BIT(4)
+<<<<<<< HEAD
 #define MIPI_DSI_MSG_CMD_DMA_SCHED BIT(5)
+=======
+>>>>>>> origin/android16-base
 
 enum dsi_panel_rotation {
 	DSI_PANEL_ROTATE_NONE = 0,
@@ -120,7 +126,10 @@ struct dsi_backlight_config {
 	u32 bl_min_level;
 	u32 bl_max_level;
 	u32 brightness_max_level;
+<<<<<<< HEAD
 	u32 brightness_init_level;
+=======
+>>>>>>> origin/android16-base
 	u32 bl_level;
 	u32 bl_scale;
 	u32 bl_scale_sv;
@@ -148,10 +157,15 @@ struct dsi_panel_reset_config {
 	u32 count;
 
 	int reset_gpio;
+<<<<<<< HEAD
 	int tp_reset_gpio;
 	int disp_en_gpio;
 	int lcd_mode_sel_gpio;
 	u32 reset_powerdown_delay;
+=======
+	int disp_en_gpio;
+	int lcd_mode_sel_gpio;
+>>>>>>> origin/android16-base
 	u32 mode_sel_state;
 };
 
@@ -168,7 +182,10 @@ struct drm_panel_esd_config {
 	bool esd_enabled;
 
 	enum esd_check_status_mode status_mode;
+<<<<<<< HEAD
 	struct dsi_panel_cmd_set offset_cmd;
+=======
+>>>>>>> origin/android16-base
 	struct dsi_panel_cmd_set status_cmd;
 	u32 *status_cmds_rlen;
 	u32 *status_valid_params;
@@ -178,12 +195,15 @@ struct drm_panel_esd_config {
 	u32 groups;
 };
 
+<<<<<<< HEAD
 #define BRIGHTNESS_ALPHA_PAIR_LEN 2
 struct brightness_alpha_pair {
 	u32 brightness;
 	u32 alpha;
 };
 
+=======
+>>>>>>> origin/android16-base
 struct dsi_panel {
 	const char *name;
 	const char *type;
@@ -211,7 +231,10 @@ struct dsi_panel {
 
 	struct dsi_regulator_info power_info;
 	struct dsi_backlight_config bl_config;
+<<<<<<< HEAD
 	struct dsi_backlight_config bl_slaver_config;
+=======
+>>>>>>> origin/android16-base
 	struct dsi_panel_reset_config reset_config;
 	struct dsi_pinctrl_info pinctrl;
 	struct drm_panel_hdr_properties hdr_props;
@@ -235,6 +258,7 @@ struct dsi_panel {
 
 	bool sync_broadcast_en;
 
+<<<<<<< HEAD
 	struct dsi_panel_mi_cfg mi_cfg;
 
 	int panel_test_gpio;
@@ -243,6 +267,11 @@ struct dsi_panel {
 
 	struct brightness_alpha_pair *fod_dim_lut;
 	u32 fod_dim_lut_count;
+=======
+	int panel_test_gpio;
+	int power_mode;
+	enum dsi_panel_physical_type panel_type;
+>>>>>>> origin/android16-base
 };
 
 static inline bool dsi_panel_ulps_feature_enabled(struct dsi_panel *panel)
@@ -348,8 +377,11 @@ int dsi_panel_switch(struct dsi_panel *panel);
 
 int dsi_panel_post_switch(struct dsi_panel *panel);
 
+<<<<<<< HEAD
 int dsi_panel_dc_switch(struct dsi_panel *panel);
 
+=======
+>>>>>>> origin/android16-base
 void dsi_dsc_pclk_param_calc(struct msm_display_dsc_info *dsc, int intf_width);
 
 void dsi_panel_bl_handoff(struct dsi_panel *panel);
@@ -365,6 +397,7 @@ void dsi_panel_ext_bridge_put(struct dsi_panel *panel);
 void dsi_panel_calc_dsi_transfer_time(struct dsi_host_common_cfg *config,
 		struct dsi_display_mode *mode, u32 frame_threshold_us);
 
+<<<<<<< HEAD
 int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
 				enum dsi_cmd_set_type type);
 int dsi_panel_update_backlight(struct dsi_panel *panel,
@@ -383,4 +416,6 @@ int dsi_panel_set_fod_hbm(struct dsi_panel *panel, bool status);
 
 u32 dsi_panel_get_fod_dim_alpha(struct dsi_panel *panel);
 
+=======
+>>>>>>> origin/android16-base
 #endif /* _DSI_PANEL_H_ */

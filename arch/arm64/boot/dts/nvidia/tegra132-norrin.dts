@@ -9,8 +9,13 @@
 	compatible = "nvidia,norrin", "nvidia,tegra132", "nvidia,tegra124";
 
 	aliases {
+<<<<<<< HEAD
 		rtc0 = "/i2c@7000d000/as3722@40";
 		rtc1 = "/rtc@7000e000";
+=======
+		rtc0 = &as3722;
+		rtc1 = &tegra_rtc;
+>>>>>>> origin/android16-base
 		serial0 = &uarta;
 	};
 

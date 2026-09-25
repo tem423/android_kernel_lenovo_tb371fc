@@ -51,12 +51,20 @@ static int do_active_device(struct ctl_table *table, int write,
 	
 	for (dev = port->devices; dev ; dev = dev->next) {
 		if(dev == port->cad) {
+<<<<<<< HEAD
 			len += sprintf(buffer, "%s\n", dev->name);
+=======
+			len += scnprintf(buffer, sizeof(buffer), "%s\n", dev->name);
+>>>>>>> origin/android16-base
 		}
 	}
 
 	if(!len) {
+<<<<<<< HEAD
 		len += sprintf(buffer, "%s\n", "none");
+=======
+		len += scnprintf(buffer, sizeof(buffer), "%s\n", "none");
+>>>>>>> origin/android16-base
 	}
 
 	if (len > *lenp)
@@ -87,6 +95,7 @@ static int do_autoprobe(struct ctl_table *table, int write,
 	}
 	
 	if ((str = info->class_name) != NULL)
+<<<<<<< HEAD
 		len += sprintf (buffer + len, "CLASS:%s;\n", str);
 
 	if ((str = info->model) != NULL)
@@ -100,6 +109,21 @@ static int do_autoprobe(struct ctl_table *table, int write,
 
 	if ((str = info->cmdset) != NULL)
 		len += sprintf (buffer + len, "COMMAND SET:%s;\n", str);
+=======
+		len += scnprintf (buffer + len, sizeof(buffer) - len, "CLASS:%s;\n", str);
+
+	if ((str = info->model) != NULL)
+		len += scnprintf (buffer + len, sizeof(buffer) - len, "MODEL:%s;\n", str);
+
+	if ((str = info->mfr) != NULL)
+		len += scnprintf (buffer + len, sizeof(buffer) - len, "MANUFACTURER:%s;\n", str);
+
+	if ((str = info->description) != NULL)
+		len += scnprintf (buffer + len, sizeof(buffer) - len, "DESCRIPTION:%s;\n", str);
+
+	if ((str = info->cmdset) != NULL)
+		len += scnprintf (buffer + len, sizeof(buffer) - len, "COMMAND SET:%s;\n", str);
+>>>>>>> origin/android16-base
 
 	if (len > *lenp)
 		len = *lenp;
@@ -117,7 +141,11 @@ static int do_hardware_base_addr(struct ctl_table *table, int write,
 				 size_t *lenp, loff_t *ppos)
 {
 	struct parport *port = (struct parport *)table->extra1;
+<<<<<<< HEAD
 	char buffer[20];
+=======
+	char buffer[64];
+>>>>>>> origin/android16-base
 	int len = 0;
 
 	if (*ppos) {
@@ -128,7 +156,11 @@ static int do_hardware_base_addr(struct ctl_table *table, int write,
 	if (write) /* permissions prevent this anyway */
 		return -EACCES;
 
+<<<<<<< HEAD
 	len += sprintf (buffer, "%lu\t%lu\n", port->base, port->base_hi);
+=======
+	len += scnprintf (buffer, sizeof(buffer), "%lu\t%lu\n", port->base, port->base_hi);
+>>>>>>> origin/android16-base
 
 	if (len > *lenp)
 		len = *lenp;
@@ -156,7 +188,11 @@ static int do_hardware_irq(struct ctl_table *table, int write,
 	if (write) /* permissions prevent this anyway */
 		return -EACCES;
 
+<<<<<<< HEAD
 	len += sprintf (buffer, "%d\n", port->irq);
+=======
+	len += scnprintf (buffer, sizeof(buffer), "%d\n", port->irq);
+>>>>>>> origin/android16-base
 
 	if (len > *lenp)
 		len = *lenp;
@@ -184,7 +220,11 @@ static int do_hardware_dma(struct ctl_table *table, int write,
 	if (write) /* permissions prevent this anyway */
 		return -EACCES;
 
+<<<<<<< HEAD
 	len += sprintf (buffer, "%d\n", port->dma);
+=======
+	len += scnprintf (buffer, sizeof(buffer), "%d\n", port->dma);
+>>>>>>> origin/android16-base
 
 	if (len > *lenp)
 		len = *lenp;
@@ -213,7 +253,15 @@ static int do_hardware_modes(struct ctl_table *table, int write,
 		return -EACCES;
 
 	{
+<<<<<<< HEAD
 #define printmode(x) {if(port->modes&PARPORT_MODE_##x){len+=sprintf(buffer+len,"%s%s",f?",":"",#x);f++;}}
+=======
+#define printmode(x)							\
+do {									\
+	if (port->modes & PARPORT_MODE_##x)				\
+		len += scnprintf(buffer + len, sizeof(buffer) - len, "%s%s", f++ ? "," : "", #x); \
+} while (0)
+>>>>>>> origin/android16-base
 		int f = 0;
 		printmode(PCSPP);
 		printmode(TRISTATE);

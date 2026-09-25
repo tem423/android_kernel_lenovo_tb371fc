@@ -452,6 +452,12 @@ static void rxrpc_local_processor(struct work_struct *work)
 		container_of(work, struct rxrpc_local, processor);
 	bool again;
 
+<<<<<<< HEAD
+=======
+	if (local->dead)
+		return;
+
+>>>>>>> origin/android16-base
 	trace_rxrpc_local(local->debug_id, rxrpc_local_processing,
 			  atomic_read(&local->usage), NULL);
 

@@ -4,6 +4,7 @@
 #ifndef __ASMNDS32_TLB_H
 #define __ASMNDS32_TLB_H
 
+<<<<<<< HEAD
 #define tlb_start_vma(tlb,vma)						\
 	do {								\
 		if (!tlb->fullmm)					\
@@ -20,6 +21,8 @@
 
 #define tlb_flush(tlb)	flush_tlb_mm((tlb)->mm)
 
+=======
+>>>>>>> origin/android16-base
 #include <asm-generic/tlb.h>
 
 #define __pte_free_tlb(tlb, pte, addr)	pte_free((tlb)->mm, pte)

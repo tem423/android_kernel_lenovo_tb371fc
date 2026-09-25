@@ -68,7 +68,11 @@ static int iosf_mbi_pci_read_mdr(u32 mcrx, u32 mcr, u32 *mdr)
 
 fail_read:
 	dev_err(&mbi_pdev->dev, "PCI config access failed with %d\n", result);
+<<<<<<< HEAD
 	return result;
+=======
+	return pcibios_err_to_errno(result);
+>>>>>>> origin/android16-base
 }
 
 static int iosf_mbi_pci_write_mdr(u32 mcrx, u32 mcr, u32 mdr)
@@ -97,7 +101,11 @@ static int iosf_mbi_pci_write_mdr(u32 mcrx, u32 mcr, u32 mdr)
 
 fail_write:
 	dev_err(&mbi_pdev->dev, "PCI config access failed with %d\n", result);
+<<<<<<< HEAD
 	return result;
+=======
+	return pcibios_err_to_errno(result);
+>>>>>>> origin/android16-base
 }
 
 int iosf_mbi_read(u8 port, u8 opcode, u32 offset, u32 *mdr)

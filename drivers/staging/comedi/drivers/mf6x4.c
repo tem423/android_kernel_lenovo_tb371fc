@@ -112,8 +112,14 @@ static int mf6x4_ai_eoc(struct comedi_device *dev,
 	struct mf6x4_private *devpriv = dev->private;
 	unsigned int status;
 
+<<<<<<< HEAD
 	status = ioread32(devpriv->gpioc_reg);
 	if (status & MF6X4_GPIOC_EOLC)
+=======
+	/* EOLC goes low at end of conversion. */
+	status = ioread32(devpriv->gpioc_reg);
+	if ((status & MF6X4_GPIOC_EOLC) == 0)
+>>>>>>> origin/android16-base
 		return 0;
 	return -EBUSY;
 }

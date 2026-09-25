@@ -247,6 +247,11 @@ int jbd2_journal_recover(journal_t *journal)
 	journal_superblock_t *	sb;
 
 	struct recovery_info	info;
+<<<<<<< HEAD
+=======
+	errseq_t		wb_err;
+	struct address_space	*mapping;
+>>>>>>> origin/android16-base
 
 	memset(&info, 0, sizeof(info));
 	sb = journal->j_superblock;
@@ -264,6 +269,12 @@ int jbd2_journal_recover(journal_t *journal)
 		return 0;
 	}
 
+<<<<<<< HEAD
+=======
+	wb_err = 0;
+	mapping = journal->j_fs_dev->bd_inode->i_mapping;
+	errseq_check_and_advance(&mapping->wb_err, &wb_err);
+>>>>>>> origin/android16-base
 	err = do_one_pass(journal, &info, PASS_SCAN);
 	if (!err)
 		err = do_one_pass(journal, &info, PASS_REVOKE);
@@ -284,6 +295,12 @@ int jbd2_journal_recover(journal_t *journal)
 	err2 = sync_blockdev(journal->j_fs_dev);
 	if (!err)
 		err = err2;
+<<<<<<< HEAD
+=======
+	err2 = errseq_check_and_advance(&mapping->wb_err, &wb_err);
+	if (!err)
+		err = err2;
+>>>>>>> origin/android16-base
 	/* Make sure all replayed data is on permanent storage */
 	if (journal->j_flags & JBD2_BARRIER) {
 		err2 = blkdev_issue_flush(journal->j_fs_dev, GFP_KERNEL, NULL);

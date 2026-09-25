@@ -649,6 +649,10 @@ static int bcm3510_download_firmware(struct dvb_frontend* fe)
 		deb_info("firmware chunk, addr: 0x%04x, len: 0x%04x, total length: 0x%04zx\n",addr,len,fw->size);
 		if ((ret = bcm3510_write_ram(st,addr,&b[i+4],len)) < 0) {
 			err("firmware download failed: %d\n",ret);
+<<<<<<< HEAD
+=======
+			release_firmware(fw);
+>>>>>>> origin/android16-base
 			return ret;
 		}
 		i += 4 + len;
@@ -834,7 +838,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(bcm3510_attach);
+=======
+EXPORT_SYMBOL_GPL(bcm3510_attach);
+>>>>>>> origin/android16-base
 
 static const struct dvb_frontend_ops bcm3510_ops = {
 	.delsys = { SYS_ATSC, SYS_DVBC_ANNEX_B },

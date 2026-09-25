@@ -538,10 +538,15 @@ static int moxart_mac_probe(struct platform_device *pdev)
 	SET_NETDEV_DEV(ndev, &pdev->dev);
 
 	ret = register_netdev(ndev);
+<<<<<<< HEAD
 	if (ret) {
 		free_netdev(ndev);
 		goto init_fail;
 	}
+=======
+	if (ret)
+		goto init_fail;
+>>>>>>> origin/android16-base
 
 	netdev_dbg(ndev, "%s: IRQ=%d address=%pM\n",
 		   __func__, ndev->irq, ndev->dev_addr);

@@ -80,6 +80,11 @@ static int pcie_poll_cmd(struct controller *ctrl, int timeout)
 		if (slot_status & PCI_EXP_SLTSTA_CC) {
 			pcie_capability_write_word(pdev, PCI_EXP_SLTSTA,
 						   PCI_EXP_SLTSTA_CC);
+<<<<<<< HEAD
+=======
+			ctrl->cmd_busy = 0;
+			smp_mb();
+>>>>>>> origin/android16-base
 			return 1;
 		}
 		if (timeout < 0)
@@ -296,6 +301,7 @@ int pciehp_check_link_status(struct controller *ctrl)
 static int __pciehp_link_set(struct controller *ctrl, bool enable)
 {
 	struct pci_dev *pdev = ctrl_dev(ctrl);
+<<<<<<< HEAD
 	u16 lnk_ctrl;
 
 	pcie_capability_read_word(pdev, PCI_EXP_LNKCTL, &lnk_ctrl);
@@ -307,6 +313,13 @@ static int __pciehp_link_set(struct controller *ctrl, bool enable)
 
 	pcie_capability_write_word(pdev, PCI_EXP_LNKCTL, lnk_ctrl);
 	ctrl_dbg(ctrl, "%s: lnk_ctrl = %x\n", __func__, lnk_ctrl);
+=======
+
+	pcie_capability_clear_and_set_word(pdev, PCI_EXP_LNKCTL,
+					   PCI_EXP_LNKCTL_LD,
+					   enable ? 0 : PCI_EXP_LNKCTL_LD);
+
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -576,6 +589,11 @@ read_status:
 	 */
 	if (ctrl->power_fault_detected)
 		status &= ~PCI_EXP_SLTSTA_PFD;
+<<<<<<< HEAD
+=======
+	else if (status & PCI_EXP_SLTSTA_PFD)
+		ctrl->power_fault_detected = true;
+>>>>>>> origin/android16-base
 
 	events |= status;
 	if (!events) {
@@ -585,7 +603,11 @@ read_status:
 	}
 
 	if (status) {
+<<<<<<< HEAD
 		pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, events);
+=======
+		pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, status);
+>>>>>>> origin/android16-base
 
 		/*
 		 * In MSI mode, all event bits must be zero before the port
@@ -660,8 +682,12 @@ static irqreturn_t pciehp_ist(int irq, void *dev_id)
 	}
 
 	/* Check Power Fault Detected */
+<<<<<<< HEAD
 	if ((events & PCI_EXP_SLTSTA_PFD) && !ctrl->power_fault_detected) {
 		ctrl->power_fault_detected = 1;
+=======
+	if (events & PCI_EXP_SLTSTA_PFD) {
+>>>>>>> origin/android16-base
 		ctrl_err(ctrl, "Slot(%s): Power fault\n", slot_name(slot));
 		pciehp_set_attention_status(slot, 1);
 		pciehp_green_led_off(slot);
@@ -671,7 +697,11 @@ static irqreturn_t pciehp_ist(int irq, void *dev_id)
 	 * Disable requests have higher priority than Presence Detect Changed
 	 * or Data Link Layer State Changed events.
 	 */
+<<<<<<< HEAD
 	down_read(&ctrl->reset_lock);
+=======
+	down_read_nested(&ctrl->reset_lock, ctrl->depth);
+>>>>>>> origin/android16-base
 	if (events & DISABLE_SLOT)
 		pciehp_handle_disable_request(slot);
 	else if (events & (PCI_EXP_SLTSTA_PDC | PCI_EXP_SLTSTA_DLLSC))
@@ -782,7 +812,11 @@ int pciehp_reset_slot(struct slot *slot, int probe)
 	if (probe)
 		return 0;
 
+<<<<<<< HEAD
 	down_write(&ctrl->reset_lock);
+=======
+	down_write_nested(&ctrl->reset_lock, ctrl->depth);
+>>>>>>> origin/android16-base
 
 	if (!ATTN_BUTTN(ctrl)) {
 		ctrl_mask |= PCI_EXP_SLTCTL_PDCE;
@@ -869,6 +903,23 @@ static inline void dbg_ctrl(struct controller *ctrl)
 
 #define FLAG(x, y)	(((x) & (y)) ? '+' : '-')
 
+<<<<<<< HEAD
+=======
+static inline int pcie_hotplug_depth(struct pci_dev *dev)
+{
+	struct pci_bus *bus = dev->bus;
+	int depth = 0;
+
+	while (bus->parent) {
+		bus = bus->parent;
+		if (bus->self && bus->self->is_hotplug_bridge)
+			depth++;
+	}
+
+	return depth;
+}
+
+>>>>>>> origin/android16-base
 struct controller *pcie_init(struct pcie_device *dev)
 {
 	struct controller *ctrl;
@@ -881,6 +932,10 @@ struct controller *pcie_init(struct pcie_device *dev)
 		goto abort;
 
 	ctrl->pcie = dev;
+<<<<<<< HEAD
+=======
+	ctrl->depth = pcie_hotplug_depth(dev->port);
+>>>>>>> origin/android16-base
 	pcie_capability_read_dword(pdev, PCI_EXP_SLTCAP, &slot_cap);
 
 	if (pdev->hotplug_user_indicators)
@@ -968,6 +1023,11 @@ static void quirk_cmd_compl(struct pci_dev *pdev)
 }
 DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_INTEL, PCI_ANY_ID,
 			      PCI_CLASS_BRIDGE_PCI, 8, quirk_cmd_compl);
+<<<<<<< HEAD
+=======
+DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_QCOM, 0x0110,
+			      PCI_CLASS_BRIDGE_PCI, 8, quirk_cmd_compl);
+>>>>>>> origin/android16-base
 DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_QCOM, 0x0400,
 			      PCI_CLASS_BRIDGE_PCI, 8, quirk_cmd_compl);
 DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_QCOM, 0x0401,

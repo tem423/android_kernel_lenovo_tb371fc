@@ -91,7 +91,11 @@ static irqreturn_t uni_player_irq_handler(int irq, void *dev_id)
 			SET_UNIPERIF_ITM_BCLR_FIFO_ERROR(player);
 
 			/* Stop the player */
+<<<<<<< HEAD
 			snd_pcm_stop_xrun(player->substream);
+=======
+			snd_pcm_stop(player->substream, SNDRV_PCM_STATE_XRUN);
+>>>>>>> origin/android16-base
 		}
 
 		ret = IRQ_HANDLED;
@@ -105,7 +109,11 @@ static irqreturn_t uni_player_irq_handler(int irq, void *dev_id)
 		SET_UNIPERIF_ITM_BCLR_DMA_ERROR(player);
 
 		/* Stop the player */
+<<<<<<< HEAD
 		snd_pcm_stop_xrun(player->substream);
+=======
+		snd_pcm_stop(player->substream, SNDRV_PCM_STATE_XRUN);
+>>>>>>> origin/android16-base
 
 		ret = IRQ_HANDLED;
 	}
@@ -138,7 +146,11 @@ static irqreturn_t uni_player_irq_handler(int irq, void *dev_id)
 		dev_err(player->dev, "Underflow recovery failed\n");
 
 		/* Stop the player */
+<<<<<<< HEAD
 		snd_pcm_stop_xrun(player->substream);
+=======
+		snd_pcm_stop(player->substream, SNDRV_PCM_STATE_XRUN);
+>>>>>>> origin/android16-base
 
 		ret = IRQ_HANDLED;
 	}

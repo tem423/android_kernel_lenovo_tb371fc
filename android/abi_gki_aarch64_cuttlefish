@@ -14,14 +14,28 @@
   bpf_trace_run8
   cancel_delayed_work
   cancel_delayed_work_sync
+<<<<<<< HEAD
+=======
+  cancel_work_sync
+>>>>>>> origin/android16-base
   capable
   cfg80211_inform_bss_data
   cfg80211_put_bss
   __cfi_slowpath
   __check_object_size
+<<<<<<< HEAD
   complete
   __const_udelay
   consume_skb
+=======
+  __class_create
+  class_destroy
+  complete
+  __const_udelay
+  consume_skb
+  _copy_from_iter_full
+  _copy_to_iter
+>>>>>>> origin/android16-base
   cpu_hwcap_keys
   cpu_hwcaps
   cpu_number
@@ -58,6 +72,10 @@
   free_irq
   free_netdev
   __free_pages
+<<<<<<< HEAD
+=======
+  freezing_slow_path
+>>>>>>> origin/android16-base
   get_device
   get_random_bytes
   get_unused_fd_flags
@@ -89,12 +107,20 @@
   __list_add_valid
   __list_del_entry_valid
   __ll_sc_atomic64_add
+<<<<<<< HEAD
+=======
+  __ll_sc_atomic64_add_return
+>>>>>>> origin/android16-base
   __ll_sc_atomic64_andnot
   __ll_sc_atomic64_fetch_or
   __ll_sc_atomic64_or
   __ll_sc_atomic_add
   __ll_sc_atomic_add_return
   __ll_sc_atomic_sub_return
+<<<<<<< HEAD
+=======
+  __ll_sc___cmpxchg_case_mb_4
+>>>>>>> origin/android16-base
   __local_bh_enable_ip
   lock_sock_nested
   memcpy
@@ -104,7 +130,13 @@
   misc_deregister
   misc_register
   mod_timer
+<<<<<<< HEAD
   module_layout
+=======
+  __module_get
+  module_layout
+  module_put
+>>>>>>> origin/android16-base
   __msecs_to_jiffies
   msleep
   __mutex_init
@@ -122,6 +154,10 @@
   netif_tx_stop_all_queues
   netif_tx_wake_queue
   no_llseek
+<<<<<<< HEAD
+=======
+  nonseekable_open
+>>>>>>> origin/android16-base
   noop_llseek
   nr_cpu_ids
   of_find_property
@@ -180,7 +216,13 @@
   __rcu_read_unlock
   refcount_dec_and_test_checked
   refcount_inc_checked
+<<<<<<< HEAD
   register_netdev
+=======
+  __refrigerator
+  register_netdev
+  register_netdevice_notifier
+>>>>>>> origin/android16-base
   register_virtio_device
   register_virtio_driver
   release_sock
@@ -197,6 +239,10 @@
   sg_init_table
   sg_next
   skb_clone
+<<<<<<< HEAD
+=======
+  skb_dequeue
+>>>>>>> origin/android16-base
   skb_put
   sk_free
   snd_device_new
@@ -215,7 +261,14 @@
   strstr
   synchronize_irq
   synchronize_net
+<<<<<<< HEAD
   sysfs_create_groups
+=======
+  sysfs_create_group
+  sysfs_create_groups
+  sysfs_remove_group
+  system_freezing_cnt
+>>>>>>> origin/android16-base
   system_wq
   trace_define_field
   trace_event_buffer_commit
@@ -228,7 +281,13 @@
   trace_raw_output_prep
   trace_seq_printf
   __udelay
+<<<<<<< HEAD
   unregister_netdev
+=======
+  unlock_page
+  unregister_netdev
+  unregister_netdevice_notifier
+>>>>>>> origin/android16-base
   unregister_netdevice_queue
   unregister_virtio_device
   unregister_virtio_driver
@@ -258,6 +317,10 @@
   vring_del_virtqueue
   vring_interrupt
   vring_transport_features
+<<<<<<< HEAD
+=======
+  wait_for_completion
+>>>>>>> origin/android16-base
   wait_woken
   __wake_up
   __warn_printk
@@ -301,6 +364,26 @@
   pci_for_each_dma_alias
   pci_request_acs
 
+<<<<<<< HEAD
+=======
+# required by dm-user.ko
+  bio_advance
+  bio_endio
+  bio_put
+  _copy_from_iter
+  copy_page_from_iter
+  copy_page_to_iter
+  dm_register_target
+  dm_unregister_target
+  kasprintf
+  mempool_alloc
+  mempool_exit
+  mempool_free
+  mempool_init
+  mempool_kfree
+  mempool_kmalloc
+
+>>>>>>> origin/android16-base
 # required by dummy-cpufreq.ko
   cpufreq_generic_attr
   cpufreq_register_driver
@@ -336,9 +419,13 @@
 
 # required by failover.ko
   netdev_master_upper_dev_link
+<<<<<<< HEAD
   register_netdevice_notifier
   rtnl_is_locked
   unregister_netdevice_notifier
+=======
+  rtnl_is_locked
+>>>>>>> origin/android16-base
 
 # required by gnss-cmdline.ko
   bus_find_device_by_name
@@ -350,7 +437,10 @@
   gnss_insert_raw
   gnss_put_device
   gnss_register_device
+<<<<<<< HEAD
   __ll_sc___cmpxchg_case_mb_4
+=======
+>>>>>>> origin/android16-base
   __pm_runtime_disable
   serdev_device_close
   serdev_device_open
@@ -360,6 +450,22 @@
   serdev_device_write
   serdev_device_write_wakeup
 
+<<<<<<< HEAD
+=======
+# required by hci_vhci.ko
+  bt_err
+  hci_alloc_dev
+  hci_free_dev
+  hci_recv_frame
+  hci_register_dev
+  hci_unregister_dev
+  skb_pull
+  skb_push
+  skb_queue_head
+  skb_queue_purge
+  skb_queue_tail
+
+>>>>>>> origin/android16-base
 # required by incrementalfs.ko
   bin2hex
   __break_lease
@@ -408,10 +514,18 @@
   match_int
   match_token
   notify_change
+<<<<<<< HEAD
+=======
+  override_creds
+>>>>>>> origin/android16-base
   pagecache_get_page
   path_get
   path_put
   register_filesystem
+<<<<<<< HEAD
+=======
+  revert_creds
+>>>>>>> origin/android16-base
   seq_puts
   set_anon_super
   sget
@@ -420,11 +534,16 @@
   simple_statfs
   strndup_user
   sync_filesystem
+<<<<<<< HEAD
   sysfs_create_group
   sysfs_remove_group
   truncate_inode_pages
   unlock_new_inode
   unlock_page
+=======
+  truncate_inode_pages
+  unlock_new_inode
+>>>>>>> origin/android16-base
   unlock_rename
   unregister_filesystem
   user_path_at_empty
@@ -446,17 +565,25 @@
   dma_buf_export
   dma_buf_fd
   dma_buf_put
+<<<<<<< HEAD
   freezing_slow_path
   kernel_kobj
   kthread_create_on_node
   __ll_sc_atomic64_add_return
+=======
+  kernel_kobj
+  kthread_create_on_node
+>>>>>>> origin/android16-base
   __ll_sc_atomic64_sub_return
   mod_node_page_state
   plist_add
   ptr_to_hashval
   rb_erase
   rb_insert_color
+<<<<<<< HEAD
   __refrigerator
+=======
+>>>>>>> origin/android16-base
   register_shrinker
   remap_pfn_range
   sched_setscheduler
@@ -464,7 +591,10 @@
   __sg_page_iter_next
   __sg_page_iter_start
   split_page
+<<<<<<< HEAD
   system_freezing_cnt
+=======
+>>>>>>> origin/android16-base
   totalram_pages
   vmap
   vunmap
@@ -555,8 +685,11 @@
   cdev_device_add
   cdev_device_del
   cdev_init
+<<<<<<< HEAD
   __class_create
   class_destroy
+=======
+>>>>>>> origin/android16-base
   __compat_only_sysfs_link_entry_to_kobj
   del_timer_sync
   device_initialize
@@ -594,7 +727,10 @@
   blk_queue_update_dma_pad
   bpf_trace_run4
   bpf_trace_run5
+<<<<<<< HEAD
   cancel_work_sync
+=======
+>>>>>>> origin/android16-base
   clk_disable
   clk_enable
   clk_prepare
@@ -669,6 +805,10 @@
   register_netdevice
   rtnl_link_register
   rtnl_link_unregister
+<<<<<<< HEAD
+=======
+  unregister_netdevice_many
+>>>>>>> origin/android16-base
   wiphy_free
   wiphy_new_nm
   wiphy_register
@@ -785,6 +925,10 @@
   sync_file_create
   sync_file_get_fence
   __tracepoint_dma_fence_emit
+<<<<<<< HEAD
+=======
+  __tracepoint_gpu_mem_total
+>>>>>>> origin/android16-base
   ttm_bo_add_to_lru
   ttm_bo_del_sub_from_lru
   ttm_bo_device_init
@@ -814,7 +958,10 @@
   ww_mutex_unlock
 
 # required by virtio-rng.ko
+<<<<<<< HEAD
   wait_for_completion
+=======
+>>>>>>> origin/android16-base
   wait_for_completion_killable
 
 # required by virtio_blk.ko
@@ -857,6 +1004,32 @@
   __sysfs_match_string
   unregister_blkdev
 
+<<<<<<< HEAD
+=======
+# required by virtio_console.ko
+  cdev_add
+  cdev_alloc
+  cdev_del
+  device_create
+  device_destroy
+  dma_alloc_from_dev_coherent
+  dma_release_from_dev_coherent
+  fasync_helper
+  hvc_alloc
+  hvc_instantiate
+  hvc_kick
+  hvc_poll
+  hvc_remove
+  __hvc_resize
+  kill_fasync
+  kobject_uevent
+  pipe_lock
+  pipe_unlock
+  __register_chrdev
+  __splice_from_pipe
+  __unregister_chrdev
+
+>>>>>>> origin/android16-base
 # required by virtio_input.ko
   input_alloc_absinfo
   input_allocate_device
@@ -915,6 +1088,10 @@
   __netif_set_xps_queue
   net_ratelimit
   nf_conntrack_destroy
+<<<<<<< HEAD
+=======
+  __pskb_pull_tail
+>>>>>>> origin/android16-base
   _raw_spin_trylock
   skb_add_rx_frag
   skb_coalesce_rx_frag
@@ -941,6 +1118,10 @@
 # required by virtio_pci.ko
   irq_set_affinity_hint
   pci_alloc_irq_vectors_affinity
+<<<<<<< HEAD
+=======
+  pci_device_is_present
+>>>>>>> origin/android16-base
   pci_find_capability
   pci_find_ext_capability
   pci_find_next_capability
@@ -952,6 +1133,10 @@
   pci_release_region
   pci_release_selected_regions
   pci_request_selected_regions
+<<<<<<< HEAD
+=======
+  virtio_break_device
+>>>>>>> origin/android16-base
   virtio_device_freeze
   virtio_device_restore
 
@@ -960,6 +1145,7 @@
   nvdimm_bus_unregister
   nvdimm_pmem_region_create
 
+<<<<<<< HEAD
 # required by vmw_vsock_virtio_transport_common.ko
   bpf_trace_run10
   _copy_from_iter_full
@@ -970,15 +1156,33 @@
   __module_get
   module_put
   nonseekable_open
+=======
+# required by vmw_vsock_virtio_transport.ko
+  synchronize_rcu
+
+# required by vmw_vsock_virtio_transport_common.ko
+  bpf_trace_run10
+
+# required by vsock.ko
+  autoremove_wake_function
+  init_user_ns
+  ns_capable_noaudit
+>>>>>>> origin/android16-base
   prandom_u32
   prepare_to_wait
   proto_register
   proto_unregister
   _raw_write_lock_bh
   _raw_write_unlock_bh
+<<<<<<< HEAD
   security_sock_graft
   sk_alloc
   skb_dequeue
+=======
+  security_sk_clone
+  security_sock_graft
+  sk_alloc
+>>>>>>> origin/android16-base
   sock_init_data
   sock_no_accept
   sock_no_getsockopt

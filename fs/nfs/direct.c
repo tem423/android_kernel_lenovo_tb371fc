@@ -288,8 +288,13 @@ ssize_t nfs_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
 	VM_BUG_ON(iov_iter_count(iter) != PAGE_SIZE);
 
 	if (iov_iter_rw(iter) == READ)
+<<<<<<< HEAD
 		return nfs_file_direct_read(iocb, iter);
 	return nfs_file_direct_write(iocb, iter);
+=======
+		return nfs_file_direct_read(iocb, iter, true);
+	return nfs_file_direct_write(iocb, iter, true);
+>>>>>>> origin/android16-base
 }
 
 static void nfs_direct_release_pages(struct page **pages, unsigned int npages)
@@ -553,6 +558,10 @@ static ssize_t nfs_direct_read_schedule_iovec(struct nfs_direct_req *dreq,
  * nfs_file_direct_read - file direct read operation for NFS files
  * @iocb: target I/O control block
  * @iter: vector of user buffers into which to read data
+<<<<<<< HEAD
+=======
+ * @swap: flag indicating this is swap IO, not O_DIRECT IO
+>>>>>>> origin/android16-base
  *
  * We use this function for direct reads instead of calling
  * generic_file_aio_read() in order to avoid gfar's check to see if
@@ -568,7 +577,12 @@ static ssize_t nfs_direct_read_schedule_iovec(struct nfs_direct_req *dreq,
  * client must read the updated atime from the server back into its
  * cache.
  */
+<<<<<<< HEAD
 ssize_t nfs_file_direct_read(struct kiocb *iocb, struct iov_iter *iter)
+=======
+ssize_t nfs_file_direct_read(struct kiocb *iocb, struct iov_iter *iter,
+			     bool swap)
+>>>>>>> origin/android16-base
 {
 	struct file *file = iocb->ki_filp;
 	struct address_space *mapping = file->f_mapping;
@@ -610,12 +624,22 @@ ssize_t nfs_file_direct_read(struct kiocb *iocb, struct iov_iter *iter)
 	if (iter_is_iovec(iter))
 		dreq->flags = NFS_ODIRECT_SHOULD_DIRTY;
 
+<<<<<<< HEAD
 	nfs_start_io_direct(inode);
+=======
+	if (!swap)
+		nfs_start_io_direct(inode);
+>>>>>>> origin/android16-base
 
 	NFS_I(inode)->read_io += count;
 	requested = nfs_direct_read_schedule_iovec(dreq, iter, iocb->ki_pos);
 
+<<<<<<< HEAD
 	nfs_end_io_direct(inode);
+=======
+	if (!swap)
+		nfs_end_io_direct(inode);
+>>>>>>> origin/android16-base
 
 	if (requested > 0) {
 		result = nfs_direct_wait(dreq);
@@ -884,7 +908,11 @@ static const struct nfs_pgio_completion_ops nfs_direct_write_completion_ops = {
  */
 static ssize_t nfs_direct_write_schedule_iovec(struct nfs_direct_req *dreq,
 					       struct iov_iter *iter,
+<<<<<<< HEAD
 					       loff_t pos)
+=======
+					       loff_t pos, int ioflags)
+>>>>>>> origin/android16-base
 {
 	struct nfs_pageio_descriptor desc;
 	struct inode *inode = dreq->inode;
@@ -892,7 +920,11 @@ static ssize_t nfs_direct_write_schedule_iovec(struct nfs_direct_req *dreq,
 	size_t requested_bytes = 0;
 	size_t wsize = max_t(size_t, NFS_SERVER(inode)->wsize, PAGE_SIZE);
 
+<<<<<<< HEAD
 	nfs_pageio_init_write(&desc, inode, FLUSH_COND_STABLE, false,
+=======
+	nfs_pageio_init_write(&desc, inode, ioflags, false,
+>>>>>>> origin/android16-base
 			      &nfs_direct_write_completion_ops);
 	desc.pg_dreq = dreq;
 	get_dreq(dreq);
@@ -971,6 +1003,10 @@ static ssize_t nfs_direct_write_schedule_iovec(struct nfs_direct_req *dreq,
  * nfs_file_direct_write - file direct write operation for NFS files
  * @iocb: target I/O control block
  * @iter: vector of user buffers from which to write data
+<<<<<<< HEAD
+=======
+ * @swap: flag indicating this is swap IO, not O_DIRECT IO
+>>>>>>> origin/android16-base
  *
  * We use this function for direct writes instead of calling
  * generic_file_aio_write() in order to avoid taking the inode
@@ -987,7 +1023,12 @@ static ssize_t nfs_direct_write_schedule_iovec(struct nfs_direct_req *dreq,
  * Note that O_APPEND is not supported for NFS direct writes, as there
  * is no atomic O_APPEND write facility in the NFS protocol.
  */
+<<<<<<< HEAD
 ssize_t nfs_file_direct_write(struct kiocb *iocb, struct iov_iter *iter)
+=======
+ssize_t nfs_file_direct_write(struct kiocb *iocb, struct iov_iter *iter,
+			      bool swap)
+>>>>>>> origin/android16-base
 {
 	ssize_t result = -EINVAL, requested;
 	size_t count;
@@ -1001,7 +1042,15 @@ ssize_t nfs_file_direct_write(struct kiocb *iocb, struct iov_iter *iter)
 	dfprintk(FILE, "NFS: direct write(%pD2, %zd@%Ld)\n",
 		file, iov_iter_count(iter), (long long) iocb->ki_pos);
 
+<<<<<<< HEAD
 	result = generic_write_checks(iocb, iter);
+=======
+	if (swap)
+		/* bypass generic checks */
+		result =  iov_iter_count(iter);
+	else
+		result = generic_write_checks(iocb, iter);
+>>>>>>> origin/android16-base
 	if (result <= 0)
 		return result;
 	count = result;
@@ -1031,6 +1080,7 @@ ssize_t nfs_file_direct_write(struct kiocb *iocb, struct iov_iter *iter)
 	if (!is_sync_kiocb(iocb))
 		dreq->iocb = iocb;
 
+<<<<<<< HEAD
 	nfs_start_io_direct(inode);
 
 	requested = nfs_direct_write_schedule_iovec(dreq, iter, pos);
@@ -1042,6 +1092,25 @@ ssize_t nfs_file_direct_write(struct kiocb *iocb, struct iov_iter *iter)
 
 	nfs_end_io_direct(inode);
 
+=======
+	if (swap) {
+		requested = nfs_direct_write_schedule_iovec(dreq, iter, pos,
+							    FLUSH_STABLE);
+	} else {
+		nfs_start_io_direct(inode);
+
+		requested = nfs_direct_write_schedule_iovec(dreq, iter, pos,
+							    FLUSH_COND_STABLE);
+
+		if (mapping->nrpages) {
+			invalidate_inode_pages2_range(mapping,
+						      pos >> PAGE_SHIFT, end);
+		}
+
+		nfs_end_io_direct(inode);
+	}
+
+>>>>>>> origin/android16-base
 	if (requested > 0) {
 		result = nfs_direct_wait(dreq);
 		if (result > 0) {

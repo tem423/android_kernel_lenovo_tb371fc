@@ -710,7 +710,10 @@ load_data(struct snd_sf_list *sflist, const void __user *data, long count)
 	struct snd_soundfont *sf;
 	struct soundfont_sample_info sample_info;
 	struct snd_sf_sample *sp;
+<<<<<<< HEAD
 	long off;
+=======
+>>>>>>> origin/android16-base
 
 	/* patch must be opened */
 	if ((sf = sflist->currsf) == NULL)
@@ -719,12 +722,25 @@ load_data(struct snd_sf_list *sflist, const void __user *data, long count)
 	if (is_special_type(sf->type))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (copy_from_user(&sample_info, data, sizeof(sample_info)))
 		return -EFAULT;
 
 	off = sizeof(sample_info);
 
 	if (sample_info.size != (count-off)/2)
+=======
+	if (count < (long)sizeof(sample_info)) {
+		return -EINVAL;
+	}
+	if (copy_from_user(&sample_info, data, sizeof(sample_info)))
+		return -EFAULT;
+	data += sizeof(sample_info);
+	count -= sizeof(sample_info);
+
+	// SoundFont uses S16LE samples.
+	if (sample_info.size * 2 != count)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	/* Check for dup */
@@ -751,7 +767,11 @@ load_data(struct snd_sf_list *sflist, const void __user *data, long count)
 		int  rc;
 		rc = sflist->callback.sample_new
 			(sflist->callback.private_data, sp, sflist->memhdr,
+<<<<<<< HEAD
 			 data + off, count - off);
+=======
+			 data, count);
+>>>>>>> origin/android16-base
 		if (rc < 0) {
 			sf_sample_delete(sflist, sf, sp);
 			return rc;
@@ -962,10 +982,19 @@ load_guspatch(struct snd_sf_list *sflist, const char __user *data,
 	}
 	if (copy_from_user(&patch, data, sizeof(patch)))
 		return -EFAULT;
+<<<<<<< HEAD
 	
 	count -= sizeof(patch);
 	data += sizeof(patch);
 
+=======
+	count -= sizeof(patch);
+	data += sizeof(patch);
+
+	if ((patch.len << (patch.mode & WAVE_16_BITS ? 1 : 0)) != count)
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	sf = newsf(sflist, SNDRV_SFNT_PAT_TYPE_GUS|SNDRV_SFNT_PAT_SHARED, NULL);
 	if (sf == NULL)
 		return -ENOMEM;

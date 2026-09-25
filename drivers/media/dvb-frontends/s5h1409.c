@@ -993,7 +993,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(s5h1409_attach);
+=======
+EXPORT_SYMBOL_GPL(s5h1409_attach);
+>>>>>>> origin/android16-base
 
 static const struct dvb_frontend_ops s5h1409_ops = {
 	.delsys = { SYS_ATSC, SYS_DVBC_ANNEX_B },

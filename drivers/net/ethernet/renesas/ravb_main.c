@@ -738,14 +738,22 @@ static void ravb_error_interrupt(struct net_device *ndev)
 	ravb_write(ndev, ~(EIS_QFS | EIS_RESERVED), EIS);
 	if (eis & EIS_QFS) {
 		ris2 = ravb_read(ndev, RIS2);
+<<<<<<< HEAD
 		ravb_write(ndev, ~(RIS2_QFF0 | RIS2_RFFF | RIS2_RESERVED),
+=======
+		ravb_write(ndev, ~(RIS2_QFF0 | RIS2_QFF1 | RIS2_RFFF | RIS2_RESERVED),
+>>>>>>> origin/android16-base
 			   RIS2);
 
 		/* Receive Descriptor Empty int */
 		if (ris2 & RIS2_QFF0)
 			priv->stats[RAVB_BE].rx_over_errors++;
 
+<<<<<<< HEAD
 		    /* Receive Descriptor Empty int */
+=======
+		/* Receive Descriptor Empty int */
+>>>>>>> origin/android16-base
 		if (ris2 & RIS2_QFF1)
 			priv->stats[RAVB_NC].rx_over_errors++;
 
@@ -1392,13 +1400,21 @@ static int ravb_open(struct net_device *ndev)
 	if (priv->chip_id == RCAR_GEN2)
 		ravb_ptp_init(ndev, priv->pdev);
 
+<<<<<<< HEAD
 	netif_tx_start_all_queues(ndev);
 
+=======
+>>>>>>> origin/android16-base
 	/* PHY control start */
 	error = ravb_phy_start(ndev);
 	if (error)
 		goto out_ptp_stop;
 
+<<<<<<< HEAD
+=======
+	netif_tx_start_all_queues(ndev);
+
+>>>>>>> origin/android16-base
 	return 0;
 
 out_ptp_stop:
@@ -1447,6 +1463,15 @@ static void ravb_tx_timeout_work(struct work_struct *work)
 	struct net_device *ndev = priv->ndev;
 	int error;
 
+<<<<<<< HEAD
+=======
+	if (!rtnl_trylock()) {
+		usleep_range(1000, 2000);
+		schedule_work(&priv->work);
+		return;
+	}
+
+>>>>>>> origin/android16-base
 	netif_tx_stop_all_queues(ndev);
 
 	/* Stop PTP Clock driver */
@@ -1479,7 +1504,11 @@ static void ravb_tx_timeout_work(struct work_struct *work)
 		 */
 		netdev_err(ndev, "%s: ravb_dmac_init() failed, error %d\n",
 			   __func__, error);
+<<<<<<< HEAD
 		return;
+=======
+		goto out_unlock;
+>>>>>>> origin/android16-base
 	}
 	ravb_emac_init(ndev);
 
@@ -1489,6 +1518,12 @@ out:
 		ravb_ptp_init(ndev, priv->pdev);
 
 	netif_tx_start_all_queues(ndev);
+<<<<<<< HEAD
+=======
+
+out_unlock:
+	rtnl_unlock();
+>>>>>>> origin/android16-base
 }
 
 /* Packet transmit function for Ethernet AVB */
@@ -1499,7 +1534,11 @@ static netdev_tx_t ravb_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	struct ravb_tstamp_skb *ts_skb;
 	struct ravb_tx_desc *desc;
 	unsigned long flags;
+<<<<<<< HEAD
 	u32 dma_addr;
+=======
+	dma_addr_t dma_addr;
+>>>>>>> origin/android16-base
 	void *buffer;
 	u32 entry;
 	u32 len;
@@ -2199,11 +2238,18 @@ static int ravb_remove(struct platform_device *pdev)
 			  priv->desc_bat_dma);
 	/* Set reset mode */
 	ravb_write(ndev, CCC_OPC_RESET, CCC);
+<<<<<<< HEAD
 	pm_runtime_put_sync(&pdev->dev);
+=======
+>>>>>>> origin/android16-base
 	unregister_netdev(ndev);
 	netif_napi_del(&priv->napi[RAVB_NC]);
 	netif_napi_del(&priv->napi[RAVB_BE]);
 	ravb_mdio_release(priv);
+<<<<<<< HEAD
+=======
+	pm_runtime_put_sync(&pdev->dev);
+>>>>>>> origin/android16-base
 	pm_runtime_disable(&pdev->dev);
 	free_netdev(ndev);
 	platform_set_drvdata(pdev, NULL);
@@ -2310,6 +2356,10 @@ static int __maybe_unused ravb_resume(struct device *dev)
 		ret = ravb_open(ndev);
 		if (ret < 0)
 			return ret;
+<<<<<<< HEAD
+=======
+		ravb_set_rx_mode(ndev);
+>>>>>>> origin/android16-base
 		netif_device_attach(ndev);
 	}
 

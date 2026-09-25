@@ -1009,6 +1009,24 @@ static void byt_gpio_disable_free(struct pinctrl_dev *pctl_dev,
 	pm_runtime_put(&vg->pdev->dev);
 }
 
+<<<<<<< HEAD
+=======
+static void byt_gpio_direct_irq_check(struct byt_gpio *vg,
+				      unsigned int offset)
+{
+	void __iomem *conf_reg = byt_gpio_reg(vg, offset, BYT_CONF0_REG);
+
+	/*
+	 * Before making any direction modifications, do a check if gpio is set
+	 * for direct IRQ. On Bay Trail, setting GPIO to output does not make
+	 * sense, so let's at least inform the caller before they shoot
+	 * themselves in the foot.
+	 */
+	if (readl(conf_reg) & BYT_DIRECT_IRQ_EN)
+		dev_info_once(&vg->pdev->dev, "Potential Error: Setting GPIO with direct_irq_en to output");
+}
+
+>>>>>>> origin/android16-base
 static int byt_gpio_set_direction(struct pinctrl_dev *pctl_dev,
 				  struct pinctrl_gpio_range *range,
 				  unsigned int offset,
@@ -1016,7 +1034,10 @@ static int byt_gpio_set_direction(struct pinctrl_dev *pctl_dev,
 {
 	struct byt_gpio *vg = pinctrl_dev_get_drvdata(pctl_dev);
 	void __iomem *val_reg = byt_gpio_reg(vg, offset, BYT_VAL_REG);
+<<<<<<< HEAD
 	void __iomem *conf_reg = byt_gpio_reg(vg, offset, BYT_CONF0_REG);
+=======
+>>>>>>> origin/android16-base
 	unsigned long flags;
 	u32 value;
 
@@ -1027,6 +1048,7 @@ static int byt_gpio_set_direction(struct pinctrl_dev *pctl_dev,
 	if (input)
 		value |= BYT_OUTPUT_EN;
 	else
+<<<<<<< HEAD
 		/*
 		 * Before making any direction modifications, do a check if gpio
 		 * is set for direct IRQ.  On baytrail, setting GPIO to output
@@ -1035,6 +1057,10 @@ static int byt_gpio_set_direction(struct pinctrl_dev *pctl_dev,
 		 */
 		WARN(readl(conf_reg) & BYT_DIRECT_IRQ_EN,
 		     "Potential Error: Setting GPIO with direct_irq_en to output");
+=======
+		byt_gpio_direct_irq_check(vg, offset);
+
+>>>>>>> origin/android16-base
 	writel(value, val_reg);
 
 	raw_spin_unlock_irqrestore(&byt_lock, flags);
@@ -1250,7 +1276,10 @@ static int byt_pin_config_set(struct pinctrl_dev *pctl_dev,
 			break;
 		case PIN_CONFIG_INPUT_DEBOUNCE:
 			debounce = readl(db_reg);
+<<<<<<< HEAD
 			debounce &= ~BYT_DEBOUNCE_PULSE_MASK;
+=======
+>>>>>>> origin/android16-base
 
 			if (arg)
 				conf |= BYT_DEBOUNCE_EN;
@@ -1259,6 +1288,7 @@ static int byt_pin_config_set(struct pinctrl_dev *pctl_dev,
 
 			switch (arg) {
 			case 375:
+<<<<<<< HEAD
 				debounce |= BYT_DEBOUNCE_PULSE_375US;
 				break;
 			case 750:
@@ -1277,6 +1307,33 @@ static int byt_pin_config_set(struct pinctrl_dev *pctl_dev,
 				debounce |= BYT_DEBOUNCE_PULSE_12MS;
 				break;
 			case 24000:
+=======
+				debounce &= ~BYT_DEBOUNCE_PULSE_MASK;
+				debounce |= BYT_DEBOUNCE_PULSE_375US;
+				break;
+			case 750:
+				debounce &= ~BYT_DEBOUNCE_PULSE_MASK;
+				debounce |= BYT_DEBOUNCE_PULSE_750US;
+				break;
+			case 1500:
+				debounce &= ~BYT_DEBOUNCE_PULSE_MASK;
+				debounce |= BYT_DEBOUNCE_PULSE_1500US;
+				break;
+			case 3000:
+				debounce &= ~BYT_DEBOUNCE_PULSE_MASK;
+				debounce |= BYT_DEBOUNCE_PULSE_3MS;
+				break;
+			case 6000:
+				debounce &= ~BYT_DEBOUNCE_PULSE_MASK;
+				debounce |= BYT_DEBOUNCE_PULSE_6MS;
+				break;
+			case 12000:
+				debounce &= ~BYT_DEBOUNCE_PULSE_MASK;
+				debounce |= BYT_DEBOUNCE_PULSE_12MS;
+				break;
+			case 24000:
+				debounce &= ~BYT_DEBOUNCE_PULSE_MASK;
+>>>>>>> origin/android16-base
 				debounce |= BYT_DEBOUNCE_PULSE_24MS;
 				break;
 			default:
@@ -1374,6 +1431,7 @@ static int byt_gpio_get_direction(struct gpio_chip *chip, unsigned int offset)
 
 static int byt_gpio_direction_input(struct gpio_chip *chip, unsigned int offset)
 {
+<<<<<<< HEAD
 	return pinctrl_gpio_direction_input(chip->base + offset);
 }
 
@@ -1387,6 +1445,52 @@ static int byt_gpio_direction_output(struct gpio_chip *chip,
 
 	byt_gpio_set(chip, offset, value);
 
+=======
+	struct byt_gpio *vg = gpiochip_get_data(chip);
+	void __iomem *val_reg = byt_gpio_reg(vg, offset, BYT_VAL_REG);
+	unsigned long flags;
+	u32 reg;
+
+	raw_spin_lock_irqsave(&byt_lock, flags);
+
+	reg = readl(val_reg);
+	reg &= ~BYT_DIR_MASK;
+	reg |= BYT_OUTPUT_EN;
+	writel(reg, val_reg);
+
+	raw_spin_unlock_irqrestore(&byt_lock, flags);
+	return 0;
+}
+
+/*
+ * Note despite the temptation this MUST NOT be converted into a call to
+ * pinctrl_gpio_direction_output() + byt_gpio_set() that does not work this
+ * MUST be done as a single BYT_VAL_REG register write.
+ * See the commit message of the commit adding this comment for details.
+ */
+static int byt_gpio_direction_output(struct gpio_chip *chip,
+				     unsigned int offset, int value)
+{
+	struct byt_gpio *vg = gpiochip_get_data(chip);
+	void __iomem *val_reg = byt_gpio_reg(vg, offset, BYT_VAL_REG);
+	unsigned long flags;
+	u32 reg;
+
+	raw_spin_lock_irqsave(&byt_lock, flags);
+
+	byt_gpio_direct_irq_check(vg, offset);
+
+	reg = readl(val_reg);
+	reg &= ~BYT_DIR_MASK;
+	if (value)
+		reg |= BYT_LEVEL;
+	else
+		reg &= ~BYT_LEVEL;
+
+	writel(reg, val_reg);
+
+	raw_spin_unlock_irqrestore(&byt_lock, flags);
+>>>>>>> origin/android16-base
 	return 0;
 }
 

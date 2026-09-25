@@ -145,7 +145,11 @@ void vivid_rds_gen_fill(struct vivid_rds_gen *rds, unsigned freq,
 	rds->ta = alt;
 	rds->ms = true;
 	snprintf(rds->psname, sizeof(rds->psname), "%6d.%1d",
+<<<<<<< HEAD
 		 freq / 16, ((freq & 0xf) * 10) / 16);
+=======
+		 (freq / 16) % 1000000, (((freq & 0xf) * 10) / 16) % 10);
+>>>>>>> origin/android16-base
 	if (alt)
 		strlcpy(rds->radiotext,
 			" The Radio Data System can switch between different Radio Texts ",

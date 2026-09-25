@@ -1213,6 +1213,7 @@ void __init smp_setup_processor_id(void)
 		xcall_deliver_impl = hypervisor_xcall_deliver;
 }
 
+<<<<<<< HEAD
 void __init smp_fill_in_cpu_possible_map(void)
 {
 	int possible_cpus = num_possible_cpus();
@@ -1227,6 +1228,8 @@ void __init smp_fill_in_cpu_possible_map(void)
 		set_cpu_possible(i, false);
 }
 
+=======
+>>>>>>> origin/android16-base
 void smp_fill_in_sib_core_maps(void)
 {
 	unsigned int i;

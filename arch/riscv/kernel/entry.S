@@ -449,6 +449,10 @@ ENDPROC(__fstate_restore)
 
 
 	.section ".rodata"
+<<<<<<< HEAD
+=======
+	.align LGREG
+>>>>>>> origin/android16-base
 	/* Exception vector table */
 ENTRY(excp_vect_table)
 	RISCV_PTR do_trap_insn_misaligned

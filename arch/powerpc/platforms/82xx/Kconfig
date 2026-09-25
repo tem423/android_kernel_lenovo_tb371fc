@@ -51,7 +51,10 @@ endif
 
 config PQ2ADS
 	bool
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 
 config 8260
 	bool

@@ -98,9 +98,15 @@ int __init mpc85xx_setup_pmc(void)
 			pr_err("Could not map guts node address\n");
 			return -ENOMEM;
 		}
+<<<<<<< HEAD
 	}
 
 	qoriq_pm_ops = &mpc85xx_pm_ops;
 
+=======
+		qoriq_pm_ops = &mpc85xx_pm_ops;
+	}
+
+>>>>>>> origin/android16-base
 	return 0;
 }

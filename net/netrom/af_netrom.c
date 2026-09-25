@@ -403,6 +403,14 @@ static int nr_listen(struct socket *sock, int backlog)
 	struct sock *sk = sock->sk;
 
 	lock_sock(sk);
+<<<<<<< HEAD
+=======
+	if (sock->state != SS_UNCONNECTED) {
+		release_sock(sk);
+		return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	if (sk->sk_state != TCP_LISTEN) {
 		memset(&nr_sk(sk)->user_addr, 0, AX25_ADDR_LEN);
 		sk->sk_max_ack_backlog = backlog;
@@ -451,6 +459,7 @@ static int nr_create(struct net *net, struct socket *sock, int protocol,
 	nr_init_timers(sk);
 
 	nr->t1     =
+<<<<<<< HEAD
 		msecs_to_jiffies(sysctl_netrom_transport_timeout);
 	nr->t2     =
 		msecs_to_jiffies(sysctl_netrom_transport_acknowledge_delay);
@@ -461,6 +470,18 @@ static int nr_create(struct net *net, struct socket *sock, int protocol,
 	nr->idle   =
 		msecs_to_jiffies(sysctl_netrom_transport_no_activity_timeout);
 	nr->window = sysctl_netrom_transport_requested_window_size;
+=======
+		msecs_to_jiffies(READ_ONCE(sysctl_netrom_transport_timeout));
+	nr->t2     =
+		msecs_to_jiffies(READ_ONCE(sysctl_netrom_transport_acknowledge_delay));
+	nr->n2     =
+		msecs_to_jiffies(READ_ONCE(sysctl_netrom_transport_maximum_tries));
+	nr->t4     =
+		msecs_to_jiffies(READ_ONCE(sysctl_netrom_transport_busy_delay));
+	nr->idle   =
+		msecs_to_jiffies(READ_ONCE(sysctl_netrom_transport_no_activity_timeout));
+	nr->window = READ_ONCE(sysctl_netrom_transport_requested_window_size);
+>>>>>>> origin/android16-base
 
 	nr->bpqext = 1;
 	nr->state  = NR_STATE_0;
@@ -658,6 +679,14 @@ static int nr_connect(struct socket *sock, struct sockaddr *uaddr,
 		goto out_release;
 	}
 
+<<<<<<< HEAD
+=======
+	if (sock->state == SS_CONNECTING) {
+		err = -EALREADY;
+		goto out_release;
+	}
+
+>>>>>>> origin/android16-base
 	sk->sk_state   = TCP_CLOSE;
 	sock->state = SS_UNCONNECTED;
 
@@ -947,7 +976,11 @@ int nr_rx_frame(struct sk_buff *skb, struct net_device *dev)
 		 * G8PZT's Xrouter which is sending packets with command type 7
 		 * as an extension of the protocol.
 		 */
+<<<<<<< HEAD
 		if (sysctl_netrom_reset_circuit &&
+=======
+		if (READ_ONCE(sysctl_netrom_reset_circuit) &&
+>>>>>>> origin/android16-base
 		    (frametype != NR_RESET || flags != 0))
 			nr_transmit_reset(skb, 1);
 

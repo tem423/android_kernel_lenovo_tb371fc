@@ -966,6 +966,7 @@ jme_udpsum(struct sk_buff *skb)
 	if (skb->protocol != htons(ETH_P_IP))
 		return csum;
 	skb_set_network_header(skb, ETH_HLEN);
+<<<<<<< HEAD
 	if ((ip_hdr(skb)->protocol != IPPROTO_UDP) ||
 	    (skb->len < (ETH_HLEN +
 			(ip_hdr(skb)->ihl << 2) +
@@ -975,6 +976,15 @@ jme_udpsum(struct sk_buff *skb)
 	}
 	skb_set_transport_header(skb,
 			ETH_HLEN + (ip_hdr(skb)->ihl << 2));
+=======
+
+	if (ip_hdr(skb)->protocol != IPPROTO_UDP ||
+	    skb->len < (ETH_HLEN + ip_hdrlen(skb) + sizeof(struct udphdr))) {
+		skb_reset_network_header(skb);
+		return csum;
+	}
+	skb_set_transport_header(skb, ETH_HLEN + ip_hdrlen(skb));
+>>>>>>> origin/android16-base
 	csum = udp_hdr(skb)->check;
 	skb_reset_transport_header(skb);
 	skb_reset_network_header(skb);

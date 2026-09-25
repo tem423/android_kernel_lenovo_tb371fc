@@ -7,8 +7,13 @@
 #include "spectrum.h"
 
 enum mlxsw_sp_counter_sub_pool_id {
+<<<<<<< HEAD
 	MLXSW_SP_COUNTER_SUB_POOL_FLOW,
 	MLXSW_SP_COUNTER_SUB_POOL_RIF,
+=======
+	MLXSW_SP_COUNTER_SUB_POOL_RIF,
+	MLXSW_SP_COUNTER_SUB_POOL_FLOW,
+>>>>>>> origin/android16-base
 };
 
 int mlxsw_sp_counter_alloc(struct mlxsw_sp *mlxsw_sp,

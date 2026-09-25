@@ -6,6 +6,11 @@
 #include <asm/percpu.h>
 #include <asm/asm-offsets.h>
 #include <asm/processor-flags.h>
+<<<<<<< HEAD
+=======
+#include <asm/msr.h>
+#include <asm/nospec-branch.h>
+>>>>>>> origin/android16-base
 
 /*
 
@@ -146,27 +151,39 @@ For 32-bit we have the following conventions - kernel is built with
 
 .endm
 
+<<<<<<< HEAD
 .macro POP_REGS pop_rdi=1 skip_r11rcx=0
+=======
+.macro POP_REGS pop_rdi=1
+>>>>>>> origin/android16-base
 	popq %r15
 	popq %r14
 	popq %r13
 	popq %r12
 	popq %rbp
 	popq %rbx
+<<<<<<< HEAD
 	.if \skip_r11rcx
 	popq %rsi
 	.else
 	popq %r11
 	.endif
+=======
+	popq %r11
+>>>>>>> origin/android16-base
 	popq %r10
 	popq %r9
 	popq %r8
 	popq %rax
+<<<<<<< HEAD
 	.if \skip_r11rcx
 	popq %rsi
 	.else
 	popq %rcx
 	.endif
+=======
+	popq %rcx
+>>>>>>> origin/android16-base
 	popq %rdx
 	popq %rsi
 	.if \pop_rdi
@@ -317,6 +334,65 @@ For 32-bit we have the following conventions - kernel is built with
 #endif
 
 /*
+<<<<<<< HEAD
+=======
+ * IBRS kernel mitigation for Spectre_v2.
+ *
+ * Assumes full context is established (PUSH_REGS, CR3 and GS) and it clobbers
+ * the regs it uses (AX, CX, DX). Must be called before the first RET
+ * instruction (NOTE! UNTRAIN_RET includes a RET instruction)
+ *
+ * The optional argument is used to save/restore the current value,
+ * which is used on the paranoid paths.
+ *
+ * Assumes x86_spec_ctrl_{base,current} to have SPEC_CTRL_IBRS set.
+ */
+.macro IBRS_ENTER save_reg
+	ALTERNATIVE "jmp .Lend_\@", "", X86_FEATURE_KERNEL_IBRS
+	movl	$MSR_IA32_SPEC_CTRL, %ecx
+
+.ifnb \save_reg
+	rdmsr
+	shl	$32, %rdx
+	or	%rdx, %rax
+	mov	%rax, \save_reg
+	test	$SPEC_CTRL_IBRS, %eax
+	jz	.Ldo_wrmsr_\@
+	lfence
+	jmp	.Lend_\@
+.Ldo_wrmsr_\@:
+.endif
+
+	movq	PER_CPU_VAR(x86_spec_ctrl_current), %rdx
+	movl	%edx, %eax
+	shr	$32, %rdx
+	wrmsr
+.Lend_\@:
+.endm
+
+/*
+ * Similar to IBRS_ENTER, requires KERNEL GS,CR3 and clobbers (AX, CX, DX)
+ * regs. Must be called after the last RET.
+ */
+.macro IBRS_EXIT save_reg
+	ALTERNATIVE "jmp .Lend_\@", "", X86_FEATURE_KERNEL_IBRS
+	movl	$MSR_IA32_SPEC_CTRL, %ecx
+
+.ifnb \save_reg
+	mov	\save_reg, %rdx
+.else
+	movq	PER_CPU_VAR(x86_spec_ctrl_current), %rdx
+	andl	$(~SPEC_CTRL_IBRS), %edx
+.endif
+
+	movl	%edx, %eax
+	shr	$32, %rdx
+	wrmsr
+.Lend_\@:
+.endm
+
+/*
+>>>>>>> origin/android16-base
  * Mitigate Spectre v1 for conditional swapgs code paths.
  *
  * FENCE_SWAPGS_USER_ENTRY is used in the user entry swapgs code path, to

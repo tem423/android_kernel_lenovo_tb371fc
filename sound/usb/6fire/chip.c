@@ -66,8 +66,15 @@ static void usb6fire_chip_abort(struct sfire_chip *chip)
 	}
 }
 
+<<<<<<< HEAD
 static void usb6fire_chip_destroy(struct sfire_chip *chip)
 {
+=======
+static void usb6fire_card_free(struct snd_card *card)
+{
+	struct sfire_chip *chip = card->private_data;
+
+>>>>>>> origin/android16-base
 	if (chip) {
 		if (chip->pcm)
 			usb6fire_pcm_destroy(chip);
@@ -77,8 +84,11 @@ static void usb6fire_chip_destroy(struct sfire_chip *chip)
 			usb6fire_comm_destroy(chip);
 		if (chip->control)
 			usb6fire_control_destroy(chip);
+<<<<<<< HEAD
 		if (chip->card)
 			snd_card_free(chip->card);
+=======
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -141,6 +151,10 @@ static int usb6fire_chip_probe(struct usb_interface *intf,
 	chip->regidx = regidx;
 	chip->intf_count = 1;
 	chip->card = card;
+<<<<<<< HEAD
+=======
+	card->private_free = usb6fire_card_free;
+>>>>>>> origin/android16-base
 
 	ret = usb6fire_comm_init(chip);
 	if (ret < 0)
@@ -167,7 +181,11 @@ static int usb6fire_chip_probe(struct usb_interface *intf,
 	return 0;
 
 destroy_chip:
+<<<<<<< HEAD
 	usb6fire_chip_destroy(chip);
+=======
+	snd_card_free(card);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -186,7 +204,10 @@ static void usb6fire_chip_disconnect(struct usb_interface *intf)
 
 			chip->shutdown = true;
 			usb6fire_chip_abort(chip);
+<<<<<<< HEAD
 			usb6fire_chip_destroy(chip);
+=======
+>>>>>>> origin/android16-base
 		}
 	}
 }

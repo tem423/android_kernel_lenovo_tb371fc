@@ -1176,6 +1176,11 @@ void __init setup_arch(char **cmdline_p)
 	reserve_initrd();
 
 	acpi_table_upgrade();
+<<<<<<< HEAD
+=======
+	/* Look for ACPI tables and reserve memory occupied by them. */
+	acpi_boot_table_init();
+>>>>>>> origin/android16-base
 
 	vsmp_init();
 
@@ -1183,11 +1188,14 @@ void __init setup_arch(char **cmdline_p)
 
 	early_platform_quirks();
 
+<<<<<<< HEAD
 	/*
 	 * Parse the ACPI tables for possible boot-time SMP configuration.
 	 */
 	acpi_boot_table_init();
 
+=======
+>>>>>>> origin/android16-base
 	early_acpi_boot_init();
 
 	initmem_init();

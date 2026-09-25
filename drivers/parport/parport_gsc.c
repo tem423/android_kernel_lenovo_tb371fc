@@ -287,7 +287,11 @@ struct parport *parport_gsc_probe_port(unsigned long base,
 	p->size = (p->modes & PARPORT_MODE_EPP)?8:3;
 	p->private_data = priv;
 
+<<<<<<< HEAD
 	printk(KERN_INFO "%s: PC-style at 0x%lx", p->name, p->base);
+=======
+	pr_info("%s: PC-style at 0x%lx", p->name, p->base);
+>>>>>>> origin/android16-base
 	p->irq = irq;
 	if (p->irq == PARPORT_IRQ_AUTO) {
 		p->irq = PARPORT_IRQ_NONE;
@@ -304,12 +308,24 @@ struct parport *parport_gsc_probe_port(unsigned long base,
 		p->dma = PARPORT_DMA_NONE;
 
 	pr_cont(" [");
+<<<<<<< HEAD
 #define printmode(x) {if(p->modes&PARPORT_MODE_##x){pr_cont("%s%s",f?",":"",#x);f++;}}
+=======
+#define printmode(x)							\
+do {									\
+	if (p->modes & PARPORT_MODE_##x)				\
+		pr_cont("%s%s", f++ ? "," : "", #x);			\
+} while (0)
+>>>>>>> origin/android16-base
 	{
 		int f = 0;
 		printmode(PCSPP);
 		printmode(TRISTATE);
+<<<<<<< HEAD
 		printmode(COMPAT)
+=======
+		printmode(COMPAT);
+>>>>>>> origin/android16-base
 		printmode(EPP);
 //		printmode(ECP);
 //		printmode(DMA);
@@ -320,8 +336,12 @@ struct parport *parport_gsc_probe_port(unsigned long base,
 	if (p->irq != PARPORT_IRQ_NONE) {
 		if (request_irq (p->irq, parport_irq_handler,
 				 0, p->name, p)) {
+<<<<<<< HEAD
 			printk (KERN_WARNING "%s: irq %d in use, "
 				"resorting to polled operation\n",
+=======
+			pr_warn("%s: irq %d in use, resorting to polled operation\n",
+>>>>>>> origin/android16-base
 				p->name, p->irq);
 			p->irq = PARPORT_IRQ_NONE;
 			p->dma = PARPORT_DMA_NONE;
@@ -352,7 +372,11 @@ static int __init parport_init_chip(struct parisc_device *dev)
 	unsigned long port;
 
 	if (!dev->irq) {
+<<<<<<< HEAD
 		printk(KERN_WARNING "IRQ not found for parallel device at 0x%llx\n",
+=======
+		pr_warn("IRQ not found for parallel device at 0x%llx\n",
+>>>>>>> origin/android16-base
 			(unsigned long long)dev->hpa.start);
 		return -ENODEV;
 	}

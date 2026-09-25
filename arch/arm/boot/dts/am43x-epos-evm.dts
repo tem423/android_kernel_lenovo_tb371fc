@@ -590,7 +590,11 @@
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c0_pins>;
+<<<<<<< HEAD
 	clock-frequency = <400000>;
+=======
+	clock-frequency = <100000>;
+>>>>>>> origin/android16-base
 
 	tps65218: tps65218@24 {
 		reg = <0x24>;
@@ -839,7 +843,11 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&spi0_pins_default>;
 	pinctrl-1 = <&spi0_pins_sleep>;
+<<<<<<< HEAD
 	ti,pindir-d0-out-d1-in = <1>;
+=======
+	ti,pindir-d0-out-d1-in;
+>>>>>>> origin/android16-base
 };
 
 &spi1 {
@@ -847,7 +855,11 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&spi1_pins_default>;
 	pinctrl-1 = <&spi1_pins_sleep>;
+<<<<<<< HEAD
 	ti,pindir-d0-out-d1-in = <1>;
+=======
+	ti,pindir-d0-out-d1-in;
+>>>>>>> origin/android16-base
 };
 
 &usb2_phy1 {

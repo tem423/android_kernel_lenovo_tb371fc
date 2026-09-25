@@ -835,6 +835,11 @@ static struct siox_device *siox_device_add(struct siox_master *smaster,
 
 err_device_register:
 	/* don't care to make the buffer smaller again */
+<<<<<<< HEAD
+=======
+	put_device(&sdevice->dev);
+	sdevice = NULL;
+>>>>>>> origin/android16-base
 
 err_buf_alloc:
 	siox_master_unlock(smaster);

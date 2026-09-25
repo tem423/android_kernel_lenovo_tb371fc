@@ -134,10 +134,17 @@ nvkm_cstate_find_best(struct nvkm_clk *clk, struct nvkm_pstate *pstate,
 
 	list_for_each_entry_from_reverse(cstate, &pstate->list, head) {
 		if (nvkm_cstate_valid(clk, cstate, max_volt, clk->temp))
+<<<<<<< HEAD
 			break;
 	}
 
 	return cstate;
+=======
+			return cstate;
+	}
+
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 static struct nvkm_cstate *
@@ -168,6 +175,11 @@ nvkm_cstate_prog(struct nvkm_clk *clk, struct nvkm_pstate *pstate, int cstatei)
 	if (!list_empty(&pstate->list)) {
 		cstate = nvkm_cstate_get(clk, pstate, cstatei);
 		cstate = nvkm_cstate_find_best(clk, pstate, cstate);
+<<<<<<< HEAD
+=======
+		if (!cstate)
+			return -EINVAL;
+>>>>>>> origin/android16-base
 	} else {
 		cstate = &pstate->base;
 	}

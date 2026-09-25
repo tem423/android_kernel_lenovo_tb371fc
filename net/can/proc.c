@@ -467,6 +467,12 @@ void can_init_proc(struct net *net)
  */
 void can_remove_proc(struct net *net)
 {
+<<<<<<< HEAD
+=======
+	if (!net->can.proc_dir)
+		return;
+
+>>>>>>> origin/android16-base
 	if (net->can.pde_version)
 		remove_proc_entry(CAN_PROC_VERSION, net->can.proc_dir);
 
@@ -494,6 +500,10 @@ void can_remove_proc(struct net *net)
 	if (net->can.pde_rcvlist_sff)
 		remove_proc_entry(CAN_PROC_RCVLIST_SFF, net->can.proc_dir);
 
+<<<<<<< HEAD
 	if (net->can.proc_dir)
 		remove_proc_entry("can", net->proc_net);
+=======
+	remove_proc_entry("can", net->proc_net);
+>>>>>>> origin/android16-base
 }

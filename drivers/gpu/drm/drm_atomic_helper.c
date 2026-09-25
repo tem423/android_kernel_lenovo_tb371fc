@@ -2920,7 +2920,11 @@ int drm_atomic_helper_set_config(struct drm_mode_set *set,
 
 	ret = handle_conflicting_encoders(state, true);
 	if (ret)
+<<<<<<< HEAD
 		return ret;
+=======
+		goto fail;
+>>>>>>> origin/android16-base
 
 	ret = drm_atomic_commit(state);
 

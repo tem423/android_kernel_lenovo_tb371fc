@@ -1263,3 +1263,7 @@ MODULE_DEVICE_TABLE(pci, csio_pci_tbl);
 MODULE_VERSION(CSIO_DRV_VERSION);
 MODULE_FIRMWARE(FW_FNAME_T5);
 MODULE_FIRMWARE(FW_FNAME_T6);
+<<<<<<< HEAD
+=======
+MODULE_SOFTDEP("pre: cxgb4");
+>>>>>>> origin/android16-base

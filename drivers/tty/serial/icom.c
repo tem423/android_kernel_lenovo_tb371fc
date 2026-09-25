@@ -1501,7 +1501,11 @@ static int icom_probe(struct pci_dev *dev,
 	retval = pci_read_config_dword(dev, PCI_COMMAND, &command_reg);
 	if (retval) {
 		dev_err(&dev->dev, "PCI Config read FAILED\n");
+<<<<<<< HEAD
 		return retval;
+=======
+		goto probe_exit0;
+>>>>>>> origin/android16-base
 	}
 
 	pci_write_config_dword(dev, PCI_COMMAND,

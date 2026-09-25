@@ -128,6 +128,11 @@ for MERGE_FILE in $MERGE_LIST ; do
 		fi
 		sed -i "/$CFG[ =]/d" $TMP_FILE
 	done
+<<<<<<< HEAD
+=======
+	# In case the previous file lacks a new line at the end
+	echo >> $TMP_FILE
+>>>>>>> origin/android16-base
 	cat $MERGE_FILE >> $TMP_FILE
 done
 

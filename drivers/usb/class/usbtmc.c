@@ -1537,6 +1537,7 @@ static void usbtmc_interrupt(struct urb *urb)
 		dev_err(dev, "overflow with length %d, actual length is %d\n",
 			data->iin_wMaxPacketSize, urb->actual_length);
 		/* fall through */
+<<<<<<< HEAD
 	case -ECONNRESET:
 	case -ENOENT:
 	case -ESHUTDOWN:
@@ -1548,6 +1549,12 @@ static void usbtmc_interrupt(struct urb *urb)
 		return;
 	default:
 		dev_err(dev, "unknown status received: %d\n", status);
+=======
+	default:
+		/* urb terminated, clean up */
+		dev_dbg(dev, "urb terminated, status: %d\n", status);
+		return;
+>>>>>>> origin/android16-base
 	}
 exit:
 	rv = usb_submit_urb(urb, GFP_ATOMIC);

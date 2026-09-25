@@ -724,6 +724,12 @@ static void show_smap_vma_flags(struct seq_file *m, struct vm_area_struct *vma)
 		[ilog2(VM_PKEY_BIT4)]	= "",
 #endif
 #endif /* CONFIG_ARCH_HAS_PKEYS */
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_HAVE_ARCH_USERFAULTFD_MINOR
+		[ilog2(VM_UFFD_MINOR)]	= "ui",
+#endif /* CONFIG_HAVE_ARCH_USERFAULTFD_MINOR */
+>>>>>>> origin/android16-base
 	};
 	size_t i;
 
@@ -760,9 +766,13 @@ static int smaps_hugetlb_range(pte_t *pte, unsigned long hmask,
 			page = device_private_entry_to_page(swpent);
 	}
 	if (page) {
+<<<<<<< HEAD
 		int mapcount = page_mapcount(page);
 
 		if (mapcount >= 2)
+=======
+		if (page_mapcount(page) >= 2 || hugetlb_pmd_shared(pte))
+>>>>>>> origin/android16-base
 			mss->shared_hugetlb += huge_page_size(hstate_vma(vma));
 		else
 			mss->private_hugetlb += huge_page_size(hstate_vma(vma));
@@ -907,7 +917,11 @@ static int show_smaps_rollup(struct seq_file *m, void *v)
 		last_vma_end = vma->vm_end;
 	}
 
+<<<<<<< HEAD
 	show_vma_header_prefix(m, priv->mm->mmap->vm_start,
+=======
+	show_vma_header_prefix(m, priv->mm->mmap ? priv->mm->mmap->vm_start : 0,
+>>>>>>> origin/android16-base
 			       last_vma_end, 0, 0, 0, 0);
 	seq_pad(m, ' ');
 	seq_puts(m, "[rollup]\n");
@@ -1234,11 +1248,16 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
 					goto out_mm;
 				}
 				for (vma = mm->mmap; vma; vma = vma->vm_next) {
+<<<<<<< HEAD
 					vm_write_begin(vma);
 					WRITE_ONCE(vma->vm_flags,
 						vma->vm_flags & ~VM_SOFTDIRTY);
 					vma_set_page_prot(vma);
 					vm_write_end(vma);
+=======
+					vma->vm_flags &= ~VM_SOFTDIRTY;
+					vma_set_page_prot(vma);
+>>>>>>> origin/android16-base
 				}
 				downgrade_write(&mm->mmap_sem);
 				break;

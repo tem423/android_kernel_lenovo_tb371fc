@@ -18,14 +18,22 @@
 /**
  * struct nilfs_shadow_map - shadow mapping of meta data file
  * @bmap_store: shadow copy of bmap state
+<<<<<<< HEAD
  * @frozen_data: shadowed dirty data pages
  * @frozen_btnodes: shadowed dirty b-tree nodes' pages
+=======
+ * @inode: holder of page caches used in shadow mapping
+>>>>>>> origin/android16-base
  * @frozen_buffers: list of frozen buffers
  */
 struct nilfs_shadow_map {
 	struct nilfs_bmap_store bmap_store;
+<<<<<<< HEAD
 	struct address_space frozen_data;
 	struct address_space frozen_btnodes;
+=======
+	struct inode *inode;
+>>>>>>> origin/android16-base
 	struct list_head frozen_buffers;
 };
 

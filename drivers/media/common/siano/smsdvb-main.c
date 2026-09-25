@@ -1180,12 +1180,26 @@ static int smsdvb_hotplug(struct smscore_device_t *coredev,
 	rc = dvb_create_media_graph(&client->adapter, true);
 	if (rc < 0) {
 		pr_err("dvb_create_media_graph failed %d\n", rc);
+<<<<<<< HEAD
 		goto client_error;
+=======
+		goto media_graph_error;
+>>>>>>> origin/android16-base
 	}
 
 	pr_info("DVB interface registered.\n");
 	return 0;
 
+<<<<<<< HEAD
+=======
+media_graph_error:
+	mutex_lock(&g_smsdvb_clientslock);
+	list_del(&client->entry);
+	mutex_unlock(&g_smsdvb_clientslock);
+
+	smsdvb_debugfs_release(client);
+
+>>>>>>> origin/android16-base
 client_error:
 	dvb_unregister_frontend(&client->frontend);
 

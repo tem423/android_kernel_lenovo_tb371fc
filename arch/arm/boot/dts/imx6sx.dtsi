@@ -49,6 +49,12 @@
 		spi2 = &ecspi3;
 		spi3 = &ecspi4;
 		spi4 = &ecspi5;
+<<<<<<< HEAD
+=======
+		usb0 = &usbotg1;
+		usb1 = &usbotg2;
+		usb2 = &usbh;
+>>>>>>> origin/android16-base
 		usbphy0 = &usbphy1;
 		usbphy1 = &usbphy2;
 	};
@@ -167,12 +173,24 @@
 		ocram_s: sram@8f8000 {
 			compatible = "mmio-sram";
 			reg = <0x008f8000 0x4000>;
+<<<<<<< HEAD
+=======
+			ranges = <0 0x008f8000 0x4000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+>>>>>>> origin/android16-base
 			clocks = <&clks IMX6SX_CLK_OCRAM_S>;
 		};
 
 		ocram: sram@900000 {
 			compatible = "mmio-sram";
 			reg = <0x00900000 0x20000>;
+<<<<<<< HEAD
+=======
+			ranges = <0 0x00900000 0x20000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+>>>>>>> origin/android16-base
 			clocks = <&clks IMX6SX_CLK_OCRAM>;
 		};
 
@@ -459,7 +477,11 @@
 				status = "disabled";
 			};
 
+<<<<<<< HEAD
 			gpt: gpt@2098000 {
+=======
+			gpt: timer@2098000 {
+>>>>>>> origin/android16-base
 				compatible = "fsl,imx6sx-gpt", "fsl,imx6dl-gpt";
 				reg = <0x02098000 0x4000>;
 				interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;

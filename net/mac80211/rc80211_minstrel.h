@@ -98,7 +98,10 @@ struct minstrel_sta_info {
 	u8 max_prob_rate;
 	unsigned int total_packets;
 	unsigned int sample_packets;
+<<<<<<< HEAD
 	int sample_deferred;
+=======
+>>>>>>> origin/android16-base
 
 	unsigned int sample_row;
 	unsigned int sample_column;

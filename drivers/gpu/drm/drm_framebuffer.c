@@ -539,7 +539,11 @@ int drm_mode_dirtyfb_ioctl(struct drm_device *dev,
 	struct drm_framebuffer *fb;
 	unsigned flags;
 	int num_clips;
+<<<<<<< HEAD
 	int ret;
+=======
+	int ret = 0;
+>>>>>>> origin/android16-base
 
 	if (!drm_core_check_feature(dev, DRIVER_MODESET))
 		return -EINVAL;

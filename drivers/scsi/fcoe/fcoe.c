@@ -2519,6 +2519,10 @@ static int __init fcoe_init(void)
 
 out_free:
 	mutex_unlock(&fcoe_config_mutex);
+<<<<<<< HEAD
+=======
+	fcoe_transport_detach(&fcoe_sw_transport);
+>>>>>>> origin/android16-base
 out_destroy:
 	destroy_workqueue(fcoe_wq);
 	return rc;

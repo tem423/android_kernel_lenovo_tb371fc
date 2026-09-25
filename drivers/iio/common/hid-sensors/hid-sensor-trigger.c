@@ -46,7 +46,11 @@ static ssize_t _hid_sensor_set_report_latency(struct device *dev,
 	latency = integer * 1000 + fract / 1000;
 	ret = hid_sensor_set_report_latency(attrb, latency);
 	if (ret < 0)
+<<<<<<< HEAD
 		return len;
+=======
+		return ret;
+>>>>>>> origin/android16-base
 
 	attrb->latency_ms = hid_sensor_get_report_latency(attrb);
 

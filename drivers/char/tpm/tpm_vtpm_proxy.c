@@ -700,6 +700,7 @@ static struct miscdevice vtpmx_miscdev = {
 	.fops = &vtpmx_fops,
 };
 
+<<<<<<< HEAD
 static int vtpmx_init(void)
 {
 	return misc_register(&vtpmx_miscdev);
@@ -710,10 +711,13 @@ static void vtpmx_cleanup(void)
 	misc_deregister(&vtpmx_miscdev);
 }
 
+=======
+>>>>>>> origin/android16-base
 static int __init vtpm_module_init(void)
 {
 	int rc;
 
+<<<<<<< HEAD
 	rc = vtpmx_init();
 	if (rc) {
 		pr_err("couldn't create vtpmx device\n");
@@ -731,6 +735,19 @@ static int __init vtpm_module_init(void)
 
 err_vtpmx_cleanup:
 	vtpmx_cleanup();
+=======
+	workqueue = create_workqueue("tpm-vtpm");
+	if (!workqueue) {
+		pr_err("couldn't create workqueue\n");
+		return -ENOMEM;
+	}
+
+	rc = misc_register(&vtpmx_miscdev);
+	if (rc) {
+		pr_err("couldn't create vtpmx device\n");
+		destroy_workqueue(workqueue);
+	}
+>>>>>>> origin/android16-base
 
 	return rc;
 }
@@ -738,7 +755,11 @@ err_vtpmx_cleanup:
 static void __exit vtpm_module_exit(void)
 {
 	destroy_workqueue(workqueue);
+<<<<<<< HEAD
 	vtpmx_cleanup();
+=======
+	misc_deregister(&vtpmx_miscdev);
+>>>>>>> origin/android16-base
 }
 
 module_init(vtpm_module_init);

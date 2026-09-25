@@ -916,6 +916,7 @@ acpi_ut_copy_ipackage_to_ipackage(union acpi_operand_object *source_obj,
 	status = acpi_ut_walk_package_tree(source_obj, dest_obj,
 					   acpi_ut_copy_ielement_to_ielement,
 					   walk_state);
+<<<<<<< HEAD
 	if (ACPI_FAILURE(status)) {
 
 		/* On failure, delete the destination package object */
@@ -923,6 +924,8 @@ acpi_ut_copy_ipackage_to_ipackage(union acpi_operand_object *source_obj,
 		acpi_ut_remove_reference(dest_obj);
 	}
 
+=======
+>>>>>>> origin/android16-base
 	return_ACPI_STATUS(status);
 }
 

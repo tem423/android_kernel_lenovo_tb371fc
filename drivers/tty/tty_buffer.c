@@ -167,7 +167,12 @@ static struct tty_buffer *tty_buffer_alloc(struct tty_port *port, size_t size)
 	   have queued and recycle that ? */
 	if (atomic_read(&port->buf.mem_used) > port->buf.mem_limit)
 		return NULL;
+<<<<<<< HEAD
 	p = kmalloc(sizeof(struct tty_buffer) + 2 * size, GFP_ATOMIC);
+=======
+	p = kmalloc(sizeof(struct tty_buffer) + 2 * size,
+		    GFP_ATOMIC | __GFP_NOWARN);
+>>>>>>> origin/android16-base
 	if (p == NULL)
 		return NULL;
 
@@ -389,6 +394,7 @@ int __tty_insert_flip_char(struct tty_port *port, unsigned char ch, char flag)
 EXPORT_SYMBOL(__tty_insert_flip_char);
 
 /**
+<<<<<<< HEAD
  *	tty_schedule_flip	-	push characters to ldisc
  *	@port: tty port to push from
  *
@@ -410,6 +416,8 @@ void tty_schedule_flip(struct tty_port *port)
 EXPORT_SYMBOL(tty_schedule_flip);
 
 /**
+=======
+>>>>>>> origin/android16-base
  *	tty_prepare_flip_string		-	make room for characters
  *	@port: tty port
  *	@chars: return pointer for character write area
@@ -529,12 +537,30 @@ static void flush_to_ldisc(struct work_struct *work)
 		if (!count)
 			break;
 		head->read += count;
+<<<<<<< HEAD
+=======
+
+		if (need_resched())
+			cond_resched();
+>>>>>>> origin/android16-base
 	}
 
 	mutex_unlock(&buf->lock);
 
 }
 
+<<<<<<< HEAD
+=======
+static inline void tty_flip_buffer_commit(struct tty_buffer *tail)
+{
+	/*
+	 * Paired w/ acquire in flush_to_ldisc(); ensures flush_to_ldisc() sees
+	 * buffer data.
+	 */
+	smp_store_release(&tail->commit, tail->used);
+}
+
+>>>>>>> origin/android16-base
 /**
  *	tty_flip_buffer_push	-	terminal
  *	@port: tty port to push
@@ -548,11 +574,52 @@ static void flush_to_ldisc(struct work_struct *work)
 
 void tty_flip_buffer_push(struct tty_port *port)
 {
+<<<<<<< HEAD
 	tty_schedule_flip(port);
+=======
+	struct tty_bufhead *buf = &port->buf;
+
+	tty_flip_buffer_commit(buf->tail);
+	queue_work(system_unbound_wq, &buf->work);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL(tty_flip_buffer_push);
 
 /**
+<<<<<<< HEAD
+=======
+ * tty_insert_flip_string_and_push_buffer - add characters to the tty buffer and
+ *	push
+ * @port: tty port
+ * @chars: characters
+ * @size: size
+ *
+ * The function combines tty_insert_flip_string() and tty_flip_buffer_push()
+ * with the exception of properly holding the @port->lock.
+ *
+ * To be used only internally (by pty currently).
+ *
+ * Returns: the number added.
+ */
+int tty_insert_flip_string_and_push_buffer(struct tty_port *port,
+		const unsigned char *chars, size_t size)
+{
+	struct tty_bufhead *buf = &port->buf;
+	unsigned long flags;
+
+	spin_lock_irqsave(&port->lock, flags);
+	size = tty_insert_flip_string(port, chars, size);
+	if (size)
+		tty_flip_buffer_commit(buf->tail);
+	spin_unlock_irqrestore(&port->lock, flags);
+
+	queue_work(system_unbound_wq, &buf->work);
+
+	return size;
+}
+
+/**
+>>>>>>> origin/android16-base
  *	tty_buffer_init		-	prepare a tty buffer structure
  *	@tty: tty to initialise
  *

@@ -6,6 +6,16 @@ config F2FS_FS
 	select CRYPTO_CRC32
 	select F2FS_FS_XATTR if FS_ENCRYPTION
 	select FS_ENCRYPTION_ALGS if FS_ENCRYPTION
+<<<<<<< HEAD
+=======
+	select LZ4_COMPRESS if F2FS_FS_LZ4
+	select LZ4_DECOMPRESS if F2FS_FS_LZ4
+	select LZ4HC_COMPRESS if F2FS_FS_LZ4HC
+	select LZO_COMPRESS if F2FS_FS_LZO
+	select LZO_DECOMPRESS if F2FS_FS_LZO
+	select ZSTD_COMPRESS if F2FS_FS_ZSTD
+	select ZSTD_DECOMPRESS if F2FS_FS_ZSTD
+>>>>>>> origin/android16-base
 	help
 	  F2FS is based on Log-structured File System (LFS), which supports
 	  versatile "flash-friendly" features. The design has been focused on
@@ -84,6 +94,7 @@ config F2FS_FS_ENCRYPTION
 	  FS_ENCRYPTION.  Use CONFIG_FS_ENCRYPTION=y in new config
 	  files.
 
+<<<<<<< HEAD
 config F2FS_IO_TRACE
 	bool "F2FS IO tracer"
 	depends on F2FS_FS
@@ -94,6 +105,8 @@ config F2FS_IO_TRACE
 
 	  If unsure, say N.
 
+=======
+>>>>>>> origin/android16-base
 config F2FS_FAULT_INJECTION
 	bool "F2FS fault injection facility"
 	depends on F2FS_FS
@@ -112,21 +125,38 @@ config F2FS_FS_COMPRESSION
 config F2FS_FS_LZO
 	bool "LZO compression support"
 	depends on F2FS_FS_COMPRESSION
+<<<<<<< HEAD
 	select LZO_COMPRESS
 	select LZO_DECOMPRESS
+=======
+>>>>>>> origin/android16-base
 	default y
 	help
 	  Support LZO compress algorithm, if unsure, say Y.
 
+<<<<<<< HEAD
 config F2FS_FS_LZ4
 	bool "LZ4 compression support"
 	depends on F2FS_FS_COMPRESSION
 	select LZ4_COMPRESS
 	select LZ4_DECOMPRESS
+=======
+config F2FS_FS_LZORLE
+	bool "LZO-RLE compression support"
+	depends on F2FS_FS_LZO
+	default y
+	help
+	  Support LZO-RLE compress algorithm, if unsure, say Y.
+
+config F2FS_FS_LZ4
+	bool "LZ4 compression support"
+	depends on F2FS_FS_COMPRESSION
+>>>>>>> origin/android16-base
 	default y
 	help
 	  Support LZ4 compress algorithm, if unsure, say Y.
 
+<<<<<<< HEAD
 config F2FS_FS_ZSTD
 	bool "ZSTD compression support"
 	depends on F2FS_FS_COMPRESSION
@@ -135,3 +165,35 @@ config F2FS_FS_ZSTD
 	default y
 	help
 	  Support ZSTD compress algorithm, if unsure, say Y.
+=======
+config F2FS_FS_LZ4HC
+	bool "LZ4HC compression support"
+	depends on F2FS_FS_LZ4
+	default y
+	help
+	  Support LZ4HC compress algorithm, LZ4HC has compatible on-disk
+	  layout with LZ4, if unsure, say Y.
+
+config F2FS_FS_ZSTD
+	bool "ZSTD compression support"
+	depends on F2FS_FS_COMPRESSION
+	default y
+	help
+	  Support ZSTD compress algorithm, if unsure, say Y.
+
+config F2FS_IOSTAT
+	bool "F2FS IO statistics information"
+	depends on F2FS_FS
+	default y
+	help
+	  Support getting IO statistics through sysfs and printing out periodic
+	  IO statistics tracepoint events. You have to turn on "iostat_enable"
+	  sysfs node to enable this feature.
+
+config F2FS_UNFAIR_RWSEM
+	bool "F2FS unfair rw_semaphore"
+	depends on F2FS_FS && BLK_CGROUP
+	help
+	  Use unfair rw_semaphore, if system configured IO priority by block
+	  cgroup.
+>>>>>>> origin/android16-base

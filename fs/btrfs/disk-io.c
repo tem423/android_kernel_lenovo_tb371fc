@@ -2855,7 +2855,11 @@ int open_ctree(struct super_block *sb,
 		~BTRFS_FEATURE_INCOMPAT_SUPP;
 	if (features) {
 		btrfs_err(fs_info,
+<<<<<<< HEAD
 		    "cannot mount because of unsupported optional features (%llx)",
+=======
+		    "cannot mount because of unsupported optional features (0x%llx)",
+>>>>>>> origin/android16-base
 		    features);
 		err = -EINVAL;
 		goto fail_alloc;
@@ -2915,11 +2919,32 @@ int open_ctree(struct super_block *sb,
 		~BTRFS_FEATURE_COMPAT_RO_SUPP;
 	if (!sb_rdonly(sb) && features) {
 		btrfs_err(fs_info,
+<<<<<<< HEAD
 	"cannot mount read-write because of unsupported optional features (%llx)",
+=======
+	"cannot mount read-write because of unsupported optional features (0x%llx)",
+>>>>>>> origin/android16-base
 		       features);
 		err = -EINVAL;
 		goto fail_alloc;
 	}
+<<<<<<< HEAD
+=======
+	/*
+	 * We have unsupported RO compat features, although RO mounted, we
+	 * should not cause any metadata write, including log replay.
+	 * Or we could screw up whatever the new feature requires.
+	 */
+	if (unlikely(features && btrfs_super_log_root(disk_super) &&
+		     !btrfs_test_opt(fs_info, NOLOGREPLAY))) {
+		btrfs_err(fs_info,
+"cannot replay dirty log with unsupported compat_ro features (0x%llx), try rescue=nologreplay",
+			  features);
+		err = -EINVAL;
+		goto fail_alloc;
+	}
+
+>>>>>>> origin/android16-base
 
 	ret = btrfs_init_workqueues(fs_info, fs_devices);
 	if (ret) {
@@ -3095,7 +3120,12 @@ retry_root_backup:
 		goto fail_sysfs;
 	}
 
+<<<<<<< HEAD
 	if (!sb_rdonly(sb) && !btrfs_check_rw_degradable(fs_info, NULL)) {
+=======
+	if (!sb_rdonly(sb) && fs_info->fs_devices->missing_devices &&
+	    !btrfs_check_rw_degradable(fs_info, NULL)) {
+>>>>>>> origin/android16-base
 		btrfs_warn(fs_info,
 		"writeable mount is not allowed due to too many missing devices");
 		goto fail_sysfs;
@@ -3578,11 +3608,31 @@ static void btrfs_end_empty_barrier(struct bio *bio)
  */
 static void write_dev_flush(struct btrfs_device *device)
 {
+<<<<<<< HEAD
 	struct request_queue *q = bdev_get_queue(device->bdev);
 	struct bio *bio = device->flush_bio;
 
 	if (!test_bit(QUEUE_FLAG_WC, &q->queue_flags))
 		return;
+=======
+	struct bio *bio = device->flush_bio;
+
+#ifndef CONFIG_BTRFS_FS_CHECK_INTEGRITY
+	/*
+	 * When a disk has write caching disabled, we skip submission of a bio
+	 * with flush and sync requests before writing the superblock, since
+	 * it's not needed. However when the integrity checker is enabled, this
+	 * results in reports that there are metadata blocks referred by a
+	 * superblock that were not properly flushed. So don't skip the bio
+	 * submission only when the integrity checker is enabled for the sake
+	 * of simplicity, since this is a debug tool and not meant for use in
+	 * non-debug builds.
+	 */
+	struct request_queue *q = bdev_get_queue(device->bdev);
+	if (!test_bit(QUEUE_FLAG_WC, &q->queue_flags))
+		return;
+#endif
+>>>>>>> origin/android16-base
 
 	bio_reset(bio);
 	bio->bi_end_io = btrfs_end_empty_barrier;
@@ -4218,6 +4268,20 @@ static void btrfs_destroy_all_ordered_extents(struct btrfs_fs_info *fs_info)
 	spin_unlock(&fs_info->ordered_root_lock);
 
 	/*
+<<<<<<< HEAD
+=======
+	 * Wait for any fixup workers to complete.
+	 * If we don't wait for them here and they are still running by the time
+	 * we call kthread_stop() against the cleaner kthread further below, we
+	 * get an use-after-free on the cleaner because the fixup worker adds an
+	 * inode to the list of delayed iputs and then attempts to wakeup the
+	 * cleaner kthread, which was already stopped and destroyed. We parked
+	 * already the cleaner, but below we run all pending delayed iputs.
+	 */
+	btrfs_flush_workqueue(fs_info->fixup_workers);
+
+	/*
+>>>>>>> origin/android16-base
 	 * We need this here because if we've been flipped read-only we won't
 	 * get sync() from the umount, so we need to make sure any ordered
 	 * extents that haven't had their dirty pages IO start writeout yet
@@ -4321,7 +4385,15 @@ static void btrfs_destroy_delalloc_inodes(struct btrfs_root *root)
 		 */
 		inode = igrab(&btrfs_inode->vfs_inode);
 		if (inode) {
+<<<<<<< HEAD
 			invalidate_inode_pages2(inode->i_mapping);
+=======
+			unsigned int nofs_flag;
+
+			nofs_flag = memalloc_nofs_save();
+			invalidate_inode_pages2(inode->i_mapping);
+			memalloc_nofs_restore(nofs_flag);
+>>>>>>> origin/android16-base
 			iput(inode);
 		}
 		spin_lock(&root->delalloc_lock);
@@ -4439,7 +4511,16 @@ static void btrfs_cleanup_bg_io(struct btrfs_block_group_cache *cache)
 
 	inode = cache->io_ctl.inode;
 	if (inode) {
+<<<<<<< HEAD
 		invalidate_inode_pages2(inode->i_mapping);
+=======
+		unsigned int nofs_flag;
+
+		nofs_flag = memalloc_nofs_save();
+		invalidate_inode_pages2(inode->i_mapping);
+		memalloc_nofs_restore(nofs_flag);
+
+>>>>>>> origin/android16-base
 		BTRFS_I(inode)->generation = 0;
 		cache->io_ctl.inode = NULL;
 		iput(inode);

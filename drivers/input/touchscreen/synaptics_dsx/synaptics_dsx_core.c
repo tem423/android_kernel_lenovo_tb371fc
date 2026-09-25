@@ -36,6 +36,10 @@
 #include <linux/slab.h>
 #include <linux/interrupt.h>
 #include <linux/delay.h>
+<<<<<<< HEAD
+=======
+#include <linux/i2c.h>
+>>>>>>> origin/android16-base
 #include <linux/input.h>
 #include <linux/gpio.h>
 #include <linux/platform_device.h>

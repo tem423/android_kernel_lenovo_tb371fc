@@ -54,18 +54,30 @@
 		emac: gem@30000 {
 			compatible = "cadence,gem";
 			reg = <0x30000 0x10000>;
+<<<<<<< HEAD
+=======
+			interrupt-parent = <&vic0>;
+>>>>>>> origin/android16-base
 			interrupts = <31>;
 		};
 
 		dmac1: dmac@40000 {
 			compatible = "snps,dw-dmac";
 			reg = <0x40000 0x10000>;
+<<<<<<< HEAD
+=======
+			interrupt-parent = <&vic0>;
+>>>>>>> origin/android16-base
 			interrupts = <25>;
 		};
 
 		dmac2: dmac@50000 {
 			compatible = "snps,dw-dmac";
 			reg = <0x50000 0x10000>;
+<<<<<<< HEAD
+=======
+			interrupt-parent = <&vic0>;
+>>>>>>> origin/android16-base
 			interrupts = <26>;
 		};
 
@@ -243,6 +255,10 @@
 		axi2pico@c0000000 {
 			compatible = "picochip,axi2pico-pc3x2";
 			reg = <0xc0000000 0x10000>;
+<<<<<<< HEAD
+=======
+			interrupt-parent = <&vic0>;
+>>>>>>> origin/android16-base
 			interrupts = <13 14 15 16 17 18 19 20 21>;
 		};
 	};

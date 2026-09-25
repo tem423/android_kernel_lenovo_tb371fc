@@ -620,7 +620,11 @@ struct atom_gpio_pin_lut_v2_1
 {
   struct  atom_common_table_header  table_header;
   /*the real number of this included in the structure is calcualted by using the (whole structure size - the header size)/size of atom_gpio_pin_lut  */
+<<<<<<< HEAD
   struct  atom_gpio_pin_assignment  gpio_pin[8];
+=======
+  struct  atom_gpio_pin_assignment  gpio_pin[];
+>>>>>>> origin/android16-base
 };
 
 

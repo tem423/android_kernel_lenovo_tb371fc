@@ -617,7 +617,11 @@ static ssize_t amdgpu_get_pp_dpm_sclk(struct device *dev,
 static ssize_t amdgpu_read_mask(const char *buf, size_t count, uint32_t *mask)
 {
 	int ret;
+<<<<<<< HEAD
 	long level;
+=======
+	unsigned long level;
+>>>>>>> origin/android16-base
 	char *sub_str = NULL;
 	char *tmp;
 	char buf_cpy[AMDGPU_MASK_BUF_MAX + 1];
@@ -633,8 +637,13 @@ static ssize_t amdgpu_read_mask(const char *buf, size_t count, uint32_t *mask)
 	while (tmp[0]) {
 		sub_str = strsep(&tmp, delimiter);
 		if (strlen(sub_str)) {
+<<<<<<< HEAD
 			ret = kstrtol(sub_str, 0, &level);
 			if (ret)
+=======
+			ret = kstrtoul(sub_str, 0, &level);
+			if (ret || level > 31)
+>>>>>>> origin/android16-base
 				return -EINVAL;
 			*mask |= 1 << level;
 		} else

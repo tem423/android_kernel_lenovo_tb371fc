@@ -65,7 +65,11 @@ static void mq_destroy(struct Qdisc *sch)
 	if (!priv->qdiscs)
 		return;
 	for (ntx = 0; ntx < dev->num_tx_queues && priv->qdiscs[ntx]; ntx++)
+<<<<<<< HEAD
 		qdisc_destroy(priv->qdiscs[ntx]);
+=======
+		qdisc_put(priv->qdiscs[ntx]);
+>>>>>>> origin/android16-base
 	kfree(priv->qdiscs);
 }
 
@@ -119,7 +123,11 @@ static void mq_attach(struct Qdisc *sch)
 		qdisc = priv->qdiscs[ntx];
 		old = dev_graft_qdisc(qdisc->dev_queue, qdisc);
 		if (old)
+<<<<<<< HEAD
 			qdisc_destroy(old);
+=======
+			qdisc_put(old);
+>>>>>>> origin/android16-base
 #ifdef CONFIG_NET_SCHED
 		if (ntx < dev->real_num_tx_queues)
 			qdisc_hash_add(qdisc, false);

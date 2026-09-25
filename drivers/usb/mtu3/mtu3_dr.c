@@ -30,10 +30,15 @@ enum mtu3_vbus_id_state {
 
 static void toggle_opstate(struct ssusb_mtk *ssusb)
 {
+<<<<<<< HEAD
 	if (!ssusb->otg_switch.is_u3_drd) {
 		mtu3_setbits(ssusb->mac_base, U3D_DEVICE_CONTROL, DC_SESSION);
 		mtu3_setbits(ssusb->mac_base, U3D_POWER_MANAGEMENT, SOFT_CONN);
 	}
+=======
+	mtu3_setbits(ssusb->mac_base, U3D_DEVICE_CONTROL, DC_SESSION);
+	mtu3_setbits(ssusb->mac_base, U3D_POWER_MANAGEMENT, SOFT_CONN);
+>>>>>>> origin/android16-base
 }
 
 /* only port0 supports dual-role mode */

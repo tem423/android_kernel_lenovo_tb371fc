@@ -199,7 +199,10 @@ struct dsi_display {
 	const char *display_type;
 	struct list_head list;
 	bool is_cont_splash_enabled;
+<<<<<<< HEAD
 	bool is_prim_display;
+=======
+>>>>>>> origin/android16-base
 	bool sw_te_using_wd;
 	struct mutex display_lock;
 	int disp_te_gpio;
@@ -275,7 +278,10 @@ struct dsi_display {
 	u32 clk_gating_config;
 	bool queue_cmd_waits;
 	struct workqueue_struct *dma_cmd_workq;
+<<<<<<< HEAD
 	atomic_t fod_ui;
+=======
+>>>>>>> origin/android16-base
 };
 
 int dsi_display_dev_probe(struct platform_device *pdev);
@@ -737,6 +743,7 @@ int dsi_display_cont_splash_config(void *display);
 int dsi_display_get_panel_vfp(void *display,
 	int h_active, int v_active);
 
+<<<<<<< HEAD
 int dsi_display_cmd_engine_enable(struct dsi_display *display);
 int dsi_display_cmd_engine_disable(struct dsi_display *display);
 int dsi_host_alloc_cmd_tx_buffer(struct dsi_display *display);
@@ -751,4 +758,6 @@ struct dsi_display *get_main_display(void);
 
 void dsi_display_set_fod_ui(struct dsi_display *display, bool status);
 
+=======
+>>>>>>> origin/android16-base
 #endif /* _DSI_DISPLAY_H_ */

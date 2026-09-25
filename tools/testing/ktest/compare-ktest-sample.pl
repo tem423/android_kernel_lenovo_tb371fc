@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/usr/bin/perl
+=======
+#!/usr/bin/env perl
+>>>>>>> origin/android16-base
 # SPDX-License-Identifier: GPL-2.0
 
 open (IN,"ktest.pl");

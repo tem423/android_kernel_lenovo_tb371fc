@@ -153,7 +153,11 @@ struct snd_vortex {
 #ifndef CHIP_AU8810
 	stream_t dma_wt[NR_WT];
 	wt_voice_t wt_voice[NR_WT];	/* WT register cache. */
+<<<<<<< HEAD
 	char mixwt[(NR_WT / NR_WTPB) * 6];	/* WT mixin objects */
+=======
+	s8 mixwt[(NR_WT / NR_WTPB) * 6];	/* WT mixin objects */
+>>>>>>> origin/android16-base
 #endif
 
 	/* Global resources */
@@ -247,8 +251,13 @@ static int vortex_alsafmt_aspfmt(snd_pcm_format_t alsafmt, vortex_t *v);
 static void vortex_connect_default(vortex_t * vortex, int en);
 static int vortex_adb_allocroute(vortex_t * vortex, int dma, int nr_ch,
 				 int dir, int type, int subdev);
+<<<<<<< HEAD
 static char vortex_adb_checkinout(vortex_t * vortex, int resmap[], int out,
 				  int restype);
+=======
+static int vortex_adb_checkinout(vortex_t * vortex, int resmap[], int out,
+				 int restype);
+>>>>>>> origin/android16-base
 #ifndef CHIP_AU8810
 static int vortex_wt_allocroute(vortex_t * vortex, int dma, int nr_ch);
 static void vortex_wt_connect(vortex_t * vortex, int en);

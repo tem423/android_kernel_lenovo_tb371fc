@@ -304,7 +304,11 @@ static void smc_cdc_msg_recv_action(struct smc_sock *smc,
 		smc->sk.sk_shutdown |= RCV_SHUTDOWN;
 		if (smc->clcsock && smc->clcsock->sk)
 			smc->clcsock->sk->sk_shutdown |= RCV_SHUTDOWN;
+<<<<<<< HEAD
 		sock_set_flag(&smc->sk, SOCK_DONE);
+=======
+		smc_sock_set_flag(&smc->sk, SOCK_DONE);
+>>>>>>> origin/android16-base
 		sock_hold(&smc->sk); /* sock_put in close_work */
 		if (!schedule_work(&conn->close_work))
 			sock_put(&smc->sk);

@@ -22,8 +22,13 @@
 #define MV_NAME_SIZE 32
 
 #define for_each_mv(mv) \
+<<<<<<< HEAD
 	for ((mv) = (struct sh_machine_vector *)&__machvec_start; \
 	     (mv) && (unsigned long)(mv) < (unsigned long)&__machvec_end; \
+=======
+	for ((mv) = (struct sh_machine_vector *)__machvec_start; \
+	     (mv) && (unsigned long)(mv) < (unsigned long)__machvec_end; \
+>>>>>>> origin/android16-base
 	     (mv)++)
 
 static struct sh_machine_vector * __init get_mv_byname(const char *name)
@@ -89,8 +94,13 @@ void __init sh_mv_setup(void)
 	if (!machvec_selected) {
 		unsigned long machvec_size;
 
+<<<<<<< HEAD
 		machvec_size = ((unsigned long)&__machvec_end -
 				(unsigned long)&__machvec_start);
+=======
+		machvec_size = ((unsigned long)__machvec_end -
+				(unsigned long)__machvec_start);
+>>>>>>> origin/android16-base
 
 		/*
 		 * Sanity check for machvec section alignment. Ensure
@@ -104,7 +114,11 @@ void __init sh_mv_setup(void)
 		 * vector (usually the only one) from .machvec.init.
 		 */
 		if (machvec_size >= sizeof(struct sh_machine_vector))
+<<<<<<< HEAD
 			sh_mv = *(struct sh_machine_vector *)&__machvec_start;
+=======
+			sh_mv = *(struct sh_machine_vector *)__machvec_start;
+>>>>>>> origin/android16-base
 	}
 
 	printk(KERN_NOTICE "Booting machvec: %s\n", get_system_type());

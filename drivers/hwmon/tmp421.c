@@ -109,11 +109,16 @@ struct tmp421_data {
 	s16 temp[4];
 };
 
+<<<<<<< HEAD
 static int temp_from_s16(s16 reg)
+=======
+static int temp_from_raw(u16 reg, bool extended)
+>>>>>>> origin/android16-base
 {
 	/* Mask out status bits */
 	int temp = reg & ~0xf;
 
+<<<<<<< HEAD
 	return (temp * 1000 + 128) / 256;
 }
 
@@ -126,6 +131,14 @@ static int temp_from_u16(u16 reg)
 	temp -= 64 * 256;
 
 	return (temp * 1000 + 128) / 256;
+=======
+	if (extended)
+		temp = temp - 64 * 256;
+	else
+		temp = (s16)temp;
+
+	return DIV_ROUND_CLOSEST(temp * 1000, 256);
+>>>>>>> origin/android16-base
 }
 
 static struct tmp421_data *tmp421_update_device(struct device *dev)
@@ -162,6 +175,7 @@ static int tmp421_read(struct device *dev, enum hwmon_sensor_types type,
 
 	switch (attr) {
 	case hwmon_temp_input:
+<<<<<<< HEAD
 		if (tmp421->config & TMP421_CONFIG_RANGE)
 			*val = temp_from_u16(tmp421->temp[channel]);
 		else
@@ -173,6 +187,17 @@ static int tmp421_read(struct device *dev, enum hwmon_sensor_types type,
 		 * register (low byte).
 		 */
 		*val = tmp421->temp[channel] & 0x01;
+=======
+		*val = temp_from_raw(tmp421->temp[channel],
+				     tmp421->config & TMP421_CONFIG_RANGE);
+		return 0;
+	case hwmon_temp_fault:
+		/*
+		 * Any of OPEN or /PVLD bits indicate a hardware mulfunction
+		 * and the conversion result may be incorrect
+		 */
+		*val = !!(tmp421->temp[channel] & 0x03);
+>>>>>>> origin/android16-base
 		return 0;
 	default:
 		return -EOPNOTSUPP;
@@ -185,11 +210,16 @@ static umode_t tmp421_is_visible(const void *data, enum hwmon_sensor_types type,
 {
 	switch (attr) {
 	case hwmon_temp_fault:
+<<<<<<< HEAD
 		if (channel == 0)
 			return 0;
 		return S_IRUGO;
 	case hwmon_temp_input:
 		return S_IRUGO;
+=======
+	case hwmon_temp_input:
+		return 0444;
+>>>>>>> origin/android16-base
 	default:
 		return 0;
 	}

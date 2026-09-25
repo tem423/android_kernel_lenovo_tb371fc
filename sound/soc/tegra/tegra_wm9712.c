@@ -59,6 +59,10 @@ static struct snd_soc_dai_link tegra_wm9712_dai = {
 
 static struct snd_soc_card snd_soc_tegra_wm9712 = {
 	.name = "tegra-wm9712",
+<<<<<<< HEAD
+=======
+	.driver_name = "tegra",
+>>>>>>> origin/android16-base
 	.owner = THIS_MODULE,
 	.dai_link = &tegra_wm9712_dai,
 	.num_links = 1,

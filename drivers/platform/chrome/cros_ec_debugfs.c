@@ -292,6 +292,10 @@ static int ec_read_version_supported(struct cros_ec_dev *ec)
 	if (!msg)
 		return 0;
 
+<<<<<<< HEAD
+=======
+	msg->version = 1;
+>>>>>>> origin/android16-base
 	msg->command = EC_CMD_GET_CMD_VERSIONS + ec->cmd_offset;
 	msg->outsize = sizeof(*params);
 	msg->insize = sizeof(*response);

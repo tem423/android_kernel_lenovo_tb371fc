@@ -1731,7 +1731,11 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
 		tm_reclaim_current(0);
 #endif
 
+<<<<<<< HEAD
 	memset(regs->gpr, 0, sizeof(regs->gpr));
+=======
+	memset(&regs->gpr[1], 0, sizeof(regs->gpr) - sizeof(regs->gpr[0]));
+>>>>>>> origin/android16-base
 	regs->ctr = 0;
 	regs->link = 0;
 	regs->xer = 0;
@@ -2017,12 +2021,20 @@ unsigned long get_wchan(struct task_struct *p)
 		return 0;
 
 	do {
+<<<<<<< HEAD
 		sp = *(unsigned long *)sp;
+=======
+		sp = READ_ONCE_NOCHECK(*(unsigned long *)sp);
+>>>>>>> origin/android16-base
 		if (!validate_sp(sp, p, STACK_FRAME_OVERHEAD) ||
 		    p->state == TASK_RUNNING)
 			return 0;
 		if (count > 0) {
+<<<<<<< HEAD
 			ip = ((unsigned long *)sp)[STACK_FRAME_LR_SAVE];
+=======
+			ip = READ_ONCE_NOCHECK(((unsigned long *)sp)[STACK_FRAME_LR_SAVE]);
+>>>>>>> origin/android16-base
 			if (!in_sched_functions(ip))
 				return ip;
 		}

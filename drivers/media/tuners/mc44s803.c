@@ -366,7 +366,11 @@ error:
 	kfree(priv);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(mc44s803_attach);
+=======
+EXPORT_SYMBOL_GPL(mc44s803_attach);
+>>>>>>> origin/android16-base
 
 MODULE_AUTHOR("Jochen Friedrich");
 MODULE_DESCRIPTION("Freescale MC44S803 silicon tuner driver");

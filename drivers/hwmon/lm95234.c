@@ -310,7 +310,12 @@ static ssize_t set_tcrit2(struct device *dev, struct device_attribute *attr,
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
 	val = clamp_val(DIV_ROUND_CLOSEST(val, 1000), 0, index ? 255 : 127);
+=======
+	val = DIV_ROUND_CLOSEST(clamp_val(val, 0, (index ? 255 : 127) * 1000),
+				1000);
+>>>>>>> origin/android16-base
 
 	mutex_lock(&data->update_lock);
 	data->tcrit2[index] = val;
@@ -359,7 +364,11 @@ static ssize_t set_tcrit1(struct device *dev, struct device_attribute *attr,
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
 	val = clamp_val(DIV_ROUND_CLOSEST(val, 1000), 0, 255);
+=======
+	val = DIV_ROUND_CLOSEST(clamp_val(val, 0, 255000), 1000);
+>>>>>>> origin/android16-base
 
 	mutex_lock(&data->update_lock);
 	data->tcrit1[index] = val;
@@ -400,7 +409,11 @@ static ssize_t set_tcrit1_hyst(struct device *dev,
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
 	val = DIV_ROUND_CLOSEST(val, 1000);
+=======
+	val = DIV_ROUND_CLOSEST(clamp_val(val, -255000, 255000), 1000);
+>>>>>>> origin/android16-base
 	val = clamp_val((int)data->tcrit1[index] - val, 0, 31);
 
 	mutex_lock(&data->update_lock);
@@ -440,7 +453,11 @@ static ssize_t set_offset(struct device *dev, struct device_attribute *attr,
 		return ret;
 
 	/* Accuracy is 1/2 degrees C */
+<<<<<<< HEAD
 	val = clamp_val(DIV_ROUND_CLOSEST(val, 500), -128, 127);
+=======
+	val = DIV_ROUND_CLOSEST(clamp_val(val, -64000, 63500), 500);
+>>>>>>> origin/android16-base
 
 	mutex_lock(&data->update_lock);
 	data->toffset[index] = val;

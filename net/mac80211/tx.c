@@ -594,10 +594,20 @@ ieee80211_tx_h_select_key(struct ieee80211_tx_data *tx)
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(tx->skb);
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)tx->skb->data;
 
+<<<<<<< HEAD
 	if (unlikely(info->flags & IEEE80211_TX_INTFL_DONT_ENCRYPT))
 		tx->key = NULL;
 	else if (tx->sta &&
 		 (key = rcu_dereference(tx->sta->ptk[tx->sta->ptk_idx])))
+=======
+	if (unlikely(info->flags & IEEE80211_TX_INTFL_DONT_ENCRYPT)) {
+		tx->key = NULL;
+		return TX_CONTINUE;
+	}
+
+	if (tx->sta &&
+	    (key = rcu_dereference(tx->sta->ptk[tx->sta->ptk_idx])))
+>>>>>>> origin/android16-base
 		tx->key = key;
 	else if (ieee80211_is_group_privacy_action(tx->skb) &&
 		(key = rcu_dereference(tx->sdata->default_multicast_key)))
@@ -652,12 +662,23 @@ ieee80211_tx_h_select_key(struct ieee80211_tx_data *tx)
 		}
 
 		if (unlikely(tx->key && tx->key->flags & KEY_FLAG_TAINTED &&
+<<<<<<< HEAD
 			     !ieee80211_is_deauth(hdr->frame_control)))
+=======
+			     !ieee80211_is_deauth(hdr->frame_control)) &&
+			     tx->skb->protocol != tx->sdata->control_port_protocol)
+>>>>>>> origin/android16-base
 			return TX_DROP;
 
 		if (!skip_hw && tx->key &&
 		    tx->key->flags & KEY_FLAG_UPLOADED_TO_HARDWARE)
 			info->control.hw_key = &tx->key->conf;
+<<<<<<< HEAD
+=======
+	} else if (!ieee80211_is_mgmt(hdr->frame_control) && tx->sta &&
+		   test_sta_flag(tx->sta, WLAN_STA_USES_ENCRYPTION)) {
+		return TX_DROP;
+>>>>>>> origin/android16-base
 	}
 
 	return TX_CONTINUE;
@@ -1909,6 +1930,7 @@ static bool ieee80211_tx(struct ieee80211_sub_if_data *sdata,
 
 /* device xmit handlers */
 
+<<<<<<< HEAD
 static int ieee80211_skb_resize(struct ieee80211_sub_if_data *sdata,
 				struct sk_buff *skb,
 				int head_need, bool may_encrypt)
@@ -1922,6 +1944,26 @@ static int ieee80211_skb_resize(struct ieee80211_sub_if_data *sdata,
 	enc_tailroom = may_encrypt &&
 		       (sdata->crypto_tx_tailroom_needed_cnt ||
 			ieee80211_is_mgmt(hdr->frame_control));
+=======
+enum ieee80211_encrypt {
+	ENCRYPT_NO,
+	ENCRYPT_MGMT,
+	ENCRYPT_DATA,
+};
+
+static int ieee80211_skb_resize(struct ieee80211_sub_if_data *sdata,
+				struct sk_buff *skb,
+				int head_need,
+				enum ieee80211_encrypt encrypt)
+{
+	struct ieee80211_local *local = sdata->local;
+	bool enc_tailroom;
+	int tail_need = 0;
+
+	enc_tailroom = encrypt == ENCRYPT_MGMT ||
+		       (encrypt == ENCRYPT_DATA &&
+			sdata->crypto_tx_tailroom_needed_cnt);
+>>>>>>> origin/android16-base
 
 	if (enc_tailroom) {
 		tail_need = IEEE80211_ENCRYPT_TAILROOM;
@@ -1953,6 +1995,7 @@ void ieee80211_xmit(struct ieee80211_sub_if_data *sdata,
 {
 	struct ieee80211_local *local = sdata->local;
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+<<<<<<< HEAD
 	struct ieee80211_hdr *hdr;
 	int headroom;
 	bool may_encrypt;
@@ -1961,15 +2004,38 @@ void ieee80211_xmit(struct ieee80211_sub_if_data *sdata,
 
 	headroom = local->tx_headroom;
 	if (may_encrypt)
+=======
+	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
+	int headroom;
+	enum ieee80211_encrypt encrypt;
+
+	if (info->flags & IEEE80211_TX_INTFL_DONT_ENCRYPT)
+		encrypt = ENCRYPT_NO;
+	else if (ieee80211_is_mgmt(hdr->frame_control))
+		encrypt = ENCRYPT_MGMT;
+	else
+		encrypt = ENCRYPT_DATA;
+
+	headroom = local->tx_headroom;
+	if (encrypt != ENCRYPT_NO)
+>>>>>>> origin/android16-base
 		headroom += sdata->encrypt_headroom;
 	headroom -= skb_headroom(skb);
 	headroom = max_t(int, 0, headroom);
 
+<<<<<<< HEAD
 	if (ieee80211_skb_resize(sdata, skb, headroom, may_encrypt)) {
+=======
+	if (ieee80211_skb_resize(sdata, skb, headroom, encrypt)) {
+>>>>>>> origin/android16-base
 		ieee80211_free_txskb(&local->hw, skb);
 		return;
 	}
 
+<<<<<<< HEAD
+=======
+	/* reload after potential resize */
+>>>>>>> origin/android16-base
 	hdr = (struct ieee80211_hdr *) skb->data;
 	info->control.vif = &sdata->vif;
 
@@ -2110,7 +2176,15 @@ static bool ieee80211_parse_tx_radiotap(struct ieee80211_local *local,
 			}
 
 			vht_mcs = iterator.this_arg[4] >> 4;
+<<<<<<< HEAD
 			vht_nss = iterator.this_arg[4] & 0xF;
+=======
+			if (vht_mcs > 11)
+				vht_mcs = 0;
+			vht_nss = iterator.this_arg[4] & 0xF;
+			if (!vht_nss || vht_nss > 8)
+				vht_nss = 1;
+>>>>>>> origin/android16-base
 			break;
 
 		/*
@@ -2752,7 +2826,11 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
 		head_need += sdata->encrypt_headroom;
 		head_need += local->tx_headroom;
 		head_need = max_t(int, 0, head_need);
+<<<<<<< HEAD
 		if (ieee80211_skb_resize(sdata, skb, head_need, true)) {
+=======
+		if (ieee80211_skb_resize(sdata, skb, head_need, ENCRYPT_DATA)) {
+>>>>>>> origin/android16-base
 			ieee80211_free_txskb(&local->hw, skb);
 			skb = NULL;
 			return ERR_PTR(-ENOMEM);
@@ -2847,7 +2925,11 @@ void ieee80211_check_fast_xmit(struct sta_info *sta)
 	    sdata->vif.type == NL80211_IFTYPE_STATION)
 		goto out;
 
+<<<<<<< HEAD
 	if (!test_sta_flag(sta, WLAN_STA_AUTHORIZED))
+=======
+	if (!test_sta_flag(sta, WLAN_STA_AUTHORIZED) || !sta->uploaded)
+>>>>>>> origin/android16-base
 		goto out;
 
 	if (test_sta_flag(sta, WLAN_STA_PS_STA) ||
@@ -3126,7 +3208,13 @@ static bool ieee80211_amsdu_prepare_head(struct ieee80211_sub_if_data *sdata,
 	if (info->control.flags & IEEE80211_TX_CTRL_AMSDU)
 		return true;
 
+<<<<<<< HEAD
 	if (!ieee80211_amsdu_realloc_pad(local, skb, sizeof(*amsdu_hdr)))
+=======
+	if (!ieee80211_amsdu_realloc_pad(local, skb,
+					 sizeof(*amsdu_hdr) +
+					 local->hw.extra_tx_headroom))
+>>>>>>> origin/android16-base
 		return false;
 
 	data = skb_push(skb, sizeof(*amsdu_hdr));
@@ -3246,6 +3334,17 @@ static bool ieee80211_amsdu_aggregate(struct ieee80211_sub_if_data *sdata,
 	if (!ieee80211_amsdu_prepare_head(sdata, fast_tx, head))
 		goto out;
 
+<<<<<<< HEAD
+=======
+	/* If n == 2, the "while (*frag_tail)" loop above didn't execute
+	 * and  frag_tail should be &skb_shinfo(head)->frag_list.
+	 * However, ieee80211_amsdu_prepare_head() can reallocate it.
+	 * Reload frag_tail to have it pointing to the correct place.
+	 */
+	if (n == 2)
+		frag_tail = &skb_shinfo(head)->frag_list;
+
+>>>>>>> origin/android16-base
 	/*
 	 * Pad out the previous subframe to a multiple of 4 by adding the
 	 * padding to the next one, that's being added. Note that head->len
@@ -3415,7 +3514,11 @@ static bool ieee80211_xmit_fast(struct ieee80211_sub_if_data *sdata,
 	if (unlikely(ieee80211_skb_resize(sdata, skb,
 					  max_t(int, extra_head + hw_headroom -
 						     skb_headroom(skb), 0),
+<<<<<<< HEAD
 					  false))) {
+=======
+					  ENCRYPT_NO))) {
+>>>>>>> origin/android16-base
 		kfree_skb(skb);
 		return true;
 	}

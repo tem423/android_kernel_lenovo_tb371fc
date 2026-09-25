@@ -20,6 +20,11 @@
 #include <linux/spi/spi.h>
 #include <linux/mutex.h>
 #include <linux/of.h>
+<<<<<<< HEAD
+=======
+#include <linux/reset.h>
+#include <linux/pm_runtime.h>
+>>>>>>> origin/android16-base
 
 #define HSSPI_GLOBAL_CTRL_REG			0x0
 #define GLOBAL_CTRL_CS_POLARITY_SHIFT		0
@@ -161,6 +166,10 @@ static int bcm63xx_hsspi_do_txrx(struct spi_device *spi, struct spi_transfer *t)
 	int step_size = HSSPI_BUFFER_LEN;
 	const u8 *tx = t->tx_buf;
 	u8 *rx = t->rx_buf;
+<<<<<<< HEAD
+=======
+	u32 val = 0;
+>>>>>>> origin/android16-base
 
 	bcm63xx_hsspi_set_clk(bs, spi, t->speed_hz);
 	bcm63xx_hsspi_set_cs(bs, spi->chip_select, true);
@@ -176,11 +185,24 @@ static int bcm63xx_hsspi_do_txrx(struct spi_device *spi, struct spi_transfer *t)
 		step_size -= HSSPI_OPCODE_LEN;
 
 	if ((opcode == HSSPI_OP_READ && t->rx_nbits == SPI_NBITS_DUAL) ||
+<<<<<<< HEAD
 	    (opcode == HSSPI_OP_WRITE && t->tx_nbits == SPI_NBITS_DUAL))
 		opcode |= HSSPI_OP_MULTIBIT;
 
 	__raw_writel(1 << MODE_CTRL_MULTIDATA_WR_SIZE_SHIFT |
 		     1 << MODE_CTRL_MULTIDATA_RD_SIZE_SHIFT | 0xff,
+=======
+	    (opcode == HSSPI_OP_WRITE && t->tx_nbits == SPI_NBITS_DUAL)) {
+		opcode |= HSSPI_OP_MULTIBIT;
+
+		if (t->rx_nbits == SPI_NBITS_DUAL)
+			val |= 1 << MODE_CTRL_MULTIDATA_RD_SIZE_SHIFT;
+		if (t->tx_nbits == SPI_NBITS_DUAL)
+			val |= 1 << MODE_CTRL_MULTIDATA_WR_SIZE_SHIFT;
+	}
+
+	__raw_writel(val | 0xff,
+>>>>>>> origin/android16-base
 		     bs->regs + HSSPI_PROFILE_MODE_CTRL_REG(chip_select));
 
 	while (pending > 0) {
@@ -432,6 +454,7 @@ static int bcm63xx_hsspi_probe(struct platform_device *pdev)
 	if (ret)
 		goto out_put_master;
 
+<<<<<<< HEAD
 	/* register and we are done */
 	ret = devm_spi_register_master(dev, master);
 	if (ret)
@@ -439,6 +462,19 @@ static int bcm63xx_hsspi_probe(struct platform_device *pdev)
 
 	return 0;
 
+=======
+	pm_runtime_enable(&pdev->dev);
+
+	/* register and we are done */
+	ret = devm_spi_register_master(dev, master);
+	if (ret)
+		goto out_pm_disable;
+
+	return 0;
+
+out_pm_disable:
+	pm_runtime_disable(&pdev->dev);
+>>>>>>> origin/android16-base
 out_put_master:
 	spi_master_put(master);
 out_disable_pll_clk:
@@ -487,8 +523,15 @@ static int bcm63xx_hsspi_resume(struct device *dev)
 
 	if (bs->pll_clk) {
 		ret = clk_prepare_enable(bs->pll_clk);
+<<<<<<< HEAD
 		if (ret)
 			return ret;
+=======
+		if (ret) {
+			clk_disable_unprepare(bs->clk);
+			return ret;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	spi_master_resume(master);

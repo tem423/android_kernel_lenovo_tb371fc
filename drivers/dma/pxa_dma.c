@@ -772,7 +772,10 @@ static void pxad_free_desc(struct virt_dma_desc *vd)
 	dma_addr_t dma;
 	struct pxad_desc_sw *sw_desc = to_pxad_sw_desc(vd);
 
+<<<<<<< HEAD
 	BUG_ON(sw_desc->nb_desc == 0);
+=======
+>>>>>>> origin/android16-base
 	for (i = sw_desc->nb_desc - 1; i >= 0; i--) {
 		if (i > 0)
 			dma = sw_desc->hw_desc[i - 1]->ddadr;
@@ -960,6 +963,7 @@ static void pxad_get_config(struct pxad_chan *chan,
 		*dcmd |= PXA_DCMD_BURST16;
 	else if (maxburst == 32)
 		*dcmd |= PXA_DCMD_BURST32;
+<<<<<<< HEAD
 
 	/* FIXME: drivers should be ported over to use the filter
 	 * function. Once that's done, the following two lines can
@@ -967,6 +971,8 @@ static void pxad_get_config(struct pxad_chan *chan,
 	 */
 	if (chan->cfg.slave_id)
 		chan->drcmr = chan->cfg.slave_id;
+=======
+>>>>>>> origin/android16-base
 }
 
 static struct dma_async_tx_descriptor *

@@ -181,8 +181,14 @@ acpi_ns_simple_repair(struct acpi_evaluate_info *info,
 	 * Try to fix if there was no return object. Warning if failed to fix.
 	 */
 	if (!return_object) {
+<<<<<<< HEAD
 		if (expected_btypes && (!(expected_btypes & ACPI_RTYPE_NONE))) {
 			if (package_index != ACPI_NOT_PACKAGE_ELEMENT) {
+=======
+		if (expected_btypes) {
+			if (!(expected_btypes & ACPI_RTYPE_NONE) &&
+			    package_index != ACPI_NOT_PACKAGE_ELEMENT) {
+>>>>>>> origin/android16-base
 				ACPI_WARN_PREDEFINED((AE_INFO,
 						      info->full_pathname,
 						      ACPI_WARN_ALWAYS,
@@ -196,14 +202,25 @@ acpi_ns_simple_repair(struct acpi_evaluate_info *info,
 				if (ACPI_SUCCESS(status)) {
 					return (AE_OK);	/* Repair was successful */
 				}
+<<<<<<< HEAD
 			} else {
+=======
+			}
+
+			if (expected_btypes != ACPI_RTYPE_NONE) {
+>>>>>>> origin/android16-base
 				ACPI_WARN_PREDEFINED((AE_INFO,
 						      info->full_pathname,
 						      ACPI_WARN_ALWAYS,
 						      "Missing expected return value"));
+<<<<<<< HEAD
 			}
 
 			return (AE_AML_NO_RETURN_VALUE);
+=======
+				return (AE_AML_NO_RETURN_VALUE);
+			}
+>>>>>>> origin/android16-base
 		}
 	}
 

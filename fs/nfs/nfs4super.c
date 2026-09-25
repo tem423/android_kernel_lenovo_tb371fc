@@ -95,7 +95,11 @@ static void nfs4_evict_inode(struct inode *inode)
 	nfs_inode_return_delegation_noreclaim(inode);
 	/* Note that above delegreturn would trigger pnfs return-on-close */
 	pnfs_return_layout(inode);
+<<<<<<< HEAD
 	pnfs_destroy_layout(NFS_I(inode));
+=======
+	pnfs_destroy_layout_final(NFS_I(inode));
+>>>>>>> origin/android16-base
 	/* First call standard NFS clear_inode() code */
 	nfs_clear_inode(inode);
 }

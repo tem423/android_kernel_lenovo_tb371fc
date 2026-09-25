@@ -6061,6 +6061,10 @@ static int nv_probe(struct pci_dev *pci_dev, const struct pci_device_id *id)
 	return 0;
 
 out_error:
+<<<<<<< HEAD
+=======
+	nv_mgmt_release_sema(dev);
+>>>>>>> origin/android16-base
 	if (phystate_orig)
 		writel(phystate|NVREG_ADAPTCTL_RUNNING, base + NvRegAdapterControl);
 out_freering:

@@ -126,15 +126,29 @@ EXPORT_SYMBOL(snd_seq_dump_var_event);
  * expand the variable length event to linear buffer space.
  */
 
+<<<<<<< HEAD
 static int seq_copy_in_kernel(char **bufptr, const void *src, int size)
 {
+=======
+static int seq_copy_in_kernel(void *ptr, void *src, int size)
+{
+	char **bufptr = ptr;
+
+>>>>>>> origin/android16-base
 	memcpy(*bufptr, src, size);
 	*bufptr += size;
 	return 0;
 }
 
+<<<<<<< HEAD
 static int seq_copy_in_user(char __user **bufptr, const void *src, int size)
 {
+=======
+static int seq_copy_in_user(void *ptr, void *src, int size)
+{
+	char __user **bufptr = ptr;
+
+>>>>>>> origin/android16-base
 	if (copy_to_user(*bufptr, src, size))
 		return -EFAULT;
 	*bufptr += size;
@@ -163,8 +177,12 @@ int snd_seq_expand_var_event(const struct snd_seq_event *event, int count, char 
 		return newlen;
 	}
 	err = snd_seq_dump_var_event(event,
+<<<<<<< HEAD
 				     in_kernel ? (snd_seq_dump_func_t)seq_copy_in_kernel :
 				     (snd_seq_dump_func_t)seq_copy_in_user,
+=======
+				     in_kernel ? seq_copy_in_kernel : seq_copy_in_user,
+>>>>>>> origin/android16-base
 				     &buf);
 	return err < 0 ? err : newlen;
 }

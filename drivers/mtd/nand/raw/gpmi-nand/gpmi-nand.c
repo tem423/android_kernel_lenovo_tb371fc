@@ -612,6 +612,7 @@ static int gpmi_get_clks(struct gpmi_nand_data *this)
 		r->clock[i] = clk;
 	}
 
+<<<<<<< HEAD
 	if (GPMI_IS_MX6(this))
 		/*
 		 * Set the default value for the gpmi clock.
@@ -621,6 +622,8 @@ static int gpmi_get_clks(struct gpmi_nand_data *this)
 		 */
 		clk_set_rate(r->clock[0], 22000000);
 
+=======
+>>>>>>> origin/android16-base
 	return 0;
 
 err_clock:
@@ -1931,7 +1934,11 @@ static int gpmi_nand_init(struct gpmi_nand_data *this)
 	this->bch_geometry.auxiliary_size = 128;
 	ret = gpmi_alloc_dma_buffer(this);
 	if (ret)
+<<<<<<< HEAD
 		goto err_out;
+=======
+		return ret;
+>>>>>>> origin/android16-base
 
 	chip->dummy_controller.ops = &gpmi_nand_controller_ops;
 	ret = nand_scan(chip, GPMI_IS_MX6(this) ? 2 : 1);

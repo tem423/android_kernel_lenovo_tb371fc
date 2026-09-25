@@ -1429,6 +1429,10 @@ module_init(ioat_init_module);
 static void __exit ioat_exit_module(void)
 {
 	pci_unregister_driver(&ioat_pci_driver);
+<<<<<<< HEAD
+=======
+	kmem_cache_destroy(ioat_sed_cache);
+>>>>>>> origin/android16-base
 	kmem_cache_destroy(ioat_cache);
 }
 module_exit(ioat_exit_module);

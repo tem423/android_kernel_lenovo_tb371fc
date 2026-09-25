@@ -1341,7 +1341,11 @@ int main(int argc, char *argv[])
 	if (opt_list && opt_list_mapcnt)
 		kpagecount_fd = checked_open(PROC_KPAGECOUNT, O_RDONLY);
 
+<<<<<<< HEAD
 	if (opt_mark_idle && opt_file)
+=======
+	if (opt_mark_idle)
+>>>>>>> origin/android16-base
 		page_idle_fd = checked_open(SYS_KERNEL_MM_PAGE_IDLE, O_RDWR);
 
 	if (opt_list && opt_pid)

@@ -319,7 +319,10 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_BATT_PROFILE_VERSION,
 	POWER_SUPPLY_PROP_BATT_FULL_CURRENT,
 	POWER_SUPPLY_PROP_RECHARGE_SOC,
+<<<<<<< HEAD
 	POWER_SUPPLY_PROP_RECHARGE_MV,
+=======
+>>>>>>> origin/android16-base
 	POWER_SUPPLY_PROP_HVDCP_OPTI_ALLOWED,
 	POWER_SUPPLY_PROP_SMB_EN_MODE,
 	POWER_SUPPLY_PROP_SMB_EN_REASON,
@@ -351,10 +354,13 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_VOLTAGE_STEP,
 	POWER_SUPPLY_PROP_APSD_RERUN,
 	POWER_SUPPLY_PROP_APSD_TIMEOUT,
+<<<<<<< HEAD
 	POWER_SUPPLY_PROP_ELAPSED_MONTHS,
 	POWER_SUPPLY_PROP_GAUGE_VOLTAGE,
 	POWER_SUPPLY_PROP_BATTERY_MAINTENANCE,
 	POWER_SUPPLY_PROP_BATTERY_MAINTENANCE_SET,
+=======
+>>>>>>> origin/android16-base
 	/* Charge pump properties */
 	POWER_SUPPLY_PROP_CP_STATUS1,
 	POWER_SUPPLY_PROP_CP_STATUS2,
@@ -410,7 +416,10 @@ enum power_supply_type {
 	POWER_SUPPLY_TYPE_UFP,			/* Type-C UFP */
 	POWER_SUPPLY_TYPE_DFP,			/* Type-C DFP */
 	POWER_SUPPLY_TYPE_CHARGE_PUMP,		/* Charge Pump */
+<<<<<<< HEAD
 	POWER_SUPPLY_TYPE_POGO,                 /* POGOPIN */
+=======
+>>>>>>> origin/android16-base
 };
 
 enum power_supply_usb_type {
@@ -625,8 +634,14 @@ extern int power_supply_get_battery_info(struct power_supply *psy,
 					 struct power_supply_battery_info *info);
 extern void power_supply_changed(struct power_supply *psy);
 extern int power_supply_am_i_supplied(struct power_supply *psy);
+<<<<<<< HEAD
 extern int power_supply_set_input_current_limit_from_supplier(
 					 struct power_supply *psy);
+=======
+int power_supply_get_property_from_supplier(struct power_supply *psy,
+					    enum power_supply_property psp,
+					    union power_supply_propval *val);
+>>>>>>> origin/android16-base
 extern int power_supply_set_battery_charged(struct power_supply *psy);
 
 #ifdef CONFIG_POWER_SUPPLY

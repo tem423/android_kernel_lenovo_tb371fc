@@ -870,6 +870,10 @@ static int redriver_i2c_probe(struct i2c_client *client,
 			&redriver->panic_nb);
 
 	ssusb_redriver_debugfs_entries(redriver);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 	dev_dbg(&client->dev, "USB 3.1 Gen1/Gen2 Re-Driver Probed.\n");
 
 	return 0;

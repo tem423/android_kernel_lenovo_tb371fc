@@ -35,8 +35,14 @@ void autofs_catatonic_mode(struct autofs_sb_info *sbi)
 		wq->status = -ENOENT; /* Magic is gone - report failure */
 		kfree(wq->name.name);
 		wq->name.name = NULL;
+<<<<<<< HEAD
 		wq->wait_ctr--;
 		wake_up_interruptible(&wq->queue);
+=======
+		wake_up_interruptible(&wq->queue);
+		if (!--wq->wait_ctr)
+			kfree(wq);
+>>>>>>> origin/android16-base
 		wq = nwq;
 	}
 	fput(sbi->pipe);	/* Close the pipe */

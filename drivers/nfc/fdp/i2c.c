@@ -273,6 +273,12 @@ static void fdp_nci_i2c_read_device_properties(struct device *dev,
 					   len, sizeof(**fw_vsc_cfg),
 					   GFP_KERNEL);
 
+<<<<<<< HEAD
+=======
+		if (!*fw_vsc_cfg)
+			goto alloc_err;
+
+>>>>>>> origin/android16-base
 		r = device_property_read_u8_array(dev, FDP_DP_FW_VSC_CFG_NAME,
 						  *fw_vsc_cfg, len);
 
@@ -286,6 +292,10 @@ vsc_read_err:
 		*fw_vsc_cfg = NULL;
 	}
 
+<<<<<<< HEAD
+=======
+alloc_err:
+>>>>>>> origin/android16-base
 	dev_dbg(dev, "Clock type: %d, clock frequency: %d, VSC: %s",
 		*clock_type, *clock_freq, *fw_vsc_cfg != NULL ? "yes" : "no");
 }

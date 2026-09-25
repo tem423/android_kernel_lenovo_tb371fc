@@ -439,7 +439,11 @@ static const struct ocotp_params imx6sl_params = {
 };
 
 static const struct ocotp_params imx6sll_params = {
+<<<<<<< HEAD
 	.nregs = 128,
+=======
+	.nregs = 80,
+>>>>>>> origin/android16-base
 	.bank_address_words = 0,
 	.set_timing = imx_ocotp_set_imx6_timing,
 };
@@ -451,7 +455,11 @@ static const struct ocotp_params imx6sx_params = {
 };
 
 static const struct ocotp_params imx6ul_params = {
+<<<<<<< HEAD
 	.nregs = 128,
+=======
+	.nregs = 144,
+>>>>>>> origin/android16-base
 	.bank_address_words = 0,
 	.set_timing = imx_ocotp_set_imx6_timing,
 };

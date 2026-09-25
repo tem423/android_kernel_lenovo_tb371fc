@@ -1862,7 +1862,11 @@ static int delta_probe(struct platform_device *pdev)
 	if (ret) {
 		dev_err(delta->dev, "%s failed to initialize firmware ipc channel\n",
 			DELTA_PREFIX);
+<<<<<<< HEAD
 		goto err;
+=======
+		goto err_pm_disable;
+>>>>>>> origin/android16-base
 	}
 
 	/* register all available decoders */
@@ -1876,7 +1880,11 @@ static int delta_probe(struct platform_device *pdev)
 	if (ret) {
 		dev_err(delta->dev, "%s failed to register V4L2 device\n",
 			DELTA_PREFIX);
+<<<<<<< HEAD
 		goto err;
+=======
+		goto err_pm_disable;
+>>>>>>> origin/android16-base
 	}
 
 	delta->work_queue = create_workqueue(DELTA_NAME);
@@ -1901,6 +1909,11 @@ err_work_queue:
 	destroy_workqueue(delta->work_queue);
 err_v4l2:
 	v4l2_device_unregister(&delta->v4l2_dev);
+<<<<<<< HEAD
+=======
+err_pm_disable:
+	pm_runtime_disable(dev);
+>>>>>>> origin/android16-base
 err:
 	return ret;
 }

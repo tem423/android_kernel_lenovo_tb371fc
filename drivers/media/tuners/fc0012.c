@@ -504,7 +504,11 @@ err:
 
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(fc0012_attach);
+=======
+EXPORT_SYMBOL_GPL(fc0012_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("Fitipower FC0012 silicon tuner driver");
 MODULE_AUTHOR("Hans-Frieder Vogt <hfvogt@gmx.net>");

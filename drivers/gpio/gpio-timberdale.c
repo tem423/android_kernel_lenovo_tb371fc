@@ -55,9 +55,16 @@ static int timbgpio_update_bit(struct gpio_chip *gpio, unsigned index,
 	unsigned offset, bool enabled)
 {
 	struct timbgpio *tgpio = gpiochip_get_data(gpio);
+<<<<<<< HEAD
 	u32 reg;
 
 	spin_lock(&tgpio->lock);
+=======
+	unsigned long flags;
+	u32 reg;
+
+	spin_lock_irqsave(&tgpio->lock, flags);
+>>>>>>> origin/android16-base
 	reg = ioread32(tgpio->membase + offset);
 
 	if (enabled)
@@ -66,7 +73,11 @@ static int timbgpio_update_bit(struct gpio_chip *gpio, unsigned index,
 		reg &= ~(1 << index);
 
 	iowrite32(reg, tgpio->membase + offset);
+<<<<<<< HEAD
 	spin_unlock(&tgpio->lock);
+=======
+	spin_unlock_irqrestore(&tgpio->lock, flags);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

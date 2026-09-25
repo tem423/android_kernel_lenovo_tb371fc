@@ -15,6 +15,10 @@ obj-$(CONFIG_IIO_TRIGGERED_EVENT) += industrialio-triggered-event.o
 
 obj-y += accel/
 obj-y += adc/
+<<<<<<< HEAD
+=======
+obj-y += addac/
+>>>>>>> origin/android16-base
 obj-y += afe/
 obj-y += amplifiers/
 obj-y += buffer/

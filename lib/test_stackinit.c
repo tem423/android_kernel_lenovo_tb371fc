@@ -67,10 +67,17 @@ static bool range_contains(char *haystack_start, size_t haystack_size,
 #define INIT_STRUCT_none		/**/
 #define INIT_STRUCT_zero		= { }
 #define INIT_STRUCT_static_partial	= { .two = 0, }
+<<<<<<< HEAD
 #define INIT_STRUCT_static_all		= { .one = arg->one,		\
 					    .two = arg->two,		\
 					    .three = arg->three,	\
 					    .four = arg->four,		\
+=======
+#define INIT_STRUCT_static_all		= { .one = 0,			\
+					    .two = 0,			\
+					    .three = 0,			\
+					    .four = 0,			\
+>>>>>>> origin/android16-base
 					}
 #define INIT_STRUCT_dynamic_partial	= { .two = arg->two, }
 #define INIT_STRUCT_dynamic_all		= { .one = arg->one,		\
@@ -84,8 +91,12 @@ static bool range_contains(char *haystack_start, size_t haystack_size,
 					var.one = 0;			\
 					var.two = 0;			\
 					var.three = 0;			\
+<<<<<<< HEAD
 					memset(&var.four, 0,		\
 					       sizeof(var.four))
+=======
+					var.four = 0
+>>>>>>> origin/android16-base
 
 /*
  * @name: unique string name for the test
@@ -210,18 +221,26 @@ struct test_small_hole {
 	unsigned long four;
 };
 
+<<<<<<< HEAD
 /* Try to trigger unhandled padding in a structure. */
 struct test_aligned {
 	u32 internal1;
 	u64 internal2;
 } __aligned(64);
 
+=======
+/* Trigger unhandled padding in a structure. */
+>>>>>>> origin/android16-base
 struct test_big_hole {
 	u8 one;
 	u8 two;
 	u8 three;
 	/* 61 byte padding hole here. */
+<<<<<<< HEAD
 	struct test_aligned four;
+=======
+	u8 four __aligned(64);
+>>>>>>> origin/android16-base
 } __aligned(64);
 
 struct test_trailing_hole {

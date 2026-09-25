@@ -705,9 +705,19 @@ int xs_watch_msg(struct xs_watch_event *event)
 
 	spin_lock(&watches_lock);
 	event->handle = find_watch(event->token);
+<<<<<<< HEAD
 	if (event->handle != NULL) {
 		spin_lock(&watch_events_lock);
 		list_add_tail(&event->list, &watch_events);
+=======
+	if (event->handle != NULL &&
+			(!event->handle->will_handle ||
+			 event->handle->will_handle(event->handle,
+				 event->path, event->token))) {
+		spin_lock(&watch_events_lock);
+		list_add_tail(&event->list, &watch_events);
+		event->handle->nr_pending++;
+>>>>>>> origin/android16-base
 		wake_up(&watch_events_waitq);
 		spin_unlock(&watch_events_lock);
 	} else
@@ -765,6 +775,11 @@ int register_xenbus_watch(struct xenbus_watch *watch)
 
 	sprintf(token, "%lX", (long)watch);
 
+<<<<<<< HEAD
+=======
+	watch->nr_pending = 0;
+
+>>>>>>> origin/android16-base
 	down_read(&xs_watch_rwsem);
 
 	spin_lock(&watches_lock);
@@ -814,11 +829,22 @@ void unregister_xenbus_watch(struct xenbus_watch *watch)
 
 	/* Cancel pending watch events. */
 	spin_lock(&watch_events_lock);
+<<<<<<< HEAD
 	list_for_each_entry_safe(event, tmp, &watch_events, list) {
 		if (event->handle != watch)
 			continue;
 		list_del(&event->list);
 		kfree(event);
+=======
+	if (watch->nr_pending) {
+		list_for_each_entry_safe(event, tmp, &watch_events, list) {
+			if (event->handle != watch)
+				continue;
+			list_del(&event->list);
+			kfree(event);
+		}
+		watch->nr_pending = 0;
+>>>>>>> origin/android16-base
 	}
 	spin_unlock(&watch_events_lock);
 
@@ -865,7 +891,10 @@ void xs_suspend_cancel(void)
 
 static int xenwatch_thread(void *unused)
 {
+<<<<<<< HEAD
 	struct list_head *ent;
+=======
+>>>>>>> origin/android16-base
 	struct xs_watch_event *event;
 
 	xenwatch_pid = current->pid;
@@ -880,6 +909,7 @@ static int xenwatch_thread(void *unused)
 		mutex_lock(&xenwatch_mutex);
 
 		spin_lock(&watch_events_lock);
+<<<<<<< HEAD
 		ent = watch_events.next;
 		if (ent != &watch_events)
 			list_del(ent);
@@ -887,6 +917,17 @@ static int xenwatch_thread(void *unused)
 
 		if (ent != &watch_events) {
 			event = list_entry(ent, struct xs_watch_event, list);
+=======
+		event = list_first_entry_or_null(&watch_events,
+				struct xs_watch_event, list);
+		if (event) {
+			list_del(&event->list);
+			event->handle->nr_pending--;
+		}
+		spin_unlock(&watch_events_lock);
+
+		if (event) {
+>>>>>>> origin/android16-base
 			event->handle->callback(event->handle, event->path,
 						event->token);
 			kfree(event);

@@ -55,6 +55,12 @@
 
 /* J9 */
 &pcie0 {
+<<<<<<< HEAD
+=======
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie_reset_pins &pcie_clkreq_pins>;
+	reset-gpios = <&gpiosb 3 GPIO_ACTIVE_LOW>;
+>>>>>>> origin/android16-base
 	status = "okay";
 };
 

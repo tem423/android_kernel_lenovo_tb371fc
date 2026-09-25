@@ -169,6 +169,10 @@ DEFINE_EVENT(
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/infiniband/sw/rdmavt
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #define TRACE_INCLUDE_FILE trace_mr
 #include <trace/define_trace.h>

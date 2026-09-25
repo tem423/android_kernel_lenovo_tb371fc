@@ -366,7 +366,11 @@ void mdp5_smp_dump(struct mdp5_smp *smp, struct drm_printer *p)
 
 			drm_printf(p, "%s:%d\t%d\t%s\n",
 				pipe2name(pipe), j, inuse,
+<<<<<<< HEAD
 				plane ? plane->name : NULL);
+=======
+				plane ? plane->name : "(null)");
+>>>>>>> origin/android16-base
 
 			total += inuse;
 		}

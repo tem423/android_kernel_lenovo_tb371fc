@@ -1180,6 +1180,11 @@ static int wm8997_probe(struct platform_device *pdev)
 		goto err_spk_irqs;
 	}
 
+<<<<<<< HEAD
+=======
+	return ret;
+
+>>>>>>> origin/android16-base
 err_spk_irqs:
 	arizona_free_spk_irqs(arizona);
 

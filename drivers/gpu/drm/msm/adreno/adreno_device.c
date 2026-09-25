@@ -190,8 +190,16 @@ struct msm_gpu *adreno_load_gpu(struct drm_device *dev)
 	if (ret)
 		return NULL;
 
+<<<<<<< HEAD
 	/* Make sure pm runtime is active and reset any previous errors */
 	pm_runtime_set_active(&pdev->dev);
+=======
+	/*
+	 * Now that we have firmware loaded, and are ready to begin
+	 * booting the gpu, go ahead and enable runpm:
+	 */
+	pm_runtime_enable(&pdev->dev);
+>>>>>>> origin/android16-base
 
 	ret = pm_runtime_get_sync(&pdev->dev);
 	if (ret < 0) {

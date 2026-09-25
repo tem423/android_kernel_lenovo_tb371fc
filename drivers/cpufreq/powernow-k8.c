@@ -881,9 +881,15 @@ static int get_transition_latency(struct powernow_k8_data *data)
 
 /* Take a frequency, and issue the fid/vid transition command */
 static int transition_frequency_fidvid(struct powernow_k8_data *data,
+<<<<<<< HEAD
 		unsigned int index)
 {
 	struct cpufreq_policy *policy;
+=======
+		unsigned int index,
+		struct cpufreq_policy *policy)
+{
+>>>>>>> origin/android16-base
 	u32 fid = 0;
 	u32 vid = 0;
 	int res;
@@ -915,9 +921,12 @@ static int transition_frequency_fidvid(struct powernow_k8_data *data,
 	freqs.old = find_khz_freq_from_fid(data->currfid);
 	freqs.new = find_khz_freq_from_fid(fid);
 
+<<<<<<< HEAD
 	policy = cpufreq_cpu_get(smp_processor_id());
 	cpufreq_cpu_put(policy);
 
+=======
+>>>>>>> origin/android16-base
 	cpufreq_freq_transition_begin(policy, &freqs);
 	res = transition_fid_vid(data, fid, vid);
 	cpufreq_freq_transition_end(policy, &freqs, res);
@@ -972,7 +981,11 @@ static long powernowk8_target_fn(void *arg)
 
 	powernow_k8_acpi_pst_values(data, newstate);
 
+<<<<<<< HEAD
 	ret = transition_frequency_fidvid(data, newstate);
+=======
+	ret = transition_frequency_fidvid(data, newstate, pol);
+>>>>>>> origin/android16-base
 
 	if (ret) {
 		pr_err("transition frequency failed\n");
@@ -1107,7 +1120,12 @@ static int powernowk8_cpu_exit(struct cpufreq_policy *pol)
 
 	kfree(data->powernow_table);
 	kfree(data);
+<<<<<<< HEAD
 	for_each_cpu(cpu, pol->cpus)
+=======
+	/* pol->cpus will be empty here, use related_cpus instead. */
+	for_each_cpu(cpu, pol->related_cpus)
+>>>>>>> origin/android16-base
 		per_cpu(powernow_data, cpu) = NULL;
 
 	return 0;

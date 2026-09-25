@@ -1,7 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0
 config PPC64
 	bool "64-bit kernel"
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	select ZLIB_DEFLATE
 	help
 	  This option selects whether a 32-bit or a 64-bit kernel
@@ -134,11 +137,19 @@ config POWER9_CPU
 
 config E5500_CPU
 	bool "Freescale e5500"
+<<<<<<< HEAD
 	depends on E500
 
 config E6500_CPU
 	bool "Freescale e6500"
 	depends on E500
+=======
+	depends on PPC64 && E500
+
+config E6500_CPU
+	bool "Freescale e6500"
+	depends on PPC64 && E500
+>>>>>>> origin/android16-base
 
 config 860_CPU
 	bool "8xx family"
@@ -368,7 +379,10 @@ config PPC_MM_SLICES
 	bool
 	default y if PPC_BOOK3S_64
 	default y if PPC_8xx && HUGETLB_PAGE
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 
 config PPC_HAVE_PMU_SUPPORT
        bool
@@ -382,7 +396,10 @@ config PPC_PERF_CTRS
 config FORCE_SMP
 	# Allow platforms to force SMP=y by selecting this
 	bool
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 	select SMP
 
 config SMP
@@ -423,7 +440,10 @@ config CHECK_CACHE_COHERENCY
 
 config PPC_DOORBELL
 	bool
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/android16-base
 
 endmenu
 

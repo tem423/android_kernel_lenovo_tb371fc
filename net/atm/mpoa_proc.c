@@ -222,11 +222,19 @@ static ssize_t proc_mpc_write(struct file *file, const char __user *buff,
 	if (!page)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	for (p = page, len = 0; len < nbytes; p++, len++) {
+=======
+	for (p = page, len = 0; len < nbytes; p++) {
+>>>>>>> origin/android16-base
 		if (get_user(*p, buff++)) {
 			free_page((unsigned long)page);
 			return -EFAULT;
 		}
+<<<<<<< HEAD
+=======
+		len += 1;
+>>>>>>> origin/android16-base
 		if (*p == '\0' || *p == '\n')
 			break;
 	}

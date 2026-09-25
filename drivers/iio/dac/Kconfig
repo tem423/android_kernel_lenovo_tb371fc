@@ -335,6 +335,10 @@ config STM32_DAC
 
 config STM32_DAC_CORE
 	tristate
+<<<<<<< HEAD
+=======
+	select REGMAP_MMIO
+>>>>>>> origin/android16-base
 
 config TI_DAC082S085
 	tristate "Texas Instruments 8/10/12-bit 2/4-channel DAC driver"

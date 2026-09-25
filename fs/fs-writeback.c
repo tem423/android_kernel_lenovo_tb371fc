@@ -512,9 +512,20 @@ static void inode_switch_wbs(struct inode *inode, int new_wb_id)
 	/* find and pin the new wb */
 	rcu_read_lock();
 	memcg_css = css_from_id(new_wb_id, &memory_cgrp_subsys);
+<<<<<<< HEAD
 	if (memcg_css)
 		isw->new_wb = wb_get_create(bdi, memcg_css, GFP_ATOMIC);
 	rcu_read_unlock();
+=======
+	if (memcg_css && !css_tryget(memcg_css))
+		memcg_css = NULL;
+	rcu_read_unlock();
+	if (!memcg_css)
+		goto out_free;
+
+	isw->new_wb = wb_get_create(bdi, memcg_css, GFP_ATOMIC);
+	css_put(memcg_css);
+>>>>>>> origin/android16-base
 	if (!isw->new_wb)
 		goto out_free;
 
@@ -697,7 +708,11 @@ void wbc_detach_inode(struct writeback_control *wbc)
 		 * is okay.  The main goal is avoiding keeping an inode on
 		 * the wrong wb for an extended period of time.
 		 */
+<<<<<<< HEAD
 		if (hweight32(history) > WB_FRN_HIST_THR_SLOTS)
+=======
+		if (hweight16(history) > WB_FRN_HIST_THR_SLOTS)
+>>>>>>> origin/android16-base
 			inode_switch_wbs(inode, max_id);
 	}
 
@@ -1393,11 +1408,28 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 	}
 
 	/*
+<<<<<<< HEAD
+=======
+	 * If the inode has dirty timestamps and we need to write them, call
+	 * mark_inode_dirty_sync() to notify the filesystem about it and to
+	 * change I_DIRTY_TIME into I_DIRTY_SYNC.
+	 */
+	if ((inode->i_state & I_DIRTY_TIME) &&
+	    (wbc->sync_mode == WB_SYNC_ALL || wbc->for_sync ||
+	     time_after(jiffies, inode->dirtied_time_when +
+			dirtytime_expire_interval * HZ))) {
+		trace_writeback_lazytime(inode);
+		mark_inode_dirty_sync(inode);
+	}
+
+	/*
+>>>>>>> origin/android16-base
 	 * Some filesystems may redirty the inode during the writeback
 	 * due to delalloc, clear dirty metadata flags right before
 	 * write_inode()
 	 */
 	spin_lock(&inode->i_lock);
+<<<<<<< HEAD
 
 	dirty = inode->i_state & I_DIRTY;
 	if ((inode->i_state & I_DIRTY_TIME) &&
@@ -1408,6 +1440,9 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 		dirty |= I_DIRTY_TIME;
 		trace_writeback_lazytime(inode);
 	}
+=======
+	dirty = inode->i_state & I_DIRTY;
+>>>>>>> origin/android16-base
 	inode->i_state &= ~dirty;
 
 	/*
@@ -1428,8 +1463,11 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 
 	spin_unlock(&inode->i_lock);
 
+<<<<<<< HEAD
 	if (dirty & I_DIRTY_TIME)
 		mark_inode_dirty_sync(inode);
+=======
+>>>>>>> origin/android16-base
 	/* Don't write the inode if only I_DIRTY_PAGES was set */
 	if (dirty & ~I_DIRTY_PAGES) {
 		int err = write_inode(inode, wbc);
@@ -1561,11 +1599,19 @@ static long writeback_sb_inodes(struct super_block *sb,
 	};
 	unsigned long start_time = jiffies;
 	long write_chunk;
+<<<<<<< HEAD
 	long wrote = 0;  /* count both pages and inodes */
+=======
+	long total_wrote = 0;  /* count both pages and inodes */
+>>>>>>> origin/android16-base
 
 	while (!list_empty(&wb->b_io)) {
 		struct inode *inode = wb_inode(wb->b_io.prev);
 		struct bdi_writeback *tmp_wb;
+<<<<<<< HEAD
+=======
+		long wrote;
+>>>>>>> origin/android16-base
 
 		if (inode->i_sb != sb) {
 			if (work->sb) {
@@ -1641,7 +1687,13 @@ static long writeback_sb_inodes(struct super_block *sb,
 
 		wbc_detach_inode(&wbc);
 		work->nr_pages -= write_chunk - wbc.nr_to_write;
+<<<<<<< HEAD
 		wrote += write_chunk - wbc.nr_to_write;
+=======
+		wrote = write_chunk - wbc.nr_to_write - wbc.pages_skipped;
+		wrote = wrote < 0 ? 0 : wrote;
+		total_wrote += wrote;
+>>>>>>> origin/android16-base
 
 		if (need_resched()) {
 			/*
@@ -1663,7 +1715,11 @@ static long writeback_sb_inodes(struct super_block *sb,
 		tmp_wb = inode_to_wb_and_lock_list(inode);
 		spin_lock(&inode->i_lock);
 		if (!(inode->i_state & I_DIRTY_ALL))
+<<<<<<< HEAD
 			wrote++;
+=======
+			total_wrote++;
+>>>>>>> origin/android16-base
 		requeue_inode(inode, tmp_wb, &wbc);
 		inode_sync_complete(inode);
 		spin_unlock(&inode->i_lock);
@@ -1677,14 +1733,22 @@ static long writeback_sb_inodes(struct super_block *sb,
 		 * bail out to wb_writeback() often enough to check
 		 * background threshold and other termination conditions.
 		 */
+<<<<<<< HEAD
 		if (wrote) {
+=======
+		if (total_wrote) {
+>>>>>>> origin/android16-base
 			if (time_is_before_jiffies(start_time + HZ / 10UL))
 				break;
 			if (work->nr_pages <= 0)
 				break;
 		}
 	}
+<<<<<<< HEAD
 	return wrote;
+=======
+	return total_wrote;
+>>>>>>> origin/android16-base
 }
 
 static long __writeback_inodes_wb(struct bdi_writeback *wb,
@@ -1984,7 +2048,11 @@ void wb_workfn(struct work_struct *work)
 						struct bdi_writeback, dwork);
 	long pages_written;
 
+<<<<<<< HEAD
 	set_worker_desc("flush-%s", dev_name(wb->bdi->dev));
+=======
+	set_worker_desc("flush-%s", bdi_dev_name(wb->bdi));
+>>>>>>> origin/android16-base
 	current->flags |= PF_SWAPWRITE;
 
 	if (likely(!current_is_workqueue_rescuer() ||
@@ -2113,6 +2181,7 @@ int dirtytime_interval_handler(struct ctl_table *table, int write,
 	return ret;
 }
 
+<<<<<<< HEAD
 static noinline void block_dump___mark_inode_dirty(struct inode *inode)
 {
 	if (inode->i_ino || strcmp(inode->i_sb->s_id, "bdev")) {
@@ -2135,6 +2204,8 @@ static noinline void block_dump___mark_inode_dirty(struct inode *inode)
 	}
 }
 
+=======
+>>>>>>> origin/android16-base
 /**
  * __mark_inode_dirty -	internal function
  *
@@ -2194,9 +2265,12 @@ void __mark_inode_dirty(struct inode *inode, int flags)
 	    (dirtytime && (inode->i_state & I_DIRTY_INODE)))
 		return;
 
+<<<<<<< HEAD
 	if (unlikely(block_dump))
 		block_dump___mark_inode_dirty(inode);
 
+=======
+>>>>>>> origin/android16-base
 	spin_lock(&inode->i_lock);
 	if (dirtytime && (inode->i_state & I_DIRTY_INODE))
 		goto out_unlock_inode;

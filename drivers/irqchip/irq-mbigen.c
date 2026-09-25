@@ -75,6 +75,23 @@ struct mbigen_device {
 	void __iomem		*base;
 };
 
+<<<<<<< HEAD
+=======
+static inline unsigned int get_mbigen_node_offset(unsigned int nid)
+{
+	unsigned int offset = nid * MBIGEN_NODE_OFFSET;
+
+	/*
+	 * To avoid touched clear register in unexpected way, we need to directly
+	 * skip clear register when access to more than 10 mbigen nodes.
+	 */
+	if (nid >= (REG_MBIGEN_CLEAR_OFFSET / MBIGEN_NODE_OFFSET))
+		offset += MBIGEN_NODE_OFFSET;
+
+	return offset;
+}
+
+>>>>>>> origin/android16-base
 static inline unsigned int get_mbigen_vec_reg(irq_hw_number_t hwirq)
 {
 	unsigned int nid, pin;
@@ -83,8 +100,12 @@ static inline unsigned int get_mbigen_vec_reg(irq_hw_number_t hwirq)
 	nid = hwirq / IRQS_PER_MBIGEN_NODE + 1;
 	pin = hwirq % IRQS_PER_MBIGEN_NODE;
 
+<<<<<<< HEAD
 	return pin * 4 + nid * MBIGEN_NODE_OFFSET
 			+ REG_MBIGEN_VEC_OFFSET;
+=======
+	return pin * 4 + get_mbigen_node_offset(nid) + REG_MBIGEN_VEC_OFFSET;
+>>>>>>> origin/android16-base
 }
 
 static inline void get_mbigen_type_reg(irq_hw_number_t hwirq,
@@ -99,8 +120,12 @@ static inline void get_mbigen_type_reg(irq_hw_number_t hwirq,
 	*mask = 1 << (irq_ofst % 32);
 	ofst = irq_ofst / 32 * 4;
 
+<<<<<<< HEAD
 	*addr = ofst + nid * MBIGEN_NODE_OFFSET
 		+ REG_MBIGEN_TYPE_OFFSET;
+=======
+	*addr = ofst + get_mbigen_node_offset(nid) + REG_MBIGEN_TYPE_OFFSET;
+>>>>>>> origin/android16-base
 }
 
 static inline void get_mbigen_clear_reg(irq_hw_number_t hwirq,

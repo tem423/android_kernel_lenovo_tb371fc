@@ -244,11 +244,19 @@ static inline void ath9k_skb_queue_complete(struct hif_device_usb *hif_dev,
 		ath9k_htc_txcompletion_cb(hif_dev->htc_handle,
 					  skb, txok);
 		if (txok) {
+<<<<<<< HEAD
 			TX_STAT_INC(skb_success);
 			TX_STAT_ADD(skb_success_bytes, ln);
 		}
 		else
 			TX_STAT_INC(skb_failed);
+=======
+			TX_STAT_INC(hif_dev, skb_success);
+			TX_STAT_ADD(hif_dev, skb_success_bytes, ln);
+		}
+		else
+			TX_STAT_INC(hif_dev, skb_failed);
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -302,7 +310,11 @@ static void hif_usb_tx_cb(struct urb *urb)
 	hif_dev->tx.tx_buf_cnt++;
 	if (!(hif_dev->tx.flags & HIF_USB_TX_STOP))
 		__hif_usb_tx(hif_dev); /* Check for pending SKBs */
+<<<<<<< HEAD
 	TX_STAT_INC(buf_completed);
+=======
+	TX_STAT_INC(hif_dev, buf_completed);
+>>>>>>> origin/android16-base
 	spin_unlock(&hif_dev->tx.tx_lock);
 }
 
@@ -353,7 +365,11 @@ static int __hif_usb_tx(struct hif_device_usb *hif_dev)
 			tx_buf->len += tx_buf->offset;
 
 		__skb_queue_tail(&tx_buf->skb_queue, nskb);
+<<<<<<< HEAD
 		TX_STAT_INC(skb_queued);
+=======
+		TX_STAT_INC(hif_dev, skb_queued);
+>>>>>>> origin/android16-base
 	}
 
 	usb_fill_bulk_urb(tx_buf->urb, hif_dev->udev,
@@ -368,11 +384,18 @@ static int __hif_usb_tx(struct hif_device_usb *hif_dev)
 		__skb_queue_head_init(&tx_buf->skb_queue);
 		list_move_tail(&tx_buf->list, &hif_dev->tx.tx_buf);
 		hif_dev->tx.tx_buf_cnt++;
+<<<<<<< HEAD
 	}
 
 	if (!ret)
 		TX_STAT_INC(buf_queued);
 
+=======
+	} else {
+		TX_STAT_INC(hif_dev, buf_queued);
+	}
+
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -515,7 +538,11 @@ static void hif_usb_sta_drain(void *hif_handle, u8 idx)
 			ath9k_htc_txcompletion_cb(hif_dev->htc_handle,
 						  skb, false);
 			hif_dev->tx.tx_skb_cnt--;
+<<<<<<< HEAD
 			TX_STAT_INC(skb_failed);
+=======
+			TX_STAT_INC(hif_dev, skb_failed);
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -535,6 +562,27 @@ static struct ath9k_htc_hif hif_usb = {
 	.send = hif_usb_send,
 };
 
+<<<<<<< HEAD
+=======
+/* Need to free remain_skb allocated in ath9k_hif_usb_rx_stream
+ * in case ath9k_hif_usb_rx_stream wasn't called next time to
+ * process the buffer and subsequently free it.
+ */
+static void ath9k_hif_usb_free_rx_remain_skb(struct hif_device_usb *hif_dev)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&hif_dev->rx_lock, flags);
+	if (hif_dev->remain_skb) {
+		dev_kfree_skb_any(hif_dev->remain_skb);
+		hif_dev->remain_skb = NULL;
+		hif_dev->rx_remain_len = 0;
+		RX_STAT_INC(hif_dev, skb_dropped);
+	}
+	spin_unlock_irqrestore(&hif_dev->rx_lock, flags);
+}
+
+>>>>>>> origin/android16-base
 static void ath9k_hif_usb_rx_stream(struct hif_device_usb *hif_dev,
 				    struct sk_buff *skb)
 {
@@ -562,11 +610,19 @@ static void ath9k_hif_usb_rx_stream(struct hif_device_usb *hif_dev,
 			memcpy(ptr, skb->data, rx_remain_len);
 
 			rx_pkt_len += rx_remain_len;
+<<<<<<< HEAD
 			hif_dev->rx_remain_len = 0;
 			skb_put(remain_skb, rx_pkt_len);
 
 			skb_pool[pool_index++] = remain_skb;
 
+=======
+			skb_put(remain_skb, rx_pkt_len);
+
+			skb_pool[pool_index++] = remain_skb;
+			hif_dev->remain_skb = NULL;
+			hif_dev->rx_remain_len = 0;
+>>>>>>> origin/android16-base
 		} else {
 			index = rx_remain_len;
 		}
@@ -585,9 +641,27 @@ static void ath9k_hif_usb_rx_stream(struct hif_device_usb *hif_dev,
 		pkt_len = get_unaligned_le16(ptr + index);
 		pkt_tag = get_unaligned_le16(ptr + index + 2);
 
+<<<<<<< HEAD
 		if (pkt_tag != ATH_USB_RX_STREAM_MODE_TAG) {
 			RX_STAT_INC(skb_dropped);
 			return;
+=======
+		/* It is supposed that if we have an invalid pkt_tag or
+		 * pkt_len then the whole input SKB is considered invalid
+		 * and dropped; the associated packets already in skb_pool
+		 * are dropped, too.
+		 */
+		if (pkt_tag != ATH_USB_RX_STREAM_MODE_TAG) {
+			RX_STAT_INC(hif_dev, skb_dropped);
+			goto invalid_pkt;
+		}
+
+		if (pkt_len > 2 * MAX_RX_BUF_SIZE) {
+			dev_err(&hif_dev->udev->dev,
+				"ath9k_htc: invalid pkt_len (%x)\n", pkt_len);
+			RX_STAT_INC(hif_dev, skb_dropped);
+			goto invalid_pkt;
+>>>>>>> origin/android16-base
 		}
 
 		pad_len = 4 - (pkt_len & 0x3);
@@ -599,11 +673,14 @@ static void ath9k_hif_usb_rx_stream(struct hif_device_usb *hif_dev,
 
 		if (index > MAX_RX_BUF_SIZE) {
 			spin_lock(&hif_dev->rx_lock);
+<<<<<<< HEAD
 			hif_dev->rx_remain_len = index - MAX_RX_BUF_SIZE;
 			hif_dev->rx_transfer_len =
 				MAX_RX_BUF_SIZE - chk_idx - 4;
 			hif_dev->rx_pad_len = pad_len;
 
+=======
+>>>>>>> origin/android16-base
 			nskb = __dev_alloc_skb(pkt_len + 32, GFP_ATOMIC);
 			if (!nskb) {
 				dev_err(&hif_dev->udev->dev,
@@ -611,8 +688,19 @@ static void ath9k_hif_usb_rx_stream(struct hif_device_usb *hif_dev,
 				spin_unlock(&hif_dev->rx_lock);
 				goto err;
 			}
+<<<<<<< HEAD
 			skb_reserve(nskb, 32);
 			RX_STAT_INC(skb_allocated);
+=======
+
+			hif_dev->rx_remain_len = index - MAX_RX_BUF_SIZE;
+			hif_dev->rx_transfer_len =
+				MAX_RX_BUF_SIZE - chk_idx - 4;
+			hif_dev->rx_pad_len = pad_len;
+
+			skb_reserve(nskb, 32);
+			RX_STAT_INC(hif_dev, skb_allocated);
+>>>>>>> origin/android16-base
 
 			memcpy(nskb->data, &(skb->data[chk_idx+4]),
 			       hif_dev->rx_transfer_len);
@@ -633,7 +721,11 @@ static void ath9k_hif_usb_rx_stream(struct hif_device_usb *hif_dev,
 				goto err;
 			}
 			skb_reserve(nskb, 32);
+<<<<<<< HEAD
 			RX_STAT_INC(skb_allocated);
+=======
+			RX_STAT_INC(hif_dev, skb_allocated);
+>>>>>>> origin/android16-base
 
 			memcpy(nskb->data, &(skb->data[chk_idx+4]), pkt_len);
 			skb_put(nskb, pkt_len);
@@ -643,11 +735,26 @@ static void ath9k_hif_usb_rx_stream(struct hif_device_usb *hif_dev,
 
 err:
 	for (i = 0; i < pool_index; i++) {
+<<<<<<< HEAD
 		RX_STAT_ADD(skb_completed_bytes, skb_pool[i]->len);
 		ath9k_htc_rx_msg(hif_dev->htc_handle, skb_pool[i],
 				 skb_pool[i]->len, USB_WLAN_RX_PIPE);
 		RX_STAT_INC(skb_completed);
 	}
+=======
+		RX_STAT_ADD(hif_dev, skb_completed_bytes, skb_pool[i]->len);
+		ath9k_htc_rx_msg(hif_dev->htc_handle, skb_pool[i],
+				 skb_pool[i]->len, USB_WLAN_RX_PIPE);
+		RX_STAT_INC(hif_dev, skb_completed);
+	}
+	return;
+invalid_pkt:
+	for (i = 0; i < pool_index; i++) {
+		dev_kfree_skb_any(skb_pool[i]);
+		RX_STAT_INC(hif_dev, skb_dropped);
+	}
+	return;
+>>>>>>> origin/android16-base
 }
 
 static void ath9k_hif_usb_rx_cb(struct urb *urb)
@@ -681,8 +788,12 @@ static void ath9k_hif_usb_rx_cb(struct urb *urb)
 	}
 
 resubmit:
+<<<<<<< HEAD
 	skb_reset_tail_pointer(skb);
 	skb_trim(skb, 0);
+=======
+	__skb_set_length(skb, 0);
+>>>>>>> origin/android16-base
 
 	usb_anchor_urb(urb, &hif_dev->rx_submitted);
 	ret = usb_submit_urb(urb, GFP_ATOMIC);
@@ -702,14 +813,21 @@ static void ath9k_hif_usb_reg_in_cb(struct urb *urb)
 	struct rx_buf *rx_buf = (struct rx_buf *)urb->context;
 	struct hif_device_usb *hif_dev = rx_buf->hif_dev;
 	struct sk_buff *skb = rx_buf->skb;
+<<<<<<< HEAD
 	struct sk_buff *nskb;
+=======
+>>>>>>> origin/android16-base
 	int ret;
 
 	if (!skb)
 		return;
 
 	if (!hif_dev)
+<<<<<<< HEAD
 		goto free;
+=======
+		goto free_skb;
+>>>>>>> origin/android16-base
 
 	switch (urb->status) {
 	case 0:
@@ -718,10 +836,16 @@ static void ath9k_hif_usb_reg_in_cb(struct urb *urb)
 	case -ECONNRESET:
 	case -ENODEV:
 	case -ESHUTDOWN:
+<<<<<<< HEAD
 		goto free;
 	default:
 		skb_reset_tail_pointer(skb);
 		skb_trim(skb, 0);
+=======
+		goto free_skb;
+	default:
+		__skb_set_length(skb, 0);
+>>>>>>> origin/android16-base
 
 		goto resubmit;
 	}
@@ -729,6 +853,7 @@ static void ath9k_hif_usb_reg_in_cb(struct urb *urb)
 	if (likely(urb->actual_length != 0)) {
 		skb_put(skb, urb->actual_length);
 
+<<<<<<< HEAD
 		/* Process the command first */
 		ath9k_htc_rx_msg(hif_dev->htc_handle, skb,
 				 skb->len, USB_REG_IN_PIPE);
@@ -743,11 +868,33 @@ static void ath9k_hif_usb_reg_in_cb(struct urb *urb)
 		}
 
 		rx_buf->skb = nskb;
+=======
+		/*
+		 * Process the command first.
+		 * skb is either freed here or passed to be
+		 * managed to another callback function.
+		 */
+		ath9k_htc_rx_msg(hif_dev->htc_handle, skb,
+				 skb->len, USB_REG_IN_PIPE);
+
+		skb = alloc_skb(MAX_REG_IN_BUF_SIZE, GFP_ATOMIC);
+		if (!skb) {
+			dev_err(&hif_dev->udev->dev,
+				"ath9k_htc: REG_IN memory allocation failure\n");
+			goto free_rx_buf;
+		}
+
+		rx_buf->skb = skb;
+>>>>>>> origin/android16-base
 
 		usb_fill_int_urb(urb, hif_dev->udev,
 				 usb_rcvintpipe(hif_dev->udev,
 						 USB_REG_IN_PIPE),
+<<<<<<< HEAD
 				 nskb->data, MAX_REG_IN_BUF_SIZE,
+=======
+				 skb->data, MAX_REG_IN_BUF_SIZE,
+>>>>>>> origin/android16-base
 				 ath9k_hif_usb_reg_in_cb, rx_buf, 1);
 	}
 
@@ -756,12 +903,22 @@ resubmit:
 	ret = usb_submit_urb(urb, GFP_ATOMIC);
 	if (ret) {
 		usb_unanchor_urb(urb);
+<<<<<<< HEAD
 		goto free;
 	}
 
 	return;
 free:
 	kfree_skb(skb);
+=======
+		goto free_skb;
+	}
+
+	return;
+free_skb:
+	kfree_skb(skb);
+free_rx_buf:
+>>>>>>> origin/android16-base
 	kfree(rx_buf);
 	urb->context = NULL;
 }
@@ -774,14 +931,20 @@ static void ath9k_hif_usb_dealloc_tx_urbs(struct hif_device_usb *hif_dev)
 	spin_lock_irqsave(&hif_dev->tx.tx_lock, flags);
 	list_for_each_entry_safe(tx_buf, tx_buf_tmp,
 				 &hif_dev->tx.tx_buf, list) {
+<<<<<<< HEAD
 		usb_get_urb(tx_buf->urb);
 		spin_unlock_irqrestore(&hif_dev->tx.tx_lock, flags);
 		usb_kill_urb(tx_buf->urb);
+=======
+>>>>>>> origin/android16-base
 		list_del(&tx_buf->list);
 		usb_free_urb(tx_buf->urb);
 		kfree(tx_buf->buf);
 		kfree(tx_buf);
+<<<<<<< HEAD
 		spin_lock_irqsave(&hif_dev->tx.tx_lock, flags);
+=======
+>>>>>>> origin/android16-base
 	}
 	spin_unlock_irqrestore(&hif_dev->tx.tx_lock, flags);
 
@@ -851,6 +1014,10 @@ err:
 static void ath9k_hif_usb_dealloc_rx_urbs(struct hif_device_usb *hif_dev)
 {
 	usb_kill_anchored_urbs(&hif_dev->rx_submitted);
+<<<<<<< HEAD
+=======
+	ath9k_hif_usb_free_rx_remain_skb(hif_dev);
+>>>>>>> origin/android16-base
 }
 
 static int ath9k_hif_usb_alloc_rx_urbs(struct hif_device_usb *hif_dev)
@@ -1323,10 +1490,31 @@ static int send_eject_command(struct usb_interface *interface)
 static int ath9k_hif_usb_probe(struct usb_interface *interface,
 			       const struct usb_device_id *id)
 {
+<<<<<<< HEAD
 	struct usb_device *udev = interface_to_usbdev(interface);
 	struct hif_device_usb *hif_dev;
 	int ret = 0;
 
+=======
+	struct usb_endpoint_descriptor *bulk_in, *bulk_out, *int_in, *int_out;
+	struct usb_device *udev = interface_to_usbdev(interface);
+	struct usb_host_interface *alt;
+	struct hif_device_usb *hif_dev;
+	int ret = 0;
+
+	/* Verify the expected endpoints are present */
+	alt = interface->cur_altsetting;
+	if (usb_find_common_endpoints(alt, &bulk_in, &bulk_out, &int_in, &int_out) < 0 ||
+	    usb_endpoint_num(bulk_in) != USB_WLAN_RX_PIPE ||
+	    usb_endpoint_num(bulk_out) != USB_WLAN_TX_PIPE ||
+	    usb_endpoint_num(int_in) != USB_REG_IN_PIPE ||
+	    usb_endpoint_num(int_out) != USB_REG_OUT_PIPE) {
+		dev_err(&udev->dev,
+			"ath9k_htc: Device endpoint numbers are not the expected ones\n");
+		return -ENODEV;
+	}
+
+>>>>>>> origin/android16-base
 	if (id->driver_info == STORAGE_DEVICE)
 		return send_eject_command(interface);
 

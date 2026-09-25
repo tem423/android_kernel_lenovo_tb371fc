@@ -247,12 +247,25 @@ int st21nfca_hci_se_io(struct nfc_hci_dev *hdev, u32 se_idx,
 					ST21NFCA_EVT_TRANSMIT_DATA,
 					apdu, apdu_length);
 	default:
+<<<<<<< HEAD
+=======
+		/* Need to free cb_context here as at the moment we can't
+		 * clearly indicate to the caller if the callback function
+		 * would be called (and free it) or not. In both cases a
+		 * negative value may be returned to the caller.
+		 */
+		kfree(cb_context);
+>>>>>>> origin/android16-base
 		return -ENODEV;
 	}
 }
 EXPORT_SYMBOL(st21nfca_hci_se_io);
 
+<<<<<<< HEAD
 static void st21nfca_se_wt_timeout(struct timer_list *t)
+=======
+static void st21nfca_se_wt_work(struct work_struct *work)
+>>>>>>> origin/android16-base
 {
 	/*
 	 * No answer from the secure element
@@ -265,8 +278,14 @@ static void st21nfca_se_wt_timeout(struct timer_list *t)
 	 */
 	/* hardware reset managed through VCC_UICC_OUT power supply */
 	u8 param = 0x01;
+<<<<<<< HEAD
 	struct st21nfca_hci_info *info = from_timer(info, t,
 						    se_info.bwi_timer);
+=======
+	struct st21nfca_hci_info *info = container_of(work,
+						struct st21nfca_hci_info,
+						se_info.timeout_work);
+>>>>>>> origin/android16-base
 
 	pr_debug("\n");
 
@@ -284,6 +303,16 @@ static void st21nfca_se_wt_timeout(struct timer_list *t)
 	info->se_info.cb(info->se_info.cb_context, NULL, 0, -ETIME);
 }
 
+<<<<<<< HEAD
+=======
+static void st21nfca_se_wt_timeout(struct timer_list *t)
+{
+	struct st21nfca_hci_info *info = from_timer(info, t, se_info.bwi_timer);
+
+	schedule_work(&info->se_info.timeout_work);
+}
+
+>>>>>>> origin/android16-base
 static void st21nfca_se_activation_timeout(struct timer_list *t)
 {
 	struct st21nfca_hci_info *info = from_timer(info, t,
@@ -339,10 +368,32 @@ int st21nfca_connectivity_event_received(struct nfc_hci_dev *hdev, u8 host,
 			return -ENOMEM;
 
 		transaction->aid_len = skb->data[1];
+<<<<<<< HEAD
 		memcpy(transaction->aid, &skb->data[2],
 		       transaction->aid_len);
 		transaction->params_len = skb->data[transaction->aid_len + 3];
 
+=======
+
+		/* Checking if the length of the AID is valid */
+		if (transaction->aid_len > sizeof(transaction->aid)) {
+			devm_kfree(dev, transaction);
+			return -EINVAL;
+		}
+
+		memcpy(transaction->aid, &skb->data[2],
+		       transaction->aid_len);
+
+		transaction->params_len = skb->data[transaction->aid_len + 3];
+
+		/* Total size is allocated (skb->len - 2) minus fixed array members */
+		if (transaction->params_len > ((skb->len - 2) -
+		    sizeof(struct nfc_evt_transaction))) {
+			devm_kfree(dev, transaction);
+			return -EINVAL;
+		}
+
+>>>>>>> origin/android16-base
 		/* Check next byte is PARAMETERS tag (82) and the length field */
 		if (skb->data[transaction->aid_len + 2] !=
 		    NFC_EVT_TRANSACTION_PARAMS_TAG ||
@@ -376,6 +427,10 @@ int st21nfca_apdu_reader_event_received(struct nfc_hci_dev *hdev,
 	switch (event) {
 	case ST21NFCA_EVT_TRANSMIT_DATA:
 		del_timer_sync(&info->se_info.bwi_timer);
+<<<<<<< HEAD
+=======
+		cancel_work_sync(&info->se_info.timeout_work);
+>>>>>>> origin/android16-base
 		info->se_info.bwi_active = false;
 		r = nfc_hci_send_event(hdev, ST21NFCA_DEVICE_MGNT_GATE,
 				ST21NFCA_EVT_SE_END_OF_APDU_TRANSFER, NULL, 0);
@@ -405,6 +460,10 @@ void st21nfca_se_init(struct nfc_hci_dev *hdev)
 	struct st21nfca_hci_info *info = nfc_hci_get_clientdata(hdev);
 
 	init_completion(&info->se_info.req_completion);
+<<<<<<< HEAD
+=======
+	INIT_WORK(&info->se_info.timeout_work, st21nfca_se_wt_work);
+>>>>>>> origin/android16-base
 	/* initialize timers */
 	timer_setup(&info->se_info.bwi_timer, st21nfca_se_wt_timeout, 0);
 	info->se_info.bwi_active = false;
@@ -432,6 +491,10 @@ void st21nfca_se_deinit(struct nfc_hci_dev *hdev)
 	if (info->se_info.se_active)
 		del_timer_sync(&info->se_info.se_active_timer);
 
+<<<<<<< HEAD
+=======
+	cancel_work_sync(&info->se_info.timeout_work);
+>>>>>>> origin/android16-base
 	info->se_info.bwi_active = false;
 	info->se_info.se_active = false;
 }

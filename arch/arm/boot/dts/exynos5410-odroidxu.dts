@@ -113,7 +113,10 @@
 };
 
 &cpu0_thermal {
+<<<<<<< HEAD
 	thermal-sensors = <&tmu_cpu0 0>;
+=======
+>>>>>>> origin/android16-base
 	polling-delay-passive = <0>;
 	polling-delay = <0>;
 
@@ -324,6 +327,11 @@
 				regulator-name = "vddq_lcd";
 				regulator-min-microvolt = <1800000>;
 				regulator-max-microvolt = <1800000>;
+<<<<<<< HEAD
+=======
+				/* Supplies also GPK and GPJ */
+				regulator-always-on;
+>>>>>>> origin/android16-base
 			};
 
 			ldo8_reg: LDO8 {
@@ -626,11 +634,19 @@
 };
 
 &usbdrd_dwc3_0 {
+<<<<<<< HEAD
 	dr_mode = "host";
 };
 
 &usbdrd_dwc3_1 {
 	dr_mode = "peripheral";
+=======
+	dr_mode = "peripheral";
+};
+
+&usbdrd_dwc3_1 {
+	dr_mode = "host";
+>>>>>>> origin/android16-base
 };
 
 &usbdrd3_0 {

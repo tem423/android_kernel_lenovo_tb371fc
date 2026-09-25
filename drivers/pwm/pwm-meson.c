@@ -425,7 +425,11 @@ static const struct meson_pwm_data pwm_axg_ee_data = {
 };
 
 static const char * const pwm_axg_ao_parent_names[] = {
+<<<<<<< HEAD
 	"aoclk81", "xtal", "fclk_div4", "fclk_div5"
+=======
+	"xtal", "axg_ao_clk81", "fclk_div4", "fclk_div5"
+>>>>>>> origin/android16-base
 };
 
 static const struct meson_pwm_data pwm_axg_ao_data = {

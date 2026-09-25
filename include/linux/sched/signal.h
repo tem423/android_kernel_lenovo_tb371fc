@@ -8,6 +8,12 @@
 #include <linux/sched/jobctl.h>
 #include <linux/sched/task.h>
 #include <linux/cred.h>
+<<<<<<< HEAD
+=======
+#include <linux/android_kabi.h>
+#include <linux/mm.h>
+#include <asm/ptrace.h>
+>>>>>>> origin/android16-base
 
 /*
  * Types defining task->signal and task->sighand and APIs using them:
@@ -232,6 +238,13 @@ struct signal_struct {
 	struct mutex cred_guard_mutex;	/* guard against foreign influences on
 					 * credential calculations
 					 * (notably. ptrace) */
+<<<<<<< HEAD
+=======
+	ANDROID_KABI_RESERVE(1);
+	ANDROID_KABI_RESERVE(2);
+	ANDROID_KABI_RESERVE(3);
+	ANDROID_KABI_RESERVE(4);
+>>>>>>> origin/android16-base
 } __randomize_layout;
 
 /*
@@ -373,6 +386,23 @@ static inline int signal_pending_state(long state, struct task_struct *p)
 }
 
 /*
+<<<<<<< HEAD
+=======
+ * This should only be used in fault handlers to decide whether we
+ * should stop the current fault routine to handle the signals
+ * instead, especially with the case where we've got interrupted with
+ * a VM_FAULT_RETRY.
+ */
+static inline bool fault_signal_pending(vm_fault_t fault_flags,
+					struct pt_regs *regs)
+{
+	return unlikely((fault_flags & VM_FAULT_RETRY) &&
+			(fatal_signal_pending(current) ||
+			 (user_mode(regs) && signal_pending(current))));
+}
+
+/*
+>>>>>>> origin/android16-base
  * Reevaluate whether the task has signals pending delivery.
  * Wake the task if so.
  * This is required every time the blocked sigset_t changes.

@@ -21,7 +21,10 @@ struct saved_context {
 #endif
 	unsigned long cr0, cr2, cr3, cr4;
 	u64 misc_enable;
+<<<<<<< HEAD
 	bool misc_enable_saved;
+=======
+>>>>>>> origin/android16-base
 	struct saved_msrs saved_msrs;
 	struct desc_ptr gdt_desc;
 	struct desc_ptr idt;
@@ -30,6 +33,10 @@ struct saved_context {
 	unsigned long tr;
 	unsigned long safety;
 	unsigned long return_address;
+<<<<<<< HEAD
+=======
+	bool misc_enable_saved;
+>>>>>>> origin/android16-base
 } __attribute__((packed));
 
 #endif /* _ASM_X86_SUSPEND_32_H */

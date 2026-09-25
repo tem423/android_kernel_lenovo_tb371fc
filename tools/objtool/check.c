@@ -159,6 +159,10 @@ static int __dead_end_function(struct objtool_file *file, struct symbol *func,
 		"panic",
 		"do_exit",
 		"do_task_dead",
+<<<<<<< HEAD
+=======
+		"make_task_dead",
+>>>>>>> origin/android16-base
 		"__module_put_and_exit",
 		"complete_and_exit",
 		"kvm_spurious_fault",
@@ -167,7 +171,11 @@ static int __dead_end_function(struct objtool_file *file, struct symbol *func,
 		"fortify_panic",
 		"usercopy_abort",
 		"machine_real_restart",
+<<<<<<< HEAD
 		"rewind_stack_do_exit",
+=======
+		"rewind_stack_and_make_dead",
+>>>>>>> origin/android16-base
 	};
 
 	if (func->bind == STB_WEAK)

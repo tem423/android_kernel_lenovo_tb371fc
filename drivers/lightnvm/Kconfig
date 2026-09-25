@@ -4,7 +4,11 @@
 
 menuconfig NVM
 	bool "Open-Channel SSD target support"
+<<<<<<< HEAD
 	depends on BLOCK && PCI
+=======
+	depends on BLOCK && PCI && BROKEN
+>>>>>>> origin/android16-base
 	select BLK_DEV_NVME
 	help
 	  Say Y here to get to enable Open-channel SSDs.
@@ -19,6 +23,10 @@ if NVM
 
 config NVM_PBLK
 	tristate "Physical Block Device Open-Channel SSD target"
+<<<<<<< HEAD
+=======
+	select CRC32
+>>>>>>> origin/android16-base
 	help
 	  Allows an open-channel SSD to be exposed as a block device to the
 	  host. The target assumes the device exposes raw flash and must be

@@ -47,12 +47,19 @@ static const char *tpc_names[] = {
  * memstick_debug_get_tpc_name - debug helper that returns string for
  * a TPC number
  */
+<<<<<<< HEAD
 const char *memstick_debug_get_tpc_name(int tpc)
 {
 	return tpc_names[tpc-1];
 }
 EXPORT_SYMBOL(memstick_debug_get_tpc_name);
 
+=======
+static __maybe_unused const char *memstick_debug_get_tpc_name(int tpc)
+{
+	return tpc_names[tpc-1];
+}
+>>>>>>> origin/android16-base
 
 /* Read a register*/
 static inline u32 r592_read_reg(struct r592_device *dev, int address)
@@ -762,8 +769,15 @@ static int r592_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		goto error3;
 
 	dev->mmio = pci_ioremap_bar(pdev, 0);
+<<<<<<< HEAD
 	if (!dev->mmio)
 		goto error4;
+=======
+	if (!dev->mmio) {
+		error = -ENOMEM;
+		goto error4;
+	}
+>>>>>>> origin/android16-base
 
 	dev->irq = pdev->irq;
 	spin_lock_init(&dev->irq_lock);
@@ -789,12 +803,23 @@ static int r592_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		&dev->dummy_dma_page_physical_address, GFP_KERNEL);
 	r592_stop_dma(dev , 0);
 
+<<<<<<< HEAD
 	if (request_irq(dev->irq, &r592_irq, IRQF_SHARED,
 			  DRV_NAME, dev))
 		goto error6;
 
 	r592_update_card_detect(dev);
 	if (memstick_add_host(host))
+=======
+	error = request_irq(dev->irq, &r592_irq, IRQF_SHARED,
+			  DRV_NAME, dev);
+	if (error)
+		goto error6;
+
+	r592_update_card_detect(dev);
+	error = memstick_add_host(host);
+	if (error)
+>>>>>>> origin/android16-base
 		goto error7;
 
 	message("driver successfully loaded");
@@ -827,7 +852,11 @@ static void r592_remove(struct pci_dev *pdev)
 	/* Stop the processing thread.
 	That ensures that we won't take any more requests */
 	kthread_stop(dev->io_thread);
+<<<<<<< HEAD
 
+=======
+	del_timer_sync(&dev->detect_timer);
+>>>>>>> origin/android16-base
 	r592_enable_device(dev, false);
 
 	while (!error && dev->req) {
@@ -836,15 +865,25 @@ static void r592_remove(struct pci_dev *pdev)
 	}
 	memstick_remove_host(dev->host);
 
+<<<<<<< HEAD
+=======
+	if (dev->dummy_dma_page)
+		dma_free_coherent(&pdev->dev, PAGE_SIZE, dev->dummy_dma_page,
+			dev->dummy_dma_page_physical_address);
+
+>>>>>>> origin/android16-base
 	free_irq(dev->irq, dev);
 	iounmap(dev->mmio);
 	pci_release_regions(pdev);
 	pci_disable_device(pdev);
 	memstick_free_host(dev->host);
+<<<<<<< HEAD
 
 	if (dev->dummy_dma_page)
 		dma_free_coherent(&pdev->dev, PAGE_SIZE, dev->dummy_dma_page,
 			dev->dummy_dma_page_physical_address);
+=======
+>>>>>>> origin/android16-base
 }
 
 #ifdef CONFIG_PM_SLEEP

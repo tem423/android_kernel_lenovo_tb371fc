@@ -601,6 +601,13 @@ static long pci_endpoint_test_ioctl(struct file *file, unsigned int cmd,
 	struct pci_dev *pdev = test->pdev;
 
 	mutex_lock(&test->mutex);
+<<<<<<< HEAD
+=======
+
+	reinit_completion(&test->irq_raised);
+	test->last_irq = -ENODATA;
+
+>>>>>>> origin/android16-base
 	switch (cmd) {
 	case PCITEST_BAR:
 		bar = arg;
@@ -785,6 +792,12 @@ static void pci_endpoint_test_remove(struct pci_dev *pdev)
 	if (id < 0)
 		return;
 
+<<<<<<< HEAD
+=======
+	pci_endpoint_test_release_irq(test);
+	pci_endpoint_test_free_irq_vectors(test);
+
+>>>>>>> origin/android16-base
 	misc_deregister(&test->miscdev);
 	kfree(misc_device->name);
 	ida_simple_remove(&pci_endpoint_test_ida, id);
@@ -793,9 +806,12 @@ static void pci_endpoint_test_remove(struct pci_dev *pdev)
 			pci_iounmap(pdev, test->bar[bar]);
 	}
 
+<<<<<<< HEAD
 	pci_endpoint_test_release_irq(test);
 	pci_endpoint_test_free_irq_vectors(test);
 
+=======
+>>>>>>> origin/android16-base
 	pci_release_regions(pdev);
 	pci_disable_device(pdev);
 }

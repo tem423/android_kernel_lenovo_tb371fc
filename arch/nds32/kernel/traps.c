@@ -183,7 +183,11 @@ void die(const char *str, struct pt_regs *regs, int err)
 
 	bust_spinlocks(0);
 	spin_unlock_irq(&die_lock);
+<<<<<<< HEAD
 	do_exit(SIGSEGV);
+=======
+	make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 }
 
 EXPORT_SYMBOL(die);
@@ -286,7 +290,11 @@ void unhandled_interruption(struct pt_regs *regs)
 	pr_emerg("unhandled_interruption\n");
 	show_regs(regs);
 	if (!user_mode(regs))
+<<<<<<< HEAD
 		do_exit(SIGKILL);
+=======
+		make_task_dead(SIGKILL);
+>>>>>>> origin/android16-base
 	force_sig(SIGKILL, current);
 }
 
@@ -297,7 +305,11 @@ void unhandled_exceptions(unsigned long entry, unsigned long addr,
 		 addr, type);
 	show_regs(regs);
 	if (!user_mode(regs))
+<<<<<<< HEAD
 		do_exit(SIGKILL);
+=======
+		make_task_dead(SIGKILL);
+>>>>>>> origin/android16-base
 	force_sig(SIGKILL, current);
 }
 
@@ -324,7 +336,11 @@ void do_revinsn(struct pt_regs *regs)
 	pr_emerg("Reserved Instruction\n");
 	show_regs(regs);
 	if (!user_mode(regs))
+<<<<<<< HEAD
 		do_exit(SIGILL);
+=======
+		make_task_dead(SIGILL);
+>>>>>>> origin/android16-base
 	force_sig(SIGILL, current);
 }
 

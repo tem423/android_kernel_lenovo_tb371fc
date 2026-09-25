@@ -991,4 +991,8 @@ gm107_grctx = {
 	.r406500 = gm107_grctx_generate_r406500,
 	.gpc_tpc_nr = gk104_grctx_generate_gpc_tpc_nr,
 	.r419e00 = gm107_grctx_generate_r419e00,
+<<<<<<< HEAD
+=======
+	.r419f78 = gk110_grctx_generate_r419f78,
+>>>>>>> origin/android16-base
 };

@@ -12,7 +12,11 @@ ifeq ($(KERNEL_BUILD), 1)
 	# These are configurable via Kconfig for kernel-based builds
 	# Need to explicitly configure for Android-based builds
 	AUDIO_BLD_DIR := $(ANDROID_BUILD_TOP)/kernel/msm-4.19
+<<<<<<< HEAD
 	AUDIO_ROOT := $(srctree)/techpack/audio
+=======
+	AUDIO_ROOT := $(AUDIO_BLD_DIR)/techpack/audio
+>>>>>>> origin/android16-base
 endif
 
 ifeq ($(KERNEL_BUILD), 0)
@@ -115,6 +119,9 @@ rouleur_slave_dlkm-y := $(ROULEUR_SLAVE_OBJS)
 
 obj-$(CONFIG_PM2250_SPMI) += pm2250_spmi_dlkm.o
 pm2250_spmi_dlkm-y := $(PM2250_SPMI_OBJS)
+<<<<<<< HEAD
 
 # inject some build related information
 DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"
+=======
+>>>>>>> origin/android16-base

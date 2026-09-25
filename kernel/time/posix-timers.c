@@ -1166,8 +1166,13 @@ COMPAT_SYSCALL_DEFINE2(clock_adjtime, clockid_t, which_clock,
 
 	err = kc->clock_adj(which_clock, &ktx);
 
+<<<<<<< HEAD
 	if (err >= 0)
 		err = compat_put_timex(utp, &ktx);
+=======
+	if (err >= 0 && compat_put_timex(utp, &ktx))
+		return -EFAULT;
+>>>>>>> origin/android16-base
 
 	return err;
 }
@@ -1225,6 +1230,10 @@ SYSCALL_DEFINE4(clock_nanosleep, const clockid_t, which_clock, int, flags,
 		return -EINVAL;
 	if (flags & TIMER_ABSTIME)
 		rmtp = NULL;
+<<<<<<< HEAD
+=======
+	current->restart_block.fn = do_no_restart_syscall;
+>>>>>>> origin/android16-base
 	current->restart_block.nanosleep.type = rmtp ? TT_NATIVE : TT_NONE;
 	current->restart_block.nanosleep.rmtp = rmtp;
 
@@ -1252,6 +1261,10 @@ COMPAT_SYSCALL_DEFINE4(clock_nanosleep, clockid_t, which_clock, int, flags,
 		return -EINVAL;
 	if (flags & TIMER_ABSTIME)
 		rmtp = NULL;
+<<<<<<< HEAD
+=======
+	current->restart_block.fn = do_no_restart_syscall;
+>>>>>>> origin/android16-base
 	current->restart_block.nanosleep.type = rmtp ? TT_COMPAT : TT_NONE;
 	current->restart_block.nanosleep.compat_rmtp = rmtp;
 

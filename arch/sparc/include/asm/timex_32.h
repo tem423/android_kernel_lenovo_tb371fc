@@ -9,8 +9,12 @@
 
 #define CLOCK_TICK_RATE	1193180 /* Underlying HZ */
 
+<<<<<<< HEAD
 /* XXX Maybe do something better at some point... -DaveM */
 typedef unsigned long cycles_t;
 #define get_cycles()	(0)
+=======
+#include <asm-generic/timex.h>
+>>>>>>> origin/android16-base
 
 #endif

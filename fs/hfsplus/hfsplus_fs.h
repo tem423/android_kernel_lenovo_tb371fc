@@ -156,6 +156,10 @@ struct hfsplus_sb_info {
 
 	/* Runtime variables */
 	u32 blockoffset;
+<<<<<<< HEAD
+=======
+	u32 min_io_size;
+>>>>>>> origin/android16-base
 	sector_t part_start;
 	sector_t sect_count;
 	int fs_shift;
@@ -198,6 +202,11 @@ struct hfsplus_sb_info {
 #define HFSPLUS_SB_HFSX		3
 #define HFSPLUS_SB_CASEFOLD	4
 #define HFSPLUS_SB_NOBARRIER	5
+<<<<<<< HEAD
+=======
+#define HFSPLUS_SB_UID		6
+#define HFSPLUS_SB_GID		7
+>>>>>>> origin/android16-base
 
 static inline struct hfsplus_sb_info *HFSPLUS_SB(struct super_block *sb)
 {
@@ -304,7 +313,11 @@ struct hfsplus_readdir_data {
  */
 static inline unsigned short hfsplus_min_io_size(struct super_block *sb)
 {
+<<<<<<< HEAD
 	return max_t(unsigned short, bdev_logical_block_size(sb->s_bdev),
+=======
+	return max_t(unsigned short, HFSPLUS_SB(sb)->min_io_size,
+>>>>>>> origin/android16-base
 		     HFSPLUS_SECTOR_SIZE);
 }
 
@@ -535,6 +548,30 @@ int hfsplus_read_wrapper(struct super_block *sb);
 #define __hfsp_mt2ut(t)		(be32_to_cpu(t) - 2082844800U)
 #define __hfsp_ut2mt(t)		(cpu_to_be32(t + 2082844800U))
 
+<<<<<<< HEAD
+=======
+static inline enum hfsplus_btree_mutex_classes
+hfsplus_btree_lock_class(struct hfs_btree *tree)
+{
+	enum hfsplus_btree_mutex_classes class;
+
+	switch (tree->cnid) {
+	case HFSPLUS_CAT_CNID:
+		class = CATALOG_BTREE_MUTEX;
+		break;
+	case HFSPLUS_EXT_CNID:
+		class = EXTENTS_BTREE_MUTEX;
+		break;
+	case HFSPLUS_ATTR_CNID:
+		class = ATTR_BTREE_MUTEX;
+		break;
+	default:
+		BUG();
+	}
+	return class;
+}
+
+>>>>>>> origin/android16-base
 /* compatibility */
 #define hfsp_mt2ut(t)		(struct timespec){ .tv_sec = __hfsp_mt2ut(t) }
 #define hfsp_ut2mt(t)		__hfsp_ut2mt((t).tv_sec)

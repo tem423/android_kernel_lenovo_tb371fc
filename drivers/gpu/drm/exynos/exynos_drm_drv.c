@@ -410,6 +410,10 @@ err_mode_config_cleanup:
 	drm_release_iommu_mapping(drm);
 err_free_private:
 	kfree(private);
+<<<<<<< HEAD
+=======
+	dev_set_drvdata(dev, NULL);
+>>>>>>> origin/android16-base
 err_free_drm:
 	drm_dev_put(drm);
 
@@ -424,6 +428,10 @@ static void exynos_drm_unbind(struct device *dev)
 
 	exynos_drm_fbdev_fini(drm);
 	drm_kms_helper_poll_fini(drm);
+<<<<<<< HEAD
+=======
+	drm_atomic_helper_shutdown(drm);
+>>>>>>> origin/android16-base
 
 	component_unbind_all(drm->dev, drm);
 	drm_mode_config_cleanup(drm);
@@ -461,9 +469,24 @@ static int exynos_drm_platform_remove(struct platform_device *pdev)
 	return 0;
 }
 
+<<<<<<< HEAD
 static struct platform_driver exynos_drm_platform_driver = {
 	.probe	= exynos_drm_platform_probe,
 	.remove	= exynos_drm_platform_remove,
+=======
+static void exynos_drm_platform_shutdown(struct platform_device *pdev)
+{
+	struct drm_device *drm = platform_get_drvdata(pdev);
+
+	if (drm)
+		drm_atomic_helper_shutdown(drm);
+}
+
+static struct platform_driver exynos_drm_platform_driver = {
+	.probe	= exynos_drm_platform_probe,
+	.remove	= exynos_drm_platform_remove,
+	.shutdown = exynos_drm_platform_shutdown,
+>>>>>>> origin/android16-base
 	.driver	= {
 		.name	= "exynos-drm",
 		.pm	= &exynos_drm_pm_ops,

@@ -569,6 +569,11 @@ static struct clk_branch disp_cc_mdss_vsync_clk = {
 
 static struct gdsc mdss_gdsc = {
 	.gdscr = 0x3000,
+<<<<<<< HEAD
+=======
+	.en_few_wait_val = 0x6,
+	.en_rest_wait_val = 0x5,
+>>>>>>> origin/android16-base
 	.pd = {
 		.name = "mdss_gdsc",
 	},

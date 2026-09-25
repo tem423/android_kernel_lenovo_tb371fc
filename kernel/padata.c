@@ -121,7 +121,11 @@ int padata_do_parallel(struct padata_instance *pinst,
 	if (!cpumask_test_cpu(cb_cpu, pd->cpumask.cbcpu))
 		goto out;
 
+<<<<<<< HEAD
 	err =  -EBUSY;
+=======
+	err = -EBUSY;
+>>>>>>> origin/android16-base
 	if ((pinst->flags & PADATA_RESET))
 		goto out;
 

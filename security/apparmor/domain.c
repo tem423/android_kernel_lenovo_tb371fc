@@ -464,7 +464,11 @@ restart:
 				 * xattrs, or a longer match
 				 */
 				candidate = profile;
+<<<<<<< HEAD
 				candidate_len = profile->xmatch_len;
+=======
+				candidate_len = max(count, profile->xmatch_len);
+>>>>>>> origin/android16-base
 				candidate_xattrs = ret;
 				conflict = false;
 			}

@@ -117,9 +117,16 @@ static inline int LIMIT_TO_MV(int limit, int range)
 	return limit * range / 256;
 }
 
+<<<<<<< HEAD
 static inline int MV_TO_LIMIT(int mv, int range)
 {
 	return clamp_val(DIV_ROUND_CLOSEST(mv * 256, range), 0, 255);
+=======
+static inline int MV_TO_LIMIT(unsigned long mv, int range)
+{
+	mv = clamp_val(mv, 0, ULONG_MAX / 256);
+	return DIV_ROUND_CLOSEST(clamp_val(mv * 256, 0, range * 255), range);
+>>>>>>> origin/android16-base
 }
 
 static inline int ADC_TO_CURR(int adc, int gain)

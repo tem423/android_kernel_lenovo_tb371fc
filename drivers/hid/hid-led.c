@@ -369,7 +369,11 @@ static const struct hidled_config hidled_configs[] = {
 		.type = DREAM_CHEEKY,
 		.name = "Dream Cheeky Webmail Notifier",
 		.short_name = "dream_cheeky",
+<<<<<<< HEAD
 		.max_brightness = 31,
+=======
+		.max_brightness = 63,
+>>>>>>> origin/android16-base
 		.num_leds = 1,
 		.report_size = 9,
 		.report_type = RAW_REQUEST,

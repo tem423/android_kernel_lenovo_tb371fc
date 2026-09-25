@@ -1253,7 +1253,15 @@ static struct platform_driver intel_driver = {
 
 int __init intel_init(void)
 {
+<<<<<<< HEAD
 	platform_driver_register(&intel_driver);
+=======
+	int err;
+
+	err = platform_driver_register(&intel_driver);
+	if (err)
+		return err;
+>>>>>>> origin/android16-base
 
 	return hci_uart_register_proto(&intel_proto);
 }

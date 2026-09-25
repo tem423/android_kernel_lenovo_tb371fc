@@ -37,7 +37,10 @@ int get_vaddr_frames(unsigned long start, unsigned int nr_frames,
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
 	int ret = 0;
+<<<<<<< HEAD
 	int err;
+=======
+>>>>>>> origin/android16-base
 	int locked;
 
 	if (nr_frames == 0)
@@ -74,6 +77,7 @@ int get_vaddr_frames(unsigned long start, unsigned int nr_frames,
 		vec->is_pfns = false;
 		ret = get_user_pages_locked(start, nr_frames,
 			gup_flags, (struct page **)(vec->ptrs), &locked);
+<<<<<<< HEAD
 		goto out;
 	}
 
@@ -100,6 +104,16 @@ int get_vaddr_frames(unsigned long start, unsigned int nr_frames,
 			break;
 		vma = find_vma_intersection(mm, start, start + 1);
 	} while (vma && vma->vm_flags & (VM_IO | VM_PFNMAP));
+=======
+		if (likely(ret > 0))
+			goto out;
+	}
+
+	/* This used to (racily) return non-refcounted pfns. Let people know */
+	WARN_ONCE(1, "get_vaddr_frames() cannot follow VM_IO mapping");
+	vec->nr_frames = 0;
+
+>>>>>>> origin/android16-base
 out:
 	if (locked)
 		up_read(&mm->mmap_sem);

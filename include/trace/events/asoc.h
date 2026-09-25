@@ -11,6 +11,11 @@
 #define DAPM_DIRECT "(direct)"
 #define DAPM_ARROW(dir) (((dir) == SND_SOC_DAPM_DIR_OUT) ? "->" : "<-")
 
+<<<<<<< HEAD
+=======
+TRACE_DEFINE_ENUM(SND_SOC_DAPM_DIR_OUT);
+
+>>>>>>> origin/android16-base
 struct snd_soc_jack;
 struct snd_soc_card;
 struct snd_soc_dapm_widget;

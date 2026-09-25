@@ -772,10 +772,17 @@ void jffs2_clear_xattr_subsystem(struct jffs2_sb_info *c)
 }
 
 #define XREF_TMPHASH_SIZE	(128)
+<<<<<<< HEAD
 void jffs2_build_xattr_subsystem(struct jffs2_sb_info *c)
 {
 	struct jffs2_xattr_ref *ref, *_ref;
 	struct jffs2_xattr_ref *xref_tmphash[XREF_TMPHASH_SIZE];
+=======
+int jffs2_build_xattr_subsystem(struct jffs2_sb_info *c)
+{
+	struct jffs2_xattr_ref *ref, *_ref;
+	struct jffs2_xattr_ref **xref_tmphash;
+>>>>>>> origin/android16-base
 	struct jffs2_xattr_datum *xd, *_xd;
 	struct jffs2_inode_cache *ic;
 	struct jffs2_raw_node_ref *raw;
@@ -784,9 +791,18 @@ void jffs2_build_xattr_subsystem(struct jffs2_sb_info *c)
 
 	BUG_ON(!(c->flags & JFFS2_SB_FLAG_BUILDING));
 
+<<<<<<< HEAD
 	/* Phase.1 : Merge same xref */
 	for (i=0; i < XREF_TMPHASH_SIZE; i++)
 		xref_tmphash[i] = NULL;
+=======
+	xref_tmphash = kcalloc(XREF_TMPHASH_SIZE,
+			       sizeof(struct jffs2_xattr_ref *), GFP_KERNEL);
+	if (!xref_tmphash)
+		return -ENOMEM;
+
+	/* Phase.1 : Merge same xref */
+>>>>>>> origin/android16-base
 	for (ref=c->xref_temp; ref; ref=_ref) {
 		struct jffs2_xattr_ref *tmp;
 
@@ -884,6 +900,11 @@ void jffs2_build_xattr_subsystem(struct jffs2_sb_info *c)
 		     "%u of xref (%u dead, %u orphan) found.\n",
 		     xdatum_count, xdatum_unchecked_count, xdatum_orphan_count,
 		     xref_count, xref_dead_count, xref_orphan_count);
+<<<<<<< HEAD
+=======
+	kfree(xref_tmphash);
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 struct jffs2_xattr_datum *jffs2_setup_xattr_datum(struct jffs2_sb_info *c,
@@ -1106,6 +1127,12 @@ int do_jffs2_setxattr(struct inode *inode, int xprefix, const char *xname,
 		return rc;
 
 	request = PAD(sizeof(struct jffs2_raw_xattr) + strlen(xname) + 1 + size);
+<<<<<<< HEAD
+=======
+	if (request > c->sector_size - c->cleanmarker_size)
+		return -ERANGE;
+
+>>>>>>> origin/android16-base
 	rc = jffs2_reserve_space(c, request, &length,
 				 ALLOC_NORMAL, JFFS2_SUMMARY_XATTR_SIZE);
 	if (rc) {

@@ -9,7 +9,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM devfreq
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/devfreq
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE devfreq_trace
 

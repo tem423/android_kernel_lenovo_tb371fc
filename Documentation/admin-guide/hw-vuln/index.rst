@@ -15,3 +15,8 @@ are configurable at compile, boot or run time.
    tsx_async_abort
    multihit.rst
    special-register-buffer-data-sampling.rst
+<<<<<<< HEAD
+=======
+   processor_mmio_stale_data.rst
+   gather_data_sampling.rst
+>>>>>>> origin/android16-base

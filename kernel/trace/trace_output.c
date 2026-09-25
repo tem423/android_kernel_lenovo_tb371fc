@@ -1395,7 +1395,11 @@ static struct trace_event *events[] __initdata = {
 	NULL
 };
 
+<<<<<<< HEAD
 __init static int init_events(void)
+=======
+__init int init_events(void)
+>>>>>>> origin/android16-base
 {
 	struct trace_event *event;
 	int i, ret;
@@ -1413,4 +1417,7 @@ __init static int init_events(void)
 
 	return 0;
 }
+<<<<<<< HEAD
 early_initcall(init_events);
+=======
+>>>>>>> origin/android16-base

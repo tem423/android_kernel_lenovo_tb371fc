@@ -5,7 +5,11 @@
 
 / {
 	model = "AST2500 EVB";
+<<<<<<< HEAD
 	compatible = "aspeed,ast2500";
+=======
+	compatible = "aspeed,ast2500-evb", "aspeed,ast2500";
+>>>>>>> origin/android16-base
 
 	aliases {
 		serial4 = &uart5;

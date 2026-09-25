@@ -70,6 +70,10 @@ static void event_handler(struct work_struct *work)
 	while ((ud = get_event()) != NULL) {
 		usbip_dbg_eh("pending event %lx\n", ud->event);
 
+<<<<<<< HEAD
+=======
+		mutex_lock(&ud->sysfs_lock);
+>>>>>>> origin/android16-base
 		/*
 		 * NOTE: shutdown must come first.
 		 * Shutdown the device.
@@ -90,6 +94,10 @@ static void event_handler(struct work_struct *work)
 			ud->eh_ops.unusable(ud);
 			unset_event(ud, USBIP_EH_UNUSABLE);
 		}
+<<<<<<< HEAD
+=======
+		mutex_unlock(&ud->sysfs_lock);
+>>>>>>> origin/android16-base
 
 		wake_up(&ud->eh_waitq);
 	}

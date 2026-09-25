@@ -4,7 +4,11 @@
  * Copyright 2006-2010		Johannes Berg <johannes@sipsolutions.net>
  * Copyright 2013-2014  Intel Mobile Communications GmbH
  * Copyright 2015-2017	Intel Deutschland GmbH
+<<<<<<< HEAD
  * Copyright (C) 2018-2020 Intel Corporation
+=======
+ * Copyright (C) 2018-2021 Intel Corporation
+>>>>>>> origin/android16-base
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
@@ -851,9 +855,12 @@ int wiphy_register(struct wiphy *wiphy)
 		return res;
 	}
 
+<<<<<<< HEAD
 	/* set up regulatory info */
 	wiphy_regulatory_register(wiphy);
 
+=======
+>>>>>>> origin/android16-base
 	list_add_rcu(&rdev->list, &cfg80211_rdev_list);
 	cfg80211_rdev_list_generation++;
 
@@ -867,6 +874,12 @@ int wiphy_register(struct wiphy *wiphy)
 	cfg80211_debugfs_rdev_add(rdev);
 	nl80211_notify_wiphy(rdev, NL80211_CMD_NEW_WIPHY);
 
+<<<<<<< HEAD
+=======
+	/* set up regulatory info */
+	wiphy_regulatory_register(wiphy);
+
+>>>>>>> origin/android16-base
 	if (wiphy->regulatory_flags & REGULATORY_CUSTOM_REG) {
 		struct regulatory_request request;
 

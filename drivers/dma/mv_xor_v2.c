@@ -777,8 +777,15 @@ static int mv_xor_v2_probe(struct platform_device *pdev)
 		goto disable_clk;
 
 	msi_desc = first_msi_entry(&pdev->dev);
+<<<<<<< HEAD
 	if (!msi_desc)
 		goto free_msi_irqs;
+=======
+	if (!msi_desc) {
+		ret = -ENODEV;
+		goto free_msi_irqs;
+	}
+>>>>>>> origin/android16-base
 	xor_dev->msi_desc = msi_desc;
 
 	ret = devm_request_irq(&pdev->dev, msi_desc->irq,
@@ -904,6 +911,10 @@ static int mv_xor_v2_remove(struct platform_device *pdev)
 	tasklet_kill(&xor_dev->irq_tasklet);
 
 	clk_disable_unprepare(xor_dev->clk);
+<<<<<<< HEAD
+=======
+	clk_disable_unprepare(xor_dev->reg_clk);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

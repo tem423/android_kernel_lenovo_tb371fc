@@ -20,7 +20,11 @@
 
 #define HIGH_WATERMARK			50
 #define LOW_WATERMARK			45
+<<<<<<< HEAD
 #define MAX_WRITEBACK_JOBS		0
+=======
+#define MAX_WRITEBACK_JOBS		min(0x10000000 / PAGE_SIZE, totalram_pages / 16)
+>>>>>>> origin/android16-base
 #define ENDIO_LATENCY			16
 #define WRITEBACK_LATENCY		64
 #define AUTOCOMMIT_BLOCKS_SSD		65536
@@ -142,6 +146,10 @@ struct dm_writecache {
 	size_t metadata_sectors;
 	size_t n_blocks;
 	uint64_t seq_count;
+<<<<<<< HEAD
+=======
+	sector_t data_device_sectors;
+>>>>>>> origin/android16-base
 	void *block_start;
 	struct wc_entry *entries;
 	unsigned block_size;
@@ -153,6 +161,10 @@ struct dm_writecache {
 	bool overwrote_committed:1;
 	bool memory_vmapped:1;
 
+<<<<<<< HEAD
+=======
+	bool start_sector_set:1;
+>>>>>>> origin/android16-base
 	bool high_wm_percent_set:1;
 	bool low_wm_percent_set:1;
 	bool max_writeback_jobs_set:1;
@@ -161,6 +173,13 @@ struct dm_writecache {
 	bool writeback_fua_set:1;
 	bool flush_on_suspend:1;
 
+<<<<<<< HEAD
+=======
+	unsigned high_wm_percent_value;
+	unsigned low_wm_percent_value;
+	unsigned autocommit_time_value;
+
+>>>>>>> origin/android16-base
 	unsigned writeback_all;
 	struct workqueue_struct *writeback_wq;
 	struct work_struct writeback_work;
@@ -318,7 +337,11 @@ err1:
 #else
 static int persistent_memory_claim(struct dm_writecache *wc)
 {
+<<<<<<< HEAD
 	BUG();
+=======
+	return -EOPNOTSUPP;
+>>>>>>> origin/android16-base
 }
 #endif
 
@@ -924,6 +947,11 @@ static void writecache_resume(struct dm_target *ti)
 
 	wc_lock(wc);
 
+<<<<<<< HEAD
+=======
+	wc->data_device_sectors = i_size_read(wc->dev->bdev->bd_inode) >> SECTOR_SHIFT;
+
+>>>>>>> origin/android16-base
 	if (WC_MODE_PMEM(wc)) {
 		persistent_memory_invalidate_cache(wc->memory_map, wc->memory_map_size);
 	} else {
@@ -1494,6 +1522,13 @@ static bool wc_add_block(struct writeback_struct *wb, struct wc_entry *e, gfp_t 
 	void *address = memory_data(wc, e);
 
 	persistent_memory_flush_cache(address, block_size);
+<<<<<<< HEAD
+=======
+
+	if (unlikely(bio_end_sector(&wb->bio) >= wc->data_device_sectors))
+		return true;
+
+>>>>>>> origin/android16-base
 	return bio_add_page(&wb->bio, persistent_memory_page(address),
 			    block_size, persistent_memory_page_offset(address)) != 0;
 }
@@ -1566,6 +1601,12 @@ static void __writecache_writeback_pmem(struct dm_writecache *wc, struct writeba
 		if (writecache_has_error(wc)) {
 			bio->bi_status = BLK_STS_IOERR;
 			bio_endio(&wb->bio);
+<<<<<<< HEAD
+=======
+		} else if (unlikely(!bio_sectors(&wb->bio))) {
+			bio->bi_status = BLK_STS_OK;
+			bio_endio(&wb->bio);
+>>>>>>> origin/android16-base
 		} else {
 			submit_bio(&wb->bio);
 		}
@@ -1609,6 +1650,17 @@ static void __writecache_writeback_ssd(struct dm_writecache *wc, struct writebac
 			e = f;
 		}
 
+<<<<<<< HEAD
+=======
+		if (unlikely(to.sector + to.count > wc->data_device_sectors)) {
+			if (to.sector >= wc->data_device_sectors) {
+				writecache_copy_endio(0, 0, c);
+				continue;
+			}
+			from.count = to.count = wc->data_device_sectors - to.sector;
+		}
+
+>>>>>>> origin/android16-base
 		dm_kcopyd_copy(wc->dm_kcopyd, &from, 1, &to, 0, writecache_copy_endio, c);
 
 		__writeback_throttle(wc, wbl);
@@ -1883,7 +1935,11 @@ static int writecache_ctr(struct dm_target *ti, unsigned argc, char **argv)
 	struct wc_memory_superblock s;
 
 	static struct dm_arg _args[] = {
+<<<<<<< HEAD
 		{0, 10, "Invalid number of feature args"},
+=======
+		{0, 16, "Invalid number of feature args"},
+>>>>>>> origin/android16-base
 	};
 
 	as.argc = argc;
@@ -2045,6 +2101,10 @@ static int writecache_ctr(struct dm_target *ti, unsigned argc, char **argv)
 			if (sscanf(string, "%llu%c", &start_sector, &dummy) != 1)
 				goto invalid_optional;
 			wc->start_sector = start_sector;
+<<<<<<< HEAD
+=======
+			wc->start_sector_set = true;
+>>>>>>> origin/android16-base
 			if (wc->start_sector != start_sector ||
 			    wc->start_sector >= wc->memory_map_size >> SECTOR_SHIFT)
 				goto invalid_optional;
@@ -2054,6 +2114,10 @@ static int writecache_ctr(struct dm_target *ti, unsigned argc, char **argv)
 				goto invalid_optional;
 			if (high_wm_percent < 0 || high_wm_percent > 100)
 				goto invalid_optional;
+<<<<<<< HEAD
+=======
+			wc->high_wm_percent_value = high_wm_percent;
+>>>>>>> origin/android16-base
 			wc->high_wm_percent_set = true;
 		} else if (!strcasecmp(string, "low_watermark") && opt_params >= 1) {
 			string = dm_shift_arg(&as), opt_params--;
@@ -2061,6 +2125,10 @@ static int writecache_ctr(struct dm_target *ti, unsigned argc, char **argv)
 				goto invalid_optional;
 			if (low_wm_percent < 0 || low_wm_percent > 100)
 				goto invalid_optional;
+<<<<<<< HEAD
+=======
+			wc->low_wm_percent_value = low_wm_percent;
+>>>>>>> origin/android16-base
 			wc->low_wm_percent_set = true;
 		} else if (!strcasecmp(string, "writeback_jobs") && opt_params >= 1) {
 			string = dm_shift_arg(&as), opt_params--;
@@ -2080,6 +2148,10 @@ static int writecache_ctr(struct dm_target *ti, unsigned argc, char **argv)
 			if (autocommit_msecs > 3600000)
 				goto invalid_optional;
 			wc->autocommit_jiffies = msecs_to_jiffies(autocommit_msecs);
+<<<<<<< HEAD
+=======
+			wc->autocommit_time_value = autocommit_msecs;
+>>>>>>> origin/android16-base
 			wc->autocommit_time_set = true;
 		} else if (!strcasecmp(string, "fua")) {
 			if (WC_MODE_PMEM(wc)) {
@@ -2275,7 +2347,10 @@ static void writecache_status(struct dm_target *ti, status_type_t type,
 	struct dm_writecache *wc = ti->private;
 	unsigned extra_args;
 	unsigned sz = 0;
+<<<<<<< HEAD
 	uint64_t x;
+=======
+>>>>>>> origin/android16-base
 
 	switch (type) {
 	case STATUSTYPE_INFO:
@@ -2287,7 +2362,11 @@ static void writecache_status(struct dm_target *ti, status_type_t type,
 		DMEMIT("%c %s %s %u ", WC_MODE_PMEM(wc) ? 'p' : 's',
 				wc->dev->name, wc->ssd_dev->name, wc->block_size);
 		extra_args = 0;
+<<<<<<< HEAD
 		if (wc->start_sector)
+=======
+		if (wc->start_sector_set)
+>>>>>>> origin/android16-base
 			extra_args += 2;
 		if (wc->high_wm_percent_set)
 			extra_args += 2;
@@ -2303,6 +2382,7 @@ static void writecache_status(struct dm_target *ti, status_type_t type,
 			extra_args++;
 
 		DMEMIT("%u", extra_args);
+<<<<<<< HEAD
 		if (wc->start_sector)
 			DMEMIT(" start_sector %llu", (unsigned long long)wc->start_sector);
 		if (wc->high_wm_percent_set) {
@@ -2317,12 +2397,24 @@ static void writecache_status(struct dm_target *ti, status_type_t type,
 			do_div(x, (size_t)wc->n_blocks);
 			DMEMIT(" low_watermark %u", 100 - (unsigned)x);
 		}
+=======
+		if (wc->start_sector_set)
+			DMEMIT(" start_sector %llu", (unsigned long long)wc->start_sector);
+		if (wc->high_wm_percent_set)
+			DMEMIT(" high_watermark %u", wc->high_wm_percent_value);
+		if (wc->low_wm_percent_set)
+			DMEMIT(" low_watermark %u", wc->low_wm_percent_value);
+>>>>>>> origin/android16-base
 		if (wc->max_writeback_jobs_set)
 			DMEMIT(" writeback_jobs %u", wc->max_writeback_jobs);
 		if (wc->autocommit_blocks_set)
 			DMEMIT(" autocommit_blocks %u", wc->autocommit_blocks);
 		if (wc->autocommit_time_set)
+<<<<<<< HEAD
 			DMEMIT(" autocommit_time %u", jiffies_to_msecs(wc->autocommit_jiffies));
+=======
+			DMEMIT(" autocommit_time %u", wc->autocommit_time_value);
+>>>>>>> origin/android16-base
 		if (wc->writeback_fua_set)
 			DMEMIT(" %sfua", wc->writeback_fua ? "" : "no");
 		break;

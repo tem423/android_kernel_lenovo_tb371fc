@@ -335,7 +335,11 @@ DEFINE_EVENT(dwc3_log_ep, dwc3_gadget_ep_disable,
 /* this part has to be here */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/usb/dwc3
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

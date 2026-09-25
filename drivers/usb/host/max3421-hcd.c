@@ -125,8 +125,11 @@ struct max3421_hcd {
 
 	struct task_struct *spi_thread;
 
+<<<<<<< HEAD
 	struct max3421_hcd *next;
 
+=======
+>>>>>>> origin/android16-base
 	enum max3421_rh_state rh_state;
 	/* lower 16 bits contain port status, upper 16 bits the change mask: */
 	u32 port_status;
@@ -174,8 +177,11 @@ struct max3421_ep {
 	u8 retransmit;			/* packet needs retransmission */
 };
 
+<<<<<<< HEAD
 static struct max3421_hcd *max3421_hcd_list;
 
+=======
+>>>>>>> origin/android16-base
 #define MAX3421_FIFO_SIZE	64
 
 #define MAX3421_SPI_DIR_RD	0	/* read register from MAX3421 */
@@ -1848,7 +1854,11 @@ max3421_probe(struct spi_device *spi)
 	struct max3421_hcd *max3421_hcd;
 	struct usb_hcd *hcd = NULL;
 	struct max3421_hcd_platform_data *pdata = NULL;
+<<<<<<< HEAD
 	int retval = -ENOMEM;
+=======
+	int retval;
+>>>>>>> origin/android16-base
 
 	if (spi_setup(spi) < 0) {
 		dev_err(&spi->dev, "Unable to setup SPI bus");
@@ -1890,6 +1900,10 @@ max3421_probe(struct spi_device *spi)
 		goto error;
 	}
 
+<<<<<<< HEAD
+=======
+	retval = -ENOMEM;
+>>>>>>> origin/android16-base
 	hcd = usb_create_hcd(&max3421_hcd_desc, &spi->dev,
 			     dev_name(&spi->dev));
 	if (!hcd) {
@@ -1898,9 +1912,14 @@ max3421_probe(struct spi_device *spi)
 	}
 	set_bit(HCD_FLAG_POLL_RH, &hcd->flags);
 	max3421_hcd = hcd_to_max3421(hcd);
+<<<<<<< HEAD
 	max3421_hcd->next = max3421_hcd_list;
 	max3421_hcd_list = max3421_hcd;
 	INIT_LIST_HEAD(&max3421_hcd->ep_list);
+=======
+	INIT_LIST_HEAD(&max3421_hcd->ep_list);
+	spi_set_drvdata(spi, max3421_hcd);
+>>>>>>> origin/android16-base
 
 	max3421_hcd->tx = kmalloc(sizeof(*max3421_hcd->tx), GFP_KERNEL);
 	if (!max3421_hcd->tx)
@@ -1950,6 +1969,7 @@ error:
 static int
 max3421_remove(struct spi_device *spi)
 {
+<<<<<<< HEAD
 	struct max3421_hcd *max3421_hcd = NULL, **prev;
 	struct usb_hcd *hcd = NULL;
 	unsigned long flags;
@@ -1965,13 +1985,24 @@ max3421_remove(struct spi_device *spi)
 			spi);
 		return -ENODEV;
 	}
+=======
+	struct max3421_hcd *max3421_hcd;
+	struct usb_hcd *hcd;
+	unsigned long flags;
+
+	max3421_hcd = spi_get_drvdata(spi);
+	hcd = max3421_to_hcd(max3421_hcd);
+>>>>>>> origin/android16-base
 
 	usb_remove_hcd(hcd);
 
 	spin_lock_irqsave(&max3421_hcd->lock, flags);
 
 	kthread_stop(max3421_hcd->spi_thread);
+<<<<<<< HEAD
 	*prev = max3421_hcd->next;
+=======
+>>>>>>> origin/android16-base
 
 	spin_unlock_irqrestore(&max3421_hcd->lock, flags);
 

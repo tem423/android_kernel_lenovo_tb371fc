@@ -113,4 +113,9 @@ extern int smum_update_dpm_settings(struct pp_hwmgr *hwmgr, void *profile_settin
 
 extern int smum_smc_table_manager(struct pp_hwmgr *hwmgr, uint8_t *table, uint16_t table_id, bool rw);
 
+<<<<<<< HEAD
+=======
+extern int smum_stop_smc(struct pp_hwmgr *hwmgr);
+
+>>>>>>> origin/android16-base
 #endif

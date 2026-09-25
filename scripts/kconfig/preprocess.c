@@ -111,7 +111,11 @@ static char *do_error_if(int argc, char *argv[])
 	if (!strcmp(argv[0], "y"))
 		pperror("%s", argv[1]);
 
+<<<<<<< HEAD
 	return NULL;
+=======
+	return xstrdup("");
+>>>>>>> origin/android16-base
 }
 
 static char *do_filename(int argc, char *argv[])
@@ -138,7 +142,11 @@ static char *do_lineno(int argc, char *argv[])
 static char *do_shell(int argc, char *argv[])
 {
 	FILE *p;
+<<<<<<< HEAD
 	char buf[256];
+=======
+	char buf[4096];
+>>>>>>> origin/android16-base
 	char *cmd;
 	size_t nread;
 	int i;
@@ -393,6 +401,12 @@ static char *eval_clause(const char *str, size_t len, int argc, char *argv[])
 
 		p++;
 	}
+<<<<<<< HEAD
+=======
+
+	if (new_argc >= FUNCTION_MAX_ARGS)
+		pperror("too many function arguments");
+>>>>>>> origin/android16-base
 	new_argv[new_argc++] = prev;
 
 	/*

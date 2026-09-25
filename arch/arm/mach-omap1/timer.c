@@ -165,7 +165,11 @@ err_free_pdata:
 	kfree(pdata);
 
 err_free_pdev:
+<<<<<<< HEAD
 	platform_device_unregister(pdev);
+=======
+	platform_device_put(pdev);
+>>>>>>> origin/android16-base
 
 	return ret;
 }

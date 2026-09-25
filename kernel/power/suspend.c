@@ -205,6 +205,10 @@ static int __init mem_sleep_default_setup(char *str)
 		if (mem_sleep_labels[state] &&
 		    !strcmp(str, mem_sleep_labels[state])) {
 			mem_sleep_default = state;
+<<<<<<< HEAD
+=======
+			mem_sleep_current = state;
+>>>>>>> origin/android16-base
 			break;
 		}
 

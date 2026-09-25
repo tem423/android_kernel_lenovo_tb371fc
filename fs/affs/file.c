@@ -878,7 +878,11 @@ affs_truncate(struct inode *inode)
 	if (inode->i_size > AFFS_I(inode)->mmu_private) {
 		struct address_space *mapping = inode->i_mapping;
 		struct page *page;
+<<<<<<< HEAD
 		void *fsdata;
+=======
+		void *fsdata = NULL;
+>>>>>>> origin/android16-base
 		loff_t isize = inode->i_size;
 		int res;
 

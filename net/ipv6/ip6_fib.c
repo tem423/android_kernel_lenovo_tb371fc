@@ -112,7 +112,11 @@ void fib6_update_sernum(struct net *net, struct fib6_info *f6i)
 	fn = rcu_dereference_protected(f6i->fib6_node,
 			lockdep_is_held(&f6i->fib6_table->tb6_lock));
 	if (fn)
+<<<<<<< HEAD
 		fn->fn_sernum = fib6_new_sernum(net);
+=======
+		WRITE_ONCE(fn->fn_sernum, fib6_new_sernum(net));
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -544,12 +548,22 @@ static int fib6_dump_table(struct fib6_table *table, struct sk_buff *skb,
 		spin_unlock_bh(&table->tb6_lock);
 		if (res > 0) {
 			cb->args[4] = 1;
+<<<<<<< HEAD
 			cb->args[5] = w->root->fn_sernum;
 		}
 	} else {
 		if (cb->args[5] != w->root->fn_sernum) {
 			/* Begin at the root if the tree changed */
 			cb->args[5] = w->root->fn_sernum;
+=======
+			cb->args[5] = READ_ONCE(w->root->fn_sernum);
+		}
+	} else {
+		int sernum = READ_ONCE(w->root->fn_sernum);
+		if (cb->args[5] != sernum) {
+			/* Begin at the root if the tree changed */
+			cb->args[5] = sernum;
+>>>>>>> origin/android16-base
 			w->state = FWS_INIT;
 			w->node = w->root;
 			w->skip = w->count;
@@ -586,6 +600,7 @@ static int inet6_dump_fib(struct sk_buff *skb, struct netlink_callback *cb)
 	if (!w) {
 		/* New dump:
 		 *
+<<<<<<< HEAD
 		 * 1. hook callback destructor.
 		 */
 		cb->args[3] = (long)cb->done;
@@ -593,12 +608,24 @@ static int inet6_dump_fib(struct sk_buff *skb, struct netlink_callback *cb)
 
 		/*
 		 * 2. allocate and initialize walker.
+=======
+		 * 1. allocate and initialize walker.
+>>>>>>> origin/android16-base
 		 */
 		w = kzalloc(sizeof(*w), GFP_ATOMIC);
 		if (!w)
 			return -ENOMEM;
 		w->func = fib6_dump_node;
 		cb->args[2] = (long)w;
+<<<<<<< HEAD
+=======
+
+		/* 2. hook callback destructor.
+		 */
+		cb->args[3] = (long)cb->done;
+		cb->done = fib6_dump_done;
+
+>>>>>>> origin/android16-base
 	}
 
 	arg.skb = skb;
@@ -906,6 +933,11 @@ static void fib6_purge_rt(struct fib6_info *rt, struct fib6_node *fn,
 {
 	struct fib6_table *table = rt->fib6_table;
 
+<<<<<<< HEAD
+=======
+	/* Flush all cached dst in exception table */
+	rt6_flush_exceptions(rt);
+>>>>>>> origin/android16-base
 	if (rt->rt6i_pcpu)
 		fib6_drop_pcpu_from(rt, table);
 
@@ -1201,7 +1233,11 @@ static void __fib6_update_sernum_upto_root(struct fib6_info *rt,
 	/* paired with smp_rmb() in rt6_get_cookie_safe() */
 	smp_wmb();
 	while (fn) {
+<<<<<<< HEAD
 		fn->fn_sernum = sernum;
+=======
+		WRITE_ONCE(fn->fn_sernum, sernum);
+>>>>>>> origin/android16-base
 		fn = rcu_dereference_protected(fn->parent,
 				lockdep_is_held(&rt->fib6_table->tb6_lock));
 	}
@@ -1223,7 +1259,14 @@ int fib6_add(struct fib6_node *root, struct fib6_info *rt,
 	     struct nl_info *info, struct netlink_ext_ack *extack)
 {
 	struct fib6_table *table = rt->fib6_table;
+<<<<<<< HEAD
 	struct fib6_node *fn, *pn = NULL;
+=======
+	struct fib6_node *fn;
+#ifdef CONFIG_IPV6_SUBTREES
+	struct fib6_node *pn = NULL;
+#endif
+>>>>>>> origin/android16-base
 	int err = -ENOMEM;
 	int allow_create = 1;
 	int replace_required = 0;
@@ -1248,9 +1291,15 @@ int fib6_add(struct fib6_node *root, struct fib6_info *rt,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	pn = fn;
 
 #ifdef CONFIG_IPV6_SUBTREES
+=======
+#ifdef CONFIG_IPV6_SUBTREES
+	pn = fn;
+
+>>>>>>> origin/android16-base
 	if (rt->fib6_src.plen) {
 		struct fib6_node *sn;
 
@@ -1348,6 +1397,7 @@ out:
 			if (!pn_leaf && !(pn->fn_flags & RTN_RTINFO)) {
 				pn_leaf = fib6_find_prefix(info->nl_net, table,
 							   pn);
+<<<<<<< HEAD
 #if RT6_DEBUG >= 2
 				if (!pn_leaf) {
 					WARN_ON(!pn_leaf);
@@ -1355,6 +1405,11 @@ out:
 					    info->nl_net->ipv6.fib6_null_entry;
 				}
 #endif
+=======
+				if (!pn_leaf)
+					pn_leaf =
+					    info->nl_net->ipv6.fib6_null_entry;
+>>>>>>> origin/android16-base
 				fib6_info_hold(pn_leaf);
 				rcu_assign_pointer(pn->leaf, pn_leaf);
 			}
@@ -1756,9 +1811,12 @@ static void fib6_del_route(struct fib6_table *table, struct fib6_node *fn,
 	net->ipv6.rt6_stats->fib_rt_entries--;
 	net->ipv6.rt6_stats->fib_discarded_routes++;
 
+<<<<<<< HEAD
 	/* Flush all cached dst in exception table */
 	rt6_flush_exceptions(rt);
 
+=======
+>>>>>>> origin/android16-base
 	/* Reset round-robin state, if necessary */
 	if (rcu_access_pointer(fn->rr_ptr) == rt)
 		fn->rr_ptr = NULL;
@@ -1984,8 +2042,13 @@ static int fib6_clean_node(struct fib6_walker *w)
 	};
 
 	if (c->sernum != FIB6_NO_SERNUM_CHANGE &&
+<<<<<<< HEAD
 	    w->node->fn_sernum != c->sernum)
 		w->node->fn_sernum = c->sernum;
+=======
+	    READ_ONCE(w->node->fn_sernum) != c->sernum)
+		WRITE_ONCE(w->node->fn_sernum, c->sernum);
+>>>>>>> origin/android16-base
 
 	if (!c->func) {
 		WARN_ON_ONCE(c->sernum == FIB6_NO_SERNUM_CHANGE);
@@ -2333,7 +2396,11 @@ static void ipv6_route_seq_setup_walk(struct ipv6_route_iter *iter,
 	iter->w.state = FWS_INIT;
 	iter->w.node = iter->w.root;
 	iter->w.args = iter;
+<<<<<<< HEAD
 	iter->sernum = iter->w.root->fn_sernum;
+=======
+	iter->sernum = READ_ONCE(iter->w.root->fn_sernum);
+>>>>>>> origin/android16-base
 	INIT_LIST_HEAD(&iter->w.lh);
 	fib6_walker_link(net, &iter->w);
 }
@@ -2361,8 +2428,15 @@ static struct fib6_table *ipv6_route_seq_next_table(struct fib6_table *tbl,
 
 static void ipv6_route_check_sernum(struct ipv6_route_iter *iter)
 {
+<<<<<<< HEAD
 	if (iter->sernum != iter->w.root->fn_sernum) {
 		iter->sernum = iter->w.root->fn_sernum;
+=======
+	int sernum = READ_ONCE(iter->w.root->fn_sernum);
+
+	if (iter->sernum != sernum) {
+		iter->sernum = sernum;
+>>>>>>> origin/android16-base
 		iter->w.state = FWS_INIT;
 		iter->w.node = iter->w.root;
 		WARN_ON(iter->w.skip);

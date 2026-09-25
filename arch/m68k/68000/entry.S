@@ -47,6 +47,11 @@ do_trace:
 	jbsr	syscall_trace_enter
 	RESTORE_SWITCH_STACK
 	addql	#4,%sp
+<<<<<<< HEAD
+=======
+	addql	#1,%d0
+	jeq	ret_from_exception
+>>>>>>> origin/android16-base
 	movel	%sp@(PT_OFF_ORIG_D0),%d1
 	movel	#-ENOSYS,%d0
 	cmpl	#NR_syscalls,%d1

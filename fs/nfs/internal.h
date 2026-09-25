@@ -575,12 +575,23 @@ extern int nfs4_test_session_trunk(struct rpc_clnt *,
 
 static inline struct inode *nfs_igrab_and_active(struct inode *inode)
 {
+<<<<<<< HEAD
 	inode = igrab(inode);
 	if (inode != NULL && !nfs_sb_active(inode->i_sb)) {
 		iput(inode);
 		inode = NULL;
 	}
 	return inode;
+=======
+	struct super_block *sb = inode->i_sb;
+
+	if (sb && nfs_sb_active(sb)) {
+		if (igrab(inode))
+			return inode;
+		nfs_sb_deactive(sb);
+	}
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 static inline void nfs_iput_and_deactive(struct inode *inode)
@@ -613,9 +624,15 @@ unsigned long nfs_block_bits(unsigned long bsize, unsigned char *nrbitsp)
 	if ((bsize & (bsize - 1)) || nrbitsp) {
 		unsigned char	nrbits;
 
+<<<<<<< HEAD
 		for (nrbits = 31; nrbits && !(bsize & (1 << nrbits)); nrbits--)
 			;
 		bsize = 1 << nrbits;
+=======
+		for (nrbits = 31; nrbits && !(bsize & (1UL << nrbits)); nrbits--)
+			;
+		bsize = 1UL << nrbits;
+>>>>>>> origin/android16-base
 		if (nrbitsp)
 			*nrbitsp = nrbits;
 	}

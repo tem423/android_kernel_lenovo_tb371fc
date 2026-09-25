@@ -323,7 +323,11 @@ static ssize_t iio_debugfs_write_reg(struct file *file,
 	char buf[80];
 	int ret;
 
+<<<<<<< HEAD
 	count = min_t(size_t, count, (sizeof(buf)-1));
+=======
+	count = min(count, sizeof(buf) - 1);
+>>>>>>> origin/android16-base
 	if (copy_from_user(buf, userbuf, count))
 		return -EFAULT;
 

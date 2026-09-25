@@ -815,6 +815,7 @@ config PERCPU_STATS
 	  information includes global and per chunk statistics, which can
 	  be used to help understand percpu memory usage.
 
+<<<<<<< HEAD
 config ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
        def_bool n
 
@@ -837,6 +838,8 @@ config SPECULATIVE_PAGE_FAULT
 	 allocating, it is failing its processing and a classic page fault
 	 is then tried.
 
+=======
+>>>>>>> origin/android16-base
 config HAVE_USERSPACE_LOW_MEMORY_KILLER
 	bool "Have userspace low memory killer"
 	default n

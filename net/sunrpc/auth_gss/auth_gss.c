@@ -53,6 +53,10 @@
 #include <linux/uaccess.h>
 #include <linux/hashtable.h>
 
+<<<<<<< HEAD
+=======
+#include "auth_gss_internal.h"
+>>>>>>> origin/android16-base
 #include "../netns.h"
 
 static const struct rpc_authops authgss_ops;
@@ -147,6 +151,7 @@ gss_cred_set_ctx(struct rpc_cred *cred, struct gss_cl_ctx *ctx)
 	clear_bit(RPCAUTH_CRED_NEW, &cred->cr_flags);
 }
 
+<<<<<<< HEAD
 static const void *
 simple_get_bytes(const void *p, const void *end, void *res, size_t len)
 {
@@ -176,6 +181,8 @@ simple_get_netobj(const void *p, const void *end, struct xdr_netobj *dest)
 	return q;
 }
 
+=======
+>>>>>>> origin/android16-base
 static struct gss_cl_ctx *
 gss_cred_get_ctx(struct rpc_cred *cred)
 {
@@ -351,7 +358,11 @@ __gss_find_upcall(struct rpc_pipe *pipe, kuid_t uid, const struct gss_auth *auth
 	list_for_each_entry(pos, &pipe->in_downcall, list) {
 		if (!uid_eq(pos->uid, uid))
 			continue;
+<<<<<<< HEAD
 		if (auth && pos->auth->service != auth->service)
+=======
+		if (pos->auth->service != auth->service)
+>>>>>>> origin/android16-base
 			continue;
 		refcount_inc(&pos->count);
 		dprintk("RPC:       %s found msg %p\n", __func__, pos);
@@ -705,6 +716,24 @@ out:
 	return err;
 }
 
+<<<<<<< HEAD
+=======
+static struct gss_upcall_msg *
+gss_find_downcall(struct rpc_pipe *pipe, kuid_t uid)
+{
+	struct gss_upcall_msg *pos;
+	list_for_each_entry(pos, &pipe->in_downcall, list) {
+		if (!uid_eq(pos->uid, uid))
+			continue;
+		if (!rpc_msg_is_inflight(&pos->msg))
+			continue;
+		refcount_inc(&pos->count);
+		return pos;
+	}
+	return NULL;
+}
+
+>>>>>>> origin/android16-base
 #define MSG_BUF_MAXSIZE 1024
 
 static ssize_t
@@ -751,7 +780,11 @@ gss_pipe_downcall(struct file *filp, const char __user *src, size_t mlen)
 	err = -ENOENT;
 	/* Find a matching upcall */
 	spin_lock(&pipe->lock);
+<<<<<<< HEAD
 	gss_msg = __gss_find_upcall(pipe, uid, NULL);
+=======
+	gss_msg = gss_find_downcall(pipe, uid);
+>>>>>>> origin/android16-base
 	if (gss_msg == NULL) {
 		spin_unlock(&pipe->lock);
 		goto err_put_ctx;

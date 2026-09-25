@@ -321,6 +321,7 @@ static int ad5820_probe(struct i2c_client *client,
 
 	ret = media_entity_pads_init(&coil->subdev.entity, 0, NULL);
 	if (ret < 0)
+<<<<<<< HEAD
 		goto cleanup2;
 
 	ret = v4l2_async_register_subdev(&coil->subdev);
@@ -333,6 +334,20 @@ cleanup2:
 	mutex_destroy(&coil->power_lock);
 cleanup:
 	media_entity_cleanup(&coil->subdev.entity);
+=======
+		goto clean_mutex;
+
+	ret = v4l2_async_register_subdev(&coil->subdev);
+	if (ret < 0)
+		goto clean_entity;
+
+	return ret;
+
+clean_entity:
+	media_entity_cleanup(&coil->subdev.entity);
+clean_mutex:
+	mutex_destroy(&coil->power_lock);
+>>>>>>> origin/android16-base
 	return ret;
 }
 

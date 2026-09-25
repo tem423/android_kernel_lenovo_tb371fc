@@ -394,7 +394,11 @@ ssize_t tmc_sg_table_get_data(struct tmc_sg_table *sg_table,
 static inline unsigned long
 tmc_sg_table_buf_size(struct tmc_sg_table *sg_table)
 {
+<<<<<<< HEAD
 	return sg_table->data_pages.nr_pages << PAGE_SHIFT;
+=======
+	return (unsigned long)sg_table->data_pages.nr_pages << PAGE_SHIFT;
+>>>>>>> origin/android16-base
 }
 
 struct coresight_device *tmc_etr_get_catu_device(struct tmc_drvdata *drvdata);

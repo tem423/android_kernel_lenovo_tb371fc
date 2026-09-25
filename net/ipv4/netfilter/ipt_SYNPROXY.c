@@ -54,7 +54,11 @@ synproxy_send_tcp(struct net *net,
 
 	skb_dst_set_noref(nskb, skb_dst(skb));
 	nskb->protocol = htons(ETH_P_IP);
+<<<<<<< HEAD
 	if (ip_route_me_harder(net, nskb, RTN_UNSPEC))
+=======
+	if (ip_route_me_harder(net, nskb->sk, nskb, RTN_UNSPEC))
+>>>>>>> origin/android16-base
 		goto free_nskb;
 
 	if (nfct) {

@@ -358,7 +358,12 @@ out:
 	return err;
 }
 
+<<<<<<< HEAD
 static int xen_pcibk_reconfigure(struct xen_pcibk_device *pdev)
+=======
+static int xen_pcibk_reconfigure(struct xen_pcibk_device *pdev,
+				 enum xenbus_state state)
+>>>>>>> origin/android16-base
 {
 	int err = 0;
 	int num_devs;
@@ -372,9 +377,13 @@ static int xen_pcibk_reconfigure(struct xen_pcibk_device *pdev)
 	dev_dbg(&pdev->xdev->dev, "Reconfiguring device ...\n");
 
 	mutex_lock(&pdev->dev_lock);
+<<<<<<< HEAD
 	/* Make sure we only reconfigure once */
 	if (xenbus_read_driver_state(pdev->xdev->nodename) !=
 	    XenbusStateReconfiguring)
+=======
+	if (xenbus_read_driver_state(pdev->xdev->nodename) != state)
+>>>>>>> origin/android16-base
 		goto out;
 
 	err = xenbus_scanf(XBT_NIL, pdev->xdev->nodename, "num_devs", "%d",
@@ -499,6 +508,13 @@ static int xen_pcibk_reconfigure(struct xen_pcibk_device *pdev)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	if (state != XenbusStateReconfiguring)
+		/* Make sure we only reconfigure once. */
+		goto out;
+
+>>>>>>> origin/android16-base
 	err = xenbus_switch_state(pdev->xdev, XenbusStateReconfigured);
 	if (err) {
 		xenbus_dev_fatal(pdev->xdev, err,
@@ -524,7 +540,11 @@ static void xen_pcibk_frontend_changed(struct xenbus_device *xdev,
 		break;
 
 	case XenbusStateReconfiguring:
+<<<<<<< HEAD
 		xen_pcibk_reconfigure(pdev);
+=======
+		xen_pcibk_reconfigure(pdev, XenbusStateReconfiguring);
+>>>>>>> origin/android16-base
 		break;
 
 	case XenbusStateConnected:
@@ -663,6 +683,18 @@ static void xen_pcibk_be_watch(struct xenbus_watch *watch,
 		xen_pcibk_setup_backend(pdev);
 		break;
 
+<<<<<<< HEAD
+=======
+	case XenbusStateInitialised:
+		/*
+		 * We typically move to Initialised when the first device was
+		 * added. Hence subsequent devices getting added may need
+		 * reconfiguring.
+		 */
+		xen_pcibk_reconfigure(pdev, XenbusStateInitialised);
+		break;
+
+>>>>>>> origin/android16-base
 	default:
 		break;
 	}
@@ -688,7 +720,11 @@ static int xen_pcibk_xenbus_probe(struct xenbus_device *dev,
 
 	/* watch the backend node for backend configuration information */
 	err = xenbus_watch_path(dev, dev->nodename, &pdev->be_watch,
+<<<<<<< HEAD
 				xen_pcibk_be_watch);
+=======
+				NULL, xen_pcibk_be_watch);
+>>>>>>> origin/android16-base
 	if (err)
 		goto out;
 

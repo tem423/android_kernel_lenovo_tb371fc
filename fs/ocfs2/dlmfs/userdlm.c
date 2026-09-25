@@ -449,6 +449,14 @@ again:
 	}
 
 	spin_lock(&lockres->l_lock);
+<<<<<<< HEAD
+=======
+	if (lockres->l_flags & USER_LOCK_IN_TEARDOWN) {
+		spin_unlock(&lockres->l_lock);
+		status = -EAGAIN;
+		goto bail;
+	}
+>>>>>>> origin/android16-base
 
 	/* We only compare against the currently granted level
 	 * here. If the lock is blocked waiting on a downconvert,
@@ -615,7 +623,11 @@ int user_dlm_destroy_lock(struct user_lock_res *lockres)
 	spin_lock(&lockres->l_lock);
 	if (lockres->l_flags & USER_LOCK_IN_TEARDOWN) {
 		spin_unlock(&lockres->l_lock);
+<<<<<<< HEAD
 		return 0;
+=======
+		goto bail;
+>>>>>>> origin/android16-base
 	}
 
 	lockres->l_flags |= USER_LOCK_IN_TEARDOWN;
@@ -629,12 +641,23 @@ int user_dlm_destroy_lock(struct user_lock_res *lockres)
 	}
 
 	if (lockres->l_ro_holders || lockres->l_ex_holders) {
+<<<<<<< HEAD
+=======
+		lockres->l_flags &= ~USER_LOCK_IN_TEARDOWN;
+>>>>>>> origin/android16-base
 		spin_unlock(&lockres->l_lock);
 		goto bail;
 	}
 
 	status = 0;
 	if (!(lockres->l_flags & USER_LOCK_ATTACHED)) {
+<<<<<<< HEAD
+=======
+		/*
+		 * lock is never requested, leave USER_LOCK_IN_TEARDOWN set
+		 * to avoid new lock request coming in.
+		 */
+>>>>>>> origin/android16-base
 		spin_unlock(&lockres->l_lock);
 		goto bail;
 	}
@@ -645,6 +668,13 @@ int user_dlm_destroy_lock(struct user_lock_res *lockres)
 
 	status = ocfs2_dlm_unlock(conn, &lockres->l_lksb, DLM_LKF_VALBLK);
 	if (status) {
+<<<<<<< HEAD
+=======
+		spin_lock(&lockres->l_lock);
+		lockres->l_flags &= ~USER_LOCK_IN_TEARDOWN;
+		lockres->l_flags &= ~USER_LOCK_BUSY;
+		spin_unlock(&lockres->l_lock);
+>>>>>>> origin/android16-base
 		user_log_dlm_error("ocfs2_dlm_unlock", status, lockres);
 		goto bail;
 	}

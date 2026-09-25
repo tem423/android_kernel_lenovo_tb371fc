@@ -30,10 +30,13 @@
 
 extern unsigned long ccount_freq;
 
+<<<<<<< HEAD
 typedef unsigned long long cycles_t;
 
 #define get_cycles()	(0)
 
+=======
+>>>>>>> origin/android16-base
 void local_timer_setup(unsigned cpu);
 
 /*
@@ -69,4 +72,9 @@ static inline void set_linux_timer (unsigned long ccompare)
 	WSR_CCOMPARE(LINUX_TIMER, ccompare);
 }
 
+<<<<<<< HEAD
+=======
+#include <asm-generic/timex.h>
+
+>>>>>>> origin/android16-base
 #endif	/* _XTENSA_TIMEX_H */

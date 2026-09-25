@@ -399,7 +399,11 @@ void usbtv_audio_free(struct usbtv *usbtv)
 	cancel_work_sync(&usbtv->snd_trigger);
 
 	if (usbtv->snd && usbtv->udev) {
+<<<<<<< HEAD
 		snd_card_free(usbtv->snd);
+=======
+		snd_card_free_when_closed(usbtv->snd);
+>>>>>>> origin/android16-base
 		usbtv->snd = NULL;
 	}
 }

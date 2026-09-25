@@ -131,7 +131,11 @@ void wlc_phy_shim_detach(struct phy_shim_info *physhim);
 
 /* PHY to WL utility functions */
 struct wlapi_timer *wlapi_init_timer(struct phy_shim_info *physhim,
+<<<<<<< HEAD
 				     void (*fn)(struct brcms_phy *pi),
+=======
+				     void (*fn)(void *pi),
+>>>>>>> origin/android16-base
 				     void *arg, const char *name);
 void wlapi_free_timer(struct wlapi_timer *t);
 void wlapi_add_timer(struct wlapi_timer *t, uint ms, int periodic);

@@ -727,13 +727,30 @@ static int cfv_probe(struct virtio_device *vdev)
 	/* Carrier is off until netdevice is opened */
 	netif_carrier_off(netdev);
 
+<<<<<<< HEAD
 	/* register Netdev */
 	err = register_netdev(netdev);
 	if (err) {
+=======
+	/* serialize netdev register + virtio_device_ready() with ndo_open() */
+	rtnl_lock();
+
+	/* register Netdev */
+	err = register_netdevice(netdev);
+	if (err) {
+		rtnl_unlock();
+>>>>>>> origin/android16-base
 		dev_err(&vdev->dev, "Unable to register netdev (%d)\n", err);
 		goto err;
 	}
 
+<<<<<<< HEAD
+=======
+	virtio_device_ready(vdev);
+
+	rtnl_unlock();
+
+>>>>>>> origin/android16-base
 	debugfs_init(cfv);
 
 	return 0;

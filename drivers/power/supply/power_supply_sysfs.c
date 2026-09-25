@@ -45,8 +45,13 @@ static const char * const power_supply_type_text[] = {
 	"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
 	"USB_PD", "USB_PD_DRP", "BrickID",
 	"USB_HVDCP", "USB_HVDCP_3", "USB_HVDCP_3P5", "Wireless", "USB_FLOAT",
+<<<<<<< HEAD
 	"BMS", "Parallel", "Main", "Wipower", "USB_C_UFP", "USB_C_DFP",
 	"Charge_Pump", "POGO",
+=======
+	"BMS", "Parallel", "Main", "USB_C_UFP", "USB_C_DFP",
+	"Charge_Pump",
+>>>>>>> origin/android16-base
 };
 
 static const char * const power_supply_usb_type_text[] = {
@@ -148,7 +153,12 @@ static ssize_t power_supply_show_property(struct device *dev,
 
 		if (ret < 0) {
 			if (ret == -ENODATA)
+<<<<<<< HEAD
 				dev_dbg(dev, "driver has no data for `%s' property\n",
+=======
+				dev_dbg_ratelimited(dev,
+					"driver has no data for `%s' property\n",
+>>>>>>> origin/android16-base
 					attr->attr.name);
 			else if (ret != -ENODEV && ret != -EAGAIN)
 				dev_err_ratelimited(dev,
@@ -437,7 +447,10 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(batt_profile_version),
 	POWER_SUPPLY_ATTR(batt_full_current),
 	POWER_SUPPLY_ATTR(recharge_soc),
+<<<<<<< HEAD
 	POWER_SUPPLY_ATTR(recharge_mv),
+=======
+>>>>>>> origin/android16-base
 	POWER_SUPPLY_ATTR(hvdcp_opti_allowed),
 	POWER_SUPPLY_ATTR(smb_en_mode),
 	POWER_SUPPLY_ATTR(smb_en_reason),
@@ -469,10 +482,13 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(voltage_step),
 	POWER_SUPPLY_ATTR(apsd_rerun),
 	POWER_SUPPLY_ATTR(apsd_timeout),
+<<<<<<< HEAD
 	POWER_SUPPLY_ATTR(elapsed_months),
 	POWER_SUPPLY_ATTR(gauge_voltage),
 	POWER_SUPPLY_ATTR(battery_maintenance),
 	POWER_SUPPLY_ATTR(battery_maintenance_set),
+=======
+>>>>>>> origin/android16-base
 	/* Charge pump properties */
 	POWER_SUPPLY_ATTR(cp_status1),
 	POWER_SUPPLY_ATTR(cp_status2),
@@ -582,8 +598,11 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	dev_dbg(dev, "%s: POWER_SUPPLY_NAME=%s\n", __FUNCTION__, psy->desc->name);
 
+=======
+>>>>>>> origin/android16-base
 	prop_buf = (char *)get_zeroed_page(GFP_KERNEL);
 	if (!prop_buf)
 		return -ENOMEM;

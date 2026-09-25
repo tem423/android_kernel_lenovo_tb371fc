@@ -1140,6 +1140,11 @@ int w1_process(void *data)
 	/* remainder if it woke up early */
 	unsigned long jremain = 0;
 
+<<<<<<< HEAD
+=======
+	atomic_inc(&dev->refcnt);
+
+>>>>>>> origin/android16-base
 	for (;;) {
 
 		if (!jremain && dev->search_count) {
@@ -1167,8 +1172,15 @@ int w1_process(void *data)
 		 */
 		mutex_unlock(&dev->list_mutex);
 
+<<<<<<< HEAD
 		if (kthread_should_stop())
 			break;
+=======
+		if (kthread_should_stop()) {
+			__set_current_state(TASK_RUNNING);
+			break;
+		}
+>>>>>>> origin/android16-base
 
 		/* Only sleep when the search is active. */
 		if (dev->search_count) {
@@ -1233,10 +1245,17 @@ err_out_exit_init:
 
 static void __exit w1_fini(void)
 {
+<<<<<<< HEAD
 	struct w1_master *dev;
 
 	/* Set netlink removal messages and some cleanup */
 	list_for_each_entry(dev, &w1_masters, w1_master_entry)
+=======
+	struct w1_master *dev, *n;
+
+	/* Set netlink removal messages and some cleanup */
+	list_for_each_entry_safe(dev, n, &w1_masters, w1_master_entry)
+>>>>>>> origin/android16-base
 		__w1_remove_master_device(dev);
 
 	w1_fini_netlink();

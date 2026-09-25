@@ -103,9 +103,22 @@ static int ses_recv_diag(struct scsi_device *sdev, int page_code,
 		0
 	};
 	unsigned char recv_page_code;
+<<<<<<< HEAD
 
 	ret =  scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, buf, bufflen,
 				NULL, SES_TIMEOUT, SES_RETRIES, NULL);
+=======
+	unsigned int retries = SES_RETRIES;
+	struct scsi_sense_hdr sshdr;
+
+	do {
+		ret = scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, buf, bufflen,
+				       &sshdr, SES_TIMEOUT, 1, NULL);
+	} while (ret > 0 && --retries && scsi_sense_valid(&sshdr) &&
+		 (sshdr.sense_key == NOT_READY ||
+		  (sshdr.sense_key == UNIT_ATTENTION && sshdr.asc == 0x29)));
+
+>>>>>>> origin/android16-base
 	if (unlikely(ret))
 		return ret;
 
@@ -127,7 +140,11 @@ static int ses_recv_diag(struct scsi_device *sdev, int page_code,
 static int ses_send_diag(struct scsi_device *sdev, int page_code,
 			 void *buf, int bufflen)
 {
+<<<<<<< HEAD
 	u32 result;
+=======
+	int result;
+>>>>>>> origin/android16-base
 
 	unsigned char cmd[] = {
 		SEND_DIAGNOSTIC,
@@ -137,9 +154,22 @@ static int ses_send_diag(struct scsi_device *sdev, int page_code,
 		bufflen & 0xff,
 		0
 	};
+<<<<<<< HEAD
 
 	result = scsi_execute_req(sdev, cmd, DMA_TO_DEVICE, buf, bufflen,
 				  NULL, SES_TIMEOUT, SES_RETRIES, NULL);
+=======
+	struct scsi_sense_hdr sshdr;
+	unsigned int retries = SES_RETRIES;
+
+	do {
+		result = scsi_execute_req(sdev, cmd, DMA_TO_DEVICE, buf, bufflen,
+					  &sshdr, SES_TIMEOUT, 1, NULL);
+	} while (result > 0 && --retries && scsi_sense_valid(&sshdr) &&
+		 (sshdr.sense_key == NOT_READY ||
+		  (sshdr.sense_key == UNIT_ATTENTION && sshdr.asc == 0x29)));
+
+>>>>>>> origin/android16-base
 	if (result)
 		sdev_printk(KERN_ERR, sdev, "SEND DIAGNOSTIC result: %8x\n",
 			    result);
@@ -435,8 +465,13 @@ int ses_match_host(struct enclosure_device *edev, void *data)
 }
 #endif  /*  0  */
 
+<<<<<<< HEAD
 static void ses_process_descriptor(struct enclosure_component *ecomp,
 				   unsigned char *desc)
+=======
+static int ses_process_descriptor(struct enclosure_component *ecomp,
+				   unsigned char *desc, int max_desc_len)
+>>>>>>> origin/android16-base
 {
 	int eip = desc[0] & 0x10;
 	int invalid = desc[0] & 0x80;
@@ -447,22 +482,48 @@ static void ses_process_descriptor(struct enclosure_component *ecomp,
 	unsigned char *d;
 
 	if (invalid)
+<<<<<<< HEAD
 		return;
+=======
+		return 0;
+>>>>>>> origin/android16-base
 
 	switch (proto) {
 	case SCSI_PROTOCOL_FCP:
 		if (eip) {
+<<<<<<< HEAD
+=======
+			if (max_desc_len <= 7)
+				return 1;
+>>>>>>> origin/android16-base
 			d = desc + 4;
 			slot = d[3];
 		}
 		break;
 	case SCSI_PROTOCOL_SAS:
+<<<<<<< HEAD
 		if (eip) {
 			d = desc + 4;
 			slot = d[3];
 			d = desc + 8;
 		} else
 			d = desc + 4;
+=======
+
+		if (eip) {
+			if (max_desc_len <= 27)
+				return 1;
+			d = desc + 4;
+			slot = d[3];
+			d = desc + 8;
+		} else {
+			if (max_desc_len <= 23)
+				return 1;
+			d = desc + 4;
+		}
+
+
+>>>>>>> origin/android16-base
 		/* only take the phy0 addr */
 		addr = (u64)d[12] << 56 |
 			(u64)d[13] << 48 |
@@ -479,6 +540,11 @@ static void ses_process_descriptor(struct enclosure_component *ecomp,
 	}
 	ecomp->slot = slot;
 	scomp->addr = addr;
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 struct efd {
@@ -493,9 +559,12 @@ static int ses_enclosure_find_by_addr(struct enclosure_device *edev,
 	int i;
 	struct ses_component *scomp;
 
+<<<<<<< HEAD
 	if (!edev->component[0].scratch)
 		return 0;
 
+=======
+>>>>>>> origin/android16-base
 	for (i = 0; i < edev->components; i++) {
 		scomp = edev->component[i].scratch;
 		if (scomp->addr != efd->addr)
@@ -551,7 +620,11 @@ static void ses_enclosure_data_process(struct enclosure_device *edev,
 		/* skip past overall descriptor */
 		desc_ptr += len + 4;
 	}
+<<<<<<< HEAD
 	if (ses_dev->page10)
+=======
+	if (ses_dev->page10 && ses_dev->page10_len > 9)
+>>>>>>> origin/android16-base
 		addl_desc_ptr = ses_dev->page10 + 8;
 	type_ptr = ses_dev->page1_types;
 	components = 0;
@@ -559,17 +632,35 @@ static void ses_enclosure_data_process(struct enclosure_device *edev,
 		for (j = 0; j < type_ptr[1]; j++) {
 			char *name = NULL;
 			struct enclosure_component *ecomp;
+<<<<<<< HEAD
 
 			if (desc_ptr) {
 				if (desc_ptr >= buf + page7_len) {
+=======
+			int max_desc_len;
+
+			if (desc_ptr) {
+				if (desc_ptr + 3 >= buf + page7_len) {
+>>>>>>> origin/android16-base
 					desc_ptr = NULL;
 				} else {
 					len = (desc_ptr[2] << 8) + desc_ptr[3];
 					desc_ptr += 4;
+<<<<<<< HEAD
 					/* Add trailing zero - pushes into
 					 * reserved space */
 					desc_ptr[len] = '\0';
 					name = desc_ptr;
+=======
+					if (desc_ptr + len > buf + page7_len)
+						desc_ptr = NULL;
+					else {
+						/* Add trailing zero - pushes into
+						 * reserved space */
+						desc_ptr[len] = '\0';
+						name = desc_ptr;
+					}
+>>>>>>> origin/android16-base
 				}
 			}
 			if (type_ptr[0] == ENCLOSURE_COMPONENT_DEVICE ||
@@ -581,6 +672,7 @@ static void ses_enclosure_data_process(struct enclosure_device *edev,
 						components++,
 						type_ptr[0],
 						name);
+<<<<<<< HEAD
 				else
 					ecomp = &edev->component[components++];
 
@@ -589,6 +681,22 @@ static void ses_enclosure_data_process(struct enclosure_device *edev,
 						ses_process_descriptor(
 							ecomp,
 							addl_desc_ptr);
+=======
+				else if (components < edev->components)
+					ecomp = &edev->component[components++];
+				else
+					ecomp = ERR_PTR(-EINVAL);
+
+				if (!IS_ERR(ecomp)) {
+					if (addl_desc_ptr) {
+						max_desc_len = ses_dev->page10_len -
+						    (addl_desc_ptr - ses_dev->page10);
+						if (ses_process_descriptor(ecomp,
+						    addl_desc_ptr,
+						    max_desc_len))
+							addl_desc_ptr = NULL;
+					}
+>>>>>>> origin/android16-base
 					if (create)
 						enclosure_component_register(
 							ecomp);
@@ -605,9 +713,17 @@ static void ses_enclosure_data_process(struct enclosure_device *edev,
 			     /* these elements are optional */
 			     type_ptr[0] == ENCLOSURE_COMPONENT_SCSI_TARGET_PORT ||
 			     type_ptr[0] == ENCLOSURE_COMPONENT_SCSI_INITIATOR_PORT ||
+<<<<<<< HEAD
 			     type_ptr[0] == ENCLOSURE_COMPONENT_CONTROLLER_ELECTRONICS))
 				addl_desc_ptr += addl_desc_ptr[1] + 2;
 
+=======
+			     type_ptr[0] == ENCLOSURE_COMPONENT_CONTROLLER_ELECTRONICS)) {
+				addl_desc_ptr += addl_desc_ptr[1] + 2;
+				if (addl_desc_ptr + 1 >= ses_dev->page10 + ses_dev->page10_len)
+					addl_desc_ptr = NULL;
+			}
+>>>>>>> origin/android16-base
 		}
 	}
 	kfree(buf);
@@ -706,6 +822,10 @@ static int ses_intf_add(struct device *cdev,
 		    type_ptr[0] == ENCLOSURE_COMPONENT_ARRAY_DEVICE)
 			components += type_ptr[1];
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/android16-base
 	ses_dev->page1 = buf;
 	ses_dev->page1_len = len;
 	buf = NULL;
@@ -747,9 +867,17 @@ static int ses_intf_add(struct device *cdev,
 		buf = NULL;
 	}
 page2_not_supported:
+<<<<<<< HEAD
 	scomp = kcalloc(components, sizeof(struct ses_component), GFP_KERNEL);
 	if (!scomp)
 		goto err_free;
+=======
+	if (components > 0) {
+		scomp = kcalloc(components, sizeof(struct ses_component), GFP_KERNEL);
+		if (!scomp)
+			goto err_free;
+	}
+>>>>>>> origin/android16-base
 
 	edev = enclosure_register(cdev->parent, dev_name(&sdev->sdev_gendev),
 				  components, &ses_enclosure_callbacks);
@@ -829,7 +957,12 @@ static void ses_intf_remove_enclosure(struct scsi_device *sdev)
 	kfree(ses_dev->page2);
 	kfree(ses_dev);
 
+<<<<<<< HEAD
 	kfree(edev->component[0].scratch);
+=======
+	if (edev->components)
+		kfree(edev->component[0].scratch);
+>>>>>>> origin/android16-base
 
 	put_device(&edev->edev);
 	enclosure_unregister(edev);

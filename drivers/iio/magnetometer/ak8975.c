@@ -404,6 +404,10 @@ static int ak8975_power_on(const struct ak8975_data *data)
 	if (ret) {
 		dev_warn(&data->client->dev,
 			 "Failed to enable specified Vid supply\n");
+<<<<<<< HEAD
+=======
+		regulator_disable(data->vdd);
+>>>>>>> origin/android16-base
 		return ret;
 	}
 	/*
@@ -672,6 +676,7 @@ static int ak8975_start_read_axis(struct ak8975_data *data,
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
 	/* This will be executed only for non-interrupt based waiting case */
 	if (ret & data->def->ctrl_masks[ST1_DRDY]) {
 		ret = i2c_smbus_read_byte_data(client,
@@ -688,6 +693,10 @@ static int ak8975_start_read_axis(struct ak8975_data *data,
 	}
 
 	return 0;
+=======
+	/* Return with zero if the data is ready. */
+	return !data->def->ctrl_regs[ST1_DRDY];
+>>>>>>> origin/android16-base
 }
 
 /* Retrieve raw flux value for one of the x, y, or z axis.  */
@@ -714,6 +723,23 @@ static int ak8975_read_axis(struct iio_dev *indio_dev, int index, int *val)
 	if (ret < 0)
 		goto exit;
 
+<<<<<<< HEAD
+=======
+	/* Read out ST2 for release lock on measurment data. */
+	ret = i2c_smbus_read_byte_data(client, data->def->ctrl_regs[ST2]);
+	if (ret < 0) {
+		dev_err(&client->dev, "Error in reading ST2\n");
+		goto exit;
+	}
+
+	if (ret & (data->def->ctrl_masks[ST2_DERR] |
+		   data->def->ctrl_masks[ST2_HOFL])) {
+		dev_err(&client->dev, "ST2 status error 0x%x\n", ret);
+		ret = -EINVAL;
+		goto exit;
+	}
+
+>>>>>>> origin/android16-base
 	mutex_unlock(&data->lock);
 
 	pm_runtime_mark_last_busy(&data->client->dev);

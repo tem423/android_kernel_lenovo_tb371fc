@@ -97,7 +97,11 @@
 &emac {
 	pinctrl-names = "default";
 	pinctrl-0 = <&rgmii_pins>;
+<<<<<<< HEAD
 	phy-mode = "rgmii";
+=======
+	phy-mode = "rgmii-id";
+>>>>>>> origin/android16-base
 	phy-handle = <&ext_rgmii_phy>;
 	phy-supply = <&reg_dc1sw>;
 	status = "okay";

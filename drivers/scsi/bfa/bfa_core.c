@@ -1915,15 +1915,22 @@ bfa_comp_process(struct bfa_s *bfa, struct list_head *comp_q)
 	struct list_head		*qe;
 	struct list_head		*qen;
 	struct bfa_cb_qe_s	*hcb_qe;
+<<<<<<< HEAD
 	bfa_cb_cbfn_status_t	cbfn;
+=======
+>>>>>>> origin/android16-base
 
 	list_for_each_safe(qe, qen, comp_q) {
 		hcb_qe = (struct bfa_cb_qe_s *) qe;
 		if (hcb_qe->pre_rmv) {
 			/* qe is invalid after return, dequeue before cbfn() */
 			list_del(qe);
+<<<<<<< HEAD
 			cbfn = (bfa_cb_cbfn_status_t)(hcb_qe->cbfn);
 			cbfn(hcb_qe->cbarg, hcb_qe->fw_status);
+=======
+			hcb_qe->cbfn_status(hcb_qe->cbarg, hcb_qe->fw_status);
+>>>>>>> origin/android16-base
 		} else
 			hcb_qe->cbfn(hcb_qe->cbarg, BFA_TRUE);
 	}

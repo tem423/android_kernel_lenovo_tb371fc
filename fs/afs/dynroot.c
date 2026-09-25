@@ -172,6 +172,7 @@ static int afs_dynroot_d_revalidate(struct dentry *dentry, unsigned int flags)
 	return 1;
 }
 
+<<<<<<< HEAD
 /*
  * Allow the VFS to enquire as to whether a dentry should be unhashed (mustn't
  * sleep)
@@ -186,6 +187,11 @@ static int afs_dynroot_d_delete(const struct dentry *dentry)
 const struct dentry_operations afs_dynroot_dentry_operations = {
 	.d_revalidate	= afs_dynroot_d_revalidate,
 	.d_delete	= afs_dynroot_d_delete,
+=======
+const struct dentry_operations afs_dynroot_dentry_operations = {
+	.d_revalidate	= afs_dynroot_d_revalidate,
+	.d_delete	= always_delete_dentry,
+>>>>>>> origin/android16-base
 	.d_release	= afs_d_release,
 	.d_automount	= afs_d_automount,
 };

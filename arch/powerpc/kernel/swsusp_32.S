@@ -181,7 +181,11 @@ _GLOBAL(swsusp_arch_resume)
 #ifdef CONFIG_ALTIVEC
 	/* Stop pending alitvec streams and memory accesses */
 BEGIN_FTR_SECTION
+<<<<<<< HEAD
 	DSSALL
+=======
+	PPC_DSSALL
+>>>>>>> origin/android16-base
 END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
 #endif
  	sync

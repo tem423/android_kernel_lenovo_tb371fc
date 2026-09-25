@@ -492,7 +492,11 @@ static enum m5mols_restype __find_restype(u32 code)
 	do {
 		if (code == m5mols_default_ffmt[type].code)
 			return type;
+<<<<<<< HEAD
 	} while (type++ != SIZE_DEFAULT_FFMT);
+=======
+	} while (++type != SIZE_DEFAULT_FFMT);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

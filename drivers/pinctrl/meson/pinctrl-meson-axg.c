@@ -400,6 +400,10 @@ static struct meson_pmx_group meson_axg_periphs_groups[] = {
 	GPIO_GROUP(GPIOA_15),
 	GPIO_GROUP(GPIOA_16),
 	GPIO_GROUP(GPIOA_17),
+<<<<<<< HEAD
+=======
+	GPIO_GROUP(GPIOA_18),
+>>>>>>> origin/android16-base
 	GPIO_GROUP(GPIOA_19),
 	GPIO_GROUP(GPIOA_20),
 

@@ -31,7 +31,11 @@
 	pcp_op_T__ *ptr__;						\
 	preempt_disable_notrace();					\
 	ptr__ = raw_cpu_ptr(&(pcp));					\
+<<<<<<< HEAD
 	prev__ = *ptr__;						\
+=======
+	prev__ = READ_ONCE(*ptr__);					\
+>>>>>>> origin/android16-base
 	do {								\
 		old__ = prev__;						\
 		new__ = old__ op (val);					\

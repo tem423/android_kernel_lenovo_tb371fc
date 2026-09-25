@@ -540,7 +540,11 @@ static void etnaviv_gpu_enable_mlcg(struct etnaviv_gpu *gpu)
 	u32 pmc, ppc;
 
 	/* enable clock gating */
+<<<<<<< HEAD
 	ppc = gpu_read(gpu, VIVS_PM_POWER_CONTROLS);
+=======
+	ppc = gpu_read_power(gpu, VIVS_PM_POWER_CONTROLS);
+>>>>>>> origin/android16-base
 	ppc |= VIVS_PM_POWER_CONTROLS_ENABLE_MODULE_CLOCK_GATING;
 
 	/* Disable stall module clock gating for 4.3.0.1 and 4.3.0.2 revs */
@@ -548,9 +552,15 @@ static void etnaviv_gpu_enable_mlcg(struct etnaviv_gpu *gpu)
 	    gpu->identity.revision == 0x4302)
 		ppc |= VIVS_PM_POWER_CONTROLS_DISABLE_STALL_MODULE_CLOCK_GATING;
 
+<<<<<<< HEAD
 	gpu_write(gpu, VIVS_PM_POWER_CONTROLS, ppc);
 
 	pmc = gpu_read(gpu, VIVS_PM_MODULE_CONTROLS);
+=======
+	gpu_write_power(gpu, VIVS_PM_POWER_CONTROLS, ppc);
+
+	pmc = gpu_read_power(gpu, VIVS_PM_MODULE_CONTROLS);
+>>>>>>> origin/android16-base
 
 	/* Disable PA clock gating for GC400+ without bugfix except for GC420 */
 	if (gpu->identity.model >= chipModel_GC400 &&
@@ -579,7 +589,11 @@ static void etnaviv_gpu_enable_mlcg(struct etnaviv_gpu *gpu)
 	pmc |= VIVS_PM_MODULE_CONTROLS_DISABLE_MODULE_CLOCK_GATING_RA_HZ;
 	pmc |= VIVS_PM_MODULE_CONTROLS_DISABLE_MODULE_CLOCK_GATING_RA_EZ;
 
+<<<<<<< HEAD
 	gpu_write(gpu, VIVS_PM_MODULE_CONTROLS, pmc);
+=======
+	gpu_write_power(gpu, VIVS_PM_MODULE_CONTROLS, pmc);
+>>>>>>> origin/android16-base
 }
 
 void etnaviv_gpu_start_fe(struct etnaviv_gpu *gpu, u32 address, u16 prefetch)
@@ -620,11 +634,19 @@ static void etnaviv_gpu_setup_pulse_eater(struct etnaviv_gpu *gpu)
 	    (gpu->identity.features & chipFeatures_PIPE_3D))
 	{
 		/* Performance fix: disable internal DFS */
+<<<<<<< HEAD
 		pulse_eater = gpu_read(gpu, VIVS_PM_PULSE_EATER);
 		pulse_eater |= BIT(18);
 	}
 
 	gpu_write(gpu, VIVS_PM_PULSE_EATER, pulse_eater);
+=======
+		pulse_eater = gpu_read_power(gpu, VIVS_PM_PULSE_EATER);
+		pulse_eater |= BIT(18);
+	}
+
+	gpu_write_power(gpu, VIVS_PM_PULSE_EATER, pulse_eater);
+>>>>>>> origin/android16-base
 }
 
 static void etnaviv_gpu_hw_init(struct etnaviv_gpu *gpu)
@@ -1038,7 +1060,11 @@ static bool etnaviv_fence_signaled(struct dma_fence *fence)
 {
 	struct etnaviv_fence *f = to_etnaviv_fence(fence);
 
+<<<<<<< HEAD
 	return fence_completed(f->gpu, f->base.seqno);
+=======
+	return (s32)(f->gpu->completed_fence - f->base.seqno) >= 0;
+>>>>>>> origin/android16-base
 }
 
 static void etnaviv_fence_release(struct dma_fence *fence)
@@ -1077,6 +1103,15 @@ static struct dma_fence *etnaviv_gpu_fence_alloc(struct etnaviv_gpu *gpu)
 	return &f->base;
 }
 
+<<<<<<< HEAD
+=======
+/* returns true if fence a comes after fence b */
+static inline bool fence_after(u32 a, u32 b)
+{
+	return (s32)(a - b) > 0;
+}
+
+>>>>>>> origin/android16-base
 /*
  * event management:
  */
@@ -1231,10 +1266,19 @@ static void sync_point_perfmon_sample_pre(struct etnaviv_gpu *gpu,
 {
 	u32 val;
 
+<<<<<<< HEAD
 	/* disable clock gating */
 	val = gpu_read(gpu, VIVS_PM_POWER_CONTROLS);
 	val &= ~VIVS_PM_POWER_CONTROLS_ENABLE_MODULE_CLOCK_GATING;
 	gpu_write(gpu, VIVS_PM_POWER_CONTROLS, val);
+=======
+	mutex_lock(&gpu->lock);
+
+	/* disable clock gating */
+	val = gpu_read_power(gpu, VIVS_PM_POWER_CONTROLS);
+	val &= ~VIVS_PM_POWER_CONTROLS_ENABLE_MODULE_CLOCK_GATING;
+	gpu_write_power(gpu, VIVS_PM_POWER_CONTROLS, val);
+>>>>>>> origin/android16-base
 
 	/* enable debug register */
 	val = gpu_read(gpu, VIVS_HI_CLOCK_CONTROL);
@@ -1242,6 +1286,11 @@ static void sync_point_perfmon_sample_pre(struct etnaviv_gpu *gpu,
 	gpu_write(gpu, VIVS_HI_CLOCK_CONTROL, val);
 
 	sync_point_perfmon_sample(gpu, event, ETNA_PM_PROCESS_PRE);
+<<<<<<< HEAD
+=======
+
+	mutex_unlock(&gpu->lock);
+>>>>>>> origin/android16-base
 }
 
 static void sync_point_perfmon_sample_post(struct etnaviv_gpu *gpu,
@@ -1251,6 +1300,7 @@ static void sync_point_perfmon_sample_post(struct etnaviv_gpu *gpu,
 	unsigned int i;
 	u32 val;
 
+<<<<<<< HEAD
 	sync_point_perfmon_sample(gpu, event, ETNA_PM_PROCESS_POST);
 
 	for (i = 0; i < submit->nr_pmrs; i++) {
@@ -1259,15 +1309,35 @@ static void sync_point_perfmon_sample_post(struct etnaviv_gpu *gpu,
 		*pmr->bo_vma = pmr->sequence;
 	}
 
+=======
+	mutex_lock(&gpu->lock);
+
+	sync_point_perfmon_sample(gpu, event, ETNA_PM_PROCESS_POST);
+
+>>>>>>> origin/android16-base
 	/* disable debug register */
 	val = gpu_read(gpu, VIVS_HI_CLOCK_CONTROL);
 	val |= VIVS_HI_CLOCK_CONTROL_DISABLE_DEBUG_REGISTERS;
 	gpu_write(gpu, VIVS_HI_CLOCK_CONTROL, val);
 
 	/* enable clock gating */
+<<<<<<< HEAD
 	val = gpu_read(gpu, VIVS_PM_POWER_CONTROLS);
 	val |= VIVS_PM_POWER_CONTROLS_ENABLE_MODULE_CLOCK_GATING;
 	gpu_write(gpu, VIVS_PM_POWER_CONTROLS, val);
+=======
+	val = gpu_read_power(gpu, VIVS_PM_POWER_CONTROLS);
+	val |= VIVS_PM_POWER_CONTROLS_ENABLE_MODULE_CLOCK_GATING;
+	gpu_write_power(gpu, VIVS_PM_POWER_CONTROLS, val);
+
+	mutex_unlock(&gpu->lock);
+
+	for (i = 0; i < submit->nr_pmrs; i++) {
+		const struct etnaviv_perfmon_request *pmr = submit->pmrs + i;
+
+		*pmr->bo_vma = pmr->sequence;
+	}
+>>>>>>> origin/android16-base
 }
 
 

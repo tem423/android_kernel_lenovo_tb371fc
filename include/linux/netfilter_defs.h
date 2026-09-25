@@ -7,6 +7,7 @@
 /* in/out/forward only */
 #define NF_ARP_NUMHOOKS 3
 
+<<<<<<< HEAD
 /* max hook is NF_DN_ROUTE (6), also see uapi/linux/netfilter_decnet.h */
 #define NF_DN_NUMHOOKS 7
 
@@ -16,5 +17,8 @@
 #else
 #define NF_MAX_HOOKS	NF_INET_NUMHOOKS
 #endif
+=======
+#define NF_MAX_HOOKS	NF_INET_NUMHOOKS
+>>>>>>> origin/android16-base
 
 #endif

@@ -282,14 +282,24 @@ static int _rtl_usb_init_tx(struct ieee80211_hw *hw)
 						    ? USB_HIGH_SPEED_BULK_SIZE
 						    : USB_FULL_SPEED_BULK_SIZE;
 
+<<<<<<< HEAD
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "USB Max Bulk-out Size=%d\n",
 		 rtlusb->max_bulk_out_size);
+=======
+	rtl_dbg(rtlpriv, COMP_INIT, DBG_DMESG, "USB Max Bulk-out Size=%d\n",
+		rtlusb->max_bulk_out_size);
+>>>>>>> origin/android16-base
 
 	for (i = 0; i < __RTL_TXQ_NUM; i++) {
 		u32 ep_num = rtlusb->ep_map.ep_mapping[i];
 		if (!ep_num) {
+<<<<<<< HEAD
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 				 "Invalid endpoint map setting!\n");
+=======
+			rtl_dbg(rtlpriv, COMP_INIT, DBG_DMESG,
+				"Invalid endpoint map setting!\n");
+>>>>>>> origin/android16-base
 			return -EINVAL;
 		}
 	}
@@ -358,10 +368,17 @@ static int _rtl_usb_init(struct ieee80211_hw *hw)
 		else if (usb_endpoint_dir_out(pep_desc))
 			rtlusb->out_ep_nums++;
 
+<<<<<<< HEAD
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 			 "USB EP(0x%02x), MaxPacketSize=%d, Interval=%d\n",
 			 pep_desc->bEndpointAddress, pep_desc->wMaxPacketSize,
 			 pep_desc->bInterval);
+=======
+		rtl_dbg(rtlpriv, COMP_INIT, DBG_DMESG,
+			"USB EP(0x%02x), MaxPacketSize=%d, Interval=%d\n",
+			pep_desc->bEndpointAddress, pep_desc->wMaxPacketSize,
+			pep_desc->bInterval);
+>>>>>>> origin/android16-base
 	}
 	if (rtlusb->in_ep_nums <  rtlpriv->cfg->usb_interface_cfg->in_ep_num) {
 		pr_err("Too few input end points found\n");
@@ -960,7 +977,11 @@ static void _rtl_usb_tx_preprocess(struct ieee80211_hw *hw,
 
 	memset(&tcb_desc, 0, sizeof(struct rtl_tcb_desc));
 	if (ieee80211_is_auth(fc)) {
+<<<<<<< HEAD
 		RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG, "MAC80211_LINKING\n");
+=======
+		rtl_dbg(rtlpriv, COMP_SEND, DBG_DMESG, "MAC80211_LINKING\n");
+>>>>>>> origin/android16-base
 	}
 
 	if (rtlpriv->psc.sw_ps_enabled) {
@@ -1042,7 +1063,11 @@ int rtl_usb_probe(struct usb_interface *intf,
 	hw = ieee80211_alloc_hw(sizeof(struct rtl_priv) +
 				sizeof(struct rtl_usb_priv), &rtl_ops);
 	if (!hw) {
+<<<<<<< HEAD
 		WARN_ONCE(true, "rtl_usb: ieee80211 alloc failed\n");
+=======
+		pr_warn("rtl_usb: ieee80211 alloc failed\n");
+>>>>>>> origin/android16-base
 		return -ENOMEM;
 	}
 	rtlpriv = hw->priv;

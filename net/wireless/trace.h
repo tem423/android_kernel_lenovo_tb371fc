@@ -1619,7 +1619,11 @@ TRACE_EVENT(rdev_return_void_tx_rx,
 
 DECLARE_EVENT_CLASS(tx_rx_evt,
 	TP_PROTO(struct wiphy *wiphy, u32 tx, u32 rx),
+<<<<<<< HEAD
 	TP_ARGS(wiphy, rx, tx),
+=======
+	TP_ARGS(wiphy, tx, rx),
+>>>>>>> origin/android16-base
 	TP_STRUCT__entry(
 		WIPHY_ENTRY
 		__field(u32, tx)
@@ -1636,7 +1640,11 @@ DECLARE_EVENT_CLASS(tx_rx_evt,
 
 DEFINE_EVENT(tx_rx_evt, rdev_set_antenna,
 	TP_PROTO(struct wiphy *wiphy, u32 tx, u32 rx),
+<<<<<<< HEAD
 	TP_ARGS(wiphy, rx, tx)
+=======
+	TP_ARGS(wiphy, tx, rx)
+>>>>>>> origin/android16-base
 );
 
 DECLARE_EVENT_CLASS(wiphy_netdev_id_evt,
@@ -3334,7 +3342,11 @@ TRACE_EVENT(cfg80211_update_owe_info_event,
 #endif /* !__RDEV_OPS_TRACE || TRACE_HEADER_MULTI_READ */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../net/wireless
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace
 #include <trace/define_trace.h>

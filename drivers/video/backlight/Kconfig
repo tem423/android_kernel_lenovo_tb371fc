@@ -493,6 +493,7 @@ config BACKLIGHT_RAVE_SP
 endif # BACKLIGHT_CLASS_DEVICE
 
 endif # BACKLIGHT_LCD_SUPPORT
+<<<<<<< HEAD
 config BACKLIGHT_KTZ8866A
 	tristate "KTZ8866A Backlight Driver (Master)"
 	depends on BACKLIGHT_CLASS_DEVICE && I2C
@@ -504,3 +505,5 @@ config BACKLIGHT_KTZ8866B
 	depends on BACKLIGHT_CLASS_DEVICE && I2C
 	help
 	  KTZ8866B dual backlight slave chip driver (TB371FC).
+=======
+>>>>>>> origin/android16-base

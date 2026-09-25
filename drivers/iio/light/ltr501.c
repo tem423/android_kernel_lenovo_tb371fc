@@ -35,9 +35,18 @@
 #define LTR501_PART_ID 0x86
 #define LTR501_MANUFAC_ID 0x87
 #define LTR501_ALS_DATA1 0x88 /* 16-bit, little endian */
+<<<<<<< HEAD
 #define LTR501_ALS_DATA0 0x8a /* 16-bit, little endian */
 #define LTR501_ALS_PS_STATUS 0x8c
 #define LTR501_PS_DATA 0x8d /* 16-bit, little endian */
+=======
+#define LTR501_ALS_DATA1_UPPER 0x89 /* upper 8 bits of LTR501_ALS_DATA1 */
+#define LTR501_ALS_DATA0 0x8a /* 16-bit, little endian */
+#define LTR501_ALS_DATA0_UPPER 0x8b /* upper 8 bits of LTR501_ALS_DATA0 */
+#define LTR501_ALS_PS_STATUS 0x8c
+#define LTR501_PS_DATA 0x8d /* 16-bit, little endian */
+#define LTR501_PS_DATA_UPPER 0x8e /* upper 8 bits of LTR501_PS_DATA */
+>>>>>>> origin/android16-base
 #define LTR501_INTR 0x8f /* output mode, polarity, mode */
 #define LTR501_PS_THRESH_UP 0x90 /* 11 bit, ps upper threshold */
 #define LTR501_PS_THRESH_LOW 0x92 /* 11 bit, ps lower threshold */
@@ -408,18 +417,31 @@ static int ltr501_read_als(struct ltr501_data *data, __le16 buf[2])
 
 static int ltr501_read_ps(struct ltr501_data *data)
 {
+<<<<<<< HEAD
 	int ret, status;
+=======
+	__le16 status;
+	int ret;
+>>>>>>> origin/android16-base
 
 	ret = ltr501_drdy(data, LTR501_STATUS_PS_RDY);
 	if (ret < 0)
 		return ret;
 
 	ret = regmap_bulk_read(data->regmap, LTR501_PS_DATA,
+<<<<<<< HEAD
 			       &status, 2);
 	if (ret < 0)
 		return ret;
 
 	return status;
+=======
+			       &status, sizeof(status));
+	if (ret < 0)
+		return ret;
+
+	return le16_to_cpu(status);
+>>>>>>> origin/android16-base
 }
 
 static int ltr501_read_intr_prst(struct ltr501_data *data,
@@ -1207,7 +1229,11 @@ static struct ltr501_chip_info ltr501_chip_info_tbl[] = {
 		.als_gain_tbl_size = ARRAY_SIZE(ltr559_als_gain_tbl),
 		.ps_gain = ltr559_ps_gain_tbl,
 		.ps_gain_tbl_size = ARRAY_SIZE(ltr559_ps_gain_tbl),
+<<<<<<< HEAD
 		.als_mode_active = BIT(1),
+=======
+		.als_mode_active = BIT(0),
+>>>>>>> origin/android16-base
 		.als_gain_mask = BIT(2) | BIT(3) | BIT(4),
 		.als_gain_shift = 2,
 		.info = &ltr501_info,
@@ -1271,7 +1297,11 @@ static irqreturn_t ltr501_trigger_handler(int irq, void *p)
 		ret = regmap_bulk_read(data->regmap, LTR501_ALS_DATA1,
 				       (u8 *)als_buf, sizeof(als_buf));
 		if (ret < 0)
+<<<<<<< HEAD
 			return ret;
+=======
+			goto done;
+>>>>>>> origin/android16-base
 		if (test_bit(0, indio_dev->active_scan_mask))
 			scan.channels[j++] = le16_to_cpu(als_buf[1]);
 		if (test_bit(1, indio_dev->active_scan_mask))
@@ -1356,9 +1386,18 @@ static bool ltr501_is_volatile_reg(struct device *dev, unsigned int reg)
 {
 	switch (reg) {
 	case LTR501_ALS_DATA1:
+<<<<<<< HEAD
 	case LTR501_ALS_DATA0:
 	case LTR501_ALS_PS_STATUS:
 	case LTR501_PS_DATA:
+=======
+	case LTR501_ALS_DATA1_UPPER:
+	case LTR501_ALS_DATA0:
+	case LTR501_ALS_DATA0_UPPER:
+	case LTR501_ALS_PS_STATUS:
+	case LTR501_PS_DATA:
+	case LTR501_PS_DATA_UPPER:
+>>>>>>> origin/android16-base
 		return true;
 	default:
 		return false;

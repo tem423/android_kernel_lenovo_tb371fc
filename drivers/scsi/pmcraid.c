@@ -4559,7 +4559,11 @@ pmcraid_register_interrupt_handler(struct pmcraid_instance *pinstance)
 	return 0;
 
 out_unwind:
+<<<<<<< HEAD
 	while (--i > 0)
+=======
+	while (--i >= 0)
+>>>>>>> origin/android16-base
 		free_irq(pci_irq_vector(pdev, i), &pinstance->hrrq_vector[i]);
 	pci_free_irq_vectors(pdev);
 	return rc;

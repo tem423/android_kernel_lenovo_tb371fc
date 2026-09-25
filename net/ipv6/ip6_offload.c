@@ -98,6 +98,11 @@ static struct sk_buff *ipv6_gso_segment(struct sk_buff *skb,
 	if (likely(ops && ops->callbacks.gso_segment)) {
 		skb_reset_transport_header(skb);
 		segs = ops->callbacks.gso_segment(skb, features);
+<<<<<<< HEAD
+=======
+		if (!segs)
+			skb->network_header = skb_mac_header(skb) + nhoff - skb->head;
+>>>>>>> origin/android16-base
 	}
 
 	if (IS_ERR_OR_NULL(segs))

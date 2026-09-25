@@ -1,5 +1,9 @@
 #!/bin/bash
 
+<<<<<<< HEAD
+=======
+rm -r tmpmnt
+>>>>>>> origin/android16-base
 rm -f testfile.img
 dd if=/dev/zero of=testfile.img bs=1M seek=1000 count=1
 DEVICE=$(losetup --show -f testfile.img)

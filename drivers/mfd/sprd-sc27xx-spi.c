@@ -212,7 +212,11 @@ static int sprd_pmic_probe(struct spi_device *spi)
 	}
 
 	ret = devm_regmap_add_irq_chip(&spi->dev, ddata->regmap, ddata->irq,
+<<<<<<< HEAD
 				       IRQF_ONESHOT | IRQF_NO_SUSPEND, 0,
+=======
+				       IRQF_ONESHOT, 0,
+>>>>>>> origin/android16-base
 				       &ddata->irq_chip, &ddata->irq_data);
 	if (ret) {
 		dev_err(&spi->dev, "Failed to add PMIC irq chip %d\n", ret);
@@ -228,9 +232,40 @@ static int sprd_pmic_probe(struct spi_device *spi)
 		return ret;
 	}
 
+<<<<<<< HEAD
 	return 0;
 }
 
+=======
+	device_init_wakeup(&spi->dev, true);
+	return 0;
+}
+
+#ifdef CONFIG_PM_SLEEP
+static int sprd_pmic_suspend(struct device *dev)
+{
+	struct sprd_pmic *ddata = dev_get_drvdata(dev);
+
+	if (device_may_wakeup(dev))
+		enable_irq_wake(ddata->irq);
+
+	return 0;
+}
+
+static int sprd_pmic_resume(struct device *dev)
+{
+	struct sprd_pmic *ddata = dev_get_drvdata(dev);
+
+	if (device_may_wakeup(dev))
+		disable_irq_wake(ddata->irq);
+
+	return 0;
+}
+#endif
+
+static SIMPLE_DEV_PM_OPS(sprd_pmic_pm_ops, sprd_pmic_suspend, sprd_pmic_resume);
+
+>>>>>>> origin/android16-base
 static const struct of_device_id sprd_pmic_match[] = {
 	{ .compatible = "sprd,sc2731", .data = &sc2731_data },
 	{},
@@ -242,6 +277,10 @@ static struct spi_driver sprd_pmic_driver = {
 		.name = "sc27xx-pmic",
 		.bus = &spi_bus_type,
 		.of_match_table = sprd_pmic_match,
+<<<<<<< HEAD
+=======
+		.pm = &sprd_pmic_pm_ops,
+>>>>>>> origin/android16-base
 	},
 	.probe = sprd_pmic_probe,
 };

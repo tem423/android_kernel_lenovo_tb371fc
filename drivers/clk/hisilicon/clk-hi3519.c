@@ -142,7 +142,11 @@ static void hi3519_clk_unregister(struct platform_device *pdev)
 	of_clk_del_provider(pdev->dev.of_node);
 
 	hisi_clk_unregister_gate(hi3519_gate_clks,
+<<<<<<< HEAD
 				ARRAY_SIZE(hi3519_mux_clks),
+=======
+				ARRAY_SIZE(hi3519_gate_clks),
+>>>>>>> origin/android16-base
 				crg->clk_data);
 	hisi_clk_unregister_mux(hi3519_mux_clks,
 				ARRAY_SIZE(hi3519_mux_clks),

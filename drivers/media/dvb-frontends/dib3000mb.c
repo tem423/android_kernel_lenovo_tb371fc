@@ -819,4 +819,8 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL");
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(dib3000mb_attach);
+=======
+EXPORT_SYMBOL_GPL(dib3000mb_attach);
+>>>>>>> origin/android16-base

@@ -18,6 +18,10 @@
 #include <linux/smp.h>
 #include <linux/atomic.h>
 #include <asm/pgalloc.h>
+<<<<<<< HEAD
+=======
+#include <asm/processor.h>
+>>>>>>> origin/android16-base
 #include <asm/smp.h>
 #include <asm/bl_bit.h>
 

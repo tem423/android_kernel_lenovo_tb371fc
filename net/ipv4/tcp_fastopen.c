@@ -276,6 +276,10 @@ static struct sock *tcp_fastopen_create_child(struct sock *sk,
 static bool tcp_fastopen_queue_check(struct sock *sk)
 {
 	struct fastopen_queue *fastopenq;
+<<<<<<< HEAD
+=======
+	int max_qlen;
+>>>>>>> origin/android16-base
 
 	/* Make sure the listener has enabled fastopen, and we don't
 	 * exceed the max # of pending TFO requests allowed before trying
@@ -288,10 +292,18 @@ static bool tcp_fastopen_queue_check(struct sock *sk)
 	 * temporarily vs a server not supporting Fast Open at all.
 	 */
 	fastopenq = &inet_csk(sk)->icsk_accept_queue.fastopenq;
+<<<<<<< HEAD
 	if (fastopenq->max_qlen == 0)
 		return false;
 
 	if (fastopenq->qlen >= fastopenq->max_qlen) {
+=======
+	max_qlen = READ_ONCE(fastopenq->max_qlen);
+	if (max_qlen == 0)
+		return false;
+
+	if (fastopenq->qlen >= max_qlen) {
+>>>>>>> origin/android16-base
 		struct request_sock *req1;
 		spin_lock(&fastopenq->lock);
 		req1 = fastopenq->rskq_rst_head;
@@ -313,7 +325,11 @@ static bool tcp_fastopen_no_cookie(const struct sock *sk,
 				   const struct dst_entry *dst,
 				   int flag)
 {
+<<<<<<< HEAD
 	return (sock_net(sk)->ipv4.sysctl_tcp_fastopen & flag) ||
+=======
+	return (READ_ONCE(sock_net(sk)->ipv4.sysctl_tcp_fastopen) & flag) ||
+>>>>>>> origin/android16-base
 	       tcp_sk(sk)->fastopen_no_cookie ||
 	       (dst && dst_metric(dst, RTAX_FASTOPEN_NO_COOKIE));
 }
@@ -328,7 +344,11 @@ struct sock *tcp_try_fastopen(struct sock *sk, struct sk_buff *skb,
 			      const struct dst_entry *dst)
 {
 	bool syn_data = TCP_SKB_CB(skb)->end_seq != TCP_SKB_CB(skb)->seq + 1;
+<<<<<<< HEAD
 	int tcp_fastopen = sock_net(sk)->ipv4.sysctl_tcp_fastopen;
+=======
+	int tcp_fastopen = READ_ONCE(sock_net(sk)->ipv4.sysctl_tcp_fastopen);
+>>>>>>> origin/android16-base
 	struct tcp_fastopen_cookie valid_foc = { .len = -1 };
 	struct sock *child;
 
@@ -342,8 +362,12 @@ struct sock *tcp_try_fastopen(struct sock *sk, struct sk_buff *skb,
 		return NULL;
 	}
 
+<<<<<<< HEAD
 	if (syn_data &&
 	    tcp_fastopen_no_cookie(sk, dst, TFO_SERVER_COOKIE_NOT_REQD))
+=======
+	if (tcp_fastopen_no_cookie(sk, dst, TFO_SERVER_COOKIE_NOT_REQD))
+>>>>>>> origin/android16-base
 		goto fastopen;
 
 	if (foc->len >= 0 &&  /* Client presents or requests a cookie */
@@ -454,8 +478,20 @@ void tcp_fastopen_active_disable(struct sock *sk)
 {
 	struct net *net = sock_net(sk);
 
+<<<<<<< HEAD
 	atomic_inc(&net->ipv4.tfo_active_disable_times);
 	net->ipv4.tfo_active_disable_stamp = jiffies;
+=======
+	/* Paired with READ_ONCE() in tcp_fastopen_active_should_disable() */
+	WRITE_ONCE(net->ipv4.tfo_active_disable_stamp, jiffies);
+
+	/* Paired with smp_rmb() in tcp_fastopen_active_should_disable().
+	 * We want net->ipv4.tfo_active_disable_stamp to be updated first.
+	 */
+	smp_mb__before_atomic();
+	atomic_inc(&net->ipv4.tfo_active_disable_times);
+
+>>>>>>> origin/android16-base
 	NET_INC_STATS(net, LINUX_MIB_TCPFASTOPENBLACKHOLE);
 }
 
@@ -473,10 +509,23 @@ bool tcp_fastopen_active_should_disable(struct sock *sk)
 	if (!tfo_da_times)
 		return false;
 
+<<<<<<< HEAD
 	/* Limit timout to max: 2^6 * initial timeout */
 	multiplier = 1 << min(tfo_da_times - 1, 6);
 	timeout = multiplier * tfo_bh_timeout * HZ;
 	if (time_before(jiffies, sock_net(sk)->ipv4.tfo_active_disable_stamp + timeout))
+=======
+	/* Paired with smp_mb__before_atomic() in tcp_fastopen_active_disable() */
+	smp_rmb();
+
+	/* Limit timout to max: 2^6 * initial timeout */
+	multiplier = 1 << min(tfo_da_times - 1, 6);
+
+	/* Paired with the WRITE_ONCE() in tcp_fastopen_active_disable(). */
+	timeout = READ_ONCE(sock_net(sk)->ipv4.tfo_active_disable_stamp) +
+		  multiplier * tfo_bh_timeout * HZ;
+	if (time_before(jiffies, timeout))
+>>>>>>> origin/android16-base
 		return true;
 
 	/* Mark check bit so we can check for successful active TFO

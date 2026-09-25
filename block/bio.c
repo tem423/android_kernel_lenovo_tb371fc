@@ -317,7 +317,11 @@ static struct bio *__bio_chain_endio(struct bio *bio)
 {
 	struct bio *parent = bio->bi_private;
 
+<<<<<<< HEAD
 	if (!parent->bi_status)
+=======
+	if (bio->bi_status && !parent->bi_status)
+>>>>>>> origin/android16-base
 		parent->bi_status = bio->bi_status;
 	bio_put(bio);
 	return parent;
@@ -1532,7 +1536,11 @@ struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
 		if (bytes > len)
 			bytes = len;
 
+<<<<<<< HEAD
 		page = alloc_page(q->bounce_gfp | gfp_mask);
+=======
+		page = alloc_page(q->bounce_gfp | __GFP_ZERO | gfp_mask);
+>>>>>>> origin/android16-base
 		if (!page)
 			goto cleanup;
 
@@ -1596,8 +1604,12 @@ void bio_set_pages_dirty(struct bio *bio)
 	int i;
 
 	bio_for_each_segment_all(bvec, bio, i) {
+<<<<<<< HEAD
 		if (!PageCompound(bvec->bv_page))
 			set_page_dirty_lock(bvec->bv_page);
+=======
+		set_page_dirty_lock(bvec->bv_page);
+>>>>>>> origin/android16-base
 	}
 }
 EXPORT_SYMBOL_GPL(bio_set_pages_dirty);
@@ -1656,7 +1668,11 @@ void bio_check_pages_dirty(struct bio *bio)
 	int i;
 
 	bio_for_each_segment_all(bvec, bio, i) {
+<<<<<<< HEAD
 		if (!PageDirty(bvec->bv_page) && !PageCompound(bvec->bv_page))
+=======
+		if (!PageDirty(bvec->bv_page))
+>>>>>>> origin/android16-base
 			goto defer;
 	}
 

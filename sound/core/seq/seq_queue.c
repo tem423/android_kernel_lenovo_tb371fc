@@ -247,12 +247,21 @@ struct snd_seq_queue *snd_seq_queue_find_name(char *name)
 
 /* -------------------------------------------------------- */
 
+<<<<<<< HEAD
+=======
+#define MAX_CELL_PROCESSES_IN_QUEUE	1000
+
+>>>>>>> origin/android16-base
 void snd_seq_check_queue(struct snd_seq_queue *q, int atomic, int hop)
 {
 	unsigned long flags;
 	struct snd_seq_event_cell *cell;
 	snd_seq_tick_time_t cur_tick;
 	snd_seq_real_time_t cur_time;
+<<<<<<< HEAD
+=======
+	int processed = 0;
+>>>>>>> origin/android16-base
 
 	if (q == NULL)
 		return;
@@ -275,6 +284,11 @@ void snd_seq_check_queue(struct snd_seq_queue *q, int atomic, int hop)
 		if (!cell)
 			break;
 		snd_seq_dispatch_event(cell, atomic, hop);
+<<<<<<< HEAD
+=======
+		if (++processed >= MAX_CELL_PROCESSES_IN_QUEUE)
+			goto out; /* the rest processed at the next batch */
+>>>>>>> origin/android16-base
 	}
 
 	/* Process time queue... */
@@ -284,14 +298,29 @@ void snd_seq_check_queue(struct snd_seq_queue *q, int atomic, int hop)
 		if (!cell)
 			break;
 		snd_seq_dispatch_event(cell, atomic, hop);
+<<<<<<< HEAD
 	}
 
+=======
+		if (++processed >= MAX_CELL_PROCESSES_IN_QUEUE)
+			goto out; /* the rest processed at the next batch */
+	}
+
+ out:
+>>>>>>> origin/android16-base
 	/* free lock */
 	spin_lock_irqsave(&q->check_lock, flags);
 	if (q->check_again) {
 		q->check_again = 0;
+<<<<<<< HEAD
 		spin_unlock_irqrestore(&q->check_lock, flags);
 		goto __again;
+=======
+		if (processed < MAX_CELL_PROCESSES_IN_QUEUE) {
+			spin_unlock_irqrestore(&q->check_lock, flags);
+			goto __again;
+		}
+>>>>>>> origin/android16-base
 	}
 	q->check_blocked = 0;
 	spin_unlock_irqrestore(&q->check_lock, flags);

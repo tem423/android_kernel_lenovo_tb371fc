@@ -13,6 +13,10 @@
 #ifndef __ASSEMBLY__
 
 #define clear_page(paddr)		memset((paddr), 0, PAGE_SIZE)
+<<<<<<< HEAD
+=======
+#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
+>>>>>>> origin/android16-base
 #define copy_page(to, from)		memcpy((to), (from), PAGE_SIZE)
 
 struct vm_area_struct;

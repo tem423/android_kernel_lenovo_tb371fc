@@ -132,6 +132,10 @@
 #include <linux/ioprio.h>
 #include <linux/sbitmap.h>
 #include <linux/delay.h>
+<<<<<<< HEAD
+=======
+#include <linux/backing-dev.h>
+>>>>>>> origin/android16-base
 
 #include "blk.h"
 #include "blk-mq.h"
@@ -415,6 +419,11 @@ static struct bfq_io_cq *bfq_bic_lookup(struct bfq_data *bfqd,
  */
 void bfq_schedule_dispatch(struct bfq_data *bfqd)
 {
+<<<<<<< HEAD
+=======
+	lockdep_assert_held(&bfqd->lock);
+
+>>>>>>> origin/android16-base
 	if (bfqd->queued != 0) {
 		bfq_log(bfqd, "schedule dispatch");
 		blk_mq_run_hw_queues(bfqd->queue, true);
@@ -624,12 +633,22 @@ void bfq_pos_tree_add_move(struct bfq_data *bfqd, struct bfq_queue *bfqq)
 }
 
 /*
+<<<<<<< HEAD
  * Tell whether there are active queues or groups with differentiated weights.
  */
 static bool bfq_differentiated_weights(struct bfq_data *bfqd)
 {
 	/*
 	 * For weights to differ, at least one of the trees must contain
+=======
+ * Tell whether there are active queues with different weights or
+ * active groups.
+ */
+static bool bfq_varied_queue_weights_or_active_groups(struct bfq_data *bfqd)
+{
+	/*
+	 * For queue weights to differ, queue_weights_tree must contain
+>>>>>>> origin/android16-base
 	 * at least two nodes.
 	 */
 	return (!RB_EMPTY_ROOT(&bfqd->queue_weights_tree) &&
@@ -637,9 +656,13 @@ static bool bfq_differentiated_weights(struct bfq_data *bfqd)
 		 bfqd->queue_weights_tree.rb_node->rb_right)
 #ifdef CONFIG_BFQ_GROUP_IOSCHED
 	       ) ||
+<<<<<<< HEAD
 	       (!RB_EMPTY_ROOT(&bfqd->group_weights_tree) &&
 		(bfqd->group_weights_tree.rb_node->rb_left ||
 		 bfqd->group_weights_tree.rb_node->rb_right)
+=======
+		(bfqd->num_groups_with_pending_reqs > 0
+>>>>>>> origin/android16-base
 #endif
 	       );
 }
@@ -657,6 +680,7 @@ static bool bfq_differentiated_weights(struct bfq_data *bfqd)
  * 3) all active groups at the same level in the groups tree have the same
  *    number of children.
  *
+<<<<<<< HEAD
  * Unfortunately, keeping the necessary state for evaluating exactly the
  * above symmetry conditions would be quite complex and time-consuming.
  * Therefore this function evaluates, instead, the following stronger
@@ -672,11 +696,31 @@ static bool bfq_differentiated_weights(struct bfq_data *bfqd)
 static bool bfq_symmetric_scenario(struct bfq_data *bfqd)
 {
 	return !bfq_differentiated_weights(bfqd);
+=======
+ * Unfortunately, keeping the necessary state for evaluating exactly
+ * the last two symmetry sub-conditions above would be quite complex
+ * and time consuming.  Therefore this function evaluates, instead,
+ * only the following stronger two sub-conditions, for which it is
+ * much easier to maintain the needed state:
+ * 1) all active queues have the same weight,
+ * 2) there are no active groups.
+ * In particular, the last condition is always true if hierarchical
+ * support or the cgroups interface are not enabled, thus no state
+ * needs to be maintained in this case.
+ */
+static bool bfq_symmetric_scenario(struct bfq_data *bfqd)
+{
+	return !bfq_varied_queue_weights_or_active_groups(bfqd);
+>>>>>>> origin/android16-base
 }
 
 /*
  * If the weight-counter tree passed as input contains no counter for
+<<<<<<< HEAD
  * the weight of the input entity, then add that counter; otherwise just
+=======
+ * the weight of the input queue, then add that counter; otherwise just
+>>>>>>> origin/android16-base
  * increment the existing counter.
  *
  * Note that weight-counter trees contain few nodes in mostly symmetric
@@ -687,6 +731,7 @@ static bool bfq_symmetric_scenario(struct bfq_data *bfqd)
  * In most scenarios, the rate at which nodes are created/destroyed
  * should be low too.
  */
+<<<<<<< HEAD
 void bfq_weights_tree_add(struct bfq_data *bfqd, struct bfq_entity *entity,
 			  struct rb_root *root)
 {
@@ -701,11 +746,31 @@ void bfq_weights_tree_add(struct bfq_data *bfqd, struct bfq_entity *entity,
 	 *      backlogged; in this respect, each of the two events
 	 *      causes an invocation of this function,
 	 *   3) this is the invocation of this function caused by the
+=======
+void bfq_weights_tree_add(struct bfq_data *bfqd, struct bfq_queue *bfqq,
+			  struct rb_root *root)
+{
+	struct bfq_entity *entity = &bfqq->entity;
+	struct rb_node **new = &(root->rb_node), *parent = NULL;
+
+	/*
+	 * Do not insert if the queue is already associated with a
+	 * counter, which happens if:
+	 *   1) a request arrival has caused the queue to become both
+	 *      non-weight-raised, and hence change its weight, and
+	 *      backlogged; in this respect, each of the two events
+	 *      causes an invocation of this function,
+	 *   2) this is the invocation of this function caused by the
+>>>>>>> origin/android16-base
 	 *      second event. This second invocation is actually useless,
 	 *      and we handle this fact by exiting immediately. More
 	 *      efficient or clearer solutions might possibly be adopted.
 	 */
+<<<<<<< HEAD
 	if (entity->weight_counter)
+=======
+	if (bfqq->weight_counter)
+>>>>>>> origin/android16-base
 		return;
 
 	while (*new) {
@@ -715,7 +780,11 @@ void bfq_weights_tree_add(struct bfq_data *bfqd, struct bfq_entity *entity,
 		parent = *new;
 
 		if (entity->weight == __counter->weight) {
+<<<<<<< HEAD
 			entity->weight_counter = __counter;
+=======
+			bfqq->weight_counter = __counter;
+>>>>>>> origin/android16-base
 			goto inc_counter;
 		}
 		if (entity->weight < __counter->weight)
@@ -724,6 +793,7 @@ void bfq_weights_tree_add(struct bfq_data *bfqd, struct bfq_entity *entity,
 			new = &((*new)->rb_right);
 	}
 
+<<<<<<< HEAD
 	entity->weight_counter = kzalloc(sizeof(struct bfq_weight_counter),
 					 GFP_ATOMIC);
 
@@ -752,11 +822,44 @@ inc_counter:
 
 /*
  * Decrement the weight counter associated with the entity, and, if the
+=======
+	bfqq->weight_counter = kzalloc(sizeof(struct bfq_weight_counter),
+				       GFP_ATOMIC);
+
+	/*
+	 * In the unlucky event of an allocation failure, we just
+	 * exit. This will cause the weight of queue to not be
+	 * considered in bfq_varied_queue_weights_or_active_groups,
+	 * which, in its turn, causes the scenario to be deemed
+	 * wrongly symmetric in case bfqq's weight would have been
+	 * the only weight making the scenario asymmetric.  On the
+	 * bright side, no unbalance will however occur when bfqq
+	 * becomes inactive again (the invocation of this function
+	 * is triggered by an activation of queue).  In fact,
+	 * bfq_weights_tree_remove does nothing if
+	 * !bfqq->weight_counter.
+	 */
+	if (unlikely(!bfqq->weight_counter))
+		return;
+
+	bfqq->weight_counter->weight = entity->weight;
+	rb_link_node(&bfqq->weight_counter->weights_node, parent, new);
+	rb_insert_color(&bfqq->weight_counter->weights_node, root);
+
+inc_counter:
+	bfqq->weight_counter->num_active++;
+	bfqq->ref++;
+}
+
+/*
+ * Decrement the weight counter associated with the queue, and, if the
+>>>>>>> origin/android16-base
  * counter reaches 0, remove the counter from the tree.
  * See the comments to the function bfq_weights_tree_add() for considerations
  * about overhead.
  */
 void __bfq_weights_tree_remove(struct bfq_data *bfqd,
+<<<<<<< HEAD
 			       struct bfq_entity *entity,
 			       struct rb_root *root)
 {
@@ -777,15 +880,41 @@ reset_entity_pointer:
 /*
  * Invoke __bfq_weights_tree_remove on bfqq and all its inactive
  * parent entities.
+=======
+			       struct bfq_queue *bfqq,
+			       struct rb_root *root)
+{
+	if (!bfqq->weight_counter)
+		return;
+
+	bfqq->weight_counter->num_active--;
+	if (bfqq->weight_counter->num_active > 0)
+		goto reset_entity_pointer;
+
+	rb_erase(&bfqq->weight_counter->weights_node, root);
+	kfree(bfqq->weight_counter);
+
+reset_entity_pointer:
+	bfqq->weight_counter = NULL;
+	bfq_put_queue(bfqq);
+}
+
+/*
+ * Invoke __bfq_weights_tree_remove on bfqq and decrement the number
+ * of active groups for each queue's inactive parent entity.
+>>>>>>> origin/android16-base
  */
 void bfq_weights_tree_remove(struct bfq_data *bfqd,
 			     struct bfq_queue *bfqq)
 {
 	struct bfq_entity *entity = bfqq->entity.parent;
 
+<<<<<<< HEAD
 	__bfq_weights_tree_remove(bfqd, &bfqq->entity,
 				  &bfqd->queue_weights_tree);
 
+=======
+>>>>>>> origin/android16-base
 	for_each_entity(entity) {
 		struct bfq_sched_data *sd = entity->my_sched_data;
 
@@ -797,6 +926,7 @@ void bfq_weights_tree_remove(struct bfq_data *bfqd,
 			 * next_in_service for details on why
 			 * in_service_entity must be checked too).
 			 *
+<<<<<<< HEAD
 			 * As a consequence, the weight of entity is
 			 * not to be removed. In addition, if entity
 			 * is active, then its parent entities are
@@ -809,6 +939,39 @@ void bfq_weights_tree_remove(struct bfq_data *bfqd,
 		__bfq_weights_tree_remove(bfqd, entity,
 					  &bfqd->group_weights_tree);
 	}
+=======
+			 * As a consequence, its parent entities are
+			 * active as well, and thus this loop must
+			 * stop here.
+			 */
+			break;
+		}
+
+		/*
+		 * The decrement of num_groups_with_pending_reqs is
+		 * not performed immediately upon the deactivation of
+		 * entity, but it is delayed to when it also happens
+		 * that the first leaf descendant bfqq of entity gets
+		 * all its pending requests completed. The following
+		 * instructions perform this delayed decrement, if
+		 * needed. See the comments on
+		 * num_groups_with_pending_reqs for details.
+		 */
+		if (entity->in_groups_with_pending_reqs) {
+			entity->in_groups_with_pending_reqs = false;
+			bfqd->num_groups_with_pending_reqs--;
+		}
+	}
+
+	/*
+	 * Next function is invoked last, because it causes bfqq to be
+	 * freed if the following holds: bfqq is not in service and
+	 * has no dispatched request. DO NOT use bfqq after the next
+	 * function invocation.
+	 */
+	__bfq_weights_tree_remove(bfqd, bfqq,
+				  &bfqd->queue_weights_tree);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -1002,7 +1165,12 @@ bfq_bfqq_resume_state(struct bfq_queue *bfqq, struct bfq_data *bfqd,
 
 static int bfqq_process_refs(struct bfq_queue *bfqq)
 {
+<<<<<<< HEAD
 	return bfqq->ref - bfqq->allocated - bfqq->entity.on_st;
+=======
+	return bfqq->ref - bfqq->allocated - bfqq->entity.on_st -
+		(bfqq->weight_counter != NULL);
+>>>>>>> origin/android16-base
 }
 
 /* Empty burst list and add just bfqq (see comments on bfq_handle_burst) */
@@ -2136,6 +2304,18 @@ bfq_setup_merge(struct bfq_queue *bfqq, struct bfq_queue *new_bfqq)
 	 * are likely to increase the throughput.
 	 */
 	bfqq->new_bfqq = new_bfqq;
+<<<<<<< HEAD
+=======
+	/*
+	 * The above assignment schedules the following redirections:
+	 * each time some I/O for bfqq arrives, the process that
+	 * generated that I/O is disassociated from bfqq and
+	 * associated with new_bfqq. Here we increases new_bfqq->ref
+	 * in advance, adding the number of processes that are
+	 * expected to be associated with new_bfqq as they happen to
+	 * issue I/O.
+	 */
+>>>>>>> origin/android16-base
 	new_bfqq->ref += process_refs;
 	return new_bfqq;
 }
@@ -2195,6 +2375,17 @@ bfq_setup_cooperator(struct bfq_data *bfqd, struct bfq_queue *bfqq,
 {
 	struct bfq_queue *in_service_bfqq, *new_bfqq;
 
+<<<<<<< HEAD
+=======
+	/* if a merge has already been setup, then proceed with that first */
+	new_bfqq = bfqq->new_bfqq;
+	if (new_bfqq) {
+		while (new_bfqq->new_bfqq)
+			new_bfqq = new_bfqq->new_bfqq;
+		return new_bfqq;
+	}
+
+>>>>>>> origin/android16-base
 	/*
 	 * Prevent bfqq from being merged if it has been created too
 	 * long ago. The idea is that true cooperating processes, and
@@ -2209,9 +2400,12 @@ bfq_setup_cooperator(struct bfq_data *bfqd, struct bfq_queue *bfqq,
 	if (bfq_too_late_for_merging(bfqq))
 		return NULL;
 
+<<<<<<< HEAD
 	if (bfqq->new_bfqq)
 		return bfqq->new_bfqq;
 
+=======
+>>>>>>> origin/android16-base
 	if (!io_struct || unlikely(bfqq == &bfqd->oom_bfqq))
 		return NULL;
 
@@ -2478,6 +2672,10 @@ static void __bfq_set_in_service_queue(struct bfq_data *bfqd,
 	}
 
 	bfqd->in_service_queue = bfqq;
+<<<<<<< HEAD
+=======
+	bfqd->in_serv_last_pos = 0;
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -2796,7 +2994,11 @@ static void bfq_dispatch_remove(struct request_queue *q, struct request *rq)
 	bfq_remove_request(q, rq);
 }
 
+<<<<<<< HEAD
 static void __bfq_bfqq_expire(struct bfq_data *bfqd, struct bfq_queue *bfqq)
+=======
+static bool __bfq_bfqq_expire(struct bfq_data *bfqd, struct bfq_queue *bfqq)
+>>>>>>> origin/android16-base
 {
 	/*
 	 * If this bfqq is shared between multiple processes, check
@@ -2829,9 +3031,17 @@ static void __bfq_bfqq_expire(struct bfq_data *bfqd, struct bfq_queue *bfqq)
 	/*
 	 * All in-service entities must have been properly deactivated
 	 * or requeued before executing the next function, which
+<<<<<<< HEAD
 	 * resets all in-service entites as no more in service.
 	 */
 	__bfq_bfqd_reset_in_service(bfqd);
+=======
+	 * resets all in-service entities as no more in service. This
+	 * may cause bfqq to be freed. If this happens, the next
+	 * function returns true.
+	 */
+	return __bfq_bfqd_reset_in_service(bfqd);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -3236,7 +3446,10 @@ void bfq_bfqq_expire(struct bfq_data *bfqd,
 	bool slow;
 	unsigned long delta = 0;
 	struct bfq_entity *entity = &bfqq->entity;
+<<<<<<< HEAD
 	int ref;
+=======
+>>>>>>> origin/android16-base
 
 	/*
 	 * Check whether the process is slow (see bfq_bfqq_is_slow).
@@ -3305,10 +3518,15 @@ void bfq_bfqq_expire(struct bfq_data *bfqd,
 	 * reason.
 	 */
 	__bfq_bfqq_recalc_budget(bfqd, bfqq, reason);
+<<<<<<< HEAD
 	ref = bfqq->ref;
 	__bfq_bfqq_expire(bfqd, bfqq);
 
 	if (ref == 1) /* bfqq is gone, no more actions on it */
+=======
+	if (__bfq_bfqq_expire(bfqd, bfqq))
+		/* bfqq is gone, no more actions on it */
+>>>>>>> origin/android16-base
 		return;
 
 	bfqq->injected_service = 0;
@@ -3519,9 +3737,17 @@ static bool bfq_better_to_idle(struct bfq_queue *bfqq)
 	 * symmetric scenario where:
 	 * (i)  each of these processes must get the same throughput as
 	 *      the others;
+<<<<<<< HEAD
 	 * (ii) all these processes have the same I/O pattern
 		(either sequential or random).
 	 * In fact, in such a scenario, the drive will tend to treat
+=======
+	 * (ii) the I/O of each process has the same properties, in
+	 *      terms of locality (sequential or random), direction
+	 *      (reads or writes), request sizes, greediness
+	 *      (from I/O-bound to sporadic), and so on.
+	 * In fact, in such a scenario, the drive tends to treat
+>>>>>>> origin/android16-base
 	 * the requests of each of these processes in about the same
 	 * way as the requests of the others, and thus to provide
 	 * each of these processes with about the same throughput
@@ -3530,6 +3756,7 @@ static bool bfq_better_to_idle(struct bfq_queue *bfqq)
 	 * certainly needed to guarantee that bfqq receives its
 	 * assigned fraction of the device throughput (see [1] for
 	 * details).
+<<<<<<< HEAD
 	 *
 	 * We address this issue by controlling, actually, only the
 	 * symmetry sub-condition (i), i.e., provided that
@@ -3542,6 +3769,69 @@ static bool bfq_better_to_idle(struct bfq_queue *bfqq)
 	 * exploit preemption to preserve guarantees in case of
 	 * symmetric scenarios, even if (ii) does not hold, as
 	 * explained in the next two paragraphs.
+=======
+	 * The problem is that idling may significantly reduce
+	 * throughput with certain combinations of types of I/O and
+	 * devices. An important example is sync random I/O, on flash
+	 * storage with command queueing. So, unless bfqq falls in the
+	 * above cases where idling also boosts throughput, it would
+	 * be important to check conditions (i) and (ii) accurately,
+	 * so as to avoid idling when not strictly needed for service
+	 * guarantees.
+	 *
+	 * Unfortunately, it is extremely difficult to thoroughly
+	 * check condition (ii). And, in case there are active groups,
+	 * it becomes very difficult to check condition (i) too. In
+	 * fact, if there are active groups, then, for condition (i)
+	 * to become false, it is enough that an active group contains
+	 * more active processes or sub-groups than some other active
+	 * group. More precisely, for condition (i) to hold because of
+	 * such a group, it is not even necessary that the group is
+	 * (still) active: it is sufficient that, even if the group
+	 * has become inactive, some of its descendant processes still
+	 * have some request already dispatched but still waiting for
+	 * completion. In fact, requests have still to be guaranteed
+	 * their share of the throughput even after being
+	 * dispatched. In this respect, it is easy to show that, if a
+	 * group frequently becomes inactive while still having
+	 * in-flight requests, and if, when this happens, the group is
+	 * not considered in the calculation of whether the scenario
+	 * is asymmetric, then the group may fail to be guaranteed its
+	 * fair share of the throughput (basically because idling may
+	 * not be performed for the descendant processes of the group,
+	 * but it had to be).  We address this issue with the
+	 * following bi-modal behavior, implemented in the function
+	 * bfq_symmetric_scenario().
+	 *
+	 * If there are groups with requests waiting for completion
+	 * (as commented above, some of these groups may even be
+	 * already inactive), then the scenario is tagged as
+	 * asymmetric, conservatively, without checking any of the
+	 * conditions (i) and (ii). So the device is idled for bfqq.
+	 * This behavior matches also the fact that groups are created
+	 * exactly if controlling I/O is a primary concern (to
+	 * preserve bandwidth and latency guarantees).
+	 *
+	 * On the opposite end, if there are no groups with requests
+	 * waiting for completion, then only condition (i) is actually
+	 * controlled, i.e., provided that condition (i) holds, idling
+	 * is not performed, regardless of whether condition (ii)
+	 * holds. In other words, only if condition (i) does not hold,
+	 * then idling is allowed, and the device tends to be
+	 * prevented from queueing many requests, possibly of several
+	 * processes. Since there are no groups with requests waiting
+	 * for completion, then, to control condition (i) it is enough
+	 * to check just whether all the queues with requests waiting
+	 * for completion also have the same weight.
+	 *
+	 * Not checking condition (ii) evidently exposes bfqq to the
+	 * risk of getting less throughput than its fair share.
+	 * However, for queues with the same weight, a further
+	 * mechanism, preemption, mitigates or even eliminates this
+	 * problem. And it does so without consequences on overall
+	 * throughput. This mechanism and its benefits are explained
+	 * in the next three paragraphs.
+>>>>>>> origin/android16-base
 	 *
 	 * Even if a queue, say Q, is expired when it remains idle, Q
 	 * can still preempt the new in-service queue if the next
@@ -3555,11 +3845,15 @@ static bool bfq_better_to_idle(struct bfq_queue *bfqq)
 	 * idling allows the internal queues of the device to contain
 	 * many requests, and thus to reorder requests, we can rather
 	 * safely assume that the internal scheduler still preserves a
+<<<<<<< HEAD
 	 * minimum of mid-term fairness. The motivation for using
 	 * preemption instead of idling is that, by not idling,
 	 * service guarantees are preserved without minimally
 	 * sacrificing throughput. In other words, both a high
 	 * throughput and its desired distribution are obtained.
+=======
+	 * minimum of mid-term fairness.
+>>>>>>> origin/android16-base
 	 *
 	 * More precisely, this preemption-based, idleless approach
 	 * provides fairness in terms of IOPS, and not sectors per
@@ -3578,6 +3872,7 @@ static bool bfq_better_to_idle(struct bfq_queue *bfqq)
 	 * 1024/8 times as high as the service received by the other
 	 * queue.
 	 *
+<<<<<<< HEAD
 	 * On the other hand, device idling is performed, and thus
 	 * pure sector-domain guarantees are provided, for the
 	 * following queues, which are likely to need stronger
@@ -3599,6 +3894,30 @@ static bool bfq_better_to_idle(struct bfq_queue *bfqq)
 	 * to bfqq. Actually, we should be even more precise, and
 	 * differentiate between interactive weight raising and
 	 * soft real-time weight raising.
+=======
+	 * The motivation for using preemption instead of idling (for
+	 * queues with the same weight) is that, by not idling,
+	 * service guarantees are preserved (completely or at least in
+	 * part) without minimally sacrificing throughput. And, if
+	 * there is no active group, then the primary expectation for
+	 * this device is probably a high throughput.
+	 *
+	 * We are now left only with explaining the additional
+	 * compound condition that is checked below for deciding
+	 * whether the scenario is asymmetric. To explain this
+	 * compound condition, we need to add that the function
+	 * bfq_symmetric_scenario checks the weights of only
+	 * non-weight-raised queues, for efficiency reasons (see
+	 * comments on bfq_weights_tree_add()). Then the fact that
+	 * bfqq is weight-raised is checked explicitly here. More
+	 * precisely, the compound condition below takes into account
+	 * also the fact that, even if bfqq is being weight-raised,
+	 * the scenario is still symmetric if all queues with requests
+	 * waiting for completion happen to be
+	 * weight-raised. Actually, we should be even more precise
+	 * here, and differentiate between interactive weight raising
+	 * and soft real-time weight raising.
+>>>>>>> origin/android16-base
 	 *
 	 * As a side note, it is worth considering that the above
 	 * device-idling countermeasures may however fail in the
@@ -4001,6 +4320,10 @@ exit:
 #if defined(CONFIG_BFQ_GROUP_IOSCHED) && defined(CONFIG_DEBUG_BLK_CGROUP)
 static void bfq_update_dispatch_stats(struct request_queue *q,
 				      struct request *rq,
+<<<<<<< HEAD
+=======
+				      struct bfq_queue *in_serv_queue,
+>>>>>>> origin/android16-base
 				      bool idle_timer_disabled)
 {
 	struct bfq_queue *bfqq = rq ? RQ_BFQQ(rq) : NULL;
@@ -4022,6 +4345,7 @@ static void bfq_update_dispatch_stats(struct request_queue *q,
 	 * bfqq_group(bfqq) exists as well.
 	 */
 	spin_lock_irq(q->queue_lock);
+<<<<<<< HEAD
 	if (bfqq && idle_timer_disabled)
 		/*
 		 * It could be possible that current active
@@ -4031,6 +4355,19 @@ static void bfq_update_dispatch_stats(struct request_queue *q,
 		 * derive its associated bfq queue and group.
 		 */
 		bfqg_stats_update_idle_time(bfqq_group(bfqq));
+=======
+	if (idle_timer_disabled)
+		/*
+		 * Since the idle timer has been disabled,
+		 * in_serv_queue contained some request when
+		 * __bfq_dispatch_request was invoked above, which
+		 * implies that rq was picked exactly from
+		 * in_serv_queue. Thus in_serv_queue == bfqq, and is
+		 * therefore guaranteed to exist because of the above
+		 * arguments.
+		 */
+		bfqg_stats_update_idle_time(bfqq_group(in_serv_queue));
+>>>>>>> origin/android16-base
 	if (bfqq) {
 		struct bfq_group *bfqg = bfqq_group(bfqq);
 
@@ -4043,6 +4380,10 @@ static void bfq_update_dispatch_stats(struct request_queue *q,
 #else
 static inline void bfq_update_dispatch_stats(struct request_queue *q,
 					     struct request *rq,
+<<<<<<< HEAD
+=======
+					     struct bfq_queue *in_serv_queue,
+>>>>>>> origin/android16-base
 					     bool idle_timer_disabled) {}
 #endif
 
@@ -4051,7 +4392,11 @@ static struct request *bfq_dispatch_request(struct blk_mq_hw_ctx *hctx)
 	struct bfq_data *bfqd = hctx->queue->elevator->elevator_data;
 	struct request *rq;
 	struct bfq_queue *in_serv_queue;
+<<<<<<< HEAD
 	bool waiting_rq, idle_timer_disabled;
+=======
+	bool waiting_rq, idle_timer_disabled = false;
+>>>>>>> origin/android16-base
 
 	spin_lock_irq(&bfqd->lock);
 
@@ -4059,6 +4404,7 @@ static struct request *bfq_dispatch_request(struct blk_mq_hw_ctx *hctx)
 	waiting_rq = in_serv_queue && bfq_bfqq_wait_request(in_serv_queue);
 
 	rq = __bfq_dispatch_request(hctx);
+<<<<<<< HEAD
 
 	idle_timer_disabled =
 		waiting_rq && !bfq_bfqq_wait_request(in_serv_queue);
@@ -4067,6 +4413,17 @@ static struct request *bfq_dispatch_request(struct blk_mq_hw_ctx *hctx)
 
 	bfq_update_dispatch_stats(hctx->queue, rq,
 				  idle_timer_disabled);
+=======
+	if (in_serv_queue == bfqd->in_service_queue) {
+		idle_timer_disabled =
+			waiting_rq && !bfq_bfqq_wait_request(in_serv_queue);
+	}
+
+	spin_unlock_irq(&bfqd->lock);
+	bfq_update_dispatch_stats(hctx->queue, rq,
+			idle_timer_disabled ? in_serv_queue : NULL,
+				idle_timer_disabled);
+>>>>>>> origin/android16-base
 
 	return rq;
 }
@@ -4207,8 +4564,14 @@ bfq_set_next_ioprio_data(struct bfq_queue *bfqq, struct bfq_io_cq *bic)
 	ioprio_class = IOPRIO_PRIO_CLASS(bic->ioprio);
 	switch (ioprio_class) {
 	default:
+<<<<<<< HEAD
 		dev_err(bfqq->bfqd->queue->backing_dev_info->dev,
 			"bfq: bad prio class %d\n", ioprio_class);
+=======
+		pr_err("bdi %s: bfq: bad prio class %d\n",
+				bdi_dev_name(bfqq->bfqd->queue->backing_dev_info),
+				ioprio_class);
+>>>>>>> origin/android16-base
 		/* fall through */
 	case IOPRIO_CLASS_NONE:
 		/*
@@ -4234,7 +4597,11 @@ bfq_set_next_ioprio_data(struct bfq_queue *bfqq, struct bfq_io_cq *bic)
 	if (bfqq->new_ioprio >= IOPRIO_BE_NR) {
 		pr_crit("bfq_set_next_ioprio_data: new_ioprio %d\n",
 			bfqq->new_ioprio);
+<<<<<<< HEAD
 		bfqq->new_ioprio = IOPRIO_BE_NR;
+=======
+		bfqq->new_ioprio = IOPRIO_BE_NR - 1;
+>>>>>>> origin/android16-base
 	}
 
 	bfqq->entity.new_weight = bfq_ioprio_to_weight(bfqq->new_ioprio);
@@ -4948,7 +5315,11 @@ bfq_split_bfqq(struct bfq_io_cq *bic, struct bfq_queue *bfqq)
 {
 	bfq_log_bfqq(bfqq->bfqd, bfqq, "splitting queue");
 
+<<<<<<< HEAD
 	if (bfqq_process_refs(bfqq) == 1) {
+=======
+	if (bfqq_process_refs(bfqq) == 1 && !bfqq->new_bfqq) {
+>>>>>>> origin/android16-base
 		bfqq->pid = current->pid;
 		bfq_clear_bfqq_coop(bfqq);
 		bfq_clear_bfqq_split_coop(bfqq);
@@ -5133,7 +5504,12 @@ static struct bfq_queue *bfq_init_rq(struct request *rq)
 	 * addition, if the queue has also just been split, we have to
 	 * resume its state.
 	 */
+<<<<<<< HEAD
 	if (likely(bfqq != &bfqd->oom_bfqq) && bfqq_process_refs(bfqq) == 1) {
+=======
+	if (likely(bfqq != &bfqd->oom_bfqq) && !bfqq->new_bfqq &&
+	    bfqq_process_refs(bfqq) == 1) {
+>>>>>>> origin/android16-base
 		bfqq->bic = bic;
 		if (split) {
 			/*
@@ -5195,8 +5571,13 @@ bfq_idle_slice_timer_body(struct bfq_data *bfqd, struct bfq_queue *bfqq)
 	bfq_bfqq_expire(bfqd, bfqq, true, reason);
 
 schedule_dispatch:
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&bfqd->lock, flags);
 	bfq_schedule_dispatch(bfqd);
+=======
+	bfq_schedule_dispatch(bfqd);
+	spin_unlock_irqrestore(&bfqd->lock, flags);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -5345,6 +5726,11 @@ static void bfq_exit_queue(struct elevator_queue *e)
 	spin_unlock_irq(&bfqd->lock);
 #endif
 
+<<<<<<< HEAD
+=======
+	wbt_enable_default(bfqd->queue);
+
+>>>>>>> origin/android16-base
 	kfree(bfqd);
 }
 
@@ -5415,7 +5801,11 @@ static int bfq_init_queue(struct request_queue *q, struct elevator_type *e)
 	bfqd->idle_slice_timer.function = bfq_idle_slice_timer;
 
 	bfqd->queue_weights_tree = RB_ROOT;
+<<<<<<< HEAD
 	bfqd->group_weights_tree = RB_ROOT;
+=======
+	bfqd->num_groups_with_pending_reqs = 0;
+>>>>>>> origin/android16-base
 
 	INIT_LIST_HEAD(&bfqd->active_list);
 	INIT_LIST_HEAD(&bfqd->idle_list);

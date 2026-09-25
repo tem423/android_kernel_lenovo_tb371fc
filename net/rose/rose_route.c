@@ -230,8 +230,13 @@ static void rose_remove_neigh(struct rose_neigh *rose_neigh)
 {
 	struct rose_neigh *s;
 
+<<<<<<< HEAD
 	rose_stop_ftimer(rose_neigh);
 	rose_stop_t0timer(rose_neigh);
+=======
+	del_timer_sync(&rose_neigh->ftimer);
+	del_timer_sync(&rose_neigh->t0timer);
+>>>>>>> origin/android16-base
 
 	skb_queue_purge(&rose_neigh->queue);
 
@@ -616,6 +621,11 @@ struct net_device *rose_dev_first(void)
 			if (first == NULL || strncmp(dev->name, first->name, 3) < 0)
 				first = dev;
 	}
+<<<<<<< HEAD
+=======
+	if (first)
+		dev_hold(first);
+>>>>>>> origin/android16-base
 	rcu_read_unlock();
 
 	return first;

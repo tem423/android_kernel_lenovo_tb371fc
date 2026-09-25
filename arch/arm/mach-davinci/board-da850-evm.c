@@ -1045,11 +1045,20 @@ static int __init da850_evm_config_emac(void)
 	int ret;
 	u32 val;
 	struct davinci_soc_info *soc_info = &davinci_soc_info;
+<<<<<<< HEAD
 	u8 rmii_en = soc_info->emac_pdata->rmii_en;
+=======
+	u8 rmii_en;
+>>>>>>> origin/android16-base
 
 	if (!machine_is_davinci_da850_evm())
 		return 0;
 
+<<<<<<< HEAD
+=======
+	rmii_en = soc_info->emac_pdata->rmii_en;
+
+>>>>>>> origin/android16-base
 	cfg_chip3_base = DA8XX_SYSCFG0_VIRT(DA8XX_CFGCHIP3_REG);
 
 	val = __raw_readl(cfg_chip3_base);

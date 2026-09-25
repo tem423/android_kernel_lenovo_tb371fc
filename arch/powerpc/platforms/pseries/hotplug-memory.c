@@ -487,7 +487,11 @@ static int dlpar_memory_remove_by_index(u32 drc_index)
 	int lmb_found;
 	int rc;
 
+<<<<<<< HEAD
 	pr_info("Attempting to hot-remove LMB, drc index %x\n", drc_index);
+=======
+	pr_debug("Attempting to hot-remove LMB, drc index %x\n", drc_index);
+>>>>>>> origin/android16-base
 
 	lmb_found = 0;
 	for_each_drmem_lmb(lmb) {
@@ -501,6 +505,7 @@ static int dlpar_memory_remove_by_index(u32 drc_index)
 		}
 	}
 
+<<<<<<< HEAD
 	if (!lmb_found)
 		rc = -EINVAL;
 
@@ -509,6 +514,17 @@ static int dlpar_memory_remove_by_index(u32 drc_index)
 			lmb->base_addr);
 	else
 		pr_info("Memory at %llx was hot-removed\n", lmb->base_addr);
+=======
+	if (!lmb_found) {
+		pr_debug("Failed to look up LMB for drc index %x\n", drc_index);
+		rc = -EINVAL;
+	} else if (rc) {
+		pr_debug("Failed to hot-remove memory at %llx\n",
+			 lmb->base_addr);
+	} else {
+		pr_debug("Memory at %llx was hot-removed\n", lmb->base_addr);
+	}
+>>>>>>> origin/android16-base
 
 	return rc;
 }
@@ -761,8 +777,13 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add)
 			if (!drmem_lmb_reserved(lmb))
 				continue;
 
+<<<<<<< HEAD
 			pr_info("Memory at %llx (drc index %x) was hot-added\n",
 				lmb->base_addr, lmb->drc_index);
+=======
+			pr_debug("Memory at %llx (drc index %x) was hot-added\n",
+				 lmb->base_addr, lmb->drc_index);
+>>>>>>> origin/android16-base
 			drmem_remove_lmb_reservation(lmb);
 		}
 		rc = 0;

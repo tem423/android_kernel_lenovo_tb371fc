@@ -1155,6 +1155,10 @@ static struct kmod_test_device *register_test_dev_kmod(void)
 	if (ret) {
 		pr_err("could not register misc device: %d\n", ret);
 		free_test_dev_kmod(test_dev);
+<<<<<<< HEAD
+=======
+		test_dev = NULL;
+>>>>>>> origin/android16-base
 		goto out;
 	}
 

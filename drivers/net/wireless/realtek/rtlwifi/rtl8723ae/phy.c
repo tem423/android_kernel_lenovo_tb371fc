@@ -72,7 +72,11 @@ u32 rtl8723e_phy_query_rf_reg(struct ieee80211_hw *hw,
 							    rfpath, regaddr);
 	}
 
+<<<<<<< HEAD
 	bitshift = rtl8723_phy_calculate_bit_shift(bitmask);
+=======
+	bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 	readback_value = (original_value & bitmask) >> bitshift;
 
 	spin_unlock_irqrestore(&rtlpriv->locks.rf_lock, flags);
@@ -104,7 +108,11 @@ void rtl8723e_phy_set_rf_reg(struct ieee80211_hw *hw,
 			original_value = rtl8723_phy_rf_serial_read(hw,
 								    rfpath,
 								    regaddr);
+<<<<<<< HEAD
 			bitshift = rtl8723_phy_calculate_bit_shift(bitmask);
+=======
+			bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 			data =
 			    ((original_value & (~bitmask)) |
 			     (data << bitshift));
@@ -113,7 +121,11 @@ void rtl8723e_phy_set_rf_reg(struct ieee80211_hw *hw,
 		rtl8723_phy_rf_serial_write(hw, rfpath, regaddr, data);
 	} else {
 		if (bitmask != RFREG_OFFSET_MASK) {
+<<<<<<< HEAD
 			bitshift = rtl8723_phy_calculate_bit_shift(bitmask);
+=======
+			bitshift = calculate_bit_shift(bitmask);
+>>>>>>> origin/android16-base
 			data =
 			    ((original_value & (~bitmask)) |
 			     (data << bitshift));

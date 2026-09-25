@@ -1537,7 +1537,11 @@ static unsigned int card_count;
 static int isicom_probe(struct pci_dev *pdev,
 	const struct pci_device_id *ent)
 {
+<<<<<<< HEAD
 	unsigned int uninitialized_var(signature), index;
+=======
+	unsigned int signature, index;
+>>>>>>> origin/android16-base
 	int retval = -EPERM;
 	struct isi_board *board = NULL;
 

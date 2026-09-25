@@ -638,16 +638,31 @@ static void insert_iommu_master(struct device *dev,
 static int qcom_iommu_of_xlate(struct device *dev,
 			       struct of_phandle_args *spec)
 {
+<<<<<<< HEAD
 	struct msm_iommu_dev *iommu;
+=======
+	struct msm_iommu_dev *iommu = NULL, *iter;
+>>>>>>> origin/android16-base
 	unsigned long flags;
 	int ret = 0;
 
 	spin_lock_irqsave(&msm_iommu_lock, flags);
+<<<<<<< HEAD
 	list_for_each_entry(iommu, &qcom_iommu_devices, dev_node)
 		if (iommu->dev->of_node == spec->np)
 			break;
 
 	if (!iommu || iommu->dev->of_node != spec->np) {
+=======
+	list_for_each_entry(iter, &qcom_iommu_devices, dev_node) {
+		if (iter->dev->of_node == spec->np) {
+			iommu = iter;
+			break;
+		}
+	}
+
+	if (!iommu) {
+>>>>>>> origin/android16-base
 		ret = -ENODEV;
 		goto fail;
 	}

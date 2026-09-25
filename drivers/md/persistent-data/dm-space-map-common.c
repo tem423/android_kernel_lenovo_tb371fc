@@ -279,6 +279,14 @@ int sm_ll_lookup_bitmap(struct ll_disk *ll, dm_block_t b, uint32_t *result)
 	struct disk_index_entry ie_disk;
 	struct dm_block *blk;
 
+<<<<<<< HEAD
+=======
+	if (b >= ll->nr_blocks) {
+		DMERR_LIMIT("metadata block out of bounds");
+		return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	b = do_div(index, ll->entries_per_block);
 	r = ll->load_ie(ll, index, &ie_disk);
 	if (r < 0)
@@ -337,6 +345,11 @@ int sm_ll_find_free_block(struct ll_disk *ll, dm_block_t begin,
 	 */
 	begin = do_div(index_begin, ll->entries_per_block);
 	end = do_div(end, ll->entries_per_block);
+<<<<<<< HEAD
+=======
+	if (end == 0)
+		end = ll->entries_per_block;
+>>>>>>> origin/android16-base
 
 	for (i = index_begin; i < index_end; i++, begin = 0) {
 		struct dm_block *blk;

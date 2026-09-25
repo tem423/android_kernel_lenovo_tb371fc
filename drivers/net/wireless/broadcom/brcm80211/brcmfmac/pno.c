@@ -163,12 +163,21 @@ static int brcmf_pno_set_random(struct brcmf_if *ifp, struct brcmf_pno_info *pi)
 	struct brcmf_pno_macaddr_le pfn_mac;
 	u8 *mac_addr = NULL;
 	u8 *mac_mask = NULL;
+<<<<<<< HEAD
 	int err, i;
 
 	for (i = 0; i < pi->n_reqs; i++)
 		if (pi->reqs[i]->flags & NL80211_SCAN_FLAG_RANDOM_ADDR) {
 			mac_addr = pi->reqs[i]->mac_addr;
 			mac_mask = pi->reqs[i]->mac_addr_mask;
+=======
+	int err, i, ri;
+
+	for (ri = 0; ri < pi->n_reqs; ri++)
+		if (pi->reqs[ri]->flags & NL80211_SCAN_FLAG_RANDOM_ADDR) {
+			mac_addr = pi->reqs[ri]->mac_addr;
+			mac_mask = pi->reqs[ri]->mac_addr_mask;
+>>>>>>> origin/android16-base
 			break;
 		}
 
@@ -190,7 +199,11 @@ static int brcmf_pno_set_random(struct brcmf_if *ifp, struct brcmf_pno_info *pi)
 	pfn_mac.mac[0] |= 0x02;
 
 	brcmf_dbg(SCAN, "enabling random mac: reqid=%llu mac=%pM\n",
+<<<<<<< HEAD
 		  pi->reqs[i]->reqid, pfn_mac.mac);
+=======
+		  pi->reqs[ri]->reqid, pfn_mac.mac);
+>>>>>>> origin/android16-base
 	err = brcmf_fil_iovar_data_set(ifp, "pfn_macaddr", &pfn_mac,
 				       sizeof(pfn_mac));
 	if (err)

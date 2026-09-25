@@ -22,6 +22,10 @@
 #include <linux/virtio.h>
 #include <linux/crypto.h>
 #include <linux/spinlock.h>
+<<<<<<< HEAD
+=======
+#include <linux/interrupt.h>
+>>>>>>> origin/android16-base
 #include <crypto/aead.h>
 #include <crypto/aes.h>
 #include <crypto/engine.h>
@@ -39,6 +43,10 @@ struct data_queue {
 	char name[32];
 
 	struct crypto_engine *engine;
+<<<<<<< HEAD
+=======
+	struct tasklet_struct done_task;
+>>>>>>> origin/android16-base
 };
 
 struct virtio_crypto {

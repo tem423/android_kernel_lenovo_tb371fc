@@ -23,6 +23,16 @@
 #include <openssl/err.h>
 #include <openssl/engine.h>
 
+<<<<<<< HEAD
+=======
+/*
+ * OpenSSL 3.0 deprecates the OpenSSL's ENGINE API.
+ *
+ * Remove this if/when that API is no longer used
+ */
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
+>>>>>>> origin/android16-base
 #define PKEY_ID_PKCS7 2
 
 static __attribute__((noreturn))

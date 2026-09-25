@@ -44,6 +44,12 @@
 
 #define MAX_ULD_QSETS 16
 
+<<<<<<< HEAD
+=======
+/* ulp_mem_io + ulptx_idata + payload + padding */
+#define MAX_IMM_ULPTX_WR_LEN (32 + 8 + 256 + 8)
+
+>>>>>>> origin/android16-base
 /* CPL message priority levels */
 enum {
 	CPL_PRIORITY_DATA     = 0,  /* data messages */

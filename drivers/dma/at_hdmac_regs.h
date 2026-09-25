@@ -168,6 +168,7 @@
 /* LLI == Linked List Item; aka DMA buffer descriptor */
 struct at_lli {
 	/* values that are not changed by hardware */
+<<<<<<< HEAD
 	dma_addr_t	saddr;
 	dma_addr_t	daddr;
 	/* value that may get written back: */
@@ -175,6 +176,15 @@ struct at_lli {
 	/* more values that are not changed by hardware */
 	u32		ctrlb;
 	dma_addr_t	dscr;	/* chain to next lli */
+=======
+	u32 saddr;
+	u32 daddr;
+	/* value that may get written back: */
+	u32 ctrla;
+	/* more values that are not changed by hardware */
+	u32 ctrlb;
+	u32 dscr;	/* chain to next lli */
+>>>>>>> origin/android16-base
 };
 
 /**

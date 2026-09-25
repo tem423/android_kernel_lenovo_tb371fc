@@ -74,7 +74,11 @@ TRACE_EVENT(rpmh_send_msg,
 #endif /* _TRACE_RPMH_H */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/soc/qcom
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace-rpmh

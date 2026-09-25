@@ -12,6 +12,10 @@
 #include <linux/usb/ch9.h>
 #include <linux/sysfs.h>
 #include <linux/kthread.h>
+<<<<<<< HEAD
+=======
+#include <linux/file.h>
+>>>>>>> origin/android16-base
 #include <linux/byteorder/generic.h>
 
 #include "usbip_common.h"
@@ -90,8 +94,14 @@ unlock:
 }
 static BIN_ATTR_RO(dev_desc, sizeof(struct usb_device_descriptor));
 
+<<<<<<< HEAD
 static ssize_t usbip_sockfd_store(struct device *dev, struct device_attribute *attr,
 		     const char *in, size_t count)
+=======
+static ssize_t usbip_sockfd_store(struct device *dev,
+				  struct device_attribute *attr,
+				  const char *in, size_t count)
+>>>>>>> origin/android16-base
 {
 	struct vudc *udc = (struct vudc *) dev_get_drvdata(dev);
 	int rv;
@@ -100,6 +110,11 @@ static ssize_t usbip_sockfd_store(struct device *dev, struct device_attribute *a
 	struct socket *socket;
 	unsigned long flags;
 	int ret;
+<<<<<<< HEAD
+=======
+	struct task_struct *tcp_rx = NULL;
+	struct task_struct *tcp_tx = NULL;
+>>>>>>> origin/android16-base
 
 	rv = kstrtoint(in, 0, &sockfd);
 	if (rv != 0)
@@ -109,6 +124,10 @@ static ssize_t usbip_sockfd_store(struct device *dev, struct device_attribute *a
 		dev_err(dev, "no device");
 		return -ENODEV;
 	}
+<<<<<<< HEAD
+=======
+	mutex_lock(&udc->ud.sysfs_lock);
+>>>>>>> origin/android16-base
 	spin_lock_irqsave(&udc->lock, flags);
 	/* Don't export what we don't have */
 	if (!udc->driver || !udc->pullup) {
@@ -138,6 +157,7 @@ static ssize_t usbip_sockfd_store(struct device *dev, struct device_attribute *a
 			goto unlock_ud;
 		}
 
+<<<<<<< HEAD
 		udc->ud.tcp_socket = socket;
 
 		spin_unlock_irq(&udc->ud.lock);
@@ -151,11 +171,63 @@ static ssize_t usbip_sockfd_store(struct device *dev, struct device_attribute *a
 		spin_lock_irqsave(&udc->lock, flags);
 		spin_lock_irq(&udc->ud.lock);
 		udc->ud.status = SDEV_ST_USED;
+=======
+		if (socket->type != SOCK_STREAM) {
+			dev_err(dev, "Expecting SOCK_STREAM - found %d",
+				socket->type);
+			ret = -EINVAL;
+			goto sock_err;
+		}
+
+		/* unlock and create threads and get tasks */
+		spin_unlock_irq(&udc->ud.lock);
+		spin_unlock_irqrestore(&udc->lock, flags);
+
+		tcp_rx = kthread_create(&v_rx_loop, &udc->ud, "vudc_rx");
+		if (IS_ERR(tcp_rx)) {
+			sockfd_put(socket);
+			mutex_unlock(&udc->ud.sysfs_lock);
+			return -EINVAL;
+		}
+		tcp_tx = kthread_create(&v_tx_loop, &udc->ud, "vudc_tx");
+		if (IS_ERR(tcp_tx)) {
+			kthread_stop(tcp_rx);
+			sockfd_put(socket);
+			mutex_unlock(&udc->ud.sysfs_lock);
+			return -EINVAL;
+		}
+
+		/* get task structs now */
+		get_task_struct(tcp_rx);
+		get_task_struct(tcp_tx);
+
+		/* lock and update udc->ud state */
+		spin_lock_irqsave(&udc->lock, flags);
+		spin_lock_irq(&udc->ud.lock);
+
+		udc->ud.tcp_socket = socket;
+		udc->ud.tcp_rx = tcp_rx;
+		udc->ud.tcp_tx = tcp_tx;
+		udc->ud.status = SDEV_ST_USED;
+
+>>>>>>> origin/android16-base
 		spin_unlock_irq(&udc->ud.lock);
 
 		ktime_get_ts64(&udc->start_time);
 		v_start_timer(udc);
 		udc->connected = 1;
+<<<<<<< HEAD
+=======
+
+		spin_unlock_irqrestore(&udc->lock, flags);
+
+		wake_up_process(udc->ud.tcp_rx);
+		wake_up_process(udc->ud.tcp_tx);
+
+		mutex_unlock(&udc->ud.sysfs_lock);
+		return count;
+
+>>>>>>> origin/android16-base
 	} else {
 		if (!udc->connected) {
 			dev_err(dev, "Device not connected");
@@ -174,13 +246,26 @@ static ssize_t usbip_sockfd_store(struct device *dev, struct device_attribute *a
 	}
 
 	spin_unlock_irqrestore(&udc->lock, flags);
+<<<<<<< HEAD
 
 	return count;
 
+=======
+	mutex_unlock(&udc->ud.sysfs_lock);
+
+	return count;
+
+sock_err:
+	sockfd_put(socket);
+>>>>>>> origin/android16-base
 unlock_ud:
 	spin_unlock_irq(&udc->ud.lock);
 unlock:
 	spin_unlock_irqrestore(&udc->lock, flags);
+<<<<<<< HEAD
+=======
+	mutex_unlock(&udc->ud.sysfs_lock);
+>>>>>>> origin/android16-base
 
 	return ret;
 }

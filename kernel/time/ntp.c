@@ -686,6 +686,7 @@ static inline void process_adjtimex_modes(const struct timex *txc, s32 *time_tai
 	}
 
 	if (txc->modes & ADJ_MAXERROR)
+<<<<<<< HEAD
 		time_maxerror = txc->maxerror;
 
 	if (txc->modes & ADJ_ESTERROR)
@@ -697,6 +698,18 @@ static inline void process_adjtimex_modes(const struct timex *txc, s32 *time_tai
 			time_constant += 4;
 		time_constant = min(time_constant, (long)MAXTC);
 		time_constant = max(time_constant, 0l);
+=======
+		time_maxerror = clamp(txc->maxerror, (__kernel_long_t)0, (__kernel_long_t)NTP_PHASE_LIMIT);
+
+	if (txc->modes & ADJ_ESTERROR)
+		time_esterror = clamp(txc->esterror, (__kernel_long_t)0, (__kernel_long_t)NTP_PHASE_LIMIT);
+
+	if (txc->modes & ADJ_TIMECONST) {
+		time_constant = clamp(txc->constant, (__kernel_long_t)0, (__kernel_long_t)MAXTC);
+		if (!(time_status & STA_NANO))
+			time_constant += 4;
+		time_constant = clamp(time_constant, (long)0, (long)MAXTC);
+>>>>>>> origin/android16-base
 	}
 
 	if (txc->modes & ADJ_TAI &&

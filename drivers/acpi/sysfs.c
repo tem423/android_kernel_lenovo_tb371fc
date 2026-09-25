@@ -439,6 +439,7 @@ static ssize_t acpi_data_show(struct file *filp, struct kobject *kobj,
 {
 	struct acpi_data_attr *data_attr;
 	void __iomem *base;
+<<<<<<< HEAD
 	ssize_t rc;
 
 	data_attr = container_of(bin_attr, struct acpi_data_attr, attr);
@@ -451,6 +452,31 @@ static ssize_t acpi_data_show(struct file *filp, struct kobject *kobj,
 	acpi_os_unmap_memory(base, data_attr->attr.size);
 
 	return rc;
+=======
+	ssize_t size;
+
+	data_attr = container_of(bin_attr, struct acpi_data_attr, attr);
+	size = data_attr->attr.size;
+
+	if (offset < 0)
+		return -EINVAL;
+
+	if (offset >= size)
+		return 0;
+
+	if (count > size - offset)
+		count = size - offset;
+
+	base = acpi_os_map_iomem(data_attr->addr, size);
+	if (!base)
+		return -ENOMEM;
+
+	memcpy_fromio(buf, base + offset, count);
+
+	acpi_os_unmap_iomem(base, size);
+
+	return count;
+>>>>>>> origin/android16-base
 }
 
 static int acpi_bert_data_init(void *th, struct acpi_data_attr *data_attr)

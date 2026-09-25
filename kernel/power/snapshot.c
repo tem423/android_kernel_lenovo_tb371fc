@@ -1145,13 +1145,17 @@ void free_basic_memory_bitmaps(void)
 
 void clear_free_pages(void)
 {
+<<<<<<< HEAD
 #ifdef CONFIG_PAGE_POISONING_ZERO
+=======
+>>>>>>> origin/android16-base
 	struct memory_bitmap *bm = free_pages_map;
 	unsigned long pfn;
 
 	if (WARN_ON(!(free_pages_map)))
 		return;
 
+<<<<<<< HEAD
 	memory_bm_position_reset(bm);
 	pfn = memory_bm_next_pfn(bm);
 	while (pfn != BM_END_OF_MAP) {
@@ -1163,6 +1167,20 @@ void clear_free_pages(void)
 	memory_bm_position_reset(bm);
 	pr_info("free pages cleared after restore\n");
 #endif /* PAGE_POISONING_ZERO */
+=======
+	if (IS_ENABLED(CONFIG_PAGE_POISONING_ZERO) || want_init_on_free()) {
+		memory_bm_position_reset(bm);
+		pfn = memory_bm_next_pfn(bm);
+		while (pfn != BM_END_OF_MAP) {
+			if (pfn_valid(pfn))
+				clear_highpage(pfn_to_page(pfn));
+
+			pfn = memory_bm_next_pfn(bm);
+		}
+		memory_bm_position_reset(bm);
+		pr_info("free pages cleared after restore\n");
+	}
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -2376,8 +2394,14 @@ static void *get_highmem_page_buffer(struct page *page,
 		pbe->copy_page = tmp;
 	} else {
 		/* Copy of the page will be stored in normal memory */
+<<<<<<< HEAD
 		kaddr = safe_pages_list;
 		safe_pages_list = safe_pages_list->next;
+=======
+		kaddr = __get_safe_page(ca->gfp_mask);
+		if (!kaddr)
+			return ERR_PTR(-ENOMEM);
+>>>>>>> origin/android16-base
 		pbe->copy_page = virt_to_page(kaddr);
 	}
 	pbe->next = highmem_pblist;
@@ -2557,8 +2581,14 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
 		return ERR_PTR(-ENOMEM);
 	}
 	pbe->orig_address = page_address(page);
+<<<<<<< HEAD
 	pbe->address = safe_pages_list;
 	safe_pages_list = safe_pages_list->next;
+=======
+	pbe->address = __get_safe_page(ca->gfp_mask);
+	if (!pbe->address)
+		return ERR_PTR(-ENOMEM);
+>>>>>>> origin/android16-base
 	pbe->next = restore_pblist;
 	restore_pblist = pbe;
 	return pbe->address;
@@ -2589,8 +2619,11 @@ int snapshot_write_next(struct snapshot_handle *handle)
 	if (handle->cur > 1 && handle->cur > nr_meta_pages + nr_copy_pages)
 		return 0;
 
+<<<<<<< HEAD
 	handle->sync_read = 1;
 
+=======
+>>>>>>> origin/android16-base
 	if (!handle->cur) {
 		if (!buffer)
 			/* This makes the buffer be freed by swsusp_free() */
@@ -2631,7 +2664,10 @@ int snapshot_write_next(struct snapshot_handle *handle)
 			memory_bm_position_reset(&orig_bm);
 			restore_pblist = NULL;
 			handle->buffer = get_buffer(&orig_bm, &ca);
+<<<<<<< HEAD
 			handle->sync_read = 0;
+=======
+>>>>>>> origin/android16-base
 			if (IS_ERR(handle->buffer))
 				return PTR_ERR(handle->buffer);
 		}
@@ -2643,9 +2679,14 @@ int snapshot_write_next(struct snapshot_handle *handle)
 		handle->buffer = get_buffer(&orig_bm, &ca);
 		if (IS_ERR(handle->buffer))
 			return PTR_ERR(handle->buffer);
+<<<<<<< HEAD
 		if (handle->buffer != buffer)
 			handle->sync_read = 0;
 	}
+=======
+	}
+	handle->sync_read = (handle->buffer == buffer);
+>>>>>>> origin/android16-base
 	handle->cur++;
 	return PAGE_SIZE;
 }

@@ -21,7 +21,11 @@ static const efi_char16_t efi_SetupMode_name[] = L"SetupMode";
 
 /* SHIM variables */
 static const efi_guid_t shim_guid = EFI_SHIM_LOCK_GUID;
+<<<<<<< HEAD
 static const efi_char16_t shim_MokSBState_name[] = L"MokSBState";
+=======
+static const efi_char16_t shim_MokSBState_name[] = L"MokSBStateRT";
+>>>>>>> origin/android16-base
 
 #define get_efi_var(name, vendor, ...) \
 	efi_call_runtime(get_variable, \
@@ -60,8 +64,13 @@ enum efi_secureboot_mode efi_get_secureboot(efi_system_table_t *sys_table_arg)
 
 	/*
 	 * See if a user has put the shim into insecure mode. If so, and if the
+<<<<<<< HEAD
 	 * variable doesn't have the runtime attribute set, we might as well
 	 * honor that.
+=======
+	 * variable doesn't have the non-volatile attribute set, we might as
+	 * well honor that.
+>>>>>>> origin/android16-base
 	 */
 	size = sizeof(moksbstate);
 	status = get_efi_var(shim_MokSBState_name, &shim_guid,
@@ -70,7 +79,11 @@ enum efi_secureboot_mode efi_get_secureboot(efi_system_table_t *sys_table_arg)
 	/* If it fails, we don't care why. Default to secure */
 	if (status != EFI_SUCCESS)
 		goto secure_boot_enabled;
+<<<<<<< HEAD
 	if (!(attr & EFI_VARIABLE_RUNTIME_ACCESS) && moksbstate == 1)
+=======
+	if (!(attr & EFI_VARIABLE_NON_VOLATILE) && moksbstate == 1)
+>>>>>>> origin/android16-base
 		return efi_secureboot_mode_disabled;
 
 secure_boot_enabled:

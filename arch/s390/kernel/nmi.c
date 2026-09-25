@@ -179,7 +179,11 @@ void s390_handle_mcck(void)
 		       "malfunction (code 0x%016lx).\n", mcck.mcck_code);
 		printk(KERN_EMERG "mcck: task: %s, pid: %d.\n",
 		       current->comm, current->pid);
+<<<<<<< HEAD
 		do_exit(SIGSEGV);
+=======
+		make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 	}
 }
 EXPORT_SYMBOL_GPL(s390_handle_mcck);

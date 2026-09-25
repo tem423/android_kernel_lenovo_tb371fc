@@ -238,8 +238,12 @@ static void enable_tx_dma(struct s3c24xx_uart_port *ourport)
 	/* Enable tx dma mode */
 	ucon = rd_regl(port, S3C2410_UCON);
 	ucon &= ~(S3C64XX_UCON_TXBURST_MASK | S3C64XX_UCON_TXMODE_MASK);
+<<<<<<< HEAD
 	ucon |= (dma_get_cache_alignment() >= 16) ?
 		S3C64XX_UCON_TXBURST_16 : S3C64XX_UCON_TXBURST_1;
+=======
+	ucon |= S3C64XX_UCON_TXBURST_1;
+>>>>>>> origin/android16-base
 	ucon |= S3C64XX_UCON_TXMODE_DMA;
 	wr_regl(port,  S3C2410_UCON, ucon);
 
@@ -512,7 +516,11 @@ static void enable_rx_dma(struct s3c24xx_uart_port *ourport)
 			S3C64XX_UCON_DMASUS_EN |
 			S3C64XX_UCON_TIMEOUT_EN |
 			S3C64XX_UCON_RXMODE_MASK);
+<<<<<<< HEAD
 	ucon |= S3C64XX_UCON_RXBURST_16 |
+=======
+	ucon |= S3C64XX_UCON_RXBURST_1 |
+>>>>>>> origin/android16-base
 			0xf << S3C64XX_UCON_TIMEOUT_SHIFT |
 			S3C64XX_UCON_EMPTYINT_EN |
 			S3C64XX_UCON_TIMEOUT_EN |
@@ -761,11 +769,16 @@ static irqreturn_t s3c24xx_serial_tx_chars(int irq, void *id)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
 		spin_unlock(&port->lock);
 		uart_write_wakeup(port);
 		spin_lock(&port->lock);
 	}
+=======
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
+		uart_write_wakeup(port);
+>>>>>>> origin/android16-base
 
 	if (uart_circ_empty(xmit))
 		s3c24xx_serial_stop_tx(port);
@@ -804,11 +817,18 @@ static unsigned int s3c24xx_serial_tx_empty(struct uart_port *port)
 		if ((ufstat & info->tx_fifomask) != 0 ||
 		    (ufstat & info->tx_fifofull))
 			return 0;
+<<<<<<< HEAD
 
 		return 1;
 	}
 
 	return s3c24xx_serial_txempty_nofifo(port);
+=======
+		return TIOCSER_TEMT;
+	}
+
+	return s3c24xx_serial_txempty_nofifo(port) ? TIOCSER_TEMT : 0;
+>>>>>>> origin/android16-base
 }
 
 /* no modem control lines */
@@ -1203,8 +1223,17 @@ static unsigned int s3c24xx_serial_getclk(struct s3c24xx_uart_port *ourport,
 			continue;
 
 		rate = clk_get_rate(clk);
+<<<<<<< HEAD
 		if (!rate)
 			continue;
+=======
+		if (!rate) {
+			dev_err(ourport->port.dev,
+				"Failed to get clock rate for %s.\n", clkname);
+			clk_put(clk);
+			continue;
+		}
+>>>>>>> origin/android16-base
 
 		if (ourport->info->has_divslot) {
 			unsigned long div = rate / req_baud;
@@ -1230,10 +1259,24 @@ static unsigned int s3c24xx_serial_getclk(struct s3c24xx_uart_port *ourport,
 			calc_deviation = -calc_deviation;
 
 		if (calc_deviation < deviation) {
+<<<<<<< HEAD
+=======
+			/*
+			 * If we find a better clk, release the previous one, if
+			 * any.
+			 */
+			if (!IS_ERR(*best_clk))
+				clk_put(*best_clk);
+>>>>>>> origin/android16-base
 			*best_clk = clk;
 			best_quot = quot;
 			*clk_num = cnt;
 			deviation = calc_deviation;
+<<<<<<< HEAD
+=======
+		} else {
+			clk_put(clk);
+>>>>>>> origin/android16-base
 		}
 	}
 

@@ -2558,7 +2558,12 @@ static int cma_resolve_ib_route(struct rdma_id_private *id_priv, int timeout_ms)
 
 	cma_init_resolve_route_work(work, id_priv);
 
+<<<<<<< HEAD
 	route->path_rec = kmalloc(sizeof *route->path_rec, GFP_KERNEL);
+=======
+	if (!route->path_rec)
+		route->path_rec = kmalloc(sizeof *route->path_rec, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!route->path_rec) {
 		ret = -ENOMEM;
 		goto err1;

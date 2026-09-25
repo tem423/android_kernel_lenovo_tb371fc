@@ -112,8 +112,16 @@ static int lan911x_config_init(struct phy_device *phydev)
 static int lan87xx_read_status(struct phy_device *phydev)
 {
 	struct smsc_phy_priv *priv = phydev->priv;
+<<<<<<< HEAD
 
 	int err = genphy_read_status(phydev);
+=======
+	int err;
+
+	err = genphy_read_status(phydev);
+	if (err)
+		return err;
+>>>>>>> origin/android16-base
 
 	if (!phydev->link && priv->energy_enable) {
 		int i;

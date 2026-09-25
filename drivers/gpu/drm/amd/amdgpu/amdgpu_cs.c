@@ -110,7 +110,11 @@ static int amdgpu_cs_parser_init(struct amdgpu_cs_parser *p, union drm_amdgpu_cs
 	int ret;
 
 	if (cs->in.num_chunks == 0)
+<<<<<<< HEAD
 		return 0;
+=======
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	chunk_array = kmalloc_array(cs->in.num_chunks, sizeof(uint64_t), GFP_KERNEL);
 	if (!chunk_array)
@@ -147,7 +151,11 @@ static int amdgpu_cs_parser_init(struct amdgpu_cs_parser *p, union drm_amdgpu_cs
 	}
 
 	for (i = 0; i < p->nchunks; i++) {
+<<<<<<< HEAD
 		struct drm_amdgpu_cs_chunk __user **chunk_ptr = NULL;
+=======
+		struct drm_amdgpu_cs_chunk __user *chunk_ptr = NULL;
+>>>>>>> origin/android16-base
 		struct drm_amdgpu_cs_chunk user_chunk;
 		uint32_t __user *cdata;
 
@@ -1469,6 +1477,10 @@ int amdgpu_cs_fence_to_handle_ioctl(struct drm_device *dev, void *data,
 		return 0;
 
 	default:
+<<<<<<< HEAD
+=======
+		dma_fence_put(fence);
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 }
@@ -1501,15 +1513,24 @@ static int amdgpu_cs_wait_all_fences(struct amdgpu_device *adev,
 			continue;
 
 		r = dma_fence_wait_timeout(fence, true, timeout);
+<<<<<<< HEAD
+=======
+		if (r > 0 && fence->error)
+			r = fence->error;
+
+>>>>>>> origin/android16-base
 		dma_fence_put(fence);
 		if (r < 0)
 			return r;
 
 		if (r == 0)
 			break;
+<<<<<<< HEAD
 
 		if (fence->error)
 			return fence->error;
+=======
+>>>>>>> origin/android16-base
 	}
 
 	memset(wait, 0, sizeof(*wait));

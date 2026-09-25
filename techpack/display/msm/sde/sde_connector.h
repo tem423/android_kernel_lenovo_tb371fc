@@ -389,6 +389,7 @@ struct sde_connector_dyn_hdr_metadata {
 	bool dynamic_hdr_update;
 };
 
+<<<<<<< HEAD
 enum mi_dimlayer_type {
 	MI_DIMLAYER_NULL = 0x0,
 	MI_DIMLAYER_FOD_HBM_OVERLAY = 0x1,
@@ -405,6 +406,8 @@ struct mi_dimlayer_state
 	uint32_t current_backlight;
 };
 
+=======
+>>>>>>> origin/android16-base
 /**
  * struct sde_connector - local sde connector structure
  * @base: Base drm connector structure
@@ -484,7 +487,10 @@ struct sde_connector {
 	spinlock_t event_lock;
 
 	struct backlight_device *bl_device;
+<<<<<<< HEAD
 	struct sde_clone_cdev *cdev_clone;
+=======
+>>>>>>> origin/android16-base
 	struct delayed_work status_work;
 	u32 esd_status_interval;
 	bool panel_dead;
@@ -503,9 +509,12 @@ struct sde_connector {
 
 	bool last_cmd_tx_sts;
 	bool hdr_capable;
+<<<<<<< HEAD
 
 	struct mi_dimlayer_state mi_dimlayer_state;
 	u32 fod_frame_count;
+=======
+>>>>>>> origin/android16-base
 };
 
 /**
@@ -991,6 +1000,7 @@ int sde_connector_get_panel_vfp(struct drm_connector *connector,
  */
 int sde_connector_esd_status(struct drm_connector *connector);
 
+<<<<<<< HEAD
 /**
  * sde_connector_hbm_ctl - mi function to control hbm
  * @connector: Pointer to DRM connector object
@@ -1009,4 +1019,6 @@ void sde_connector_mi_get_current_alpha(struct drm_connector *connector, uint32_
 
 void sde_connector_fod_notify(struct drm_connector *connector);
 
+=======
+>>>>>>> origin/android16-base
 #endif /* _SDE_CONNECTOR_H_ */

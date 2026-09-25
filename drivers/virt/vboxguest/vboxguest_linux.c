@@ -341,8 +341,13 @@ static int vbg_pci_probe(struct pci_dev *pci, const struct pci_device_id *id)
 		goto err_vbg_core_exit;
 	}
 
+<<<<<<< HEAD
 	ret = devm_request_irq(dev, pci->irq, vbg_core_isr, IRQF_SHARED,
 			       DEVICE_NAME, gdev);
+=======
+	ret = request_irq(pci->irq, vbg_core_isr, IRQF_SHARED, DEVICE_NAME,
+			  gdev);
+>>>>>>> origin/android16-base
 	if (ret) {
 		vbg_err("vboxguest: Error requesting irq: %d\n", ret);
 		goto err_vbg_core_exit;
@@ -352,7 +357,11 @@ static int vbg_pci_probe(struct pci_dev *pci, const struct pci_device_id *id)
 	if (ret) {
 		vbg_err("vboxguest: Error misc_register %s failed: %d\n",
 			DEVICE_NAME, ret);
+<<<<<<< HEAD
 		goto err_vbg_core_exit;
+=======
+		goto err_free_irq;
+>>>>>>> origin/android16-base
 	}
 
 	ret = misc_register(&gdev->misc_device_user);
@@ -388,6 +397,11 @@ err_unregister_misc_device_user:
 	misc_deregister(&gdev->misc_device_user);
 err_unregister_misc_device:
 	misc_deregister(&gdev->misc_device);
+<<<<<<< HEAD
+=======
+err_free_irq:
+	free_irq(pci->irq, gdev);
+>>>>>>> origin/android16-base
 err_vbg_core_exit:
 	vbg_core_exit(gdev);
 err_disable_pcidev:
@@ -404,6 +418,10 @@ static void vbg_pci_remove(struct pci_dev *pci)
 	vbg_gdev = NULL;
 	mutex_unlock(&vbg_gdev_mutex);
 
+<<<<<<< HEAD
+=======
+	free_irq(pci->irq, gdev);
+>>>>>>> origin/android16-base
 	device_remove_file(gdev->dev, &dev_attr_host_features);
 	device_remove_file(gdev->dev, &dev_attr_host_version);
 	misc_deregister(&gdev->misc_device_user);

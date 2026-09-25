@@ -395,6 +395,10 @@ static int i2c_acpi_notify(struct notifier_block *nb, unsigned long value,
 			break;
 
 		i2c_acpi_register_device(adapter, adev, &info);
+<<<<<<< HEAD
+=======
+		put_device(&adapter->dev);
+>>>>>>> origin/android16-base
 		break;
 	case ACPI_RECONFIG_DEVICE_REMOVE:
 		if (!acpi_device_enumerated(adev))

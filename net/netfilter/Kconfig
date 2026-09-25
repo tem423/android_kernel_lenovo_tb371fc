@@ -93,7 +93,11 @@ config NF_CONNTRACK_MARK
 config NF_CONNTRACK_SECMARK
 	bool  'Connection tracking security mark support'
 	depends on NETWORK_SECMARK
+<<<<<<< HEAD
 	default m if NETFILTER_ADVANCED=n
+=======
+	default y if NETFILTER_ADVANCED=n
+>>>>>>> origin/android16-base
 	help
 	  This option enables security markings to be applied to
 	  connections.  Typically they are copied to connections from
@@ -117,7 +121,10 @@ config NF_CONNTRACK_ZONES
 
 config NF_CONNTRACK_PROCFS
 	bool "Supply CT list in procfs (OBSOLETE)"
+<<<<<<< HEAD
 	default y
+=======
+>>>>>>> origin/android16-base
 	depends on PROC_FS
 	---help---
 	This option enables for the list of known conntrack entries
@@ -1432,8 +1439,11 @@ config NETFILTER_XT_MATCH_OWNER
 	based on who created the socket: the user or group. It is also
 	possible to check whether a socket actually exists.
 
+<<<<<<< HEAD
 	Conflicts with '"quota, tag, uid" match'
 
+=======
+>>>>>>> origin/android16-base
 config NETFILTER_XT_MATCH_POLICY
 	tristate 'IPsec "policy" match support'
 	depends on XFRM
@@ -1467,6 +1477,7 @@ config NETFILTER_XT_MATCH_PKTTYPE
 
 	  To compile it as a module, choose M here.  If unsure, say N.
 
+<<<<<<< HEAD
 config NETFILTER_XT_MATCH_QTAGUID
 	bool '"quota, tag, owner" match and stats support'
         depends on NETFILTER_XT_MATCH_SOCKET
@@ -1483,6 +1494,8 @@ config NETFILTER_XT_MATCH_QTAGUID
 
 	  If unsure, say `N'.
 
+=======
+>>>>>>> origin/android16-base
 config NETFILTER_XT_MATCH_QUOTA
 	tristate '"quota" match support'
 	depends on NETFILTER_ADVANCED

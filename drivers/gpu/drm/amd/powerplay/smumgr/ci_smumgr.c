@@ -2723,10 +2723,14 @@ static int ci_initialize_mc_reg_table(struct pp_hwmgr *hwmgr)
 
 static bool ci_is_dpm_running(struct pp_hwmgr *hwmgr)
 {
+<<<<<<< HEAD
 	return (1 == PHM_READ_INDIRECT_FIELD(hwmgr->device,
 					     CGS_IND_REG__SMC, FEATURE_STATUS,
 					     VOLTAGE_CONTROLLER_ON))
 		? true : false;
+=======
+	return ci_is_smc_ram_running(hwmgr);
+>>>>>>> origin/android16-base
 }
 
 static int ci_smu_init(struct pp_hwmgr *hwmgr)
@@ -2934,6 +2938,32 @@ static int ci_update_smc_table(struct pp_hwmgr *hwmgr, uint32_t type)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static void ci_reset_smc(struct pp_hwmgr *hwmgr)
+{
+	PHM_WRITE_INDIRECT_FIELD(hwmgr->device, CGS_IND_REG__SMC,
+				  SMC_SYSCON_RESET_CNTL,
+				  rst_reg, 1);
+}
+
+
+static void ci_stop_smc_clock(struct pp_hwmgr *hwmgr)
+{
+	PHM_WRITE_INDIRECT_FIELD(hwmgr->device, CGS_IND_REG__SMC,
+				  SMC_SYSCON_CLOCK_CNTL_0,
+				  ck_disable, 1);
+}
+
+static int ci_stop_smc(struct pp_hwmgr *hwmgr)
+{
+	ci_reset_smc(hwmgr);
+	ci_stop_smc_clock(hwmgr);
+
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 const struct pp_smumgr_func ci_smu_funcs = {
 	.smu_init = ci_smu_init,
 	.smu_fini = ci_smu_fini,
@@ -2957,4 +2987,8 @@ const struct pp_smumgr_func ci_smu_funcs = {
 	.is_dpm_running = ci_is_dpm_running,
 	.update_dpm_settings = ci_update_dpm_settings,
 	.update_smc_table = ci_update_smc_table,
+<<<<<<< HEAD
+=======
+	.stop_smc = ci_stop_smc,
+>>>>>>> origin/android16-base
 };

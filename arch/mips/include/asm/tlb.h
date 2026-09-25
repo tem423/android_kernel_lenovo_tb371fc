@@ -5,6 +5,7 @@
 #include <asm/cpu-features.h>
 #include <asm/mipsregs.h>
 
+<<<<<<< HEAD
 /*
  * MIPS doesn't need any special per-pte or per-vma handling, except
  * we need to flush cache for area to be unmapped.
@@ -22,6 +23,8 @@
  */
 #define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
 
+=======
+>>>>>>> origin/android16-base
 #define _UNIQUE_ENTRYHI(base, idx)					\
 		(((base) + ((idx) << (PAGE_SHIFT + 1))) |		\
 		 (cpu_has_tlbinv ? MIPS_ENTRYHI_EHINV : 0))

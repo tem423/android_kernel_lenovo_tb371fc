@@ -295,7 +295,11 @@ static int aspeed_disable_sig(const struct aspeed_sig_expr **exprs,
 	int ret = 0;
 
 	if (!exprs)
+<<<<<<< HEAD
 		return true;
+=======
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	while (*exprs && !ret) {
 		ret = aspeed_sig_expr_disable(*exprs, maps);
@@ -458,6 +462,7 @@ int aspeed_pinmux_set_mux(struct pinctrl_dev *pctldev, unsigned int function,
 static bool aspeed_expr_is_gpio(const struct aspeed_sig_expr *expr)
 {
 	/*
+<<<<<<< HEAD
 	 * The signal type is GPIO if the signal name has "GPIO" as a prefix.
 	 * strncmp (rather than strcmp) is used to implement the prefix
 	 * requirement.
@@ -465,6 +470,16 @@ static bool aspeed_expr_is_gpio(const struct aspeed_sig_expr *expr)
 	 * expr->signal might look like "GPIOT3" in the GPIO case.
 	 */
 	return strncmp(expr->signal, "GPIO", 4) == 0;
+=======
+	 * The signal type is GPIO if the signal name has "GPI" as a prefix.
+	 * strncmp (rather than strcmp) is used to implement the prefix
+	 * requirement.
+	 *
+	 * expr->signal might look like "GPIOB1" in the GPIO case.
+	 * expr->signal might look like "GPIT0" in the GPI case.
+	 */
+	return strncmp(expr->signal, "GPI", 3) == 0;
+>>>>>>> origin/android16-base
 }
 
 static bool aspeed_gpio_in_exprs(const struct aspeed_sig_expr **exprs)

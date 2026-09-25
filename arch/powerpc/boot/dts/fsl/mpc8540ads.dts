@@ -11,7 +11,11 @@
 
 /dts-v1/;
 
+<<<<<<< HEAD
 /include/ "e500v2_power_isa.dtsi"
+=======
+/include/ "e500v1_power_isa.dtsi"
+>>>>>>> origin/android16-base
 
 / {
 	model = "MPC8540ADS";

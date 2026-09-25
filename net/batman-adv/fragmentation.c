@@ -403,6 +403,10 @@ out:
 
 /**
  * batadv_frag_create() - create a fragment from skb
+<<<<<<< HEAD
+=======
+ * @net_dev: outgoing device for fragment
+>>>>>>> origin/android16-base
  * @skb: skb to create fragment from
  * @frag_head: header to use in new fragment
  * @fragment_size: size of new fragment
@@ -413,22 +417,40 @@ out:
  *
  * Return: the new fragment, NULL on error.
  */
+<<<<<<< HEAD
 static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
 					  struct batadv_frag_packet *frag_head,
 					  unsigned int fragment_size)
 {
+=======
+static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
+					  struct sk_buff *skb,
+					  struct batadv_frag_packet *frag_head,
+					  unsigned int fragment_size)
+{
+	unsigned int ll_reserved = LL_RESERVED_SPACE(net_dev);
+	unsigned int tailroom = net_dev->needed_tailroom;
+>>>>>>> origin/android16-base
 	struct sk_buff *skb_fragment;
 	unsigned int header_size = sizeof(*frag_head);
 	unsigned int mtu = fragment_size + header_size;
 
+<<<<<<< HEAD
 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
+=======
+	skb_fragment = dev_alloc_skb(ll_reserved + mtu + tailroom);
+>>>>>>> origin/android16-base
 	if (!skb_fragment)
 		goto err;
 
 	skb_fragment->priority = skb->priority;
 
 	/* Eat the last mtu-bytes of the skb */
+<<<<<<< HEAD
 	skb_reserve(skb_fragment, header_size + ETH_HLEN);
+=======
+	skb_reserve(skb_fragment, ll_reserved + header_size);
+>>>>>>> origin/android16-base
 	skb_split(skb, skb_fragment, skb->len - fragment_size);
 
 	/* Add the header */
@@ -451,11 +473,19 @@ int batadv_frag_send_packet(struct sk_buff *skb,
 			    struct batadv_orig_node *orig_node,
 			    struct batadv_neigh_node *neigh_node)
 {
+<<<<<<< HEAD
+=======
+	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
+>>>>>>> origin/android16-base
 	struct batadv_priv *bat_priv;
 	struct batadv_hard_iface *primary_if = NULL;
 	struct batadv_frag_packet frag_header;
 	struct sk_buff *skb_fragment;
+<<<<<<< HEAD
 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
+=======
+	unsigned int mtu = net_dev->mtu;
+>>>>>>> origin/android16-base
 	unsigned int header_size = sizeof(frag_header);
 	unsigned int max_fragment_size, num_fragments;
 	int ret;
@@ -485,6 +515,20 @@ int batadv_frag_send_packet(struct sk_buff *skb,
 		goto free_skb;
 	}
 
+<<<<<<< HEAD
+=======
+	/* GRO might have added fragments to the fragment list instead of
+	 * frags[]. But this is not handled by skb_split and must be
+	 * linearized to avoid incorrect length information after all
+	 * batman-adv fragments were created and submitted to the
+	 * hard-interface
+	 */
+	if (skb_has_frag_list(skb) && __skb_linearize(skb)) {
+		ret = -ENOMEM;
+		goto free_skb;
+	}
+
+>>>>>>> origin/android16-base
 	/* Create one header to be copied to all fragments */
 	frag_header.packet_type = BATADV_UNICAST_FRAG;
 	frag_header.version = BATADV_COMPAT_VERSION;
@@ -515,7 +559,11 @@ int batadv_frag_send_packet(struct sk_buff *skb,
 			goto put_primary_if;
 		}
 
+<<<<<<< HEAD
 		skb_fragment = batadv_frag_create(skb, &frag_header,
+=======
+		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
+>>>>>>> origin/android16-base
 						  max_fragment_size);
 		if (!skb_fragment) {
 			ret = -ENOMEM;
@@ -534,6 +582,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
 		frag_header.no++;
 	}
 
+<<<<<<< HEAD
 	/* Make room for the fragment header. */
 	if (batadv_skb_head_push(skb, header_size) < 0 ||
 	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0) {
@@ -541,6 +590,16 @@ int batadv_frag_send_packet(struct sk_buff *skb,
 		goto put_primary_if;
 	}
 
+=======
+	/* make sure that there is at least enough head for the fragmentation
+	 * and ethernet headers
+	 */
+	ret = skb_cow_head(skb, ETH_HLEN + header_size);
+	if (ret < 0)
+		goto put_primary_if;
+
+	skb_push(skb, header_size);
+>>>>>>> origin/android16-base
 	memcpy(skb->data, &frag_header, header_size);
 
 	/* Send the last fragment */

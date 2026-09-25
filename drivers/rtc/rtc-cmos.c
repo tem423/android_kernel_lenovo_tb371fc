@@ -467,7 +467,14 @@ static int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t)
 	min = t->time.tm_min;
 	sec = t->time.tm_sec;
 
+<<<<<<< HEAD
 	rtc_control = CMOS_READ(RTC_CONTROL);
+=======
+	spin_lock_irq(&rtc_lock);
+	rtc_control = CMOS_READ(RTC_CONTROL);
+	spin_unlock_irq(&rtc_lock);
+
+>>>>>>> origin/android16-base
 	if (!(rtc_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
 		/* Writing 0xff means "don't care" or "match all".  */
 		mon = (mon <= 12) ? bin2bcd(mon) : 0xff;
@@ -598,11 +605,18 @@ static int cmos_nvram_read(void *priv, unsigned int off, void *val,
 			   size_t count)
 {
 	unsigned char *buf = val;
+<<<<<<< HEAD
 	int	retval;
 
 	off += NVRAM_OFFSET;
 	spin_lock_irq(&rtc_lock);
 	for (retval = 0; count; count--, off++, retval++) {
+=======
+
+	off += NVRAM_OFFSET;
+	spin_lock_irq(&rtc_lock);
+	for (; count; count--, off++) {
+>>>>>>> origin/android16-base
 		if (off < 128)
 			*buf++ = CMOS_READ(off);
 		else if (can_bank2)
@@ -612,7 +626,11 @@ static int cmos_nvram_read(void *priv, unsigned int off, void *val,
 	}
 	spin_unlock_irq(&rtc_lock);
 
+<<<<<<< HEAD
 	return retval;
+=======
+	return count ? -EIO : 0;
+>>>>>>> origin/android16-base
 }
 
 static int cmos_nvram_write(void *priv, unsigned int off, void *val,
@@ -620,7 +638,10 @@ static int cmos_nvram_write(void *priv, unsigned int off, void *val,
 {
 	struct cmos_rtc	*cmos = priv;
 	unsigned char	*buf = val;
+<<<<<<< HEAD
 	int		retval;
+=======
+>>>>>>> origin/android16-base
 
 	/* NOTE:  on at least PCs and Ataris, the boot firmware uses a
 	 * checksum on part of the NVRAM data.  That's currently ignored
@@ -629,7 +650,11 @@ static int cmos_nvram_write(void *priv, unsigned int off, void *val,
 	 */
 	off += NVRAM_OFFSET;
 	spin_lock_irq(&rtc_lock);
+<<<<<<< HEAD
 	for (retval = 0; count; count--, off++, retval++) {
+=======
+	for (; count; count--, off++) {
+>>>>>>> origin/android16-base
 		/* don't trash RTC registers */
 		if (off == cmos->day_alrm
 				|| off == cmos->mon_alrm
@@ -644,7 +669,11 @@ static int cmos_nvram_write(void *priv, unsigned int off, void *val,
 	}
 	spin_unlock_irq(&rtc_lock);
 
+<<<<<<< HEAD
 	return retval;
+=======
+	return count ? -EIO : 0;
+>>>>>>> origin/android16-base
 }
 
 /*----------------------------------------------------------------*/

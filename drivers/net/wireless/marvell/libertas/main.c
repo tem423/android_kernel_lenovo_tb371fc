@@ -216,7 +216,11 @@ int lbs_stop_iface(struct lbs_private *priv)
 
 	spin_lock_irqsave(&priv->driver_lock, flags);
 	priv->iface_running = false;
+<<<<<<< HEAD
 	kfree_skb(priv->currenttxskb);
+=======
+	dev_kfree_skb_irq(priv->currenttxskb);
+>>>>>>> origin/android16-base
 	priv->currenttxskb = NULL;
 	priv->tx_pending_len = 0;
 	spin_unlock_irqrestore(&priv->driver_lock, flags);
@@ -869,6 +873,10 @@ static int lbs_init_adapter(struct lbs_private *priv)
 	ret = kfifo_alloc(&priv->event_fifo, sizeof(u32) * 16, GFP_KERNEL);
 	if (ret) {
 		pr_err("Out of memory allocating event FIFO buffer\n");
+<<<<<<< HEAD
+=======
+		lbs_free_cmd_buffer(priv);
+>>>>>>> origin/android16-base
 		goto out;
 	}
 

@@ -229,7 +229,11 @@ static u32 flow_get_skgid(const struct sk_buff *skb)
 
 static u32 flow_get_vlan_tag(const struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	u16 uninitialized_var(tag);
+=======
+	u16 tag;
+>>>>>>> origin/android16-base
 
 	if (vlan_get_tag(skb, &tag) < 0)
 		return 0;

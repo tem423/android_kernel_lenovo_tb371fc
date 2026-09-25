@@ -138,6 +138,11 @@ static int fdtv_ca_pmt(struct firedtv *fdtv, void *arg)
 	} else {
 		data_length = msg->msg[3];
 	}
+<<<<<<< HEAD
+=======
+	if (data_length > sizeof(msg->msg) - data_pos)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	return avc_ca_pmt(fdtv, &msg->msg[data_pos], data_length);
 }

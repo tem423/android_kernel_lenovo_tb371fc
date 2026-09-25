@@ -70,7 +70,11 @@ reserved:
 
 ENTRY(handle_interrupt)
 
+<<<<<<< HEAD
 	INTERRUPT_PROLOGUE  irq
+=======
+	INTERRUPT_PROLOGUE
+>>>>>>> origin/android16-base
 
 	# irq control APIs local_irq_save/restore/disable/enable fiddle with
 	# global interrupt enable bits in STATUS32 (.IE for 1 prio, .E[] for 2 prio)
@@ -226,7 +230,11 @@ debug_marker_l1:
 	bset.nz	r11, r11, AUX_IRQ_ACT_BIT_U	; NZ means U
 	sr	r11, [AUX_IRQ_ACT]
 
+<<<<<<< HEAD
 	INTERRUPT_EPILOGUE  irq
+=======
+	INTERRUPT_EPILOGUE
+>>>>>>> origin/android16-base
 	rtie
 
 ;####### Return from Exception / pure kernel mode #######

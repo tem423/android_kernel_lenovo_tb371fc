@@ -3,6 +3,10 @@
 #define CAIAQ_AUDIO_H
 
 int snd_usb_caiaq_audio_init(struct snd_usb_caiaqdev *cdev);
+<<<<<<< HEAD
+=======
+void snd_usb_caiaq_audio_disconnect(struct snd_usb_caiaqdev *cdev);
+>>>>>>> origin/android16-base
 void snd_usb_caiaq_audio_free(struct snd_usb_caiaqdev *cdev);
 
 #endif /* CAIAQ_AUDIO_H */

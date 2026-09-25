@@ -416,16 +416,33 @@ static int rcsi2_wait_phy_start(struct rcar_csi2 *priv)
 static int rcsi2_set_phypll(struct rcar_csi2 *priv, unsigned int mbps)
 {
 	const struct rcsi2_mbps_reg *hsfreq;
+<<<<<<< HEAD
 
 	for (hsfreq = priv->info->hsfreqrange; hsfreq->mbps != 0; hsfreq++)
 		if (hsfreq->mbps >= mbps)
 			break;
+=======
+	const struct rcsi2_mbps_reg *hsfreq_prev = NULL;
+
+	for (hsfreq = priv->info->hsfreqrange; hsfreq->mbps != 0; hsfreq++) {
+		if (hsfreq->mbps >= mbps)
+			break;
+		hsfreq_prev = hsfreq;
+	}
+>>>>>>> origin/android16-base
 
 	if (!hsfreq->mbps) {
 		dev_err(priv->dev, "Unsupported PHY speed (%u Mbps)", mbps);
 		return -ERANGE;
 	}
 
+<<<<<<< HEAD
+=======
+	if (hsfreq_prev &&
+	    ((mbps - hsfreq_prev->mbps) <= (hsfreq->mbps - mbps)))
+		hsfreq = hsfreq_prev;
+
+>>>>>>> origin/android16-base
 	rcsi2_write(priv, PHYPLL_REG, PHYPLL_HSFREQRANGE(hsfreq->reg));
 
 	return 0;
@@ -474,6 +491,11 @@ static int rcsi2_start(struct rcar_csi2 *priv)
 
 	/* Code is validated in set_fmt. */
 	format = rcsi2_code_to_fmt(priv->mf.code);
+<<<<<<< HEAD
+=======
+	if (!format)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Enable all Virtual Channels.
@@ -834,10 +856,24 @@ static int rcsi2_phtw_write_mbps(struct rcar_csi2 *priv, unsigned int mbps,
 				 const struct rcsi2_mbps_reg *values, u16 code)
 {
 	const struct rcsi2_mbps_reg *value;
+<<<<<<< HEAD
 
 	for (value = values; value->mbps; value++)
 		if (value->mbps >= mbps)
 			break;
+=======
+	const struct rcsi2_mbps_reg *prev_value = NULL;
+
+	for (value = values; value->mbps; value++) {
+		if (value->mbps >= mbps)
+			break;
+		prev_value = value;
+	}
+
+	if (prev_value &&
+	    ((mbps - prev_value->mbps) <= (value->mbps - mbps)))
+		value = prev_value;
+>>>>>>> origin/android16-base
 
 	if (!value->mbps) {
 		dev_err(priv->dev, "Unsupported PHY speed (%u Mbps)", mbps);

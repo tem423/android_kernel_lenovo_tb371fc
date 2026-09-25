@@ -571,10 +571,16 @@ static struct iio_sw_device *iio_dummy_probe(const char *name)
 	struct iio_sw_device *swd;
 
 	swd = kzalloc(sizeof(*swd), GFP_KERNEL);
+<<<<<<< HEAD
 	if (!swd) {
 		ret = -ENOMEM;
 		goto error_kzalloc;
 	}
+=======
+	if (!swd)
+		return ERR_PTR(-ENOMEM);
+
+>>>>>>> origin/android16-base
 	/*
 	 * Allocate an IIO device.
 	 *
@@ -586,7 +592,11 @@ static struct iio_sw_device *iio_dummy_probe(const char *name)
 	indio_dev = iio_device_alloc(sizeof(*st));
 	if (!indio_dev) {
 		ret = -ENOMEM;
+<<<<<<< HEAD
 		goto error_ret;
+=======
+		goto error_free_swd;
+>>>>>>> origin/android16-base
 	}
 
 	st = iio_priv(indio_dev);
@@ -617,6 +627,13 @@ static struct iio_sw_device *iio_dummy_probe(const char *name)
 	 *    indio_dev->name = spi_get_device_id(spi)->name;
 	 */
 	indio_dev->name = kstrdup(name, GFP_KERNEL);
+<<<<<<< HEAD
+=======
+	if (!indio_dev->name) {
+		ret = -ENOMEM;
+		goto error_free_device;
+	}
+>>>>>>> origin/android16-base
 
 	/* Provide description of available channels */
 	indio_dev->channels = iio_dummy_channels;
@@ -633,7 +650,11 @@ static struct iio_sw_device *iio_dummy_probe(const char *name)
 
 	ret = iio_simple_dummy_events_register(indio_dev);
 	if (ret < 0)
+<<<<<<< HEAD
 		goto error_free_device;
+=======
+		goto error_free_name;
+>>>>>>> origin/android16-base
 
 	ret = iio_simple_dummy_configure_buffer(indio_dev);
 	if (ret < 0)
@@ -650,11 +671,20 @@ error_unconfigure_buffer:
 	iio_simple_dummy_unconfigure_buffer(indio_dev);
 error_unregister_events:
 	iio_simple_dummy_events_unregister(indio_dev);
+<<<<<<< HEAD
 error_free_device:
 	iio_device_free(indio_dev);
 error_ret:
 	kfree(swd);
 error_kzalloc:
+=======
+error_free_name:
+	kfree(indio_dev->name);
+error_free_device:
+	iio_device_free(indio_dev);
+error_free_swd:
+	kfree(swd);
+>>>>>>> origin/android16-base
 	return ERR_PTR(ret);
 }
 

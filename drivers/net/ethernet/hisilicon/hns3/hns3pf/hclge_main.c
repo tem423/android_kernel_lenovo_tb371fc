@@ -2517,8 +2517,18 @@ static u32 hclge_check_event_cause(struct hclge_dev *hdev, u32 *clearval)
 static void hclge_clear_event_cause(struct hclge_dev *hdev, u32 event_type,
 				    u32 regclr)
 {
+<<<<<<< HEAD
 	switch (event_type) {
 	case HCLGE_VECTOR0_EVENT_RST:
+=======
+#define HCLGE_IMP_RESET_DELAY		5
+
+	switch (event_type) {
+	case HCLGE_VECTOR0_EVENT_RST:
+		if (regclr == BIT(HCLGE_VECTOR0_IMPRESET_INT_B))
+			mdelay(HCLGE_IMP_RESET_DELAY);
+
+>>>>>>> origin/android16-base
 		hclge_write_dev(&hdev->hw, HCLGE_MISC_RESET_STS_REG, regclr);
 		break;
 	case HCLGE_VECTOR0_EVENT_MBX:
@@ -5182,12 +5192,25 @@ void hclge_reset_tqp(struct hnae3_handle *handle, u16 queue_id)
 
 void hclge_reset_vf_queue(struct hclge_vport *vport, u16 queue_id)
 {
+<<<<<<< HEAD
+=======
+	struct hnae3_handle *handle = &vport->nic;
+>>>>>>> origin/android16-base
 	struct hclge_dev *hdev = vport->back;
 	int reset_try_times = 0;
 	int reset_status;
 	u16 queue_gid;
 	int ret;
 
+<<<<<<< HEAD
+=======
+	if (queue_id >= handle->kinfo.num_tqps) {
+		dev_warn(&hdev->pdev->dev, "Invalid vf queue id(%u)\n",
+			 queue_id);
+		return;
+	}
+
+>>>>>>> origin/android16-base
 	queue_gid = hclge_covert_handle_qid_global(&vport->nic, queue_id);
 
 	ret = hclge_send_reset_tqp_cmd(hdev, queue_gid, true);
@@ -6380,6 +6403,10 @@ static int hclge_init(void)
 
 static void hclge_exit(void)
 {
+<<<<<<< HEAD
+=======
+	hnae3_unregister_ae_algo_prepare(&ae_algo);
+>>>>>>> origin/android16-base
 	hnae3_unregister_ae_algo(&ae_algo);
 }
 module_init(hclge_init);

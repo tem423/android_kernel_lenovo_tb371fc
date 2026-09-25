@@ -1733,7 +1733,11 @@ struct dst_state *dst_attach(struct dst_state *state, struct dvb_adapter *dvb_ad
 	return state;				/*	Manu (DST is a card not a frontend)	*/
 }
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(dst_attach);
+=======
+EXPORT_SYMBOL_GPL(dst_attach);
+>>>>>>> origin/android16-base
 
 static const struct dvb_frontend_ops dst_dvbt_ops = {
 	.delsys = { SYS_DVBT },

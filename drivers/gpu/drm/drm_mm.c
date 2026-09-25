@@ -164,7 +164,11 @@ static void show_leaks(struct drm_mm *mm) { }
 
 INTERVAL_TREE_DEFINE(struct drm_mm_node, rb,
 		     u64, __subtree_last,
+<<<<<<< HEAD
 		     START, LAST, static inline, drm_mm_interval_tree)
+=======
+		     START, LAST, static inline __maybe_unused, drm_mm_interval_tree)
+>>>>>>> origin/android16-base
 
 struct drm_mm_node *
 __drm_mm_interval_first(const struct drm_mm *mm, u64 start, u64 last)

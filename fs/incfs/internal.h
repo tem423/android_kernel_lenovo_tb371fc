@@ -18,4 +18,9 @@ static inline struct mem_range range(u8 *data, size_t len)
 
 #define LOCK_REQUIRED(lock)  WARN_ON_ONCE(!mutex_is_locked(&lock))
 
+<<<<<<< HEAD
+=======
+#define EFSCORRUPTED EUCLEAN
+
+>>>>>>> origin/android16-base
 #endif /* _INCFS_INTERNAL_H */

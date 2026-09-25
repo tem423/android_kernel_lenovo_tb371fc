@@ -2784,7 +2784,11 @@ il4965_hdl_tx(struct il_priv *il, struct il_rx_buf *rxb)
 	struct ieee80211_tx_info *info;
 	struct il4965_tx_resp *tx_resp = (void *)&pkt->u.raw[0];
 	u32 status = le32_to_cpu(tx_resp->u.status);
+<<<<<<< HEAD
 	int uninitialized_var(tid);
+=======
+	int tid;
+>>>>>>> origin/android16-base
 	int sta_id;
 	int freed;
 	u8 *qc = NULL;
@@ -6236,10 +6240,19 @@ out:
 	mutex_unlock(&il->mutex);
 }
 
+<<<<<<< HEAD
 static void
 il4965_setup_deferred_work(struct il_priv *il)
 {
 	il->workqueue = create_singlethread_workqueue(DRV_NAME);
+=======
+static int
+il4965_setup_deferred_work(struct il_priv *il)
+{
+	il->workqueue = create_singlethread_workqueue(DRV_NAME);
+	if (!il->workqueue)
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	init_waitqueue_head(&il->wait_command_queue);
 
@@ -6260,6 +6273,11 @@ il4965_setup_deferred_work(struct il_priv *il)
 	tasklet_init(&il->irq_tasklet,
 		     il4965_irq_tasklet,
 		     (unsigned long)il);
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static void
@@ -6649,7 +6667,14 @@ il4965_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		goto out_disable_msi;
 	}
 
+<<<<<<< HEAD
 	il4965_setup_deferred_work(il);
+=======
+	err = il4965_setup_deferred_work(il);
+	if (err)
+		goto out_free_irq;
+
+>>>>>>> origin/android16-base
 	il4965_setup_handlers(il);
 
 	/*********************************************
@@ -6687,6 +6712,10 @@ il4965_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 out_destroy_workqueue:
 	destroy_workqueue(il->workqueue);
 	il->workqueue = NULL;
+<<<<<<< HEAD
+=======
+out_free_irq:
+>>>>>>> origin/android16-base
 	free_irq(il->pci_dev->irq, il);
 out_disable_msi:
 	pci_disable_msi(il->pci_dev);

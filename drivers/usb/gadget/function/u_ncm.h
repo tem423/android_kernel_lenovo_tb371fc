@@ -20,6 +20,12 @@ struct f_ncm_opts {
 	struct net_device		*net;
 	bool				bound;
 
+<<<<<<< HEAD
+=======
+	struct config_group		*ncm_interf_group;
+	struct usb_os_desc		ncm_os_desc;
+	char				ncm_ext_compat_id[16];
+>>>>>>> origin/android16-base
 	/*
 	 * Read/write access to configfs attributes is handled by configfs.
 	 *

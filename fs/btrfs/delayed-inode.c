@@ -642,7 +642,11 @@ static int btrfs_delayed_inode_reserve_metadata(
 						      btrfs_ino(inode),
 						      num_bytes, 1);
 		} else {
+<<<<<<< HEAD
 			btrfs_qgroup_free_meta_prealloc(root, fs_info->nodesize);
+=======
+			btrfs_qgroup_free_meta_prealloc(root, num_bytes);
+>>>>>>> origin/android16-base
 		}
 		return ret;
 	}
@@ -984,7 +988,11 @@ static void btrfs_release_delayed_inode(struct btrfs_delayed_node *delayed_node)
 
 	if (delayed_node &&
 	    test_bit(BTRFS_DELAYED_NODE_INODE_DIRTY, &delayed_node->flags)) {
+<<<<<<< HEAD
 		BUG_ON(!delayed_node->root);
+=======
+		ASSERT(delayed_node->root);
+>>>>>>> origin/android16-base
 		clear_bit(BTRFS_DELAYED_NODE_INODE_DIRTY, &delayed_node->flags);
 		delayed_node->count--;
 
@@ -1030,12 +1038,19 @@ static int __btrfs_update_delayed_inode(struct btrfs_trans_handle *trans,
 	nofs_flag = memalloc_nofs_save();
 	ret = btrfs_lookup_inode(trans, root, path, &key, mod);
 	memalloc_nofs_restore(nofs_flag);
+<<<<<<< HEAD
 	if (ret > 0) {
 		btrfs_release_path(path);
 		return -ENOENT;
 	} else if (ret < 0) {
 		return ret;
 	}
+=======
+	if (ret > 0)
+		ret = -ENOENT;
+	if (ret < 0)
+		goto out;
+>>>>>>> origin/android16-base
 
 	leaf = path->nodes[0];
 	inode_item = btrfs_item_ptr(leaf, path->slots[0],
@@ -1073,6 +1088,17 @@ err_out:
 	btrfs_delayed_inode_release_metadata(fs_info, node, (ret < 0));
 	btrfs_release_delayed_inode(node);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * If we fail to update the delayed inode we need to abort the
+	 * transaction, because we could leave the inode with the improper
+	 * counts behind.
+	 */
+	if (ret && ret != -ENOENT)
+		btrfs_abort_transaction(trans, ret);
+
+>>>>>>> origin/android16-base
 	return ret;
 
 search:
@@ -1127,6 +1153,12 @@ __btrfs_commit_inode_delayed_items(struct btrfs_trans_handle *trans,
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
+=======
+	ret = btrfs_record_root_in_trans(trans, node->root);
+	if (ret)
+		return ret;
+>>>>>>> origin/android16-base
 	ret = btrfs_update_delayed_inode(trans, node->root, path, node);
 	return ret;
 }
@@ -1165,20 +1197,47 @@ static int __btrfs_run_delayed_items(struct btrfs_trans_handle *trans, int nr)
 		ret = __btrfs_commit_inode_delayed_items(trans, path,
 							 curr_node);
 		if (ret) {
+<<<<<<< HEAD
 			btrfs_release_delayed_node(curr_node);
 			curr_node = NULL;
+=======
+>>>>>>> origin/android16-base
 			btrfs_abort_transaction(trans, ret);
 			break;
 		}
 
 		prev_node = curr_node;
 		curr_node = btrfs_next_delayed_node(curr_node);
+<<<<<<< HEAD
 		btrfs_release_delayed_node(prev_node);
 	}
 
 	if (curr_node)
 		btrfs_release_delayed_node(curr_node);
 	btrfs_free_path(path);
+=======
+		/*
+		 * See the comment below about releasing path before releasing
+		 * node. If the commit of delayed items was successful the path
+		 * should always be released, but in case of an error, it may
+		 * point to locked extent buffers (a leaf at the very least).
+		 */
+		ASSERT(path->nodes[0] == NULL);
+		btrfs_release_delayed_node(prev_node);
+	}
+
+	/*
+	 * Release the path to avoid a potential deadlock and lockdep splat when
+	 * releasing the delayed node, as that requires taking the delayed node's
+	 * mutex. If another task starts running delayed items before we take
+	 * the mutex, it will first lock the mutex and then it may try to lock
+	 * the same btree path (leaf).
+	 */
+	btrfs_free_path(path);
+
+	if (curr_node)
+		btrfs_release_delayed_node(curr_node);
+>>>>>>> origin/android16-base
 	trans->block_rsv = block_rsv;
 
 	return ret;

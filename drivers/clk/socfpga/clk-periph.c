@@ -61,7 +61,11 @@ static __init void __socfpga_periph_init(struct device_node *node,
 	const struct clk_ops *ops)
 {
 	u32 reg;
+<<<<<<< HEAD
 	struct clk *clk;
+=======
+	struct clk_hw *hw_clk;
+>>>>>>> origin/android16-base
 	struct socfpga_periph_clk *periph_clk;
 	const char *clk_name = node->name;
 	const char *parent_name[SOCFPGA_MAX_PARENTS];
@@ -104,6 +108,7 @@ static __init void __socfpga_periph_init(struct device_node *node,
 	init.parent_names = parent_name;
 
 	periph_clk->hw.hw.init = &init;
+<<<<<<< HEAD
 
 	clk = clk_register(NULL, &periph_clk->hw.hw);
 	if (WARN_ON(IS_ERR(clk))) {
@@ -111,6 +116,15 @@ static __init void __socfpga_periph_init(struct device_node *node,
 		return;
 	}
 	rc = of_clk_add_provider(node, of_clk_src_simple_get, clk);
+=======
+	hw_clk = &periph_clk->hw.hw;
+
+	if (clk_hw_register(NULL, hw_clk)) {
+		kfree(periph_clk);
+		return;
+	}
+	rc = of_clk_add_provider(node, of_clk_src_simple_get, hw_clk);
+>>>>>>> origin/android16-base
 }
 
 void __init socfpga_periph_init(struct device_node *node)

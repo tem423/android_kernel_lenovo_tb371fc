@@ -447,6 +447,10 @@ done:
 	return error;
 }
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_PROC_FS
+>>>>>>> origin/android16-base
 void *atm_dev_seq_start(struct seq_file *seq, loff_t *pos)
 {
 	mutex_lock(&atm_dev_mutex);
@@ -462,3 +466,7 @@ void *atm_dev_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 {
 	return seq_list_next(v, &atm_devs, pos);
 }
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> origin/android16-base

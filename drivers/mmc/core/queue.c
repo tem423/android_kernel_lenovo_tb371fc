@@ -383,8 +383,15 @@ static void mmc_setup_queue(struct mmc_queue *mq, struct mmc_card *card)
 	if (host->ops->init)
 		host->ops->init(host);
 
+<<<<<<< HEAD
 	if (mmc_card_mmc(card))
 		block_size = card->ext_csd.data_sector_size;
+=======
+	if (mmc_card_mmc(card) && card->ext_csd.data_sector_size) {
+		block_size = card->ext_csd.data_sector_size;
+		WARN_ON(block_size != 512 && block_size != 4096);
+	}
+>>>>>>> origin/android16-base
 
 	blk_queue_logical_block_size(mq->queue, block_size);
 	blk_queue_max_segment_size(mq->queue,

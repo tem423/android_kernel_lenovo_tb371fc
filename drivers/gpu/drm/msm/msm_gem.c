@@ -965,7 +965,11 @@ static struct drm_gem_object *_msm_gem_new(struct drm_device *dev,
 
 	ret = msm_gem_new_impl(dev, size, flags, NULL, &obj, struct_mutex_locked);
 	if (ret)
+<<<<<<< HEAD
 		goto fail;
+=======
+		return ERR_PTR(ret);
+>>>>>>> origin/android16-base
 
 	if (use_vram) {
 		struct msm_gem_vma *vma;
@@ -1035,7 +1039,11 @@ struct drm_gem_object *msm_gem_import(struct drm_device *dev,
 
 	ret = msm_gem_new_impl(dev, size, MSM_BO_WC, dmabuf->resv, &obj, false);
 	if (ret)
+<<<<<<< HEAD
 		goto fail;
+=======
+		return ERR_PTR(ret);
+>>>>>>> origin/android16-base
 
 	drm_gem_private_object_init(dev, obj, size);
 

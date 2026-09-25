@@ -19,6 +19,10 @@ struct usb_role_switch {
 	struct device dev;
 	struct mutex lock; /* device lock*/
 	enum usb_role role;
+<<<<<<< HEAD
+=======
+	bool registered;
+>>>>>>> origin/android16-base
 
 	/* From descriptor */
 	struct device *usb2_port;
@@ -45,6 +49,12 @@ int usb_role_switch_set_role(struct usb_role_switch *sw, enum usb_role role)
 	if (IS_ERR_OR_NULL(sw))
 		return 0;
 
+<<<<<<< HEAD
+=======
+	if (!sw->registered)
+		return -EOPNOTSUPP;
+
+>>>>>>> origin/android16-base
 	mutex_lock(&sw->lock);
 
 	ret = sw->set(sw->dev.parent, role);
@@ -68,7 +78,11 @@ enum usb_role usb_role_switch_get_role(struct usb_role_switch *sw)
 {
 	enum usb_role role;
 
+<<<<<<< HEAD
 	if (IS_ERR_OR_NULL(sw))
+=======
+	if (IS_ERR_OR_NULL(sw) || !sw->registered)
+>>>>>>> origin/android16-base
 		return USB_ROLE_NONE;
 
 	mutex_lock(&sw->lock);
@@ -276,6 +290,11 @@ usb_role_switch_register(struct device *parent,
 		return ERR_PTR(ret);
 	}
 
+<<<<<<< HEAD
+=======
+	sw->registered = true;
+
+>>>>>>> origin/android16-base
 	/* TODO: Symlinks for the host port and the device controller. */
 
 	return sw;
@@ -290,8 +309,15 @@ EXPORT_SYMBOL_GPL(usb_role_switch_register);
  */
 void usb_role_switch_unregister(struct usb_role_switch *sw)
 {
+<<<<<<< HEAD
 	if (!IS_ERR_OR_NULL(sw))
 		device_unregister(&sw->dev);
+=======
+	if (!IS_ERR_OR_NULL(sw)) {
+		sw->registered = false;
+		device_unregister(&sw->dev);
+	}
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(usb_role_switch_unregister);
 

@@ -108,6 +108,7 @@ static int fec_ptp_enable_pps(struct fec_enet_private *fep, uint enable)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	if (fep->pps_enable == enable)
 		return 0;
 
@@ -116,6 +117,15 @@ static int fec_ptp_enable_pps(struct fec_enet_private *fep, uint enable)
 
 	spin_lock_irqsave(&fep->tmreg_lock, flags);
 
+=======
+	spin_lock_irqsave(&fep->tmreg_lock, flags);
+
+	if (fep->pps_enable == enable) {
+		spin_unlock_irqrestore(&fep->tmreg_lock, flags);
+		return 0;
+	}
+
+>>>>>>> origin/android16-base
 	if (enable) {
 		/* clear capture or output compare interrupt status if have.
 		 */
@@ -141,11 +151,15 @@ static int fec_ptp_enable_pps(struct fec_enet_private *fep, uint enable)
 		 * NSEC_PER_SEC - ts.tv_nsec. Add the remaining nanoseconds
 		 * to current timer would be next second.
 		 */
+<<<<<<< HEAD
 		tempval = readl(fep->hwp + FEC_ATIME_CTRL);
 		tempval |= FEC_T_CTRL_CAPTURE;
 		writel(tempval, fep->hwp + FEC_ATIME_CTRL);
 
 		tempval = readl(fep->hwp + FEC_ATIME);
+=======
+		tempval = fep->cc.read(&fep->cc);
+>>>>>>> origin/android16-base
 		/* Convert the ptp local counter to 1588 timestamp */
 		ns = timecounter_cyc2time(&fep->tc, tempval);
 		ts = ns_to_timespec64(ns);
@@ -220,15 +234,22 @@ static u64 fec_ptp_read(const struct cyclecounter *cc)
 {
 	struct fec_enet_private *fep =
 		container_of(cc, struct fec_enet_private, cc);
+<<<<<<< HEAD
 	const struct platform_device_id *id_entry =
 		platform_get_device_id(fep->pdev);
+=======
+>>>>>>> origin/android16-base
 	u32 tempval;
 
 	tempval = readl(fep->hwp + FEC_ATIME_CTRL);
 	tempval |= FEC_T_CTRL_CAPTURE;
 	writel(tempval, fep->hwp + FEC_ATIME_CTRL);
 
+<<<<<<< HEAD
 	if (id_entry->driver_data & FEC_QUIRK_BUG_CAPTURE)
+=======
+	if (fep->quirks & FEC_QUIRK_BUG_CAPTURE)
+>>>>>>> origin/android16-base
 		udelay(1);
 
 	return readl(fep->hwp + FEC_ATIME);
@@ -382,9 +403,22 @@ static int fec_ptp_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
 	u64 ns;
 	unsigned long flags;
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&adapter->tmreg_lock, flags);
 	ns = timecounter_read(&adapter->tc);
 	spin_unlock_irqrestore(&adapter->tmreg_lock, flags);
+=======
+	mutex_lock(&adapter->ptp_clk_mutex);
+	/* Check the ptp clock */
+	if (!adapter->ptp_clk_on) {
+		mutex_unlock(&adapter->ptp_clk_mutex);
+		return -EINVAL;
+	}
+	spin_lock_irqsave(&adapter->tmreg_lock, flags);
+	ns = timecounter_read(&adapter->tc);
+	spin_unlock_irqrestore(&adapter->tmreg_lock, flags);
+	mutex_unlock(&adapter->ptp_clk_mutex);
+>>>>>>> origin/android16-base
 
 	*ts = ns_to_timespec64(ns);
 
@@ -445,6 +479,12 @@ static int fec_ptp_enable(struct ptp_clock_info *ptp,
 	int ret = 0;
 
 	if (rq->type == PTP_CLK_REQ_PPS) {
+<<<<<<< HEAD
+=======
+		fep->pps_channel = DEFAULT_PPS_CHANNEL;
+		fep->reload_period = PPS_OUPUT_RELOAD_PERIOD;
+
+>>>>>>> origin/android16-base
 		ret = fec_ptp_enable_pps(fep, on);
 
 		return ret;
@@ -592,6 +632,13 @@ void fec_ptp_init(struct platform_device *pdev, int irq_idx)
 	fep->ptp_caps.enable = fec_ptp_enable;
 
 	fep->cycle_speed = clk_get_rate(fep->clk_ptp);
+<<<<<<< HEAD
+=======
+	if (!fep->cycle_speed) {
+		fep->cycle_speed = NSEC_PER_SEC;
+		dev_err(&fep->pdev->dev, "clk_ptp clock rate is zero\n");
+	}
+>>>>>>> origin/android16-base
 	fep->ptp_inc = NSEC_PER_SEC / fep->cycle_speed;
 
 	spin_lock_init(&fep->tmreg_lock);
@@ -628,6 +675,12 @@ void fec_ptp_stop(struct platform_device *pdev)
 	struct net_device *ndev = platform_get_drvdata(pdev);
 	struct fec_enet_private *fep = netdev_priv(ndev);
 
+<<<<<<< HEAD
+=======
+	if (fep->pps_enable)
+		fec_ptp_enable_pps(fep, 0);
+
+>>>>>>> origin/android16-base
 	cancel_delayed_work_sync(&fep->time_keep);
 	if (fep->ptp_clock)
 		ptp_clock_unregister(fep->ptp_clock);

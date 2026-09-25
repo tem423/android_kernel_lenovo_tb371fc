@@ -44,7 +44,11 @@
 
 #define PLL_USER_CTL(p)		((p)->offset + (p)->regs[PLL_OFF_USER_CTL])
 #define PLL_POST_DIV_SHIFT	8
+<<<<<<< HEAD
 #define PLL_POST_DIV_MASK(p)	GENMASK((p)->width, 0)
+=======
+#define PLL_POST_DIV_MASK(p)	GENMASK((p)->width ? (p)->width - 1 : 3, 0)
+>>>>>>> origin/android16-base
 #define PLL_ALPHA_EN		BIT(24)
 #define PLL_ALPHA_MODE		BIT(25)
 #define PLL_VCO_SHIFT		20

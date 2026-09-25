@@ -857,7 +857,17 @@ static noinline struct btrfs_device *device_list_add(const char *path,
 			if (device->bdev != path_bdev) {
 				bdput(path_bdev);
 				mutex_unlock(&fs_devices->device_list_mutex);
+<<<<<<< HEAD
 				btrfs_warn_in_rcu(device->fs_info,
+=======
+				/*
+				 * device->fs_info may not be reliable here, so
+				 * pass in a NULL instead. This avoids a
+				 * possible use-after-free when the fs_info and
+				 * fs_info->sb are already torn down.
+				 */
+				btrfs_warn_in_rcu(NULL,
+>>>>>>> origin/android16-base
 	"duplicate device %s devid %llu generation %llu scanned by %s (%d)",
 						  path, devid, found_transid,
 						  current->comm,
@@ -974,6 +984,7 @@ again:
 			continue;
 		}
 
+<<<<<<< HEAD
 		if (device->devid == BTRFS_DEV_REPLACE_DEVID) {
 			/*
 			 * In the first step, keep the device which has
@@ -990,6 +1001,15 @@ again:
 				continue;
 			}
 		}
+=======
+		/*
+		 * We have already validated the presence of BTRFS_DEV_REPLACE_DEVID,
+		 * in btrfs_init_dev_replace() so just continue.
+		 */
+		if (device->devid == BTRFS_DEV_REPLACE_DEVID)
+			continue;
+
+>>>>>>> origin/android16-base
 		if (device->bdev) {
 			blkdev_put(device->bdev, device->mode);
 			device->bdev = NULL;
@@ -998,9 +1018,13 @@ again:
 		if (test_bit(BTRFS_DEV_STATE_WRITEABLE, &device->dev_state)) {
 			list_del_init(&device->dev_alloc_list);
 			clear_bit(BTRFS_DEV_STATE_WRITEABLE, &device->dev_state);
+<<<<<<< HEAD
 			if (!test_bit(BTRFS_DEV_STATE_REPLACE_TGT,
 				      &device->dev_state))
 				fs_devices->rw_devices--;
+=======
+			fs_devices->rw_devices--;
+>>>>>>> origin/android16-base
 		}
 		list_del_init(&device->dev_list);
 		fs_devices->num_devices--;
@@ -1053,8 +1077,18 @@ static void btrfs_close_one_device(struct btrfs_device *device)
 		fs_devices->rw_devices--;
 	}
 
+<<<<<<< HEAD
 	if (test_bit(BTRFS_DEV_STATE_MISSING, &device->dev_state))
 		fs_devices->missing_devices--;
+=======
+	if (device->devid == BTRFS_DEV_REPLACE_DEVID)
+		clear_bit(BTRFS_DEV_STATE_REPLACE_TGT, &device->dev_state);
+
+	if (test_bit(BTRFS_DEV_STATE_MISSING, &device->dev_state)) {
+		clear_bit(BTRFS_DEV_STATE_MISSING, &device->dev_state);
+		fs_devices->missing_devices--;
+	}
+>>>>>>> origin/android16-base
 
 	btrfs_close_bdev(device);
 
@@ -1418,7 +1452,11 @@ again:
 			goto out;
 	}
 
+<<<<<<< HEAD
 	while (1) {
+=======
+	while (search_start < search_end) {
+>>>>>>> origin/android16-base
 		l = path->nodes[0];
 		slot = path->slots[0];
 		if (slot >= btrfs_header_nritems(l)) {
@@ -1441,6 +1479,12 @@ again:
 		if (key.type != BTRFS_DEV_EXTENT_KEY)
 			goto next;
 
+<<<<<<< HEAD
+=======
+		if (key.offset > search_end)
+			break;
+
+>>>>>>> origin/android16-base
 		if (key.offset > search_start) {
 			hole_size = key.offset - search_start;
 
@@ -1515,6 +1559,10 @@ next:
 	else
 		ret = 0;
 
+<<<<<<< HEAD
+=======
+	ASSERT(max_hole_start + max_hole_size <= search_end);
+>>>>>>> origin/android16-base
 out:
 	btrfs_free_path(path);
 	*start = max_hole_start;
@@ -2459,9 +2507,12 @@ int btrfs_init_new_device(struct btrfs_fs_info *fs_info, const char *device_path
 	btrfs_set_super_num_devices(fs_info->super_copy,
 				    orig_super_num_devices + 1);
 
+<<<<<<< HEAD
 	/* add sysfs device entry */
 	btrfs_sysfs_add_device_link(fs_devices, device);
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * we've got more storage, clear any full flags on the space
 	 * infos
@@ -2469,6 +2520,13 @@ int btrfs_init_new_device(struct btrfs_fs_info *fs_info, const char *device_path
 	btrfs_clear_space_info_full(fs_info);
 
 	mutex_unlock(&fs_info->chunk_mutex);
+<<<<<<< HEAD
+=======
+
+	/* Add sysfs device entry */
+	btrfs_sysfs_add_device_link(fs_devices, device);
+
+>>>>>>> origin/android16-base
 	mutex_unlock(&fs_devices->device_list_mutex);
 
 	if (seeding_dev) {
@@ -2755,7 +2813,11 @@ static struct extent_map *get_chunk_map(struct btrfs_fs_info *fs_info,
 		return ERR_PTR(-EINVAL);
 	}
 
+<<<<<<< HEAD
 	if (em->start > logical || em->start + em->len < logical) {
+=======
+	if (em->start > logical || em->start + em->len <= logical) {
+>>>>>>> origin/android16-base
 		btrfs_crit(fs_info,
 			   "found a bad mapping, wanted %llu-%llu, found %llu-%llu",
 			   logical, length, em->start, em->start + em->len);
@@ -2943,7 +3005,22 @@ again:
 			mutex_unlock(&fs_info->delete_unused_bgs_mutex);
 			goto error;
 		}
+<<<<<<< HEAD
 		BUG_ON(ret == 0); /* Corruption */
+=======
+		if (ret == 0) {
+			/*
+			 * On the first search we would find chunk tree with
+			 * offset -1, which is not possible. On subsequent
+			 * loops this would find an existing item on an invalid
+			 * offset (one less than the previous one, wrong
+			 * alignment and size).
+			 */
+			ret = -EUCLEAN;
+			mutex_unlock(&fs_info->delete_unused_bgs_mutex);
+			goto error;
+		}
+>>>>>>> origin/android16-base
 
 		ret = btrfs_previous_item(chunk_root, path, key.objectid,
 					  key.type);
@@ -4016,6 +4093,11 @@ int btrfs_recover_balance(struct btrfs_fs_info *fs_info)
 		btrfs_warn(fs_info,
 	"balance: cannot set exclusive op status, resume manually");
 
+<<<<<<< HEAD
+=======
+	btrfs_release_path(path);
+
+>>>>>>> origin/android16-base
 	mutex_lock(&fs_info->balance_mutex);
 	BUG_ON(fs_info->balance_ctl);
 	spin_lock(&fs_info->balance_lock);
@@ -4099,8 +4181,12 @@ int btrfs_cancel_balance(struct btrfs_fs_info *fs_info)
 		}
 	}
 
+<<<<<<< HEAD
 	BUG_ON(fs_info->balance_ctl ||
 		test_bit(BTRFS_FS_BALANCE_RUNNING, &fs_info->flags));
+=======
+	ASSERT(!test_bit(BTRFS_FS_BALANCE_RUNNING, &fs_info->flags));
+>>>>>>> origin/android16-base
 	atomic_dec(&fs_info->balance_cancel_req);
 	mutex_unlock(&fs_info->balance_mutex);
 	return 0;
@@ -6922,12 +7008,21 @@ int btrfs_read_chunk_tree(struct btrfs_fs_info *fs_info)
 	 * do another round of validation checks.
 	 */
 	if (total_dev != fs_info->fs_devices->total_devices) {
+<<<<<<< HEAD
 		btrfs_err(fs_info,
 	   "super_num_devices %llu mismatch with num_devices %llu found here",
 			  btrfs_super_num_devices(fs_info->super_copy),
 			  total_dev);
 		ret = -EINVAL;
 		goto error;
+=======
+		btrfs_warn(fs_info,
+"super block num_devices %llu mismatch with DEV_ITEM count %llu, will be repaired on next transaction commit",
+			  btrfs_super_num_devices(fs_info->super_copy),
+			  total_dev);
+		fs_info->fs_devices->total_devices = total_dev;
+		btrfs_set_super_num_devices(fs_info->super_copy, total_dev);
+>>>>>>> origin/android16-base
 	}
 	if (btrfs_super_total_bytes(fs_info->super_copy) <
 	    fs_info->fs_devices->total_rw_bytes) {

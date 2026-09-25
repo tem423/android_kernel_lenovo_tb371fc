@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
+<<<<<<< HEAD
  * Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2013-2019, 2020, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  * Copyright (c) 2023, Qualcomm Innovation Center, Inc. All rights reserved.
  */
 

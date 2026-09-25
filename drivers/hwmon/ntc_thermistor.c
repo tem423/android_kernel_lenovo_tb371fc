@@ -57,6 +57,10 @@ static const struct platform_device_id ntc_thermistor_id[] = {
 	{ "ncp15xh103", TYPE_NCPXXXH103 },
 	{ },
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(platform, ntc_thermistor_id);
+>>>>>>> origin/android16-base
 
 /*
  * A compensation table should be sorted by the values of .ohm

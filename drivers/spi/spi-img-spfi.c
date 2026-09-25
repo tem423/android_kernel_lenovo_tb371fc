@@ -774,8 +774,15 @@ static int img_spfi_resume(struct device *dev)
 	int ret;
 
 	ret = pm_runtime_get_sync(dev);
+<<<<<<< HEAD
 	if (ret)
 		return ret;
+=======
+	if (ret < 0) {
+		pm_runtime_put_noidle(dev);
+		return ret;
+	}
+>>>>>>> origin/android16-base
 	spfi_reset(spfi);
 	pm_runtime_put(dev);
 

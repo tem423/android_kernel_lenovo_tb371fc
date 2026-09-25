@@ -8,6 +8,10 @@
  * published by the Free Software Foundation.
  *
  */
+<<<<<<< HEAD
+=======
+#include <linux/device.h>
+>>>>>>> origin/android16-base
 #include <linux/init.h>
 #include <linux/io.h>
 #include <linux/slab.h>
@@ -83,6 +87,16 @@ static ssize_t realview_get_build(struct device *dev,
 static struct device_attribute realview_build_attr =
 	__ATTR(build,  S_IRUGO, realview_get_build,  NULL);
 
+<<<<<<< HEAD
+=======
+static void realview_soc_socdev_release(void *data)
+{
+	struct soc_device *soc_dev = data;
+
+	soc_device_unregister(soc_dev);
+}
+
+>>>>>>> origin/android16-base
 static int realview_soc_probe(struct platform_device *pdev)
 {
 	struct regmap *syscon_regmap;
@@ -95,7 +109,11 @@ static int realview_soc_probe(struct platform_device *pdev)
 	if (IS_ERR(syscon_regmap))
 		return PTR_ERR(syscon_regmap);
 
+<<<<<<< HEAD
 	soc_dev_attr = kzalloc(sizeof(*soc_dev_attr), GFP_KERNEL);
+=======
+	soc_dev_attr = devm_kzalloc(&pdev->dev, sizeof(*soc_dev_attr), GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!soc_dev_attr)
 		return -ENOMEM;
 
@@ -107,10 +125,21 @@ static int realview_soc_probe(struct platform_device *pdev)
 	soc_dev_attr->machine = "RealView";
 	soc_dev_attr->family = "Versatile";
 	soc_dev = soc_device_register(soc_dev_attr);
+<<<<<<< HEAD
 	if (IS_ERR(soc_dev)) {
 		kfree(soc_dev_attr);
 		return -ENODEV;
 	}
+=======
+	if (IS_ERR(soc_dev))
+		return -ENODEV;
+
+	ret = devm_add_action_or_reset(&pdev->dev, realview_soc_socdev_release,
+				       soc_dev);
+	if (ret)
+		return ret;
+
+>>>>>>> origin/android16-base
 	ret = regmap_read(syscon_regmap, REALVIEW_SYS_ID_OFFSET,
 			  &realview_coreid);
 	if (ret)

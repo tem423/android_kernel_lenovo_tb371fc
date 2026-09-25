@@ -20,6 +20,10 @@ struct f_hid_opts {
 	int				minor;
 	unsigned char			subclass;
 	unsigned char			protocol;
+<<<<<<< HEAD
+=======
+	unsigned char			no_out_endpoint;
+>>>>>>> origin/android16-base
 	unsigned short			report_length;
 	unsigned short			report_desc_length;
 	unsigned char			*report_desc;

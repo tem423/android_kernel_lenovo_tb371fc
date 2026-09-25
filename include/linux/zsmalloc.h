@@ -36,7 +36,11 @@ enum zs_mapmode {
 
 struct zs_pool_stats {
 	/* How many pages were migrated (freed) */
+<<<<<<< HEAD
 	unsigned long pages_compacted;
+=======
+	atomic_long_t pages_compacted;
+>>>>>>> origin/android16-base
 };
 
 struct zs_pool;

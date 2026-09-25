@@ -230,7 +230,11 @@ static int q6lsm_callback(struct apr_client_data *data, void *priv)
 		}
 
 		if (client->param_size != param_size) {
+<<<<<<< HEAD
 			pr_err("%s: response payload size %d mismatched with user requested %d\n",
+=======
+			pr_err("%s: response payload size %d mismatched with user requested %zu\n",
+>>>>>>> origin/android16-base
 			    __func__, param_size, client->param_size);
 			ret = -EINVAL;
 			goto done;
@@ -2035,11 +2039,23 @@ static int q6lsm_mmapcallback(struct apr_client_data *data, void *priv)
 		lsm_common.set_custom_topology = 1;
 		return 0;
 	}
+<<<<<<< HEAD
 
 	/* 
 	The payload_size can be either 4 or 8 bytes.
 	It has to be verified whether the payload_size is 
 	atleast 4 bytes. If it is less, returns errorcode.
+=======
+	
+	/*
+	The payload_size can be either 4 or 8 bytes.
+	It has to be verified whether the payload_size is
+	atleast 4 bytes. If it is less, returns errorcode.
+
+	The opcode for 4 bytes is 0x12A80
+	The opcode for 8 bytes is 0x110E8.
+	 
+>>>>>>> origin/android16-base
 	*/
 
 	if (data->payload_size < (2 * sizeof(uint16_t))) {

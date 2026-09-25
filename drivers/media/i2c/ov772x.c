@@ -1424,7 +1424,11 @@ static int ov772x_probe(struct i2c_client *client,
 	priv->subdev.ctrl_handler = &priv->hdl;
 	if (priv->hdl.error) {
 		ret = priv->hdl.error;
+<<<<<<< HEAD
 		goto error_mutex_destroy;
+=======
+		goto error_ctrl_free;
+>>>>>>> origin/android16-base
 	}
 
 	priv->clk = clk_get(&client->dev, NULL);
@@ -1473,7 +1477,10 @@ error_clk_put:
 	clk_put(priv->clk);
 error_ctrl_free:
 	v4l2_ctrl_handler_free(&priv->hdl);
+<<<<<<< HEAD
 error_mutex_destroy:
+=======
+>>>>>>> origin/android16-base
 	mutex_destroy(&priv->lock);
 
 	return ret;

@@ -734,10 +734,16 @@ void dlm_recovered_lock(struct dlm_rsb *r)
 
 static void recover_lvb(struct dlm_rsb *r)
 {
+<<<<<<< HEAD
 	struct dlm_lkb *lkb, *high_lkb = NULL;
 	uint32_t high_seq = 0;
 	int lock_lvb_exists = 0;
 	int big_lock_exists = 0;
+=======
+	struct dlm_lkb *big_lkb = NULL, *iter, *high_lkb = NULL;
+	uint32_t high_seq = 0;
+	int lock_lvb_exists = 0;
+>>>>>>> origin/android16-base
 	int lvblen = r->res_ls->ls_lvblen;
 
 	if (!rsb_flag(r, RSB_NEW_MASTER2) &&
@@ -753,12 +759,18 @@ static void recover_lvb(struct dlm_rsb *r)
 	/* we are the new master, so figure out if VALNOTVALID should
 	   be set, and set the rsb lvb from the best lkb available. */
 
+<<<<<<< HEAD
 	list_for_each_entry(lkb, &r->res_grantqueue, lkb_statequeue) {
 		if (!(lkb->lkb_exflags & DLM_LKF_VALBLK))
+=======
+	list_for_each_entry(iter, &r->res_grantqueue, lkb_statequeue) {
+		if (!(iter->lkb_exflags & DLM_LKF_VALBLK))
+>>>>>>> origin/android16-base
 			continue;
 
 		lock_lvb_exists = 1;
 
+<<<<<<< HEAD
 		if (lkb->lkb_grmode > DLM_LOCK_CR) {
 			big_lock_exists = 1;
 			goto setflag;
@@ -772,10 +784,26 @@ static void recover_lvb(struct dlm_rsb *r)
 
 	list_for_each_entry(lkb, &r->res_convertqueue, lkb_statequeue) {
 		if (!(lkb->lkb_exflags & DLM_LKF_VALBLK))
+=======
+		if (iter->lkb_grmode > DLM_LOCK_CR) {
+			big_lkb = iter;
+			goto setflag;
+		}
+
+		if (((int)iter->lkb_lvbseq - (int)high_seq) >= 0) {
+			high_lkb = iter;
+			high_seq = iter->lkb_lvbseq;
+		}
+	}
+
+	list_for_each_entry(iter, &r->res_convertqueue, lkb_statequeue) {
+		if (!(iter->lkb_exflags & DLM_LKF_VALBLK))
+>>>>>>> origin/android16-base
 			continue;
 
 		lock_lvb_exists = 1;
 
+<<<<<<< HEAD
 		if (lkb->lkb_grmode > DLM_LOCK_CR) {
 			big_lock_exists = 1;
 			goto setflag;
@@ -784,6 +812,16 @@ static void recover_lvb(struct dlm_rsb *r)
 		if (((int)lkb->lkb_lvbseq - (int)high_seq) >= 0) {
 			high_lkb = lkb;
 			high_seq = lkb->lkb_lvbseq;
+=======
+		if (iter->lkb_grmode > DLM_LOCK_CR) {
+			big_lkb = iter;
+			goto setflag;
+		}
+
+		if (((int)iter->lkb_lvbseq - (int)high_seq) >= 0) {
+			high_lkb = iter;
+			high_seq = iter->lkb_lvbseq;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -792,7 +830,11 @@ static void recover_lvb(struct dlm_rsb *r)
 		goto out;
 
 	/* lvb is invalidated if only NL/CR locks remain */
+<<<<<<< HEAD
 	if (!big_lock_exists)
+=======
+	if (!big_lkb)
+>>>>>>> origin/android16-base
 		rsb_set_flag(r, RSB_VALNOTVALID);
 
 	if (!r->res_lvbptr) {
@@ -801,9 +843,15 @@ static void recover_lvb(struct dlm_rsb *r)
 			goto out;
 	}
 
+<<<<<<< HEAD
 	if (big_lock_exists) {
 		r->res_lvbseq = lkb->lkb_lvbseq;
 		memcpy(r->res_lvbptr, lkb->lkb_lvbptr, lvblen);
+=======
+	if (big_lkb) {
+		r->res_lvbseq = big_lkb->lkb_lvbseq;
+		memcpy(r->res_lvbptr, big_lkb->lkb_lvbptr, lvblen);
+>>>>>>> origin/android16-base
 	} else if (high_lkb) {
 		r->res_lvbseq = high_lkb->lkb_lvbseq;
 		memcpy(r->res_lvbptr, high_lkb->lkb_lvbptr, lvblen);

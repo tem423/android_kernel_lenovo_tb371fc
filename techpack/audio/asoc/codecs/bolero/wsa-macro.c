@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
+=======
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/module.h>
@@ -1007,7 +1011,10 @@ static int wsa_macro_event_handler(struct snd_soc_component *component,
 
 	switch (event) {
 	case BOLERO_MACRO_EVT_SSR_DOWN:
+<<<<<<< HEAD
 		trace_printk("%s, enter SSR down\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		if (wsa_priv->swr_ctrl_data) {
 			swrm_wcd_notify(
 				wsa_priv->swr_ctrl_data[0].wsa_swr_pdev,
@@ -1038,7 +1045,10 @@ static int wsa_macro_event_handler(struct snd_soc_component *component,
 						WSA_CORE_CLK, false);
 		break;
 	case BOLERO_MACRO_EVT_SSR_UP:
+<<<<<<< HEAD
 		trace_printk("%s, enter SSR up\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		/* reset swr after ssr/pdr */
 		wsa_priv->reset_swr = true;
 		if (wsa_priv->swr_ctrl_data)
@@ -2862,9 +2872,12 @@ static int wsa_swrm_clock(void *handle, bool enable)
 
 	mutex_lock(&wsa_priv->swr_clk_lock);
 
+<<<<<<< HEAD
 	trace_printk("%s: %s swrm clock %s\n",
 		dev_name(wsa_priv->dev), __func__,
 		(enable ? "enable" : "disable"));
+=======
+>>>>>>> origin/android16-base
 	dev_dbg(wsa_priv->dev, "%s: swrm clock %s\n",
 		__func__, (enable ? "enable" : "disable"));
 	if (enable) {
@@ -2930,9 +2943,12 @@ static int wsa_swrm_clock(void *handle, bool enable)
 			}
 		}
 	}
+<<<<<<< HEAD
 	trace_printk("%s: %s swrm clock users: %d\n",
 		dev_name(wsa_priv->dev), __func__,
 		wsa_priv->swr_clk_users);
+=======
+>>>>>>> origin/android16-base
 	dev_dbg(wsa_priv->dev, "%s: swrm clock users %d\n",
 		__func__, wsa_priv->swr_clk_users);
 exit:

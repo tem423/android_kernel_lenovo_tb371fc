@@ -697,11 +697,18 @@ deliver:
 
 				err = qdisc_enqueue(skb, q->qdisc, &to_free);
 				kfree_skb_list(to_free);
+<<<<<<< HEAD
 				if (err != NET_XMIT_SUCCESS &&
 				    net_xmit_drop_count(err)) {
 					qdisc_qstats_drop(sch);
 					qdisc_tree_reduce_backlog(sch, 1,
 								  pkt_len);
+=======
+				if (err != NET_XMIT_SUCCESS) {
+					if (net_xmit_drop_count(err))
+						qdisc_qstats_drop(sch);
+					qdisc_tree_reduce_backlog(sch, 1, pkt_len);
+>>>>>>> origin/android16-base
 				}
 				goto tfifo_dequeue;
 			}
@@ -748,12 +755,19 @@ static void dist_free(struct disttable *d)
  * signed 16 bit values.
  */
 
+<<<<<<< HEAD
 static int get_dist_table(struct Qdisc *sch, struct disttable **tbl,
 			  const struct nlattr *attr)
 {
 	size_t n = nla_len(attr)/sizeof(__s16);
 	const __s16 *data = nla_data(attr);
 	spinlock_t *root_lock;
+=======
+static int get_dist_table(struct disttable **tbl, const struct nlattr *attr)
+{
+	size_t n = nla_len(attr)/sizeof(__s16);
+	const __s16 *data = nla_data(attr);
+>>>>>>> origin/android16-base
 	struct disttable *d;
 	int i;
 
@@ -768,6 +782,7 @@ static int get_dist_table(struct Qdisc *sch, struct disttable **tbl,
 	for (i = 0; i < n; i++)
 		d->table[i] = data[i];
 
+<<<<<<< HEAD
 	root_lock = qdisc_root_sleeping_lock(sch);
 
 	spin_lock_bh(root_lock);
@@ -775,6 +790,9 @@ static int get_dist_table(struct Qdisc *sch, struct disttable **tbl,
 	spin_unlock_bh(root_lock);
 
 	dist_free(d);
+=======
+	*tbl = d;
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -930,6 +948,11 @@ static int netem_change(struct Qdisc *sch, struct nlattr *opt,
 {
 	struct netem_sched_data *q = qdisc_priv(sch);
 	struct nlattr *tb[TCA_NETEM_MAX + 1];
+<<<<<<< HEAD
+=======
+	struct disttable *delay_dist = NULL;
+	struct disttable *slot_dist = NULL;
+>>>>>>> origin/android16-base
 	struct tc_netem_qopt *qopt;
 	struct clgstate old_clg;
 	int old_loss_model = CLG_RANDOM;
@@ -943,6 +966,22 @@ static int netem_change(struct Qdisc *sch, struct nlattr *opt,
 	if (ret < 0)
 		return ret;
 
+<<<<<<< HEAD
+=======
+	if (tb[TCA_NETEM_DELAY_DIST]) {
+		ret = get_dist_table(&delay_dist, tb[TCA_NETEM_DELAY_DIST]);
+		if (ret)
+			goto table_free;
+	}
+
+	if (tb[TCA_NETEM_SLOT_DIST]) {
+		ret = get_dist_table(&slot_dist, tb[TCA_NETEM_SLOT_DIST]);
+		if (ret)
+			goto table_free;
+	}
+
+	sch_tree_lock(sch);
+>>>>>>> origin/android16-base
 	/* backup q->clg and q->loss_model */
 	old_clg = q->clg;
 	old_loss_model = q->loss_model;
@@ -951,12 +990,18 @@ static int netem_change(struct Qdisc *sch, struct nlattr *opt,
 		ret = get_loss_clg(q, tb[TCA_NETEM_LOSS]);
 		if (ret) {
 			q->loss_model = old_loss_model;
+<<<<<<< HEAD
 			return ret;
+=======
+			q->clg = old_clg;
+			goto unlock;
+>>>>>>> origin/android16-base
 		}
 	} else {
 		q->loss_model = CLG_RANDOM;
 	}
 
+<<<<<<< HEAD
 	if (tb[TCA_NETEM_DELAY_DIST]) {
 		ret = get_dist_table(sch, &q->delay_dist,
 				     tb[TCA_NETEM_DELAY_DIST]);
@@ -971,6 +1016,12 @@ static int netem_change(struct Qdisc *sch, struct nlattr *opt,
 			goto get_table_failure;
 	}
 
+=======
+	if (delay_dist)
+		swap(q->delay_dist, delay_dist);
+	if (slot_dist)
+		swap(q->slot_dist, slot_dist);
+>>>>>>> origin/android16-base
 	sch->limit = qopt->limit;
 
 	q->latency = PSCHED_TICKS2NS(qopt->latency);
@@ -1018,6 +1069,7 @@ static int netem_change(struct Qdisc *sch, struct nlattr *opt,
 	/* capping jitter to the range acceptable by tabledist() */
 	q->jitter = min_t(s64, abs(q->jitter), INT_MAX);
 
+<<<<<<< HEAD
 	return ret;
 
 get_table_failure:
@@ -1027,6 +1079,14 @@ get_table_failure:
 	 */
 	q->clg = old_clg;
 	q->loss_model = old_loss_model;
+=======
+unlock:
+	sch_tree_unlock(sch);
+
+table_free:
+	dist_free(delay_dist);
+	dist_free(slot_dist);
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -1054,7 +1114,11 @@ static void netem_destroy(struct Qdisc *sch)
 
 	qdisc_watchdog_cancel(&q->watchdog);
 	if (q->qdisc)
+<<<<<<< HEAD
 		qdisc_destroy(q->qdisc);
+=======
+		qdisc_put(q->qdisc);
+>>>>>>> origin/android16-base
 	dist_free(q->delay_dist);
 	dist_free(q->slot_dist);
 }
@@ -1120,9 +1184,15 @@ static int netem_dump(struct Qdisc *sch, struct sk_buff *skb)
 	struct tc_netem_rate rate;
 	struct tc_netem_slot slot;
 
+<<<<<<< HEAD
 	qopt.latency = min_t(psched_tdiff_t, PSCHED_NS2TICKS(q->latency),
 			     UINT_MAX);
 	qopt.jitter = min_t(psched_tdiff_t, PSCHED_NS2TICKS(q->jitter),
+=======
+	qopt.latency = min_t(psched_time_t, PSCHED_NS2TICKS(q->latency),
+			     UINT_MAX);
+	qopt.jitter = min_t(psched_time_t, PSCHED_NS2TICKS(q->jitter),
+>>>>>>> origin/android16-base
 			    UINT_MAX);
 	qopt.limit = q->limit;
 	qopt.loss = q->loss;

@@ -216,9 +216,15 @@ static inline void iosapic_write(void __iomem *iosapic, unsigned int reg, u32 va
 
 static DEFINE_SPINLOCK(iosapic_lock);
 
+<<<<<<< HEAD
 static inline void iosapic_eoi(void __iomem *addr, unsigned int data)
 {
 	__raw_writel(data, addr);
+=======
+static inline void iosapic_eoi(__le32 __iomem *addr, __le32 data)
+{
+	__raw_writel((__force u32)data, addr);
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -889,6 +895,10 @@ int iosapic_serial_irq(struct parisc_device *dev)
 
 	return vi->txn_irq;
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(iosapic_serial_irq);
+>>>>>>> origin/android16-base
 #endif
 
 

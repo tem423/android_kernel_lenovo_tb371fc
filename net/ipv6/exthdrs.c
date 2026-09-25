@@ -138,6 +138,7 @@ static bool ip6_parse_tlv(const struct tlvtype_proc *procs,
 	len -= 2;
 
 	while (len > 0) {
+<<<<<<< HEAD
 		int optlen = nh[off + 1] + 2;
 		int i;
 
@@ -150,6 +151,25 @@ static bool ip6_parse_tlv(const struct tlvtype_proc *procs,
 			break;
 
 		case IPV6_TLV_PADN:
+=======
+		int optlen, i;
+
+		if (nh[off] == IPV6_TLV_PAD1) {
+			padlen++;
+			if (padlen > 7)
+				goto bad;
+			off++;
+			len--;
+			continue;
+		}
+		if (len < 2)
+			goto bad;
+		optlen = nh[off + 1] + 2;
+		if (optlen > len)
+			goto bad;
+
+		if (nh[off] == IPV6_TLV_PADN) {
+>>>>>>> origin/android16-base
 			/* RFC 2460 states that the purpose of PadN is
 			 * to align the containing header to multiples
 			 * of 8. 7 is therefore the highest valid value.
@@ -166,12 +186,16 @@ static bool ip6_parse_tlv(const struct tlvtype_proc *procs,
 				if (nh[off + i] != 0)
 					goto bad;
 			}
+<<<<<<< HEAD
 			break;
 
 		default: /* Other TLV code so scan list */
 			if (optlen > len)
 				goto bad;
 
+=======
+		} else {
+>>>>>>> origin/android16-base
 			tlv_count++;
 			if (tlv_count > max_count)
 				goto bad;
@@ -191,7 +215,10 @@ static bool ip6_parse_tlv(const struct tlvtype_proc *procs,
 				return false;
 
 			padlen = 0;
+<<<<<<< HEAD
 			break;
+=======
+>>>>>>> origin/android16-base
 		}
 		off += optlen;
 		len -= optlen;
@@ -309,7 +336,11 @@ fail_and_free:
 #endif
 
 	if (ip6_parse_tlv(tlvprocdestopt_lst, skb,
+<<<<<<< HEAD
 			  init_net.ipv6.sysctl.max_dst_opts_cnt)) {
+=======
+			  net->ipv6.sysctl.max_dst_opts_cnt)) {
+>>>>>>> origin/android16-base
 		skb->transport_header += extlen;
 		opt = IP6CB(skb);
 #if IS_ENABLED(CONFIG_IPV6_MIP6)
@@ -848,7 +879,11 @@ fail_and_free:
 
 	opt->flags |= IP6SKB_HOPBYHOP;
 	if (ip6_parse_tlv(tlvprochopopt_lst, skb,
+<<<<<<< HEAD
 			  init_net.ipv6.sysctl.max_hbh_opts_cnt)) {
+=======
+			  net->ipv6.sysctl.max_hbh_opts_cnt)) {
+>>>>>>> origin/android16-base
 		skb->transport_header += extlen;
 		opt = IP6CB(skb);
 		opt->nhoff = sizeof(struct ipv6hdr);

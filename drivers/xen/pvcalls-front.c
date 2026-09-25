@@ -346,8 +346,13 @@ static void free_active_ring(struct sock_mapping *map)
 	if (!map->active.ring)
 		return;
 
+<<<<<<< HEAD
 	free_pages((unsigned long)map->active.data.in,
 			map->active.ring->ring_order);
+=======
+	free_pages_exact(map->active.data.in,
+			 PAGE_SIZE << map->active.ring->ring_order);
+>>>>>>> origin/android16-base
 	free_page((unsigned long)map->active.ring);
 }
 
@@ -361,8 +366,13 @@ static int alloc_active_ring(struct sock_mapping *map)
 		goto out;
 
 	map->active.ring->ring_order = PVCALLS_RING_ORDER;
+<<<<<<< HEAD
 	bytes = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
 					PVCALLS_RING_ORDER);
+=======
+	bytes = alloc_pages_exact(PAGE_SIZE << PVCALLS_RING_ORDER,
+				  GFP_KERNEL | __GFP_ZERO);
+>>>>>>> origin/android16-base
 	if (!bytes)
 		goto out;
 

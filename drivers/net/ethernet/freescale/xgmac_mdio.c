@@ -301,9 +301,16 @@ err_ioremap:
 static int xgmac_mdio_remove(struct platform_device *pdev)
 {
 	struct mii_bus *bus = platform_get_drvdata(pdev);
+<<<<<<< HEAD
 
 	mdiobus_unregister(bus);
 	iounmap(bus->priv);
+=======
+	struct mdio_fsl_priv *priv = bus->priv;
+
+	mdiobus_unregister(bus);
+	iounmap(priv->mdio_base);
+>>>>>>> origin/android16-base
 	mdiobus_free(bus);
 
 	return 0;

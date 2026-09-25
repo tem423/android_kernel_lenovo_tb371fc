@@ -177,7 +177,10 @@ int snd_unregister_oss_device(int type, struct snd_card *card, int dev)
 		mutex_unlock(&sound_oss_mutex);
 		return -ENOENT;
 	}
+<<<<<<< HEAD
 	unregister_sound_special(minor);
+=======
+>>>>>>> origin/android16-base
 	switch (SNDRV_MINOR_OSS_DEVICE(minor)) {
 	case SNDRV_MINOR_OSS_PCM:
 		track2 = SNDRV_MINOR_OSS(cidx, SNDRV_MINOR_OSS_AUDIO);
@@ -189,12 +192,27 @@ int snd_unregister_oss_device(int type, struct snd_card *card, int dev)
 		track2 = SNDRV_MINOR_OSS(cidx, SNDRV_MINOR_OSS_DMMIDI1);
 		break;
 	}
+<<<<<<< HEAD
 	if (track2 >= 0) {
 		unregister_sound_special(track2);
 		snd_oss_minors[track2] = NULL;
 	}
 	snd_oss_minors[minor] = NULL;
 	mutex_unlock(&sound_oss_mutex);
+=======
+	if (track2 >= 0)
+		snd_oss_minors[track2] = NULL;
+	snd_oss_minors[minor] = NULL;
+	mutex_unlock(&sound_oss_mutex);
+
+	/* call unregister_sound_special() outside sound_oss_mutex;
+	 * otherwise may deadlock, as it can trigger the release of a card
+	 */
+	unregister_sound_special(minor);
+	if (track2 >= 0)
+		unregister_sound_special(track2);
+
+>>>>>>> origin/android16-base
 	kfree(mptr);
 	return 0;
 }

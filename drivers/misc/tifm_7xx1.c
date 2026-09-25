@@ -194,7 +194,11 @@ static void tifm_7xx1_switch_media(struct work_struct *work)
 				spin_unlock_irqrestore(&fm->lock, flags);
 			}
 			if (sock)
+<<<<<<< HEAD
 				tifm_free_device(&sock->dev);
+=======
+				put_device(&sock->dev);
+>>>>>>> origin/android16-base
 		}
 		spin_lock_irqsave(&fm->lock, flags);
 	}

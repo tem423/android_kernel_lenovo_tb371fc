@@ -3,7 +3,11 @@
  * Copyright 2006-2007	Jiri Benc <jbenc@suse.cz>
  * Copyright 2013-2014  Intel Mobile Communications GmbH
  * Copyright (C) 2015 - 2017 Intel Deutschland GmbH
+<<<<<<< HEAD
  * Copyright (C) 2018-2020 Intel Corporation
+=======
+ * Copyright (C) 2018-2021 Intel Corporation
+>>>>>>> origin/android16-base
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -244,6 +248,27 @@ struct sta_info *sta_info_get_by_idx(struct ieee80211_sub_if_data *sdata,
  */
 void sta_info_free(struct ieee80211_local *local, struct sta_info *sta)
 {
+<<<<<<< HEAD
+=======
+	/*
+	 * If we had used sta_info_pre_move_state() then we might not
+	 * have gone through the state transitions down again, so do
+	 * it here now (and warn if it's inserted).
+	 *
+	 * This will clear state such as fast TX/RX that may have been
+	 * allocated during state transitions.
+	 */
+	while (sta->sta_state > IEEE80211_STA_NONE) {
+		int ret;
+
+		WARN_ON_ONCE(test_sta_flag(sta, WLAN_STA_INSERTED));
+
+		ret = sta_info_move_state(sta, sta->sta_state - 1);
+		if (WARN_ONCE(ret, "sta_info_move_state() returned %d\n", ret))
+			break;
+	}
+
+>>>>>>> origin/android16-base
 	if (sta->rate_ctrl)
 		rate_control_free_sta(sta);
 
@@ -351,6 +376,11 @@ struct sta_info *sta_info_alloc(struct ieee80211_sub_if_data *sdata,
 
 	u64_stats_init(&sta->rx_stats.syncp);
 
+<<<<<<< HEAD
+=======
+	ieee80211_init_frag_cache(&sta->frags);
+
+>>>>>>> origin/android16-base
 	sta->sta_state = IEEE80211_STA_NONE;
 
 	/* Mark TID as unreserved */
@@ -609,6 +639,11 @@ static int sta_info_insert_finish(struct sta_info *sta) __acquires(RCU)
 	if (ieee80211_vif_is_mesh(&sdata->vif))
 		mesh_accept_plinks_update(sdata);
 
+<<<<<<< HEAD
+=======
+	ieee80211_check_fast_xmit(sta);
+
+>>>>>>> origin/android16-base
 	return 0;
  out_remove:
 	sta_info_hash_del(local, sta);
@@ -616,7 +651,11 @@ static int sta_info_insert_finish(struct sta_info *sta) __acquires(RCU)
  out_drop_sta:
 	local->num_sta--;
 	synchronize_net();
+<<<<<<< HEAD
 	__cleanup_single_sta(sta);
+=======
+	cleanup_single_sta(sta);
+>>>>>>> origin/android16-base
  out_err:
 	mutex_unlock(&local->sta_mtx);
 	kfree(sinfo);
@@ -635,6 +674,7 @@ int sta_info_insert_rcu(struct sta_info *sta) __acquires(RCU)
 
 	err = sta_info_insert_check(sta);
 	if (err) {
+<<<<<<< HEAD
 		mutex_unlock(&local->sta_mtx);
 		rcu_read_lock();
 		goto out_free;
@@ -648,6 +688,15 @@ int sta_info_insert_rcu(struct sta_info *sta) __acquires(RCU)
  out_free:
 	sta_info_free(local, sta);
 	return err;
+=======
+		sta_info_free(local, sta);
+		mutex_unlock(&local->sta_mtx);
+		rcu_read_lock();
+		return err;
+	}
+
+	return sta_info_insert_finish(sta);
+>>>>>>> origin/android16-base
 }
 
 int sta_info_insert(struct sta_info *sta)
@@ -955,7 +1004,12 @@ static int __must_check __sta_info_destroy_part1(struct sta_info *sta)
 	list_del_rcu(&sta->list);
 	sta->removed = true;
 
+<<<<<<< HEAD
 	drv_sta_pre_rcu_remove(local, sta->sdata, sta);
+=======
+	if (sta->uploaded)
+		drv_sta_pre_rcu_remove(local, sta->sdata, sta);
+>>>>>>> origin/android16-base
 
 	if (sdata->vif.type == NL80211_IFTYPE_AP_VLAN &&
 	    rcu_access_pointer(sdata->u.vlan.sta) == sta)
@@ -1020,6 +1074,11 @@ static void __sta_info_destroy_part2(struct sta_info *sta)
 	rate_control_remove_sta_debugfs(sta);
 	ieee80211_sta_debugfs_remove(sta);
 
+<<<<<<< HEAD
+=======
+	ieee80211_destroy_frag_cache(&sta->frags);
+
+>>>>>>> origin/android16-base
 	cleanup_single_sta(sta);
 }
 
@@ -1256,7 +1315,11 @@ void ieee80211_sta_ps_deliver_wakeup(struct sta_info *sta)
 	skb_queue_head_init(&pending);
 
 	/* sync with ieee80211_tx_h_unicast_ps_buf */
+<<<<<<< HEAD
 	spin_lock(&sta->ps_lock);
+=======
+	spin_lock_bh(&sta->ps_lock);
+>>>>>>> origin/android16-base
 	/* Send all buffered frames to the station */
 	for (ac = 0; ac < IEEE80211_NUM_ACS; ac++) {
 		int count = skb_queue_len(&pending), tmp;
@@ -1285,7 +1348,11 @@ void ieee80211_sta_ps_deliver_wakeup(struct sta_info *sta)
 	 */
 	clear_sta_flag(sta, WLAN_STA_PSPOLL);
 	clear_sta_flag(sta, WLAN_STA_UAPSD);
+<<<<<<< HEAD
 	spin_unlock(&sta->ps_lock);
+=======
+	spin_unlock_bh(&sta->ps_lock);
+>>>>>>> origin/android16-base
 
 	atomic_dec(&ps->num_sta_ps);
 
@@ -1328,11 +1395,14 @@ static void ieee80211_send_null_response(struct sta_info *sta, int tid,
 	struct ieee80211_tx_info *info;
 	struct ieee80211_chanctx_conf *chanctx_conf;
 
+<<<<<<< HEAD
 	/* Don't send NDPs when STA is connected HE */
 	if (sdata->vif.type == NL80211_IFTYPE_STATION &&
 	    !(sdata->u.mgd.flags & IEEE80211_STA_DISABLE_HE))
 		return;
 
+=======
+>>>>>>> origin/android16-base
 	if (qos) {
 		fc = cpu_to_le16(IEEE80211_FTYPE_DATA |
 				 IEEE80211_STYPE_QOS_NULLFUNC |
@@ -2036,7 +2106,11 @@ static void sta_stats_decode_rate(struct ieee80211_local *local, u32 rate,
 
 static int sta_set_rate_info_rx(struct sta_info *sta, struct rate_info *rinfo)
 {
+<<<<<<< HEAD
 	u16 rate = READ_ONCE(sta_get_last_rx_stats(sta)->last_rate);
+=======
+	u32 rate = READ_ONCE(sta_get_last_rx_stats(sta)->last_rate);
+>>>>>>> origin/android16-base
 
 	if (rate == STA_STATS_RATE_INVALID)
 		return -EINVAL;

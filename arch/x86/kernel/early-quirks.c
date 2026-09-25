@@ -515,6 +515,10 @@ static const struct intel_early_ops gen11_early_ops __initconst = {
 	.stolen_size = gen9_stolen_size,
 };
 
+<<<<<<< HEAD
+=======
+/* Intel integrated GPUs for which we need to reserve "stolen memory" */
+>>>>>>> origin/android16-base
 static const struct pci_device_id intel_early_ids[] __initconst = {
 	INTEL_I830_IDS(&i830_early_ops),
 	INTEL_I845G_IDS(&i845_early_ops),
@@ -584,6 +588,16 @@ static void __init intel_graphics_quirks(int num, int slot, int func)
 	u16 device;
 	int i;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Reserve "stolen memory" for an integrated GPU.  If we've already
+	 * found one, there's nothing to do for other (discrete) GPUs.
+	 */
+	if (resource_size(&intel_graphics_stolen_res))
+		return;
+
+>>>>>>> origin/android16-base
 	device = read_pci_config_16(num, slot, func, PCI_DEVICE_ID);
 
 	for (i = 0; i < ARRAY_SIZE(intel_early_ids); i++) {
@@ -696,7 +710,11 @@ static struct chipset early_qrk[] __initdata = {
 	{ PCI_VENDOR_ID_INTEL, 0x3406, PCI_CLASS_BRIDGE_HOST,
 	  PCI_BASE_CLASS_BRIDGE, 0, intel_remapping_check },
 	{ PCI_VENDOR_ID_INTEL, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA, PCI_ANY_ID,
+<<<<<<< HEAD
 	  QFLAG_APPLY_ONCE, intel_graphics_quirks },
+=======
+	  0, intel_graphics_quirks },
+>>>>>>> origin/android16-base
 	/*
 	 * HPET on the current version of the Baytrail platform has accuracy
 	 * problems: it will halt in deep idle state - so we disable it.

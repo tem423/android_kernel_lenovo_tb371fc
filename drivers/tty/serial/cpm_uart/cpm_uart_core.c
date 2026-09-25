@@ -1269,6 +1269,7 @@ static void cpm_uart_console_write(struct console *co, const char *s,
 {
 	struct uart_cpm_port *pinfo = &cpm_uart_ports[co->index];
 	unsigned long flags;
+<<<<<<< HEAD
 	int nolock = oops_in_progress;
 
 	if (unlikely(nolock)) {
@@ -1282,6 +1283,16 @@ static void cpm_uart_console_write(struct console *co, const char *s,
 	if (unlikely(nolock)) {
 		local_irq_restore(flags);
 	} else {
+=======
+
+	if (unlikely(oops_in_progress)) {
+		local_irq_save(flags);
+		cpm_uart_early_write(pinfo, s, count, true);
+		local_irq_restore(flags);
+	} else {
+		spin_lock_irqsave(&pinfo->port.lock, flags);
+		cpm_uart_early_write(pinfo, s, count, true);
+>>>>>>> origin/android16-base
 		spin_unlock_irqrestore(&pinfo->port.lock, flags);
 	}
 }

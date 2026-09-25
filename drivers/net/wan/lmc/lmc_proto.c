@@ -103,6 +103,7 @@ __be16 lmc_proto_type(lmc_softc_t *sc, struct sk_buff *skb) /*FOLD00*/
     switch(sc->if_type){
     case LMC_PPP:
 	    return hdlc_type_trans(skb, sc->lmc_device);
+<<<<<<< HEAD
 	    break;
     case LMC_NET:
         return htons(ETH_P_802_2);
@@ -114,6 +115,15 @@ __be16 lmc_proto_type(lmc_softc_t *sc, struct sk_buff *skb) /*FOLD00*/
         printk(KERN_WARNING "%s: No protocol set for this interface, assuming 802.2 (which is wrong!!)\n", sc->name);
         return htons(ETH_P_802_2);
         break;
+=======
+    case LMC_NET:
+        return htons(ETH_P_802_2);
+    case LMC_RAW: /* Packet type for skbuff kind of useless */
+        return htons(ETH_P_802_2);
+    default:
+        printk(KERN_WARNING "%s: No protocol set for this interface, assuming 802.2 (which is wrong!!)\n", sc->name);
+        return htons(ETH_P_802_2);
+>>>>>>> origin/android16-base
     }
     lmc_trace(sc->lmc_device, "lmc_proto_tye out");
 

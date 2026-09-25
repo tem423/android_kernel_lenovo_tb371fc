@@ -41,15 +41,25 @@
 
 #ifdef CONFIG_ARC_DW2_UNWIND
 
+<<<<<<< HEAD
 static void seed_unwind_frame_info(struct task_struct *tsk,
 				   struct pt_regs *regs,
 				   struct unwind_frame_info *frame_info)
+=======
+static int
+seed_unwind_frame_info(struct task_struct *tsk, struct pt_regs *regs,
+		       struct unwind_frame_info *frame_info)
+>>>>>>> origin/android16-base
 {
 	/*
 	 * synchronous unwinding (e.g. dump_stack)
 	 *  - uses current values of SP and friends
 	 */
+<<<<<<< HEAD
 	if (tsk == NULL && regs == NULL) {
+=======
+	if (regs == NULL && (tsk == NULL || tsk == current)) {
+>>>>>>> origin/android16-base
 		unsigned long fp, sp, blink, ret;
 		frame_info->task = current;
 
@@ -68,11 +78,23 @@ static void seed_unwind_frame_info(struct task_struct *tsk,
 		frame_info->call_frame = 0;
 	} else if (regs == NULL) {
 		/*
+<<<<<<< HEAD
 		 * Asynchronous unwinding of sleeping task
 		 *  - Gets SP etc from task's pt_regs (saved bottom of kernel
 		 *    mode stack of task)
 		 */
 
+=======
+		 * Asynchronous unwinding of a likely sleeping task
+		 *  - first ensure it is actually sleeping
+		 *  - if so, it will be in __switch_to, kernel mode SP of task
+		 *    is safe-kept and BLINK at a well known location in there
+		 */
+
+		if (tsk->state == TASK_RUNNING)
+			return -1;
+
+>>>>>>> origin/android16-base
 		frame_info->task = tsk;
 
 		frame_info->regs.r27 = TSK_K_FP(tsk);
@@ -106,6 +128,11 @@ static void seed_unwind_frame_info(struct task_struct *tsk,
 		frame_info->regs.r63 = regs->ret;
 		frame_info->call_frame = 0;
 	}
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 #endif
@@ -119,7 +146,12 @@ arc_unwind_core(struct task_struct *tsk, struct pt_regs *regs,
 	unsigned int address;
 	struct unwind_frame_info frame_info;
 
+<<<<<<< HEAD
 	seed_unwind_frame_info(tsk, regs, &frame_info);
+=======
+	if (seed_unwind_frame_info(tsk, regs, &frame_info))
+		return 0;
+>>>>>>> origin/android16-base
 
 	while (1) {
 		address = UNW_PC(&frame_info);

@@ -159,6 +159,11 @@ static inline void crypto_kpp_set_flags(struct crypto_kpp *tfm, u32 flags)
  * crypto_free_kpp() - free KPP tfm handle
  *
  * @tfm: KPP tfm handle allocated with crypto_alloc_kpp()
+<<<<<<< HEAD
+=======
+ *
+ * If @tfm is a NULL or error pointer, this function does nothing.
+>>>>>>> origin/android16-base
  */
 static inline void crypto_free_kpp(struct crypto_kpp *tfm)
 {

@@ -1493,7 +1493,10 @@ static void _free_command_line(wchar_t **command_line, int num)
 static int python_start_script(const char *script, int argc, const char **argv)
 {
 	struct tables *tables = &tables_global;
+<<<<<<< HEAD
 	PyMODINIT_FUNC (*initfunc)(void);
+=======
+>>>>>>> origin/android16-base
 #if PY_MAJOR_VERSION < 3
 	const char **command_line;
 #else
@@ -1508,20 +1511,33 @@ static int python_start_script(const char *script, int argc, const char **argv)
 	FILE *fp;
 
 #if PY_MAJOR_VERSION < 3
+<<<<<<< HEAD
 	initfunc = initperf_trace_context;
+=======
+>>>>>>> origin/android16-base
 	command_line = malloc((argc + 1) * sizeof(const char *));
 	command_line[0] = script;
 	for (i = 1; i < argc + 1; i++)
 		command_line[i] = argv[i - 1];
+<<<<<<< HEAD
 #else
 	initfunc = PyInit_perf_trace_context;
+=======
+	PyImport_AppendInittab(name, initperf_trace_context);
+#else
+>>>>>>> origin/android16-base
 	command_line = malloc((argc + 1) * sizeof(wchar_t *));
 	command_line[0] = Py_DecodeLocale(script, NULL);
 	for (i = 1; i < argc + 1; i++)
 		command_line[i] = Py_DecodeLocale(argv[i - 1], NULL);
+<<<<<<< HEAD
 #endif
 
 	PyImport_AppendInittab(name, initfunc);
+=======
+	PyImport_AppendInittab(name, PyInit_perf_trace_context);
+#endif
+>>>>>>> origin/android16-base
 	Py_Initialize();
 
 #if PY_MAJOR_VERSION < 3

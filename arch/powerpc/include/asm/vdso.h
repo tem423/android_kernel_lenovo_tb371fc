@@ -49,6 +49,10 @@ int vdso_getcpu_init(void);
 
 #define V_FUNCTION_BEGIN(name)		\
 	.globl name;			\
+<<<<<<< HEAD
+=======
+	.type name,@function; 		\
+>>>>>>> origin/android16-base
 	name:				\
 
 #define V_FUNCTION_END(name)		\

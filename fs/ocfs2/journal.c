@@ -989,7 +989,11 @@ void ocfs2_journal_shutdown(struct ocfs2_super *osb)
 	if (!igrab(inode))
 		BUG();
 
+<<<<<<< HEAD
 	num_running_trans = atomic_read(&(osb->journal->j_num_trans));
+=======
+	num_running_trans = atomic_read(&(journal->j_num_trans));
+>>>>>>> origin/android16-base
 	trace_ocfs2_journal_shutdown(num_running_trans);
 
 	/* Do a commit_cache here. It will flush our journal, *and*
@@ -1008,9 +1012,16 @@ void ocfs2_journal_shutdown(struct ocfs2_super *osb)
 		osb->commit_task = NULL;
 	}
 
+<<<<<<< HEAD
 	BUG_ON(atomic_read(&(osb->journal->j_num_trans)) != 0);
 
 	if (ocfs2_mount_local(osb)) {
+=======
+	BUG_ON(atomic_read(&(journal->j_num_trans)) != 0);
+
+	if (ocfs2_mount_local(osb) &&
+	    (journal->j_journal->j_flags & JBD2_LOADED)) {
+>>>>>>> origin/android16-base
 		jbd2_journal_lock_updates(journal->j_journal);
 		status = jbd2_journal_flush(journal->j_journal);
 		jbd2_journal_unlock_updates(journal->j_journal);

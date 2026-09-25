@@ -256,8 +256,13 @@ EXPORT_SYMBOL_GPL(ffs_lock);
 static struct ffs_dev *_ffs_find_dev(const char *name);
 static struct ffs_dev *_ffs_alloc_dev(void);
 static void _ffs_free_dev(struct ffs_dev *dev);
+<<<<<<< HEAD
 static void *ffs_acquire_dev(const char *dev_name);
 static void ffs_release_dev(struct ffs_data *ffs_data);
+=======
+static int ffs_acquire_dev(const char *dev_name, struct ffs_data *ffs_data);
+static void ffs_release_dev(struct ffs_dev *ffs_dev);
+>>>>>>> origin/android16-base
 static int ffs_ready(struct ffs_data *ffs);
 static void ffs_closed(struct ffs_data *ffs);
 
@@ -285,6 +290,14 @@ static int __ffs_ep0_queue_wait(struct ffs_data *ffs, char *data, size_t len)
 	struct usb_request *req = ffs->ep0req;
 	int ret;
 
+<<<<<<< HEAD
+=======
+	if (!req) {
+		spin_unlock_irq(&ffs->ev.waitq.lock);
+		return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	req->zero     = len < le16_to_cpu(ffs->ev.setup.wLength);
 
 	spin_unlock_irq(&ffs->ev.waitq.lock);
@@ -652,7 +665,11 @@ static int ffs_ep0_open(struct inode *inode, struct file *file)
 	file->private_data = ffs;
 	ffs_data_opened(ffs);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return stream_open(inode, file);
+>>>>>>> origin/android16-base
 }
 
 static int ffs_ep0_release(struct inode *inode, struct file *file)
@@ -813,6 +830,10 @@ static void ffs_user_copy_worker(struct work_struct *work)
 	int ret = io_data->req->status ? io_data->req->status :
 					 io_data->req->actual;
 	bool kiocb_has_eventfd = io_data->kiocb->ki_flags & IOCB_EVENTFD;
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 
 	ffs_log("enter: ret %d for %s", ret, io_data->read ? "read" : "write");
 
@@ -831,7 +852,14 @@ static void ffs_user_copy_worker(struct work_struct *work)
 	if (io_data->ffs->ffs_eventfd && !kiocb_has_eventfd)
 		eventfd_signal(io_data->ffs->ffs_eventfd, 1);
 
+<<<<<<< HEAD
 	usb_ep_free_request(io_data->ep, io_data->req);
+=======
+	spin_lock_irqsave(&io_data->ffs->eps_lock, flags);
+	usb_ep_free_request(io_data->ep, io_data->req);
+	io_data->req = NULL;
+	spin_unlock_irqrestore(&io_data->ffs->eps_lock, flags);
+>>>>>>> origin/android16-base
 
 	if (io_data->read)
 		kfree(io_data->to_free);
@@ -1193,7 +1221,11 @@ ffs_epfile_open(struct inode *inode, struct file *file)
 	ffs_data_opened(epfile->ffs);
 	atomic_inc(&epfile->opened);
 
+<<<<<<< HEAD
 	return 0;
+=======
+	return stream_open(inode, file);
+>>>>>>> origin/android16-base
 }
 
 static int ffs_aio_cancel(struct kiocb *kiocb)
@@ -1408,8 +1440,13 @@ static long ffs_epfile_ioctl(struct file *file, unsigned code,
 		struct usb_endpoint_descriptor desc1, *desc;
 
 		switch (epfile->ffs->gadget->speed) {
+<<<<<<< HEAD
 		case USB_SPEED_SUPER_PLUS:
 		case USB_SPEED_SUPER:
+=======
+		case USB_SPEED_SUPER:
+		case USB_SPEED_SUPER_PLUS:
+>>>>>>> origin/android16-base
 			desc_idx = 2;
 			break;
 		case USB_SPEED_HIGH:
@@ -1687,7 +1724,10 @@ ffs_fs_mount(struct file_system_type *t, int flags,
 	};
 	struct dentry *rv;
 	int ret;
+<<<<<<< HEAD
 	void *ffs_dev;
+=======
+>>>>>>> origin/android16-base
 	struct ffs_data	*ffs;
 
 	ENTER();
@@ -1713,6 +1753,7 @@ ffs_fs_mount(struct file_system_type *t, int flags,
 		return ERR_PTR(-ENOMEM);
 	}
 
+<<<<<<< HEAD
 	ffs_dev = ffs_acquire_dev(dev_name);
 	if (IS_ERR(ffs_dev)) {
 		ffs_data_put(ffs);
@@ -1727,6 +1768,18 @@ ffs_fs_mount(struct file_system_type *t, int flags,
 		ffs_data_put(data.ffs_data);
 	}
 
+=======
+	ret = ffs_acquire_dev(dev_name, ffs);
+	if (ret) {
+		ffs_data_put(ffs);
+		return ERR_PTR(ret);
+	}
+	data.ffs_data = ffs;
+
+	rv = mount_nodev(t, flags, &data, ffs_sb_fill);
+	if (IS_ERR(rv) && data.ffs_data)
+		ffs_data_put(data.ffs_data);
+>>>>>>> origin/android16-base
 	return rv;
 }
 
@@ -1736,10 +1789,15 @@ ffs_fs_kill_sb(struct super_block *sb)
 	ENTER();
 
 	kill_litter_super(sb);
+<<<<<<< HEAD
 	if (sb->s_fs_info) {
 		ffs_release_dev(sb->s_fs_info);
 		ffs_data_closed(sb->s_fs_info);
 	}
+=======
+	if (sb->s_fs_info)
+		ffs_data_closed(sb->s_fs_info);
+>>>>>>> origin/android16-base
 }
 
 static struct file_system_type ffs_fs_type = {
@@ -1816,6 +1874,10 @@ static void ffs_data_put(struct ffs_data *ffs)
 	if (unlikely(refcount_dec_and_test(&ffs->ref))) {
 		pr_info("%s(): freeing\n", __func__);
 		ffs_data_clear(ffs);
+<<<<<<< HEAD
+=======
+		ffs_release_dev(ffs->private_data);
+>>>>>>> origin/android16-base
 		BUG_ON(waitqueue_active(&ffs->ev.waitq) ||
 		       waitqueue_active(&ffs->ep0req_completion.wait) ||
 		       waitqueue_active(&ffs->wait));
@@ -1828,6 +1890,12 @@ static void ffs_data_put(struct ffs_data *ffs)
 
 static void ffs_data_closed(struct ffs_data *ffs)
 {
+<<<<<<< HEAD
+=======
+	struct ffs_epfile *epfiles;
+	unsigned long flags;
+
+>>>>>>> origin/android16-base
 	ENTER();
 
 	ffs_log("state %d setup_state %d flag %lu opened %d", ffs->state,
@@ -1836,6 +1904,7 @@ static void ffs_data_closed(struct ffs_data *ffs)
 	if (atomic_dec_and_test(&ffs->opened)) {
 		if (ffs->no_disconnect) {
 			ffs->state = FFS_DEACTIVATED;
+<<<<<<< HEAD
 			mutex_lock(&ffs->mutex);
 			if (ffs->epfiles) {
 				ffs_epfiles_destroy(ffs->epfiles,
@@ -1843,6 +1912,20 @@ static void ffs_data_closed(struct ffs_data *ffs)
 				ffs->epfiles = NULL;
 			}
 			mutex_unlock(&ffs->mutex);
+=======
+			spin_lock_irqsave(&ffs->eps_lock, flags);
+			epfiles = ffs->epfiles;
+			ffs->epfiles = NULL;
+			spin_unlock_irqrestore(&ffs->eps_lock,
+							flags);
+
+			mutex_lock(&ffs->mutex);
+			if (epfiles)
+				ffs_epfiles_destroy(epfiles,
+						 ffs->eps_count);
+			mutex_unlock(&ffs->mutex);
+
+>>>>>>> origin/android16-base
 			if (ffs->setup_state == FFS_SETUP_PENDING)
 				__ffs_ep0_stall(ffs);
 		} else {
@@ -1903,6 +1986,12 @@ static struct ffs_data *ffs_data_new(const char *dev_name)
 
 static void ffs_data_clear(struct ffs_data *ffs)
 {
+<<<<<<< HEAD
+=======
+	struct ffs_epfile *epfiles;
+	unsigned long flags;
+
+>>>>>>> origin/android16-base
 	ENTER();
 
 	ffs_log("enter: state %d setup_state %d flag %lu", ffs->state,
@@ -1914,6 +2003,7 @@ static void ffs_data_clear(struct ffs_data *ffs)
 
 	BUG_ON(ffs->gadget);
 
+<<<<<<< HEAD
 	mutex_lock(&ffs->mutex);
 	if (ffs->epfiles) {
 		ffs_epfiles_destroy(ffs->epfiles, ffs->eps_count);
@@ -1922,6 +2012,28 @@ static void ffs_data_clear(struct ffs_data *ffs)
 
 	if (ffs->ffs_eventfd)
 		eventfd_ctx_put(ffs->ffs_eventfd);
+=======
+	spin_lock_irqsave(&ffs->eps_lock, flags);
+	epfiles = ffs->epfiles;
+	ffs->epfiles = NULL;
+	spin_unlock_irqrestore(&ffs->eps_lock, flags);
+
+	/*
+	 * potential race possible between ffs_func_eps_disable
+	 * & ffs_epfile_release therefore maintaining a local
+	 * copy of epfile will save us from use-after-free.
+	 */
+	mutex_lock(&ffs->mutex);
+	if (epfiles) {
+		ffs_epfiles_destroy(epfiles, ffs->eps_count);
+		ffs->epfiles = NULL;
+	}
+
+	if (ffs->ffs_eventfd) {
+		eventfd_ctx_put(ffs->ffs_eventfd);
+		ffs->ffs_eventfd = NULL;
+	}
+>>>>>>> origin/android16-base
 
 	kfree(ffs->raw_descs_data);
 	ffs->raw_descs_data = NULL;
@@ -2009,12 +2121,22 @@ static void functionfs_unbind(struct ffs_data *ffs)
 	ENTER();
 
 	if (!WARN_ON(!ffs->gadget)) {
+<<<<<<< HEAD
+=======
+		/* dequeue before freeing ep0req */
+		usb_ep_dequeue(ffs->gadget->ep0, ffs->ep0req);
+		mutex_lock(&ffs->mutex);
+>>>>>>> origin/android16-base
 		usb_ep_free_request(ffs->gadget->ep0, ffs->ep0req);
 		ffs->ep0req = NULL;
 		ffs->gadget = NULL;
 		clear_bit(FFS_FL_BOUND, &ffs->flags);
 		ffs_log("state %d setup_state %d flag %lu gadget %pK\n",
 			ffs->state, ffs->setup_state, ffs->flags, ffs->gadget);
+<<<<<<< HEAD
+=======
+		mutex_unlock(&ffs->mutex);
+>>>>>>> origin/android16-base
 		ffs_data_put(ffs);
 	}
 }
@@ -2081,12 +2203,17 @@ static void ffs_epfiles_destroy(struct ffs_epfile *epfiles, unsigned count)
 
 static void ffs_func_eps_disable(struct ffs_function *func)
 {
+<<<<<<< HEAD
 	struct ffs_data *ffs      = func->ffs;
+=======
+	struct ffs_data *ffs;
+>>>>>>> origin/android16-base
 	struct ffs_ep *ep;
 	struct ffs_epfile *epfile;
 	unsigned short count;
 	unsigned long flags;
 
+<<<<<<< HEAD
 	ffs_log("enter: state %d setup_state %d flag %lu", func->ffs->state,
 		func->ffs->setup_state, func->ffs->flags);
 
@@ -2094,6 +2221,17 @@ static void ffs_func_eps_disable(struct ffs_function *func)
 	count = func->ffs->eps_count;
 	epfile = func->ffs->epfiles;
 	ep = func->eps;
+=======
+	spin_lock_irqsave(&func->ffs->eps_lock, flags);
+	ffs = func->ffs;
+	ep = func->eps;
+	epfile = ffs->epfiles;
+	count = ffs->eps_count;
+
+	ffs_log("enter: state %d setup_state %d flag %lu", func->ffs->state,
+		func->ffs->setup_state, func->ffs->flags);
+
+>>>>>>> origin/android16-base
 	while (count--) {
 		/* pending requests get nuked */
 		if (likely(ep->ep))
@@ -2112,6 +2250,7 @@ static void ffs_func_eps_disable(struct ffs_function *func)
 
 static int ffs_func_eps_enable(struct ffs_function *func)
 {
+<<<<<<< HEAD
 	struct ffs_data *ffs      = func->ffs;
 	struct ffs_ep *ep         = func->eps;
 	struct ffs_epfile *epfile = ffs->epfiles;
@@ -2123,6 +2262,24 @@ static int ffs_func_eps_enable(struct ffs_function *func)
 		func->ffs->setup_state, func->ffs->flags);
 
 	spin_lock_irqsave(&func->ffs->eps_lock, flags);
+=======
+	struct ffs_data *ffs;
+	struct ffs_ep *ep;
+	struct ffs_epfile *epfile;
+	unsigned short count;
+	unsigned long flags;
+	int ret = 0;
+
+	spin_lock_irqsave(&func->ffs->eps_lock, flags);
+	ffs = func->ffs;
+	ep = func->eps;
+	epfile = ffs->epfiles;
+	count = ffs->eps_count;
+
+	ffs_log("enter: state %d setup_state %d flag %lu", func->ffs->state,
+		func->ffs->setup_state, func->ffs->flags);
+
+>>>>>>> origin/android16-base
 	while(count--) {
 		ep->ep->driver_data = ep;
 
@@ -2828,6 +2985,10 @@ static int __ffs_data_got_strings(struct ffs_data *ffs,
 
 	do { /* lang_count > 0 so we can use do-while */
 		unsigned needed = needed_count;
+<<<<<<< HEAD
+=======
+		u32 str_per_lang = str_count;
+>>>>>>> origin/android16-base
 
 		if (unlikely(len < 3))
 			goto error_free;
@@ -2863,7 +3024,11 @@ static int __ffs_data_got_strings(struct ffs_data *ffs,
 
 			data += length + 1;
 			len -= length + 1;
+<<<<<<< HEAD
 		} while (--str_count);
+=======
+		} while (--str_per_lang);
+>>>>>>> origin/android16-base
 
 		s->id = 0;   /* terminator */
 		s->s = NULL;
@@ -3224,6 +3389,10 @@ static inline struct f_fs_opts *ffs_do_functionfs_bind(struct usb_function *f,
 	struct f_fs_opts *ffs_opts =
 		container_of(f->fi, struct f_fs_opts, func_inst);
 	struct ffs_data *ffs = ffs_opts->dev->ffs_data;
+<<<<<<< HEAD
+=======
+	struct ffs_data *ffs_data;
+>>>>>>> origin/android16-base
 	int ret;
 
 	ENTER();
@@ -3238,12 +3407,20 @@ static inline struct f_fs_opts *ffs_do_functionfs_bind(struct usb_function *f,
 	if (!ffs_opts->no_configfs)
 		ffs_dev_lock();
 	ret = ffs_opts->dev->desc_ready ? 0 : -ENODEV;
+<<<<<<< HEAD
 	func->ffs = ffs_opts->dev->ffs_data;
+=======
+	ffs_data = ffs_opts->dev->ffs_data;
+>>>>>>> origin/android16-base
 	if (!ffs_opts->no_configfs)
 		ffs_dev_unlock();
 	if (ret)
 		return ERR_PTR(ret);
 
+<<<<<<< HEAD
+=======
+	func->ffs = ffs_data;
+>>>>>>> origin/android16-base
 	func->conf = c;
 	func->gadget = c->cdev->gadget;
 
@@ -3374,7 +3551,12 @@ static int _ffs_func_bind(struct usb_configuration *c,
 	}
 
 	if (likely(super)) {
+<<<<<<< HEAD
 		func->function.ss_descriptors = vla_ptr(vlabuf, d, ss_descs);
+=======
+		func->function.ss_descriptors = func->function.ssp_descriptors =
+			vla_ptr(vlabuf, d, ss_descs);
+>>>>>>> origin/android16-base
 		ss_len = ffs_do_descs(ffs, ffs->ss_descs_count,
 				vla_ptr(vlabuf, d, raw_descs) + fs_len + hs_len,
 				d_raw_descs__sz - fs_len - hs_len,
@@ -3584,7 +3766,11 @@ static int ffs_func_setup(struct usb_function *f,
 	__ffs_event_add(ffs, FUNCTIONFS_SETUP);
 	spin_unlock_irqrestore(&ffs->ev.waitq.lock, flags);
 
+<<<<<<< HEAD
 	return creq->wLength == 0 ? USB_GADGET_DELAYED_STATUS : 0;
+=======
+	return ffs->ev.setup.wLength == 0 ? USB_GADGET_DELAYED_STATUS : 0;
+>>>>>>> origin/android16-base
 }
 
 static bool ffs_func_req_match(struct usb_function *f,
@@ -3737,6 +3923,10 @@ static void ffs_free_inst(struct usb_function_instance *f)
 	struct f_fs_opts *opts;
 
 	opts = to_f_fs_opts(f);
+<<<<<<< HEAD
+=======
+	ffs_release_dev(opts->dev);
+>>>>>>> origin/android16-base
 	ffs_dev_lock();
 	_ffs_free_dev(opts->dev);
 	ffs_dev_unlock();
@@ -3802,10 +3992,19 @@ static void ffs_func_unbind(struct usb_configuration *c,
 		ffs->func = NULL;
 	}
 
+<<<<<<< HEAD
 	if (!--opts->refcnt) {
 		ffs_event_add(ffs, FUNCTIONFS_UNBIND);
 		functionfs_unbind(ffs);
 	}
+=======
+	/* Drain any pending AIO completions */
+	drain_workqueue(ffs->io_completion_wq);
+
+	ffs_event_add(ffs, FUNCTIONFS_UNBIND);
+	if (!--opts->refcnt)
+		functionfs_unbind(ffs);
+>>>>>>> origin/android16-base
 
 	/* cleanup after autoconfig */
 	spin_lock_irqsave(&func->ffs->eps_lock, flags);
@@ -3829,12 +4028,17 @@ static void ffs_func_unbind(struct usb_configuration *c,
 	func->function.ssp_descriptors = NULL;
 	func->interfaces_nums = NULL;
 
+<<<<<<< HEAD
 	if (opts->refcnt) {
 		ffs_event_add(ffs, FUNCTIONFS_UNBIND);
 
 		ffs_log("exit: state %d setup_state %d flag %lu", ffs->state,
 			ffs->setup_state, ffs->flags);
 	}
+=======
+	ffs_log("exit: state %d setup_state %d flag %lu", ffs->state,
+		ffs->setup_state, ffs->flags);
+>>>>>>> origin/android16-base
 }
 
 static struct usb_function *ffs_alloc(struct usb_function_instance *fi)
@@ -3934,17 +4138,26 @@ static void _ffs_free_dev(struct ffs_dev *dev)
 {
 	list_del(&dev->entry);
 
+<<<<<<< HEAD
 	/* Clear the private_data pointer to stop incorrect dev access */
 	if (dev->ffs_data)
 		dev->ffs_data->private_data = NULL;
 
+=======
+>>>>>>> origin/android16-base
 	kfree(dev);
 	if (list_empty(&ffs_devices))
 		functionfs_cleanup();
 }
 
+<<<<<<< HEAD
 static void *ffs_acquire_dev(const char *dev_name)
 {
+=======
+static int ffs_acquire_dev(const char *dev_name, struct ffs_data *ffs_data)
+{
+	int ret = 0;
+>>>>>>> origin/android16-base
 	struct ffs_dev *ffs_dev;
 
 	ENTER();
@@ -3952,6 +4165,7 @@ static void *ffs_acquire_dev(const char *dev_name)
 	ffs_dev_lock();
 
 	ffs_dev = _ffs_find_dev(dev_name);
+<<<<<<< HEAD
 	if (!ffs_dev)
 		ffs_dev = ERR_PTR(-ENOENT);
 	else if (ffs_dev->mounted)
@@ -3971,13 +4185,43 @@ static void ffs_release_dev(struct ffs_data *ffs_data)
 {
 	struct ffs_dev *ffs_dev;
 
+=======
+	if (!ffs_dev) {
+		ret = -ENOENT;
+	} else if (ffs_dev->mounted) {
+		ret = -EBUSY;
+	} else if (ffs_dev->ffs_acquire_dev_callback &&
+		   ffs_dev->ffs_acquire_dev_callback(ffs_dev)) {
+		ret = -ENOENT;
+	} else {
+		ffs_dev->mounted = true;
+		ffs_dev->ffs_data = ffs_data;
+		ffs_data->private_data = ffs_dev;
+	}
+
+	ffs_dev_unlock();
+	return ret;
+}
+
+static void ffs_release_dev(struct ffs_dev *ffs_dev)
+{
+>>>>>>> origin/android16-base
 	ENTER();
 
 	ffs_dev_lock();
 
+<<<<<<< HEAD
 	ffs_dev = ffs_data->private_data;
 	if (ffs_dev) {
 		ffs_dev->mounted = false;
+=======
+	if (ffs_dev && ffs_dev->mounted) {
+		ffs_dev->mounted = false;
+		if (ffs_dev->ffs_data) {
+			ffs_dev->ffs_data->private_data = NULL;
+			ffs_dev->ffs_data = NULL;
+		}
+>>>>>>> origin/android16-base
 
 		if (ffs_dev->ffs_release_dev_callback)
 			ffs_dev->ffs_release_dev_callback(ffs_dev);
@@ -4008,7 +4252,10 @@ static int ffs_ready(struct ffs_data *ffs)
 	}
 
 	ffs_obj->desc_ready = true;
+<<<<<<< HEAD
 	ffs_obj->ffs_data = ffs;
+=======
+>>>>>>> origin/android16-base
 
 	if (ffs_obj->ffs_ready_callback) {
 		ret = ffs_obj->ffs_ready_callback(ffs);
@@ -4042,7 +4289,10 @@ static void ffs_closed(struct ffs_data *ffs)
 		goto done;
 
 	ffs_obj->desc_ready = false;
+<<<<<<< HEAD
 	ffs_obj->ffs_data = NULL;
+=======
+>>>>>>> origin/android16-base
 
 	if (test_and_clear_bit(FFS_FL_CALL_CLOSED_CALLBACK, &ffs->flags) &&
 	    ffs_obj->ffs_closed_callback)

@@ -142,10 +142,15 @@ static int parport_config(struct pcmcia_device *link)
 			      link->irq, PARPORT_DMA_NONE,
 			      &link->dev, IRQF_SHARED);
     if (p == NULL) {
+<<<<<<< HEAD
 	printk(KERN_NOTICE "parport_cs: parport_pc_probe_port() at "
 	       "0x%3x, irq %u failed\n",
 	       (unsigned int) link->resource[0]->start,
 	       link->irq);
+=======
+	    pr_notice("parport_cs: parport_pc_probe_port() at 0x%3x, irq %u failed\n",
+		      (unsigned int)link->resource[0]->start, link->irq);
+>>>>>>> origin/android16-base
 	goto failed;
     }
 

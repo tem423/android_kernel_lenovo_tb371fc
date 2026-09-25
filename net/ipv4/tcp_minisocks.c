@@ -179,7 +179,11 @@ tcp_timewait_state_process(struct inet_timewait_sock *tw, struct sk_buff *skb,
 			 * Oh well... nobody has a sufficient solution to this
 			 * protocol bug yet.
 			 */
+<<<<<<< HEAD
 			if (twsk_net(tw)->ipv4.sysctl_tcp_rfc1337 == 0) {
+=======
+			if (!READ_ONCE(twsk_net(tw)->ipv4.sysctl_tcp_rfc1337)) {
+>>>>>>> origin/android16-base
 kill:
 				inet_twsk_deschedule_put(tw);
 				return TCP_TW_SUCCESS;
@@ -470,7 +474,11 @@ struct sock *tcp_create_openreq_child(const struct sock *sk,
 
 	seq = treq->rcv_isn + 1;
 	newtp->rcv_wup = seq;
+<<<<<<< HEAD
 	newtp->copied_seq = seq;
+=======
+	WRITE_ONCE(newtp->copied_seq, seq);
+>>>>>>> origin/android16-base
 	WRITE_ONCE(newtp->rcv_nxt, seq);
 	newtp->segs_in = 1;
 
@@ -510,7 +518,11 @@ struct sock *tcp_create_openreq_child(const struct sock *sk,
 	newtp->app_limited = ~0U;
 
 	tcp_init_xmit_timers(newsk);
+<<<<<<< HEAD
 	newtp->write_seq = newtp->pushed_seq = treq->snt_isn + 1;
+=======
+	WRITE_ONCE(newtp->write_seq, newtp->pushed_seq = treq->snt_isn + 1);
+>>>>>>> origin/android16-base
 
 	newtp->rx_opt.saw_tstamp = 0;
 
@@ -550,7 +562,11 @@ struct sock *tcp_create_openreq_child(const struct sock *sk,
 	newtp->tsoffset = treq->ts_off;
 #ifdef CONFIG_TCP_MD5SIG
 	newtp->md5sig_info = NULL;	/*XXX*/
+<<<<<<< HEAD
 	if (newtp->af_specific->md5_lookup(sk, newsk))
+=======
+	if (treq->af_specific->req_md5_lookup(sk, req_to_sk(req)))
+>>>>>>> origin/android16-base
 		newtp->tcp_header_len += TCPOLEN_MD5SIG_ALIGNED;
 #endif
 	if (skb->len >= TCP_MSS_DEFAULT + newtp->tcp_header_len)
@@ -582,6 +598,12 @@ EXPORT_SYMBOL(tcp_create_openreq_child);
  * validation and inside tcp_v4_reqsk_send_ack(). Can we do better?
  *
  * We don't need to initialize tmp_opt.sack_ok as we don't use the results
+<<<<<<< HEAD
+=======
+ *
+ * Note: If @fastopen is true, this can be called from process context.
+ *       Otherwise, this is from BH context.
+>>>>>>> origin/android16-base
  */
 
 struct sock *tcp_check_req(struct sock *sk, struct sk_buff *skb,
@@ -734,7 +756,11 @@ struct sock *tcp_check_req(struct sock *sk, struct sk_buff *skb,
 					  &tcp_rsk(req)->last_oow_ack_time))
 			req->rsk_ops->send_ack(sk, skb, req);
 		if (paws_reject)
+<<<<<<< HEAD
 			__NET_INC_STATS(sock_net(sk), LINUX_MIB_PAWSESTABREJECTED);
+=======
+			NET_INC_STATS(sock_net(sk), LINUX_MIB_PAWSESTABREJECTED);
+>>>>>>> origin/android16-base
 		return NULL;
 	}
 
@@ -753,7 +779,11 @@ struct sock *tcp_check_req(struct sock *sk, struct sk_buff *skb,
 	 *	   "fourth, check the SYN bit"
 	 */
 	if (flg & (TCP_FLAG_RST|TCP_FLAG_SYN)) {
+<<<<<<< HEAD
 		__TCP_INC_STATS(sock_net(sk), TCP_MIB_ATTEMPTFAILS);
+=======
+		TCP_INC_STATS(sock_net(sk), TCP_MIB_ATTEMPTFAILS);
+>>>>>>> origin/android16-base
 		goto embryonic_reset;
 	}
 
@@ -815,8 +845,16 @@ embryonic_reset:
 		tcp_reset(sk);
 	}
 	if (!fastopen) {
+<<<<<<< HEAD
 		inet_csk_reqsk_queue_drop(sk, req);
 		__NET_INC_STATS(sock_net(sk), LINUX_MIB_EMBRYONICRSTS);
+=======
+		bool unlinked = inet_csk_reqsk_queue_drop(sk, req);
+
+		if (unlinked)
+			__NET_INC_STATS(sock_net(sk), LINUX_MIB_EMBRYONICRSTS);
+		*req_stolen = !unlinked;
+>>>>>>> origin/android16-base
 	}
 	return NULL;
 }

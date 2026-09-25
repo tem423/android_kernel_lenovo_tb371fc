@@ -227,14 +227,23 @@ static irqreturn_t kxsd9_trigger_handler(int irq, void *p)
 			       hw_values.chan,
 			       sizeof(hw_values.chan));
 	if (ret) {
+<<<<<<< HEAD
 		dev_err(st->dev,
 			"error reading data\n");
 		return ret;
+=======
+		dev_err(st->dev, "error reading data: %d\n", ret);
+		goto out;
+>>>>>>> origin/android16-base
 	}
 
 	iio_push_to_buffers_with_timestamp(indio_dev,
 					   &hw_values,
 					   iio_get_time_ns(indio_dev));
+<<<<<<< HEAD
+=======
+out:
+>>>>>>> origin/android16-base
 	iio_trigger_notify_done(indio_dev->trig);
 
 	return IRQ_HANDLED;

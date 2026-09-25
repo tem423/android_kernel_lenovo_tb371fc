@@ -739,16 +739,27 @@ static void peak_pci_remove(struct pci_dev *pdev)
 		struct net_device *prev_dev = chan->prev_dev;
 
 		dev_info(&pdev->dev, "removing device %s\n", dev->name);
+<<<<<<< HEAD
+=======
+		/* do that only for first channel */
+		if (!prev_dev && chan->pciec_card)
+			peak_pciec_remove(chan->pciec_card);
+>>>>>>> origin/android16-base
 		unregister_sja1000dev(dev);
 		free_sja1000dev(dev);
 		dev = prev_dev;
 
+<<<<<<< HEAD
 		if (!dev) {
 			/* do that only for first channel */
 			if (chan->pciec_card)
 				peak_pciec_remove(chan->pciec_card);
 			break;
 		}
+=======
+		if (!dev)
+			break;
+>>>>>>> origin/android16-base
 		priv = netdev_priv(dev);
 		chan = priv->priv;
 	}

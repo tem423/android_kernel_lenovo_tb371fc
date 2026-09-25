@@ -18,7 +18,11 @@
 struct nft_range_expr {
 	struct nft_data		data_from;
 	struct nft_data		data_to;
+<<<<<<< HEAD
 	enum nft_registers	sreg:8;
+=======
+	u8			sreg;
+>>>>>>> origin/android16-base
 	u8			len;
 	enum nft_range_ops	op:8;
 };
@@ -90,8 +94,13 @@ static int nft_range_init(const struct nft_ctx *ctx, const struct nft_expr *expr
 		goto err2;
 	}
 
+<<<<<<< HEAD
 	priv->sreg = nft_parse_register(tb[NFTA_RANGE_SREG]);
 	err = nft_validate_register_load(priv->sreg, desc_from.len);
+=======
+	err = nft_parse_register_load(tb[NFTA_RANGE_SREG], &priv->sreg,
+				      desc_from.len);
+>>>>>>> origin/android16-base
 	if (err < 0)
 		goto err2;
 

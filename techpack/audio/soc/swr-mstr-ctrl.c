@@ -381,8 +381,11 @@ static int swrm_request_hw_vote(struct swr_mstr_ctrl *swrm,
 				if (!swrm->dev_up) {
 					dev_dbg(swrm->dev, "%s: device is down or SSR state\n",
 							__func__);
+<<<<<<< HEAD
 					trace_printk("%s: device is down or SSR state\n",
 							__func__);
+=======
+>>>>>>> origin/android16-base
 					mutex_unlock(&swrm->devlock);
 					return -ENODEV;
 				}
@@ -413,8 +416,11 @@ static int swrm_request_hw_vote(struct swr_mstr_ctrl *swrm,
 				if (!swrm->dev_up) {
 					dev_dbg(swrm->dev, "%s: device is down or SSR state\n",
 							__func__);
+<<<<<<< HEAD
 					trace_printk("%s: device is down or SSR state\n",
 							__func__);
+=======
+>>>>>>> origin/android16-base
 					mutex_unlock(&swrm->devlock);
 					return -ENODEV;
 				}
@@ -443,8 +449,11 @@ static int swrm_request_hw_vote(struct swr_mstr_ctrl *swrm,
 	mutex_unlock(&swrm->devlock);
 	dev_dbg(swrm->dev, "%s: hw_clk_en: %d audio_core_clk_en: %d\n",
 		__func__, swrm->hw_core_clk_en, swrm->aud_core_clk_en);
+<<<<<<< HEAD
 	trace_printk("%s: hw_clk_en: %d audio_core_clk_en: %d\n",
 		__func__, swrm->hw_core_clk_en, swrm->aud_core_clk_en);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -510,8 +519,11 @@ static int swrm_clk_request(struct swr_mstr_ctrl *swrm, bool enable)
 		}
 		swrm->clk_ref_count++;
 		if (swrm->clk_ref_count == 1) {
+<<<<<<< HEAD
 			trace_printk("%s: clock enable count %d",
 				__func__, swrm->clk_ref_count);
+=======
+>>>>>>> origin/android16-base
 			ret = swrm->clk(swrm->handle, true);
 			if (ret) {
 				dev_err_ratelimited(swrm->dev,
@@ -521,8 +533,11 @@ static int swrm_clk_request(struct swr_mstr_ctrl *swrm, bool enable)
 			}
 		}
 	} else if (--swrm->clk_ref_count == 0) {
+<<<<<<< HEAD
 		trace_printk("%s: clock disable count %d",
 			__func__, swrm->clk_ref_count);
+=======
+>>>>>>> origin/android16-base
 		swrm->clk(swrm->handle, false);
 		complete(&swrm->clk_off_complete);
 	}
@@ -828,6 +843,14 @@ static int swrm_cmd_fifo_rd_cmd(struct swr_mstr_ctrl *swrm, int *cmd_data,
 	u32 val;
 	u32 retry_attempt = 0;
 
+<<<<<<< HEAD
+=======
+	if (!dev_addr) {
+		dev_err(swrm->dev, "%s: invalid slave dev num\n", __func__);
+		return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	mutex_lock(&swrm->iolock);
 	val = swrm_get_packed_reg_val(&swrm->rcmd_id, len, dev_addr, reg_addr);
 	if (swrm->read) {
@@ -857,7 +880,10 @@ retry_read:
 			/* wait 500 us before retry on fifo read failure */
 			usleep_range(500, 505);
 			if (retry_attempt == (MAX_FIFO_RD_FAIL_RETRY - 1)) {
+<<<<<<< HEAD
 				swr_master_write(swrm, SWRM_CMD_FIFO_CMD, 0x1);
+=======
+>>>>>>> origin/android16-base
 				swr_master_write(swrm, SWRM_CMD_FIFO_RD_CMD, val);
 			}
 			retry_attempt++;
@@ -883,6 +909,14 @@ static int swrm_cmd_fifo_wr_cmd(struct swr_mstr_ctrl *swrm, u8 cmd_data,
 	u32 val;
 	int ret = 0;
 
+<<<<<<< HEAD
+=======
+	if (!dev_addr) {
+		dev_err(swrm->dev, "%s: invalid slave dev num\n", __func__);
+		return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	mutex_lock(&swrm->iolock);
 	if (!cmd_id)
 		val = swrm_get_packed_reg_val(&swrm->wcmd_id, cmd_data,
@@ -1826,7 +1860,10 @@ static irqreturn_t swr_mstr_interrupt(int irq, void *dev)
 	struct swr_device *swr_dev;
 	struct swr_master *mstr = &swrm->master;
 
+<<<<<<< HEAD
 	trace_printk("%s enter\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	if (unlikely(swrm_lock_sleep(swrm) == false)) {
 		dev_err(swrm->dev, "%s Failed to hold suspend\n", __func__);
 		return IRQ_NONE;
@@ -1844,7 +1881,10 @@ static irqreturn_t swr_mstr_interrupt(int irq, void *dev)
 	intr_sts = swr_master_read(swrm, SWRM_INTERRUPT_STATUS);
 	intr_sts_masked = intr_sts & swrm->intr_mask;
 
+<<<<<<< HEAD
 	trace_printk("%s: status: 0x%x \n", __func__, intr_sts_masked);
+=======
+>>>>>>> origin/android16-base
 handle_irq:
 	for (i = 0; i < SWRM_INTERRUPT_MAX; i++) {
 		value = intr_sts_masked & (1 << i);
@@ -1989,7 +2029,10 @@ handle_irq:
 	mutex_unlock(&swrm->reslock);
 exit:
 	swrm_unlock_sleep(swrm);
+<<<<<<< HEAD
 	trace_printk("%s exit\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -2004,7 +2047,10 @@ static irqreturn_t swr_mstr_interrupt_v2(int irq, void *dev)
 	struct swr_device *swr_dev;
 	struct swr_master *mstr = &swrm->master;
 
+<<<<<<< HEAD
 	trace_printk("%s enter\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	if (unlikely(swrm_lock_sleep(swrm) == false)) {
 		dev_err(swrm->dev, "%s Failed to hold suspend\n", __func__);
 		return IRQ_NONE;
@@ -2031,7 +2077,10 @@ static irqreturn_t swr_mstr_interrupt_v2(int irq, void *dev)
 	intr_sts_masked = intr_sts & swrm->intr_mask;
 
 	dev_dbg(swrm->dev, "%s: status: 0x%x \n", __func__, intr_sts_masked);
+<<<<<<< HEAD
 	trace_printk("%s: status: 0x%x \n", __func__, intr_sts_masked);
+=======
+>>>>>>> origin/android16-base
 handle_irq:
 	for (i = 0; i < SWRM_INTERRUPT_MAX; i++) {
 		value = intr_sts_masked & (1 << i);
@@ -2142,7 +2191,10 @@ handle_irq:
 			dev_err(swrm->dev,
 				"%s: SWR write FIFO overflow fifo status %x\n",
 				__func__, value);
+<<<<<<< HEAD
 			swr_master_write(swrm, SWRM_CMD_FIFO_CMD, 0x1);
+=======
+>>>>>>> origin/android16-base
 			break;
 		case SWRM_INTERRUPT_STATUS_CMD_ERROR:
 			value = swr_master_read(swrm, SWRM_CMD_FIFO_STATUS);
@@ -2237,7 +2289,10 @@ err_audio_hw_vote:
 exit:
 	mutex_unlock(&swrm->reslock);
 	swrm_unlock_sleep(swrm);
+<<<<<<< HEAD
 	trace_printk("%s exit\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -2251,7 +2306,10 @@ static irqreturn_t swrm_wakeup_interrupt(int irq, void *dev)
 		return IRQ_NONE;
 	}
 
+<<<<<<< HEAD
 	trace_printk("%s enter\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	mutex_lock(&swrm->devlock);
 	if (!swrm->dev_up) {
 		if (swrm->wake_irq > 0) {
@@ -2290,7 +2348,10 @@ static irqreturn_t swrm_wakeup_interrupt(int irq, void *dev)
 	pm_runtime_put_autosuspend(swrm->dev);
 	swrm_unlock_sleep(swrm);
 exit:
+<<<<<<< HEAD
 	trace_printk("%s exit\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -2305,7 +2366,10 @@ static void swrm_wakeup_work(struct work_struct *work)
 		return;
 	}
 
+<<<<<<< HEAD
 	trace_printk("%s enter\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	mutex_lock(&swrm->devlock);
 	if (!swrm->dev_up) {
 		mutex_unlock(&swrm->devlock);
@@ -2321,7 +2385,10 @@ static void swrm_wakeup_work(struct work_struct *work)
 	pm_runtime_put_autosuspend(swrm->dev);
 	swrm_unlock_sleep(swrm);
 exit:
+<<<<<<< HEAD
 	trace_printk("%s exit\n", __func__);
+=======
+>>>>>>> origin/android16-base
 	pm_relax(swrm->dev);
 }
 
@@ -2884,6 +2951,13 @@ static int swrm_probe(struct platform_device *pdev)
 		dev_info(&pdev->dev,
 			 "%s: version specified in dtsi: 0x%x not match with HW read version 0x%x\n",
 			 __func__, swrm->version, swrm_hw_ver);
+<<<<<<< HEAD
+=======
+	swrm->rd_fifo_depth = ((swr_master_read(swrm, SWRM_COMP_PARAMS)
+				& SWRM_COMP_PARAMS_RD_FIFO_DEPTH) >> 15);
+	swrm->wr_fifo_depth = ((swr_master_read(swrm, SWRM_COMP_PARAMS)
+				& SWRM_COMP_PARAMS_WR_FIFO_DEPTH) >> 10);
+>>>>>>> origin/android16-base
 	ret = swrm_master_init(swrm);
 	if (ret < 0) {
 		dev_err(&pdev->dev,
@@ -2900,11 +2974,14 @@ static int swrm_probe(struct platform_device *pdev)
 	if (pdev->dev.of_node)
 		of_register_swr_devices(&swrm->master);
 
+<<<<<<< HEAD
 	swrm->rd_fifo_depth = ((swr_master_read(swrm, SWRM_COMP_PARAMS)
 				& SWRM_COMP_PARAMS_RD_FIFO_DEPTH) >> 15);
 	swrm->wr_fifo_depth = ((swr_master_read(swrm, SWRM_COMP_PARAMS)
 				& SWRM_COMP_PARAMS_WR_FIFO_DEPTH) >> 10);
 
+=======
+>>>>>>> origin/android16-base
 #ifdef CONFIG_DEBUG_FS
 	swrm->debugfs_swrm_dent = debugfs_create_dir(dev_name(&pdev->dev), 0);
 	if (!IS_ERR(swrm->debugfs_swrm_dent)) {
@@ -3034,8 +3111,11 @@ static int swrm_runtime_resume(struct device *dev)
 
 	dev_dbg(dev, "%s: pm_runtime: resume, state:%d\n",
 		__func__, swrm->state);
+<<<<<<< HEAD
 	trace_printk("%s: pm_runtime: resume, state:%d\n",
 		__func__, swrm->state);
+=======
+>>>>>>> origin/android16-base
 	mutex_lock(&swrm->reslock);
 
 	if (swrm_request_hw_vote(swrm, LPASS_HW_CORE, true)) {
@@ -3086,9 +3166,12 @@ static int swrm_runtime_resume(struct device *dev)
 					dev_dbg(dev,
 						"%s slave device up not implemented\n",
 						__func__);
+<<<<<<< HEAD
 					trace_printk(
 						"%s slave device up not implemented\n",
 						__func__);
+=======
+>>>>>>> origin/android16-base
 					ret = 0;
 				} else if (ret) {
 					dev_err(dev,
@@ -3146,8 +3229,11 @@ exit:
 		swrm->req_clk_switch = false;
 	mutex_unlock(&swrm->reslock);
 
+<<<<<<< HEAD
 	trace_printk("%s: pm_runtime: resume done, state:%d\n",
 		__func__, swrm->state);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -3161,9 +3247,14 @@ static int swrm_runtime_suspend(struct device *dev)
 	struct swr_master *mstr = &swrm->master;
 	struct swr_device *swr_dev;
 	int current_state = 0;
+<<<<<<< HEAD
 
 	trace_printk("%s: pm_runtime: suspend state: %d\n",
 		__func__, swrm->state);
+=======
+	struct irq_data *irq_data = NULL;
+
+>>>>>>> origin/android16-base
 	dev_dbg(dev, "%s: pm_runtime: suspend state: %d\n",
 		__func__, swrm->state);
 	if (swrm->state == SWR_MSTR_SSR_RESET) {
@@ -3192,7 +3283,10 @@ static int swrm_runtime_suspend(struct device *dev)
 		if ((current_state != SWR_MSTR_SSR) &&
 			swrm_is_port_en(&swrm->master)) {
 			dev_dbg(dev, "%s ports are enabled\n", __func__);
+<<<<<<< HEAD
 			trace_printk("%s ports are enabled\n", __func__);
+=======
+>>>>>>> origin/android16-base
 			ret = -EBUSY;
 			goto exit;
 		}
@@ -3226,14 +3320,18 @@ static int swrm_runtime_suspend(struct device *dev)
 					dev_dbg_ratelimited(dev,
 						"%s slave device down not implemented\n",
 						 __func__);
+<<<<<<< HEAD
 					trace_printk(
 						"%s slave device down not implemented\n",
 						 __func__);
+=======
+>>>>>>> origin/android16-base
 					ret = 0;
 				} else if (ret) {
 					dev_err(dev,
 						"%s: failed to shutdown swr dev %d\n",
 						__func__, swr_dev->dev_num);
+<<<<<<< HEAD
 					trace_printk(
 						"%s: failed to shutdown swr dev %d\n",
 						__func__, swr_dev->dev_num);
@@ -3242,6 +3340,11 @@ static int swrm_runtime_suspend(struct device *dev)
 			}
 			trace_printk("%s: clk stop mode not supported or SSR exit\n",
 				__func__);
+=======
+					goto exit;
+				}
+			}
+>>>>>>> origin/android16-base
 		} else {
 			/* Mask bus clash interrupt */
 			swrm->intr_mask &= ~((u32)0x08);
@@ -3269,7 +3372,13 @@ static int swrm_runtime_suspend(struct device *dev)
 
 		if (swrm->clk_stop_mode0_supp) {
 			if (swrm->wake_irq > 0) {
+<<<<<<< HEAD
 				enable_irq(swrm->wake_irq);
+=======
+				irq_data = irq_get_irq_data(swrm->wake_irq);
+				if (irq_data && irqd_irq_disabled(irq_data))
+					enable_irq(swrm->wake_irq);
+>>>>>>> origin/android16-base
 			} else if (swrm->ipc_wakeup) {
 				msm_aud_evt_blocking_notifier_call_chain(
 					SWR_WAKE_IRQ_REGISTER, (void *)swrm);
@@ -3287,8 +3396,11 @@ exit:
 	if (!hw_core_err)
 		swrm_request_hw_vote(swrm, LPASS_HW_CORE, false);
 	mutex_unlock(&swrm->reslock);
+<<<<<<< HEAD
 	trace_printk("%s: pm_runtime: suspend done state: %d\n",
 		__func__, swrm->state);
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 #endif /* CONFIG_PM */
@@ -3300,7 +3412,10 @@ static int swrm_device_suspend(struct device *dev)
 	int ret = 0;
 
 	dev_dbg(dev, "%s: swrm state: %d\n", __func__, swrm->state);
+<<<<<<< HEAD
 	trace_printk("%s: swrm state: %d\n", __func__, swrm->state);
+=======
+>>>>>>> origin/android16-base
 	if (!pm_runtime_enabled(dev) || !pm_runtime_suspended(dev)) {
 		ret = swrm_runtime_suspend(dev);
 		if (!ret) {
@@ -3319,7 +3434,10 @@ static int swrm_device_down(struct device *dev)
 	struct swr_mstr_ctrl *swrm = platform_get_drvdata(pdev);
 
 	dev_dbg(dev, "%s: swrm state: %d\n", __func__, swrm->state);
+<<<<<<< HEAD
 	trace_printk("%s: swrm state: %d\n", __func__, swrm->state);
+=======
+>>>>>>> origin/android16-base
 
 	mutex_lock(&swrm->force_down_lock);
 	swrm->state = SWR_MSTR_SSR;
@@ -3497,7 +3615,10 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 		}
 		break;
 	case SWR_DEVICE_SSR_DOWN:
+<<<<<<< HEAD
 		trace_printk("%s: swr device down called\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		mutex_lock(&swrm->mlock);
 		if (swrm->state == SWR_MSTR_DOWN)
 			dev_dbg(swrm->dev, "%s:SWR master is already Down:%d\n",
@@ -3516,7 +3637,10 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 		break;
 	case SWR_DEVICE_SSR_UP:
 		/* wait for clk voting to be zero */
+<<<<<<< HEAD
 		trace_printk("%s: swr device up  called\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		reinit_completion(&swrm->clk_off_complete);
 		if (swrm->clk_ref_count &&
 			 !wait_for_completion_timeout(&swrm->clk_off_complete,
@@ -3542,7 +3666,10 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 		break;
 	case SWR_DEVICE_DOWN:
 		dev_dbg(swrm->dev, "%s: swr master down called\n", __func__);
+<<<<<<< HEAD
 		trace_printk("%s: swr master down called\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		mutex_lock(&swrm->mlock);
 		if (swrm->state == SWR_MSTR_DOWN)
 			dev_dbg(swrm->dev, "%s:SWR master is already Down:%d\n",
@@ -3553,7 +3680,10 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 		break;
 	case SWR_DEVICE_UP:
 		dev_dbg(swrm->dev, "%s: swr master up called\n", __func__);
+<<<<<<< HEAD
 		trace_printk("%s: swr master up called\n", __func__);
+=======
+>>>>>>> origin/android16-base
 		mutex_lock(&swrm->devlock);
 		if (!swrm->dev_up) {
 			dev_dbg(swrm->dev, "SSR not complete yet\n");

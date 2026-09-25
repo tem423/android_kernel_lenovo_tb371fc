@@ -160,19 +160,33 @@ static void snd_pcm_lib_preallocate_proc_write(struct snd_info_entry *entry,
 	size_t size;
 	struct snd_dma_buffer new_dmab;
 
+<<<<<<< HEAD
 	if (substream->runtime) {
 		buffer->error = -EBUSY;
 		return;
+=======
+	mutex_lock(&substream->pcm->open_mutex);
+	if (substream->runtime) {
+		buffer->error = -EBUSY;
+		goto unlock;
+>>>>>>> origin/android16-base
 	}
 	if (!snd_info_get_line(buffer, line, sizeof(line))) {
 		snd_info_get_str(str, line, sizeof(str));
 		size = simple_strtoul(str, NULL, 10) * 1024;
 		if ((size != 0 && size < 8192) || size > substream->dma_max) {
 			buffer->error = -EINVAL;
+<<<<<<< HEAD
 			return;
 		}
 		if (substream->dma_buffer.bytes == size)
 			return;
+=======
+			goto unlock;
+		}
+		if (substream->dma_buffer.bytes == size)
+			goto unlock;
+>>>>>>> origin/android16-base
 		memset(&new_dmab, 0, sizeof(new_dmab));
 		new_dmab.dev = substream->dma_buffer.dev;
 		if (size > 0) {
@@ -180,7 +194,11 @@ static void snd_pcm_lib_preallocate_proc_write(struct snd_info_entry *entry,
 						substream->dma_buffer.dev.dev,
 						size, &new_dmab) < 0) {
 				buffer->error = -ENOMEM;
+<<<<<<< HEAD
 				return;
+=======
+				goto unlock;
+>>>>>>> origin/android16-base
 			}
 			substream->buffer_bytes_max = size;
 		} else {
@@ -192,6 +210,11 @@ static void snd_pcm_lib_preallocate_proc_write(struct snd_info_entry *entry,
 	} else {
 		buffer->error = -EINVAL;
 	}
+<<<<<<< HEAD
+=======
+ unlock:
+	mutex_unlock(&substream->pcm->open_mutex);
+>>>>>>> origin/android16-base
 }
 
 static inline void preallocate_info_init(struct snd_pcm_substream *substream)

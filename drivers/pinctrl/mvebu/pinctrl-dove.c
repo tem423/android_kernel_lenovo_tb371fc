@@ -773,7 +773,11 @@ static int dove_pinctrl_probe(struct platform_device *pdev)
 		of_match_device(dove_pinctrl_of_match, &pdev->dev);
 	struct mvebu_mpp_ctrl_data *mpp_data;
 	void __iomem *base;
+<<<<<<< HEAD
 	int i;
+=======
+	int i, ret;
+>>>>>>> origin/android16-base
 
 	pdev->dev.platform_data = (void *)match->data;
 
@@ -790,6 +794,7 @@ static int dove_pinctrl_probe(struct platform_device *pdev)
 
 	mpp_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	base = devm_ioremap_resource(&pdev->dev, mpp_res);
+<<<<<<< HEAD
 	if (IS_ERR(base))
 		return PTR_ERR(base);
 
@@ -797,6 +802,19 @@ static int dove_pinctrl_probe(struct platform_device *pdev)
 				sizeof(*mpp_data), GFP_KERNEL);
 	if (!mpp_data)
 		return -ENOMEM;
+=======
+	if (IS_ERR(base)) {
+		ret = PTR_ERR(base);
+		goto err_probe;
+	}
+
+	mpp_data = devm_kcalloc(&pdev->dev, dove_pinctrl_info.ncontrols,
+				sizeof(*mpp_data), GFP_KERNEL);
+	if (!mpp_data) {
+		ret = -ENOMEM;
+		goto err_probe;
+	}
+>>>>>>> origin/android16-base
 
 	dove_pinctrl_info.control_data = mpp_data;
 	for (i = 0; i < ARRAY_SIZE(dove_mpp_controls); i++)
@@ -815,8 +833,15 @@ static int dove_pinctrl_probe(struct platform_device *pdev)
 	}
 
 	mpp4_base = devm_ioremap_resource(&pdev->dev, res);
+<<<<<<< HEAD
 	if (IS_ERR(mpp4_base))
 		return PTR_ERR(mpp4_base);
+=======
+	if (IS_ERR(mpp4_base)) {
+		ret = PTR_ERR(mpp4_base);
+		goto err_probe;
+	}
+>>>>>>> origin/android16-base
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
 	if (!res) {
@@ -827,8 +852,15 @@ static int dove_pinctrl_probe(struct platform_device *pdev)
 	}
 
 	pmu_base = devm_ioremap_resource(&pdev->dev, res);
+<<<<<<< HEAD
 	if (IS_ERR(pmu_base))
 		return PTR_ERR(pmu_base);
+=======
+	if (IS_ERR(pmu_base)) {
+		ret = PTR_ERR(pmu_base);
+		goto err_probe;
+	}
+>>>>>>> origin/android16-base
 
 	gconfmap = syscon_regmap_lookup_by_compatible("marvell,dove-global-config");
 	if (IS_ERR(gconfmap)) {
@@ -838,12 +870,26 @@ static int dove_pinctrl_probe(struct platform_device *pdev)
 		adjust_resource(&fb_res,
 			(mpp_res->start & INT_REGS_MASK) + GC_REGS_OFFS, 0x14);
 		gc_base = devm_ioremap_resource(&pdev->dev, &fb_res);
+<<<<<<< HEAD
 		if (IS_ERR(gc_base))
 			return PTR_ERR(gc_base);
 		gconfmap = devm_regmap_init_mmio(&pdev->dev,
 						 gc_base, &gc_regmap_config);
 		if (IS_ERR(gconfmap))
 			return PTR_ERR(gconfmap);
+=======
+		if (IS_ERR(gc_base)) {
+			ret = PTR_ERR(gc_base);
+			goto err_probe;
+		}
+
+		gconfmap = devm_regmap_init_mmio(&pdev->dev,
+						 gc_base, &gc_regmap_config);
+		if (IS_ERR(gconfmap)) {
+			ret = PTR_ERR(gconfmap);
+			goto err_probe;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	/* Warn on any missing DT resource */
@@ -851,6 +897,12 @@ static int dove_pinctrl_probe(struct platform_device *pdev)
 		dev_warn(&pdev->dev, FW_BUG "Missing pinctrl regs in DTB. Please update your firmware.\n");
 
 	return mvebu_pinctrl_probe(pdev);
+<<<<<<< HEAD
+=======
+err_probe:
+	clk_disable_unprepare(clk);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static struct platform_driver dove_pinctrl_driver = {

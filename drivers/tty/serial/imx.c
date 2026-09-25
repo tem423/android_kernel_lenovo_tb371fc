@@ -1369,7 +1369,11 @@ static int imx_uart_startup(struct uart_port *port)
 	imx_uart_writel(sport, ucr1, UCR1);
 
 	ucr4 = imx_uart_readl(sport, UCR4) & ~UCR4_OREN;
+<<<<<<< HEAD
 	if (!sport->dma_is_enabled)
+=======
+	if (!dma_is_inited)
+>>>>>>> origin/android16-base
 		ucr4 |= UCR4_OREN;
 	imx_uart_writel(sport, ucr4, UCR4);
 
@@ -1915,6 +1919,7 @@ imx_uart_console_write(struct console *co, const char *s, unsigned int count)
 	unsigned int ucr1;
 	unsigned long flags = 0;
 	int locked = 1;
+<<<<<<< HEAD
 	int retval;
 
 	retval = clk_enable(sport->clk_per);
@@ -1925,6 +1930,8 @@ imx_uart_console_write(struct console *co, const char *s, unsigned int count)
 		clk_disable(sport->clk_per);
 		return;
 	}
+=======
+>>>>>>> origin/android16-base
 
 	if (sport->port.sysrq)
 		locked = 0;
@@ -1960,9 +1967,12 @@ imx_uart_console_write(struct console *co, const char *s, unsigned int count)
 
 	if (locked)
 		spin_unlock_irqrestore(&sport->port.lock, flags);
+<<<<<<< HEAD
 
 	clk_disable(sport->clk_ipg);
 	clk_disable(sport->clk_per);
+=======
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -2063,6 +2073,7 @@ imx_uart_console_setup(struct console *co, char *options)
 
 	retval = uart_set_options(&sport->port, co, baud, parity, bits, flow);
 
+<<<<<<< HEAD
 	clk_disable(sport->clk_ipg);
 	if (retval) {
 		clk_unprepare(sport->clk_ipg);
@@ -2072,6 +2083,16 @@ imx_uart_console_setup(struct console *co, char *options)
 	retval = clk_prepare(sport->clk_per);
 	if (retval)
 		clk_unprepare(sport->clk_ipg);
+=======
+	if (retval) {
+		clk_disable_unprepare(sport->clk_ipg);
+		goto error_console;
+	}
+
+	retval = clk_prepare_enable(sport->clk_per);
+	if (retval)
+		clk_disable_unprepare(sport->clk_ipg);
+>>>>>>> origin/android16-base
 
 error_console:
 	return retval;
@@ -2264,7 +2285,11 @@ static int imx_uart_probe(struct platform_device *pdev)
 	/* For register access, we only need to enable the ipg clock. */
 	ret = clk_prepare_enable(sport->clk_ipg);
 	if (ret) {
+<<<<<<< HEAD
 		dev_err(&pdev->dev, "failed to enable per clk: %d\n", ret);
+=======
+		dev_err(&pdev->dev, "failed to enable ipg clk: %d\n", ret);
+>>>>>>> origin/android16-base
 		return ret;
 	}
 
@@ -2524,6 +2549,10 @@ static const struct dev_pm_ops imx_uart_pm_ops = {
 	.suspend_noirq = imx_uart_suspend_noirq,
 	.resume_noirq = imx_uart_resume_noirq,
 	.freeze_noirq = imx_uart_suspend_noirq,
+<<<<<<< HEAD
+=======
+	.thaw_noirq = imx_uart_resume_noirq,
+>>>>>>> origin/android16-base
 	.restore_noirq = imx_uart_resume_noirq,
 	.suspend = imx_uart_suspend,
 	.resume = imx_uart_resume,

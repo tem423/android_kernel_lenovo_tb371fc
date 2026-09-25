@@ -33,7 +33,11 @@ struct disk_index_entry {
 	__le64 blocknr;
 	__le32 nr_free;
 	__le32 none_free_before;
+<<<<<<< HEAD
 } __packed;
+=======
+} __attribute__ ((packed, aligned(8)));
+>>>>>>> origin/android16-base
 
 
 #define MAX_METADATA_BITMAPS 255
@@ -43,7 +47,11 @@ struct disk_metadata_index {
 	__le64 blocknr;
 
 	struct disk_index_entry index[MAX_METADATA_BITMAPS];
+<<<<<<< HEAD
 } __packed;
+=======
+} __attribute__ ((packed, aligned(8)));
+>>>>>>> origin/android16-base
 
 struct ll_disk;
 
@@ -86,7 +94,11 @@ struct disk_sm_root {
 	__le64 nr_allocated;
 	__le64 bitmap_root;
 	__le64 ref_count_root;
+<<<<<<< HEAD
 } __packed;
+=======
+} __attribute__ ((packed, aligned(8)));
+>>>>>>> origin/android16-base
 
 #define ENTRIES_PER_BYTE 4
 
@@ -94,7 +106,11 @@ struct disk_bitmap_header {
 	__le32 csum;
 	__le32 not_used;
 	__le64 blocknr;
+<<<<<<< HEAD
 } __packed;
+=======
+} __attribute__ ((packed, aligned(8)));
+>>>>>>> origin/android16-base
 
 enum allocation_event {
 	SM_NONE,

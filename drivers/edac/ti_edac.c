@@ -197,6 +197,10 @@ static const struct of_device_id ti_edac_of_match[] = {
 	{ .compatible = "ti,emif-dra7xx", .data = (void *)EMIF_TYPE_DRA7 },
 	{},
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(of, ti_edac_of_match);
+>>>>>>> origin/android16-base
 
 static int _emif_get_id(struct device_node *node)
 {

@@ -71,7 +71,11 @@ static const struct reg_default sgtl5000_reg_defaults[] = {
 	{ SGTL5000_DAP_EQ_BASS_BAND4,		0x002f },
 	{ SGTL5000_DAP_MAIN_CHAN,		0x8000 },
 	{ SGTL5000_DAP_MIX_CHAN,		0x0000 },
+<<<<<<< HEAD
 	{ SGTL5000_DAP_AVC_CTRL,		0x0510 },
+=======
+	{ SGTL5000_DAP_AVC_CTRL,		0x5100 },
+>>>>>>> origin/android16-base
 	{ SGTL5000_DAP_AVC_THRESHOLD,		0x1473 },
 	{ SGTL5000_DAP_AVC_ATTACK,		0x0028 },
 	{ SGTL5000_DAP_AVC_DECAY,		0x0050 },
@@ -1769,6 +1773,13 @@ static int sgtl5000_i2c_remove(struct i2c_client *client)
 {
 	struct sgtl5000_priv *sgtl5000 = i2c_get_clientdata(client);
 
+<<<<<<< HEAD
+=======
+	regmap_write(sgtl5000->regmap, SGTL5000_CHIP_CLK_CTRL, SGTL5000_CHIP_CLK_CTRL_DEFAULT);
+	regmap_write(sgtl5000->regmap, SGTL5000_CHIP_DIG_POWER, SGTL5000_DIG_POWER_DEFAULT);
+	regmap_write(sgtl5000->regmap, SGTL5000_CHIP_ANA_POWER, SGTL5000_ANA_POWER_DEFAULT);
+
+>>>>>>> origin/android16-base
 	clk_disable_unprepare(sgtl5000->mclk);
 	regulator_bulk_disable(sgtl5000->num_supplies, sgtl5000->supplies);
 	regulator_bulk_free(sgtl5000->num_supplies, sgtl5000->supplies);
@@ -1776,6 +1787,14 @@ static int sgtl5000_i2c_remove(struct i2c_client *client)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static void sgtl5000_i2c_shutdown(struct i2c_client *client)
+{
+	sgtl5000_i2c_remove(client);
+}
+
+>>>>>>> origin/android16-base
 static const struct i2c_device_id sgtl5000_id[] = {
 	{"sgtl5000", 0},
 	{},
@@ -1796,6 +1815,10 @@ static struct i2c_driver sgtl5000_i2c_driver = {
 		   },
 	.probe = sgtl5000_i2c_probe,
 	.remove = sgtl5000_i2c_remove,
+<<<<<<< HEAD
+=======
+	.shutdown = sgtl5000_i2c_shutdown,
+>>>>>>> origin/android16-base
 	.id_table = sgtl5000_id,
 };
 

@@ -214,7 +214,11 @@ static struct Qdisc_ops plug_qdisc_ops __read_mostly = {
 	.priv_size   =       sizeof(struct plug_sched_data),
 	.enqueue     =       plug_enqueue,
 	.dequeue     =       plug_dequeue,
+<<<<<<< HEAD
 	.peek        =       qdisc_peek_head,
+=======
+	.peek        =       qdisc_peek_dequeued,
+>>>>>>> origin/android16-base
 	.init        =       plug_init,
 	.change      =       plug_change,
 	.reset       =	     qdisc_reset_queue,

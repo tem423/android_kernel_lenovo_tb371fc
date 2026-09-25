@@ -39,7 +39,10 @@ static struct bio *get_swap_bio(gfp_t gfp_flags,
 
 		bio->bi_iter.bi_sector = map_swap_page(page, &bdev);
 		bio_set_dev(bio, bdev);
+<<<<<<< HEAD
 		bio->bi_iter.bi_sector <<= PAGE_SHIFT - 9;
+=======
+>>>>>>> origin/android16-base
 		bio->bi_end_io = end_io;
 
 		for (i = 0; i < nr; i++)
@@ -74,6 +77,7 @@ void end_swap_bio_write(struct bio *bio)
 	bio_put(bio);
 }
 
+<<<<<<< HEAD
 static void swap_slot_free_notify(struct page *page)
 {
 	struct swap_info_struct *sis;
@@ -123,6 +127,8 @@ static void swap_slot_free_notify(struct page *page)
 	}
 }
 
+=======
+>>>>>>> origin/android16-base
 static void end_swap_bio_read(struct bio *bio)
 {
 	struct page *page = bio_first_page_all(bio);
@@ -138,7 +144,10 @@ static void end_swap_bio_read(struct bio *bio)
 	}
 
 	SetPageUptodate(page);
+<<<<<<< HEAD
 	swap_slot_free_notify(page);
+=======
+>>>>>>> origin/android16-base
 out:
 	unlock_page(page);
 	WRITE_ONCE(bio->bi_private, NULL);
@@ -180,8 +189,14 @@ int generic_swapfile_activate(struct swap_info_struct *sis,
 
 		cond_resched();
 
+<<<<<<< HEAD
 		first_block = bmap(inode, probe_block);
 		if (first_block == 0)
+=======
+		first_block = probe_block;
+		ret = bmap(inode, &first_block);
+		if (ret || !first_block)
+>>>>>>> origin/android16-base
 			goto bad_bmap;
 
 		/*
@@ -196,9 +211,17 @@ int generic_swapfile_activate(struct swap_info_struct *sis,
 					block_in_page++) {
 			sector_t block;
 
+<<<<<<< HEAD
 			block = bmap(inode, probe_block + block_in_page);
 			if (block == 0)
 				goto bad_bmap;
+=======
+			block = probe_block + block_in_page;
+			ret = bmap(inode, &block);
+			if (ret || !block)
+				goto bad_bmap;
+
+>>>>>>> origin/android16-base
 			if (block != first_block + block_in_page) {
 				/* Discontiguity */
 				probe_block++;
@@ -264,11 +287,14 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
 static sector_t swap_page_sector(struct page *page)
 {
 	return (sector_t)__page_file_index(page) << (PAGE_SHIFT - 9);
 }
 
+=======
+>>>>>>> origin/android16-base
 static inline void count_swpout_vm_event(struct page *page)
 {
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
@@ -327,7 +353,12 @@ int __swap_writepage(struct page *page, struct writeback_control *wbc,
 		return ret;
 	}
 
+<<<<<<< HEAD
 	ret = bdev_write_page(sis->bdev, swap_page_sector(page), page, wbc);
+=======
+	ret = bdev_write_page(sis->bdev, map_swap_page(page, &sis->bdev),
+			      page, wbc);
+>>>>>>> origin/android16-base
 	if (!ret) {
 		count_swpout_vm_event(page);
 		return 0;
@@ -387,6 +418,7 @@ int swap_readpage(struct page *page, bool synchronous)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	ret = bdev_read_page(sis->bdev, swap_page_sector(page), page);
 	if (!ret) {
 		if (trylock_page(page)) {
@@ -394,6 +426,10 @@ int swap_readpage(struct page *page, bool synchronous)
 			unlock_page(page);
 		}
 
+=======
+	ret = bdev_read_page(sis->bdev, map_swap_page(page, &sis->bdev), page);
+	if (!ret) {
+>>>>>>> origin/android16-base
 		count_vm_event(PSWPIN);
 		goto out;
 	}

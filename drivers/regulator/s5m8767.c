@@ -548,14 +548,28 @@ static int s5m8767_pmic_dt_parse_pdata(struct platform_device *pdev,
 	rdata = devm_kcalloc(&pdev->dev,
 			     pdata->num_regulators, sizeof(*rdata),
 			     GFP_KERNEL);
+<<<<<<< HEAD
 	if (!rdata)
 		return -ENOMEM;
+=======
+	if (!rdata) {
+		of_node_put(regulators_np);
+		return -ENOMEM;
+	}
+>>>>>>> origin/android16-base
 
 	rmode = devm_kcalloc(&pdev->dev,
 			     pdata->num_regulators, sizeof(*rmode),
 			     GFP_KERNEL);
+<<<<<<< HEAD
 	if (!rmode)
 		return -ENOMEM;
+=======
+	if (!rmode) {
+		of_node_put(regulators_np);
+		return -ENOMEM;
+	}
+>>>>>>> origin/android16-base
 
 	pdata->regulators = rdata;
 	pdata->opmode = rmode;
@@ -845,6 +859,7 @@ static int s5m8767_pmic_probe(struct platform_device *pdev)
 	/* DS4 GPIO */
 	gpio_direction_output(pdata->buck_ds[2], 0x0);
 
+<<<<<<< HEAD
 	if (pdata->buck2_gpiodvs || pdata->buck3_gpiodvs ||
 	   pdata->buck4_gpiodvs) {
 		regmap_update_bits(s5m8767->iodev->regmap_pmic,
@@ -857,6 +872,17 @@ static int s5m8767_pmic_probe(struct platform_device *pdev)
 				S5M8767_REG_BUCK4CTRL, 1 << 1,
 				(pdata->buck4_gpiodvs) ? (1 << 1) : (0 << 1));
 	}
+=======
+	regmap_update_bits(s5m8767->iodev->regmap_pmic,
+			   S5M8767_REG_BUCK2CTRL, 1 << 1,
+			   (pdata->buck2_gpiodvs) ? (1 << 1) : (0 << 1));
+	regmap_update_bits(s5m8767->iodev->regmap_pmic,
+			   S5M8767_REG_BUCK3CTRL, 1 << 1,
+			   (pdata->buck3_gpiodvs) ? (1 << 1) : (0 << 1));
+	regmap_update_bits(s5m8767->iodev->regmap_pmic,
+			   S5M8767_REG_BUCK4CTRL, 1 << 1,
+			   (pdata->buck4_gpiodvs) ? (1 << 1) : (0 << 1));
+>>>>>>> origin/android16-base
 
 	/* Initialize GPIO DVS registers */
 	for (i = 0; i < 8; i++) {
@@ -921,10 +947,21 @@ static int s5m8767_pmic_probe(struct platform_device *pdev)
 
 	for (i = 0; i < pdata->num_regulators; i++) {
 		const struct sec_voltage_desc *desc;
+<<<<<<< HEAD
 		int id = pdata->regulators[i].id;
 		int enable_reg, enable_val;
 		struct regulator_dev *rdev;
 
+=======
+		unsigned int id = pdata->regulators[i].id;
+		int enable_reg, enable_val;
+		struct regulator_dev *rdev;
+
+		BUILD_BUG_ON(ARRAY_SIZE(regulators) != ARRAY_SIZE(reg_voltage_map));
+		if (WARN_ON_ONCE(id >= ARRAY_SIZE(regulators)))
+			continue;
+
+>>>>>>> origin/android16-base
 		desc = reg_voltage_map[id];
 		if (desc) {
 			regulators[id].n_voltages =

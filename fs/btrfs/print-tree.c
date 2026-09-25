@@ -109,10 +109,17 @@ static void print_extent_item(struct extent_buffer *eb, int slot, int type)
 			pr_cont("shared data backref parent %llu count %u\n",
 			       offset, btrfs_shared_data_ref_count(eb, sref));
 			/*
+<<<<<<< HEAD
 			 * offset is supposed to be a tree block which
 			 * must be aligned to nodesize.
 			 */
 			if (!IS_ALIGNED(offset, eb->fs_info->nodesize))
+=======
+			 * Offset is supposed to be a tree block which must be
+			 * aligned to sectorsize.
+			 */
+			if (!IS_ALIGNED(offset, eb->fs_info->sectorsize))
+>>>>>>> origin/android16-base
 				pr_info(
 			"\t\t\t(parent %llu not aligned to sectorsize %u)\n",
 				     offset, eb->fs_info->sectorsize);

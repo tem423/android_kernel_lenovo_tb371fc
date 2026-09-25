@@ -956,17 +956,32 @@ static int bcm5974_probe(struct usb_interface *iface,
 	if (!dev->tp_data)
 		goto err_free_bt_buffer;
 
+<<<<<<< HEAD
 	if (dev->bt_urb)
+=======
+	if (dev->bt_urb) {
+>>>>>>> origin/android16-base
 		usb_fill_int_urb(dev->bt_urb, udev,
 				 usb_rcvintpipe(udev, cfg->bt_ep),
 				 dev->bt_data, dev->cfg.bt_datalen,
 				 bcm5974_irq_button, dev, 1);
 
+<<<<<<< HEAD
+=======
+		dev->bt_urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
+	}
+
+>>>>>>> origin/android16-base
 	usb_fill_int_urb(dev->tp_urb, udev,
 			 usb_rcvintpipe(udev, cfg->tp_ep),
 			 dev->tp_data, dev->cfg.tp_datalen,
 			 bcm5974_irq_trackpad, dev, 1);
 
+<<<<<<< HEAD
+=======
+	dev->tp_urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
+
+>>>>>>> origin/android16-base
 	/* create bcm5974 device */
 	usb_make_path(udev, dev->phys, sizeof(dev->phys));
 	strlcat(dev->phys, "/input0", sizeof(dev->phys));

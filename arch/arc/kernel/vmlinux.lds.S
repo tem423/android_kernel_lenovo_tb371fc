@@ -92,6 +92,11 @@ SECTIONS
 		CPUIDLE_TEXT
 		LOCK_TEXT
 		KPROBES_TEXT
+<<<<<<< HEAD
+=======
+		IRQENTRY_TEXT
+		SOFTIRQENTRY_TEXT
+>>>>>>> origin/android16-base
 		*(.fixup)
 		*(.gnu.warning)
 	}

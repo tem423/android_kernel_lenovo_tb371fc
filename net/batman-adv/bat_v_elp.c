@@ -513,7 +513,11 @@ int batadv_v_elp_packet_recv(struct sk_buff *skb,
 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
 	struct batadv_elp_packet *elp_packet;
 	struct batadv_hard_iface *primary_if;
+<<<<<<< HEAD
 	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
+=======
+	struct ethhdr *ethhdr;
+>>>>>>> origin/android16-base
 	bool res;
 	int ret = NET_RX_DROP;
 
@@ -521,6 +525,10 @@ int batadv_v_elp_packet_recv(struct sk_buff *skb,
 	if (!res)
 		goto free_skb;
 
+<<<<<<< HEAD
+=======
+	ethhdr = eth_hdr(skb);
+>>>>>>> origin/android16-base
 	if (batadv_is_my_mac(bat_priv, ethhdr->h_source))
 		goto free_skb;
 

@@ -1819,8 +1819,18 @@ static int null_add_dev(struct nullb_device *dev)
 	blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, nullb->q);
 
 	mutex_lock(&lock);
+<<<<<<< HEAD
 	nullb->index = ida_simple_get(&nullb_indexes, 0, 0, GFP_KERNEL);
 	dev->index = nullb->index;
+=======
+	rv = ida_simple_get(&nullb_indexes, 0, 0, GFP_KERNEL);
+	if (rv < 0) {
+		mutex_unlock(&lock);
+		goto out_cleanup_zone;
+	}
+	nullb->index = rv;
+	dev->index = rv;
+>>>>>>> origin/android16-base
 	mutex_unlock(&lock);
 
 	blk_queue_logical_block_size(nullb->q, dev->blocksize);
@@ -1832,13 +1842,23 @@ static int null_add_dev(struct nullb_device *dev)
 
 	rv = null_gendisk_register(nullb);
 	if (rv)
+<<<<<<< HEAD
 		goto out_cleanup_zone;
+=======
+		goto out_ida_free;
+>>>>>>> origin/android16-base
 
 	mutex_lock(&lock);
 	list_add_tail(&nullb->list, &nullb_list);
 	mutex_unlock(&lock);
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+out_ida_free:
+	ida_free(&nullb_indexes, nullb->index);
+>>>>>>> origin/android16-base
 out_cleanup_zone:
 	if (dev->zoned)
 		null_zone_exit(dev);
@@ -1959,10 +1979,19 @@ static void __exit null_exit(void)
 
 	if (g_queue_mode == NULL_Q_MQ && shared_tags)
 		blk_mq_free_tag_set(&tag_set);
+<<<<<<< HEAD
+=======
+
+	mutex_destroy(&lock);
+>>>>>>> origin/android16-base
 }
 
 module_init(null_init);
 module_exit(null_exit);
 
 MODULE_AUTHOR("Jens Axboe <axboe@kernel.dk>");
+<<<<<<< HEAD
+=======
+MODULE_DESCRIPTION("multi queue aware block test driver");
+>>>>>>> origin/android16-base
 MODULE_LICENSE("GPL");

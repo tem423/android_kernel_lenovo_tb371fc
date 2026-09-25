@@ -498,11 +498,19 @@ static void read_bulk_callback(struct urb *urb)
 		goto goon;
 
 	rx_status = buf[count - 2];
+<<<<<<< HEAD
 	if (rx_status & 0x1e) {
 		netif_dbg(pegasus, rx_err, net,
 			  "RX packet error %x\n", rx_status);
 		net->stats.rx_errors++;
 		if (rx_status & 0x06)	/* long or runt	*/
+=======
+	if (rx_status & 0x1c) {
+		netif_dbg(pegasus, rx_err, net,
+			  "RX packet error %x\n", rx_status);
+		net->stats.rx_errors++;
+		if (rx_status & 0x04)	/* runt	*/
+>>>>>>> origin/android16-base
 			net->stats.rx_length_errors++;
 		if (rx_status & 0x08)
 			net->stats.rx_crc_errors++;
@@ -750,12 +758,25 @@ static inline void disable_net_traffic(pegasus_t *pegasus)
 	set_registers(pegasus, EthCtrl0, sizeof(tmp), &tmp);
 }
 
+<<<<<<< HEAD
 static inline void get_interrupt_interval(pegasus_t *pegasus)
 {
 	u16 data;
 	u8 interval;
 
 	read_eprom_word(pegasus, 4, &data);
+=======
+static inline int get_interrupt_interval(pegasus_t *pegasus)
+{
+	u16 data;
+	u8 interval;
+	int ret;
+
+	ret = read_eprom_word(pegasus, 4, &data);
+	if (ret < 0)
+		return ret;
+
+>>>>>>> origin/android16-base
 	interval = data >> 8;
 	if (pegasus->usb->speed != USB_SPEED_HIGH) {
 		if (interval < 0x80) {
@@ -770,6 +791,11 @@ static inline void get_interrupt_interval(pegasus_t *pegasus)
 		}
 	}
 	pegasus->intr_interval = interval;
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static void set_carrier(struct net_device *net)
@@ -1188,7 +1214,13 @@ static int pegasus_probe(struct usb_interface *intf,
 				| NETIF_MSG_PROBE | NETIF_MSG_LINK);
 
 	pegasus->features = usb_dev_id[dev_index].private;
+<<<<<<< HEAD
 	get_interrupt_interval(pegasus);
+=======
+	res = get_interrupt_interval(pegasus);
+	if (res)
+		goto out2;
+>>>>>>> origin/android16-base
 	if (reset_mac(pegasus)) {
 		dev_err(&intf->dev, "can't reset MAC\n");
 		res = -EIO;

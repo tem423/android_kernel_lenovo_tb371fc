@@ -458,6 +458,14 @@ static irqreturn_t mcp23s08_irq(int irq, void *data)
 	if (mcp_read(mcp, MCP_INTF, &intf))
 		goto unlock;
 
+<<<<<<< HEAD
+=======
+	if (intf == 0) {
+		/* There is no interrupt pending */
+		goto unlock;
+	}
+
+>>>>>>> origin/android16-base
 	if (mcp_read(mcp, MCP_INTCAP, &intcap))
 		goto unlock;
 
@@ -475,11 +483,14 @@ static irqreturn_t mcp23s08_irq(int irq, void *data)
 	mcp->cached_gpio = gpio;
 	mutex_unlock(&mcp->lock);
 
+<<<<<<< HEAD
 	if (intf == 0) {
 		/* There is no interrupt pending */
 		return IRQ_HANDLED;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	dev_dbg(mcp->chip.parent,
 		"intcap 0x%04X intf 0x%04X gpio_orig 0x%04X gpio 0x%04X\n",
 		intcap, intf, gpio_orig, gpio);

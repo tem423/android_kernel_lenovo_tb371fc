@@ -115,7 +115,11 @@ static void fill_data(struct dlm_lock_data *data, struct dlm_lkb *lkb)
 
 void dlm_timeout_warn(struct dlm_lkb *lkb)
 {
+<<<<<<< HEAD
 	struct sk_buff *uninitialized_var(send_skb);
+=======
+	struct sk_buff *send_skb;
+>>>>>>> origin/android16-base
 	struct dlm_lock_data *data;
 	size_t size;
 	int rv;

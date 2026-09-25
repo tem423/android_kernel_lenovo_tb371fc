@@ -80,6 +80,10 @@ enum blkif_state {
 	BLKIF_STATE_DISCONNECTED,
 	BLKIF_STATE_CONNECTED,
 	BLKIF_STATE_SUSPENDED,
+<<<<<<< HEAD
+=======
+	BLKIF_STATE_ERROR,
+>>>>>>> origin/android16-base
 };
 
 struct grant {
@@ -89,6 +93,10 @@ struct grant {
 };
 
 enum blk_req_status {
+<<<<<<< HEAD
+=======
+	REQ_PROCESSING,
+>>>>>>> origin/android16-base
 	REQ_WAITING,
 	REQ_DONE,
 	REQ_ERROR,
@@ -149,6 +157,13 @@ static unsigned int xen_blkif_max_ring_order;
 module_param_named(max_ring_page_order, xen_blkif_max_ring_order, int, 0444);
 MODULE_PARM_DESC(max_ring_page_order, "Maximum order of pages to be used for the shared ring");
 
+<<<<<<< HEAD
+=======
+static bool __read_mostly xen_blkif_trusted = true;
+module_param_named(trusted, xen_blkif_trusted, bool, 0644);
+MODULE_PARM_DESC(trusted, "Is the backend trusted");
+
+>>>>>>> origin/android16-base
 #define BLK_RING_SIZE(info)	\
 	__CONST_RING_SIZE(blkif, XEN_PAGE_SIZE * (info)->nr_ring_pages)
 
@@ -209,6 +224,10 @@ struct blkfront_info
 	unsigned int feature_discard:1;
 	unsigned int feature_secdiscard:1;
 	unsigned int feature_persistent:1;
+<<<<<<< HEAD
+=======
+	unsigned int bounce:1;
+>>>>>>> origin/android16-base
 	unsigned int discard_granularity;
 	unsigned int discard_alignment;
 	/* Number of 4KB segments handled */
@@ -298,8 +317,13 @@ static int fill_grant_buffer(struct blkfront_ring_info *rinfo, int num)
 		if (!gnt_list_entry)
 			goto out_of_memory;
 
+<<<<<<< HEAD
 		if (info->feature_persistent) {
 			granted_page = alloc_page(GFP_NOIO);
+=======
+		if (info->bounce) {
+			granted_page = alloc_page(GFP_NOIO | __GFP_ZERO);
+>>>>>>> origin/android16-base
 			if (!granted_page) {
 				kfree(gnt_list_entry);
 				goto out_of_memory;
@@ -318,7 +342,11 @@ out_of_memory:
 	list_for_each_entry_safe(gnt_list_entry, n,
 	                         &rinfo->grants, node) {
 		list_del(&gnt_list_entry->node);
+<<<<<<< HEAD
 		if (info->feature_persistent)
+=======
+		if (info->bounce)
+>>>>>>> origin/android16-base
 			__free_page(gnt_list_entry->page);
 		kfree(gnt_list_entry);
 		i--;
@@ -364,7 +392,11 @@ static struct grant *get_grant(grant_ref_t *gref_head,
 	/* Assign a gref to this page */
 	gnt_list_entry->gref = gnttab_claim_grant_reference(gref_head);
 	BUG_ON(gnt_list_entry->gref == -ENOSPC);
+<<<<<<< HEAD
 	if (info->feature_persistent)
+=======
+	if (info->bounce)
+>>>>>>> origin/android16-base
 		grant_foreign_access(gnt_list_entry, info);
 	else {
 		/* Grant access to the GFN passed by the caller */
@@ -388,7 +420,11 @@ static struct grant *get_indirect_grant(grant_ref_t *gref_head,
 	/* Assign a gref to this page */
 	gnt_list_entry->gref = gnttab_claim_grant_reference(gref_head);
 	BUG_ON(gnt_list_entry->gref == -ENOSPC);
+<<<<<<< HEAD
 	if (!info->feature_persistent) {
+=======
+	if (!info->bounce) {
+>>>>>>> origin/android16-base
 		struct page *indirect_page;
 
 		/* Fetch a pre-allocated page to use for indirect grefs */
@@ -533,10 +569,17 @@ static unsigned long blkif_ring_get_request(struct blkfront_ring_info *rinfo,
 
 	id = get_id_from_freelist(rinfo);
 	rinfo->shadow[id].request = req;
+<<<<<<< HEAD
 	rinfo->shadow[id].status = REQ_WAITING;
 	rinfo->shadow[id].associated_id = NO_ASSOCIATED_ID;
 
 	(*ring_req)->u.rw.id = id;
+=======
+	rinfo->shadow[id].status = REQ_PROCESSING;
+	rinfo->shadow[id].associated_id = NO_ASSOCIATED_ID;
+
+	rinfo->shadow[id].req.u.rw.id = id;
+>>>>>>> origin/android16-base
 
 	return id;
 }
@@ -544,11 +587,20 @@ static unsigned long blkif_ring_get_request(struct blkfront_ring_info *rinfo,
 static int blkif_queue_discard_req(struct request *req, struct blkfront_ring_info *rinfo)
 {
 	struct blkfront_info *info = rinfo->dev_info;
+<<<<<<< HEAD
 	struct blkif_request *ring_req;
 	unsigned long id;
 
 	/* Fill out a communications ring structure. */
 	id = blkif_ring_get_request(rinfo, req, &ring_req);
+=======
+	struct blkif_request *ring_req, *final_ring_req;
+	unsigned long id;
+
+	/* Fill out a communications ring structure. */
+	id = blkif_ring_get_request(rinfo, req, &final_ring_req);
+	ring_req = &rinfo->shadow[id].req;
+>>>>>>> origin/android16-base
 
 	ring_req->operation = BLKIF_OP_DISCARD;
 	ring_req->u.discard.nr_sectors = blk_rq_sectors(req);
@@ -559,8 +611,14 @@ static int blkif_queue_discard_req(struct request *req, struct blkfront_ring_inf
 	else
 		ring_req->u.discard.flag = 0;
 
+<<<<<<< HEAD
 	/* Keep a private copy so we can reissue requests when recovering. */
 	rinfo->shadow[id].req = *ring_req;
+=======
+	/* Copy the request to the ring page. */
+	*final_ring_req = *ring_req;
+	rinfo->shadow[id].status = REQ_WAITING;
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -693,6 +751,10 @@ static int blkif_queue_rw_req(struct request *req, struct blkfront_ring_info *ri
 {
 	struct blkfront_info *info = rinfo->dev_info;
 	struct blkif_request *ring_req, *extra_ring_req = NULL;
+<<<<<<< HEAD
+=======
+	struct blkif_request *final_ring_req, *final_extra_ring_req = NULL;
+>>>>>>> origin/android16-base
 	unsigned long id, extra_id = NO_ASSOCIATED_ID;
 	bool require_extra_req = false;
 	int i;
@@ -700,7 +762,11 @@ static int blkif_queue_rw_req(struct request *req, struct blkfront_ring_info *ri
 		.grant_idx = 0,
 		.segments = NULL,
 		.rinfo = rinfo,
+<<<<<<< HEAD
 		.need_copy = rq_data_dir(req) && info->feature_persistent,
+=======
+		.need_copy = rq_data_dir(req) && info->bounce,
+>>>>>>> origin/android16-base
 	};
 
 	/*
@@ -737,7 +803,12 @@ static int blkif_queue_rw_req(struct request *req, struct blkfront_ring_info *ri
 	}
 
 	/* Fill out a communications ring structure. */
+<<<<<<< HEAD
 	id = blkif_ring_get_request(rinfo, req, &ring_req);
+=======
+	id = blkif_ring_get_request(rinfo, req, &final_ring_req);
+	ring_req = &rinfo->shadow[id].req;
+>>>>>>> origin/android16-base
 
 	num_sg = blk_rq_map_sg(req->q, req, rinfo->shadow[id].sg);
 	num_grant = 0;
@@ -768,7 +839,12 @@ static int blkif_queue_rw_req(struct request *req, struct blkfront_ring_info *ri
 		ring_req->u.rw.handle = info->handle;
 		ring_req->operation = rq_data_dir(req) ?
 			BLKIF_OP_WRITE : BLKIF_OP_READ;
+<<<<<<< HEAD
 		if (req_op(req) == REQ_OP_FLUSH || req->cmd_flags & REQ_FUA) {
+=======
+		if (req_op(req) == REQ_OP_FLUSH ||
+		    (req_op(req) == REQ_OP_WRITE && (req->cmd_flags & REQ_FUA))) {
+>>>>>>> origin/android16-base
 			/*
 			 * Ideally we can do an unordered flush-to-disk.
 			 * In case the backend onlysupports barriers, use that.
@@ -788,7 +864,13 @@ static int blkif_queue_rw_req(struct request *req, struct blkfront_ring_info *ri
 		ring_req->u.rw.nr_segments = num_grant;
 		if (unlikely(require_extra_req)) {
 			extra_id = blkif_ring_get_request(rinfo, req,
+<<<<<<< HEAD
 							  &extra_ring_req);
+=======
+							  &final_extra_ring_req);
+			extra_ring_req = &rinfo->shadow[extra_id].req;
+
+>>>>>>> origin/android16-base
 			/*
 			 * Only the first request contains the scatter-gather
 			 * list.
@@ -830,10 +912,20 @@ static int blkif_queue_rw_req(struct request *req, struct blkfront_ring_info *ri
 	if (setup.segments)
 		kunmap_atomic(setup.segments);
 
+<<<<<<< HEAD
 	/* Keep a private copy so we can reissue requests when recovering. */
 	rinfo->shadow[id].req = *ring_req;
 	if (unlikely(require_extra_req))
 		rinfo->shadow[extra_id].req = *extra_ring_req;
+=======
+	/* Copy request(s) to the ring page. */
+	*final_ring_req = *ring_req;
+	rinfo->shadow[id].status = REQ_WAITING;
+	if (unlikely(require_extra_req)) {
+		*final_extra_ring_req = *extra_ring_req;
+		rinfo->shadow[extra_id].status = REQ_WAITING;
+	}
+>>>>>>> origin/android16-base
 
 	if (new_persistent_gnts)
 		gnttab_free_grant_references(setup.gref_head);
@@ -936,7 +1028,12 @@ static void blkif_set_queue_limits(struct blkfront_info *info)
 	if (info->feature_discard) {
 		blk_queue_flag_set(QUEUE_FLAG_DISCARD, rq);
 		blk_queue_max_discard_sectors(rq, get_capacity(gd));
+<<<<<<< HEAD
 		rq->limits.discard_granularity = info->discard_granularity;
+=======
+		rq->limits.discard_granularity = info->discard_granularity ?:
+						 info->physical_sector_size;
+>>>>>>> origin/android16-base
 		rq->limits.discard_alignment = info->discard_alignment;
 		if (info->feature_secdiscard)
 			blk_queue_flag_set(QUEUE_FLAG_SECERASE, rq);
@@ -1014,11 +1111,20 @@ static void xlvbd_flush(struct blkfront_info *info)
 {
 	blk_queue_write_cache(info->rq, info->feature_flush ? true : false,
 			      info->feature_fua ? true : false);
+<<<<<<< HEAD
 	pr_info("blkfront: %s: %s %s %s %s %s\n",
 		info->gd->disk_name, flush_info(info),
 		"persistent grants:", info->feature_persistent ?
 		"enabled;" : "disabled;", "indirect descriptors:",
 		info->max_indirect_segments ? "enabled;" : "disabled;");
+=======
+	pr_info("blkfront: %s: %s %s %s %s %s %s %s\n",
+		info->gd->disk_name, flush_info(info),
+		"persistent grants:", info->feature_persistent ?
+		"enabled;" : "disabled;", "indirect descriptors:",
+		info->max_indirect_segments ? "enabled;" : "disabled;",
+		"bounce buffer:", info->bounce ? "enabled" : "disabled;");
+>>>>>>> origin/android16-base
 }
 
 static int xen_translate_vdev(int vdevice, int *minor, unsigned int *offset)
@@ -1253,7 +1359,11 @@ static void blkif_free_ring(struct blkfront_ring_info *rinfo)
 	if (!list_empty(&rinfo->indirect_pages)) {
 		struct page *indirect_page, *n;
 
+<<<<<<< HEAD
 		BUG_ON(info->feature_persistent);
+=======
+		BUG_ON(info->bounce);
+>>>>>>> origin/android16-base
 		list_for_each_entry_safe(indirect_page, n, &rinfo->indirect_pages, lru) {
 			list_del(&indirect_page->lru);
 			__free_page(indirect_page);
@@ -1270,7 +1380,11 @@ static void blkif_free_ring(struct blkfront_ring_info *rinfo)
 							  0, 0UL);
 				rinfo->persistent_gnts_c--;
 			}
+<<<<<<< HEAD
 			if (info->feature_persistent)
+=======
+			if (info->bounce)
+>>>>>>> origin/android16-base
 				__free_page(persistent_gnt->page);
 			kfree(persistent_gnt);
 		}
@@ -1291,7 +1405,11 @@ static void blkif_free_ring(struct blkfront_ring_info *rinfo)
 		for (j = 0; j < segs; j++) {
 			persistent_gnt = rinfo->shadow[i].grants_used[j];
 			gnttab_end_foreign_access(persistent_gnt->gref, 0, 0UL);
+<<<<<<< HEAD
 			if (info->feature_persistent)
+=======
+			if (info->bounce)
+>>>>>>> origin/android16-base
 				__free_page(persistent_gnt->page);
 			kfree(persistent_gnt);
 		}
@@ -1332,7 +1450,12 @@ free_shadow:
 			rinfo->ring_ref[i] = GRANT_INVALID_REF;
 		}
 	}
+<<<<<<< HEAD
 	free_pages((unsigned long)rinfo->ring.sring, get_order(info->nr_ring_pages * XEN_PAGE_SIZE));
+=======
+	free_pages_exact(rinfo->ring.sring,
+			 info->nr_ring_pages * XEN_PAGE_SIZE);
+>>>>>>> origin/android16-base
 	rinfo->ring.sring = NULL;
 
 	if (rinfo->irq)
@@ -1406,8 +1529,13 @@ static enum blk_req_status blkif_rsp_to_req_status(int rsp)
 static int blkif_get_final_status(enum blk_req_status s1,
 				  enum blk_req_status s2)
 {
+<<<<<<< HEAD
 	BUG_ON(s1 == REQ_WAITING);
 	BUG_ON(s2 == REQ_WAITING);
+=======
+	BUG_ON(s1 < REQ_DONE);
+	BUG_ON(s2 < REQ_DONE);
+>>>>>>> origin/android16-base
 
 	if (s1 == REQ_ERROR || s2 == REQ_ERROR)
 		return BLKIF_RSP_ERROR;
@@ -1416,9 +1544,21 @@ static int blkif_get_final_status(enum blk_req_status s1,
 	return BLKIF_RSP_OKAY;
 }
 
+<<<<<<< HEAD
 static bool blkif_completion(unsigned long *id,
 			     struct blkfront_ring_info *rinfo,
 			     struct blkif_response *bret)
+=======
+/*
+ * Return values:
+ *  1 response processed.
+ *  0 missing further responses.
+ * -1 error while processing.
+ */
+static int blkif_completion(unsigned long *id,
+			    struct blkfront_ring_info *rinfo,
+			    struct blkif_response *bret)
+>>>>>>> origin/android16-base
 {
 	int i = 0;
 	struct scatterlist *sg;
@@ -1440,8 +1580,13 @@ static bool blkif_completion(unsigned long *id,
 		s->status = blkif_rsp_to_req_status(bret->status);
 
 		/* Wait the second response if not yet here. */
+<<<<<<< HEAD
 		if (s2->status == REQ_WAITING)
 			return false;
+=======
+		if (s2->status < REQ_DONE)
+			return 0;
+>>>>>>> origin/android16-base
 
 		bret->status = blkif_get_final_status(s->status,
 						      s2->status);
@@ -1474,7 +1619,11 @@ static bool blkif_completion(unsigned long *id,
 	data.s = s;
 	num_sg = s->num_sg;
 
+<<<<<<< HEAD
 	if (bret->operation == BLKIF_OP_READ && info->feature_persistent) {
+=======
+	if (bret->operation == BLKIF_OP_READ && info->bounce) {
+>>>>>>> origin/android16-base
 		for_each_sg(s->sg, sg, num_sg, i) {
 			BUG_ON(sg->offset + sg->length > PAGE_SIZE);
 
@@ -1492,47 +1641,82 @@ static bool blkif_completion(unsigned long *id,
 	}
 	/* Add the persistent grant into the list of free grants */
 	for (i = 0; i < num_grant; i++) {
+<<<<<<< HEAD
 		if (gnttab_query_foreign_access(s->grants_used[i]->gref)) {
+=======
+		if (!gnttab_try_end_foreign_access(s->grants_used[i]->gref)) {
+>>>>>>> origin/android16-base
 			/*
 			 * If the grant is still mapped by the backend (the
 			 * backend has chosen to make this grant persistent)
 			 * we add it at the head of the list, so it will be
 			 * reused first.
 			 */
+<<<<<<< HEAD
 			if (!info->feature_persistent)
 				pr_alert_ratelimited("backed has not unmapped grant: %u\n",
 						     s->grants_used[i]->gref);
+=======
+			if (!info->feature_persistent) {
+				pr_alert("backed has not unmapped grant: %u\n",
+					 s->grants_used[i]->gref);
+				return -1;
+			}
+>>>>>>> origin/android16-base
 			list_add(&s->grants_used[i]->node, &rinfo->grants);
 			rinfo->persistent_gnts_c++;
 		} else {
 			/*
+<<<<<<< HEAD
 			 * If the grant is not mapped by the backend we end the
 			 * foreign access and add it to the tail of the list,
 			 * so it will not be picked again unless we run out of
 			 * persistent grants.
 			 */
 			gnttab_end_foreign_access(s->grants_used[i]->gref, 0, 0UL);
+=======
+			 * If the grant is not mapped by the backend we add it
+			 * to the tail of the list, so it will not be picked
+			 * again unless we run out of persistent grants.
+			 */
+>>>>>>> origin/android16-base
 			s->grants_used[i]->gref = GRANT_INVALID_REF;
 			list_add_tail(&s->grants_used[i]->node, &rinfo->grants);
 		}
 	}
 	if (s->req.operation == BLKIF_OP_INDIRECT) {
 		for (i = 0; i < INDIRECT_GREFS(num_grant); i++) {
+<<<<<<< HEAD
 			if (gnttab_query_foreign_access(s->indirect_grants[i]->gref)) {
 				if (!info->feature_persistent)
 					pr_alert_ratelimited("backed has not unmapped grant: %u\n",
 							     s->indirect_grants[i]->gref);
+=======
+			if (!gnttab_try_end_foreign_access(s->indirect_grants[i]->gref)) {
+				if (!info->feature_persistent) {
+					pr_alert("backed has not unmapped grant: %u\n",
+						 s->indirect_grants[i]->gref);
+					return -1;
+				}
+>>>>>>> origin/android16-base
 				list_add(&s->indirect_grants[i]->node, &rinfo->grants);
 				rinfo->persistent_gnts_c++;
 			} else {
 				struct page *indirect_page;
 
+<<<<<<< HEAD
 				gnttab_end_foreign_access(s->indirect_grants[i]->gref, 0, 0UL);
+=======
+>>>>>>> origin/android16-base
 				/*
 				 * Add the used indirect page back to the list of
 				 * available pages for indirect grefs.
 				 */
+<<<<<<< HEAD
 				if (!info->feature_persistent) {
+=======
+				if (!info->bounce) {
+>>>>>>> origin/android16-base
 					indirect_page = s->indirect_grants[i]->page;
 					list_add(&indirect_page->lru, &rinfo->indirect_pages);
 				}
@@ -1542,17 +1726,26 @@ static bool blkif_completion(unsigned long *id,
 		}
 	}
 
+<<<<<<< HEAD
 	return true;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 
 static irqreturn_t blkif_interrupt(int irq, void *dev_id)
 {
 	struct request *req;
+<<<<<<< HEAD
 	struct blkif_response *bret;
+=======
+	struct blkif_response bret;
+>>>>>>> origin/android16-base
 	RING_IDX i, rp;
 	unsigned long flags;
 	struct blkfront_ring_info *rinfo = (struct blkfront_ring_info *)dev_id;
 	struct blkfront_info *info = rinfo->dev_info;
+<<<<<<< HEAD
 
 	if (unlikely(info->connected != BLKIF_STATE_CONNECTED))
 		return IRQ_HANDLED;
@@ -1567,12 +1760,41 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
 
 		bret = RING_GET_RESPONSE(&rinfo->ring, i);
 		id   = bret->id;
+=======
+	unsigned int eoiflag = XEN_EOI_FLAG_SPURIOUS;
+
+	if (unlikely(info->connected != BLKIF_STATE_CONNECTED)) {
+		xen_irq_lateeoi(irq, XEN_EOI_FLAG_SPURIOUS);
+		return IRQ_HANDLED;
+	}
+
+	spin_lock_irqsave(&rinfo->ring_lock, flags);
+ again:
+	rp = READ_ONCE(rinfo->ring.sring->rsp_prod);
+	virt_rmb(); /* Ensure we see queued responses up to 'rp'. */
+	if (RING_RESPONSE_PROD_OVERFLOW(&rinfo->ring, rp)) {
+		pr_alert("%s: illegal number of responses %u\n",
+			 info->gd->disk_name, rp - rinfo->ring.rsp_cons);
+		goto err;
+	}
+
+	for (i = rinfo->ring.rsp_cons; i != rp; i++) {
+		unsigned long id;
+		unsigned int op;
+
+		eoiflag = 0;
+
+		RING_COPY_RESPONSE(&rinfo->ring, i, &bret);
+		id = bret.id;
+
+>>>>>>> origin/android16-base
 		/*
 		 * The backend has messed up and given us an id that we would
 		 * never have given to it (we stamp it up to BLK_RING_SIZE -
 		 * look in get_id_from_freelist.
 		 */
 		if (id >= BLK_RING_SIZE(info)) {
+<<<<<<< HEAD
 			WARN(1, "%s: response to %s has incorrect id (%ld)\n",
 			     info->gd->disk_name, op_name(bret->operation), id);
 			/* We can't safely get the 'struct request' as
@@ -1582,31 +1804,84 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
 		req  = rinfo->shadow[id].request;
 
 		if (bret->operation != BLKIF_OP_DISCARD) {
+=======
+			pr_alert("%s: response has incorrect id (%ld)\n",
+				 info->gd->disk_name, id);
+			goto err;
+		}
+		if (rinfo->shadow[id].status != REQ_WAITING) {
+			pr_alert("%s: response references no pending request\n",
+				 info->gd->disk_name);
+			goto err;
+		}
+
+		rinfo->shadow[id].status = REQ_PROCESSING;
+		req  = rinfo->shadow[id].request;
+
+		op = rinfo->shadow[id].req.operation;
+		if (op == BLKIF_OP_INDIRECT)
+			op = rinfo->shadow[id].req.u.indirect.indirect_op;
+		if (bret.operation != op) {
+			pr_alert("%s: response has wrong operation (%u instead of %u)\n",
+				 info->gd->disk_name, bret.operation, op);
+			goto err;
+		}
+
+		if (bret.operation != BLKIF_OP_DISCARD) {
+			int ret;
+
+>>>>>>> origin/android16-base
 			/*
 			 * We may need to wait for an extra response if the
 			 * I/O request is split in 2
 			 */
+<<<<<<< HEAD
 			if (!blkif_completion(&id, rinfo, bret))
 				continue;
+=======
+			ret = blkif_completion(&id, rinfo, &bret);
+			if (!ret)
+				continue;
+			if (unlikely(ret < 0))
+				goto err;
+>>>>>>> origin/android16-base
 		}
 
 		if (add_id_to_freelist(rinfo, id)) {
 			WARN(1, "%s: response to %s (id %ld) couldn't be recycled!\n",
+<<<<<<< HEAD
 			     info->gd->disk_name, op_name(bret->operation), id);
 			continue;
 		}
 
 		if (bret->status == BLKIF_RSP_OKAY)
+=======
+			     info->gd->disk_name, op_name(bret.operation), id);
+			continue;
+		}
+
+		if (bret.status == BLKIF_RSP_OKAY)
+>>>>>>> origin/android16-base
 			blkif_req(req)->error = BLK_STS_OK;
 		else
 			blkif_req(req)->error = BLK_STS_IOERR;
 
+<<<<<<< HEAD
 		switch (bret->operation) {
 		case BLKIF_OP_DISCARD:
 			if (unlikely(bret->status == BLKIF_RSP_EOPNOTSUPP)) {
 				struct request_queue *rq = info->rq;
 				printk(KERN_WARNING "blkfront: %s: %s op failed\n",
 					   info->gd->disk_name, op_name(bret->operation));
+=======
+		switch (bret.operation) {
+		case BLKIF_OP_DISCARD:
+			if (unlikely(bret.status == BLKIF_RSP_EOPNOTSUPP)) {
+				struct request_queue *rq = info->rq;
+
+				pr_warn_ratelimited("blkfront: %s: %s op failed\n",
+					   info->gd->disk_name, op_name(bret.operation));
+>>>>>>> origin/android16-base
 				blkif_req(req)->error = BLK_STS_NOTSUPP;
 				info->feature_discard = 0;
 				info->feature_secdiscard = 0;
@@ -1616,6 +1891,7 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
 			break;
 		case BLKIF_OP_FLUSH_DISKCACHE:
 		case BLKIF_OP_WRITE_BARRIER:
+<<<<<<< HEAD
 			if (unlikely(bret->status == BLKIF_RSP_EOPNOTSUPP)) {
 				printk(KERN_WARNING "blkfront: %s: %s op failed\n",
 				       info->gd->disk_name, op_name(bret->operation));
@@ -1625,6 +1901,17 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
 				     rinfo->shadow[id].req.u.rw.nr_segments == 0)) {
 				printk(KERN_WARNING "blkfront: %s: empty %s op failed\n",
 				       info->gd->disk_name, op_name(bret->operation));
+=======
+			if (unlikely(bret.status == BLKIF_RSP_EOPNOTSUPP)) {
+				pr_warn_ratelimited("blkfront: %s: %s op failed\n",
+				       info->gd->disk_name, op_name(bret.operation));
+				blkif_req(req)->error = BLK_STS_NOTSUPP;
+			}
+			if (unlikely(bret.status == BLKIF_RSP_ERROR &&
+				     rinfo->shadow[id].req.u.rw.nr_segments == 0)) {
+				pr_warn_ratelimited("blkfront: %s: empty %s op failed\n",
+				       info->gd->disk_name, op_name(bret.operation));
+>>>>>>> origin/android16-base
 				blkif_req(req)->error = BLK_STS_NOTSUPP;
 			}
 			if (unlikely(blkif_req(req)->error)) {
@@ -1637,9 +1924,16 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
 			/* fall through */
 		case BLKIF_OP_READ:
 		case BLKIF_OP_WRITE:
+<<<<<<< HEAD
 			if (unlikely(bret->status != BLKIF_RSP_OKAY))
 				dev_dbg(&info->xbdev->dev, "Bad return from blkdev data "
 					"request: %x\n", bret->status);
+=======
+			if (unlikely(bret.status != BLKIF_RSP_OKAY))
+				dev_dbg_ratelimited(&info->xbdev->dev,
+					"Bad return from blkdev data request: %#x\n",
+					bret.status);
+>>>>>>> origin/android16-base
 
 			break;
 		default:
@@ -1663,6 +1957,21 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
 
 	spin_unlock_irqrestore(&rinfo->ring_lock, flags);
 
+<<<<<<< HEAD
+=======
+	xen_irq_lateeoi(irq, eoiflag);
+
+	return IRQ_HANDLED;
+
+ err:
+	info->connected = BLKIF_STATE_ERROR;
+
+	spin_unlock_irqrestore(&rinfo->ring_lock, flags);
+
+	/* No EOI in order to avoid further interrupts. */
+
+	pr_alert("%s disabled for further use\n", info->gd->disk_name);
+>>>>>>> origin/android16-base
 	return IRQ_HANDLED;
 }
 
@@ -1679,8 +1988,12 @@ static int setup_blkring(struct xenbus_device *dev,
 	for (i = 0; i < info->nr_ring_pages; i++)
 		rinfo->ring_ref[i] = GRANT_INVALID_REF;
 
+<<<<<<< HEAD
 	sring = (struct blkif_sring *)__get_free_pages(GFP_NOIO | __GFP_HIGH,
 						       get_order(ring_size));
+=======
+	sring = alloc_pages_exact(ring_size, GFP_NOIO | __GFP_ZERO);
+>>>>>>> origin/android16-base
 	if (!sring) {
 		xenbus_dev_fatal(dev, -ENOMEM, "allocating shared ring");
 		return -ENOMEM;
@@ -1690,7 +2003,11 @@ static int setup_blkring(struct xenbus_device *dev,
 
 	err = xenbus_grant_ring(dev, rinfo->ring.sring, info->nr_ring_pages, gref);
 	if (err < 0) {
+<<<<<<< HEAD
 		free_pages((unsigned long)sring, get_order(ring_size));
+=======
+		free_pages_exact(sring, ring_size);
+>>>>>>> origin/android16-base
 		rinfo->ring.sring = NULL;
 		goto fail;
 	}
@@ -1701,8 +2018,13 @@ static int setup_blkring(struct xenbus_device *dev,
 	if (err)
 		goto fail;
 
+<<<<<<< HEAD
 	err = bind_evtchn_to_irqhandler(rinfo->evtchn, blkif_interrupt, 0,
 					"blkif", rinfo);
+=======
+	err = bind_evtchn_to_irqhandler_lateeoi(rinfo->evtchn, blkif_interrupt,
+						0, "blkif", rinfo);
+>>>>>>> origin/android16-base
 	if (err <= 0) {
 		xenbus_dev_fatal(dev, err,
 				 "bind_evtchn_to_irqhandler failed");
@@ -1783,6 +2105,13 @@ static int talk_to_blkback(struct xenbus_device *dev,
 	if (!info)
 		return -ENODEV;
 
+<<<<<<< HEAD
+=======
+	/* Check if backend is trusted. */
+	info->bounce = !xen_blkif_trusted ||
+		       !xenbus_read_unsigned(dev->nodename, "trusted", 1);
+
+>>>>>>> origin/android16-base
 	max_page_order = xenbus_read_unsigned(info->xbdev->otherend,
 					      "max-ring-page-order", 0);
 	ring_page_order = min(xen_blkif_max_ring_order, max_page_order);
@@ -2169,6 +2498,7 @@ static void blkfront_closing(struct blkfront_info *info)
 
 static void blkfront_setup_discard(struct blkfront_info *info)
 {
+<<<<<<< HEAD
 	int err;
 	unsigned int discard_granularity;
 	unsigned int discard_alignment;
@@ -2182,6 +2512,14 @@ static void blkfront_setup_discard(struct blkfront_info *info)
 		info->discard_granularity = discard_granularity;
 		info->discard_alignment = discard_alignment;
 	}
+=======
+	info->feature_discard = 1;
+	info->discard_granularity = xenbus_read_unsigned(info->xbdev->otherend,
+							 "discard-granularity",
+							 0);
+	info->discard_alignment = xenbus_read_unsigned(info->xbdev->otherend,
+						       "discard-alignment", 0);
+>>>>>>> origin/android16-base
 	info->feature_secdiscard =
 		!!xenbus_read_unsigned(info->xbdev->otherend, "discard-secure",
 				       0);
@@ -2216,17 +2554,29 @@ static int blkfront_setup_indirect(struct blkfront_ring_info *rinfo)
 	if (err)
 		goto out_of_memory;
 
+<<<<<<< HEAD
 	if (!info->feature_persistent && info->max_indirect_segments) {
 		/*
 		 * We are using indirect descriptors but not persistent
 		 * grants, we need to allocate a set of pages that can be
+=======
+	if (!info->bounce && info->max_indirect_segments) {
+		/*
+		 * We are using indirect descriptors but don't have a bounce
+		 * buffer, we need to allocate a set of pages that can be
+>>>>>>> origin/android16-base
 		 * used for mapping indirect grefs
 		 */
 		int num = INDIRECT_GREFS(grants) * BLK_RING_SIZE(info);
 
 		BUG_ON(!list_empty(&rinfo->indirect_pages));
 		for (i = 0; i < num; i++) {
+<<<<<<< HEAD
 			struct page *indirect_page = alloc_page(GFP_KERNEL);
+=======
+			struct page *indirect_page = alloc_page(GFP_KERNEL |
+			                                        __GFP_ZERO);
+>>>>>>> origin/android16-base
 			if (!indirect_page)
 				goto out_of_memory;
 			list_add(&indirect_page->lru, &rinfo->indirect_pages);
@@ -2318,6 +2668,11 @@ static void blkfront_gather_backend_features(struct blkfront_info *info)
 	info->feature_persistent =
 		!!xenbus_read_unsigned(info->xbdev->otherend,
 				       "feature-persistent", 0);
+<<<<<<< HEAD
+=======
+	if (info->feature_persistent)
+		info->bounce = true;
+>>>>>>> origin/android16-base
 
 	indirect_segments = xenbus_read_unsigned(info->xbdev->otherend,
 					"feature-max-indirect-segments", 0);
@@ -2675,11 +3030,18 @@ static void purge_persistent_grants(struct blkfront_info *info)
 		list_for_each_entry_safe(gnt_list_entry, tmp, &rinfo->grants,
 					 node) {
 			if (gnt_list_entry->gref == GRANT_INVALID_REF ||
+<<<<<<< HEAD
 			    gnttab_query_foreign_access(gnt_list_entry->gref))
 				continue;
 
 			list_del(&gnt_list_entry->node);
 			gnttab_end_foreign_access(gnt_list_entry->gref, 0, 0UL);
+=======
+			    !gnttab_try_end_foreign_access(gnt_list_entry->gref))
+				continue;
+
+			list_del(&gnt_list_entry->node);
+>>>>>>> origin/android16-base
 			rinfo->persistent_gnts_c--;
 			gnt_list_entry->gref = GRANT_INVALID_REF;
 			list_add_tail(&gnt_list_entry->node, &rinfo->grants);
@@ -2694,6 +3056,16 @@ static void blkfront_delay_work(struct work_struct *work)
 	struct blkfront_info *info;
 	bool need_schedule_work = false;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * Note that when using bounce buffers but not persistent grants
+	 * there's no need to run blkfront_delay_work because grants are
+	 * revoked in blkif_completion or else an error is reported and the
+	 * connection is closed.
+	 */
+
+>>>>>>> origin/android16-base
 	mutex_lock(&blkfront_mutex);
 
 	list_for_each_entry(info, &info_list, info_list) {

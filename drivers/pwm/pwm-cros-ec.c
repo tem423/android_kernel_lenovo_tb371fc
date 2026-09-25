@@ -125,6 +125,10 @@ static void cros_ec_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
 
 	state->enabled = (ret > 0);
 	state->period = EC_PWM_MAX_DUTY;
+<<<<<<< HEAD
+=======
+	state->polarity = PWM_POLARITY_NORMAL;
+>>>>>>> origin/android16-base
 
 	/* Note that "disabled" and "duty cycle == 0" are treated the same */
 	state->duty_cycle = ret;

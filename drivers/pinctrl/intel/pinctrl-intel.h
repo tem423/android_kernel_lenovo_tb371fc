@@ -25,10 +25,17 @@ struct device;
  */
 struct intel_pingroup {
 	const char *name;
+<<<<<<< HEAD
 	const unsigned *pins;
 	size_t npins;
 	unsigned short mode;
 	const unsigned *modes;
+=======
+	const unsigned int *pins;
+	size_t npins;
+	unsigned short mode;
+	const unsigned int *modes;
+>>>>>>> origin/android16-base
 };
 
 /**
@@ -56,11 +63,19 @@ struct intel_function {
  * to specify them.
  */
 struct intel_padgroup {
+<<<<<<< HEAD
 	unsigned reg_num;
 	unsigned base;
 	unsigned size;
 	int gpio_base;
 	unsigned padown_num;
+=======
+	unsigned int reg_num;
+	unsigned int base;
+	unsigned int size;
+	int gpio_base;
+	unsigned int padown_num;
+>>>>>>> origin/android16-base
 };
 
 /**
@@ -96,6 +111,7 @@ struct intel_padgroup {
  * pass custom @gpps and @ngpps instead.
  */
 struct intel_community {
+<<<<<<< HEAD
 	unsigned barno;
 	unsigned padown_offset;
 	unsigned padcfglock_offset;
@@ -107,6 +123,19 @@ struct intel_community {
 	unsigned gpp_num_padown_regs;
 	size_t npins;
 	unsigned features;
+=======
+	unsigned int barno;
+	unsigned int padown_offset;
+	unsigned int padcfglock_offset;
+	unsigned int hostown_offset;
+	unsigned int is_offset;
+	unsigned int ie_offset;
+	unsigned int pin_base;
+	unsigned int gpp_size;
+	unsigned int gpp_num_padown_regs;
+	size_t npins;
+	unsigned int features;
+>>>>>>> origin/android16-base
 	const struct intel_padgroup *gpps;
 	size_t ngpps;
 	/* Reserved for the core driver */

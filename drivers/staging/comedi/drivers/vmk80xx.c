@@ -90,6 +90,12 @@ enum {
 #define IC3_VERSION		BIT(0)
 #define IC6_VERSION		BIT(1)
 
+<<<<<<< HEAD
+=======
+#define MIN_BUF_SIZE		64
+#define PACKET_TIMEOUT		10000	/* ms */
+
+>>>>>>> origin/android16-base
 enum vmk80xx_model {
 	VMK8055_MODEL,
 	VMK8061_MODEL
@@ -157,12 +163,18 @@ static void vmk80xx_do_bulk_msg(struct comedi_device *dev)
 	__u8 rx_addr;
 	unsigned int tx_pipe;
 	unsigned int rx_pipe;
+<<<<<<< HEAD
 	size_t size;
+=======
+	size_t tx_size;
+	size_t rx_size;
+>>>>>>> origin/android16-base
 
 	tx_addr = devpriv->ep_tx->bEndpointAddress;
 	rx_addr = devpriv->ep_rx->bEndpointAddress;
 	tx_pipe = usb_sndbulkpipe(usb, tx_addr);
 	rx_pipe = usb_rcvbulkpipe(usb, rx_addr);
+<<<<<<< HEAD
 
 	/*
 	 * The max packet size attributes of the K8061
@@ -173,6 +185,16 @@ static void vmk80xx_do_bulk_msg(struct comedi_device *dev)
 	usb_bulk_msg(usb, tx_pipe, devpriv->usb_tx_buf,
 		     size, NULL, devpriv->ep_tx->bInterval);
 	usb_bulk_msg(usb, rx_pipe, devpriv->usb_rx_buf, size, NULL, HZ * 10);
+=======
+	tx_size = usb_endpoint_maxp(devpriv->ep_tx);
+	rx_size = usb_endpoint_maxp(devpriv->ep_rx);
+
+	usb_bulk_msg(usb, tx_pipe, devpriv->usb_tx_buf, tx_size, NULL,
+		     PACKET_TIMEOUT);
+
+	usb_bulk_msg(usb, rx_pipe, devpriv->usb_rx_buf, rx_size, NULL,
+		     PACKET_TIMEOUT);
+>>>>>>> origin/android16-base
 }
 
 static int vmk80xx_read_packet(struct comedi_device *dev)
@@ -191,7 +213,11 @@ static int vmk80xx_read_packet(struct comedi_device *dev)
 	pipe = usb_rcvintpipe(usb, ep->bEndpointAddress);
 	return usb_interrupt_msg(usb, pipe, devpriv->usb_rx_buf,
 				 usb_endpoint_maxp(ep), NULL,
+<<<<<<< HEAD
 				 HZ * 10);
+=======
+				 PACKET_TIMEOUT);
+>>>>>>> origin/android16-base
 }
 
 static int vmk80xx_write_packet(struct comedi_device *dev, int cmd)
@@ -212,7 +238,11 @@ static int vmk80xx_write_packet(struct comedi_device *dev, int cmd)
 	pipe = usb_sndintpipe(usb, ep->bEndpointAddress);
 	return usb_interrupt_msg(usb, pipe, devpriv->usb_tx_buf,
 				 usb_endpoint_maxp(ep), NULL,
+<<<<<<< HEAD
 				 HZ * 10);
+=======
+				 PACKET_TIMEOUT);
+>>>>>>> origin/android16-base
 }
 
 static int vmk80xx_reset_device(struct comedi_device *dev)
@@ -640,6 +670,7 @@ static int vmk80xx_find_usb_endpoints(struct comedi_device *dev)
 	struct vmk80xx_private *devpriv = dev->private;
 	struct usb_interface *intf = comedi_to_usb_interface(dev);
 	struct usb_host_interface *iface_desc = intf->cur_altsetting;
+<<<<<<< HEAD
 	struct usb_endpoint_descriptor *ep_desc;
 	int i;
 
@@ -666,6 +697,23 @@ static int vmk80xx_find_usb_endpoints(struct comedi_device *dev)
 
 	if (!devpriv->ep_rx || !devpriv->ep_tx)
 		return -ENODEV;
+=======
+	struct usb_endpoint_descriptor *ep_rx_desc, *ep_tx_desc;
+	int ret;
+
+	if (devpriv->model == VMK8061_MODEL)
+		ret = usb_find_common_endpoints(iface_desc, &ep_rx_desc,
+						&ep_tx_desc, NULL, NULL);
+	else
+		ret = usb_find_common_endpoints(iface_desc, NULL, NULL,
+						&ep_rx_desc, &ep_tx_desc);
+
+	if (ret)
+		return -ENODEV;
+
+	devpriv->ep_rx = ep_rx_desc;
+	devpriv->ep_tx = ep_tx_desc;
+>>>>>>> origin/android16-base
 
 	if (!usb_endpoint_maxp(devpriv->ep_rx) || !usb_endpoint_maxp(devpriv->ep_tx))
 		return -EINVAL;
@@ -678,12 +726,20 @@ static int vmk80xx_alloc_usb_buffers(struct comedi_device *dev)
 	struct vmk80xx_private *devpriv = dev->private;
 	size_t size;
 
+<<<<<<< HEAD
 	size = usb_endpoint_maxp(devpriv->ep_rx);
+=======
+	size = max(usb_endpoint_maxp(devpriv->ep_rx), MIN_BUF_SIZE);
+>>>>>>> origin/android16-base
 	devpriv->usb_rx_buf = kzalloc(size, GFP_KERNEL);
 	if (!devpriv->usb_rx_buf)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	size = usb_endpoint_maxp(devpriv->ep_tx);
+=======
+	size = max(usb_endpoint_maxp(devpriv->ep_tx), MIN_BUF_SIZE);
+>>>>>>> origin/android16-base
 	devpriv->usb_tx_buf = kzalloc(size, GFP_KERNEL);
 	if (!devpriv->usb_tx_buf)
 		return -ENOMEM;

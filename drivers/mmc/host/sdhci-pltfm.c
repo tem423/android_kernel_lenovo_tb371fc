@@ -132,7 +132,10 @@ struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0) {
+<<<<<<< HEAD
 		dev_err(&pdev->dev, "failed to get IRQ number\n");
+=======
+>>>>>>> origin/android16-base
 		ret = irq;
 		goto err;
 	}

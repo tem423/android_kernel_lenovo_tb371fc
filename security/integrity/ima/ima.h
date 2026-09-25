@@ -298,6 +298,10 @@ static inline int ima_read_xattr(struct dentry *dentry,
 #ifdef CONFIG_IMA_LSM_RULES
 
 #define security_filter_rule_init security_audit_rule_init
+<<<<<<< HEAD
+=======
+#define security_filter_rule_free security_audit_rule_free
+>>>>>>> origin/android16-base
 #define security_filter_rule_match security_audit_rule_match
 
 #else
@@ -308,6 +312,13 @@ static inline int security_filter_rule_init(u32 field, u32 op, char *rulestr,
 	return -EINVAL;
 }
 
+<<<<<<< HEAD
+=======
+static inline void security_filter_rule_free(void *lsmrule)
+{
+}
+
+>>>>>>> origin/android16-base
 static inline int security_filter_rule_match(u32 secid, u32 field, u32 op,
 					     void *lsmrule,
 					     struct audit_context *actx)

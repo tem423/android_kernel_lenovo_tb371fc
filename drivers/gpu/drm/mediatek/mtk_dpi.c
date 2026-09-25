@@ -52,6 +52,7 @@ enum mtk_dpi_out_channel_swap {
 };
 
 enum mtk_dpi_out_color_format {
+<<<<<<< HEAD
 	MTK_DPI_COLOR_FORMAT_RGB,
 	MTK_DPI_COLOR_FORMAT_RGB_FULL,
 	MTK_DPI_COLOR_FORMAT_YCBCR_444,
@@ -59,6 +60,9 @@ enum mtk_dpi_out_color_format {
 	MTK_DPI_COLOR_FORMAT_XV_YCC,
 	MTK_DPI_COLOR_FORMAT_YCBCR_444_FULL,
 	MTK_DPI_COLOR_FORMAT_YCBCR_422_FULL
+=======
+	MTK_DPI_COLOR_FORMAT_RGB
+>>>>>>> origin/android16-base
 };
 
 struct mtk_dpi {
@@ -347,6 +351,7 @@ static void mtk_dpi_config_2n_h_fre(struct mtk_dpi *dpi)
 static void mtk_dpi_config_color_format(struct mtk_dpi *dpi,
 					enum mtk_dpi_out_color_format format)
 {
+<<<<<<< HEAD
 	if ((format == MTK_DPI_COLOR_FORMAT_YCBCR_444) ||
 	    (format == MTK_DPI_COLOR_FORMAT_YCBCR_444_FULL)) {
 		mtk_dpi_config_yuv422_enable(dpi, false);
@@ -365,6 +370,13 @@ static void mtk_dpi_config_color_format(struct mtk_dpi *dpi,
 		mtk_dpi_config_swap_input(dpi, false);
 		mtk_dpi_config_channel_swap(dpi, MTK_DPI_OUT_CHANNEL_SWAP_RGB);
 	}
+=======
+	/* only support RGB888 */
+	mtk_dpi_config_yuv422_enable(dpi, false);
+	mtk_dpi_config_csc_enable(dpi, false);
+	mtk_dpi_config_swap_input(dpi, false);
+	mtk_dpi_config_channel_swap(dpi, MTK_DPI_OUT_CHANNEL_SWAP_RGB);
+>>>>>>> origin/android16-base
 }
 
 static void mtk_dpi_power_off(struct mtk_dpi *dpi, enum mtk_dpi_power_ctl pctl)

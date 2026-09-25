@@ -44,6 +44,7 @@ if NET_SCHED
 
 comment "Queueing/Scheduling"
 
+<<<<<<< HEAD
 config NET_SCH_CBQ
 	tristate "Class Based Queueing (CBQ)"
 	---help---
@@ -61,6 +62,8 @@ config NET_SCH_CBQ
 	  To compile this code as a module, choose M here: the
 	  module will be called sch_cbq.
 
+=======
+>>>>>>> origin/android16-base
 config NET_SCH_HTB
 	tristate "Hierarchical Token Bucket (HTB)"
 	---help---
@@ -84,6 +87,7 @@ config NET_SCH_HFSC
 	  To compile this code as a module, choose M here: the
 	  module will be called sch_hfsc.
 
+<<<<<<< HEAD
 config NET_SCH_ATM
 	tristate "ATM Virtual Circuits (ATM)"
 	depends on ATM
@@ -98,6 +102,8 @@ config NET_SCH_ATM
 	  To compile this code as a module, choose M here: the
 	  module will be called sch_atm.
 
+=======
+>>>>>>> origin/android16-base
 config NET_SCH_PRIO
 	tristate "Multi Band Priority Queueing (PRIO)"
 	---help---
@@ -205,6 +211,7 @@ config NET_SCH_GRED
 	  To compile this code as a module, choose M here: the
 	  module will be called sch_gred.
 
+<<<<<<< HEAD
 config NET_SCH_DSMARK
 	tristate "Differentiated Services marker (DSMARK)"
 	---help---
@@ -216,6 +223,8 @@ config NET_SCH_DSMARK
 	  To compile this code as a module, choose M here: the
 	  module will be called sch_dsmark.
 
+=======
+>>>>>>> origin/android16-base
 config NET_SCH_NETEM
 	tristate "Network emulator (NETEM)"
 	---help---
@@ -458,6 +467,7 @@ config NET_CLS_BASIC
 	  To compile this code as a module, choose M here: the
 	  module will be called cls_basic.
 
+<<<<<<< HEAD
 config NET_CLS_TCINDEX
 	tristate "Traffic-Control Index (TCINDEX)"
 	select NET_CLS
@@ -469,6 +479,8 @@ config NET_CLS_TCINDEX
 	  To compile this code as a module, choose M here: the
 	  module will be called cls_tcindex.
 
+=======
+>>>>>>> origin/android16-base
 config NET_CLS_ROUTE4
 	tristate "Routing decision (ROUTE)"
 	depends on INET
@@ -514,6 +526,7 @@ config CLS_U32_MARK
 	---help---
 	  Say Y here to be able to use netfilter marks as u32 key.
 
+<<<<<<< HEAD
 config NET_CLS_RSVP
 	tristate "IPv4 Resource Reservation Protocol (RSVP)"
 	select NET_CLS
@@ -542,6 +555,8 @@ config NET_CLS_RSVP6
 	  To compile this code as a module, choose M here: the
 	  module will be called cls_rsvp6.
 
+=======
+>>>>>>> origin/android16-base
 config NET_CLS_FLOW
 	tristate "Flow classifier"
 	select NET_CLS

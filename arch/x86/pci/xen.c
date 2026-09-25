@@ -36,10 +36,17 @@ static int xen_pcifront_enable_irq(struct pci_dev *dev)
 	u8 gsi;
 
 	rc = pci_read_config_byte(dev, PCI_INTERRUPT_LINE, &gsi);
+<<<<<<< HEAD
 	if (rc < 0) {
 		dev_warn(&dev->dev, "Xen PCI: failed to read interrupt line: %d\n",
 			 rc);
 		return rc;
+=======
+	if (rc) {
+		dev_warn(&dev->dev, "Xen PCI: failed to read interrupt line: %d\n",
+			 rc);
+		return pcibios_err_to_errno(rc);
+>>>>>>> origin/android16-base
 	}
 	/* In PV DomU the Xen PCI backend puts the PIRQ in the interrupt line.*/
 	pirq = gsi;
@@ -441,6 +448,14 @@ void __init xen_msi_init(void)
 
 	x86_msi.setup_msi_irqs = xen_hvm_setup_msi_irqs;
 	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
+<<<<<<< HEAD
+=======
+	/*
+	 * With XEN PIRQ/Eventchannels in use PCI/MSI[-X] masking is solely
+	 * controlled by the hypervisor.
+	 */
+	pci_msi_ignore_mask = 1;
+>>>>>>> origin/android16-base
 }
 #endif
 

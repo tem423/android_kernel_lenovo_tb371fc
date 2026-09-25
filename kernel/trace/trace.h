@@ -318,7 +318,11 @@ static inline struct trace_array *top_trace_array(void)
 #define IF_ASSIGN(var, entry, etype, id)		\
 	if (FTRACE_CMP_TYPE(var, etype)) {		\
 		var = (typeof(var))(entry);		\
+<<<<<<< HEAD
 		WARN_ON(id && (entry)->type != id);	\
+=======
+		WARN_ON(id !=0 && (entry)->type != id);	\
+>>>>>>> origin/android16-base
 		break;					\
 	}
 
@@ -467,6 +471,7 @@ struct tracer {
  *  When function tracing occurs, the following steps are made:
  *   If arch does not support a ftrace feature:
  *    call internal function (uses INTERNAL bits) which calls...
+<<<<<<< HEAD
  *   If callback is registered to the "global" list, the list
  *    function is called and recursion checks the GLOBAL bits.
  *    then this function calls...
@@ -484,6 +489,10 @@ struct tracer {
  * bit is set that is higher than the MAX bit of the current
  * check, then we know that the check was made by the previous
  * caller, and we can skip the current check.
+=======
+ *   The function callback, which can use the FTRACE bits to
+ *    check for recursion.
+>>>>>>> origin/android16-base
  */
 enum {
 	TRACE_BUFFER_BIT,
@@ -496,12 +505,22 @@ enum {
 	TRACE_FTRACE_NMI_BIT,
 	TRACE_FTRACE_IRQ_BIT,
 	TRACE_FTRACE_SIRQ_BIT,
+<<<<<<< HEAD
 
 	/* INTERNAL_BITs must be greater than FTRACE_BITs */
+=======
+	TRACE_FTRACE_TRANSITION_BIT,
+
+	/* Internal use recursion bits */
+>>>>>>> origin/android16-base
 	TRACE_INTERNAL_BIT,
 	TRACE_INTERNAL_NMI_BIT,
 	TRACE_INTERNAL_IRQ_BIT,
 	TRACE_INTERNAL_SIRQ_BIT,
+<<<<<<< HEAD
+=======
+	TRACE_INTERNAL_TRANSITION_BIT,
+>>>>>>> origin/android16-base
 
 	TRACE_BRANCH_BIT,
 /*
@@ -534,12 +553,15 @@ enum {
 
 	TRACE_GRAPH_DEPTH_START_BIT,
 	TRACE_GRAPH_DEPTH_END_BIT,
+<<<<<<< HEAD
 
 	/*
 	 * When transitioning between context, the preempt_count() may
 	 * not be correct. Allow for a single recursion to cover this case.
 	 */
 	TRACE_TRANSITION_BIT,
+=======
+>>>>>>> origin/android16-base
 };
 
 #define trace_recursion_set(bit)	do { (current)->trace_recursion |= (1<<(bit)); } while (0)
@@ -559,12 +581,27 @@ enum {
 #define TRACE_CONTEXT_BITS	4
 
 #define TRACE_FTRACE_START	TRACE_FTRACE_BIT
+<<<<<<< HEAD
 #define TRACE_FTRACE_MAX	((1 << (TRACE_FTRACE_START + TRACE_CONTEXT_BITS)) - 1)
 
 #define TRACE_LIST_START	TRACE_INTERNAL_BIT
 #define TRACE_LIST_MAX		((1 << (TRACE_LIST_START + TRACE_CONTEXT_BITS)) - 1)
 
 #define TRACE_CONTEXT_MASK	TRACE_LIST_MAX
+=======
+
+#define TRACE_LIST_START	TRACE_INTERNAL_BIT
+
+#define TRACE_CONTEXT_MASK	((1 << (TRACE_LIST_START + TRACE_CONTEXT_BITS)) - 1)
+
+enum {
+	TRACE_CTX_NMI,
+	TRACE_CTX_IRQ,
+	TRACE_CTX_SOFTIRQ,
+	TRACE_CTX_NORMAL,
+	TRACE_CTX_TRANSITION,
+};
+>>>>>>> origin/android16-base
 
 static __always_inline int trace_get_context_bit(void)
 {
@@ -572,6 +609,7 @@ static __always_inline int trace_get_context_bit(void)
 
 	if (in_interrupt()) {
 		if (in_nmi())
+<<<<<<< HEAD
 			bit = 0;
 
 		else if (in_irq())
@@ -580,51 +618,85 @@ static __always_inline int trace_get_context_bit(void)
 			bit = 2;
 	} else
 		bit = 3;
+=======
+			bit = TRACE_CTX_NMI;
+
+		else if (in_irq())
+			bit = TRACE_CTX_IRQ;
+		else
+			bit = TRACE_CTX_SOFTIRQ;
+	} else
+		bit = TRACE_CTX_NORMAL;
+>>>>>>> origin/android16-base
 
 	return bit;
 }
 
+<<<<<<< HEAD
 static __always_inline int trace_test_and_set_recursion(int start, int max)
+=======
+static __always_inline int trace_test_and_set_recursion(int start)
+>>>>>>> origin/android16-base
 {
 	unsigned int val = current->trace_recursion;
 	int bit;
 
+<<<<<<< HEAD
 	/* A previous recursion check was made */
 	if ((val & TRACE_CONTEXT_MASK) > max)
 		return 0;
 
+=======
+>>>>>>> origin/android16-base
 	bit = trace_get_context_bit() + start;
 	if (unlikely(val & (1 << bit))) {
 		/*
 		 * It could be that preempt_count has not been updated during
 		 * a switch between contexts. Allow for a single recursion.
 		 */
+<<<<<<< HEAD
 		bit = TRACE_TRANSITION_BIT;
+=======
+		bit = start + TRACE_CTX_TRANSITION;
+>>>>>>> origin/android16-base
 		if (trace_recursion_test(bit))
 			return -1;
 		trace_recursion_set(bit);
 		barrier();
+<<<<<<< HEAD
 		return bit + 1;
 	}
 
 	/* Normal check passed, clear the transition to allow it again */
 	trace_recursion_clear(TRACE_TRANSITION_BIT);
 
+=======
+		return bit;
+	}
+
+>>>>>>> origin/android16-base
 	val |= 1 << bit;
 	current->trace_recursion = val;
 	barrier();
 
+<<<<<<< HEAD
 	return bit + 1;
+=======
+	return bit;
+>>>>>>> origin/android16-base
 }
 
 static __always_inline void trace_clear_recursion(int bit)
 {
 	unsigned int val = current->trace_recursion;
 
+<<<<<<< HEAD
 	if (!bit)
 		return;
 
 	bit--;
+=======
+>>>>>>> origin/android16-base
 	bit = 1 << bit;
 	val &= ~bit;
 
@@ -745,13 +817,23 @@ void update_max_tr_single(struct trace_array *tr,
 #endif /* CONFIG_TRACER_MAX_TRACE */
 
 #ifdef CONFIG_STACKTRACE
+<<<<<<< HEAD
 void ftrace_trace_userstack(struct ring_buffer *buffer, unsigned long flags,
+=======
+void ftrace_trace_userstack(struct trace_array *tr,
+			    struct ring_buffer *buffer, unsigned long flags,
+>>>>>>> origin/android16-base
 			    int pc);
 
 void __trace_stack(struct trace_array *tr, unsigned long flags, int skip,
 		   int pc);
 #else
+<<<<<<< HEAD
 static inline void ftrace_trace_userstack(struct ring_buffer *buffer,
+=======
+static inline void ftrace_trace_userstack(struct trace_array *tr,
+					  struct ring_buffer *buffer,
+>>>>>>> origin/android16-base
 					  unsigned long flags, int pc)
 {
 }
@@ -770,6 +852,11 @@ extern void trace_event_follow_fork(struct trace_array *tr, bool enable);
 
 #ifdef CONFIG_DYNAMIC_FTRACE
 extern unsigned long ftrace_update_tot_cnt;
+<<<<<<< HEAD
+=======
+extern unsigned long ftrace_number_of_pages;
+extern unsigned long ftrace_number_of_groups;
+>>>>>>> origin/android16-base
 void ftrace_init_trace_array(struct trace_array *tr);
 #else
 static inline void ftrace_init_trace_array(struct trace_array *tr) { }
@@ -1387,6 +1474,7 @@ __event_trigger_test_discard(struct trace_event_file *file,
 	if (eflags & EVENT_FILE_FL_TRIGGER_COND)
 		*tt = event_triggers_call(file, entry, event);
 
+<<<<<<< HEAD
 	if (test_bit(EVENT_FILE_FL_SOFT_DISABLED_BIT, &file->flags) ||
 	    (unlikely(file->flags & EVENT_FILE_FL_FILTERED) &&
 	     !filter_match_preds(file->filter, entry))) {
@@ -1395,6 +1483,28 @@ __event_trigger_test_discard(struct trace_event_file *file,
 	}
 
 	return false;
+=======
+	if (likely(!(file->flags & (EVENT_FILE_FL_SOFT_DISABLED |
+				    EVENT_FILE_FL_FILTERED |
+				    EVENT_FILE_FL_PID_FILTER))))
+		return false;
+
+	if (file->flags & EVENT_FILE_FL_SOFT_DISABLED)
+		goto discard;
+
+	if (file->flags & EVENT_FILE_FL_FILTERED &&
+	    !filter_match_preds(file->filter, entry))
+		goto discard;
+
+	if ((file->flags & EVENT_FILE_FL_PID_FILTER) &&
+	    trace_event_ignore_this_pid(file))
+		goto discard;
+
+	return false;
+ discard:
+	__trace_event_discard_commit(buffer, event);
+	return true;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -1546,6 +1656,10 @@ extern void trace_event_enable_cmd_record(bool enable);
 extern void trace_event_enable_tgid_record(bool enable);
 
 extern int event_trace_init(void);
+<<<<<<< HEAD
+=======
+extern int init_events(void);
+>>>>>>> origin/android16-base
 extern int event_trace_add_tracer(struct dentry *parent, struct trace_array *tr);
 extern int event_trace_del_tracer(struct trace_array *tr);
 

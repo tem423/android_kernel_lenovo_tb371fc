@@ -167,7 +167,11 @@ static int hisi_inno_phy_probe(struct platform_device *pdev)
 		phy_set_drvdata(phy, &priv->ports[i]);
 		i++;
 
+<<<<<<< HEAD
 		if (i > INNO_PHY_PORT_NUM) {
+=======
+		if (i >= INNO_PHY_PORT_NUM) {
+>>>>>>> origin/android16-base
 			dev_warn(dev, "Support %d ports in maximum\n", i);
 			break;
 		}

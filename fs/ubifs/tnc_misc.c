@@ -138,8 +138,13 @@ int ubifs_search_zbranch(const struct ubifs_info *c,
 			 const struct ubifs_znode *znode,
 			 const union ubifs_key *key, int *n)
 {
+<<<<<<< HEAD
 	int beg = 0, end = znode->child_cnt, uninitialized_var(mid);
 	int uninitialized_var(cmp);
+=======
+	int beg = 0, end = znode->child_cnt, mid;
+	int cmp;
+>>>>>>> origin/android16-base
 	const struct ubifs_zbranch *zbr = &znode->zbranch[0];
 
 	ubifs_assert(c, end > beg);

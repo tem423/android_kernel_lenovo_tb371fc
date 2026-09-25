@@ -496,7 +496,11 @@ static pci_power_t acpi_pci_choose_state(struct pci_dev *pdev)
 {
 	int acpi_state, d_max;
 
+<<<<<<< HEAD
 	if (pdev->no_d3cold)
+=======
+	if (pdev->no_d3cold || !pdev->d3cold_allowed)
+>>>>>>> origin/android16-base
 		d_max = ACPI_STATE_D3_HOT;
 	else
 		d_max = ACPI_STATE_D3_COLD;
@@ -587,7 +591,11 @@ static int acpi_pci_propagate_wakeup(struct pci_bus *bus, bool enable)
 {
 	while (bus->parent) {
 		if (acpi_pm_device_can_wakeup(&bus->self->dev))
+<<<<<<< HEAD
 			return acpi_pm_set_bridge_wakeup(&bus->self->dev, enable);
+=======
+			return acpi_pm_set_device_wakeup(&bus->self->dev, enable);
+>>>>>>> origin/android16-base
 
 		bus = bus->parent;
 	}
@@ -595,7 +603,11 @@ static int acpi_pci_propagate_wakeup(struct pci_bus *bus, bool enable)
 	/* We have reached the root bus. */
 	if (bus->bridge) {
 		if (acpi_pm_device_can_wakeup(bus->bridge))
+<<<<<<< HEAD
 			return acpi_pm_set_bridge_wakeup(bus->bridge, enable);
+=======
+			return acpi_pm_set_device_wakeup(bus->bridge, enable);
+>>>>>>> origin/android16-base
 	}
 	return 0;
 }

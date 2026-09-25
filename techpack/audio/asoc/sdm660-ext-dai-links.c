@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
+<<<<<<< HEAD
  * Copyright (c) 2015-2019, 2020, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2015-2019, 2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/of.h>
@@ -275,6 +279,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_mix_rx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_0_RX,
@@ -292,6 +300,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_tx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_0_TX,
@@ -306,6 +318,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_mix_rx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_1_RX,
@@ -322,6 +338,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_tx3",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_1_TX,
@@ -336,6 +356,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_mix_rx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_3_RX,
@@ -352,6 +376,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_tx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.dpcm_playback = 1,
@@ -367,6 +395,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_mix_rx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_4_RX,
@@ -383,6 +415,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_rx3",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_5_RX,
@@ -400,6 +436,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_mad1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_5_TX,
@@ -414,6 +454,10 @@ static struct snd_soc_dai_link msm_ext_tasha_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tasha_codec",
 		.codec_dai_name = "tasha_rx4",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_6_RX,
@@ -433,6 +477,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_rx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_0_RX,
@@ -450,6 +498,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_tx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_0_TX,
@@ -464,6 +516,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_rx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_1_RX,
@@ -480,6 +536,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_tx3",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_1_TX,
@@ -494,6 +554,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_rx2",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_2_RX,
@@ -509,6 +573,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_rx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_3_RX,
@@ -525,6 +593,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_tx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_3_TX,
@@ -539,6 +611,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_rx1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_4_RX,
@@ -555,6 +631,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_rx3",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_5_RX,
@@ -572,6 +652,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_mad1",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_5_TX,
@@ -586,6 +670,10 @@ static struct snd_soc_dai_link msm_ext_tavil_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "tavil_codec",
 		.codec_dai_name = "tavil_rx4",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_6_RX,
@@ -1282,6 +1370,36 @@ static struct snd_soc_dai_link msm_ext_common_be_dai[] = {
 		.ignore_suspend = 1,
 		.ignore_pmdown_time = 1,
 	},
+<<<<<<< HEAD
+=======
+	/* Proxy Tx BACK END DAI Link */
+	{
+		.name = LPASS_BE_PROXY_TX,
+		.stream_name = "Proxy Capture",
+		.cpu_dai_name = "msm-dai-q6-dev.8195",
+		.platform_name = "msm-pcm-routing",
+		.codec_name = "msm-stub-codec.1",
+		.codec_dai_name = "msm-stub-tx",
+		.no_pcm = 1,
+		.dpcm_capture = 1,
+		.id = MSM_BACKEND_DAI_PROXY_TX,
+		.ignore_suspend = 1,
+	},
+	/* Proxy Rx BACK END DAI Link */
+	{
+		.name = LPASS_BE_PROXY_RX,
+		.stream_name = "Proxy Playback",
+		.cpu_dai_name = "msm-dai-q6-dev.8194",
+		.platform_name = "msm-pcm-routing",
+		.codec_name = "msm-stub-codec.1",
+		.codec_dai_name = "msm-stub-rx",
+		.no_pcm = 1,
+		.dpcm_playback = 1,
+		.id = MSM_BACKEND_DAI_PROXY_RX,
+		.ignore_pmdown_time = 1,
+		.ignore_suspend = 1,
+	},
+>>>>>>> origin/android16-base
 	{
 		.name = LPASS_BE_USB_AUDIO_RX,
 		.stream_name = "USB Audio Playback",
@@ -1289,6 +1407,10 @@ static struct snd_soc_dai_link msm_ext_common_be_dai[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "msm-stub-codec.1",
 		.codec_dai_name = "msm-stub-rx",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_USB_RX,
@@ -1769,6 +1891,10 @@ static struct snd_soc_dai_link msm_wcn_be_dai_links[] = {
 		 * supported usecase information
 		 */
 		.codec_dai_name = "btfm_bt_sco_a2dp_slim_rx",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_7_RX,
@@ -1785,6 +1911,10 @@ static struct snd_soc_dai_link msm_wcn_be_dai_links[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "btfmslim_slave",
 		.codec_dai_name = "btfm_bt_sco_slim_tx",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_7_TX,
@@ -1799,6 +1929,10 @@ static struct snd_soc_dai_link msm_wcn_be_dai_links[] = {
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "btfmslim_slave",
 		.codec_dai_name = "btfm_fm_slim_tx",
+<<<<<<< HEAD
+=======
+		.dynamic_be = 1,
+>>>>>>> origin/android16-base
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_SLIMBUS_8_TX,
@@ -1814,7 +1948,11 @@ static struct snd_soc_dai_link ext_disp_be_dai_link[] = {
 	{
 		.name = LPASS_BE_DISPLAY_PORT,
 		.stream_name = "Display Port Playback",
+<<<<<<< HEAD
 		.cpu_dai_name = "msm-dai-q6-dp.24608",
+=======
+		.cpu_dai_name = "msm-dai-q6-dp.0",
+>>>>>>> origin/android16-base
 		.platform_name = "msm-pcm-routing",
 		.codec_name = "msm-ext-disp-audio-codec-rx",
 		.codec_dai_name = "msm_dp_audio_codec_rx_dai",

@@ -1078,8 +1078,13 @@ static struct pinctrl *create_pinctrl(struct device *dev,
 		 * an -EPROBE_DEFER later, as that is the worst case.
 		 */
 		if (ret == -EPROBE_DEFER) {
+<<<<<<< HEAD
 			pinctrl_free(p, false);
 			mutex_unlock(&pinctrl_maps_mutex);
+=======
+			mutex_unlock(&pinctrl_maps_mutex);
+			pinctrl_free(p, false);
+>>>>>>> origin/android16-base
 			return ERR_PTR(ret);
 		}
 	}
@@ -1224,17 +1229,28 @@ EXPORT_SYMBOL_GPL(pinctrl_lookup_state);
 static int pinctrl_commit_state(struct pinctrl *p, struct pinctrl_state *state)
 {
 	struct pinctrl_setting *setting, *setting2;
+<<<<<<< HEAD
 	struct pinctrl_state *old_state = p->state;
 	int ret;
 
 	if (p->state) {
+=======
+	struct pinctrl_state *old_state = READ_ONCE(p->state);
+	int ret;
+
+	if (old_state) {
+>>>>>>> origin/android16-base
 		/*
 		 * For each pinmux setting in the old state, forget SW's record
 		 * of mux owner for that pingroup. Any pingroups which are
 		 * still owned by the new state will be re-acquired by the call
 		 * to pinmux_enable_setting() in the loop below.
 		 */
+<<<<<<< HEAD
 		list_for_each_entry(setting, &p->state->settings, node) {
+=======
+		list_for_each_entry(setting, &old_state->settings, node) {
+>>>>>>> origin/android16-base
 			if (setting->type != PIN_MAP_TYPE_MUX_GROUP)
 				continue;
 			pinmux_disable_setting(setting);
@@ -1992,6 +2008,17 @@ out_err:
 	return ERR_PTR(ret);
 }
 
+<<<<<<< HEAD
+=======
+static void pinctrl_uninit_controller(struct pinctrl_dev *pctldev, struct pinctrl_desc *pctldesc)
+{
+	pinctrl_free_pindescs(pctldev, pctldesc->pins,
+			      pctldesc->npins);
+	mutex_destroy(&pctldev->mutex);
+	kfree(pctldev);
+}
+
+>>>>>>> origin/android16-base
 static int pinctrl_claim_hogs(struct pinctrl_dev *pctldev)
 {
 	pctldev->p = create_pinctrl(pctldev->dev, pctldev);
@@ -2036,11 +2063,15 @@ int pinctrl_enable(struct pinctrl_dev *pctldev)
 
 	error = pinctrl_claim_hogs(pctldev);
 	if (error) {
+<<<<<<< HEAD
 		dev_err(pctldev->dev, "could not claim hogs: %i\n",
 			error);
 		mutex_destroy(&pctldev->mutex);
 		kfree(pctldev);
 
+=======
+		dev_err(pctldev->dev, "could not claim hogs: %i\n", error);
+>>>>>>> origin/android16-base
 		return error;
 	}
 
@@ -2076,8 +2107,15 @@ struct pinctrl_dev *pinctrl_register(struct pinctrl_desc *pctldesc,
 		return pctldev;
 
 	error = pinctrl_enable(pctldev);
+<<<<<<< HEAD
 	if (error)
 		return ERR_PTR(error);
+=======
+	if (error) {
+		pinctrl_uninit_controller(pctldev, pctldesc);
+		return ERR_PTR(error);
+	}
+>>>>>>> origin/android16-base
 
 	return pctldev;
 

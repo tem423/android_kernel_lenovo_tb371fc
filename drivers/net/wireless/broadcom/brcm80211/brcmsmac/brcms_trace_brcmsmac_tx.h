@@ -102,7 +102,11 @@ TRACE_EVENT(brcms_ampdu_session,
 #ifdef CONFIG_BRCM_TRACING
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/wireless/broadcom/brcm80211/brcmsmac
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE brcms_trace_brcmsmac_tx
 #include <trace/define_trace.h>

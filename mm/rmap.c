@@ -82,7 +82,12 @@ static inline struct anon_vma *anon_vma_alloc(void)
 	anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
 	if (anon_vma) {
 		atomic_set(&anon_vma->refcount, 1);
+<<<<<<< HEAD
 		anon_vma->degree = 1;	/* Reference for first vma */
+=======
+		anon_vma->num_children = 0;
+		anon_vma->num_active_vmas = 0;
+>>>>>>> origin/android16-base
 		anon_vma->parent = anon_vma;
 		/*
 		 * Initialise the anon_vma root to point to itself. If called
@@ -190,6 +195,10 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 		anon_vma = anon_vma_alloc();
 		if (unlikely(!anon_vma))
 			goto out_enomem_free_avc;
+<<<<<<< HEAD
+=======
+		anon_vma->num_children++; /* self-parent link for new root */
+>>>>>>> origin/android16-base
 		allocated = anon_vma;
 	}
 
@@ -199,8 +208,12 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	if (likely(!vma->anon_vma)) {
 		vma->anon_vma = anon_vma;
 		anon_vma_chain_link(vma, avc, anon_vma);
+<<<<<<< HEAD
 		/* vma reference or self-parent link for new root */
 		anon_vma->degree++;
+=======
+		anon_vma->num_active_vmas++;
+>>>>>>> origin/android16-base
 		allocated = NULL;
 		avc = NULL;
 	}
@@ -279,6 +292,7 @@ int anon_vma_clone(struct vm_area_struct *dst, struct vm_area_struct *src)
 		anon_vma_chain_link(dst, avc, anon_vma);
 
 		/*
+<<<<<<< HEAD
 		 * Reuse existing anon_vma if its degree lower than two,
 		 * that means it has no vma and only one anon_vma child.
 		 *
@@ -292,6 +306,21 @@ int anon_vma_clone(struct vm_area_struct *dst, struct vm_area_struct *src)
 	}
 	if (dst->anon_vma)
 		dst->anon_vma->degree++;
+=======
+		 * Reuse existing anon_vma if it has no vma and only one
+		 * anon_vma child.
+		 *
+		 * Root anon_vma is never reused:
+		 * it has self-parent reference and at least one child.
+		 */
+		if (!dst->anon_vma && src->anon_vma &&
+		    anon_vma->num_children < 2 &&
+		    anon_vma->num_active_vmas == 0)
+			dst->anon_vma = anon_vma;
+	}
+	if (dst->anon_vma)
+		dst->anon_vma->num_active_vmas++;
+>>>>>>> origin/android16-base
 	unlock_anon_vma_root(root);
 	return 0;
 
@@ -341,6 +370,10 @@ int anon_vma_fork(struct vm_area_struct *vma, struct vm_area_struct *pvma)
 	anon_vma = anon_vma_alloc();
 	if (!anon_vma)
 		goto out_error;
+<<<<<<< HEAD
+=======
+	anon_vma->num_active_vmas++;
+>>>>>>> origin/android16-base
 	avc = anon_vma_chain_alloc(GFP_KERNEL);
 	if (!avc)
 		goto out_error_free_anon_vma;
@@ -361,7 +394,11 @@ int anon_vma_fork(struct vm_area_struct *vma, struct vm_area_struct *pvma)
 	vma->anon_vma = anon_vma;
 	anon_vma_lock_write(anon_vma);
 	anon_vma_chain_link(vma, avc, anon_vma);
+<<<<<<< HEAD
 	anon_vma->parent->degree++;
+=======
+	anon_vma->parent->num_children++;
+>>>>>>> origin/android16-base
 	anon_vma_unlock_write(anon_vma);
 
 	return 0;
@@ -393,7 +430,11 @@ void unlink_anon_vmas(struct vm_area_struct *vma)
 		 * to free them outside the lock.
 		 */
 		if (RB_EMPTY_ROOT(&anon_vma->rb_root.rb_root)) {
+<<<<<<< HEAD
 			anon_vma->parent->degree--;
+=======
+			anon_vma->parent->num_children--;
+>>>>>>> origin/android16-base
 			continue;
 		}
 
@@ -401,7 +442,12 @@ void unlink_anon_vmas(struct vm_area_struct *vma)
 		anon_vma_chain_free(avc);
 	}
 	if (vma->anon_vma)
+<<<<<<< HEAD
 		vma->anon_vma->degree--;
+=======
+		vma->anon_vma->num_active_vmas--;
+
+>>>>>>> origin/android16-base
 	unlock_anon_vma_root(root);
 
 	/*
@@ -412,7 +458,12 @@ void unlink_anon_vmas(struct vm_area_struct *vma)
 	list_for_each_entry_safe(avc, next, &vma->anon_vma_chain, same_vma) {
 		struct anon_vma *anon_vma = avc->anon_vma;
 
+<<<<<<< HEAD
 		VM_WARN_ON(anon_vma->degree);
+=======
+		VM_WARN_ON(anon_vma->num_children);
+		VM_WARN_ON(anon_vma->num_active_vmas);
+>>>>>>> origin/android16-base
 		put_anon_vma(anon_vma);
 
 		list_del(&avc->same_vma);
@@ -686,7 +737,10 @@ static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
  */
 unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
 {
+<<<<<<< HEAD
 	unsigned long address;
+=======
+>>>>>>> origin/android16-base
 	if (PageAnon(page)) {
 		struct anon_vma *page__anon_vma = page_anon_vma(page);
 		/*
@@ -696,6 +750,7 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
 		if (!vma->anon_vma || !page__anon_vma ||
 		    vma->anon_vma->root != page__anon_vma->root)
 			return -EFAULT;
+<<<<<<< HEAD
 	} else if (page->mapping) {
 		if (!vma->vm_file || vma->vm_file->f_mapping != page->mapping)
 			return -EFAULT;
@@ -705,6 +760,15 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
 	if (unlikely(address < vma->vm_start || address >= vma->vm_end))
 		return -EFAULT;
 	return address;
+=======
+	} else if (!vma->vm_file) {
+		return -EFAULT;
+	} else if (vma->vm_file->f_mapping != compound_head(page)->mapping) {
+		return -EFAULT;
+	}
+
+	return vma_address(page, vma);
+>>>>>>> origin/android16-base
 }
 
 pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address)
@@ -896,7 +960,11 @@ static bool page_mkclean_one(struct page *page, struct vm_area_struct *vma,
 	 * We have to assume the worse case ie pmd for invalidation. Note that
 	 * the page can not be free from this function.
 	 */
+<<<<<<< HEAD
 	end = min(vma->vm_end, start + (PAGE_SIZE << compound_order(page)));
+=======
+	end = vma_address_end(page, vma);
+>>>>>>> origin/android16-base
 	mmu_notifier_invalidate_range_start(vma->vm_mm, start, end);
 
 	while (page_vma_mapped_walk(&pvmw)) {
@@ -1137,7 +1205,11 @@ void do_page_add_anon_rmap(struct page *page,
 }
 
 /**
+<<<<<<< HEAD
  * __page_add_new_anon_rmap - add pte mapping to a new anonymous page
+=======
+ * page_add_new_anon_rmap - add pte mapping to a new anonymous page
+>>>>>>> origin/android16-base
  * @page:	the page to add the mapping to
  * @vma:	the vm area in which the mapping is added
  * @address:	the user virtual address mapped
@@ -1147,11 +1219,19 @@ void do_page_add_anon_rmap(struct page *page,
  * This means the inc-and-test can be bypassed.
  * Page does not have to be locked.
  */
+<<<<<<< HEAD
 void __page_add_new_anon_rmap(struct page *page,
+=======
+void page_add_new_anon_rmap(struct page *page,
+>>>>>>> origin/android16-base
 	struct vm_area_struct *vma, unsigned long address, bool compound)
 {
 	int nr = compound ? hpage_nr_pages(page) : 1;
 
+<<<<<<< HEAD
+=======
+	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
+>>>>>>> origin/android16-base
 	__SetPageSwapBacked(page);
 	if (compound) {
 		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
@@ -1347,6 +1427,18 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	unsigned long start = address, end;
 	enum ttu_flags flags = (enum ttu_flags)arg;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * When racing against e.g. zap_pte_range() on another cpu,
+	 * in between its ptep_get_and_clear_full() and page_remove_rmap(),
+	 * try_to_unmap() may return false when it is about to become true,
+	 * if page table locking is skipped: use TTU_SYNC to wait for that.
+	 */
+	if (flags & TTU_SYNC)
+		pvmw.flags = PVMW_SYNC;
+
+>>>>>>> origin/android16-base
 	/* munlock has nothing to gain from examining un-locked vmas */
 	if ((flags & TTU_MUNLOCK) && !(vma->vm_flags & VM_LOCKED))
 		return true;
@@ -1368,7 +1460,12 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	 * Note that the page can not be free in this function as call of
 	 * try_to_unmap() must hold a reference on the page.
 	 */
+<<<<<<< HEAD
 	end = min(vma->vm_end, start + (PAGE_SIZE << compound_order(page)));
+=======
+	end = PageKsm(page) ?
+			address + PAGE_SIZE : vma_address_end(page, vma);
+>>>>>>> origin/android16-base
 	if (PageHuge(page)) {
 		/*
 		 * If sharing is possible, start and end will be adjusted
@@ -1586,7 +1683,34 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 
 			/* MADV_FREE page check */
 			if (!PageSwapBacked(page)) {
+<<<<<<< HEAD
 				if (!PageDirty(page)) {
+=======
+				int ref_count, map_count;
+
+				/*
+				 * Synchronize with gup_pte_range():
+				 * - clear PTE; barrier; read refcount
+				 * - inc refcount; barrier; read PTE
+				 */
+				smp_mb();
+
+				ref_count = page_ref_count(page);
+				map_count = page_mapcount(page);
+
+				/*
+				 * Order reads for page refcount and dirty flag
+				 * (see comments in __remove_mapping()).
+				 */
+				smp_rmb();
+
+				/*
+				 * The only page refs must be one from isolation
+				 * plus the rmap(s) (dropped by discard:).
+				 */
+				if (ref_count == 1 + map_count &&
+				    !PageDirty(page)) {
+>>>>>>> origin/android16-base
 					/* Invalidate as we cleared the pte */
 					mmu_notifier_invalidate_range(mm,
 						address, address + PAGE_SIZE);
@@ -1681,9 +1805,15 @@ static bool invalid_migration_vma(struct vm_area_struct *vma, void *arg)
 	return is_vma_temporary_stack(vma);
 }
 
+<<<<<<< HEAD
 static int page_mapcount_is_zero(struct page *page)
 {
 	return !total_mapcount(page);
+=======
+static int page_not_mapped(struct page *page)
+{
+	return !page_mapped(page);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -1705,7 +1835,11 @@ bool try_to_unmap(struct page *page, enum ttu_flags flags,
 	struct rmap_walk_control rwc = {
 		.rmap_one = try_to_unmap_one,
 		.arg = (void *)flags,
+<<<<<<< HEAD
 		.done = page_mapcount_is_zero,
+=======
+		.done = page_not_mapped,
+>>>>>>> origin/android16-base
 		.anon_lock = page_lock_anon_vma_read,
 		.target_vma = vma,
 	};
@@ -1727,6 +1861,7 @@ bool try_to_unmap(struct page *page, enum ttu_flags flags,
 	else
 		rmap_walk(page, &rwc);
 
+<<<<<<< HEAD
 	return !page_mapcount(page) ? true : false;
 }
 
@@ -1735,6 +1870,17 @@ static int page_not_mapped(struct page *page)
 	return !page_mapped(page);
 };
 
+=======
+	/*
+	 * When racing against e.g. zap_pte_range() on another cpu,
+	 * in between its ptep_get_and_clear_full() and page_remove_rmap(),
+	 * try_to_unmap() may return false when it is about to become true,
+	 * if page table locking is skipped: use TTU_SYNC to wait for that.
+	 */
+	return !page_mapcount(page);
+}
+
+>>>>>>> origin/android16-base
 /**
  * try_to_munlock - try to munlock a page
  * @page: the page to be munlocked
@@ -1838,6 +1984,10 @@ static void rmap_walk_anon(struct page *page, struct rmap_walk_control *rwc,
 		struct vm_area_struct *vma = avc->vma;
 		unsigned long address = vma_address(page, vma);
 
+<<<<<<< HEAD
+=======
+		VM_BUG_ON_VMA(address == -EFAULT, vma);
+>>>>>>> origin/android16-base
 		cond_resched();
 
 		if (rwc->invalid_vma && rwc->invalid_vma(vma, rwc->arg))
@@ -1900,6 +2050,10 @@ static void rmap_walk_file(struct page *page, struct rmap_walk_control *rwc,
 			pgoff_start, pgoff_end) {
 		unsigned long address = vma_address(page, vma);
 
+<<<<<<< HEAD
+=======
+		VM_BUG_ON_VMA(address == -EFAULT, vma);
+>>>>>>> origin/android16-base
 		cond_resched();
 
 		if (rwc->invalid_vma && rwc->invalid_vma(vma, rwc->arg))

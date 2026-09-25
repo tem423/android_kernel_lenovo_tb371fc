@@ -47,8 +47,13 @@
 
 ENTRY(ftrace_stub)
 #ifdef CONFIG_DYNAMIC_FTRACE
+<<<<<<< HEAD
        .global _mcount
        .set    _mcount, ftrace_stub
+=======
+       .global MCOUNT_NAME
+       .set    MCOUNT_NAME, ftrace_stub
+>>>>>>> origin/android16-base
 #endif
 	ret
 ENDPROC(ftrace_stub)
@@ -79,7 +84,11 @@ EXPORT_SYMBOL(return_to_handler)
 #endif
 
 #ifndef CONFIG_DYNAMIC_FTRACE
+<<<<<<< HEAD
 ENTRY(_mcount)
+=======
+ENTRY(MCOUNT_NAME)
+>>>>>>> origin/android16-base
 	la	t4, ftrace_stub
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
 	la	t0, ftrace_graph_return
@@ -125,6 +134,12 @@ do_trace:
 	jalr	t5
 	RESTORE_ABI_STATE
 	ret
+<<<<<<< HEAD
 ENDPROC(_mcount)
 #endif
 EXPORT_SYMBOL(_mcount)
+=======
+ENDPROC(MCOUNT_NAME)
+#endif
+EXPORT_SYMBOL(MCOUNT_NAME)
+>>>>>>> origin/android16-base

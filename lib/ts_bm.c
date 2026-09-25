@@ -64,10 +64,19 @@ static unsigned int bm_find(struct ts_config *conf, struct ts_state *state)
 	struct ts_bm *bm = ts_config_priv(conf);
 	unsigned int i, text_len, consumed = state->offset;
 	const u8 *text;
+<<<<<<< HEAD
 	int shift = bm->patlen - 1, bs;
 	const u8 icase = conf->flags & TS_IGNORECASE;
 
 	for (;;) {
+=======
+	int bs;
+	const u8 icase = conf->flags & TS_IGNORECASE;
+
+	for (;;) {
+		int shift = bm->patlen - 1;
+
+>>>>>>> origin/android16-base
 		text_len = conf->get_next_block(consumed, &text, conf, state);
 
 		if (unlikely(text_len == 0))

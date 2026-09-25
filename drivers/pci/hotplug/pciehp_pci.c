@@ -55,7 +55,18 @@ int pciehp_configure_device(struct slot *p_slot)
 
 	pci_assign_unassigned_bridge_resources(bridge);
 	pcie_bus_configure_settings(parent);
+<<<<<<< HEAD
 	pci_bus_add_devices(parent);
+=======
+
+	/*
+	 * Release reset_lock during driver binding
+	 * to avoid AB-BA deadlock with device_lock.
+	 */
+	up_read(&ctrl->reset_lock);
+	pci_bus_add_devices(parent);
+	down_read_nested(&ctrl->reset_lock, ctrl->depth);
+>>>>>>> origin/android16-base
 
  out:
 	pci_unlock_rescan_remove();
@@ -91,7 +102,19 @@ void pciehp_unconfigure_device(struct slot *p_slot)
 				pci_walk_bus(dev->subordinate,
 					     pci_dev_set_disconnected, NULL);
 		}
+<<<<<<< HEAD
 		pci_stop_and_remove_bus_device(dev);
+=======
+
+		/*
+		 * Release reset_lock during driver unbinding
+		 * to avoid AB-BA deadlock with device_lock.
+		 */
+		up_read(&ctrl->reset_lock);
+		pci_stop_and_remove_bus_device(dev);
+		down_read_nested(&ctrl->reset_lock, ctrl->depth);
+
+>>>>>>> origin/android16-base
 		/*
 		 * Ensure that no new Requests will be generated from
 		 * the device.

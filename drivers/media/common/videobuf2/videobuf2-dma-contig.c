@@ -154,7 +154,11 @@ static void *vb2_dc_alloc(struct device *dev, unsigned long attrs,
 	buf->cookie = dma_alloc_attrs(dev, size, &buf->dma_addr,
 					GFP_KERNEL | gfp_flags, buf->attrs);
 	if (!buf->cookie) {
+<<<<<<< HEAD
 		dev_err(dev, "dma_alloc_coherent of size %ld failed\n", size);
+=======
+		dev_err(dev, "dma_alloc_coherent of size %lu failed\n", size);
+>>>>>>> origin/android16-base
 		kfree(buf);
 		return ERR_PTR(-ENOMEM);
 	}
@@ -206,9 +210,15 @@ static int vb2_dc_mmap(void *buf_priv, struct vm_area_struct *vma)
 
 	vma->vm_ops->open(vma);
 
+<<<<<<< HEAD
 	pr_debug("%s: mapped dma addr 0x%08lx at 0x%08lx, size %ld\n",
 		__func__, (unsigned long)buf->dma_addr, vma->vm_start,
 		buf->size);
+=======
+	pr_debug("%s: mapped dma addr 0x%08lx at 0x%08lx, size %lu\n",
+		 __func__, (unsigned long)buf->dma_addr, vma->vm_start,
+		 buf->size);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

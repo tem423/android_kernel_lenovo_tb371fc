@@ -215,7 +215,11 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
 {
 	unsigned long old;
 
+<<<<<<< HEAD
 	if (pte_young(*ptep))
+=======
+	if (!pte_young(*ptep))
+>>>>>>> origin/android16-base
 		return 0;
 	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
 	return (old & _PAGE_ACCESSED) != 0;

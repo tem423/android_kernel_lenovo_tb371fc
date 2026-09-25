@@ -349,6 +349,7 @@ extern void deactivate_file_page(struct page *page);
 extern void mark_page_lazyfree(struct page *page);
 extern void swap_setup(void);
 
+<<<<<<< HEAD
 extern void __lru_cache_add_active_or_unevictable(struct page *page,
 						unsigned long vma_flags);
 
@@ -357,6 +358,10 @@ static inline void lru_cache_add_active_or_unevictable(struct page *page,
 {
 	return __lru_cache_add_active_or_unevictable(page, vma->vm_flags);
 }
+=======
+extern void lru_cache_add_active_or_unevictable(struct page *page,
+						struct vm_area_struct *vma);
+>>>>>>> origin/android16-base
 
 /* linux/mm/vmscan.c */
 extern unsigned long zone_reclaimable_pages(struct zone *zone);

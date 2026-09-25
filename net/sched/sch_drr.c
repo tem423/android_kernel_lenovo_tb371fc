@@ -134,7 +134,11 @@ static int drr_change_class(struct Qdisc *sch, u32 classid, u32 parentid,
 					    tca[TCA_RATE]);
 		if (err) {
 			NL_SET_ERR_MSG(extack, "Failed to replace estimator");
+<<<<<<< HEAD
 			qdisc_destroy(cl->qdisc);
+=======
+			qdisc_put(cl->qdisc);
+>>>>>>> origin/android16-base
 			kfree(cl);
 			return err;
 		}
@@ -153,7 +157,11 @@ static int drr_change_class(struct Qdisc *sch, u32 classid, u32 parentid,
 static void drr_destroy_class(struct Qdisc *sch, struct drr_class *cl)
 {
 	gen_kill_estimator(&cl->rate_est);
+<<<<<<< HEAD
 	qdisc_destroy(cl->qdisc);
+=======
+	qdisc_put(cl->qdisc);
+>>>>>>> origin/android16-base
 	kfree(cl);
 }
 

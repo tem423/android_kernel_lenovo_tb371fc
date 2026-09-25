@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 %pure-parser
+=======
+%define api.pure full
+>>>>>>> origin/android16-base
 %parse-param {void *_parse_state}
 %parse-param {void *scanner}
 %lex-param {void* scanner}

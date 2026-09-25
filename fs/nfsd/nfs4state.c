@@ -743,7 +743,12 @@ static void nfs4_free_deleg(struct nfs4_stid *stid)
  * When a delegation is recalled, the filehandle is stored in the "new"
  * filter.
  * Every 30 seconds we swap the filters and clear the "new" one,
+<<<<<<< HEAD
  * unless both are empty of course.
+=======
+ * unless both are empty of course.  This results in delegations for a
+ * given filehandle being blocked for between 30 and 60 seconds.
+>>>>>>> origin/android16-base
  *
  * Each filter is 256 bits.  We hash the filehandle to 32bit and use the
  * low 3 bytes as hash-table indices.
@@ -755,7 +760,11 @@ static void nfs4_free_deleg(struct nfs4_stid *stid)
 static DEFINE_SPINLOCK(blocked_delegations_lock);
 static struct bloom_pair {
 	int	entries, old_entries;
+<<<<<<< HEAD
 	time_t	swap_time;
+=======
+	time64_t swap_time;
+>>>>>>> origin/android16-base
 	int	new; /* index into 'set' */
 	DECLARE_BITMAP(set[2], 256);
 } blocked_delegations;
@@ -767,6 +776,7 @@ static int delegation_blocked(struct knfsd_fh *fh)
 
 	if (bd->entries == 0)
 		return 0;
+<<<<<<< HEAD
 	if (seconds_since_boot() - bd->swap_time > 30) {
 		spin_lock(&blocked_delegations_lock);
 		if (seconds_since_boot() - bd->swap_time > 30) {
@@ -776,6 +786,17 @@ static int delegation_blocked(struct knfsd_fh *fh)
 			       sizeof(bd->set[0]));
 			bd->new = 1-bd->new;
 			bd->swap_time = seconds_since_boot();
+=======
+	if (ktime_get_seconds() - bd->swap_time > 30) {
+		spin_lock(&blocked_delegations_lock);
+		if (ktime_get_seconds() - bd->swap_time > 30) {
+			bd->entries -= bd->old_entries;
+			bd->old_entries = bd->entries;
+			bd->new = 1-bd->new;
+			memset(bd->set[bd->new], 0,
+			       sizeof(bd->set[0]));
+			bd->swap_time = ktime_get_seconds();
+>>>>>>> origin/android16-base
 		}
 		spin_unlock(&blocked_delegations_lock);
 	}
@@ -805,7 +826,11 @@ static void block_delegations(struct knfsd_fh *fh)
 	__set_bit((hash>>8)&255, bd->set[bd->new]);
 	__set_bit((hash>>16)&255, bd->set[bd->new]);
 	if (bd->entries == 0)
+<<<<<<< HEAD
 		bd->swap_time = seconds_since_boot();
+=======
+		bd->swap_time = ktime_get_seconds();
+>>>>>>> origin/android16-base
 	bd->entries += 1;
 	spin_unlock(&blocked_delegations_lock);
 }
@@ -975,6 +1000,14 @@ hash_delegation_locked(struct nfs4_delegation *dp, struct nfs4_file *fp)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static bool delegation_hashed(struct nfs4_delegation *dp)
+{
+	return !(list_empty(&dp->dl_perfile));
+}
+
+>>>>>>> origin/android16-base
 static bool
 unhash_delegation_locked(struct nfs4_delegation *dp)
 {
@@ -982,7 +1015,11 @@ unhash_delegation_locked(struct nfs4_delegation *dp)
 
 	lockdep_assert_held(&state_lock);
 
+<<<<<<< HEAD
 	if (list_empty(&dp->dl_perfile))
+=======
+	if (!delegation_hashed(dp))
+>>>>>>> origin/android16-base
 		return false;
 
 	dp->dl_stid.sc_type = NFS4_CLOSED_DELEG_STID;
@@ -1014,9 +1051,15 @@ static void revoke_delegation(struct nfs4_delegation *dp)
 	WARN_ON(!list_empty(&dp->dl_recall_lru));
 
 	if (clp->cl_minorversion) {
+<<<<<<< HEAD
 		dp->dl_stid.sc_type = NFS4_REVOKED_DELEG_STID;
 		refcount_inc(&dp->dl_stid.sc_count);
 		spin_lock(&clp->cl_lock);
+=======
+		spin_lock(&clp->cl_lock);
+		dp->dl_stid.sc_type = NFS4_REVOKED_DELEG_STID;
+		refcount_inc(&dp->dl_stid.sc_count);
+>>>>>>> origin/android16-base
 		list_add(&dp->dl_recall_lru, &clp->cl_revoked);
 		spin_unlock(&clp->cl_lock);
 	}
@@ -3441,8 +3484,15 @@ nfsd4_setclientid_confirm(struct svc_rqst *rqstp,
 			status = nfserr_clid_inuse;
 			if (client_has_state(old)
 					&& !same_creds(&unconf->cl_cred,
+<<<<<<< HEAD
 							&old->cl_cred))
 				goto out;
+=======
+							&old->cl_cred)) {
+				old = NULL;
+				goto out;
+			}
+>>>>>>> origin/android16-base
 			status = mark_client_expired_locked(old);
 			if (status) {
 				old = NULL;
@@ -3912,7 +3962,11 @@ static void nfsd4_cb_recall_prepare(struct nfsd4_callback *cb)
 	 * queued for a lease break. Don't queue it again.
 	 */
 	spin_lock(&state_lock);
+<<<<<<< HEAD
 	if (dp->dl_time == 0) {
+=======
+	if (delegation_hashed(dp) && dp->dl_time == 0) {
+>>>>>>> origin/android16-base
 		dp->dl_time = get_seconds();
 		list_add_tail(&dp->dl_recall_lru, &nn->del_recall_lru);
 	}
@@ -4991,6 +5045,7 @@ static __be32 nfsd4_validate_stateid(struct nfs4_client *cl, stateid_t *stateid)
 	if (ZERO_STATEID(stateid) || ONE_STATEID(stateid) ||
 		CLOSE_STATEID(stateid))
 		return status;
+<<<<<<< HEAD
 	/* Client debugging aid. */
 	if (!same_clid(&stateid->si_opaque.so_clid, &cl->cl_clientid)) {
 		char addr_str[INET6_ADDRSTRLEN];
@@ -5000,6 +5055,8 @@ static __be32 nfsd4_validate_stateid(struct nfs4_client *cl, stateid_t *stateid)
 					"with incorrect client ID\n", addr_str);
 		return status;
 	}
+=======
+>>>>>>> origin/android16-base
 	spin_lock(&cl->cl_lock);
 	s = find_stateid_locked(cl, stateid);
 	if (!s)
@@ -5484,7 +5541,11 @@ out:
 	return status;
 }
 
+<<<<<<< HEAD
 static void nfsd4_close_open_stateid(struct nfs4_ol_stateid *s)
+=======
+static bool nfsd4_close_open_stateid(struct nfs4_ol_stateid *s)
+>>>>>>> origin/android16-base
 {
 	struct nfs4_client *clp = s->st_stid.sc_client;
 	bool unhashed;
@@ -5498,11 +5559,19 @@ static void nfsd4_close_open_stateid(struct nfs4_ol_stateid *s)
 			put_ol_stateid_locked(s, &reaplist);
 		spin_unlock(&clp->cl_lock);
 		free_ol_stateid_reaplist(&reaplist);
+<<<<<<< HEAD
 	} else {
 		spin_unlock(&clp->cl_lock);
 		free_ol_stateid_reaplist(&reaplist);
 		if (unhashed)
 			move_to_close_lru(s, clp->net);
+=======
+		return false;
+	} else {
+		spin_unlock(&clp->cl_lock);
+		free_ol_stateid_reaplist(&reaplist);
+		return unhashed;
+>>>>>>> origin/android16-base
 	}
 }
 
@@ -5518,6 +5587,10 @@ nfsd4_close(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	struct nfs4_ol_stateid *stp;
 	struct net *net = SVC_NET(rqstp);
 	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
+<<<<<<< HEAD
+=======
+	bool need_move_to_close_list;
+>>>>>>> origin/android16-base
 
 	dprintk("NFSD: nfsd4_close on file %pd\n", 
 			cstate->current_fh.fh_dentry);
@@ -5540,8 +5613,15 @@ nfsd4_close(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	 */
 	nfs4_inc_and_copy_stateid(&close->cl_stateid, &stp->st_stid);
 
+<<<<<<< HEAD
 	nfsd4_close_open_stateid(stp);
 	mutex_unlock(&stp->st_mutex);
+=======
+	need_move_to_close_list = nfsd4_close_open_stateid(stp);
+	mutex_unlock(&stp->st_mutex);
+	if (need_move_to_close_list)
+		move_to_close_lru(stp, net);
+>>>>>>> origin/android16-base
 
 	/* v4.1+ suggests that we send a special stateid in here, since the
 	 * clients should just ignore this anyway. Since this is not useful

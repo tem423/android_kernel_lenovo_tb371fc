@@ -299,7 +299,11 @@ select_by_hash:
 			i = j = reciprocal_scale(hash, socks);
 			while (reuse->socks[i]->sk_state == TCP_ESTABLISHED) {
 				i++;
+<<<<<<< HEAD
 				if (i >= reuse->num_socks)
+=======
+				if (i >= socks)
+>>>>>>> origin/android16-base
 					i = 0;
 				if (i == j)
 					goto out;

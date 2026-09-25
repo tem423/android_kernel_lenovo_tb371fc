@@ -1281,7 +1281,11 @@ static int cb_pcidas_auto_attach(struct comedi_device *dev,
 	     devpriv->amcc + AMCC_OP_REG_INTCSR);
 
 	ret = request_irq(pcidev->irq, cb_pcidas_interrupt, IRQF_SHARED,
+<<<<<<< HEAD
 			  dev->board_name, dev);
+=======
+			  "cb_pcidas", dev);
+>>>>>>> origin/android16-base
 	if (ret) {
 		dev_dbg(dev->class_dev, "unable to allocate irq %d\n",
 			pcidev->irq);

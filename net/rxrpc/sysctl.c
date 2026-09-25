@@ -17,7 +17,11 @@
 static struct ctl_table_header *rxrpc_sysctl_reg_table;
 static const unsigned int one = 1;
 static const unsigned int four = 4;
+<<<<<<< HEAD
 static const unsigned int thirtytwo = 32;
+=======
+static const unsigned int max_backlog = RXRPC_BACKLOG_MAX - 1;
+>>>>>>> origin/android16-base
 static const unsigned int n_65535 = 65535;
 static const unsigned int n_max_acks = RXRPC_RXTX_BUFF_SIZE - 1;
 static const unsigned long one_jiffy = 1;
@@ -111,7 +115,11 @@ static struct ctl_table rxrpc_sysctl_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec_minmax,
 		.extra1		= (void *)&four,
+<<<<<<< HEAD
 		.extra2		= (void *)&thirtytwo,
+=======
+		.extra2		= (void *)&max_backlog,
+>>>>>>> origin/android16-base
 	},
 	{
 		.procname	= "rx_window_size",

@@ -248,7 +248,11 @@
 					irq-trigger = <0x1>;
 
 					stmpegpio: stmpe-gpio {
+<<<<<<< HEAD
 						compatible = "stmpe,gpio";
+=======
+						compatible = "st,stmpe-gpio";
+>>>>>>> origin/android16-base
 						reg = <0>;
 						gpio-controller;
 						#gpio-cells = <2>;

@@ -108,6 +108,10 @@ struct mdev_type *add_mdev_supported_type(struct mdev_parent *parent,
 		return ERR_PTR(-ENOMEM);
 
 	type->kobj.kset = parent->mdev_types_kset;
+<<<<<<< HEAD
+=======
+	type->parent = parent;
+>>>>>>> origin/android16-base
 
 	ret = kobject_init_and_add(&type->kobj, &mdev_type_ktype, NULL,
 				   "%s-%s", dev_driver_string(parent->dev),
@@ -135,7 +139,10 @@ struct mdev_type *add_mdev_supported_type(struct mdev_parent *parent,
 	}
 
 	type->group = group;
+<<<<<<< HEAD
 	type->parent = parent;
+=======
+>>>>>>> origin/android16-base
 	return type;
 
 attrs_failed:

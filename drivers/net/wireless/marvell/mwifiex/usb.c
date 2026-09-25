@@ -130,7 +130,12 @@ static int mwifiex_usb_recv(struct mwifiex_adapter *adapter,
 		default:
 			mwifiex_dbg(adapter, ERROR,
 				    "unknown recv_type %#x\n", recv_type);
+<<<<<<< HEAD
 			return -1;
+=======
+			ret = -1;
+			goto exit_restore_skb;
+>>>>>>> origin/android16-base
 		}
 		break;
 	case MWIFIEX_USB_EP_DATA:
@@ -505,6 +510,25 @@ static int mwifiex_usb_probe(struct usb_interface *intf,
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	switch (card->usb_boot_state) {
+	case USB8XXX_FW_DNLD:
+		/* Reject broken descriptors. */
+		if (!card->rx_cmd_ep || !card->tx_cmd_ep)
+			return -ENODEV;
+		if (card->bulk_out_maxpktsize == 0)
+			return -ENODEV;
+		break;
+	case USB8XXX_FW_READY:
+		/* Assume the driver can handle missing endpoints for now. */
+		break;
+	default:
+		WARN_ON(1);
+		return -ENODEV;
+	}
+
+>>>>>>> origin/android16-base
 	usb_set_intfdata(intf, card);
 
 	ret = mwifiex_add_card(card, &card->fw_done, &usb_ops,

@@ -141,5 +141,9 @@ TRACE_EVENT(
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/platform/msm/ipa/ipa_v2
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #include <trace/define_trace.h>

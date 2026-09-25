@@ -3903,6 +3903,7 @@ static void hfa384x_usb_throttlefn(struct timer_list *t)
 
 	spin_lock_irqsave(&hw->ctlxq.lock, flags);
 
+<<<<<<< HEAD
 	/*
 	 * We need to check BOTH the RX and the TX throttle controls,
 	 * so we use the bitwise OR instead of the logical OR.
@@ -3915,6 +3916,20 @@ static void hfa384x_usb_throttlefn(struct timer_list *t)
 	      !test_and_set_bit(WORK_TX_RESUME, &hw->usb_flags))
 	    )) {
 		schedule_work(&hw->usb_work);
+=======
+	pr_debug("flags=0x%lx\n", hw->usb_flags);
+	if (!hw->wlandev->hwremoved) {
+		bool rx_throttle = test_and_clear_bit(THROTTLE_RX, &hw->usb_flags) &&
+				   !test_and_set_bit(WORK_RX_RESUME, &hw->usb_flags);
+		bool tx_throttle = test_and_clear_bit(THROTTLE_TX, &hw->usb_flags) &&
+				   !test_and_set_bit(WORK_TX_RESUME, &hw->usb_flags);
+		/*
+		 * We need to check BOTH the RX and the TX throttle controls,
+		 * so we use the bitwise OR instead of the logical OR.
+		 */
+		if (rx_throttle | tx_throttle)
+			schedule_work(&hw->usb_work);
+>>>>>>> origin/android16-base
 	}
 
 	spin_unlock_irqrestore(&hw->ctlxq.lock, flags);

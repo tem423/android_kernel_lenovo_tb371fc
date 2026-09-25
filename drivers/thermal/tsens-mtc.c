@@ -22,7 +22,11 @@ struct tsens_device *tsens_controller_is_present(void)
 }
 EXPORT_SYMBOL(tsens_controller_is_present);
 
+<<<<<<< HEAD
 static int tsens_mtc_reset_history_counter(unsigned int zone)
+=======
+int tsens_mtc_reset_history_counter(unsigned int zone)
+>>>>>>> origin/android16-base
 {
 	unsigned int reg_cntl, is_valid;
 	void __iomem *sensor_addr;

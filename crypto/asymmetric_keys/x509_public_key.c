@@ -134,6 +134,14 @@ int x509_check_for_self_signed(struct x509_certificate *cert)
 	if (strcmp(cert->pub->pkey_algo, cert->sig->pkey_algo) != 0)
 		goto out;
 
+<<<<<<< HEAD
+=======
+	if (cert->unsupported_sig) {
+		ret = 0;
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	ret = public_key_verify_signature(cert->pub, cert->sig);
 	if (ret < 0) {
 		if (ret == -ENOPKG) {

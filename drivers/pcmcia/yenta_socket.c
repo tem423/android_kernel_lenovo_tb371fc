@@ -636,11 +636,19 @@ static int yenta_search_one_res(struct resource *root, struct resource *res,
 		start = PCIBIOS_MIN_CARDBUS_IO;
 		end = ~0U;
 	} else {
+<<<<<<< HEAD
 		unsigned long avail = root->end - root->start;
 		int i;
 		size = BRIDGE_MEM_MAX;
 		if (size > avail/8) {
 			size = (avail+1)/8;
+=======
+		unsigned long avail = resource_size(root);
+		int i;
+		size = BRIDGE_MEM_MAX;
+		if (size > (avail - 1) / 8) {
+			size = avail / 8;
+>>>>>>> origin/android16-base
 			/* round size down to next power of 2 */
 			i = 0;
 			while ((size /= 2) != 0)

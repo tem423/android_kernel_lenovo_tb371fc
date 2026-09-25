@@ -671,6 +671,17 @@
        vin-supply = <&sw1c_reg>;
 };
 
+<<<<<<< HEAD
+=======
+&reg_vdd1p1 {
+	vin-supply = <&vgen5_reg>;
+};
+
+&reg_vdd2p5 {
+	vin-supply = <&vgen5_reg>;
+};
+
+>>>>>>> origin/android16-base
 &snvs_poweroff {
 	status = "okay";
 };

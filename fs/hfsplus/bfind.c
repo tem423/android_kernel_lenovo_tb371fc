@@ -25,6 +25,7 @@ int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
 	fd->key = ptr + tree->max_key_len + 2;
 	hfs_dbg(BNODE_REFS, "find_init: %d (%p)\n",
 		tree->cnid, __builtin_return_address(0));
+<<<<<<< HEAD
 	switch (tree->cnid) {
 	case HFSPLUS_CAT_CNID:
 		mutex_lock_nested(&tree->tree_lock, CATALOG_BTREE_MUTEX);
@@ -38,6 +39,10 @@ int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
 	default:
 		BUG();
 	}
+=======
+	mutex_lock_nested(&tree->tree_lock,
+			hfsplus_btree_lock_class(tree));
+>>>>>>> origin/android16-base
 	return 0;
 }
 

@@ -800,10 +800,21 @@ void __init omap_soc_device_init(void)
 
 	soc_dev_attr->machine  = soc_name;
 	soc_dev_attr->family   = omap_get_family();
+<<<<<<< HEAD
+=======
+	if (!soc_dev_attr->family) {
+		kfree(soc_dev_attr);
+		return;
+	}
+>>>>>>> origin/android16-base
 	soc_dev_attr->revision = soc_rev;
 
 	soc_dev = soc_device_register(soc_dev_attr);
 	if (IS_ERR(soc_dev)) {
+<<<<<<< HEAD
+=======
+		kfree(soc_dev_attr->family);
+>>>>>>> origin/android16-base
 		kfree(soc_dev_attr);
 		return;
 	}

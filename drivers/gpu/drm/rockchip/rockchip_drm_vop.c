@@ -204,14 +204,32 @@ static inline void vop_cfg_done(struct vop *vop)
 	VOP_REG_SET(vop, common, cfg_done, 1);
 }
 
+<<<<<<< HEAD
 static bool has_rb_swapped(uint32_t format)
+=======
+static bool has_rb_swapped(uint32_t version, uint32_t format)
+>>>>>>> origin/android16-base
 {
 	switch (format) {
 	case DRM_FORMAT_XBGR8888:
 	case DRM_FORMAT_ABGR8888:
+<<<<<<< HEAD
 	case DRM_FORMAT_BGR888:
 	case DRM_FORMAT_BGR565:
 		return true;
+=======
+	case DRM_FORMAT_BGR565:
+		return true;
+	/*
+	 * full framework (IP version 3.x) only need rb swapped for RGB888 and
+	 * little framework (IP version 2.x) only need rb swapped for BGR888,
+	 * check for 3.x to also only rb swap BGR888 for unknown vop version
+	 */
+	case DRM_FORMAT_RGB888:
+		return VOP_MAJOR(version) == 3;
+	case DRM_FORMAT_BGR888:
+		return VOP_MAJOR(version) != 3;
+>>>>>>> origin/android16-base
 	default:
 		return false;
 	}
@@ -300,8 +318,13 @@ static void scl_vop_cal_scl_fac(struct vop *vop, const struct vop_win_data *win,
 	if (info->is_yuv)
 		is_yuv = true;
 
+<<<<<<< HEAD
 	if (dst_w > 3840) {
 		DRM_DEV_ERROR(vop->dev, "Maximum dst width (3840) exceeded\n");
+=======
+	if (dst_w > 4096) {
+		DRM_DEV_ERROR(vop->dev, "Maximum dst width (4096) exceeded\n");
+>>>>>>> origin/android16-base
 		return;
 	}
 
@@ -798,7 +821,11 @@ static void vop_plane_atomic_update(struct drm_plane *plane,
 	VOP_WIN_SET(vop, win, dsp_info, dsp_info);
 	VOP_WIN_SET(vop, win, dsp_st, dsp_st);
 
+<<<<<<< HEAD
 	rb_swap = has_rb_swapped(fb->format->format);
+=======
+	rb_swap = has_rb_swapped(vop->data->version, fb->format->format);
+>>>>>>> origin/android16-base
 	VOP_WIN_SET(vop, win, rb_swap, rb_swap);
 
 	/*
@@ -1088,7 +1115,15 @@ static struct drm_crtc_state *vop_crtc_duplicate_state(struct drm_crtc *crtc)
 {
 	struct rockchip_crtc_state *rockchip_state;
 
+<<<<<<< HEAD
 	rockchip_state = kzalloc(sizeof(*rockchip_state), GFP_KERNEL);
+=======
+	if (WARN_ON(!crtc->state))
+		return NULL;
+
+	rockchip_state = kmemdup(to_rockchip_crtc_state(crtc->state),
+				 sizeof(*rockchip_state), GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!rockchip_state)
 		return NULL;
 
@@ -1595,10 +1630,17 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
 	vop_win_init(vop);
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+<<<<<<< HEAD
 	vop->len = resource_size(res);
 	vop->regs = devm_ioremap_resource(dev, res);
 	if (IS_ERR(vop->regs))
 		return PTR_ERR(vop->regs);
+=======
+	vop->regs = devm_ioremap_resource(dev, res);
+	if (IS_ERR(vop->regs))
+		return PTR_ERR(vop->regs);
+	vop->len = resource_size(res);
+>>>>>>> origin/android16-base
 
 	vop->regsbak = devm_kzalloc(dev, vop->len, GFP_KERNEL);
 	if (!vop->regsbak)

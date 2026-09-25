@@ -192,7 +192,11 @@ int cg_find_unified_root(char *root, size_t len)
 
 int cg_create(const char *cgroup)
 {
+<<<<<<< HEAD
 	return mkdir(cgroup, 0644);
+=======
+	return mkdir(cgroup, 0755);
+>>>>>>> origin/android16-base
 }
 
 static int cg_killall(const char *cgroup)

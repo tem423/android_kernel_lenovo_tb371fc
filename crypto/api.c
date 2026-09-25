@@ -571,7 +571,11 @@ void crypto_destroy_tfm(void *mem, struct crypto_tfm *tfm)
 {
 	struct crypto_alg *alg;
 
+<<<<<<< HEAD
 	if (unlikely(!mem))
+=======
+	if (IS_ERR_OR_NULL(mem))
+>>>>>>> origin/android16-base
 		return;
 
 	alg = tfm->__crt_alg;

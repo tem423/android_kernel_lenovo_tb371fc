@@ -537,12 +537,17 @@ EXPORT_SYMBOL_GPL(irq_setup_alt_chip);
 void irq_remove_generic_chip(struct irq_chip_generic *gc, u32 msk,
 			     unsigned int clr, unsigned int set)
 {
+<<<<<<< HEAD
 	unsigned int i = gc->irq_base;
+=======
+	unsigned int i, virq;
+>>>>>>> origin/android16-base
 
 	raw_spin_lock(&gc_lock);
 	list_del(&gc->list);
 	raw_spin_unlock(&gc_lock);
 
+<<<<<<< HEAD
 	for (; msk; msk >>= 1, i++) {
 		if (!(msk & 0x01))
 			continue;
@@ -552,6 +557,30 @@ void irq_remove_generic_chip(struct irq_chip_generic *gc, u32 msk,
 		irq_set_chip(i, &no_irq_chip);
 		irq_set_chip_data(i, NULL);
 		irq_modify_status(i, clr, set);
+=======
+	for (i = 0; msk; msk >>= 1, i++) {
+		if (!(msk & 0x01))
+			continue;
+
+		/*
+		 * Interrupt domain based chips store the base hardware
+		 * interrupt number in gc::irq_base. Otherwise gc::irq_base
+		 * contains the base Linux interrupt number.
+		 */
+		if (gc->domain) {
+			virq = irq_find_mapping(gc->domain, gc->irq_base + i);
+			if (!virq)
+				continue;
+		} else {
+			virq = gc->irq_base + i;
+		}
+
+		/* Remove handler first. That will mask the irq line */
+		irq_set_handler(virq, NULL);
+		irq_set_chip(virq, &no_irq_chip);
+		irq_set_chip_data(virq, NULL);
+		irq_modify_status(virq, clr, set);
+>>>>>>> origin/android16-base
 	}
 }
 EXPORT_SYMBOL_GPL(irq_remove_generic_chip);

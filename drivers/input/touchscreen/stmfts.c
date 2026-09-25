@@ -339,11 +339,19 @@ static int stmfts_input_open(struct input_dev *dev)
 
 	err = pm_runtime_get_sync(&sdata->client->dev);
 	if (err < 0)
+<<<<<<< HEAD
 		return err;
 
 	err = i2c_smbus_write_byte(sdata->client, STMFTS_MS_MT_SENSE_ON);
 	if (err)
 		return err;
+=======
+		goto out;
+
+	err = i2c_smbus_write_byte(sdata->client, STMFTS_MS_MT_SENSE_ON);
+	if (err)
+		goto out;
+>>>>>>> origin/android16-base
 
 	mutex_lock(&sdata->mutex);
 	sdata->running = true;
@@ -366,7 +374,13 @@ static int stmfts_input_open(struct input_dev *dev)
 				 "failed to enable touchkey\n");
 	}
 
+<<<<<<< HEAD
 	return 0;
+=======
+out:
+	pm_runtime_put_noidle(&sdata->client->dev);
+	return err;
+>>>>>>> origin/android16-base
 }
 
 static void stmfts_input_close(struct input_dev *dev)

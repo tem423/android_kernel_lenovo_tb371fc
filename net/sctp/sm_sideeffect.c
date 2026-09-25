@@ -434,7 +434,11 @@ void sctp_generate_proto_unreach_event(struct timer_list *t)
 		/* Try again later.  */
 		if (!mod_timer(&transport->proto_unreach_timer,
 				jiffies + (HZ/20)))
+<<<<<<< HEAD
 			sctp_association_hold(asoc);
+=======
+			sctp_transport_hold(transport);
+>>>>>>> origin/android16-base
 		goto out_unlock;
 	}
 
@@ -450,7 +454,11 @@ void sctp_generate_proto_unreach_event(struct timer_list *t)
 
 out_unlock:
 	bh_unlock_sock(sk);
+<<<<<<< HEAD
 	sctp_association_put(asoc);
+=======
+	sctp_transport_put(transport);
+>>>>>>> origin/android16-base
 }
 
  /* Handle the timeout of the RE-CONFIG timer. */
@@ -473,6 +481,13 @@ void sctp_generate_reconf_event(struct timer_list *t)
 		goto out_unlock;
 	}
 
+<<<<<<< HEAD
+=======
+	/* This happens when the response arrives after the timer is triggered. */
+	if (!asoc->strreset_chunk)
+		goto out_unlock;
+
+>>>>>>> origin/android16-base
 	error = sctp_do_sm(net, SCTP_EVENT_T_TIMEOUT,
 			   SCTP_ST_TIMEOUT(SCTP_EVENT_TIMEOUT_RECONF),
 			   asoc->state, asoc->ep, asoc,
@@ -1251,7 +1266,14 @@ static int sctp_side_effects(enum sctp_event event_type,
 	default:
 		pr_err("impossible disposition %d in state %d, event_type %d, event_id %d\n",
 		       status, state, event_type, subtype.chunk);
+<<<<<<< HEAD
 		BUG();
+=======
+		error = status;
+		if (error >= 0)
+			error = -EINVAL;
+		WARN_ON_ONCE(1);
+>>>>>>> origin/android16-base
 		break;
 	}
 

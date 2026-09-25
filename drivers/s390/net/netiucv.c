@@ -1344,6 +1344,7 @@ out:
 /**
  * Start transmission of a packet.
  * Called from generic network device layer.
+<<<<<<< HEAD
  *
  * @param skb Pointer to buffer containing the packet.
  * @param dev Pointer to interface struct.
@@ -1353,6 +1354,10 @@ out:
  *               the generic network layer.
  */
 static int netiucv_tx(struct sk_buff *skb, struct net_device *dev)
+=======
+ */
+static netdev_tx_t netiucv_tx(struct sk_buff *skb, struct net_device *dev)
+>>>>>>> origin/android16-base
 {
 	struct netiucv_priv *privptr = netdev_priv(dev);
 	int rc;

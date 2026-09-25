@@ -160,14 +160,22 @@ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol *protocol, int id,
 	dev->dev.coherent_dma_mask = dev->dma_mask;
 	dev->dev.release = &pnp_release_device;
 
+<<<<<<< HEAD
 	dev_set_name(&dev->dev, "%02x:%02x", dev->protocol->number, dev->number);
 
+=======
+>>>>>>> origin/android16-base
 	dev_id = pnp_add_id(dev, pnpid);
 	if (!dev_id) {
 		kfree(dev);
 		return NULL;
 	}
 
+<<<<<<< HEAD
+=======
+	dev_set_name(&dev->dev, "%02x:%02x", dev->protocol->number, dev->number);
+
+>>>>>>> origin/android16-base
 	return dev;
 }
 

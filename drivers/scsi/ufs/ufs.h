@@ -504,6 +504,7 @@ struct utp_upiu_rsp {
 };
 
 /**
+<<<<<<< HEAD
  * struct utp_upiu_task_req - Task request UPIU structure
  * @header - UPIU header structure DW0 to DW-2
  * @input_param1: Input parameter 1 DW-3
@@ -534,6 +535,8 @@ struct utp_upiu_task_rsp {
 };
 
 /**
+=======
+>>>>>>> origin/android16-base
  * struct ufs_query_req - parameters for building a query request
  * @query_func: UPIU header query function
  * @upiu_req: the query request data

@@ -46,14 +46,20 @@ enum {
  * called again.
  */
 struct rxe_task {
+<<<<<<< HEAD
 	void			*obj;
+=======
+>>>>>>> origin/android16-base
 	struct tasklet_struct	tasklet;
 	int			state;
 	spinlock_t		state_lock; /* spinlock for task state */
 	void			*arg;
 	int			(*func)(void *arg);
 	int			ret;
+<<<<<<< HEAD
 	char			name[16];
+=======
+>>>>>>> origin/android16-base
 	bool			destroyed;
 };
 
@@ -62,8 +68,12 @@ struct rxe_task {
  *	arg  => parameter to pass to fcn
  *	fcn  => function to call until it returns != 0
  */
+<<<<<<< HEAD
 int rxe_init_task(void *obj, struct rxe_task *task,
 		  void *arg, int (*func)(void *), char *name);
+=======
+int rxe_init_task(struct rxe_task *task, void *arg, int (*func)(void *));
+>>>>>>> origin/android16-base
 
 /* cleanup task */
 void rxe_cleanup_task(struct rxe_task *task);

@@ -83,6 +83,10 @@ void xen_init_lock_cpu(int cpu)
 	     cpu, per_cpu(lock_kicker_irq, cpu));
 
 	name = kasprintf(GFP_KERNEL, "spinlock%d", cpu);
+<<<<<<< HEAD
+=======
+	per_cpu(irq_name, cpu) = name;
+>>>>>>> origin/android16-base
 	irq = bind_ipi_to_irqhandler(XEN_SPIN_UNLOCK_VECTOR,
 				     cpu,
 				     dummy_handler,
@@ -93,7 +97,10 @@ void xen_init_lock_cpu(int cpu)
 	if (irq >= 0) {
 		disable_irq(irq); /* make sure it's never delivered */
 		per_cpu(lock_kicker_irq, cpu) = irq;
+<<<<<<< HEAD
 		per_cpu(irq_name, cpu) = name;
+=======
+>>>>>>> origin/android16-base
 	}
 
 	printk("cpu %d spinlock event irq %d\n", cpu, irq);
@@ -101,6 +108,7 @@ void xen_init_lock_cpu(int cpu)
 
 void xen_uninit_lock_cpu(int cpu)
 {
+<<<<<<< HEAD
 	if (!xen_pvspin)
 		return;
 
@@ -108,6 +116,25 @@ void xen_uninit_lock_cpu(int cpu)
 	per_cpu(lock_kicker_irq, cpu) = -1;
 	kfree(per_cpu(irq_name, cpu));
 	per_cpu(irq_name, cpu) = NULL;
+=======
+	int irq;
+
+	if (!xen_pvspin)
+		return;
+
+	kfree(per_cpu(irq_name, cpu));
+	per_cpu(irq_name, cpu) = NULL;
+	/*
+	 * When booting the kernel with 'mitigations=auto,nosmt', the secondary
+	 * CPUs are not activated, and lock_kicker_irq is not initialized.
+	 */
+	irq = per_cpu(lock_kicker_irq, cpu);
+	if (irq == -1)
+		return;
+
+	unbind_from_irqhandler(irq, NULL);
+	per_cpu(lock_kicker_irq, cpu) = -1;
+>>>>>>> origin/android16-base
 }
 
 PV_CALLEE_SAVE_REGS_THUNK(xen_vcpu_stolen);

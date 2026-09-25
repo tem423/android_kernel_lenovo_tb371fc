@@ -46,7 +46,14 @@ extern int memcmp(const void *cs, const void *ct, size_t count);
 #endif
 
 #ifdef CONFIG_KERNEL_XZ
+<<<<<<< HEAD
 #define memmove memmove
+=======
+/* Prevent KASAN override of string helpers in decompressor */
+#undef memmove
+#define memmove memmove
+#undef memcpy
+>>>>>>> origin/android16-base
 #define memcpy memcpy
 #include "../../../../lib/decompress_unxz.c"
 #endif

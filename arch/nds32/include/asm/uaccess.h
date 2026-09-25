@@ -75,9 +75,13 @@ static inline void set_fs(mm_segment_t fs)
  * versions are void (ie, don't return a value as such).
  */
 
+<<<<<<< HEAD
 #define get_user	__get_user					\
 
 #define __get_user(x, ptr)						\
+=======
+#define get_user(x, ptr)						\
+>>>>>>> origin/android16-base
 ({									\
 	long __gu_err = 0;						\
 	__get_user_check((x), (ptr), __gu_err);				\
@@ -90,6 +94,17 @@ static inline void set_fs(mm_segment_t fs)
 	(void)0;							\
 })
 
+<<<<<<< HEAD
+=======
+#define __get_user(x, ptr)						\
+({									\
+	long __gu_err = 0;						\
+	const __typeof__(*(ptr)) __user *__p = (ptr);			\
+	__get_user_err((x), __p, (__gu_err));				\
+	__gu_err;							\
+})
+
+>>>>>>> origin/android16-base
 #define __get_user_check(x, ptr, err)					\
 ({									\
 	const __typeof__(*(ptr)) __user *__p = (ptr);			\
@@ -170,12 +185,26 @@ do {									\
 		: "r"(addr), "i"(-EFAULT)				\
 		: "cc")
 
+<<<<<<< HEAD
 #define put_user	__put_user					\
+=======
+#define put_user(x, ptr)						\
+({									\
+	long __pu_err = 0;						\
+	__put_user_check((x), (ptr), __pu_err);				\
+	__pu_err;							\
+})
+>>>>>>> origin/android16-base
 
 #define __put_user(x, ptr)						\
 ({									\
 	long __pu_err = 0;						\
+<<<<<<< HEAD
 	__put_user_err((x), (ptr), __pu_err);				\
+=======
+	__typeof__(*(ptr)) __user *__p = (ptr);				\
+	__put_user_err((x), __p, __pu_err);				\
+>>>>>>> origin/android16-base
 	__pu_err;							\
 })
 

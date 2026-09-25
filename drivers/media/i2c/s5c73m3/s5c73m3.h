@@ -361,7 +361,11 @@ struct s5c73m3_ctrls {
 
 enum s5c73m3_gpio_id {
 	STBY,
+<<<<<<< HEAD
 	RST,
+=======
+	RSET,
+>>>>>>> origin/android16-base
 	GPIO_NUM,
 };
 

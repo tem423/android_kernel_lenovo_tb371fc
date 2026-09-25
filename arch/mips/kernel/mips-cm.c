@@ -183,8 +183,12 @@ static void mips_cm_probe_l2sync(void)
 	phys_addr_t addr;
 
 	/* L2-only sync was introduced with CM major revision 6 */
+<<<<<<< HEAD
 	major_rev = (read_gcr_rev() & CM_GCR_REV_MAJOR) >>
 		__ffs(CM_GCR_REV_MAJOR);
+=======
+	major_rev = FIELD_GET(CM_GCR_REV_MAJOR, read_gcr_rev());
+>>>>>>> origin/android16-base
 	if (major_rev < 6)
 		return;
 
@@ -267,6 +271,7 @@ void mips_cm_lock_other(unsigned int cluster, unsigned int core,
 	preempt_disable();
 
 	if (cm_rev >= CM_REV_CM3) {
+<<<<<<< HEAD
 		val = core << __ffs(CM3_GCR_Cx_OTHER_CORE);
 		val |= vp << __ffs(CM3_GCR_Cx_OTHER_VP);
 
@@ -274,6 +279,15 @@ void mips_cm_lock_other(unsigned int cluster, unsigned int core,
 			val |= CM_GCR_Cx_OTHER_CLUSTER_EN;
 			val |= cluster << __ffs(CM_GCR_Cx_OTHER_CLUSTER);
 			val |= block << __ffs(CM_GCR_Cx_OTHER_BLOCK);
+=======
+		val = FIELD_PREP(CM3_GCR_Cx_OTHER_CORE, core) |
+		      FIELD_PREP(CM3_GCR_Cx_OTHER_VP, vp);
+
+		if (cm_rev >= CM_REV_CM3_5) {
+			val |= CM_GCR_Cx_OTHER_CLUSTER_EN;
+			val |= FIELD_PREP(CM_GCR_Cx_OTHER_CLUSTER, cluster);
+			val |= FIELD_PREP(CM_GCR_Cx_OTHER_BLOCK, block);
+>>>>>>> origin/android16-base
 		} else {
 			WARN_ON(cluster != 0);
 			WARN_ON(block != CM_GCR_Cx_OTHER_BLOCK_LOCAL);
@@ -303,7 +317,11 @@ void mips_cm_lock_other(unsigned int cluster, unsigned int core,
 		spin_lock_irqsave(&per_cpu(cm_core_lock, curr_core),
 				  per_cpu(cm_core_lock_flags, curr_core));
 
+<<<<<<< HEAD
 		val = core << __ffs(CM_GCR_Cx_OTHER_CORENUM);
+=======
+		val = FIELD_PREP(CM_GCR_Cx_OTHER_CORENUM, core);
+>>>>>>> origin/android16-base
 	}
 
 	write_gcr_cl_other(val);
@@ -347,8 +365,13 @@ void mips_cm_error_report(void)
 	cm_other = read_gcr_error_mult();
 
 	if (revision < CM_REV_CM3) { /* CM2 */
+<<<<<<< HEAD
 		cause = cm_error >> __ffs(CM_GCR_ERROR_CAUSE_ERRTYPE);
 		ocause = cm_other >> __ffs(CM_GCR_ERROR_MULT_ERR2ND);
+=======
+		cause = FIELD_GET(CM_GCR_ERROR_CAUSE_ERRTYPE, cm_error);
+		ocause = FIELD_GET(CM_GCR_ERROR_MULT_ERR2ND, cm_other);
+>>>>>>> origin/android16-base
 
 		if (!cause)
 			return;
@@ -390,8 +413,13 @@ void mips_cm_error_report(void)
 		ulong core_id_bits, vp_id_bits, cmd_bits, cmd_group_bits;
 		ulong cm3_cca_bits, mcp_bits, cm3_tr_bits, sched_bit;
 
+<<<<<<< HEAD
 		cause = cm_error >> __ffs64(CM3_GCR_ERROR_CAUSE_ERRTYPE);
 		ocause = cm_other >> __ffs(CM_GCR_ERROR_MULT_ERR2ND);
+=======
+		cause = FIELD_GET(CM3_GCR_ERROR_CAUSE_ERRTYPE, cm_error);
+		ocause = FIELD_GET(CM_GCR_ERROR_MULT_ERR2ND, cm_other);
+>>>>>>> origin/android16-base
 
 		if (!cause)
 			return;

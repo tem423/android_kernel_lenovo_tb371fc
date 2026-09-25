@@ -231,7 +231,11 @@ static int mtdpart_setup_real(char *s)
 		struct cmdline_mtd_partition *this_mtd;
 		struct mtd_partition *parts;
 		int mtd_id_len, num_parts;
+<<<<<<< HEAD
 		char *p, *mtd_id, *semicol;
+=======
+		char *p, *mtd_id, *semicol, *open_parenth;
+>>>>>>> origin/android16-base
 
 		/*
 		 * Replace the first ';' by a NULL char so strrchr can work
@@ -241,6 +245,17 @@ static int mtdpart_setup_real(char *s)
 		if (semicol)
 			*semicol = '\0';
 
+<<<<<<< HEAD
+=======
+		/*
+		 * make sure that part-names with ":" will not be handled as
+		 * part of the mtd-id with an ":"
+		 */
+		open_parenth = strchr(s, '(');
+		if (open_parenth)
+			*open_parenth = '\0';
+
+>>>>>>> origin/android16-base
 		mtd_id = s;
 
 		/*
@@ -250,6 +265,13 @@ static int mtdpart_setup_real(char *s)
 		 */
 		p = strrchr(s, ':');
 
+<<<<<<< HEAD
+=======
+		/* Restore the '(' now. */
+		if (open_parenth)
+			*open_parenth = '(';
+
+>>>>>>> origin/android16-base
 		/* Restore the ';' now. */
 		if (semicol)
 			*semicol = ';';

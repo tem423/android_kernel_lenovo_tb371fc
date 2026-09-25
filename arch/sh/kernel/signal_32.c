@@ -116,6 +116,10 @@ static int
 restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc, int *r0_p)
 {
 	unsigned int err = 0;
+<<<<<<< HEAD
+=======
+	unsigned int sr = regs->sr & ~SR_USER_MASK;
+>>>>>>> origin/android16-base
 
 #define COPY(x)		err |= __get_user(regs->x, &sc->sc_##x)
 			COPY(regs[1]);
@@ -131,6 +135,11 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc, int *r0_p
 	COPY(sr);	COPY(pc);
 #undef COPY
 
+<<<<<<< HEAD
+=======
+	regs->sr = (regs->sr & SR_USER_MASK) | sr;
+
+>>>>>>> origin/android16-base
 #ifdef CONFIG_SH_FPU
 	if (boot_cpu_data.flags & CPU_HAS_FPU) {
 		int owned_fp;

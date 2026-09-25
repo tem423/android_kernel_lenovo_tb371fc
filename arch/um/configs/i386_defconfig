@@ -35,6 +35,10 @@ CONFIG_TTY_CHAN=y
 CONFIG_XTERM_CHAN=y
 CONFIG_CON_CHAN="pts"
 CONFIG_SSL_CHAN="pts"
+<<<<<<< HEAD
+=======
+CONFIG_SOUND=m
+>>>>>>> origin/android16-base
 CONFIG_UML_SOUND=m
 CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
 CONFIG_DEVTMPFS=y

@@ -90,6 +90,10 @@ static union acpi_object *amdgpu_atif_call(struct amdgpu_atif *atif,
 					   struct acpi_buffer *params)
 {
 	acpi_status status;
+<<<<<<< HEAD
+=======
+	union acpi_object *obj;
+>>>>>>> origin/android16-base
 	union acpi_object atif_arg_elements[2];
 	struct acpi_object_list atif_arg;
 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
@@ -112,6 +116,7 @@ static union acpi_object *amdgpu_atif_call(struct amdgpu_atif *atif,
 
 	status = acpi_evaluate_object(atif->handle, NULL, &atif_arg,
 				      &buffer);
+<<<<<<< HEAD
 
 	/* Fail only if calling the method fails and ATIF is supported */
 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
@@ -122,6 +127,26 @@ static union acpi_object *amdgpu_atif_call(struct amdgpu_atif *atif,
 	}
 
 	return buffer.pointer;
+=======
+	obj = (union acpi_object *)buffer.pointer;
+
+	/* Fail if calling the method fails */
+	if (ACPI_FAILURE(status)) {
+		DRM_DEBUG_DRIVER("failed to evaluate ATIF got %s\n",
+				 acpi_format_exception(status));
+		kfree(obj);
+		return NULL;
+	}
+
+	if (obj->type != ACPI_TYPE_BUFFER) {
+		DRM_DEBUG_DRIVER("bad object returned from ATIF: %d\n",
+				 obj->type);
+		kfree(obj);
+		return NULL;
+	}
+
+	return obj;
+>>>>>>> origin/android16-base
 }
 
 /**

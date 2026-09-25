@@ -22,6 +22,11 @@
 static siphash_key_t net_secret __read_mostly;
 static siphash_key_t ts_secret __read_mostly;
 
+<<<<<<< HEAD
+=======
+#define EPHEMERAL_PORT_SHUFFLE_PERIOD (10 * HZ)
+
+>>>>>>> origin/android16-base
 static __always_inline void net_secret_init(void)
 {
 	net_get_random_once(&net_secret, sizeof(net_secret));
@@ -94,17 +99,30 @@ u32 secure_tcpv6_seq(const __be32 *saddr, const __be32 *daddr,
 }
 EXPORT_SYMBOL(secure_tcpv6_seq);
 
+<<<<<<< HEAD
 u32 secure_ipv6_port_ephemeral(const __be32 *saddr, const __be32 *daddr,
+=======
+u64 secure_ipv6_port_ephemeral(const __be32 *saddr, const __be32 *daddr,
+>>>>>>> origin/android16-base
 			       __be16 dport)
 {
 	const struct {
 		struct in6_addr saddr;
 		struct in6_addr daddr;
+<<<<<<< HEAD
+=======
+		unsigned int timeseed;
+>>>>>>> origin/android16-base
 		__be16 dport;
 	} __aligned(SIPHASH_ALIGNMENT) combined = {
 		.saddr = *(struct in6_addr *)saddr,
 		.daddr = *(struct in6_addr *)daddr,
+<<<<<<< HEAD
 		.dport = dport
+=======
+		.timeseed = jiffies / EPHEMERAL_PORT_SHUFFLE_PERIOD,
+		.dport = dport,
+>>>>>>> origin/android16-base
 	};
 	net_secret_init();
 	return siphash(&combined, offsetofend(typeof(combined), dport),
@@ -142,11 +160,21 @@ u32 secure_tcp_seq(__be32 saddr, __be32 daddr,
 }
 EXPORT_SYMBOL_GPL(secure_tcp_seq);
 
+<<<<<<< HEAD
 u32 secure_ipv4_port_ephemeral(__be32 saddr, __be32 daddr, __be16 dport)
 {
 	net_secret_init();
 	return siphash_3u32((__force u32)saddr, (__force u32)daddr,
 			    (__force u16)dport, &net_secret);
+=======
+u64 secure_ipv4_port_ephemeral(__be32 saddr, __be32 daddr, __be16 dport)
+{
+	net_secret_init();
+	return siphash_4u32((__force u32)saddr, (__force u32)daddr,
+			    (__force u16)dport,
+			    jiffies / EPHEMERAL_PORT_SHUFFLE_PERIOD,
+			    &net_secret);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(secure_ipv4_port_ephemeral);
 #endif

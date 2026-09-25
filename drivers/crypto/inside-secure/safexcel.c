@@ -1066,7 +1066,11 @@ static int safexcel_probe(struct platform_device *pdev)
 
 		priv->ring[i].rdr_req = devm_kcalloc(dev,
 			EIP197_DEFAULT_RING_SIZE,
+<<<<<<< HEAD
 			sizeof(priv->ring[i].rdr_req),
+=======
+			sizeof(*priv->ring[i].rdr_req),
+>>>>>>> origin/android16-base
 			GFP_KERNEL);
 		if (!priv->ring[i].rdr_req) {
 			ret = -ENOMEM;

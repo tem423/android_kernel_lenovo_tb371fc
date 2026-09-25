@@ -717,7 +717,11 @@ filelayout_decode_layout(struct pnfs_layout_hdr *flo,
 		if (unlikely(!p))
 			goto out_err;
 		fl->fh_array[i]->size = be32_to_cpup(p++);
+<<<<<<< HEAD
 		if (sizeof(struct nfs_fh) < fl->fh_array[i]->size) {
+=======
+		if (fl->fh_array[i]->size > NFS_MAXFHSIZE) {
+>>>>>>> origin/android16-base
 			printk(KERN_ERR "NFS: Too big fh %d received %d\n",
 			       i, fl->fh_array[i]->size);
 			goto out_err;
@@ -837,6 +841,15 @@ filelayout_alloc_lseg(struct pnfs_layout_hdr *layoutid,
 	return &fl->generic_hdr;
 }
 
+<<<<<<< HEAD
+=======
+static bool
+filelayout_lseg_is_striped(const struct nfs4_filelayout_segment *flseg)
+{
+	return flseg->num_fh > 1;
+}
+
+>>>>>>> origin/android16-base
 /*
  * filelayout_pg_test(). Called by nfs_can_coalesce_requests()
  *
@@ -857,6 +870,11 @@ filelayout_pg_test(struct nfs_pageio_descriptor *pgio, struct nfs_page *prev,
 	size = pnfs_generic_pg_test(pgio, prev, req);
 	if (!size)
 		return 0;
+<<<<<<< HEAD
+=======
+	else if (!filelayout_lseg_is_striped(FILELAYOUT_LSEG(pgio->pg_lseg)))
+		return size;
+>>>>>>> origin/android16-base
 
 	/* see if req and prev are in the same stripe */
 	if (prev) {

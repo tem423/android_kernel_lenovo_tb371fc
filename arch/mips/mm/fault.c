@@ -154,7 +154,11 @@ good_area:
 	 */
 	fault = handle_mm_fault(vma, address, flags);
 
+<<<<<<< HEAD
 	if ((fault & VM_FAULT_RETRY) && fatal_signal_pending(current))
+=======
+	if (fault_signal_pending(fault, regs))
+>>>>>>> origin/android16-base
 		return;
 
 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);

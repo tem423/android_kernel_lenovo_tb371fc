@@ -39,7 +39,10 @@
 #include <linux/extcon.h>
 #include <linux/reset.h>
 #include <linux/clk/qcom.h>
+<<<<<<< HEAD
 #include <linux/get_otg_id.h>
+=======
+>>>>>>> origin/android16-base
 
 #include "power.h"
 #include "core.h"
@@ -124,7 +127,10 @@ MODULE_PARM_DESC(bc12_compliance, "Disable sending dp pulse for CDP");
 #define DWC3_GEVNTADRHI_EVNTADRHI_GSI_EN(n)	(n << 22)
 #define DWC3_GEVNTADRHI_EVNTADRHI_GSI_IDX(n)	(n << 16)
 #define DWC3_GEVENT_TYPE_GSI			0x3
+<<<<<<< HEAD
 int otg_state = 1;
+=======
+>>>>>>> origin/android16-base
 
 enum usb_gsi_reg {
 	GENERAL_CFG_REG,
@@ -365,6 +371,10 @@ struct dwc3_msm {
 	u64			dummy_gsi_db;
 	dma_addr_t		dummy_gsi_db_dma;
 	int			orientation_override;
+<<<<<<< HEAD
+=======
+	bool			usb_data_enabled;
+>>>>>>> origin/android16-base
 };
 
 #define USB_HSPHY_3P3_VOL_MIN		3050000 /* uV */
@@ -671,6 +681,7 @@ int msm_dwc3_reset_dbm_ep(struct usb_ep *ep)
 }
 EXPORT_SYMBOL(msm_dwc3_reset_dbm_ep);
 
+<<<<<<< HEAD
 int get_otg_state(char *str)
 {
         get_option(&str, &otg_state);
@@ -678,6 +689,8 @@ int get_otg_state(char *str)
         return 1;
 }
 EXPORT_SYMBOL(get_otg_state);
+=======
+>>>>>>> origin/android16-base
 
 /**
  * Helper function.
@@ -1163,7 +1176,11 @@ static void gsi_endxfer_for_ep(struct usb_ep *ep)
 	struct dwc3_ep *dep = to_dwc3_ep(ep);
 	struct dwc3	*dwc = dep->dwc;
 
+<<<<<<< HEAD
 	dwc3_stop_active_transfer(dwc, dep->number, true);
+=======
+	dwc3_stop_active_transfer(dwc, dep->number, true, false);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -3325,6 +3342,12 @@ static int dwc3_msm_id_notifier(struct notifier_block *nb,
 	if (!edev || !mdwc)
 		return NOTIFY_DONE;
 
+<<<<<<< HEAD
+=======
+	if (!mdwc->usb_data_enabled)
+		return NOTIFY_DONE;
+
+>>>>>>> origin/android16-base
 	dwc = platform_get_drvdata(mdwc->dwc3);
 
 	dbg_event(0xFF, "extcon idx", enb->idx);
@@ -3386,6 +3409,17 @@ static int dwc3_msm_vbus_notifier(struct notifier_block *nb,
 	if (!edev || !mdwc)
 		return NOTIFY_DONE;
 
+<<<<<<< HEAD
+=======
+	if (!mdwc->usb_data_enabled) {
+		if (event)
+			dwc3_msm_gadget_vbus_draw(mdwc, 500);
+		else
+			dwc3_msm_gadget_vbus_draw(mdwc, 0);
+		return NOTIFY_DONE;
+	}
+
+>>>>>>> origin/android16-base
 	dwc = platform_get_drvdata(mdwc->dwc3);
 
 	dbg_event(0xFF, "extcon idx", enb->idx);
@@ -3416,7 +3450,10 @@ static int dwc3_msm_vbus_notifier(struct notifier_block *nb,
 		dev_dbg(mdwc->dev, "Connected to CDP, pull DP up\n");
 		usb_phy_drive_dp_pulse(mdwc->hs_phy, DP_PULSE_WIDTH_MSEC);
 	}
+<<<<<<< HEAD
     mdwc->id_state = DWC3_ID_FLOAT;
+=======
+>>>>>>> origin/android16-base
 
 	if (dwc3_is_otg_or_drd(dwc) && !mdwc->in_restart)
 		queue_work(mdwc->dwc3_wq, &mdwc->resume_work);
@@ -3558,6 +3595,7 @@ static ssize_t mode_store(struct device *dev, struct device_attribute *attr,
 }
 
 static DEVICE_ATTR_RW(mode);
+<<<<<<< HEAD
 
 static ssize_t otg_enable_store(struct device *dev, struct device_attribute *attr,
                 const char *buf, size_t count)
@@ -3602,6 +3640,8 @@ static ssize_t otg_enable_show(struct device *dev, struct device_attribute *attr
 
 static DEVICE_ATTR_RW(otg_enable);
 
+=======
+>>>>>>> origin/android16-base
 static void msm_dwc3_perf_vote_work(struct work_struct *w);
 
 /* This node only shows max speed supported dwc3 and it should be
@@ -3763,6 +3803,38 @@ static int dwc_dpdm_cb(struct notifier_block *nb, unsigned long evt, void *p)
 
 	return NOTIFY_OK;
 }
+<<<<<<< HEAD
+=======
+
+static ssize_t usb_data_enabled_show(struct device *dev,
+				     struct device_attribute *attr, char *buf)
+{
+	struct dwc3_msm *mdwc = dev_get_drvdata(dev);
+
+	return sysfs_emit(buf, "%s\n",
+			  mdwc->usb_data_enabled ? "enabled" : "disabled");
+}
+
+static ssize_t usb_data_enabled_store(struct device *dev,
+				      struct device_attribute *attr,
+				      const char *buf, size_t count)
+{
+	struct dwc3_msm *mdwc = dev_get_drvdata(dev);
+
+	if (kstrtobool(buf, &mdwc->usb_data_enabled))
+		return -EINVAL;
+
+	if (!mdwc->usb_data_enabled) {
+		mdwc->vbus_active = false;
+		mdwc->id_state = DWC3_ID_FLOAT;
+		dwc3_ext_event_notify(mdwc);
+	}
+
+	return count;
+}
+static DEVICE_ATTR_RW(usb_data_enabled);
+
+>>>>>>> origin/android16-base
 static int dwc3_msm_probe(struct platform_device *pdev)
 {
 	struct device_node *node = pdev->dev.of_node, *dwc3_node;
@@ -4075,6 +4147,12 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 
 	mutex_init(&mdwc->suspend_resume_mutex);
 
+<<<<<<< HEAD
+=======
+	/* set the initial value */
+	mdwc->usb_data_enabled = true;
+
+>>>>>>> origin/android16-base
 	if (of_property_read_bool(node, "extcon")) {
 		ret = dwc3_msm_extcon_register(mdwc);
 		if (ret)
@@ -4131,6 +4209,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 			dwc->vbus_active = true;
 			break;
 		}
+<<<<<<< HEAD
         
         if (0 == otg_state) {
 			//enable otg
@@ -4147,6 +4226,8 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 		} else {
 			// do nothing
 		}
+=======
+>>>>>>> origin/android16-base
 
 		dwc3_ext_event_notify(mdwc);
 	}
@@ -4156,7 +4237,11 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 	device_create_file(&pdev->dev, &dev_attr_speed);
 	device_create_file(&pdev->dev, &dev_attr_usb_compliance_mode);
 	device_create_file(&pdev->dev, &dev_attr_bus_vote);
+<<<<<<< HEAD
     device_create_file(&pdev->dev, &dev_attr_otg_enable);
+=======
+	device_create_file(&pdev->dev, &dev_attr_usb_data_enabled);
+>>>>>>> origin/android16-base
 
 	return 0;
 
@@ -4179,6 +4264,10 @@ static int dwc3_msm_remove(struct platform_device *pdev)
 	int ret_pm;
 
 	device_remove_file(&pdev->dev, &dev_attr_mode);
+<<<<<<< HEAD
+=======
+	device_remove_file(&pdev->dev, &dev_attr_usb_data_enabled);
+>>>>>>> origin/android16-base
 
 	if (mdwc->dpdm_nb.notifier_call) {
 		regulator_unregister_notifier(mdwc->dpdm_reg, &mdwc->dpdm_nb);
@@ -4671,7 +4760,11 @@ static int dwc3_msm_gadget_vbus_draw(struct dwc3_msm *mdwc, unsigned int mA)
 		 * bail out if suspend happened with float cable
 		 * connected
 		 */
+<<<<<<< HEAD
 		if ((mA == 2) || (mA == 100))
+=======
+		if (mA == 2)
+>>>>>>> origin/android16-base
 			return 0;
 
 		if (!mA)
@@ -4787,7 +4880,12 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 			mdwc->drd_state = DRD_STATE_PERIPHERAL;
 			work = 1;
 		} else {
+<<<<<<< HEAD
 			dwc3_msm_gadget_vbus_draw(mdwc, 0);
+=======
+			if (mdwc->usb_data_enabled)
+				dwc3_msm_gadget_vbus_draw(mdwc, 0);
+>>>>>>> origin/android16-base
 			dev_dbg(mdwc->dev, "Cable disconnected\n");
 		}
 		break;
@@ -5027,8 +5125,11 @@ static struct platform_driver dwc3_msm_driver = {
 MODULE_LICENSE("GPL v2");
 MODULE_DESCRIPTION("DesignWare USB3 MSM Glue Layer");
 
+<<<<<<< HEAD
 __setup("androidboot.otgdis=", get_otg_state);
 
+=======
+>>>>>>> origin/android16-base
 static int dwc3_msm_init(void)
 {
 	return platform_driver_register(&dwc3_msm_driver);

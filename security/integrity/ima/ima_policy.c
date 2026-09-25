@@ -241,6 +241,24 @@ static int __init default_appraise_policy_setup(char *str)
 }
 __setup("ima_appraise_tcb", default_appraise_policy_setup);
 
+<<<<<<< HEAD
+=======
+static void ima_free_rule(struct ima_rule_entry *entry)
+{
+	int i;
+
+	if (!entry)
+		return;
+
+	kfree(entry->fsname);
+	for (i = 0; i < MAX_LSM_RULES; i++) {
+		security_filter_rule_free(entry->lsm[i].rule);
+		kfree(entry->lsm[i].args_p);
+	}
+	kfree(entry);
+}
+
+>>>>>>> origin/android16-base
 /*
  * The LSM policy can be reloaded, leaving the IMA LSM based rules referring
  * to the old, stale LSM policy.  Update the IMA LSM based rules to reflect
@@ -647,6 +665,10 @@ static int ima_lsm_rule_init(struct ima_rule_entry *entry,
 					   &entry->lsm[lsm_rule].rule);
 	if (!entry->lsm[lsm_rule].rule) {
 		kfree(entry->lsm[lsm_rule].args_p);
+<<<<<<< HEAD
+=======
+		entry->lsm[lsm_rule].args_p = NULL;
+>>>>>>> origin/android16-base
 		return -EINVAL;
 	}
 
@@ -1019,7 +1041,11 @@ ssize_t ima_parse_add_rule(char *rule)
 
 	result = ima_parse_rule(p, entry);
 	if (result) {
+<<<<<<< HEAD
 		kfree(entry);
+=======
+		ima_free_rule(entry);
+>>>>>>> origin/android16-base
 		integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL,
 				    NULL, op, "invalid-policy", result,
 				    audit_info);
@@ -1040,6 +1066,7 @@ ssize_t ima_parse_add_rule(char *rule)
 void ima_delete_rules(void)
 {
 	struct ima_rule_entry *entry, *tmp;
+<<<<<<< HEAD
 	int i;
 
 	temp_ima_appraise = 0;
@@ -1049,6 +1076,13 @@ void ima_delete_rules(void)
 
 		list_del(&entry->list);
 		kfree(entry);
+=======
+
+	temp_ima_appraise = 0;
+	list_for_each_entry_safe(entry, tmp, &ima_temp_rules, list) {
+		list_del(&entry->list);
+		ima_free_rule(entry);
+>>>>>>> origin/android16-base
 	}
 }
 

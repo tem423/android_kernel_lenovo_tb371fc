@@ -1032,8 +1032,14 @@ static int smack_inode_init_security(struct inode *inode, struct inode *dir,
 				     const struct qstr *qstr, const char **name,
 				     void **value, size_t *len)
 {
+<<<<<<< HEAD
 	struct inode_smack *issp = inode->i_security;
 	struct smack_known *skp = smk_of_current();
+=======
+	struct task_smack *tsp = current_security();
+	struct inode_smack *issp = inode->i_security;
+	struct smack_known *skp = smk_of_task(tsp);
+>>>>>>> origin/android16-base
 	struct smack_known *isp = smk_of_inode(inode);
 	struct smack_known *dsp = smk_of_inode(dir);
 	int may;
@@ -1042,6 +1048,7 @@ static int smack_inode_init_security(struct inode *inode, struct inode *dir,
 		*name = XATTR_SMACK_SUFFIX;
 
 	if (value && len) {
+<<<<<<< HEAD
 		rcu_read_lock();
 		may = smk_access_entry(skp->smk_known, dsp->smk_known,
 				       &skp->smk_rules);
@@ -1056,6 +1063,36 @@ static int smack_inode_init_security(struct inode *inode, struct inode *dir,
 		if (may > 0 && ((may & MAY_TRANSMUTE) != 0) &&
 		    smk_inode_transmutable(dir)) {
 			isp = dsp;
+=======
+		/*
+		 * If equal, transmuting already occurred in
+		 * smack_dentry_create_files_as(). No need to check again.
+		 */
+		if (tsp->smk_task != tsp->smk_transmuted) {
+			rcu_read_lock();
+			may = smk_access_entry(skp->smk_known, dsp->smk_known,
+					       &skp->smk_rules);
+			rcu_read_unlock();
+		}
+
+		/*
+		 * In addition to having smk_task equal to smk_transmuted,
+		 * if the access rule allows transmutation and the directory
+		 * requests transmutation then by all means transmute.
+		 * Mark the inode as changed.
+		 */
+		if ((tsp->smk_task == tsp->smk_transmuted) ||
+		    (may > 0 && ((may & MAY_TRANSMUTE) != 0) &&
+		     smk_inode_transmutable(dir))) {
+			/*
+			 * The caller of smack_dentry_create_files_as()
+			 * should have overridden the current cred, so the
+			 * inode label was already set correctly in
+			 * smack_inode_alloc_security().
+			 */
+			if (tsp->smk_task != tsp->smk_transmuted)
+				isp = dsp;
+>>>>>>> origin/android16-base
 			issp->smk_flags |= SMK_INODE_CHANGED;
 		}
 
@@ -1326,7 +1363,12 @@ static int smack_inode_setxattr(struct dentry *dentry, const char *name,
 		check_star = 1;
 	} else if (strcmp(name, XATTR_NAME_SMACKTRANSMUTE) == 0) {
 		check_priv = 1;
+<<<<<<< HEAD
 		if (size != TRANS_TRUE_SIZE ||
+=======
+		if (!S_ISDIR(d_backing_inode(dentry)->i_mode) ||
+		    size != TRANS_TRUE_SIZE ||
+>>>>>>> origin/android16-base
 		    strncmp(value, TRANS_TRUE, TRANS_TRUE_SIZE) != 0)
 			rc = -EINVAL;
 	} else
@@ -1490,10 +1532,26 @@ static int smack_inode_getsecurity(struct inode *inode,
 	struct super_block *sbp;
 	struct inode *ip = (struct inode *)inode;
 	struct smack_known *isp;
+<<<<<<< HEAD
 
 	if (strcmp(name, XATTR_SMACK_SUFFIX) == 0)
 		isp = smk_of_inode(inode);
 	else {
+=======
+	struct inode_smack *ispp;
+	size_t label_len;
+	char *label = NULL;
+
+	if (strcmp(name, XATTR_SMACK_SUFFIX) == 0) {
+		isp = smk_of_inode(inode);
+	} else if (strcmp(name, XATTR_SMACK_TRANSMUTE) == 0) {
+		ispp = inode->i_security;
+		if (ispp->smk_flags & SMK_INODE_TRANSMUTE)
+			label = TRANS_TRUE;
+		else
+			label = "";
+	} else {
+>>>>>>> origin/android16-base
 		/*
 		 * The rest of the Smack xattrs are only on sockets.
 		 */
@@ -1515,13 +1573,27 @@ static int smack_inode_getsecurity(struct inode *inode,
 			return -EOPNOTSUPP;
 	}
 
+<<<<<<< HEAD
 	if (alloc) {
 		*buffer = kstrdup(isp->smk_known, GFP_KERNEL);
+=======
+	if (!label)
+		label = isp->smk_known;
+
+	label_len = strlen(label);
+
+	if (alloc) {
+		*buffer = kstrdup(label, GFP_KERNEL);
+>>>>>>> origin/android16-base
 		if (*buffer == NULL)
 			return -ENOMEM;
 	}
 
+<<<<<<< HEAD
 	return strlen(isp->smk_known);
+=======
+	return label_len;
+>>>>>>> origin/android16-base
 }
 
 
@@ -2586,7 +2658,11 @@ static int smk_ipv6_check(struct smack_known *subject,
 #ifdef CONFIG_AUDIT
 	smk_ad_init_net(&ad, __func__, LSM_AUDIT_DATA_NET, &net);
 	ad.a.u.net->family = PF_INET6;
+<<<<<<< HEAD
 	ad.a.u.net->dport = ntohs(address->sin6_port);
+=======
+	ad.a.u.net->dport = address->sin6_port;
+>>>>>>> origin/android16-base
 	if (act == SMK_RECEIVING)
 		ad.a.u.net->v6info.saddr = address->sin6_addr;
 	else
@@ -2772,6 +2848,18 @@ static int smack_inode_setsecurity(struct inode *inode, const char *name,
 	if (value == NULL || size > SMK_LONGLABEL || size == 0)
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	if (strcmp(name, XATTR_SMACK_TRANSMUTE) == 0) {
+		if (!S_ISDIR(inode->i_mode) || size != TRANS_TRUE_SIZE ||
+		    strncmp(value, TRANS_TRUE, TRANS_TRUE_SIZE) != 0)
+			return -EINVAL;
+
+		nsp->smk_flags |= SMK_INODE_TRANSMUTE;
+		return 0;
+	}
+
+>>>>>>> origin/android16-base
 	skp = smk_import_entry(value, size);
 	if (IS_ERR(skp))
 		return PTR_ERR(skp);
@@ -3706,12 +3794,27 @@ static int smack_unix_stream_connect(struct sock *sock,
 		}
 	}
 
+<<<<<<< HEAD
 	/*
 	 * Cross reference the peer labels for SO_PEERSEC.
 	 */
 	if (rc == 0) {
 		nsp->smk_packet = ssp->smk_out;
 		ssp->smk_packet = osp->smk_out;
+=======
+	if (rc == 0) {
+		/*
+		 * Cross reference the peer labels for SO_PEERSEC.
+		 */
+		nsp->smk_packet = ssp->smk_out;
+		ssp->smk_packet = osp->smk_out;
+
+		/*
+		 * new/child/established socket must inherit listening socket labels
+		 */
+		nsp->smk_out = osp->smk_out;
+		nsp->smk_in  = osp->smk_in;
+>>>>>>> origin/android16-base
 	}
 
 	return rc;
@@ -4252,7 +4355,11 @@ access_check:
 	rcu_read_unlock();
 
 	if (hskp == NULL)
+<<<<<<< HEAD
 		rc = netlbl_req_setattr(req, &skp->smk_netlabel);
+=======
+		rc = netlbl_req_setattr(req, &ssp->smk_out->smk_netlabel);
+>>>>>>> origin/android16-base
 	else
 		netlbl_req_delattr(req);
 
@@ -4612,7 +4719,11 @@ static int smack_inode_copy_up(struct dentry *dentry, struct cred **new)
 	/*
 	 * Get label from overlay inode and set it in create_sid
 	 */
+<<<<<<< HEAD
 	isp = d_inode(dentry->d_parent)->i_security;
+=======
+	isp = d_inode(dentry)->i_security;
+>>>>>>> origin/android16-base
 	skp = isp->smk_inode;
 	tsp->smk_task = skp;
 	*new = new_creds;
@@ -4663,8 +4774,15 @@ static int smack_dentry_create_files_as(struct dentry *dentry, int mode,
 		 * providing access is transmuting use the containing
 		 * directory label instead of the process label.
 		 */
+<<<<<<< HEAD
 		if (may > 0 && (may & MAY_TRANSMUTE))
 			ntsp->smk_task = isp->smk_inode;
+=======
+		if (may > 0 && (may & MAY_TRANSMUTE)) {
+			ntsp->smk_task = isp->smk_inode;
+			ntsp->smk_transmuted = ntsp->smk_task;
+		}
+>>>>>>> origin/android16-base
 	}
 	return 0;
 }
@@ -4706,6 +4824,10 @@ static struct security_hook_list smack_hooks[] __lsm_ro_after_init = {
 	LSM_HOOK_INIT(file_alloc_security, smack_file_alloc_security),
 	LSM_HOOK_INIT(file_free_security, smack_file_free_security),
 	LSM_HOOK_INIT(file_ioctl, smack_file_ioctl),
+<<<<<<< HEAD
+=======
+	LSM_HOOK_INIT(file_ioctl_compat, smack_file_ioctl),
+>>>>>>> origin/android16-base
 	LSM_HOOK_INIT(file_lock, smack_file_lock),
 	LSM_HOOK_INIT(file_fcntl, smack_file_fcntl),
 	LSM_HOOK_INIT(mmap_file, smack_mmap_file),

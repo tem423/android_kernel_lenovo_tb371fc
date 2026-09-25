@@ -177,7 +177,11 @@ static void acpi_gpiochip_request_irq(struct acpi_gpio_chip *acpi_gpio,
 	int ret, value;
 
 	ret = request_threaded_irq(event->irq, NULL, event->handler,
+<<<<<<< HEAD
 				   event->irqflags, "ACPI:Event", event);
+=======
+				   event->irqflags | IRQF_ONESHOT, "ACPI:Event", event);
+>>>>>>> origin/android16-base
 	if (ret) {
 		dev_err(acpi_gpio->chip->parent,
 			"Failed to setup interrupt handler for %d\n",
@@ -278,8 +282,13 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
 	pin = agpio->pin_table[0];
 
 	if (pin <= 255) {
+<<<<<<< HEAD
 		char ev_name[5];
 		sprintf(ev_name, "_%c%02hhX",
+=======
+		char ev_name[8];
+		sprintf(ev_name, "_%c%02X",
+>>>>>>> origin/android16-base
 			agpio->triggering == ACPI_EDGE_SENSITIVE ? 'E' : 'L',
 			pin);
 		if (ACPI_SUCCESS(acpi_get_handle(handle, ev_name, &evt_handle)))
@@ -904,10 +913,24 @@ int acpi_dev_gpio_irq_get(struct acpi_device *adev, int index)
 			irq_flags = acpi_dev_get_irq_type(info.triggering,
 							  info.polarity);
 
+<<<<<<< HEAD
 			/* Set type if specified and different than the current one */
 			if (irq_flags != IRQ_TYPE_NONE &&
 			    irq_flags != irq_get_trigger_type(irq))
 				irq_set_irq_type(irq, irq_flags);
+=======
+			/*
+			 * If the IRQ is not already in use then set type
+			 * if specified and different than the current one.
+			 */
+			if (can_request_irq(irq, irq_flags)) {
+				if (irq_flags != IRQ_TYPE_NONE &&
+				    irq_flags != irq_get_trigger_type(irq))
+					irq_set_irq_type(irq, irq_flags);
+			} else {
+				dev_dbg(&adev->dev, "IRQ %d already in use\n", irq);
+			}
+>>>>>>> origin/android16-base
 
 			return irq;
 		}
@@ -1357,6 +1380,23 @@ static const struct dmi_system_id gpiolib_acpi_quirks[] = {
 	},
 	{
 		/*
+<<<<<<< HEAD
+=======
+		 * The Dell Venue 10 Pro 5055, with Bay Trail SoC + TI PMIC uses an
+		 * external embedded-controller connected via I2C + an ACPI GPIO
+		 * event handler on INT33FFC:02 pin 12, causing spurious wakeups.
+		 */
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
+			DMI_MATCH(DMI_PRODUCT_NAME, "Venue 10 Pro 5055"),
+		},
+		.driver_data = &(struct acpi_gpiolib_dmi_quirk) {
+			.ignore_wake = "INT33FC:02@12",
+		},
+	},
+	{
+		/*
+>>>>>>> origin/android16-base
 		 * HP X2 10 models with Cherry Trail SoC + TI PMIC use an
 		 * external embedded-controller connected via I2C + an ACPI GPIO
 		 * event handler on INT33FF:01 pin 0, causing spurious wakeups.
@@ -1406,6 +1446,23 @@ static const struct dmi_system_id gpiolib_acpi_quirks[] = {
 			.ignore_wake = "INT33FF:01@0",
 		},
 	},
+<<<<<<< HEAD
+=======
+	{
+		/*
+		 * Spurious wakeups from TP_ATTN# pin
+		 * Found in BIOS 0.35
+		 * https://gitlab.freedesktop.org/drm/amd/-/issues/3073
+		 */
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "GPD"),
+			DMI_MATCH(DMI_PRODUCT_NAME, "G1619-04"),
+		},
+		.driver_data = &(struct acpi_gpiolib_dmi_quirk) {
+			.ignore_wake = "PNP0C50:00@8",
+		},
+	},
+>>>>>>> origin/android16-base
 	{} /* Terminating entry */
 };
 

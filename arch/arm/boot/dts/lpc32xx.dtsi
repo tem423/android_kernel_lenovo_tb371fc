@@ -323,9 +323,12 @@
 
 					clocks = <&xtal_32k>, <&xtal>;
 					clock-names = "xtal_32k", "xtal";
+<<<<<<< HEAD
 
 					assigned-clocks = <&clk LPC32XX_CLK_HCLK_PLL>;
 					assigned-clock-rates = <208000000>;
+=======
+>>>>>>> origin/android16-base
 				};
 			};
 

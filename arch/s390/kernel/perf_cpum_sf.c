@@ -1360,7 +1360,11 @@ static int aux_output_begin(struct perf_output_handle *handle,
 	unsigned long head, base, offset;
 	struct hws_trailer_entry *te;
 
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(handle->head & ~PAGE_MASK))
+=======
+	if (handle->head & ~PAGE_MASK)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	aux->head = handle->head >> PAGE_SHIFT;
@@ -1528,7 +1532,11 @@ static void hw_collect_aux(struct cpu_hw_sf *cpuhw)
 	unsigned long num_sdb;
 
 	aux = perf_get_aux(handle);
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(!aux))
+=======
+	if (!aux)
+>>>>>>> origin/android16-base
 		return;
 
 	/* Inform user space new data arrived */
@@ -1547,7 +1555,11 @@ static void hw_collect_aux(struct cpu_hw_sf *cpuhw)
 			debug_sprintf_event(sfdbg, 1, "AUX buffer used up\n");
 			break;
 		}
+<<<<<<< HEAD
 		if (WARN_ON_ONCE(!aux))
+=======
+		if (!aux)
+>>>>>>> origin/android16-base
 			return;
 
 		/* Update head and alert_mark to new position */
@@ -1746,12 +1758,17 @@ static void cpumsf_pmu_start(struct perf_event *event, int flags)
 {
 	struct cpu_hw_sf *cpuhw = this_cpu_ptr(&cpu_hw_sf);
 
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(!(event->hw.state & PERF_HES_STOPPED)))
 		return;
 
 	if (flags & PERF_EF_RELOAD)
 		WARN_ON_ONCE(!(event->hw.state & PERF_HES_UPTODATE));
 
+=======
+	if (!(event->hw.state & PERF_HES_STOPPED))
+		return;
+>>>>>>> origin/android16-base
 	perf_pmu_disable(event->pmu);
 	event->hw.state = 0;
 	cpuhw->lsctl.cs = 1;
@@ -2097,4 +2114,8 @@ out:
 	return err;
 }
 arch_initcall(init_cpum_sampling_pmu);
+<<<<<<< HEAD
 core_param(cpum_sfb_size, CPUM_SF_MAX_SDB, sfb_size, 0640);
+=======
+core_param(cpum_sfb_size, CPUM_SF_MAX_SDB, sfb_size, 0644);
+>>>>>>> origin/android16-base

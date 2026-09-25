@@ -431,7 +431,10 @@ static struct clk_fixed_factor gpll0_out_main_div2 = {
 		},
 		.num_parents = 1,
 		.ops = &clk_fixed_factor_ops,
+<<<<<<< HEAD
 		.flags = CLK_SET_RATE_PARENT,
+=======
+>>>>>>> origin/android16-base
 	},
 };
 
@@ -478,7 +481,10 @@ static struct clk_alpha_pll_postdiv gpll2 = {
 		},
 		.num_parents = 1,
 		.ops = &clk_alpha_pll_postdiv_ro_ops,
+<<<<<<< HEAD
 		.flags = CLK_SET_RATE_PARENT,
+=======
+>>>>>>> origin/android16-base
 	},
 };
 
@@ -511,7 +517,10 @@ static struct clk_alpha_pll_postdiv gpll4 = {
 		},
 		.num_parents = 1,
 		.ops = &clk_alpha_pll_postdiv_ro_ops,
+<<<<<<< HEAD
 		.flags = CLK_SET_RATE_PARENT,
+=======
+>>>>>>> origin/android16-base
 	},
 };
 
@@ -545,7 +554,10 @@ static struct clk_alpha_pll_postdiv gpll6 = {
 		},
 		.num_parents = 1,
 		.ops = &clk_alpha_pll_postdiv_ro_ops,
+<<<<<<< HEAD
 		.flags = CLK_SET_RATE_PARENT,
+=======
+>>>>>>> origin/android16-base
 	},
 };
 
@@ -559,7 +571,10 @@ static struct clk_fixed_factor gpll6_out_main_div2 = {
 		},
 		.num_parents = 1,
 		.ops = &clk_fixed_factor_ops,
+<<<<<<< HEAD
 		.flags = CLK_SET_RATE_PARENT,
+=======
+>>>>>>> origin/android16-base
 	},
 };
 
@@ -624,7 +639,10 @@ static struct clk_alpha_pll_postdiv nss_crypto_pll = {
 		},
 		.num_parents = 1,
 		.ops = &clk_alpha_pll_postdiv_ro_ops,
+<<<<<<< HEAD
 		.flags = CLK_SET_RATE_PARENT,
+=======
+>>>>>>> origin/android16-base
 	},
 };
 
@@ -675,6 +693,10 @@ static struct clk_branch gcc_sleep_clk_src = {
 			},
 			.num_parents = 1,
 			.ops = &clk_branch2_ops,
+<<<<<<< HEAD
+=======
+			.flags = CLK_IS_CRITICAL,
+>>>>>>> origin/android16-base
 		},
 	},
 };
@@ -985,6 +1007,10 @@ static struct clk_rcg2 pcie0_axi_clk_src = {
 
 static const struct freq_tbl ftbl_pcie_aux_clk_src[] = {
 	F(19200000, P_XO, 1, 0, 0),
+<<<<<<< HEAD
+=======
+	{ }
+>>>>>>> origin/android16-base
 };
 
 static struct clk_rcg2 pcie0_aux_clk_src = {
@@ -1082,7 +1108,11 @@ static struct clk_rcg2 sdcc1_apps_clk_src = {
 		.name = "sdcc1_apps_clk_src",
 		.parent_names = gcc_xo_gpll0_gpll2_gpll0_out_main_div2,
 		.num_parents = 4,
+<<<<<<< HEAD
 		.ops = &clk_rcg2_ops,
+=======
+		.ops = &clk_rcg2_floor_ops,
+>>>>>>> origin/android16-base
 	},
 };
 
@@ -1090,6 +1120,10 @@ static const struct freq_tbl ftbl_sdcc_ice_core_clk_src[] = {
 	F(19200000, P_XO, 1, 0, 0),
 	F(160000000, P_GPLL0, 5, 0, 0),
 	F(308570000, P_GPLL6, 3.5, 0, 0),
+<<<<<<< HEAD
+=======
+	{ }
+>>>>>>> origin/android16-base
 };
 
 static struct clk_rcg2 sdcc1_ice_core_clk_src = {
@@ -1796,8 +1830,15 @@ static struct clk_regmap_div nss_port4_tx_div_clk_src = {
 static const struct freq_tbl ftbl_nss_port5_rx_clk_src[] = {
 	F(19200000, P_XO, 1, 0, 0),
 	F(25000000, P_UNIPHY1_RX, 12.5, 0, 0),
+<<<<<<< HEAD
 	F(78125000, P_UNIPHY1_RX, 4, 0, 0),
 	F(125000000, P_UNIPHY1_RX, 2.5, 0, 0),
+=======
+	F(25000000, P_UNIPHY0_RX, 5, 0, 0),
+	F(78125000, P_UNIPHY1_RX, 4, 0, 0),
+	F(125000000, P_UNIPHY1_RX, 2.5, 0, 0),
+	F(125000000, P_UNIPHY0_RX, 1, 0, 0),
+>>>>>>> origin/android16-base
 	F(156250000, P_UNIPHY1_RX, 2, 0, 0),
 	F(312500000, P_UNIPHY1_RX, 1, 0, 0),
 	{ }
@@ -1836,8 +1877,15 @@ static struct clk_regmap_div nss_port5_rx_div_clk_src = {
 static const struct freq_tbl ftbl_nss_port5_tx_clk_src[] = {
 	F(19200000, P_XO, 1, 0, 0),
 	F(25000000, P_UNIPHY1_TX, 12.5, 0, 0),
+<<<<<<< HEAD
 	F(78125000, P_UNIPHY1_TX, 4, 0, 0),
 	F(125000000, P_UNIPHY1_TX, 2.5, 0, 0),
+=======
+	F(25000000, P_UNIPHY0_TX, 5, 0, 0),
+	F(78125000, P_UNIPHY1_TX, 4, 0, 0),
+	F(125000000, P_UNIPHY1_TX, 2.5, 0, 0),
+	F(125000000, P_UNIPHY0_TX, 1, 0, 0),
+>>>>>>> origin/android16-base
 	F(156250000, P_UNIPHY1_TX, 2, 0, 0),
 	F(312500000, P_UNIPHY1_TX, 1, 0, 0),
 	{ }
@@ -1875,8 +1923,15 @@ static struct clk_regmap_div nss_port5_tx_div_clk_src = {
 
 static const struct freq_tbl ftbl_nss_port6_rx_clk_src[] = {
 	F(19200000, P_XO, 1, 0, 0),
+<<<<<<< HEAD
 	F(25000000, P_UNIPHY2_RX, 12.5, 0, 0),
 	F(78125000, P_UNIPHY2_RX, 4, 0, 0),
+=======
+	F(25000000, P_UNIPHY2_RX, 5, 0, 0),
+	F(25000000, P_UNIPHY2_RX, 12.5, 0, 0),
+	F(78125000, P_UNIPHY2_RX, 4, 0, 0),
+	F(125000000, P_UNIPHY2_RX, 1, 0, 0),
+>>>>>>> origin/android16-base
 	F(125000000, P_UNIPHY2_RX, 2.5, 0, 0),
 	F(156250000, P_UNIPHY2_RX, 2, 0, 0),
 	F(312500000, P_UNIPHY2_RX, 1, 0, 0),
@@ -1915,8 +1970,15 @@ static struct clk_regmap_div nss_port6_rx_div_clk_src = {
 
 static const struct freq_tbl ftbl_nss_port6_tx_clk_src[] = {
 	F(19200000, P_XO, 1, 0, 0),
+<<<<<<< HEAD
 	F(25000000, P_UNIPHY2_TX, 12.5, 0, 0),
 	F(78125000, P_UNIPHY2_TX, 4, 0, 0),
+=======
+	F(25000000, P_UNIPHY2_TX, 5, 0, 0),
+	F(25000000, P_UNIPHY2_TX, 12.5, 0, 0),
+	F(78125000, P_UNIPHY2_TX, 4, 0, 0),
+	F(125000000, P_UNIPHY2_TX, 1, 0, 0),
+>>>>>>> origin/android16-base
 	F(125000000, P_UNIPHY2_TX, 2.5, 0, 0),
 	F(156250000, P_UNIPHY2_TX, 2, 0, 0),
 	F(312500000, P_UNIPHY2_TX, 1, 0, 0),
@@ -3354,6 +3416,10 @@ static struct clk_branch gcc_nssnoc_ubi1_ahb_clk = {
 
 static struct clk_branch gcc_ubi0_ahb_clk = {
 	.halt_reg = 0x6820c,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x6820c,
 		.enable_mask = BIT(0),
@@ -3371,6 +3437,10 @@ static struct clk_branch gcc_ubi0_ahb_clk = {
 
 static struct clk_branch gcc_ubi0_axi_clk = {
 	.halt_reg = 0x68200,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x68200,
 		.enable_mask = BIT(0),
@@ -3388,6 +3458,10 @@ static struct clk_branch gcc_ubi0_axi_clk = {
 
 static struct clk_branch gcc_ubi0_nc_axi_clk = {
 	.halt_reg = 0x68204,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x68204,
 		.enable_mask = BIT(0),
@@ -3405,6 +3479,10 @@ static struct clk_branch gcc_ubi0_nc_axi_clk = {
 
 static struct clk_branch gcc_ubi0_core_clk = {
 	.halt_reg = 0x68210,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x68210,
 		.enable_mask = BIT(0),
@@ -3422,6 +3500,10 @@ static struct clk_branch gcc_ubi0_core_clk = {
 
 static struct clk_branch gcc_ubi0_mpt_clk = {
 	.halt_reg = 0x68208,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x68208,
 		.enable_mask = BIT(0),
@@ -3439,6 +3521,10 @@ static struct clk_branch gcc_ubi0_mpt_clk = {
 
 static struct clk_branch gcc_ubi1_ahb_clk = {
 	.halt_reg = 0x6822c,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x6822c,
 		.enable_mask = BIT(0),
@@ -3456,6 +3542,10 @@ static struct clk_branch gcc_ubi1_ahb_clk = {
 
 static struct clk_branch gcc_ubi1_axi_clk = {
 	.halt_reg = 0x68220,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x68220,
 		.enable_mask = BIT(0),
@@ -3473,6 +3563,10 @@ static struct clk_branch gcc_ubi1_axi_clk = {
 
 static struct clk_branch gcc_ubi1_nc_axi_clk = {
 	.halt_reg = 0x68224,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x68224,
 		.enable_mask = BIT(0),
@@ -3490,6 +3584,10 @@ static struct clk_branch gcc_ubi1_nc_axi_clk = {
 
 static struct clk_branch gcc_ubi1_core_clk = {
 	.halt_reg = 0x68230,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x68230,
 		.enable_mask = BIT(0),
@@ -3507,6 +3605,10 @@ static struct clk_branch gcc_ubi1_core_clk = {
 
 static struct clk_branch gcc_ubi1_mpt_clk = {
 	.halt_reg = 0x68228,
+<<<<<<< HEAD
+=======
+	.halt_check = BRANCH_HALT_DELAY,
+>>>>>>> origin/android16-base
 	.clkr = {
 		.enable_reg = 0x68228,
 		.enable_mask = BIT(0),

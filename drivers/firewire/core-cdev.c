@@ -831,8 +831,15 @@ static int ioctl_send_response(struct client *client, union ioctl_arg *arg)
 
 	r = container_of(resource, struct inbound_transaction_resource,
 			 resource);
+<<<<<<< HEAD
 	if (is_fcp_request(r->request))
 		goto out;
+=======
+	if (is_fcp_request(r->request)) {
+		kfree(r->data);
+		goto out;
+	}
+>>>>>>> origin/android16-base
 
 	if (a->length != fw_get_response_length(r->request)) {
 		ret = -EINVAL;
@@ -1495,6 +1502,10 @@ static void outbound_phy_packet_callback(struct fw_packet *packet,
 {
 	struct outbound_phy_packet_event *e =
 		container_of(packet, struct outbound_phy_packet_event, p);
+<<<<<<< HEAD
+=======
+	struct client *e_client;
+>>>>>>> origin/android16-base
 
 	switch (status) {
 	/* expected: */
@@ -1511,9 +1522,16 @@ static void outbound_phy_packet_callback(struct fw_packet *packet,
 	}
 	e->phy_packet.data[0] = packet->timestamp;
 
+<<<<<<< HEAD
 	queue_event(e->client, &e->event, &e->phy_packet,
 		    sizeof(e->phy_packet) + e->phy_packet.length, NULL, 0);
 	client_put(e->client);
+=======
+	e_client = e->client;
+	queue_event(e->client, &e->event, &e->phy_packet,
+		    sizeof(e->phy_packet) + e->phy_packet.length, NULL, 0);
+	client_put(e_client);
+>>>>>>> origin/android16-base
 }
 
 static int ioctl_send_phy_packet(struct client *client, union ioctl_arg *arg)

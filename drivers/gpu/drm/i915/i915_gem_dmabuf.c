@@ -55,13 +55,21 @@ static struct sg_table *i915_gem_map_dma_buf(struct dma_buf_attachment *attachme
 		goto err_unpin_pages;
 	}
 
+<<<<<<< HEAD
 	ret = sg_alloc_table(st, obj->mm.pages->nents, GFP_KERNEL);
+=======
+	ret = sg_alloc_table(st, obj->mm.pages->orig_nents, GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (ret)
 		goto err_free;
 
 	src = obj->mm.pages->sgl;
 	dst = st->sgl;
+<<<<<<< HEAD
 	for (i = 0; i < obj->mm.pages->nents; i++) {
+=======
+	for (i = 0; i < obj->mm.pages->orig_nents; i++) {
+>>>>>>> origin/android16-base
 		sg_set_page(dst, sg_page(src), src->length, 0);
 		dst = sg_next(dst);
 		src = sg_next(src);

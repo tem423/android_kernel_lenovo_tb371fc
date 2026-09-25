@@ -171,7 +171,13 @@ instance_destroy_rcu(struct rcu_head *head)
 	struct nfqnl_instance *inst = container_of(head, struct nfqnl_instance,
 						   rcu);
 
+<<<<<<< HEAD
 	nfqnl_flush(inst, NULL, 0);
+=======
+	rcu_read_lock();
+	nfqnl_flush(inst, NULL, 0);
+	rcu_read_unlock();
+>>>>>>> origin/android16-base
 	kfree(inst);
 	module_put(THIS_MODULE);
 }
@@ -387,12 +393,19 @@ nfqnl_build_packet_message(struct net *net, struct nfqnl_instance *queue,
 	struct nlattr *nla;
 	struct nfqnl_msg_packet_hdr *pmsg;
 	struct nlmsghdr *nlh;
+<<<<<<< HEAD
 	struct nfgenmsg *nfmsg;
+=======
+>>>>>>> origin/android16-base
 	struct sk_buff *entskb = entry->skb;
 	struct net_device *indev;
 	struct net_device *outdev;
 	struct nf_conn *ct = NULL;
+<<<<<<< HEAD
 	enum ip_conntrack_info uninitialized_var(ctinfo);
+=======
+	enum ip_conntrack_info ctinfo;
+>>>>>>> origin/android16-base
 	struct nfnl_ct_hook *nfnl_ct;
 	bool csum_verify;
 	char *secdata = NULL;
@@ -473,18 +486,28 @@ nfqnl_build_packet_message(struct net *net, struct nfqnl_instance *queue,
 		goto nlmsg_failure;
 	}
 
+<<<<<<< HEAD
 	nlh = nlmsg_put(skb, 0, 0,
 			nfnl_msg_type(NFNL_SUBSYS_QUEUE, NFQNL_MSG_PACKET),
 			sizeof(struct nfgenmsg), 0);
+=======
+	nlh = nfnl_msg_put(skb, 0, 0,
+			   nfnl_msg_type(NFNL_SUBSYS_QUEUE, NFQNL_MSG_PACKET),
+			   0, entry->state.pf, NFNETLINK_V0,
+			   htons(queue->queue_num));
+>>>>>>> origin/android16-base
 	if (!nlh) {
 		skb_tx_error(entskb);
 		kfree_skb(skb);
 		goto nlmsg_failure;
 	}
+<<<<<<< HEAD
 	nfmsg = nlmsg_data(nlh);
 	nfmsg->nfgen_family = entry->state.pf;
 	nfmsg->version = NFNETLINK_V0;
 	nfmsg->res_id = htons(queue->queue_num);
+=======
+>>>>>>> origin/android16-base
 
 	nla = __nla_reserve(skb, NFQA_PACKET_HDR, sizeof(*pmsg));
 	pmsg = nla_data(nla);
@@ -566,7 +589,12 @@ nfqnl_build_packet_message(struct net *net, struct nfqnl_instance *queue,
 		goto nla_put_failure;
 
 	if (indev && entskb->dev &&
+<<<<<<< HEAD
 	    entskb->mac_header != entskb->network_header) {
+=======
+	    skb_mac_header_was_set(entskb) &&
+	    skb_mac_header_len(entskb) != 0) {
+>>>>>>> origin/android16-base
 		struct nfqnl_msg_packet_hw phw;
 		int len;
 
@@ -715,9 +743,21 @@ static struct nf_queue_entry *
 nf_queue_entry_dup(struct nf_queue_entry *e)
 {
 	struct nf_queue_entry *entry = kmemdup(e, e->size, GFP_ATOMIC);
+<<<<<<< HEAD
 	if (entry)
 		nf_queue_entry_get_refs(entry);
 	return entry;
+=======
+
+	if (!entry)
+		return NULL;
+
+	if (nf_queue_entry_get_refs(entry))
+		return entry;
+
+	kfree(entry);
+	return NULL;
+>>>>>>> origin/android16-base
 }
 
 #if IS_ENABLED(CONFIG_BRIDGE_NETFILTER)
@@ -843,11 +883,23 @@ nfqnl_enqueue_packet(struct nf_queue_entry *entry, unsigned int queuenum)
 }
 
 static int
+<<<<<<< HEAD
 nfqnl_mangle(void *data, int data_len, struct nf_queue_entry *e, int diff)
+=======
+nfqnl_mangle(void *data, unsigned int data_len, struct nf_queue_entry *e, int diff)
+>>>>>>> origin/android16-base
 {
 	struct sk_buff *nskb;
 
 	if (diff < 0) {
+<<<<<<< HEAD
+=======
+		unsigned int min_len = skb_transport_offset(e->skb);
+
+		if (data_len < min_len)
+			return -EINVAL;
+
+>>>>>>> origin/android16-base
 		if (pskb_trim(e->skb, data_len))
 			return -ENOMEM;
 	} else if (diff > 0) {
@@ -1179,7 +1231,11 @@ static int nfqnl_recv_verdict(struct net *net, struct sock *ctnl,
 	struct nfqnl_instance *queue;
 	unsigned int verdict;
 	struct nf_queue_entry *entry;
+<<<<<<< HEAD
 	enum ip_conntrack_info uninitialized_var(ctinfo);
+=======
+	enum ip_conntrack_info ctinfo;
+>>>>>>> origin/android16-base
 	struct nfnl_ct_hook *nfnl_ct;
 	struct nf_conn *ct = NULL;
 	struct nfnl_queue_net *q = nfnl_queue_pernet(net);

@@ -257,6 +257,11 @@ static ssize_t ltc2945_set_value(struct device *dev,
 
 	/* convert to register value, then clamp and write result */
 	regval = ltc2945_val_to_reg(dev, reg, val);
+<<<<<<< HEAD
+=======
+	if (regval < 0)
+		return regval;
+>>>>>>> origin/android16-base
 	if (is_power_reg(reg)) {
 		regval = clamp_val(regval, 0, 0xffffff);
 		regbuf[0] = regval >> 16;

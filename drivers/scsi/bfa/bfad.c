@@ -1711,9 +1711,14 @@ bfad_init(void)
 
 	error = bfad_im_module_init();
 	if (error) {
+<<<<<<< HEAD
 		error = -ENOMEM;
 		printk(KERN_WARNING "bfad_im_module_init failure\n");
 		goto ext;
+=======
+		printk(KERN_WARNING "bfad_im_module_init failure\n");
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 	}
 
 	if (strcmp(FCPI_NAME, " fcpim") == 0)

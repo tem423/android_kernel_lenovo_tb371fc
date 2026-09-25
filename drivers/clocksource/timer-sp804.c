@@ -228,6 +228,14 @@ static int __init sp804_of_init(struct device_node *np)
 	struct clk *clk1, *clk2;
 	const char *name = of_get_property(np, "compatible", NULL);
 
+<<<<<<< HEAD
+=======
+	if (initialized) {
+		pr_debug("%pOF: skipping further SP804 timer device\n", np);
+		return 0;
+	}
+
+>>>>>>> origin/android16-base
 	base = of_iomap(np, 0);
 	if (!base)
 		return -ENXIO;
@@ -236,11 +244,14 @@ static int __init sp804_of_init(struct device_node *np)
 	writel(0, base + TIMER_CTRL);
 	writel(0, base + TIMER_2_BASE + TIMER_CTRL);
 
+<<<<<<< HEAD
 	if (initialized || !of_device_is_available(np)) {
 		ret = -EINVAL;
 		goto err;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	clk1 = of_clk_get(np, 0);
 	if (IS_ERR(clk1))
 		clk1 = NULL;

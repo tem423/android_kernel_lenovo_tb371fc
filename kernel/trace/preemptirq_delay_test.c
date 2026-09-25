@@ -69,4 +69,8 @@ static void __exit preemptirq_delay_exit(void)
 
 module_init(preemptirq_delay_init)
 module_exit(preemptirq_delay_exit)
+<<<<<<< HEAD
+=======
+MODULE_DESCRIPTION("Preempt / IRQ disable delay thread to test latency tracers");
+>>>>>>> origin/android16-base
 MODULE_LICENSE("GPL v2");

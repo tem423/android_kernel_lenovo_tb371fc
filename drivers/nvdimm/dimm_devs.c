@@ -359,16 +359,26 @@ static ssize_t state_show(struct device *dev, struct device_attribute *attr,
 }
 static DEVICE_ATTR_RO(state);
 
+<<<<<<< HEAD
 static ssize_t available_slots_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct nvdimm_drvdata *ndd = dev_get_drvdata(dev);
+=======
+static ssize_t __available_slots_show(struct nvdimm_drvdata *ndd, char *buf)
+{
+	struct device *dev;
+>>>>>>> origin/android16-base
 	ssize_t rc;
 	u32 nfree;
 
 	if (!ndd)
 		return -ENXIO;
 
+<<<<<<< HEAD
+=======
+	dev = ndd->dev;
+>>>>>>> origin/android16-base
 	nvdimm_bus_lock(dev);
 	nfree = nd_label_nfree(ndd);
 	if (nfree - 1 > nfree) {
@@ -380,6 +390,21 @@ static ssize_t available_slots_show(struct device *dev,
 	nvdimm_bus_unlock(dev);
 	return rc;
 }
+<<<<<<< HEAD
+=======
+
+static ssize_t available_slots_show(struct device *dev,
+				    struct device_attribute *attr, char *buf)
+{
+	ssize_t rc;
+
+	device_lock(dev);
+	rc = __available_slots_show(dev_get_drvdata(dev), buf);
+	device_unlock(dev);
+
+	return rc;
+}
+>>>>>>> origin/android16-base
 static DEVICE_ATTR_RO(available_slots);
 
 static struct attribute *nvdimm_attributes[] = {

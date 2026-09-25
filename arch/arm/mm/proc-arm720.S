@@ -186,7 +186,11 @@ arm720_crval:
  * See <asm/procinfo.h> for a definition of this structure.
  */
 	
+<<<<<<< HEAD
 		.section ".proc.info.init", #alloc
+=======
+		.section ".proc.info.init", "a"
+>>>>>>> origin/android16-base
 
 .macro arm720_proc_info name:req, cpu_val:req, cpu_mask:req, cpu_name:req, cpu_flush:req
 		.type	__\name\()_proc_info,#object

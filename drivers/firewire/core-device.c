@@ -113,10 +113,16 @@ static int textual_leaf_to_string(const u32 *block, char *buf, size_t size)
  * @buf:	where to put the string
  * @size:	size of @buf, in bytes
  *
+<<<<<<< HEAD
  * The string is taken from a minimal ASCII text descriptor leaf after
  * the immediate entry with @key.  The string is zero-terminated.
  * An overlong string is silently truncated such that it and the
  * zero byte fit into @size.
+=======
+ * The string is taken from a minimal ASCII text descriptor leaf just after the entry with the
+ * @key. The string is zero-terminated. An overlong string is silently truncated such that it
+ * and the zero byte fit into @size.
+>>>>>>> origin/android16-base
  *
  * Returns strlen(buf) or a negative error code.
  */
@@ -732,6 +738,7 @@ static void create_units(struct fw_device *device)
 					fw_unit_attributes,
 					&unit->attribute_group);
 
+<<<<<<< HEAD
 		if (device_register(&unit->device) < 0)
 			goto skip_unit;
 
@@ -740,6 +747,13 @@ static void create_units(struct fw_device *device)
 
 	skip_unit:
 		kfree(unit);
+=======
+		fw_device_get(device);
+		if (device_register(&unit->device) < 0) {
+			put_device(&unit->device);
+			continue;
+		}
+>>>>>>> origin/android16-base
 	}
 }
 

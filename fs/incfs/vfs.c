@@ -4,6 +4,7 @@
  */
 
 #include <linux/blkdev.h>
+<<<<<<< HEAD
 #include <linux/cred.h>
 #include <linux/eventpoll.h>
 #include <linux/file.h>
@@ -15,10 +16,23 @@
 #include <linux/seq_file.h>
 #include <linux/syscalls.h>
 #include <linux/xattr.h>
+=======
+#include <linux/compat.h>
+#include <linux/delay.h>
+#include <linux/file.h>
+#include <linux/fs.h>
+#include <linux/fs_stack.h>
+#include <linux/fsnotify.h>
+#include <linux/fsverity.h>
+#include <linux/namei.h>
+#include <linux/parser.h>
+#include <linux/seq_file.h>
+>>>>>>> origin/android16-base
 
 #include <uapi/linux/incrementalfs.h>
 
 #include "vfs.h"
+<<<<<<< HEAD
 #include "data_mgmt.h"
 #include "format.h"
 #include "integrity.h"
@@ -30,6 +44,15 @@
 #define READ_FILE_MODE 0444
 #define READ_EXEC_FILE_MODE 0555
 #define READ_WRITE_FILE_MODE 0666
+=======
+
+#include "data_mgmt.h"
+#include "format.h"
+#include "internal.h"
+#include "pseudo_files.h"
+#include "sysfs.h"
+#include "verity.h"
+>>>>>>> origin/android16-base
 
 static int incfs_remount_fs(struct super_block *sb, int *flags, char *data);
 
@@ -52,6 +75,7 @@ static int file_release(struct inode *inode, struct file *file);
 static int read_single_page(struct file *f, struct page *page);
 static long dispatch_ioctl(struct file *f, unsigned int req, unsigned long arg);
 
+<<<<<<< HEAD
 static ssize_t pending_reads_read(struct file *f, char __user *buf, size_t len,
 			    loff_t *ppos);
 static __poll_t pending_reads_poll(struct file *file, poll_table *wait);
@@ -63,12 +87,24 @@ static ssize_t log_read(struct file *f, char __user *buf, size_t len,
 static __poll_t log_poll(struct file *file, poll_table *wait);
 static int log_open(struct inode *inode, struct file *file);
 static int log_release(struct inode *, struct file *);
+=======
+#ifdef CONFIG_COMPAT
+static long incfs_compat_ioctl(struct file *file, unsigned int cmd,
+			 unsigned long arg);
+#endif
+>>>>>>> origin/android16-base
 
 static struct inode *alloc_inode(struct super_block *sb);
 static void free_inode(struct inode *inode);
 static void evict_inode(struct inode *inode);
 
 static int incfs_setattr(struct dentry *dentry, struct iattr *ia);
+<<<<<<< HEAD
+=======
+static int incfs_getattr(const struct path *path,
+			 struct kstat *stat, u32 request_mask,
+			 unsigned int query_flags);
+>>>>>>> origin/android16-base
 static ssize_t incfs_getxattr(struct dentry *d, const char *name,
 			void *value, size_t size);
 static ssize_t incfs_setxattr(struct dentry *d, const char *name,
@@ -109,8 +145,11 @@ static const struct file_operations incfs_dir_fops = {
 	.iterate = iterate_incfs_dir,
 	.open = file_open,
 	.release = file_release,
+<<<<<<< HEAD
 	.unlocked_ioctl = dispatch_ioctl,
 	.compat_ioctl = dispatch_ioctl
+=======
+>>>>>>> origin/android16-base
 };
 
 static const struct dentry_operations incfs_dentry_ops = {
@@ -123,6 +162,7 @@ static const struct address_space_operations incfs_address_space_ops = {
 	/* .readpages = readpages */
 };
 
+<<<<<<< HEAD
 static const struct file_operations incfs_file_ops = {
 	.open = file_open,
 	.release = file_release,
@@ -162,6 +202,49 @@ static const struct file_operations incfs_log_file_ops = {
 static const struct inode_operations incfs_file_inode_ops = {
 	.setattr = incfs_setattr,
 	.getattr = simple_getattr,
+=======
+static vm_fault_t incfs_fault(struct vm_fault *vmf)
+{
+	vmf->flags &= ~FAULT_FLAG_ALLOW_RETRY;
+	return filemap_fault(vmf);
+}
+
+static const struct vm_operations_struct incfs_file_vm_ops = {
+	.fault		= incfs_fault,
+	.map_pages	= filemap_map_pages,
+	.page_mkwrite	= filemap_page_mkwrite,
+};
+
+/* This is used for a general mmap of a disk file */
+
+static int incfs_file_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	struct address_space *mapping = file->f_mapping;
+
+	if (!mapping->a_ops->readpage)
+		return -ENOEXEC;
+	file_accessed(file);
+	vma->vm_ops = &incfs_file_vm_ops;
+	return 0;
+}
+
+const struct file_operations incfs_file_ops = {
+	.open = file_open,
+	.release = file_release,
+	.read_iter = generic_file_read_iter,
+	.mmap = incfs_file_mmap,
+	.splice_read = generic_file_splice_read,
+	.llseek = generic_file_llseek,
+	.unlocked_ioctl = dispatch_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = incfs_compat_ioctl,
+#endif
+};
+
+const struct inode_operations incfs_file_inode_ops = {
+	.setattr = incfs_setattr,
+	.getattr = incfs_getattr,
+>>>>>>> origin/android16-base
 	.listxattr = incfs_listxattr
 };
 
@@ -191,6 +274,7 @@ static const struct xattr_handler *incfs_xattr_ops[] = {
 	NULL,
 };
 
+<<<<<<< HEAD
 /* State of an open .pending_reads file, unique for each file descriptor. */
 struct pending_reads_state {
 	/* A serial number of the last pending read obtained from this file. */
@@ -202,17 +286,25 @@ struct log_file_state {
 	struct read_log_state state;
 };
 
+=======
+>>>>>>> origin/android16-base
 struct inode_search {
 	unsigned long ino;
 
 	struct dentry *backing_dentry;
 
 	size_t size;
+<<<<<<< HEAD
+=======
+
+	bool verity;
+>>>>>>> origin/android16-base
 };
 
 enum parse_parameter {
 	Opt_read_timeout,
 	Opt_readahead_pages,
+<<<<<<< HEAD
 	Opt_no_backing_file_cache,
 	Opt_no_backing_file_readahead,
 	Opt_rlog_pages,
@@ -242,6 +334,31 @@ static const match_table_t option_tokens = {
 	{ Opt_err, NULL }
 };
 
+=======
+	Opt_rlog_pages,
+	Opt_rlog_wakeup_cnt,
+	Opt_report_uid,
+	Opt_sysfs_name,
+	Opt_err
+};
+
+static const match_table_t option_tokens = {
+	{ Opt_read_timeout, "read_timeout_ms=%u" },
+	{ Opt_readahead_pages, "readahead=%u" },
+	{ Opt_rlog_pages, "rlog_pages=%u" },
+	{ Opt_rlog_wakeup_cnt, "rlog_wakeup_cnt=%u" },
+	{ Opt_report_uid, "report_uid" },
+	{ Opt_sysfs_name, "sysfs_name=%s" },
+	{ Opt_err, NULL }
+};
+
+static void free_options(struct mount_options *opts)
+{
+	kfree(opts->sysfs_name);
+	opts->sysfs_name = NULL;
+}
+
+>>>>>>> origin/android16-base
 static int parse_options(struct mount_options *opts, char *str)
 {
 	substring_t args[MAX_OPT_ARGS];
@@ -251,12 +368,22 @@ static int parse_options(struct mount_options *opts, char *str)
 	if (opts == NULL)
 		return -EFAULT;
 
+<<<<<<< HEAD
 	opts->read_timeout_ms = 1000; /* Default: 1s */
 	opts->readahead_pages = 10;
 	opts->read_log_pages = 2;
 	opts->read_log_wakeup_count = 10;
 	opts->no_backing_file_cache = false;
 	opts->no_backing_file_readahead = false;
+=======
+	*opts = (struct mount_options) {
+		.read_timeout_ms = 1000, /* Default: 1s */
+		.readahead_pages = 10,
+		.read_log_pages = 2,
+		.read_log_wakeup_count = 10,
+	};
+
+>>>>>>> origin/android16-base
 	if (str == NULL || *str == 0)
 		return 0;
 
@@ -272,6 +399,11 @@ static int parse_options(struct mount_options *opts, char *str)
 		case Opt_read_timeout:
 			if (match_int(&args[0], &value))
 				return -EINVAL;
+<<<<<<< HEAD
+=======
+			if (value > 3600000)
+				return -EINVAL;
+>>>>>>> origin/android16-base
 			opts->read_timeout_ms = value;
 			break;
 		case Opt_readahead_pages:
@@ -279,6 +411,7 @@ static int parse_options(struct mount_options *opts, char *str)
 				return -EINVAL;
 			opts->readahead_pages = value;
 			break;
+<<<<<<< HEAD
 		case Opt_no_backing_file_cache:
 			if (match_int(&args[0], &value))
 				return -EINVAL;
@@ -289,6 +422,8 @@ static int parse_options(struct mount_options *opts, char *str)
 				return -EINVAL;
 			opts->no_backing_file_readahead = (value != 0);
 			break;
+=======
+>>>>>>> origin/android16-base
 		case Opt_rlog_pages:
 			if (match_int(&args[0], &value))
 				return -EINVAL;
@@ -299,7 +434,18 @@ static int parse_options(struct mount_options *opts, char *str)
 				return -EINVAL;
 			opts->read_log_wakeup_count = value;
 			break;
+<<<<<<< HEAD
 		default:
+=======
+		case Opt_report_uid:
+			opts->report_uid = true;
+			break;
+		case Opt_sysfs_name:
+			opts->sysfs_name = match_strdup(&args[0]);
+			break;
+		default:
+			free_options(opts);
+>>>>>>> origin/android16-base
 			return -EINVAL;
 		}
 	}
@@ -307,6 +453,7 @@ static int parse_options(struct mount_options *opts, char *str)
 	return 0;
 }
 
+<<<<<<< HEAD
 static struct super_block *file_superblock(struct file *f)
 {
 	struct inode *inode = file_inode(f);
@@ -322,6 +469,8 @@ static struct mount_info *get_mount_info(struct super_block *sb)
 	return result;
 }
 
+=======
+>>>>>>> origin/android16-base
 /* Read file size from the attribute. Quicker than reading the header */
 static u64 read_size_attr(struct dentry *backing_dentry)
 {
@@ -337,14 +486,29 @@ static u64 read_size_attr(struct dentry *backing_dentry)
 	return le64_to_cpu(attr_value);
 }
 
+<<<<<<< HEAD
+=======
+/* Read verity flag from the attribute. Quicker than reading the header */
+static bool read_verity_attr(struct dentry *backing_dentry)
+{
+	return vfs_getxattr(backing_dentry, INCFS_XATTR_VERITY_NAME, NULL, 0)
+		>= 0;
+}
+
+>>>>>>> origin/android16-base
 static int inode_test(struct inode *inode, void *opaque)
 {
 	struct inode_search *search = opaque;
 	struct inode_info *node = get_incfs_node(inode);
+<<<<<<< HEAD
+=======
+	struct inode *backing_inode = d_inode(search->backing_dentry);
+>>>>>>> origin/android16-base
 
 	if (!node)
 		return 0;
 
+<<<<<<< HEAD
 	if (search->backing_dentry) {
 		struct inode *backing_inode = d_inode(search->backing_dentry);
 
@@ -352,12 +516,17 @@ static int inode_test(struct inode *inode, void *opaque)
 			inode->i_ino == search->ino;
 	} else
 		return inode->i_ino == search->ino;
+=======
+	return node->n_backing_inode == backing_inode &&
+		inode->i_ino == search->ino;
+>>>>>>> origin/android16-base
 }
 
 static int inode_set(struct inode *inode, void *opaque)
 {
 	struct inode_search *search = opaque;
 	struct inode_info *node = get_incfs_node(inode);
+<<<<<<< HEAD
 
 	if (search->backing_dentry) {
 		/* It's a regular inode that has corresponding backing inode */
@@ -431,6 +600,44 @@ static int inode_set(struct inode *inode, void *opaque)
 	} else {
 		/* Unknown inode requested. */
 		return -EINVAL;
+=======
+	struct dentry *backing_dentry = search->backing_dentry;
+	struct inode *backing_inode = d_inode(backing_dentry);
+
+	fsstack_copy_attr_all(inode, backing_inode);
+	if (S_ISREG(inode->i_mode)) {
+		u64 size = search->size;
+
+		inode->i_size = size;
+		inode->i_blocks = get_blocks_count_for_size(size);
+		inode->i_mapping->a_ops = &incfs_address_space_ops;
+		inode->i_op = &incfs_file_inode_ops;
+		inode->i_fop = &incfs_file_ops;
+		inode->i_mode &= ~0222;
+		if (search->verity)
+			inode_set_flags(inode, S_VERITY, S_VERITY);
+	} else if (S_ISDIR(inode->i_mode)) {
+		inode->i_size = 0;
+		inode->i_blocks = 1;
+		inode->i_mapping->a_ops = &incfs_address_space_ops;
+		inode->i_op = &incfs_dir_inode_ops;
+		inode->i_fop = &incfs_dir_fops;
+	} else {
+		pr_warn_once("incfs: Unexpected inode type\n");
+		return -EBADF;
+	}
+
+	ihold(backing_inode);
+	node->n_backing_inode = backing_inode;
+	node->n_mount_info = get_mount_info(inode->i_sb);
+	inode->i_ctime = backing_inode->i_ctime;
+	inode->i_mtime = backing_inode->i_mtime;
+	inode->i_atime = backing_inode->i_atime;
+	inode->i_ino = backing_inode->i_ino;
+	if (backing_inode->i_ino < INCFS_START_INO_RANGE) {
+		pr_warn("incfs: ino conflict with backing FS %ld\n",
+			backing_inode->i_ino);
+>>>>>>> origin/android16-base
 	}
 
 	return 0;
@@ -444,6 +651,7 @@ static struct inode *fetch_regular_inode(struct super_block *sb,
 		.ino = backing_inode->i_ino,
 		.backing_dentry = backing_dentry,
 		.size = read_size_attr(backing_dentry),
+<<<<<<< HEAD
 	};
 	struct inode *inode = iget5_locked(sb, search.ino, inode_test,
 				inode_set, &search);
@@ -660,6 +868,9 @@ static struct inode *fetch_log_inode(struct super_block *sb)
 {
 	struct inode_search search = {
 		.ino = INCFS_LOG_INODE
+=======
+		.verity = read_verity_attr(backing_dentry),
+>>>>>>> origin/android16-base
 	};
 	struct inode *inode = iget5_locked(sb, search.ino, inode_test,
 				inode_set, &search);
@@ -688,6 +899,7 @@ static int iterate_incfs_dir(struct file *file, struct dir_context *ctx)
 	root = dir->backing_dir->f_inode
 			== d_inode(mi->mi_backing_dir_path.dentry);
 
+<<<<<<< HEAD
 	if (root && ctx->pos == 0) {
 		if (!dir_emit(ctx, pending_reads_file_name,
 			      ARRAY_SIZE(pending_reads_file_name) - 1,
@@ -711,6 +923,17 @@ static int iterate_incfs_dir(struct file *file, struct dir_context *ctx)
 	ctx->pos -= 2;
 	error = iterate_dir(dir->backing_dir, ctx);
 	ctx->pos += 2;
+=======
+	if (root) {
+		error = emit_pseudo_files(ctx);
+		if (error)
+			goto out;
+	}
+
+	ctx->pos -= PSEUDO_FILE_COUNT;
+	error = iterate_dir(dir->backing_dir, ctx);
+	ctx->pos += PSEUDO_FILE_COUNT;
+>>>>>>> origin/android16-base
 	file->f_pos = dir->backing_dir->f_pos;
 out:
 	if (error)
@@ -737,6 +960,7 @@ static int incfs_init_dentry(struct dentry *dentry, struct path *path)
 	return 0;
 }
 
+<<<<<<< HEAD
 static struct dentry *incfs_lookup_dentry(struct dentry *parent,
 						const char *name)
 {
@@ -760,6 +984,12 @@ static struct dentry *incfs_lookup_dentry(struct dentry *parent,
 static struct dentry *open_or_create_index_dir(struct dentry *backing_dir)
 {
 	static const char name[] = ".index";
+=======
+static struct dentry *open_or_create_special_dir(struct dentry *backing_dir,
+						 const char *name,
+						 bool *created)
+{
+>>>>>>> origin/android16-base
 	struct dentry *index_dentry;
 	struct inode *backing_inode = d_inode(backing_dir);
 	int err = 0;
@@ -771,6 +1001,10 @@ static struct dentry *open_or_create_index_dir(struct dentry *backing_dir)
 		return index_dentry;
 	} else if (d_really_is_positive(index_dentry)) {
 		/* Index already exists. */
+<<<<<<< HEAD
+=======
+		*created = false;
+>>>>>>> origin/android16-base
 		return index_dentry;
 	}
 
@@ -779,17 +1013,88 @@ static struct dentry *open_or_create_index_dir(struct dentry *backing_dir)
 	err = vfs_mkdir(backing_inode, index_dentry, 0777);
 	inode_unlock(backing_inode);
 
+<<<<<<< HEAD
 	if (err)
 		return ERR_PTR(err);
 
 	if (!d_really_is_positive(index_dentry)) {
+=======
+	if (err) {
+		dput(index_dentry);
+		return ERR_PTR(err);
+	}
+
+	if (!d_really_is_positive(index_dentry) ||
+		unlikely(d_unhashed(index_dentry))) {
+>>>>>>> origin/android16-base
 		dput(index_dentry);
 		return ERR_PTR(-EINVAL);
 	}
 
+<<<<<<< HEAD
 	return index_dentry;
 }
 
+=======
+	*created = true;
+	return index_dentry;
+}
+
+static int read_single_page_timeouts(struct data_file *df, struct file *f,
+				     int block_index, struct mem_range range,
+				     struct mem_range tmp,
+				     unsigned int *delayed_min_us)
+{
+	struct mount_info *mi = df->df_mount_info;
+	struct incfs_read_data_file_timeouts timeouts = {
+		.max_pending_time_us = U32_MAX,
+	};
+	int uid = current_uid().val;
+	int i;
+
+	spin_lock(&mi->mi_per_uid_read_timeouts_lock);
+	for (i = 0; i < mi->mi_per_uid_read_timeouts_size /
+		sizeof(*mi->mi_per_uid_read_timeouts); ++i) {
+		struct incfs_per_uid_read_timeouts *t =
+			&mi->mi_per_uid_read_timeouts[i];
+
+		if(t->uid == uid) {
+			timeouts.min_time_us = t->min_time_us;
+			timeouts.min_pending_time_us = t->min_pending_time_us;
+			timeouts.max_pending_time_us = t->max_pending_time_us;
+			break;
+		}
+	}
+	spin_unlock(&mi->mi_per_uid_read_timeouts_lock);
+	if (timeouts.max_pending_time_us == U32_MAX) {
+		u64 read_timeout_us = (u64)mi->mi_options.read_timeout_ms *
+					1000;
+
+		timeouts.max_pending_time_us = read_timeout_us <= U32_MAX ?
+					       read_timeout_us : U32_MAX;
+	}
+
+	return incfs_read_data_file_block(range, f, block_index, tmp,
+					  &timeouts, delayed_min_us);
+}
+
+static int usleep_interruptible(u32 us)
+{
+	/* See:
+	 * https://www.kernel.org/doc/Documentation/timers/timers-howto.txt
+	 * for explanation
+	 */
+	if (us < 10) {
+		udelay(us);
+		return 0;
+	} else if (us < 20000) {
+		usleep_range(us, us + us / 10);
+		return 0;
+	} else
+		return msleep_interruptible(us / 1000);
+}
+
+>>>>>>> origin/android16-base
 static int read_single_page(struct file *f, struct page *page)
 {
 	loff_t offset = 0;
@@ -798,6 +1103,7 @@ static int read_single_page(struct file *f, struct page *page)
 	ssize_t read_result = 0;
 	struct data_file *df = get_incfs_data_file(f);
 	int result = 0;
+<<<<<<< HEAD
 	void *page_start = kmap(page);
 	int block_index;
 	int timeout_ms;
@@ -809,17 +1115,47 @@ static int read_single_page(struct file *f, struct page *page)
 	block_index = offset / INCFS_DATA_FILE_BLOCK_SIZE;
 	size = df->df_size;
 	timeout_ms = df->df_mount_info->mi_options.read_timeout_ms;
+=======
+	void *page_start;
+	int block_index;
+	unsigned int delayed_min_us = 0;
+
+	if (!df) {
+		SetPageError(page);
+		unlock_page(page);
+		return -EBADF;
+	}
+
+	page_start = kmap(page);
+	offset = page_offset(page);
+	block_index = (offset + df->df_mapped_offset) /
+		INCFS_DATA_FILE_BLOCK_SIZE;
+	size = df->df_size;
+>>>>>>> origin/android16-base
 
 	if (offset < size) {
 		struct mem_range tmp = {
 			.len = 2 * INCFS_DATA_FILE_BLOCK_SIZE
 		};
+<<<<<<< HEAD
 
 		tmp.data = (u8 *)__get_free_pages(GFP_NOFS, get_order(tmp.len));
 		bytes_to_read = min_t(loff_t, size - offset, PAGE_SIZE);
 		read_result = incfs_read_data_file_block(
 			range(page_start, bytes_to_read), f, block_index,
 			timeout_ms, tmp);
+=======
+		tmp.data = (u8 *)__get_free_pages(GFP_NOFS, get_order(tmp.len));
+		if (!tmp.data) {
+			read_result = -ENOMEM;
+			goto err;
+		}
+		bytes_to_read = min_t(loff_t, size - offset, PAGE_SIZE);
+
+		read_result = read_single_page_timeouts(df, f, block_index,
+					range(page_start, bytes_to_read), tmp,
+					&delayed_min_us);
+>>>>>>> origin/android16-base
 
 		free_pages((unsigned long)tmp.data, get_order(tmp.len));
 	} else {
@@ -827,6 +1163,10 @@ static int read_single_page(struct file *f, struct page *page)
 		read_result = 0;
 	}
 
+<<<<<<< HEAD
+=======
+err:
+>>>>>>> origin/android16-base
 	if (read_result < 0)
 		result = read_result;
 	else if (read_result < PAGE_SIZE)
@@ -840,6 +1180,7 @@ static int read_single_page(struct file *f, struct page *page)
 	flush_dcache_page(page);
 	kunmap(page);
 	unlock_page(page);
+<<<<<<< HEAD
 	return result;
 }
 
@@ -974,6 +1315,14 @@ out:
 }
 
 static int incfs_link(struct dentry *what, struct dentry *where)
+=======
+	if (delayed_min_us)
+		usleep_interruptible(delayed_min_us);
+	return result;
+}
+
+int incfs_link(struct dentry *what, struct dentry *where)
+>>>>>>> origin/android16-base
 {
 	struct dentry *parent_dentry = dget_parent(where);
 	struct inode *pinode = d_inode(parent_dentry);
@@ -987,7 +1336,11 @@ static int incfs_link(struct dentry *what, struct dentry *where)
 	return error;
 }
 
+<<<<<<< HEAD
 static int incfs_unlink(struct dentry *dentry)
+=======
+int incfs_unlink(struct dentry *dentry)
+>>>>>>> origin/android16-base
 {
 	struct dentry *parent_dentry = dget_parent(dentry);
 	struct inode *pinode = d_inode(parent_dentry);
@@ -1015,6 +1368,7 @@ static int incfs_rmdir(struct dentry *dentry)
 	return error;
 }
 
+<<<<<<< HEAD
 static int dir_relative_path_resolve(
 			struct mount_info *mi,
 			const char __user *relative_path,
@@ -1283,6 +1637,110 @@ out:
 	if (locked)
 		mutex_unlock(&mi->mi_dir_struct_mutex);
 	return error;
+=======
+static void notify_unlink(struct dentry *dentry, const char *file_id_str,
+			  const char *special_directory)
+{
+	struct dentry *root = dentry;
+	struct dentry *file = NULL;
+	struct dentry *dir = NULL;
+	int error = 0;
+	bool take_lock = root->d_parent != root->d_parent->d_parent;
+
+	while (root != root->d_parent)
+		root = root->d_parent;
+
+	if (take_lock)
+		dir = incfs_lookup_dentry(root, special_directory);
+	else
+		dir = lookup_one_len(special_directory, root,
+				     strlen(special_directory));
+
+	if (IS_ERR(dir)) {
+		error = PTR_ERR(dir);
+		goto out;
+	}
+	if (d_is_negative(dir)) {
+		error = -ENOENT;
+		goto out;
+	}
+
+	file = incfs_lookup_dentry(dir, file_id_str);
+	if (IS_ERR(file)) {
+		error = PTR_ERR(file);
+		goto out;
+	}
+	if (d_is_negative(file)) {
+		error = -ENOENT;
+		goto out;
+	}
+
+	fsnotify_nameremove(file, 0);
+	d_delete(file);
+
+out:
+	if (error)
+		pr_warn("%s failed with error %d\n", __func__, error);
+
+	dput(dir);
+	dput(file);
+}
+
+static void handle_file_completed(struct file *f, struct data_file *df)
+{
+	struct backing_file_context *bfc;
+	struct mount_info *mi = df->df_mount_info;
+	char *file_id_str = NULL;
+	struct dentry *incomplete_file_dentry = NULL;
+	const struct cred *old_cred = override_creds(mi->mi_owner);
+	int error;
+
+	/* Truncate file to remove any preallocated space */
+	bfc = df->df_backing_file_context;
+	if (bfc) {
+		struct file *f = bfc->bc_file;
+
+		if (f) {
+			loff_t size = i_size_read(file_inode(f));
+
+			error = vfs_truncate(&f->f_path, size);
+			if (error)
+				/* No useful action on failure */
+				pr_warn("incfs: Failed to truncate complete file: %d\n",
+					error);
+		}
+	}
+
+	/* This is best effort - there is no useful action to take on failure */
+	file_id_str = file_id_to_str(df->df_id);
+	if (!file_id_str)
+		goto out;
+
+	incomplete_file_dentry = incfs_lookup_dentry(
+					df->df_mount_info->mi_incomplete_dir,
+					file_id_str);
+	if (!incomplete_file_dentry || IS_ERR(incomplete_file_dentry)) {
+		incomplete_file_dentry = NULL;
+		goto out;
+	}
+
+	if (!d_really_is_positive(incomplete_file_dentry))
+		goto out;
+
+	vfs_fsync(df->df_backing_file_context->bc_file, 0);
+	error = incfs_unlink(incomplete_file_dentry);
+	if (error) {
+		pr_warn("incfs: Deleting incomplete file failed: %d\n", error);
+		goto out;
+	}
+
+	notify_unlink(f->f_path.dentry, file_id_str, INCFS_INCOMPLETE_NAME);
+
+out:
+	dput(incomplete_file_dentry);
+	kfree(file_id_str);
+	revert_creds(old_cred);
+>>>>>>> origin/android16-base
 }
 
 static long ioctl_fill_blocks(struct file *f, void __user *arg)
@@ -1291,15 +1749,27 @@ static long ioctl_fill_blocks(struct file *f, void __user *arg)
 	struct incfs_fill_blocks fill_blocks;
 	struct incfs_fill_block __user *usr_fill_block_array;
 	struct data_file *df = get_incfs_data_file(f);
+<<<<<<< HEAD
+=======
+	struct incfs_file_data *fd = f->private_data;
+>>>>>>> origin/android16-base
 	const ssize_t data_buf_size = 2 * INCFS_DATA_FILE_BLOCK_SIZE;
 	u8 *data_buf = NULL;
 	ssize_t error = 0;
 	int i = 0;
+<<<<<<< HEAD
+=======
+	bool complete = false;
+>>>>>>> origin/android16-base
 
 	if (!df)
 		return -EBADF;
 
+<<<<<<< HEAD
 	if ((uintptr_t)f->private_data != CAN_FILL)
+=======
+	if (!fd || fd->fd_fill_permission != CAN_FILL)
+>>>>>>> origin/android16-base
 		return -EPERM;
 
 	if (copy_from_user(&fill_blocks, usr_fill_blocks, sizeof(fill_blocks)))
@@ -1336,7 +1806,11 @@ static long ioctl_fill_blocks(struct file *f, void __user *arg)
 							     data_buf);
 		} else {
 			error = incfs_process_new_data_block(df, &fill_block,
+<<<<<<< HEAD
 							     data_buf);
+=======
+							data_buf, &complete);
+>>>>>>> origin/android16-base
 		}
 		if (error)
 			break;
@@ -1345,6 +1819,12 @@ static long ioctl_fill_blocks(struct file *f, void __user *arg)
 	if (data_buf)
 		free_pages((unsigned long)data_buf, get_order(data_buf_size));
 
+<<<<<<< HEAD
+=======
+	if (complete)
+		handle_file_completed(f, df);
+
+>>>>>>> origin/android16-base
 	/*
 	 * Only report the error if no records were processed, otherwise
 	 * just return how many were processed successfully.
@@ -1355,6 +1835,7 @@ static long ioctl_fill_blocks(struct file *f, void __user *arg)
 	return i;
 }
 
+<<<<<<< HEAD
 static long ioctl_permit_fill(struct file *f, void __user *arg)
 {
 	struct incfs_permit_fill __user *usr_permit_fill = arg;
@@ -1402,6 +1883,8 @@ out:
 	return error;
 }
 
+=======
+>>>>>>> origin/android16-base
 static long ioctl_read_file_signature(struct file *f, void __user *arg)
 {
 	struct incfs_get_file_sig_args __user *args_usr_ptr = arg;
@@ -1455,18 +1938,32 @@ static long ioctl_get_filled_blocks(struct file *f, void __user *arg)
 	struct incfs_get_filled_blocks_args __user *args_usr_ptr = arg;
 	struct incfs_get_filled_blocks_args args = {};
 	struct data_file *df = get_incfs_data_file(f);
+<<<<<<< HEAD
 	int error;
 
 	if (!df)
 		return -EINVAL;
 
 	if ((uintptr_t)f->private_data != CAN_FILL)
+=======
+	struct incfs_file_data *fd = f->private_data;
+	int error;
+
+	if (!df || !fd)
+		return -EINVAL;
+
+	if (fd->fd_fill_permission != CAN_FILL)
+>>>>>>> origin/android16-base
 		return -EPERM;
 
 	if (copy_from_user(&args, args_usr_ptr, sizeof(args)) > 0)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	error = incfs_get_filled_blocks(df, &args);
+=======
+	error = incfs_get_filled_blocks(df, fd, &args);
+>>>>>>> origin/android16-base
 
 	if (copy_to_user(args_usr_ptr, &args, sizeof(args)))
 		return -EFAULT;
@@ -1474,6 +1971,7 @@ static long ioctl_get_filled_blocks(struct file *f, void __user *arg)
 	return error;
 }
 
+<<<<<<< HEAD
 static long dispatch_ioctl(struct file *f, unsigned int req, unsigned long arg)
 {
 	struct mount_info *mi = get_mount_info(file_superblock(f));
@@ -1485,15 +1983,86 @@ static long dispatch_ioctl(struct file *f, unsigned int req, unsigned long arg)
 		return ioctl_fill_blocks(f, (void __user *)arg);
 	case INCFS_IOC_PERMIT_FILL:
 		return ioctl_permit_fill(f, (void __user *)arg);
+=======
+static long ioctl_get_block_count(struct file *f, void __user *arg)
+{
+	struct incfs_get_block_count_args __user *args_usr_ptr = arg;
+	struct incfs_get_block_count_args args = {};
+	struct data_file *df = get_incfs_data_file(f);
+
+	if (!df)
+		return -EINVAL;
+
+	args.total_data_blocks_out = df->df_data_block_count;
+	args.filled_data_blocks_out = atomic_read(&df->df_data_blocks_written);
+	args.total_hash_blocks_out = df->df_total_block_count -
+		df->df_data_block_count;
+	args.filled_hash_blocks_out = atomic_read(&df->df_hash_blocks_written);
+
+	if (copy_to_user(args_usr_ptr, &args, sizeof(args)))
+		return -EFAULT;
+
+	return 0;
+}
+
+static int incfs_ioctl_get_flags(struct file *f, void __user *arg)
+{
+	u32 flags = IS_VERITY(file_inode(f)) ? FS_VERITY_FL : 0;
+
+	return put_user(flags, (int __user *) arg);
+}
+
+static long dispatch_ioctl(struct file *f, unsigned int req, unsigned long arg)
+{
+	switch (req) {
+	case INCFS_IOC_FILL_BLOCKS:
+		return ioctl_fill_blocks(f, (void __user *)arg);
+>>>>>>> origin/android16-base
 	case INCFS_IOC_READ_FILE_SIGNATURE:
 		return ioctl_read_file_signature(f, (void __user *)arg);
 	case INCFS_IOC_GET_FILLED_BLOCKS:
 		return ioctl_get_filled_blocks(f, (void __user *)arg);
+<<<<<<< HEAD
+=======
+	case INCFS_IOC_GET_BLOCK_COUNT:
+		return ioctl_get_block_count(f, (void __user *)arg);
+	case FS_IOC_ENABLE_VERITY:
+		return incfs_ioctl_enable_verity(f, (const void __user *)arg);
+	case FS_IOC_GETFLAGS:
+		return incfs_ioctl_get_flags(f, (void __user *) arg);
+	case FS_IOC_MEASURE_VERITY:
+		return incfs_ioctl_measure_verity(f, (void __user *)arg);
+>>>>>>> origin/android16-base
 	default:
 		return -EINVAL;
 	}
 }
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_COMPAT
+static long incfs_compat_ioctl(struct file *file, unsigned int cmd,
+			       unsigned long arg)
+{
+	switch (cmd) {
+	case FS_IOC32_GETFLAGS:
+		cmd = FS_IOC_GETFLAGS;
+		break;
+	case INCFS_IOC_FILL_BLOCKS:
+	case INCFS_IOC_READ_FILE_SIGNATURE:
+	case INCFS_IOC_GET_FILLED_BLOCKS:
+	case INCFS_IOC_GET_BLOCK_COUNT:
+	case FS_IOC_ENABLE_VERITY:
+	case FS_IOC_MEASURE_VERITY:
+		break;
+	default:
+		return -ENOIOCTLCMD;
+	}
+	return dispatch_ioctl(file, cmd, (unsigned long) compat_ptr(arg));
+}
+#endif
+
+>>>>>>> origin/android16-base
 static struct dentry *dir_lookup(struct inode *dir_inode, struct dentry *dentry,
 				 unsigned int flags)
 {
@@ -1502,6 +2071,7 @@ static struct dentry *dir_lookup(struct inode *dir_inode, struct dentry *dentry,
 	struct dentry *backing_dentry = NULL;
 	struct path dir_backing_path = {};
 	struct inode_info *dir_info = get_incfs_node(dir_inode);
+<<<<<<< HEAD
 	struct mem_range name_range =
 			range((u8 *)dentry->d_name.name, dentry->d_name.len);
 	int err = 0;
@@ -1536,6 +2106,20 @@ static struct dentry *dir_lookup(struct inode *dir_inode, struct dentry *dentry,
 			d_add(dentry, inode);
 			goto out;
 		}
+=======
+	int err = 0;
+
+	if (!mi || !dir_info || !dir_info->n_backing_inode)
+		return ERR_PTR(-EBADF);
+
+	if (d_inode(mi->mi_backing_dir_path.dentry) ==
+		dir_info->n_backing_inode) {
+		/* We do lookup in the FS root. Show pseudo files. */
+		err = dir_lookup_pseudo_files(dir_inode->i_sb, dentry);
+		if (err != -ENOENT)
+			goto out;
+		err = 0;
+>>>>>>> origin/android16-base
 	}
 
 	dir_dentry = dget_parent(dentry);
@@ -1621,7 +2205,11 @@ static int dir_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 
 	if (!backing_dentry) {
 		err = -EBADF;
+<<<<<<< HEAD
 		goto out;
+=======
+		goto path_err;
+>>>>>>> origin/android16-base
 	}
 
 	if (backing_dentry->d_parent == mi->mi_index_dir) {
@@ -1630,13 +2218,26 @@ static int dir_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	if (backing_dentry->d_parent == mi->mi_incomplete_dir) {
+		/* Can't create a subdir inside .incomplete */
+		err = -EBUSY;
+		goto out;
+	}
+>>>>>>> origin/android16-base
 	inode_lock_nested(dir_node->n_backing_inode, I_MUTEX_PARENT);
 	err = vfs_mkdir(dir_node->n_backing_inode, backing_dentry, mode | 0222);
 	inode_unlock(dir_node->n_backing_inode);
 	if (!err) {
 		struct inode *inode = NULL;
 
+<<<<<<< HEAD
 		if (d_really_is_negative(backing_dentry)) {
+=======
+		if (d_really_is_negative(backing_dentry) ||
+			unlikely(d_unhashed(backing_dentry))) {
+>>>>>>> origin/android16-base
 			err = -EINVAL;
 			goto out;
 		}
@@ -1653,23 +2254,47 @@ out:
 	if (d_really_is_negative(dentry))
 		d_drop(dentry);
 	path_put(&backing_path);
+<<<<<<< HEAD
+=======
+
+path_err:
+>>>>>>> origin/android16-base
 	mutex_unlock(&mi->mi_dir_struct_mutex);
 	if (err)
 		pr_debug("incfs: %s err:%d\n", __func__, err);
 	return err;
 }
 
+<<<<<<< HEAD
 /* Delete file referenced by backing_dentry and also its hardlink from .index */
 static int final_file_delete(struct mount_info *mi,
 			struct dentry *backing_dentry)
 {
 	struct dentry *index_file_dentry = NULL;
+=======
+/*
+ * Delete file referenced by backing_dentry and if appropriate its hardlink
+ * from .index and .incomplete
+ */
+static int file_delete(struct mount_info *mi, struct dentry *dentry,
+			struct dentry *backing_dentry, int nlink)
+{
+	struct dentry *index_file_dentry = NULL;
+	struct dentry *incomplete_file_dentry = NULL;
+>>>>>>> origin/android16-base
 	/* 2 chars per byte of file ID + 1 char for \0 */
 	char file_id_str[2 * sizeof(incfs_uuid_t) + 1] = {0};
 	ssize_t uuid_size = 0;
 	int error = 0;
 
 	WARN_ON(!mutex_is_locked(&mi->mi_dir_struct_mutex));
+<<<<<<< HEAD
+=======
+
+	if (nlink > 3)
+		goto just_unlink;
+
+>>>>>>> origin/android16-base
 	uuid_size = vfs_getxattr(backing_dentry, INCFS_XATTR_ID_NAME,
 			file_id_str, 2 * sizeof(incfs_uuid_t));
 	if (uuid_size < 0) {
@@ -1685,6 +2310,7 @@ static int final_file_delete(struct mount_info *mi,
 	index_file_dentry = incfs_lookup_dentry(mi->mi_index_dir, file_id_str);
 	if (IS_ERR(index_file_dentry)) {
 		error = PTR_ERR(index_file_dentry);
+<<<<<<< HEAD
 		goto out;
 	}
 
@@ -1696,6 +2322,52 @@ static int final_file_delete(struct mount_info *mi,
 		error = incfs_unlink(index_file_dentry);
 out:
 	dput(index_file_dentry);
+=======
+		index_file_dentry = NULL;
+		goto out;
+	}
+
+	if (d_really_is_positive(index_file_dentry) && nlink > 0)
+		nlink--;
+
+	if (nlink > 2)
+		goto just_unlink;
+
+	incomplete_file_dentry = incfs_lookup_dentry(mi->mi_incomplete_dir,
+						     file_id_str);
+	if (IS_ERR(incomplete_file_dentry)) {
+		error = PTR_ERR(incomplete_file_dentry);
+		incomplete_file_dentry = NULL;
+		goto out;
+	}
+
+	if (d_really_is_positive(incomplete_file_dentry) && nlink > 0)
+		nlink--;
+
+	if (nlink > 1)
+		goto just_unlink;
+
+	if (d_really_is_positive(index_file_dentry)) {
+		error = incfs_unlink(index_file_dentry);
+		if (error)
+			goto out;
+		notify_unlink(dentry, file_id_str, INCFS_INDEX_NAME);
+	}
+
+	if (d_really_is_positive(incomplete_file_dentry)) {
+		error = incfs_unlink(incomplete_file_dentry);
+		if (error)
+			goto out;
+		notify_unlink(dentry, file_id_str, INCFS_INCOMPLETE_NAME);
+	}
+
+just_unlink:
+	error = incfs_unlink(backing_dentry);
+
+out:
+	dput(index_file_dentry);
+	dput(incomplete_file_dentry);
+>>>>>>> origin/android16-base
 	if (error)
 		pr_debug("incfs: delete_file_from_index err:%d\n", error);
 	return error;
@@ -1708,6 +2380,12 @@ static int dir_unlink(struct inode *dir, struct dentry *dentry)
 	struct kstat stat;
 	int err = 0;
 
+<<<<<<< HEAD
+=======
+	if (!mi)
+		return -EBADF;
+
+>>>>>>> origin/android16-base
 	err = mutex_lock_interruptible(&mi->mi_dir_struct_mutex);
 	if (err)
 		return err;
@@ -1715,7 +2393,11 @@ static int dir_unlink(struct inode *dir, struct dentry *dentry)
 	get_incfs_backing_path(dentry, &backing_path);
 	if (!backing_path.dentry) {
 		err = -EBADF;
+<<<<<<< HEAD
 		goto out;
+=======
+		goto path_err;
+>>>>>>> origin/android16-base
 	}
 
 	if (backing_path.dentry->d_parent == mi->mi_index_dir) {
@@ -1724,11 +2406,21 @@ static int dir_unlink(struct inode *dir, struct dentry *dentry)
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	if (backing_path.dentry->d_parent == mi->mi_incomplete_dir) {
+		/* Direct unlink from .incomplete are not allowed. */
+		err = -EBUSY;
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	err = vfs_getattr(&backing_path, &stat, STATX_NLINK,
 			  AT_STATX_SYNC_AS_STAT);
 	if (err)
 		goto out;
 
+<<<<<<< HEAD
 	if (stat.nlink == 2) {
 		/*
 		 * This is the last named link to this file. The only one left
@@ -1739,10 +2431,17 @@ static int dir_unlink(struct inode *dir, struct dentry *dentry)
 		/* There are other links to this file. Remove just this one. */
 		err = incfs_unlink(backing_path.dentry);
 	}
+=======
+	err = file_delete(mi, dentry, backing_path.dentry, stat.nlink);
+>>>>>>> origin/android16-base
 
 	d_drop(dentry);
 out:
 	path_put(&backing_path);
+<<<<<<< HEAD
+=======
+path_err:
+>>>>>>> origin/android16-base
 	if (err)
 		pr_debug("incfs: %s err:%d\n", __func__, err);
 	mutex_unlock(&mi->mi_dir_struct_mutex);
@@ -1757,6 +2456,12 @@ static int dir_link(struct dentry *old_dentry, struct inode *dir,
 	struct path backing_new_path = {};
 	int error = 0;
 
+<<<<<<< HEAD
+=======
+	if (!mi)
+		return -EBADF;
+
+>>>>>>> origin/android16-base
 	error = mutex_lock_interruptible(&mi->mi_dir_struct_mutex);
 	if (error)
 		return error;
@@ -1770,6 +2475,15 @@ static int dir_link(struct dentry *old_dentry, struct inode *dir,
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	if (backing_new_path.dentry->d_parent == mi->mi_incomplete_dir) {
+		/* Can't link to .incomplete */
+		error = -EBUSY;
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	error = incfs_link(backing_old_path.dentry, backing_new_path.dentry);
 	if (!error) {
 		struct inode *inode = NULL;
@@ -1803,6 +2517,12 @@ static int dir_rmdir(struct inode *dir, struct dentry *dentry)
 	struct path backing_path = {};
 	int err = 0;
 
+<<<<<<< HEAD
+=======
+	if (!mi)
+		return -EBADF;
+
+>>>>>>> origin/android16-base
 	err = mutex_lock_interruptible(&mi->mi_dir_struct_mutex);
 	if (err)
 		return err;
@@ -1810,7 +2530,11 @@ static int dir_rmdir(struct inode *dir, struct dentry *dentry)
 	get_incfs_backing_path(dentry, &backing_path);
 	if (!backing_path.dentry) {
 		err = -EBADF;
+<<<<<<< HEAD
 		goto out;
+=======
+		goto path_err;
+>>>>>>> origin/android16-base
 	}
 
 	if (backing_path.dentry == mi->mi_index_dir) {
@@ -1819,11 +2543,25 @@ static int dir_rmdir(struct inode *dir, struct dentry *dentry)
 		goto out;
 	}
 
+<<<<<<< HEAD
+=======
+	if (backing_path.dentry == mi->mi_incomplete_dir) {
+		/* Can't delete .incomplete */
+		err = -EBUSY;
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	err = incfs_rmdir(backing_path.dentry);
 	if (!err)
 		d_drop(dentry);
 out:
 	path_put(&backing_path);
+<<<<<<< HEAD
+=======
+
+path_err:
+>>>>>>> origin/android16-base
 	if (err)
 		pr_debug("incfs: %s err:%d\n", __func__, err);
 	mutex_unlock(&mi->mi_dir_struct_mutex);
@@ -1847,6 +2585,17 @@ static int dir_rename(struct inode *old_dir, struct dentry *old_dentry,
 		return error;
 
 	backing_old_dentry = get_incfs_dentry(old_dentry)->backing_path.dentry;
+<<<<<<< HEAD
+=======
+
+	if (!backing_old_dentry || backing_old_dentry == mi->mi_index_dir ||
+	    backing_old_dentry == mi->mi_incomplete_dir) {
+		/* Renaming .index or .incomplete not allowed */
+		error = -EBUSY;
+		goto exit;
+	}
+
+>>>>>>> origin/android16-base
 	backing_new_dentry = get_incfs_dentry(new_dentry)->backing_path.dentry;
 	dget(backing_old_dentry);
 	dget(backing_new_dentry);
@@ -1855,8 +2604,14 @@ static int dir_rename(struct inode *old_dir, struct dentry *old_dentry,
 	backing_new_dir_dentry = dget_parent(backing_new_dentry);
 	target_inode = d_inode(new_dentry);
 
+<<<<<<< HEAD
 	if (backing_old_dir_dentry == mi->mi_index_dir) {
 		/* Direct moves from .index are not allowed. */
+=======
+	if (backing_old_dir_dentry == mi->mi_index_dir ||
+	    backing_old_dir_dentry == mi->mi_incomplete_dir) {
+		/* Direct moves from .index or .incomplete are not allowed. */
+>>>>>>> origin/android16-base
 		error = -EBUSY;
 		goto out;
 	}
@@ -1893,6 +2648,10 @@ out:
 	dput(backing_new_dentry);
 	dput(backing_old_dentry);
 
+<<<<<<< HEAD
+=======
+exit:
+>>>>>>> origin/android16-base
 	mutex_unlock(&mi->mi_dir_struct_mutex);
 	if (error)
 		pr_debug("incfs: %s err:%d\n", __func__, error);
@@ -1906,12 +2665,30 @@ static int file_open(struct inode *inode, struct file *file)
 	struct file *backing_file = NULL;
 	struct path backing_path = {};
 	int err = 0;
+<<<<<<< HEAD
 	const struct cred *old_cred;
 
 	get_incfs_backing_path(file->f_path.dentry, &backing_path);
 	old_cred = override_creds(mi->mi_owner);
 	backing_file = dentry_open(&backing_path,
 			O_RDWR | O_NOATIME | O_LARGEFILE, current_cred());
+=======
+	int flags = O_NOATIME | O_LARGEFILE |
+		(S_ISDIR(inode->i_mode) ? O_RDONLY : O_RDWR);
+	const struct cred *old_cred;
+
+	WARN_ON(file->private_data);
+
+	if (!mi)
+		return -EBADF;
+
+	get_incfs_backing_path(file->f_path.dentry, &backing_path);
+	if (!backing_path.dentry)
+		return -EBADF;
+
+	old_cred = override_creds(mi->mi_owner);
+	backing_file = dentry_open(&backing_path, flags, current_cred());
+>>>>>>> origin/android16-base
 	revert_creds(old_cred);
 	path_put(&backing_path);
 
@@ -1922,8 +2699,30 @@ static int file_open(struct inode *inode, struct file *file)
 	}
 
 	if (S_ISREG(inode->i_mode)) {
+<<<<<<< HEAD
 		err = make_inode_ready_for_data_ops(mi, inode, backing_file);
 		file->private_data = (void *)CANT_FILL;
+=======
+		struct incfs_file_data *fd = kzalloc(sizeof(*fd), GFP_NOFS);
+
+		if (!fd) {
+			err = -ENOMEM;
+			goto out;
+		}
+
+		*fd = (struct incfs_file_data) {
+			.fd_fill_permission = CANT_FILL,
+		};
+		file->private_data = fd;
+
+		err = make_inode_ready_for_data_ops(mi, inode, backing_file);
+		if (err)
+			goto out;
+
+		err = incfs_fsverity_file_open(inode, file);
+		if (err)
+			goto out;
+>>>>>>> origin/android16-base
 	} else if (S_ISDIR(inode->i_mode)) {
 		struct dir_file *dir = NULL;
 
@@ -1936,9 +2735,23 @@ static int file_open(struct inode *inode, struct file *file)
 		err = -EBADF;
 
 out:
+<<<<<<< HEAD
 	if (err)
 		pr_debug("incfs: %s name:%s err: %d\n", __func__,
 			file->f_path.dentry->d_name.name, err);
+=======
+	if (err) {
+		pr_debug("name:%s err: %d\n",
+			 file->f_path.dentry->d_name.name, err);
+		if (S_ISREG(inode->i_mode))
+			kfree(file->private_data);
+		else if (S_ISDIR(inode->i_mode))
+			incfs_free_dir_file(file->private_data);
+
+		file->private_data = NULL;
+	}
+
+>>>>>>> origin/android16-base
 	if (backing_file)
 		fput(backing_file);
 	return err;
@@ -1947,9 +2760,14 @@ out:
 static int file_release(struct inode *inode, struct file *file)
 {
 	if (S_ISREG(inode->i_mode)) {
+<<<<<<< HEAD
 		/* Do nothing.
 		 * data_file is released only by inode eviction.
 		 */
+=======
+		kfree(file->private_data);
+		file->private_data = NULL;
+>>>>>>> origin/android16-base
 	} else if (S_ISDIR(inode->i_mode)) {
 		struct dir_file *dir = get_incfs_dir_file(file);
 
@@ -2052,6 +2870,13 @@ static int incfs_setattr(struct dentry *dentry, struct iattr *ia)
 	if (ia->ia_valid & ATTR_SIZE)
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	if ((ia->ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID)) &&
+	    (ia->ia_valid & ATTR_MODE))
+		return -EINVAL;
+
+>>>>>>> origin/android16-base
 	if (!di)
 		return -EINVAL;
 	backing_dentry = di->backing_path.dentry;
@@ -2081,6 +2906,46 @@ static int incfs_setattr(struct dentry *dentry, struct iattr *ia)
 	return simple_setattr(dentry, ia);
 }
 
+<<<<<<< HEAD
+=======
+
+static int incfs_getattr(const struct path *path,
+			 struct kstat *stat, u32 request_mask,
+			 unsigned int query_flags)
+{
+	struct inode *inode = d_inode(path->dentry);
+
+	generic_fillattr(inode, stat);
+
+	if (inode->i_ino < INCFS_START_INO_RANGE)
+		return 0;
+
+	stat->attributes &= ~STATX_ATTR_VERITY;
+	if (IS_VERITY(inode))
+		stat->attributes |= STATX_ATTR_VERITY;
+	stat->attributes_mask |= STATX_ATTR_VERITY;
+
+	if (request_mask & STATX_BLOCKS) {
+		struct kstat backing_kstat;
+		struct dentry_info *di = get_incfs_dentry(path->dentry);
+		int error = 0;
+		struct path *backing_path;
+
+		if (!di)
+			return -EFSCORRUPTED;
+		backing_path = &di->backing_path;
+		error = vfs_getattr(backing_path, &backing_kstat, STATX_BLOCKS,
+				    AT_STATX_SYNC_AS_STAT);
+		if (error)
+			return error;
+
+		stat->blocks = backing_kstat.blocks;
+	}
+
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 static ssize_t incfs_getxattr(struct dentry *d, const char *name,
 			void *value, size_t size)
 {
@@ -2088,6 +2953,10 @@ static ssize_t incfs_getxattr(struct dentry *d, const char *name,
 	struct mount_info *mi = get_mount_info(d->d_sb);
 	char *stored_value;
 	size_t stored_size;
+<<<<<<< HEAD
+=======
+	int i;
+>>>>>>> origin/android16-base
 
 	if (di && di->backing_path.dentry)
 		return vfs_getxattr(di->backing_path.dentry, name, value, size);
@@ -2095,6 +2964,7 @@ static ssize_t incfs_getxattr(struct dentry *d, const char *name,
 	if (strcmp(name, "security.selinux"))
 		return -ENODATA;
 
+<<<<<<< HEAD
 	if (!strcmp(d->d_iname, INCFS_PENDING_READS_FILENAME)) {
 		stored_value = mi->pending_read_xattr;
 		stored_size = mi->pending_read_xattr_size;
@@ -2105,6 +2975,16 @@ static ssize_t incfs_getxattr(struct dentry *d, const char *name,
 		return -ENODATA;
 	}
 
+=======
+	for (i = 0; i < PSEUDO_FILE_COUNT; ++i)
+		if (!strcmp(d->d_iname, incfs_pseudo_file_names[i].data))
+			break;
+	if (i == PSEUDO_FILE_COUNT)
+		return -ENODATA;
+
+	stored_value = mi->pseudo_file_xattr[i].data;
+	stored_size = mi->pseudo_file_xattr[i].len;
+>>>>>>> origin/android16-base
 	if (!stored_value)
 		return -ENODATA;
 
@@ -2113,7 +2993,10 @@ static ssize_t incfs_getxattr(struct dentry *d, const char *name,
 
 	memcpy(value, stored_value, stored_size);
 	return stored_size;
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 }
 
 
@@ -2122,8 +3005,14 @@ static ssize_t incfs_setxattr(struct dentry *d, const char *name,
 {
 	struct dentry_info *di = get_incfs_dentry(d);
 	struct mount_info *mi = get_mount_info(d->d_sb);
+<<<<<<< HEAD
 	void **stored_value;
 	size_t *stored_size;
+=======
+	u8 **stored_value;
+	size_t *stored_size;
+	int i;
+>>>>>>> origin/android16-base
 
 	if (di && di->backing_path.dentry)
 		return vfs_setxattr(di->backing_path.dentry, name, value, size,
@@ -2135,6 +3024,7 @@ static ssize_t incfs_setxattr(struct dentry *d, const char *name,
 	if (size > INCFS_MAX_FILE_ATTR_SIZE)
 		return -E2BIG;
 
+<<<<<<< HEAD
 	if (!strcmp(d->d_iname, INCFS_PENDING_READS_FILENAME)) {
 		stored_value = &mi->pending_read_xattr;
 		stored_size = &mi->pending_read_xattr_size;
@@ -2145,6 +3035,16 @@ static ssize_t incfs_setxattr(struct dentry *d, const char *name,
 		return -ENODATA;
 	}
 
+=======
+	for (i = 0; i < PSEUDO_FILE_COUNT; ++i)
+		if (!strcmp(d->d_iname, incfs_pseudo_file_names[i].data))
+			break;
+	if (i == PSEUDO_FILE_COUNT)
+		return -ENODATA;
+
+	stored_value = &mi->pseudo_file_xattr[i].data;
+	stored_size = &mi->pseudo_file_xattr[i].len;
+>>>>>>> origin/android16-base
 	kfree (*stored_value);
 	*stored_value = kzalloc(size, GFP_NOFS);
 	if (!*stored_value)
@@ -2171,10 +3071,19 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 	struct mount_options options = {};
 	struct mount_info *mi = NULL;
 	struct path backing_dir_path = {};
+<<<<<<< HEAD
 	struct dentry *index_dir;
 	struct super_block *src_fs_sb = NULL;
 	struct inode *root_inode = NULL;
 	struct super_block *sb = sget(type, NULL, set_anon_super, flags, NULL);
+=======
+	struct dentry *index_dir = NULL;
+	struct dentry *incomplete_dir = NULL;
+	struct super_block *src_fs_sb = NULL;
+	struct inode *root_inode = NULL;
+	struct super_block *sb = sget(type, NULL, set_anon_super, flags, NULL);
+	bool dir_created = false;
+>>>>>>> origin/android16-base
 	int error = 0;
 
 	if (IS_ERR(sb))
@@ -2191,17 +3100,34 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 
 	BUILD_BUG_ON(PAGE_SIZE != INCFS_DATA_FILE_BLOCK_SIZE);
 
+<<<<<<< HEAD
 	error = parse_options(&options, (char *)data);
 	if (error != 0) {
 		pr_err("incfs: Options parsing error. %d\n", error);
 		goto err;
+=======
+	if (!dev_name) {
+		pr_err("incfs: Backing dir is not set, filesystem can't be mounted.\n");
+		error = -ENOENT;
+		goto err_deactivate;
+	}
+
+	error = parse_options(&options, (char *)data);
+	if (error != 0) {
+		pr_err("incfs: Options parsing error. %d\n", error);
+		goto err_deactivate;
+>>>>>>> origin/android16-base
 	}
 
 	sb->s_bdi->ra_pages = options.readahead_pages;
 	if (!dev_name) {
 		pr_err("incfs: Backing dir is not set, filesystem can't be mounted.\n");
 		error = -ENOENT;
+<<<<<<< HEAD
 		goto err;
+=======
+		goto err_free_opts;
+>>>>>>> origin/android16-base
 	}
 
 	error = kern_path(dev_name, LOOKUP_FOLLOW | LOOKUP_DIRECTORY,
@@ -2210,6 +3136,7 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 		!d_really_is_positive(backing_dir_path.dentry)) {
 		pr_err("incfs: Error accessing: %s.\n",
 			dev_name);
+<<<<<<< HEAD
 		goto err;
 	}
 	src_fs_sb = backing_dir_path.dentry->d_sb;
@@ -2225,10 +3152,35 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 	}
 
 	index_dir = open_or_create_index_dir(backing_dir_path.dentry);
+=======
+		goto err_free_opts;
+	}
+	src_fs_sb = backing_dir_path.dentry->d_sb;
+	sb->s_maxbytes = src_fs_sb->s_maxbytes;
+	sb->s_stack_depth = src_fs_sb->s_stack_depth + 1;
+
+	if (sb->s_stack_depth > FILESYSTEM_MAX_STACK_DEPTH) {
+		error = -EINVAL;
+		goto err_put_path;
+	}
+
+	mi = incfs_alloc_mount_info(sb, &options, &backing_dir_path);
+	if (IS_ERR_OR_NULL(mi)) {
+		error = PTR_ERR(mi);
+		pr_err("incfs: Error allocating mount info. %d\n", error);
+		goto err_put_path;
+	}
+
+	sb->s_fs_info = mi;
+	mi->mi_backing_dir_path = backing_dir_path;
+	index_dir = open_or_create_special_dir(backing_dir_path.dentry,
+					       INCFS_INDEX_NAME, &dir_created);
+>>>>>>> origin/android16-base
 	if (IS_ERR_OR_NULL(index_dir)) {
 		error = PTR_ERR(index_dir);
 		pr_err("incfs: Can't find or create .index dir in %s\n",
 			dev_name);
+<<<<<<< HEAD
 		goto err;
 	}
 	mi->mi_index_dir = index_dir;
@@ -2238,27 +3190,74 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 	if (IS_ERR(root_inode)) {
 		error = PTR_ERR(root_inode);
 		goto err;
+=======
+		/* No need to null index_dir since we don't put it */
+		goto err_put_path;
+	}
+
+	mi->mi_index_dir = index_dir;
+	mi->mi_index_free = dir_created;
+
+	incomplete_dir = open_or_create_special_dir(backing_dir_path.dentry,
+						    INCFS_INCOMPLETE_NAME,
+						    &dir_created);
+	if (IS_ERR_OR_NULL(incomplete_dir)) {
+		error = PTR_ERR(incomplete_dir);
+		pr_err("incfs: Can't find or create .incomplete dir in %s\n",
+			dev_name);
+		/* No need to null incomplete_dir since we don't put it */
+		goto err_put_path;
+	}
+	mi->mi_incomplete_dir = incomplete_dir;
+	mi->mi_incomplete_free = dir_created;
+
+	root_inode = fetch_regular_inode(sb, backing_dir_path.dentry);
+	if (IS_ERR(root_inode)) {
+		error = PTR_ERR(root_inode);
+		goto err_put_path;
+>>>>>>> origin/android16-base
 	}
 
 	sb->s_root = d_make_root(root_inode);
 	if (!sb->s_root) {
 		error = -ENOMEM;
+<<<<<<< HEAD
 		goto err;
 	}
 	error = incfs_init_dentry(sb->s_root, &backing_dir_path);
 	if (error)
 		goto err;
+=======
+		goto err_put_path;
+	}
+	error = incfs_init_dentry(sb->s_root, &backing_dir_path);
+	if (error)
+		goto err_put_path;
+>>>>>>> origin/android16-base
 
 	path_put(&backing_dir_path);
 	sb->s_flags |= SB_ACTIVE;
 
 	pr_debug("incfs: mount\n");
+<<<<<<< HEAD
 	return dget(sb->s_root);
 err:
 	sb->s_fs_info = NULL;
 	path_put(&backing_dir_path);
 	incfs_free_mount_info(mi);
 	deactivate_locked_super(sb);
+=======
+	free_options(&options);
+	return dget(sb->s_root);
+
+err_put_path:
+	path_put(&backing_dir_path);
+err_free_opts:
+	free_options(&options);
+err_deactivate:
+	deactivate_locked_super(sb);
+	pr_err("incfs: mount failed %d\n", error);
+>>>>>>> origin/android16-base
 	return ERR_PTR(error);
 }
 
@@ -2273,21 +3272,68 @@ static int incfs_remount_fs(struct super_block *sb, int *flags, char *data)
 	if (err)
 		return err;
 
+<<<<<<< HEAD
 	err = incfs_realloc_mount_info(mi, &options);
 	if (err)
 		return err;
 
 	pr_debug("incfs: remount\n");
 	return 0;
+=======
+	if (options.report_uid != mi->mi_options.report_uid) {
+		pr_err("incfs: Can't change report_uid mount option on remount\n");
+		err = -EOPNOTSUPP;
+		goto out;
+	}
+
+	err = incfs_realloc_mount_info(mi, &options);
+	if (err)
+		goto out;
+
+	pr_debug("incfs: remount\n");
+
+out:
+	free_options(&options);
+	return err;
+>>>>>>> origin/android16-base
 }
 
 void incfs_kill_sb(struct super_block *sb)
 {
 	struct mount_info *mi = sb->s_fs_info;
+<<<<<<< HEAD
 
 	pr_debug("incfs: unmount\n");
 	incfs_free_mount_info(mi);
 	generic_shutdown_super(sb);
+=======
+	struct inode *dinode = NULL;
+
+	pr_debug("incfs: unmount\n");
+
+	/*
+	 * We must kill the super before freeing mi, since killing the super
+	 * triggers inode eviction, which triggers the final update of the
+	 * backing file, which uses certain information for mi
+	 */
+	kill_anon_super(sb);
+
+	if (mi) {
+		if (mi->mi_backing_dir_path.dentry)
+			dinode = d_inode(mi->mi_backing_dir_path.dentry);
+
+		if (dinode) {
+			if (mi->mi_index_dir && mi->mi_index_free)
+				vfs_rmdir(dinode, mi->mi_index_dir);
+
+			if (mi->mi_incomplete_dir && mi->mi_incomplete_free)
+				vfs_rmdir(dinode, mi->mi_incomplete_dir);
+		}
+
+		incfs_free_mount_info(mi);
+		sb->s_fs_info = NULL;
+	}
+>>>>>>> origin/android16-base
 }
 
 static int show_options(struct seq_file *m, struct dentry *root)
@@ -2301,9 +3347,18 @@ static int show_options(struct seq_file *m, struct dentry *root)
 		seq_printf(m, ",rlog_wakeup_cnt=%u",
 			   mi->mi_options.read_log_wakeup_count);
 	}
+<<<<<<< HEAD
 	if (mi->mi_options.no_backing_file_cache)
 		seq_puts(m, ",no_bf_cache");
 	if (mi->mi_options.no_backing_file_readahead)
 		seq_puts(m, ",no_bf_readahead");
+=======
+	if (mi->mi_options.report_uid)
+		seq_puts(m, ",report_uid");
+
+	if (mi->mi_sysfs_node)
+		seq_printf(m, ",sysfs_name=%s",
+			   kobject_name(&mi->mi_sysfs_node->isn_sysfs_node));
+>>>>>>> origin/android16-base
 	return 0;
 }

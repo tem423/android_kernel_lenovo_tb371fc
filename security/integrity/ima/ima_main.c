@@ -29,6 +29,10 @@
 #include <linux/ima.h>
 #include <linux/iversion.h>
 #include <linux/fs.h>
+<<<<<<< HEAD
+=======
+#include <linux/iversion.h>
+>>>>>>> origin/android16-base
 
 #include "ima.h"
 
@@ -170,7 +174,11 @@ static int process_measurement(struct file *file, const struct cred *cred,
 			       u32 secid, char *buf, loff_t size, int mask,
 			       enum ima_hooks func)
 {
+<<<<<<< HEAD
 	struct inode *inode = file_inode(file);
+=======
+	struct inode *backing_inode, *inode = file_inode(file);
+>>>>>>> origin/android16-base
 	struct integrity_iint_cache *iint = NULL;
 	struct ima_template_desc *template_desc;
 	char *pathbuf = NULL;
@@ -242,6 +250,22 @@ static int process_measurement(struct file *file, const struct cred *cred,
 		iint->measured_pcrs = 0;
 	}
 
+<<<<<<< HEAD
+=======
+	/* Detect and re-evaluate changes made to the backing file. */
+	backing_inode = d_real_inode(file_dentry(file));
+	if (backing_inode != inode &&
+	    (action & IMA_DO_MASK) && (iint->flags & IMA_DONE_MASK)) {
+		if (!IS_I_VERSION(backing_inode) ||
+		    backing_inode->i_sb->s_dev != iint->real_dev ||
+		    backing_inode->i_ino != iint->real_ino ||
+		    !inode_eq_iversion(backing_inode, iint->version)) {
+			iint->flags &= ~IMA_DONE_MASK;
+			iint->measured_pcrs = 0;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	/* Determine if already appraised/measured based on bitmask
 	 * (IMA_MEASURE, IMA_MEASURED, IMA_XXXX_APPRAISE, IMA_XXXX_APPRAISED,
 	 *  IMA_AUDIT, IMA_AUDITED)
@@ -323,7 +347,13 @@ out:
 /**
  * ima_file_mmap - based on policy, collect/store measurement.
  * @file: pointer to the file to be measured (May be NULL)
+<<<<<<< HEAD
  * @prot: contains the protection that will be applied by the kernel.
+=======
+ * @reqprot: protection requested by the application
+ * @prot: protection that will be applied by the kernel
+ * @flags: operational flags
+>>>>>>> origin/android16-base
  *
  * Measure files being mmapped executable based on the ima_must_measure()
  * policy decision.
@@ -331,7 +361,12 @@ out:
  * On success return 0.  On integrity appraisal error, assuming the file
  * is in policy and IMA-appraisal is in enforcing mode, return -EACCES.
  */
+<<<<<<< HEAD
 int ima_file_mmap(struct file *file, unsigned long prot)
+=======
+int ima_file_mmap(struct file *file, unsigned long reqprot,
+		  unsigned long prot, unsigned long flags)
+>>>>>>> origin/android16-base
 {
 	u32 secid;
 

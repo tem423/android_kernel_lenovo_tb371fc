@@ -288,16 +288,36 @@ int amdgpu_ctx_ioctl(struct drm_device *dev, void *data,
 
 	switch (args->in.op) {
 	case AMDGPU_CTX_OP_ALLOC_CTX:
+<<<<<<< HEAD
+=======
+		if (args->in.flags)
+			return -EINVAL;
+>>>>>>> origin/android16-base
 		r = amdgpu_ctx_alloc(adev, fpriv, filp, priority, &id);
 		args->out.alloc.ctx_id = id;
 		break;
 	case AMDGPU_CTX_OP_FREE_CTX:
+<<<<<<< HEAD
 		r = amdgpu_ctx_free(fpriv, id);
 		break;
 	case AMDGPU_CTX_OP_QUERY_STATE:
 		r = amdgpu_ctx_query(adev, fpriv, id, &args->out);
 		break;
 	case AMDGPU_CTX_OP_QUERY_STATE2:
+=======
+		if (args->in.flags)
+			return -EINVAL;
+		r = amdgpu_ctx_free(fpriv, id);
+		break;
+	case AMDGPU_CTX_OP_QUERY_STATE:
+		if (args->in.flags)
+			return -EINVAL;
+		r = amdgpu_ctx_query(adev, fpriv, id, &args->out);
+		break;
+	case AMDGPU_CTX_OP_QUERY_STATE2:
+		if (args->in.flags)
+			return -EINVAL;
+>>>>>>> origin/android16-base
 		r = amdgpu_ctx_query2(adev, fpriv, id, &args->out);
 		break;
 	default:

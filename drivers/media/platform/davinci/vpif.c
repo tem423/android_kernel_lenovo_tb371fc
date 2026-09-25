@@ -496,6 +496,10 @@ static int vpif_probe(struct platform_device *pdev)
 
 static int vpif_remove(struct platform_device *pdev)
 {
+<<<<<<< HEAD
+=======
+	pm_runtime_put(&pdev->dev);
+>>>>>>> origin/android16-base
 	pm_runtime_disable(&pdev->dev);
 	return 0;
 }

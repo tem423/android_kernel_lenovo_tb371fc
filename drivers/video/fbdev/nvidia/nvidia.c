@@ -766,6 +766,11 @@ static int nvidiafb_check_var(struct fb_var_screeninfo *var,
 	int pitch, err = 0;
 
 	NVTRACE_ENTER();
+<<<<<<< HEAD
+=======
+	if (!var->pixclock)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	var->transp.offset = 0;
 	var->transp.length = 0;

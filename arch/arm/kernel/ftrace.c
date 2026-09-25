@@ -47,6 +47,7 @@ void arch_ftrace_update_code(int command)
 	stop_machine(__ftrace_modify_code, &command, NULL);
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_OLD_MCOUNT
 #define OLD_MCOUNT_ADDR	((unsigned long) mcount)
 #define OLD_FTRACE_ADDR ((unsigned long) ftrace_caller_old)
@@ -71,6 +72,8 @@ static unsigned long adjust_address(struct dyn_ftrace *rec, unsigned long addr)
 	return addr;
 }
 #else
+=======
+>>>>>>> origin/android16-base
 static unsigned long ftrace_nop_replace(struct dyn_ftrace *rec)
 {
 	return NOP;
@@ -80,7 +83,10 @@ static unsigned long adjust_address(struct dyn_ftrace *rec, unsigned long addr)
 {
 	return addr;
 }
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> origin/android16-base
 
 int ftrace_arch_code_modify_prepare(void)
 {
@@ -96,9 +102,16 @@ int ftrace_arch_code_modify_post_process(void)
 	return 0;
 }
 
+<<<<<<< HEAD
 static unsigned long ftrace_call_replace(unsigned long pc, unsigned long addr)
 {
 	return arm_gen_branch_link(pc, addr);
+=======
+static unsigned long ftrace_call_replace(unsigned long pc, unsigned long addr,
+					 bool warn)
+{
+	return arm_gen_branch_link(pc, addr, warn);
+>>>>>>> origin/android16-base
 }
 
 static int ftrace_modify_code(unsigned long pc, unsigned long old,
@@ -137,13 +150,18 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
 	int ret;
 
 	pc = (unsigned long)&ftrace_call;
+<<<<<<< HEAD
 	new = ftrace_call_replace(pc, (unsigned long)func);
+=======
+	new = ftrace_call_replace(pc, (unsigned long)func, true);
+>>>>>>> origin/android16-base
 
 	ret = ftrace_modify_code(pc, 0, new, false);
 
 #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
 	if (!ret) {
 		pc = (unsigned long)&ftrace_regs_call;
+<<<<<<< HEAD
 		new = ftrace_call_replace(pc, (unsigned long)func);
 
 		ret = ftrace_modify_code(pc, 0, new, false);
@@ -154,6 +172,9 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
 	if (!ret) {
 		pc = (unsigned long)&ftrace_call_old;
 		new = ftrace_call_replace(pc, (unsigned long)func);
+=======
+		new = ftrace_call_replace(pc, (unsigned long)func, true);
+>>>>>>> origin/android16-base
 
 		ret = ftrace_modify_code(pc, 0, new, false);
 	}
@@ -166,10 +187,29 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 {
 	unsigned long new, old;
 	unsigned long ip = rec->ip;
+<<<<<<< HEAD
 
 	old = ftrace_nop_replace(rec);
 
 	new = ftrace_call_replace(ip, adjust_address(rec, addr));
+=======
+	unsigned long aaddr = adjust_address(rec, addr);
+	struct module *mod = NULL;
+
+#ifdef CONFIG_ARM_MODULE_PLTS
+	mod = rec->arch.mod;
+#endif
+
+	old = ftrace_nop_replace(rec);
+
+	new = ftrace_call_replace(ip, aaddr, !mod);
+#ifdef CONFIG_ARM_MODULE_PLTS
+	if (!new && mod) {
+		aaddr = get_module_plt(mod, ip, aaddr);
+		new = ftrace_call_replace(ip, aaddr, true);
+	}
+#endif
+>>>>>>> origin/android16-base
 
 	return ftrace_modify_code(rec->ip, old, new, true);
 }
@@ -182,9 +222,15 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
 	unsigned long new, old;
 	unsigned long ip = rec->ip;
 
+<<<<<<< HEAD
 	old = ftrace_call_replace(ip, adjust_address(rec, old_addr));
 
 	new = ftrace_call_replace(ip, adjust_address(rec, addr));
+=======
+	old = ftrace_call_replace(ip, adjust_address(rec, old_addr), true);
+
+	new = ftrace_call_replace(ip, adjust_address(rec, addr), true);
+>>>>>>> origin/android16-base
 
 	return ftrace_modify_code(rec->ip, old, new, true);
 }
@@ -194,11 +240,16 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
 int ftrace_make_nop(struct module *mod,
 		    struct dyn_ftrace *rec, unsigned long addr)
 {
+<<<<<<< HEAD
+=======
+	unsigned long aaddr = adjust_address(rec, addr);
+>>>>>>> origin/android16-base
 	unsigned long ip = rec->ip;
 	unsigned long old;
 	unsigned long new;
 	int ret;
 
+<<<<<<< HEAD
 	old = ftrace_call_replace(ip, adjust_address(rec, addr));
 	new = ftrace_nop_replace(rec);
 	ret = ftrace_modify_code(ip, old, new, true);
@@ -213,6 +264,28 @@ int ftrace_make_nop(struct module *mod,
 	}
 #endif
 
+=======
+#ifdef CONFIG_ARM_MODULE_PLTS
+	/* mod is only supplied during module loading */
+	if (!mod)
+		mod = rec->arch.mod;
+	else
+		rec->arch.mod = mod;
+#endif
+
+	old = ftrace_call_replace(ip, aaddr,
+				  !IS_ENABLED(CONFIG_ARM_MODULE_PLTS) || !mod);
+#ifdef CONFIG_ARM_MODULE_PLTS
+	if (!old && mod) {
+		aaddr = get_module_plt(mod, ip, aaddr);
+		old = ftrace_call_replace(ip, aaddr, true);
+	}
+#endif
+
+	new = ftrace_nop_replace(rec);
+	ret = ftrace_modify_code(ip, old, new, true);
+
+>>>>>>> origin/android16-base
 	return ret;
 }
 
@@ -275,6 +348,7 @@ static int ftrace_modify_graph_caller(bool enable)
 #endif
 
 
+<<<<<<< HEAD
 #ifdef CONFIG_OLD_MCOUNT
 	if (!ret)
 		ret = __ftrace_modify_caller(&ftrace_graph_call_old,
@@ -282,6 +356,8 @@ static int ftrace_modify_graph_caller(bool enable)
 					     enable);
 #endif
 
+=======
+>>>>>>> origin/android16-base
 	return ret;
 }
 

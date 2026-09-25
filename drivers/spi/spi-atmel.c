@@ -1605,7 +1605,11 @@ static int atmel_spi_probe(struct platform_device *pdev)
 		if (ret == 0) {
 			as->use_dma = true;
 		} else if (ret == -EPROBE_DEFER) {
+<<<<<<< HEAD
 			return ret;
+=======
+			goto out_unmap_regs;
+>>>>>>> origin/android16-base
 		}
 	} else if (as->caps.has_pdc_support) {
 		as->use_pdc = true;

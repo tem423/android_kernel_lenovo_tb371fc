@@ -417,7 +417,11 @@ int nla_strcmp(const struct nlattr *nla, const char *str)
 	int attrlen = nla_len(nla);
 	int d;
 
+<<<<<<< HEAD
 	if (attrlen > 0 && buf[attrlen - 1] == '\0')
+=======
+	while (attrlen > 0 && buf[attrlen - 1] == '\0')
+>>>>>>> origin/android16-base
 		attrlen--;
 
 	d = attrlen - len;

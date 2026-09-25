@@ -334,7 +334,11 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
 
 	if (new) {
 		*new = *orig;
+<<<<<<< HEAD
 		INIT_VMA(new);
+=======
+		INIT_LIST_HEAD(&new->anon_vma_chain);
+>>>>>>> origin/android16-base
 	}
 	return new;
 }
@@ -433,7 +437,11 @@ EXPORT_SYMBOL(free_task);
 static __latent_entropy int dup_mmap(struct mm_struct *mm,
 					struct mm_struct *oldmm)
 {
+<<<<<<< HEAD
 	struct vm_area_struct *mpnt, *tmp, *prev, **pprev, *last = NULL;
+=======
+	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
+>>>>>>> origin/android16-base
 	struct rb_node **rb_link, *rb_parent;
 	int retval;
 	unsigned long charge;
@@ -552,6 +560,7 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		rb_parent = &tmp->vm_rb;
 
 		mm->map_count++;
+<<<<<<< HEAD
 		if (!(tmp->vm_flags & VM_WIPEONFORK)) {
 			if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT)) {
 				/*
@@ -564,6 +573,10 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 			}
 			retval = copy_page_range(mm, oldmm, mpnt);
 		}
+=======
+		if (!(tmp->vm_flags & VM_WIPEONFORK))
+			retval = copy_page_range(mm, oldmm, mpnt);
+>>>>>>> origin/android16-base
 
 		if (tmp->vm_ops && tmp->vm_ops->open)
 			tmp->vm_ops->open(tmp);
@@ -576,6 +589,7 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 out:
 	up_write(&mm->mmap_sem);
 	flush_tlb_mm(oldmm);
+<<<<<<< HEAD
 
 	if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT)) {
 		/*
@@ -592,6 +606,8 @@ out:
 		}
 	}
 
+=======
+>>>>>>> origin/android16-base
 	up_write(&oldmm->mmap_sem);
 	dup_userfaultfd_complete(&uf);
 fail_uprobe_end:
@@ -988,9 +1004,12 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm->mmap = NULL;
 	mm->mm_rb = RB_ROOT;
 	mm->vmacache_seqnum = 0;
+<<<<<<< HEAD
 #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
 	rwlock_init(&mm->mm_rb_lock);
 #endif
+=======
+>>>>>>> origin/android16-base
 	atomic_set(&mm->mm_users, 1);
 	atomic_set(&mm->mm_count, 1);
 	init_rwsem(&mm->mmap_sem);
@@ -1014,6 +1033,10 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm->pmd_huge_pte = NULL;
 #endif
 	mm_init_uprobes_state(mm);
+<<<<<<< HEAD
+=======
+	hugetlb_count_init(mm);
+>>>>>>> origin/android16-base
 
 	if (current->mm) {
 		mm->flags = current->mm->flags & MMF_INIT_MASK;
@@ -1269,6 +1292,7 @@ static int wait_for_vfork_done(struct task_struct *child,
  * restoring the old one. . .
  * Eric Biederman 10 January 1998
  */
+<<<<<<< HEAD
 void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
 	/* Get rid of any futexes when releasing the mm */
@@ -1287,6 +1311,10 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 		exit_pi_state_list(tsk);
 #endif
 
+=======
+static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
+{
+>>>>>>> origin/android16-base
 	uprobe_free_utask(tsk);
 
 	/* Get rid of any cached register state */
@@ -1319,6 +1347,21 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 		complete_vfork_done(tsk);
 }
 
+<<<<<<< HEAD
+=======
+void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)
+{
+	futex_exit_release(tsk);
+	mm_release(tsk, mm);
+}
+
+void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
+{
+	futex_exec_release(tsk);
+	mm_release(tsk, mm);
+}
+
+>>>>>>> origin/android16-base
 /*
  * Allocate a new mm structure and copy contents from the
  * mm structure of the passed in task structure.
@@ -1722,11 +1765,19 @@ static void pidfd_show_fdinfo(struct seq_file *m, struct file *f)
 /*
  * Poll support for process exit notification.
  */
+<<<<<<< HEAD
 static unsigned int pidfd_poll(struct file *file, struct poll_table_struct *pts)
 {
 	struct task_struct *task;
 	struct pid *pid = file->private_data;
 	int poll_flags = 0;
+=======
+static __poll_t pidfd_poll(struct file *file, struct poll_table_struct *pts)
+{
+	struct task_struct *task;
+	struct pid *pid = file->private_data;
+	__poll_t poll_flags = 0;
+>>>>>>> origin/android16-base
 
 	poll_wait(file, &pid->wait_pidfd, pts);
 
@@ -1738,7 +1789,11 @@ static unsigned int pidfd_poll(struct file *file, struct poll_table_struct *pts)
 	 * group, then poll(2) should block, similar to the wait(2) family.
 	 */
 	if (!task || (task->exit_state && thread_group_empty(task)))
+<<<<<<< HEAD
 		poll_flags = POLLIN | POLLRDNORM;
+=======
+		poll_flags = EPOLLIN | EPOLLRDNORM;
+>>>>>>> origin/android16-base
 	rcu_read_unlock();
 
 	return poll_flags;
@@ -1752,6 +1807,7 @@ const struct file_operations pidfd_fops = {
 #endif
 };
 
+<<<<<<< HEAD
 /**
  * pidfd_create() - Create a new pid file descriptor.
  *
@@ -1777,6 +1833,8 @@ static int pidfd_create(struct pid *pid)
 	return fd;
 }
 
+=======
+>>>>>>> origin/android16-base
 static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
 {
 	/* Skip if kernel thread */
@@ -1818,6 +1876,10 @@ static __latent_entropy struct task_struct *copy_process(
 	int pidfd = -1, retval;
 	struct task_struct *p;
 	struct multiprocess_signals delayed;
+<<<<<<< HEAD
+=======
+	struct file *pidfile = NULL;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Don't allow sharing the root directory with processes in a different
@@ -1866,8 +1928,11 @@ static __latent_entropy struct task_struct *copy_process(
 	}
 
 	if (clone_flags & CLONE_PIDFD) {
+<<<<<<< HEAD
 		int reserved;
 
+=======
+>>>>>>> origin/android16-base
 		/*
 		 * - CLONE_PARENT_SETTID is useless for pidfds and also
 		 *   parent_tidptr is used to return pidfds.
@@ -1878,6 +1943,7 @@ static __latent_entropy struct task_struct *copy_process(
 		if (clone_flags &
 		    (CLONE_DETACHED | CLONE_PARENT_SETTID | CLONE_THREAD))
 			return ERR_PTR(-EINVAL);
+<<<<<<< HEAD
 
 		/*
 		 * Verify that parent_tidptr is sane so we can potentially
@@ -1888,6 +1954,8 @@ static __latent_entropy struct task_struct *copy_process(
 
 		if (reserved != 0)
 			return ERR_PTR(-EINVAL);
+=======
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -2102,11 +2170,28 @@ static __latent_entropy struct task_struct *copy_process(
 	 * if the fd table isn't shared).
 	 */
 	if (clone_flags & CLONE_PIDFD) {
+<<<<<<< HEAD
 		retval = pidfd_create(pid);
+=======
+		retval = get_unused_fd_flags(O_RDWR | O_CLOEXEC);
+>>>>>>> origin/android16-base
 		if (retval < 0)
 			goto bad_fork_free_pid;
 
 		pidfd = retval;
+<<<<<<< HEAD
+=======
+
+		pidfile = anon_inode_getfile("[pidfd]", &pidfd_fops, pid,
+					      O_RDWR | O_CLOEXEC);
+		if (IS_ERR(pidfile)) {
+			put_unused_fd(pidfd);
+			retval = PTR_ERR(pidfile);
+			goto bad_fork_free_pid;
+		}
+		get_pid(pid);	/* held by pidfile now */
+
+>>>>>>> origin/android16-base
 		retval = put_user(pidfd, parent_tidptr);
 		if (retval)
 			goto bad_fork_put_pidfd;
@@ -2115,6 +2200,7 @@ static __latent_entropy struct task_struct *copy_process(
 #ifdef CONFIG_BLOCK
 	p->plug = NULL;
 #endif
+<<<<<<< HEAD
 #ifdef CONFIG_FUTEX
 	p->robust_list = NULL;
 #ifdef CONFIG_COMPAT
@@ -2123,6 +2209,10 @@ static __latent_entropy struct task_struct *copy_process(
 	INIT_LIST_HEAD(&p->pi_state_list);
 	p->pi_state_cache = NULL;
 #endif
+=======
+	futex_init_task(p);
+
+>>>>>>> origin/android16-base
 	/*
 	 * sigaltstack should be cleared when sharing the same VM
 	 */
@@ -2224,7 +2314,10 @@ static __latent_entropy struct task_struct *copy_process(
 		goto bad_fork_cancel_cgroup;
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 	init_task_pid_links(p);
 	if (likely(p->pid)) {
 		ptrace_init_task(p, (clone_flags & CLONE_PTRACE) || trace);
@@ -2273,6 +2366,12 @@ static __latent_entropy struct task_struct *copy_process(
 	syscall_tracepoint_update(p);
 	write_unlock_irq(&tasklist_lock);
 
+<<<<<<< HEAD
+=======
+	if (pidfile)
+		fd_install(pidfd, pidfile);
+
+>>>>>>> origin/android16-base
 	proc_fork_connector(p);
 	cgroup_post_fork(p);
 	cgroup_threadgroup_change_end(current);
@@ -2292,8 +2391,15 @@ bad_fork_cancel_cgroup:
 bad_fork_cgroup_threadgroup_change_end:
 	cgroup_threadgroup_change_end(current);
 bad_fork_put_pidfd:
+<<<<<<< HEAD
 	if (clone_flags & CLONE_PIDFD)
 		ksys_close(pidfd);
+=======
+	if (clone_flags & CLONE_PIDFD) {
+		fput(pidfile);
+		put_unused_fd(pidfd);
+	}
+>>>>>>> origin/android16-base
 bad_fork_free_pid:
 	if (pid != &init_struct_pid)
 		free_pid(pid);

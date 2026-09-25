@@ -2437,6 +2437,10 @@ static int pxafb_remove(struct platform_device *dev)
 	info = &fbi->fb;
 
 	pxafb_overlay_exit(fbi);
+<<<<<<< HEAD
+=======
+	cancel_work_sync(&fbi->task);
+>>>>>>> origin/android16-base
 	unregister_framebuffer(info);
 
 	pxafb_disable_controller(fbi);

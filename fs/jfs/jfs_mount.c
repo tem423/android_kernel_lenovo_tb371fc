@@ -49,6 +49,10 @@
 
 #include <linux/fs.h>
 #include <linux/buffer_head.h>
+<<<<<<< HEAD
+=======
+#include <linux/log2.h>
+>>>>>>> origin/android16-base
 
 #include "jfs_incore.h"
 #include "jfs_filsys.h"
@@ -92,14 +96,22 @@ int jfs_mount(struct super_block *sb)
 	 * (initialize mount inode from the superblock)
 	 */
 	if ((rc = chkSuper(sb))) {
+<<<<<<< HEAD
 		goto errout20;
+=======
+		goto out;
+>>>>>>> origin/android16-base
 	}
 
 	ipaimap = diReadSpecial(sb, AGGREGATE_I, 0);
 	if (ipaimap == NULL) {
 		jfs_err("jfs_mount: Failed to read AGGREGATE_I");
 		rc = -EIO;
+<<<<<<< HEAD
 		goto errout20;
+=======
+		goto out;
+>>>>>>> origin/android16-base
 	}
 	sbi->ipaimap = ipaimap;
 
@@ -110,7 +122,11 @@ int jfs_mount(struct super_block *sb)
 	 */
 	if ((rc = diMount(ipaimap))) {
 		jfs_err("jfs_mount: diMount(ipaimap) failed w/rc = %d", rc);
+<<<<<<< HEAD
 		goto errout21;
+=======
+		goto err_ipaimap;
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -119,7 +135,11 @@ int jfs_mount(struct super_block *sb)
 	ipbmap = diReadSpecial(sb, BMAP_I, 0);
 	if (ipbmap == NULL) {
 		rc = -EIO;
+<<<<<<< HEAD
 		goto errout22;
+=======
+		goto err_umount_ipaimap;
+>>>>>>> origin/android16-base
 	}
 
 	jfs_info("jfs_mount: ipbmap:0x%p", ipbmap);
@@ -131,7 +151,11 @@ int jfs_mount(struct super_block *sb)
 	 */
 	if ((rc = dbMount(ipbmap))) {
 		jfs_err("jfs_mount: dbMount failed w/rc = %d", rc);
+<<<<<<< HEAD
 		goto errout22;
+=======
+		goto err_ipbmap;
+>>>>>>> origin/android16-base
 	}
 
 	/*
@@ -150,7 +174,11 @@ int jfs_mount(struct super_block *sb)
 		if (!ipaimap2) {
 			jfs_err("jfs_mount: Failed to read AGGREGATE_I");
 			rc = -EIO;
+<<<<<<< HEAD
 			goto errout35;
+=======
+			goto err_umount_ipbmap;
+>>>>>>> origin/android16-base
 		}
 		sbi->ipaimap2 = ipaimap2;
 
@@ -162,7 +190,11 @@ int jfs_mount(struct super_block *sb)
 		if ((rc = diMount(ipaimap2))) {
 			jfs_err("jfs_mount: diMount(ipaimap2) failed, rc = %d",
 				rc);
+<<<<<<< HEAD
 			goto errout35;
+=======
+			goto err_ipaimap2;
+>>>>>>> origin/android16-base
 		}
 	} else
 		/* Secondary aggregate inode table is not valid */
@@ -179,6 +211,7 @@ int jfs_mount(struct super_block *sb)
 		jfs_err("jfs_mount: Failed to read FILESYSTEM_I");
 		/* open fileset secondary inode allocation map */
 		rc = -EIO;
+<<<<<<< HEAD
 		goto errout40;
 	}
 	jfs_info("jfs_mount: ipimap:0x%p", ipimap);
@@ -193,10 +226,27 @@ int jfs_mount(struct super_block *sb)
 	}
 
 	goto out;
+=======
+		goto err_umount_ipaimap2;
+	}
+	jfs_info("jfs_mount: ipimap:0x%p", ipimap);
+
+	/* initialize fileset inode allocation map */
+	if ((rc = diMount(ipimap))) {
+		jfs_err("jfs_mount: diMount failed w/rc = %d", rc);
+		goto err_ipimap;
+	}
+
+	/* map further access of per fileset inodes by the fileset inode */
+	sbi->ipimap = ipimap;
+
+	return rc;
+>>>>>>> origin/android16-base
 
 	/*
 	 *	unwind on error
 	 */
+<<<<<<< HEAD
       errout41:		/* close fileset inode allocation map inode */
 	diFreeSpecial(ipimap);
 
@@ -224,6 +274,28 @@ int jfs_mount(struct super_block *sb)
 
       out:
 
+=======
+err_ipimap:
+	/* close fileset inode allocation map inode */
+	diFreeSpecial(ipimap);
+err_umount_ipaimap2:
+	/* close secondary aggregate inode allocation map */
+	if (ipaimap2)
+		diUnmount(ipaimap2, 1);
+err_ipaimap2:
+	/* close aggregate inodes */
+	if (ipaimap2)
+		diFreeSpecial(ipaimap2);
+err_umount_ipbmap:	/* close aggregate block allocation map */
+	dbUnmount(ipbmap, 1);
+err_ipbmap:		/* close aggregate inodes */
+	diFreeSpecial(ipbmap);
+err_umount_ipaimap:	/* close aggregate inode allocation map */
+	diUnmount(ipaimap, 1);
+err_ipaimap:		/* close aggregate inodes */
+	diFreeSpecial(ipaimap);
+out:
+>>>>>>> origin/android16-base
 	if (rc)
 		jfs_err("Mount JFS Failure: %d", rc);
 
@@ -378,6 +450,18 @@ static int chkSuper(struct super_block *sb)
 	sbi->bsize = bsize;
 	sbi->l2bsize = le16_to_cpu(j_sb->s_l2bsize);
 
+<<<<<<< HEAD
+=======
+	/* check some fields for possible corruption */
+	if (sbi->l2bsize != ilog2((u32)bsize) ||
+	    j_sb->pad != 0 ||
+	    le32_to_cpu(j_sb->s_state) > FM_STATE_MAX) {
+		rc = -EINVAL;
+		jfs_err("jfs_mount: Mount Failure: superblock is corrupt!");
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	/*
 	 * For now, ignore s_pbsize, l2bfactor.  All I/O going through buffer
 	 * cache.

@@ -14,8 +14,11 @@
  * to a jmp to memcpy_erms which does the REP; MOVSB mem copy.
  */
 
+<<<<<<< HEAD
 .weak memcpy
 
+=======
+>>>>>>> origin/android16-base
 /*
  * memcpy - Copy a memory block.
  *
@@ -28,7 +31,13 @@
  * rax original destination
  */
 ENTRY(__memcpy)
+<<<<<<< HEAD
 ENTRY(memcpy)
+=======
+.weak memcpy
+.p2align 4, 0x90
+memcpy:
+>>>>>>> origin/android16-base
 	ALTERNATIVE_2 "jmp memcpy_orig", "", X86_FEATURE_REP_GOOD, \
 		      "jmp memcpy_erms", X86_FEATURE_ERMS
 

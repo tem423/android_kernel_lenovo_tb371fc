@@ -145,5 +145,9 @@ TRACE_EVENT(applptr,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../sound/core
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/android16-base
 #include <trace/define_trace.h>

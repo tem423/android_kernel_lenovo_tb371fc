@@ -117,7 +117,11 @@ static ssize_t fuse_conn_max_background_write(struct file *file,
 					      const char __user *buf,
 					      size_t count, loff_t *ppos)
 {
+<<<<<<< HEAD
 	unsigned uninitialized_var(val);
+=======
+	unsigned val;
+>>>>>>> origin/android16-base
 	ssize_t ret;
 
 	ret = fuse_conn_limit_write(file, buf, count, ppos, &val,

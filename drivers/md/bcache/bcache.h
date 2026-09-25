@@ -265,6 +265,10 @@ struct bcache_device {
 #define BCACHE_DEV_WB_RUNNING		3
 #define BCACHE_DEV_RATE_DW_RUNNING	4
 	int			nr_stripes;
+<<<<<<< HEAD
+=======
+#define BCH_MIN_STRIPE_SZ		((4 << 20) >> SECTOR_SHIFT)
+>>>>>>> origin/android16-base
 	unsigned int		stripe_size;
 	atomic_t		*stripe_sectors_dirty;
 	unsigned long		*full_dirty_stripes;
@@ -952,9 +956,15 @@ void bch_bucket_free(struct cache_set *c, struct bkey *k);
 
 long bch_bucket_alloc(struct cache *ca, unsigned int reserve, bool wait);
 int __bch_bucket_alloc_set(struct cache_set *c, unsigned int reserve,
+<<<<<<< HEAD
 			   struct bkey *k, int n, bool wait);
 int bch_bucket_alloc_set(struct cache_set *c, unsigned int reserve,
 			 struct bkey *k, int n, bool wait);
+=======
+			   struct bkey *k, bool wait);
+int bch_bucket_alloc_set(struct cache_set *c, unsigned int reserve,
+			 struct bkey *k, bool wait);
+>>>>>>> origin/android16-base
 bool bch_alloc_sectors(struct cache_set *c, struct bkey *k,
 		       unsigned int sectors, unsigned int write_point,
 		       unsigned int write_prio, bool wait);

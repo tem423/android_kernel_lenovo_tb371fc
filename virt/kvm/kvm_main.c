@@ -112,6 +112,11 @@ EXPORT_SYMBOL_GPL(kvm_debugfs_dir);
 static int kvm_debugfs_num_entries;
 static const struct file_operations *stat_fops_per_vm[];
 
+<<<<<<< HEAD
+=======
+static struct file_operations kvm_chardev_ops;
+
+>>>>>>> origin/android16-base
 static long kvm_vcpu_ioctl(struct file *file, unsigned int ioctl,
 			   unsigned long arg);
 #ifdef CONFIG_KVM_COMPAT
@@ -412,9 +417,14 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
 	 */
 	kvm->mmu_notifier_count++;
 	need_tlb_flush = kvm_unmap_hva_range(kvm, start, end, blockable);
+<<<<<<< HEAD
 	need_tlb_flush |= kvm->tlbs_dirty;
 	/* we've to flush the tlb before the pages can be freed */
 	if (need_tlb_flush)
+=======
+	/* we've to flush the tlb before the pages can be freed */
+	if (need_tlb_flush || kvm->tlbs_dirty)
+>>>>>>> origin/android16-base
 		kvm_flush_remote_tlbs(kvm);
 
 	spin_unlock(&kvm->mmu_lock);
@@ -742,6 +752,19 @@ static struct kvm *kvm_create_vm(unsigned long type)
 
 	preempt_notifier_inc();
 
+<<<<<<< HEAD
+=======
+	/*
+	 * When the fd passed to this ioctl() is opened it pins the module,
+	 * but try_module_get() also prevents getting a reference if the module
+	 * is in MODULE_STATE_GOING (e.g. if someone ran "rmmod --wait").
+	 */
+	if (!try_module_get(kvm_chardev_ops.owner)) {
+		r = -ENODEV;
+		goto out_err;
+	}
+
+>>>>>>> origin/android16-base
 	return kvm;
 
 out_err:
@@ -818,6 +841,10 @@ static void kvm_destroy_vm(struct kvm *kvm)
 	preempt_notifier_dec();
 	hardware_disable_all();
 	mmdrop(mm);
+<<<<<<< HEAD
+=======
+	module_put(kvm_chardev_ops.owner);
+>>>>>>> origin/android16-base
 }
 
 void kvm_get_kvm(struct kvm *kvm)
@@ -1490,15 +1517,34 @@ static bool vma_is_valid(struct vm_area_struct *vma, bool write_fault)
 	return true;
 }
 
+<<<<<<< HEAD
+=======
+static int kvm_try_get_pfn(kvm_pfn_t pfn)
+{
+	if (kvm_is_reserved_pfn(pfn))
+		return 1;
+	return get_page_unless_zero(pfn_to_page(pfn));
+}
+
+>>>>>>> origin/android16-base
 static int hva_to_pfn_remapped(struct vm_area_struct *vma,
 			       unsigned long addr, bool *async,
 			       bool write_fault, bool *writable,
 			       kvm_pfn_t *p_pfn)
 {
+<<<<<<< HEAD
 	unsigned long pfn;
 	int r;
 
 	r = follow_pfn(vma, addr, &pfn);
+=======
+	kvm_pfn_t pfn;
+	pte_t *ptep;
+	spinlock_t *ptl;
+	int r;
+
+	r = follow_pte_pmd(vma->vm_mm, addr, NULL, NULL, &ptep, NULL, &ptl);
+>>>>>>> origin/android16-base
 	if (r) {
 		/*
 		 * get_user_pages fails for VM_IO and VM_PFNMAP vmas and does
@@ -1513,6 +1559,7 @@ static int hva_to_pfn_remapped(struct vm_area_struct *vma,
 		if (r)
 			return r;
 
+<<<<<<< HEAD
 		r = follow_pfn(vma, addr, &pfn);
 		if (r)
 			return r;
@@ -1521,6 +1568,21 @@ static int hva_to_pfn_remapped(struct vm_area_struct *vma,
 
 	if (writable)
 		*writable = true;
+=======
+		r = follow_pte_pmd(vma->vm_mm, addr, NULL, NULL, &ptep, NULL, &ptl);
+		if (r)
+			return r;
+	}
+
+	if (write_fault && !pte_write(*ptep)) {
+		pfn = KVM_PFN_ERR_RO_FAULT;
+		goto out;
+	}
+
+	if (writable)
+		*writable = pte_write(*ptep);
+	pfn = pte_pfn(*ptep);
+>>>>>>> origin/android16-base
 
 	/*
 	 * Get a reference here because callers of *hva_to_pfn* and
@@ -1532,11 +1594,29 @@ static int hva_to_pfn_remapped(struct vm_area_struct *vma,
 	 * Whoever called remap_pfn_range is also going to call e.g.
 	 * unmap_mapping_range before the underlying pages are freed,
 	 * causing a call to our MMU notifier.
+<<<<<<< HEAD
 	 */ 
 	kvm_get_pfn(pfn);
 
 	*p_pfn = pfn;
 	return 0;
+=======
+	 *
+	 * Certain IO or PFNMAP mappings can be backed with valid
+	 * struct pages, but be allocated without refcounting e.g.,
+	 * tail pages of non-compound higher order allocations, which
+	 * would then underflow the refcount when the caller does the
+	 * required put_page. Don't allow those pages here.
+	 */ 
+	if (!kvm_try_get_pfn(pfn))
+		r = -EFAULT;
+
+out:
+	pte_unmap_unlock(ptep, ptl);
+	*p_pfn = pfn;
+
+	return r;
+>>>>>>> origin/android16-base
 }
 
 /*
@@ -2550,12 +2630,20 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
 {
 	struct kvm *kvm = me->kvm;
 	struct kvm_vcpu *vcpu;
+<<<<<<< HEAD
 	int last_boosted_vcpu = me->kvm->last_boosted_vcpu;
+=======
+	int last_boosted_vcpu;
+>>>>>>> origin/android16-base
 	int yielded = 0;
 	int try = 3;
 	int pass;
 	int i;
 
+<<<<<<< HEAD
+=======
+	last_boosted_vcpu = READ_ONCE(kvm->last_boosted_vcpu);
+>>>>>>> origin/android16-base
 	kvm_vcpu_set_in_spin_loop(me, true);
 	/*
 	 * We boost the priority of a VCPU that is runnable but not
@@ -2584,7 +2672,11 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
 
 			yielded = kvm_vcpu_yield_to(vcpu);
 			if (yielded > 0) {
+<<<<<<< HEAD
 				kvm->last_boosted_vcpu = i;
+=======
+				WRITE_ONCE(kvm->last_boosted_vcpu, i);
+>>>>>>> origin/android16-base
 				break;
 			} else if (yielded < 0) {
 				try--;
@@ -2728,7 +2820,12 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 		goto unlock_vcpu_destroy;
 	}
 
+<<<<<<< HEAD
 	BUG_ON(kvm->vcpus[atomic_read(&kvm->online_vcpus)]);
+=======
+	vcpu->vcpu_idx = atomic_read(&kvm->online_vcpus);
+	BUG_ON(kvm->vcpus[vcpu->vcpu_idx]);
+>>>>>>> origin/android16-base
 
 	/* Now it's all set up, let userspace reach it */
 	kvm_get_kvm(kvm);
@@ -2738,7 +2835,11 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 		goto unlock_vcpu_destroy;
 	}
 
+<<<<<<< HEAD
 	kvm->vcpus[atomic_read(&kvm->online_vcpus)] = vcpu;
+=======
+	kvm->vcpus[vcpu->vcpu_idx] = vcpu;
+>>>>>>> origin/android16-base
 
 	/*
 	 * Pairs with smp_rmb() in kvm_get_vcpu.  Write kvm->vcpus
@@ -2783,7 +2884,11 @@ static long kvm_vcpu_ioctl(struct file *filp,
 	struct kvm_fpu *fpu = NULL;
 	struct kvm_sregs *kvm_sregs = NULL;
 
+<<<<<<< HEAD
 	if (vcpu->kvm->mm != current->mm)
+=======
+	if (vcpu->kvm->mm != current->mm || vcpu->kvm->vm_bugged)
+>>>>>>> origin/android16-base
 		return -EIO;
 
 	if (unlikely(_IOC_TYPE(ioctl) != KVMIO))
@@ -2989,7 +3094,11 @@ static long kvm_vcpu_compat_ioctl(struct file *filp,
 	void __user *argp = compat_ptr(arg);
 	int r;
 
+<<<<<<< HEAD
 	if (vcpu->kvm->mm != current->mm)
+=======
+	if (vcpu->kvm->mm != current->mm || vcpu->kvm->vm_bugged)
+>>>>>>> origin/android16-base
 		return -EIO;
 
 	switch (ioctl) {
@@ -3044,7 +3153,11 @@ static long kvm_device_ioctl(struct file *filp, unsigned int ioctl,
 {
 	struct kvm_device *dev = filp->private_data;
 
+<<<<<<< HEAD
 	if (dev->kvm->mm != current->mm)
+=======
+	if (dev->kvm->mm != current->mm || dev->kvm->vm_bugged)
+>>>>>>> origin/android16-base
 		return -EIO;
 
 	switch (ioctl) {
@@ -3207,7 +3320,11 @@ static long kvm_vm_ioctl(struct file *filp,
 	void __user *argp = (void __user *)arg;
 	int r;
 
+<<<<<<< HEAD
 	if (kvm->mm != current->mm)
+=======
+	if (kvm->mm != current->mm || kvm->vm_bugged)
+>>>>>>> origin/android16-base
 		return -EIO;
 	switch (ioctl) {
 	case KVM_CREATE_VCPU:
@@ -3385,7 +3502,11 @@ static long kvm_vm_compat_ioctl(struct file *filp,
 	struct kvm *kvm = filp->private_data;
 	int r;
 
+<<<<<<< HEAD
 	if (kvm->mm != current->mm)
+=======
+	if (kvm->mm != current->mm || kvm->vm_bugged)
+>>>>>>> origin/android16-base
 		return -EIO;
 	switch (ioctl) {
 	case KVM_GET_DIRTY_LOG: {

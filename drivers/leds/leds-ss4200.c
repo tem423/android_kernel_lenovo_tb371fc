@@ -368,8 +368,15 @@ static int ich7_lpc_probe(struct pci_dev *dev,
 
 	nas_gpio_pci_dev = dev;
 	status = pci_read_config_dword(dev, PMBASE, &g_pm_io_base);
+<<<<<<< HEAD
 	if (status)
 		goto out;
+=======
+	if (status) {
+		status = pcibios_err_to_errno(status);
+		goto out;
+	}
+>>>>>>> origin/android16-base
 	g_pm_io_base &= 0x00000ff80;
 
 	status = pci_read_config_dword(dev, GPIO_CTRL, &gc);
@@ -381,8 +388,14 @@ static int ich7_lpc_probe(struct pci_dev *dev,
 	}
 
 	status = pci_read_config_dword(dev, GPIO_BASE, &nas_gpio_io_base);
+<<<<<<< HEAD
 	if (0 > status) {
 		dev_info(&dev->dev, "Unable to read GPIOBASE.\n");
+=======
+	if (status) {
+		dev_info(&dev->dev, "Unable to read GPIOBASE.\n");
+		status = pcibios_err_to_errno(status);
+>>>>>>> origin/android16-base
 		goto out;
 	}
 	dev_dbg(&dev->dev, ": GPIOBASE = 0x%08x\n", nas_gpio_io_base);

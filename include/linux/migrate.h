@@ -126,14 +126,22 @@ static inline void __ClearPageMovable(struct page *page)
 #ifdef CONFIG_NUMA_BALANCING
 extern bool pmd_trans_migrating(pmd_t pmd);
 extern int migrate_misplaced_page(struct page *page,
+<<<<<<< HEAD
 				  struct vm_fault *vmf, int node);
+=======
+				  struct vm_area_struct *vma, int node);
+>>>>>>> origin/android16-base
 #else
 static inline bool pmd_trans_migrating(pmd_t pmd)
 {
 	return false;
 }
 static inline int migrate_misplaced_page(struct page *page,
+<<<<<<< HEAD
 					 struct vm_fault *vmf, int node)
+=======
+					 struct vm_area_struct *vma, int node)
+>>>>>>> origin/android16-base
 {
 	return -EAGAIN; /* can't migrate now */
 }

@@ -1666,7 +1666,11 @@ BPF_CALL_5(bpf_skb_store_bytes, struct sk_buff *, skb, u32, offset,
 
 	if (unlikely(flags & ~(BPF_F_RECOMPUTE_CSUM | BPF_F_INVALIDATE_HASH)))
 		return -EINVAL;
+<<<<<<< HEAD
 	if (unlikely(offset > 0xffff))
+=======
+	if (unlikely(offset > INT_MAX))
+>>>>>>> origin/android16-base
 		return -EFAULT;
 	if (unlikely(bpf_try_make_writable(skb, offset + len)))
 		return -EFAULT;
@@ -1701,7 +1705,11 @@ BPF_CALL_4(bpf_skb_load_bytes, const struct sk_buff *, skb, u32, offset,
 {
 	void *ptr;
 
+<<<<<<< HEAD
 	if (unlikely(offset > 0xffff))
+=======
+	if (unlikely(offset > INT_MAX))
+>>>>>>> origin/android16-base
 		goto err_clear;
 
 	ptr = skb_header_pointer(skb, offset, len, to);
@@ -2025,6 +2033,13 @@ static int __bpf_redirect_no_mac(struct sk_buff *skb, struct net_device *dev,
 
 	if (mlen) {
 		__skb_pull(skb, mlen);
+<<<<<<< HEAD
+=======
+		if (unlikely(!skb->len)) {
+			kfree_skb(skb);
+			return -ERANGE;
+		}
+>>>>>>> origin/android16-base
 
 		/* At ingress, the mac header has already been pulled once.
 		 * At egress, skb_pospull_rcsum has to be done in case that
@@ -2561,15 +2576,27 @@ static int bpf_skb_generic_push(struct sk_buff *skb, u32 off, u32 len)
 
 static int bpf_skb_generic_pop(struct sk_buff *skb, u32 off, u32 len)
 {
+<<<<<<< HEAD
+=======
+	void *old_data;
+
+>>>>>>> origin/android16-base
 	/* skb_ensure_writable() is not needed here, as we're
 	 * already working on an uncloned skb.
 	 */
 	if (unlikely(!pskb_may_pull(skb, off + len)))
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	skb_postpull_rcsum(skb, skb->data + off, len);
 	memmove(skb->data + len, skb->data, off);
 	__skb_pull(skb, len);
+=======
+	old_data = skb->data;
+	__skb_pull(skb, len);
+	skb_postpull_rcsum(skb, old_data + off, len);
+	memmove(skb->data, old_data, off);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -2639,8 +2666,11 @@ static int bpf_skb_proto_4_to_6(struct sk_buff *skb)
 			shinfo->gso_type |=  SKB_GSO_TCPV6;
 		}
 
+<<<<<<< HEAD
 		/* Due to IPv6 header, MSS needs to be downgraded. */
 		skb_decrease_gso_size(shinfo, len_diff);
+=======
+>>>>>>> origin/android16-base
 		/* Header must be checked, and gso_segs recomputed. */
 		shinfo->gso_type |= SKB_GSO_DODGY;
 		shinfo->gso_segs = 0;
@@ -2680,8 +2710,11 @@ static int bpf_skb_proto_6_to_4(struct sk_buff *skb)
 			shinfo->gso_type |=  SKB_GSO_TCPV4;
 		}
 
+<<<<<<< HEAD
 		/* Due to IPv4 header, MSS can be upgraded. */
 		skb_increase_gso_size(shinfo, len_diff);
+=======
+>>>>>>> origin/android16-base
 		/* Header must be checked, and gso_segs recomputed. */
 		shinfo->gso_type |= SKB_GSO_DODGY;
 		shinfo->gso_segs = 0;
@@ -2836,19 +2869,27 @@ static int bpf_skb_net_shrink(struct sk_buff *skb, u32 len_diff)
 	return 0;
 }
 
+<<<<<<< HEAD
 static u32 __bpf_skb_max_len(const struct sk_buff *skb)
 {
 	if (skb_at_tc_ingress(skb) || !skb->dev)
 		return SKB_MAX_ALLOC;
 	return skb->dev->mtu + skb->dev->hard_header_len;
 }
+=======
+#define BPF_SKB_MAX_LEN SKB_MAX_ALLOC
+>>>>>>> origin/android16-base
 
 static int bpf_skb_adjust_net(struct sk_buff *skb, s32 len_diff)
 {
 	bool trans_same = skb->transport_header == skb->network_header;
 	u32 len_cur, len_diff_abs = abs(len_diff);
 	u32 len_min = bpf_skb_net_base_len(skb);
+<<<<<<< HEAD
 	u32 len_max = __bpf_skb_max_len(skb);
+=======
+	u32 len_max = BPF_SKB_MAX_LEN;
+>>>>>>> origin/android16-base
 	__be16 proto = skb_protocol(skb, true);
 	bool shrink = len_diff < 0;
 	int ret;
@@ -2927,7 +2968,11 @@ static int bpf_skb_trim_rcsum(struct sk_buff *skb, unsigned int new_len)
 static inline int __bpf_skb_change_tail(struct sk_buff *skb, u32 new_len,
 					u64 flags)
 {
+<<<<<<< HEAD
 	u32 max_len = __bpf_skb_max_len(skb);
+=======
+	u32 max_len = BPF_SKB_MAX_LEN;
+>>>>>>> origin/android16-base
 	u32 min_len = __bpf_skb_min_len(skb);
 	int ret;
 
@@ -3003,7 +3048,11 @@ static const struct bpf_func_proto sk_skb_change_tail_proto = {
 static inline int __bpf_skb_change_head(struct sk_buff *skb, u32 head_room,
 					u64 flags)
 {
+<<<<<<< HEAD
 	u32 max_len = __bpf_skb_max_len(skb);
+=======
+	u32 max_len = BPF_SKB_MAX_LEN;
+>>>>>>> origin/android16-base
 	u32 new_len = skb->len + head_room;
 	int ret;
 
@@ -3025,6 +3074,10 @@ static inline int __bpf_skb_change_head(struct sk_buff *skb, u32 head_room,
 		__skb_push(skb, head_room);
 		memset(skb->data, 0, head_room);
 		skb_reset_mac_header(skb);
+<<<<<<< HEAD
+=======
+		skb_reset_mac_len(skb);
+>>>>>>> origin/android16-base
 	}
 
 	return ret;
@@ -4236,7 +4289,10 @@ static int bpf_fib_set_fwd_params(struct bpf_fib_lookup *params,
 	memcpy(params->smac, dev->dev_addr, ETH_ALEN);
 	params->h_vlan_TCI = 0;
 	params->h_vlan_proto = 0;
+<<<<<<< HEAD
 	params->ifindex = dev->ifindex;
+=======
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -4334,6 +4390,10 @@ static int bpf_ipv4_fib_lookup(struct net *net, struct bpf_fib_lookup *params,
 		params->ipv4_dst = nh->nh_gw;
 
 	params->rt_metric = res.fi->fib_priority;
+<<<<<<< HEAD
+=======
+	params->ifindex = dev->ifindex;
+>>>>>>> origin/android16-base
 
 	/* xdp and cls_bpf programs are run in RCU-bh so
 	 * rcu_read_lock_bh is not needed here
@@ -4448,6 +4508,10 @@ static int bpf_ipv6_fib_lookup(struct net *net, struct bpf_fib_lookup *params,
 
 	dev = f6i->fib6_nh.nh_dev;
 	params->rt_metric = f6i->fib6_metric;
+<<<<<<< HEAD
+=======
+	params->ifindex = dev->ifindex;
+>>>>>>> origin/android16-base
 
 	/* xdp and cls_bpf programs are run in RCU-bh so rcu_read_lock_bh is
 	 * not needed here. Can not use __ipv6_neigh_lookup_noref here
@@ -4501,6 +4565,10 @@ BPF_CALL_4(bpf_skb_fib_lookup, struct sk_buff *, skb,
 {
 	struct net *net = dev_net(skb->dev);
 	int rc = -EAFNOSUPPORT;
+<<<<<<< HEAD
+=======
+	bool check_mtu = false;
+>>>>>>> origin/android16-base
 
 	if (plen < sizeof(*params))
 		return -EINVAL;
@@ -4508,22 +4576,45 @@ BPF_CALL_4(bpf_skb_fib_lookup, struct sk_buff *, skb,
 	if (flags & ~(BPF_FIB_LOOKUP_DIRECT | BPF_FIB_LOOKUP_OUTPUT))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	switch (params->family) {
 #if IS_ENABLED(CONFIG_INET)
 	case AF_INET:
 		rc = bpf_ipv4_fib_lookup(net, params, flags, false);
+=======
+	if (params->tot_len)
+		check_mtu = true;
+
+	switch (params->family) {
+#if IS_ENABLED(CONFIG_INET)
+	case AF_INET:
+		rc = bpf_ipv4_fib_lookup(net, params, flags, check_mtu);
+>>>>>>> origin/android16-base
 		break;
 #endif
 #if IS_ENABLED(CONFIG_IPV6)
 	case AF_INET6:
+<<<<<<< HEAD
 		rc = bpf_ipv6_fib_lookup(net, params, flags, false);
+=======
+		rc = bpf_ipv6_fib_lookup(net, params, flags, check_mtu);
+>>>>>>> origin/android16-base
 		break;
 #endif
 	}
 
+<<<<<<< HEAD
 	if (!rc) {
 		struct net_device *dev;
 
+=======
+	if (rc == BPF_FIB_LKUP_RET_SUCCESS && !check_mtu) {
+		struct net_device *dev;
+
+		/* When tot_len isn't provided by user, check skb
+		 * against MTU of FIB lookup resulting net_device
+		 */
+>>>>>>> origin/android16-base
 		dev = dev_get_by_index_rcu(net, params->ifindex);
 		if (!is_skb_forwardable(dev, skb))
 			rc = BPF_FIB_LKUP_RET_FRAG_NEEDED;
@@ -4571,7 +4662,10 @@ static int bpf_push_seg6_encap(struct sk_buff *skb, u32 type, void *hdr, u32 len
 	if (err)
 		return err;
 
+<<<<<<< HEAD
 	ipv6_hdr(skb)->payload_len = htons(skb->len - sizeof(struct ipv6hdr));
+=======
+>>>>>>> origin/android16-base
 	skb_set_transport_header(skb, sizeof(struct ipv6hdr));
 
 	return seg6_lookup_nexthop(skb, NULL, 0);
@@ -5539,9 +5633,15 @@ void bpf_warn_invalid_xdp_action(u32 act)
 {
 	const u32 act_max = XDP_REDIRECT;
 
+<<<<<<< HEAD
 	WARN_ONCE(1, "%s XDP return value %u, expect packet loss!\n",
 		  act > act_max ? "Illegal" : "Driver unsupported",
 		  act);
+=======
+	pr_warn_once("%s XDP return value %u, expect packet loss!\n",
+		     act > act_max ? "Illegal" : "Driver unsupported",
+		     act);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(bpf_warn_invalid_xdp_action);
 

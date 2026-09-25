@@ -1513,7 +1513,11 @@ fail:
 	return NULL;
 }
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(xc2028_attach);
+=======
+EXPORT_SYMBOL_GPL(xc2028_attach);
+>>>>>>> origin/android16-base
 
 MODULE_DESCRIPTION("Xceive xc2028/xc3028 tuner driver");
 MODULE_AUTHOR("Michel Ludwig <michel.ludwig@gmail.com>");

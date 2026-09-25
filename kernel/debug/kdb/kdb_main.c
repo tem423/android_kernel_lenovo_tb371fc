@@ -400,6 +400,16 @@ int kdb_set(int argc, const char **argv)
 		return KDB_ARGCOUNT;
 
 	/*
+<<<<<<< HEAD
+=======
+	 * Censor sensitive variables
+	 */
+	if (strcmp(argv[1], "PROMPT") == 0 &&
+	    !kdb_check_flags(KDB_ENABLE_MEM_READ, kdb_cmd_enabled, false))
+		return KDB_NOPERM;
+
+	/*
+>>>>>>> origin/android16-base
 	 * Check for internal variables
 	 */
 	if (strcmp(argv[1], "KDBDEBUG") == 0) {
@@ -1299,6 +1309,7 @@ static int kdb_local(kdb_reason_t reason, int error, struct pt_regs *regs,
 		*(cmd_hist[cmd_head]) = '\0';
 
 do_full_getstr:
+<<<<<<< HEAD
 #if defined(CONFIG_SMP)
 		snprintf(kdb_prompt_str, CMD_BUFLEN, kdbgetenv("PROMPT"),
 			 raw_smp_processor_id());
@@ -1307,6 +1318,11 @@ do_full_getstr:
 #endif
 		if (defcmd_in_progress)
 			strncat(kdb_prompt_str, "[defcmd]", CMD_BUFLEN);
+=======
+		/* PROMPT can only be set if we have MEM_READ permission. */
+		snprintf(kdb_prompt_str, CMD_BUFLEN, kdbgetenv("PROMPT"),
+			 raw_smp_processor_id());
+>>>>>>> origin/android16-base
 
 		/*
 		 * Fetch command from keyboard

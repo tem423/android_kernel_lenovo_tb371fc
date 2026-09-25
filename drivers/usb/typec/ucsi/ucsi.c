@@ -735,6 +735,10 @@ err_unregister:
 	}
 
 err_reset:
+<<<<<<< HEAD
+=======
+	memset(&ucsi->cap, 0, sizeof(ucsi->cap));
+>>>>>>> origin/android16-base
 	ucsi_reset_ppm(ucsi);
 err:
 	mutex_unlock(&ucsi->ppm_lock);

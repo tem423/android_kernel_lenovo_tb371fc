@@ -171,6 +171,7 @@ void print_bpf_insn(const struct bpf_insn_cbs *cbs,
 		else
 			verbose(cbs->private_data, "BUG_%02x\n", insn->code);
 	} else if (class == BPF_ST) {
+<<<<<<< HEAD
 		if (BPF_MODE(insn->code) != BPF_MEM) {
 			verbose(cbs->private_data, "BUG_st_%02x\n", insn->code);
 			return;
@@ -180,6 +181,19 @@ void print_bpf_insn(const struct bpf_insn_cbs *cbs,
 			bpf_ldst_string[BPF_SIZE(insn->code) >> 3],
 			insn->dst_reg,
 			insn->off, insn->imm);
+=======
+		if (BPF_MODE(insn->code) == BPF_MEM) {
+			verbose(cbs->private_data, "(%02x) *(%s *)(r%d %+d) = %d\n",
+				insn->code,
+				bpf_ldst_string[BPF_SIZE(insn->code) >> 3],
+				insn->dst_reg,
+				insn->off, insn->imm);
+		} else if (BPF_MODE(insn->code) == 0xc0 /* BPF_NOSPEC, no UAPI */) {
+			verbose(cbs->private_data, "(%02x) nospec\n", insn->code);
+		} else {
+			verbose(cbs->private_data, "BUG_st_%02x\n", insn->code);
+		}
+>>>>>>> origin/android16-base
 	} else if (class == BPF_LDX) {
 		if (BPF_MODE(insn->code) != BPF_MEM) {
 			verbose(cbs->private_data, "BUG_ldx_%02x\n", insn->code);

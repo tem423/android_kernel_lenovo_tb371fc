@@ -568,7 +568,12 @@ static int bdc_probe(struct platform_device *pdev)
 		if (ret) {
 			dev_err(dev,
 				"No suitable DMA config available, abort\n");
+<<<<<<< HEAD
 			return -ENOTSUPP;
+=======
+			ret = -ENOTSUPP;
+			goto phycleanup;
+>>>>>>> origin/android16-base
 		}
 		dev_dbg(dev, "Using 32-bit address\n");
 	}

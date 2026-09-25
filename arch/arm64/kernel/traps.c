@@ -249,7 +249,11 @@ void die(const char *str, struct pt_regs *regs, int err)
 	raw_spin_unlock_irqrestore(&die_lock, flags);
 
 	if (ret != NOTIFY_STOP)
+<<<<<<< HEAD
 		do_exit(SIGSEGV);
+=======
+		make_task_dead(SIGSEGV);
+>>>>>>> origin/android16-base
 }
 
 static bool show_unhandled_signals_ratelimited(void)

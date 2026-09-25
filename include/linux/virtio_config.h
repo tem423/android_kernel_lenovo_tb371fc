@@ -51,8 +51,14 @@ struct irq_affinity;
  *	Returns the first 32 feature bits (all we currently need).
  * @finalize_features: confirm what device features we'll be using.
  *	vdev: the virtio_device
+<<<<<<< HEAD
  *	This gives the final feature bits for the device: it can change
  *	the dev->feature bits if it wants.
+=======
+ *	This sends the driver feature bits to the device: it can change
+ *	the dev->feature bits if it wants.
+ * Note: despite the name this can be called any number of times.
+>>>>>>> origin/android16-base
  *	Returns 0 on success or error status
  * @bus_name: return the bus name associated with the device
  *	vdev: the virtio_device

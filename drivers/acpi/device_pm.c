@@ -703,7 +703,11 @@ static void acpi_pm_notify_work_func(struct acpi_device_wakeup_context *context)
 static DEFINE_MUTEX(acpi_wakeup_lock);
 
 static int __acpi_device_wakeup_enable(struct acpi_device *adev,
+<<<<<<< HEAD
 				       u32 target_state, int max_count)
+=======
+				       u32 target_state)
+>>>>>>> origin/android16-base
 {
 	struct acpi_device_wakeup *wakeup = &adev->wakeup;
 	acpi_status status;
@@ -711,9 +715,16 @@ static int __acpi_device_wakeup_enable(struct acpi_device *adev,
 
 	mutex_lock(&acpi_wakeup_lock);
 
+<<<<<<< HEAD
 	if (wakeup->enable_count >= max_count)
 		goto out;
 
+=======
+	if (wakeup->enable_count >= INT_MAX) {
+		acpi_handle_info(adev->handle, "Wakeup enable count out of bounds!\n");
+		goto out;
+	}
+>>>>>>> origin/android16-base
 	if (wakeup->enable_count > 0)
 		goto inc;
 
@@ -750,7 +761,11 @@ out:
  */
 static int acpi_device_wakeup_enable(struct acpi_device *adev, u32 target_state)
 {
+<<<<<<< HEAD
 	return __acpi_device_wakeup_enable(adev, target_state, 1);
+=======
+	return __acpi_device_wakeup_enable(adev, target_state);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -780,8 +795,17 @@ out:
 	mutex_unlock(&acpi_wakeup_lock);
 }
 
+<<<<<<< HEAD
 static int __acpi_pm_set_device_wakeup(struct device *dev, bool enable,
 				       int max_count)
+=======
+/**
+ * acpi_pm_set_device_wakeup - Enable/disable remote wakeup for given device.
+ * @dev: Device to enable/disable to generate wakeup events.
+ * @enable: Whether to enable or disable the wakeup functionality.
+ */
+int acpi_pm_set_device_wakeup(struct device *dev, bool enable)
+>>>>>>> origin/android16-base
 {
 	struct acpi_device *adev;
 	int error;
@@ -801,13 +825,18 @@ static int __acpi_pm_set_device_wakeup(struct device *dev, bool enable,
 		return 0;
 	}
 
+<<<<<<< HEAD
 	error = __acpi_device_wakeup_enable(adev, acpi_target_system_state(),
 					    max_count);
+=======
+	error = __acpi_device_wakeup_enable(adev, acpi_target_system_state());
+>>>>>>> origin/android16-base
 	if (!error)
 		dev_dbg(dev, "Wakeup enabled by ACPI\n");
 
 	return error;
 }
+<<<<<<< HEAD
 
 /**
  * acpi_pm_set_device_wakeup - Enable/disable remote wakeup for given device.
@@ -832,6 +861,11 @@ int acpi_pm_set_bridge_wakeup(struct device *dev, bool enable)
 EXPORT_SYMBOL_GPL(acpi_pm_set_bridge_wakeup);
 
 /**
+=======
+EXPORT_SYMBOL_GPL(acpi_pm_set_device_wakeup);
+
+/**
+>>>>>>> origin/android16-base
  * acpi_dev_pm_low_power - Put ACPI device into a low-power state.
  * @dev: Device to put into a low-power state.
  * @adev: ACPI device node corresponding to @dev.

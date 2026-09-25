@@ -407,6 +407,10 @@ struct qedr_qp {
 	u32 sq_psn;
 	u32 qkey;
 	u32 dest_qp_num;
+<<<<<<< HEAD
+=======
+	u8 timeout;
+>>>>>>> origin/android16-base
 
 	/* Relevant to qps created from kernel space only (ULPs) */
 	u8 prev_wqe_size;

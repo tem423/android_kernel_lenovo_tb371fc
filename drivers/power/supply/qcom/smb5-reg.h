@@ -65,7 +65,10 @@ enum {
 #define CHARGING_PAUSE_CMD_BIT			BIT(0)
 
 #define CHGR_CFG2_REG				(CHGR_BASE + 0x51)
+<<<<<<< HEAD
 #define CHARGER_EN_ITERM			BIT(3)
+=======
+>>>>>>> origin/android16-base
 #define RECHG_MASK				GENMASK(2, 1)
 #define VBAT_BASED_RECHG_BIT			BIT(2)
 #define SOC_BASED_RECHG_BIT			GENMASK(2, 1)
@@ -396,10 +399,13 @@ enum {
 #define TYPEC_CCOUT_VALUE_BIT			BIT(1)
 #define TYPEC_CCOUT_SRC_BIT			BIT(0)
 
+<<<<<<< HEAD
 #define DEBUG_ACCESS_SRN_CFG_REG               (TYPEC_BASE + 0x4A)
 #define EN_DEBUG_ACCESS_SNK_BIT       		BIT(0)
 #define DAM_DIS_AICL_BIT       		BIT(3)
 
+=======
+>>>>>>> origin/android16-base
 #define DEBUG_ACCESS_SRC_CFG_REG		(TYPEC_BASE + 0x4C)
 #define EN_UNORIENTED_DEBUG_ACCESS_SRC_BIT	BIT(0)
 

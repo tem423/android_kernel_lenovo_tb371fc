@@ -8,6 +8,10 @@ menu "Processor type and features"
 
 config IA64
 	bool
+<<<<<<< HEAD
+=======
+	select ARCH_HAS_CPU_FINALIZE_INIT
+>>>>>>> origin/android16-base
 	select ARCH_MIGHT_HAVE_PC_PARPORT
 	select ARCH_MIGHT_HAVE_PC_SERIO
 	select PCI if (!IA64_HP_SIM)
@@ -445,7 +449,11 @@ config ARCH_PROC_KCORE_TEXT
 	depends on PROC_KCORE
 
 config IA64_MCA_RECOVERY
+<<<<<<< HEAD
 	tristate "MCA recovery from errors other than TLB."
+=======
+	bool "MCA recovery from errors other than TLB."
+>>>>>>> origin/android16-base
 
 config PERFMON
 	bool "Performance monitor support"

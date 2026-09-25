@@ -944,8 +944,13 @@ percent_rmt_hitm_cmp(struct perf_hpp_fmt *fmt __maybe_unused,
 	double per_left;
 	double per_right;
 
+<<<<<<< HEAD
 	per_left  = PERCENT(left, lcl_hitm);
 	per_right = PERCENT(right, lcl_hitm);
+=======
+	per_left  = PERCENT(left, rmt_hitm);
+	per_right = PERCENT(right, rmt_hitm);
+>>>>>>> origin/android16-base
 
 	return per_left - per_right;
 }
@@ -2724,9 +2729,13 @@ static int perf_c2c__report(int argc, const char **argv)
 		   "the input file to process"),
 	OPT_INCR('N', "node-info", &c2c.node_info,
 		 "show extra node info in report (repeat for more info)"),
+<<<<<<< HEAD
 #ifdef HAVE_SLANG_SUPPORT
 	OPT_BOOLEAN(0, "stdio", &c2c.use_stdio, "Use the stdio interface"),
 #endif
+=======
+	OPT_BOOLEAN(0, "stdio", &c2c.use_stdio, "Use the stdio interface"),
+>>>>>>> origin/android16-base
 	OPT_BOOLEAN(0, "stats", &c2c.stats_only,
 		    "Display only statistic tables (implies --stdio)"),
 	OPT_BOOLEAN(0, "full-symbols", &c2c.symbol_full,
@@ -2753,6 +2762,13 @@ static int perf_c2c__report(int argc, const char **argv)
 	if (argc)
 		usage_with_options(report_c2c_usage, options);
 
+<<<<<<< HEAD
+=======
+#ifndef HAVE_SLANG_SUPPORT
+	c2c.use_stdio = true;
+#endif
+
+>>>>>>> origin/android16-base
 	if (c2c.stats_only)
 		c2c.use_stdio = true;
 

@@ -307,7 +307,11 @@ static int brcmstb_pwm_suspend(struct device *dev)
 {
 	struct brcmstb_pwm *p = dev_get_drvdata(dev);
 
+<<<<<<< HEAD
 	clk_disable(p->clk);
+=======
+	clk_disable_unprepare(p->clk);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -316,7 +320,11 @@ static int brcmstb_pwm_resume(struct device *dev)
 {
 	struct brcmstb_pwm *p = dev_get_drvdata(dev);
 
+<<<<<<< HEAD
 	clk_enable(p->clk);
+=======
+	clk_prepare_enable(p->clk);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

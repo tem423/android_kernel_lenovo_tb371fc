@@ -157,10 +157,18 @@ config S390
 	select HAVE_MEMBLOCK
 	select HAVE_MEMBLOCK_NODE_MAP
 	select HAVE_MEMBLOCK_PHYS_MAP
+<<<<<<< HEAD
+=======
+	select HAVE_MMU_GATHER_NO_GATHER
+>>>>>>> origin/android16-base
 	select HAVE_MOD_ARCH_SPECIFIC
 	select HAVE_NOP_MCOUNT
 	select HAVE_OPROFILE
 	select HAVE_PERF_EVENTS
+<<<<<<< HEAD
+=======
+	select HAVE_RCU_TABLE_FREE
+>>>>>>> origin/android16-base
 	select HAVE_REGS_AND_STACK_ACCESS_API
 	select HAVE_RSEQ
 	select HAVE_SYSCALL_TRACEPOINTS
@@ -867,7 +875,11 @@ config CMM_IUCV
 config APPLDATA_BASE
 	def_bool n
 	prompt "Linux - VM Monitor Stream, base infrastructure"
+<<<<<<< HEAD
 	depends on PROC_FS
+=======
+	depends on PROC_SYSCTL
+>>>>>>> origin/android16-base
 	help
 	  This provides a kernel interface for creating and updating z/VM APPLDATA
 	  monitor records. The monitor records are updated at certain time

@@ -635,11 +635,20 @@ static int bnx2x_ilt_client_mem_op(struct bnx2x *bp, int cli_num,
 {
 	int i, rc;
 	struct bnx2x_ilt *ilt = BP_ILT(bp);
+<<<<<<< HEAD
 	struct ilt_client_info *ilt_cli = &ilt->clients[cli_num];
+=======
+	struct ilt_client_info *ilt_cli;
+>>>>>>> origin/android16-base
 
 	if (!ilt || !ilt->lines)
 		return -1;
 
+<<<<<<< HEAD
+=======
+	ilt_cli = &ilt->clients[cli_num];
+
+>>>>>>> origin/android16-base
 	if (ilt_cli->flags & (ILT_CLIENT_SKIP_INIT | ILT_CLIENT_SKIP_MEM))
 		return 0;
 

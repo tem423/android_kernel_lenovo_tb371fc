@@ -576,11 +576,22 @@ static int mipid_spi_probe(struct spi_device *spi)
 
 	r = mipid_detect(md);
 	if (r < 0)
+<<<<<<< HEAD
 		return r;
+=======
+		goto free_md;
+>>>>>>> origin/android16-base
 
 	omapfb_register_panel(&md->panel);
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+free_md:
+	kfree(md);
+	return r;
+>>>>>>> origin/android16-base
 }
 
 static int mipid_spi_remove(struct spi_device *spi)

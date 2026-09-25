@@ -581,7 +581,11 @@ static void chtls_reset_synq(struct listen_ctx *listen_ctx)
 
 	while (!skb_queue_empty(&listen_ctx->synq)) {
 		struct chtls_sock *csk =
+<<<<<<< HEAD
 			container_of((struct synq *)__skb_dequeue
+=======
+			container_of((struct synq *)skb_peek
+>>>>>>> origin/android16-base
 				(&listen_ctx->synq), struct chtls_sock, synq);
 		struct sock *child = csk->sk;
 
@@ -1024,6 +1028,10 @@ static struct sock *chtls_recv_sock(struct sock *lsk,
 				    const struct cpl_pass_accept_req *req,
 				    struct chtls_dev *cdev)
 {
+<<<<<<< HEAD
+=======
+	struct adapter *adap = pci_get_drvdata(cdev->pdev);
+>>>>>>> origin/android16-base
 	const struct tcphdr *tcph;
 	struct inet_sock *newinet;
 	const struct iphdr *iph;
@@ -1033,9 +1041,16 @@ static struct sock *chtls_recv_sock(struct sock *lsk,
 	struct neighbour *n;
 	struct tcp_sock *tp;
 	struct sock *newsk;
+<<<<<<< HEAD
 	u16 port_id;
 	int rxq_idx;
 	int step;
+=======
+	bool found = false;
+	u16 port_id;
+	int rxq_idx;
+	int step, i;
+>>>>>>> origin/android16-base
 
 	iph = (const struct iphdr *)network_hdr;
 	newsk = tcp_create_openreq_child(lsk, oreq, cdev->askb);
@@ -1048,6 +1063,7 @@ static struct sock *chtls_recv_sock(struct sock *lsk,
 
 	tcph = (struct tcphdr *)(iph + 1);
 	n = dst_neigh_lookup(dst, &iph->saddr);
+<<<<<<< HEAD
 	if (!n)
 		goto free_sk;
 
@@ -1057,6 +1073,22 @@ static struct sock *chtls_recv_sock(struct sock *lsk,
 	if (is_vlan_dev(ndev))
 		ndev = vlan_dev_real_dev(ndev);
 
+=======
+	if (!n || !n->dev)
+		goto free_dst;
+
+	ndev = n->dev;
+	if (is_vlan_dev(ndev))
+		ndev = vlan_dev_real_dev(ndev);
+
+	for_each_port(adap, i)
+		if (cdev->ports[i] == ndev)
+			found = true;
+
+	if (!found)
+		goto free_dst;
+
+>>>>>>> origin/android16-base
 	port_id = cxgb4_port_idx(ndev);
 
 	csk = chtls_sock_create(cdev);
@@ -1079,6 +1111,10 @@ static struct sock *chtls_recv_sock(struct sock *lsk,
 
 	oreq->ts_recent = PASS_OPEN_TID_G(ntohl(req->tos_stid));
 	sk_setup_caps(newsk, dst);
+<<<<<<< HEAD
+=======
+	newsk->sk_prot_creator = lsk->sk_prot_creator;
+>>>>>>> origin/android16-base
 	csk->sk = newsk;
 	csk->passive_reap_next = oreq;
 	csk->tx_chan = cxgb4_port_chan(ndev);
@@ -1107,6 +1143,11 @@ static struct sock *chtls_recv_sock(struct sock *lsk,
 free_csk:
 	chtls_sock_release(&csk->kref);
 free_dst:
+<<<<<<< HEAD
+=======
+	if (n)
+		neigh_release(n);
+>>>>>>> origin/android16-base
 	dst_release(dst);
 free_sk:
 	inet_csk_prepare_forced_close(newsk);
@@ -1421,6 +1462,14 @@ static int chtls_pass_establish(struct chtls_dev *cdev, struct sk_buff *skb)
 			sk_wake_async(sk, 0, POLL_OUT);
 
 		data = lookup_stid(cdev->tids, stid);
+<<<<<<< HEAD
+=======
+		if (!data) {
+			/* listening server close */
+			kfree_skb(skb);
+			goto unlock;
+		}
+>>>>>>> origin/android16-base
 		lsk = ((struct listen_ctx *)data)->lsk;
 
 		bh_lock_sock(lsk);
@@ -1806,6 +1855,7 @@ static void send_defer_abort_rpl(struct chtls_dev *cdev, struct sk_buff *skb)
 	kfree_skb(skb);
 }
 
+<<<<<<< HEAD
 static void send_abort_rpl(struct sock *sk, struct sk_buff *skb,
 			   struct chtls_dev *cdev, int status, int queue)
 {
@@ -1839,6 +1889,8 @@ static void send_abort_rpl(struct sock *sk, struct sk_buff *skb,
 	cxgb4_ofld_send(cdev->lldi->ports[0], reply_skb);
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Add an skb to the deferred skb queue for processing from process context.
  */
@@ -1901,9 +1953,15 @@ static void bl_abort_syn_rcv(struct sock *lsk, struct sk_buff *skb)
 	queue = csk->txq_idx;
 
 	skb->sk	= NULL;
+<<<<<<< HEAD
 	do_abort_syn_rcv(child, lsk);
 	send_abort_rpl(child, skb, BLOG_SKB_CB(skb)->cdev,
 		       CPL_ABORT_NO_RST, queue);
+=======
+	chtls_send_abort_rpl(child, skb, BLOG_SKB_CB(skb)->cdev,
+			     CPL_ABORT_NO_RST, queue);
+	do_abort_syn_rcv(child, lsk);
+>>>>>>> origin/android16-base
 }
 
 static int abort_syn_rcv(struct sock *sk, struct sk_buff *skb)
@@ -1933,8 +1991,13 @@ static int abort_syn_rcv(struct sock *sk, struct sk_buff *skb)
 	if (!sock_owned_by_user(psk)) {
 		int queue = csk->txq_idx;
 
+<<<<<<< HEAD
 		do_abort_syn_rcv(sk, psk);
 		send_abort_rpl(sk, skb, cdev, CPL_ABORT_NO_RST, queue);
+=======
+		chtls_send_abort_rpl(sk, skb, cdev, CPL_ABORT_NO_RST, queue);
+		do_abort_syn_rcv(sk, psk);
+>>>>>>> origin/android16-base
 	} else {
 		skb->sk = sk;
 		BLOG_SKB_CB(skb)->backlog_rcv = bl_abort_syn_rcv;
@@ -1952,9 +2015,12 @@ static void chtls_abort_req_rss(struct sock *sk, struct sk_buff *skb)
 	int queue = csk->txq_idx;
 
 	if (is_neg_adv(req->status)) {
+<<<<<<< HEAD
 		if (sk->sk_state == TCP_SYN_RECV)
 			chtls_set_tcb_tflag(sk, 0, 0);
 
+=======
+>>>>>>> origin/android16-base
 		kfree_skb(skb);
 		return;
 	}
@@ -1980,12 +2046,20 @@ static void chtls_abort_req_rss(struct sock *sk, struct sk_buff *skb)
 
 		if (sk->sk_state == TCP_SYN_RECV && !abort_syn_rcv(sk, skb))
 			return;
+<<<<<<< HEAD
 
 		chtls_release_resources(sk);
 		chtls_conn_done(sk);
 	}
 
 	chtls_send_abort_rpl(sk, skb, csk->cdev, rst_status, queue);
+=======
+	}
+
+	chtls_send_abort_rpl(sk, skb, csk->cdev, rst_status, queue);
+	chtls_release_resources(sk);
+	chtls_conn_done(sk);
+>>>>>>> origin/android16-base
 }
 
 static void chtls_abort_rpl_rss(struct sock *sk, struct sk_buff *skb)
@@ -2093,7 +2167,11 @@ static void chtls_rx_ack(struct sock *sk, struct sk_buff *skb)
 
 		if (tp->snd_una != snd_una) {
 			tp->snd_una = snd_una;
+<<<<<<< HEAD
 			tp->rcv_tstamp = tcp_time_stamp(tp);
+=======
+			tp->rcv_tstamp = tcp_jiffies32;
+>>>>>>> origin/android16-base
 			if (tp->snd_una == tp->snd_nxt &&
 			    !csk_flag_nochk(csk, CSK_TX_FAILOVER))
 				csk_reset_flag(csk, CSK_TX_WAIT_IDLE);

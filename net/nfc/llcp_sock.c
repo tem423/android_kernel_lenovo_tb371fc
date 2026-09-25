@@ -120,13 +120,27 @@ static int llcp_sock_bind(struct socket *sock, struct sockaddr *addr, int alen)
 					  llcp_sock->service_name_len,
 					  GFP_KERNEL);
 	if (!llcp_sock->service_name) {
+<<<<<<< HEAD
+=======
+		nfc_llcp_local_put(llcp_sock->local);
+		llcp_sock->local = NULL;
+		llcp_sock->dev = NULL;
+>>>>>>> origin/android16-base
 		ret = -ENOMEM;
 		goto put_dev;
 	}
 	llcp_sock->ssap = nfc_llcp_get_sdp_ssap(local, llcp_sock);
 	if (llcp_sock->ssap == LLCP_SAP_MAX) {
+<<<<<<< HEAD
 		kfree(llcp_sock->service_name);
 		llcp_sock->service_name = NULL;
+=======
+		nfc_llcp_local_put(llcp_sock->local);
+		llcp_sock->local = NULL;
+		kfree(llcp_sock->service_name);
+		llcp_sock->service_name = NULL;
+		llcp_sock->dev = NULL;
+>>>>>>> origin/android16-base
 		ret = -EADDRINUSE;
 		goto put_dev;
 	}
@@ -683,6 +697,13 @@ static int llcp_sock_connect(struct socket *sock, struct sockaddr *_addr,
 		ret = -EISCONN;
 		goto error;
 	}
+<<<<<<< HEAD
+=======
+	if (sk->sk_state == LLCP_CONNECTING) {
+		ret = -EINPROGRESS;
+		goto error;
+	}
+>>>>>>> origin/android16-base
 
 	dev = nfc_get_device(addr->dev_idx);
 	if (dev == NULL) {
@@ -714,6 +735,11 @@ static int llcp_sock_connect(struct socket *sock, struct sockaddr *_addr,
 	llcp_sock->local = nfc_llcp_local_get(local);
 	llcp_sock->ssap = nfc_llcp_get_local_ssap(local);
 	if (llcp_sock->ssap == LLCP_SAP_MAX) {
+<<<<<<< HEAD
+=======
+		nfc_llcp_local_put(llcp_sock->local);
+		llcp_sock->local = NULL;
+>>>>>>> origin/android16-base
 		ret = -ENOMEM;
 		goto put_dev;
 	}
@@ -751,8 +777,17 @@ static int llcp_sock_connect(struct socket *sock, struct sockaddr *_addr,
 
 sock_unlink:
 	nfc_llcp_put_ssap(local, llcp_sock->ssap);
+<<<<<<< HEAD
 
 	nfc_llcp_sock_unlink(&local->connecting_sockets, sk);
+=======
+	nfc_llcp_local_put(llcp_sock->local);
+	llcp_sock->local = NULL;
+
+	nfc_llcp_sock_unlink(&local->connecting_sockets, sk);
+	kfree(llcp_sock->service_name);
+	llcp_sock->service_name = NULL;
+>>>>>>> origin/android16-base
 
 put_dev:
 	nfc_put_device(dev);
@@ -780,6 +815,14 @@ static int llcp_sock_sendmsg(struct socket *sock, struct msghdr *msg,
 
 	lock_sock(sk);
 
+<<<<<<< HEAD
+=======
+	if (!llcp_sock->local) {
+		release_sock(sk);
+		return -ENODEV;
+	}
+
+>>>>>>> origin/android16-base
 	if (sk->sk_type == SOCK_DGRAM) {
 		DECLARE_SOCKADDR(struct sockaddr_nfc_llcp *, addr,
 				 msg->msg_name);

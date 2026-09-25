@@ -258,18 +258,30 @@ static void __init pxa168_clk_init(struct device_node *np)
 	pxa_unit->mpmu_base = of_iomap(np, 0);
 	if (!pxa_unit->mpmu_base) {
 		pr_err("failed to map mpmu registers\n");
+<<<<<<< HEAD
+=======
+		kfree(pxa_unit);
+>>>>>>> origin/android16-base
 		return;
 	}
 
 	pxa_unit->apmu_base = of_iomap(np, 1);
 	if (!pxa_unit->apmu_base) {
 		pr_err("failed to map apmu registers\n");
+<<<<<<< HEAD
+=======
+		kfree(pxa_unit);
+>>>>>>> origin/android16-base
 		return;
 	}
 
 	pxa_unit->apbc_base = of_iomap(np, 2);
 	if (!pxa_unit->apbc_base) {
 		pr_err("failed to map apbc registers\n");
+<<<<<<< HEAD
+=======
+		kfree(pxa_unit);
+>>>>>>> origin/android16-base
 		return;
 	}
 

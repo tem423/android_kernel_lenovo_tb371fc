@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
+<<<<<<< HEAD
  * Copyright (c) 2015-2019, 2020, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2015-2019, 2020-2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #ifndef __MSM_COMMON
@@ -86,6 +90,11 @@ struct sdm660_codec {
 
 enum {
 	INT_SND_CARD,
+<<<<<<< HEAD
+=======
+	INT_DIG_SND_CARD,
+	INT_MAX_SND_CARD = INT_DIG_SND_CARD,
+>>>>>>> origin/android16-base
 	EXT_SND_CARD_TASHA,
 	EXT_SND_CARD_TAVIL,
 };

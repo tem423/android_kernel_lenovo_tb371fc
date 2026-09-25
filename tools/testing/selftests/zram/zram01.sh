@@ -42,9 +42,13 @@ zram_algs="lzo"
 
 zram_fill_fs()
 {
+<<<<<<< HEAD
 	local mem_free0=$(free -m | awk 'NR==2 {print $4}')
 
 	for i in $(seq 0 $(($dev_num - 1))); do
+=======
+	for i in $(seq $dev_start $dev_end); do
+>>>>>>> origin/android16-base
 		echo "fill zram$i..."
 		local b=0
 		while [ true ]; do
@@ -54,6 +58,7 @@ zram_fill_fs()
 			b=$(($b + 1))
 		done
 		echo "zram$i can be filled with '$b' KB"
+<<<<<<< HEAD
 	done
 
 	local mem_free1=$(free -m | awk 'NR==2 {print $4}')
@@ -77,6 +82,19 @@ zram_fill_fs()
 	fi
 
 	echo "zram compression ratio: $(echo "scale=2; $v / 100 " | bc):1: OK"
+=======
+
+		local mem_used_total=`awk '{print $3}' "/sys/block/zram$i/mm_stat"`
+		local v=$((100 * 1024 * $b / $mem_used_total))
+		if [ "$v" -lt 100 ]; then
+			 echo "FAIL compression ratio: 0.$v:1"
+			 ERR_CODE=-1
+			 return
+		fi
+
+		echo "zram compression ratio: $(echo "scale=2; $v / 100 " | bc):1: OK"
+	done
+>>>>>>> origin/android16-base
 }
 
 check_prereqs
@@ -90,7 +108,10 @@ zram_mount
 
 zram_fill_fs
 zram_cleanup
+<<<<<<< HEAD
 zram_unload
+=======
+>>>>>>> origin/android16-base
 
 if [ $ERR_CODE -ne 0 ]; then
 	echo "$TCID : [FAIL]"

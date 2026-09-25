@@ -266,8 +266,12 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
 	start = _ALIGN_DOWN(start, page_size);
 	if (altmap) {
 		alt_start = altmap->base_pfn;
+<<<<<<< HEAD
 		alt_end = altmap->base_pfn + altmap->reserve +
 			  altmap->free + altmap->alloc + altmap->align;
+=======
+		alt_end = altmap->base_pfn + altmap->reserve + altmap->free;
+>>>>>>> origin/android16-base
 	}
 
 	pr_debug("vmemmap_free %lx...%lx\n", start, end);

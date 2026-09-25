@@ -1,4 +1,8 @@
 #include <linux/netlink.h>
+<<<<<<< HEAD
+=======
+#include <linux/nospec.h>
+>>>>>>> origin/android16-base
 #include <linux/rtnetlink.h>
 #include <linux/types.h>
 #include <net/ip.h>
@@ -24,6 +28,10 @@ int ip_metrics_convert(struct net *net, struct nlattr *fc_mx, int fc_mx_len,
 		if (type > RTAX_MAX)
 			return -EINVAL;
 
+<<<<<<< HEAD
+=======
+		type = array_index_nospec(type, RTAX_MAX + 1);
+>>>>>>> origin/android16-base
 		if (type == RTAX_CC_ALGO) {
 			char tmp[TCP_CA_NAME_MAX];
 

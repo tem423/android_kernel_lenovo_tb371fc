@@ -80,6 +80,11 @@ early_set_memory_decrypted(unsigned long vaddr, unsigned long size) { return 0; 
 static inline int __init
 early_set_memory_encrypted(unsigned long vaddr, unsigned long size) { return 0; }
 
+<<<<<<< HEAD
+=======
+static inline void mem_encrypt_init(void) { }
+
+>>>>>>> origin/android16-base
 #define __bss_decrypted
 
 #endif	/* CONFIG_AMD_MEM_ENCRYPT */

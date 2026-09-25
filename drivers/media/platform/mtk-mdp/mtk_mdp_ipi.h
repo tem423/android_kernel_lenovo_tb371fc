@@ -48,12 +48,20 @@ struct mdp_ipi_init {
  * @ipi_id        : IPI_MDP
  * @ap_inst       : AP mtk_mdp_vpu address
  * @vpu_inst_addr : VPU MDP instance address
+<<<<<<< HEAD
+=======
+ * @padding       : Alignment padding
+>>>>>>> origin/android16-base
  */
 struct mdp_ipi_comm {
 	uint32_t msg_id;
 	uint32_t ipi_id;
 	uint64_t ap_inst;
 	uint32_t vpu_inst_addr;
+<<<<<<< HEAD
+=======
+	uint32_t padding;
+>>>>>>> origin/android16-base
 };
 
 /**

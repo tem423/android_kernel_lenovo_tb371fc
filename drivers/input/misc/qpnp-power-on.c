@@ -152,8 +152,11 @@
 
 #define QPNP_POFF_REASON_UVLO			13
 
+<<<<<<< HEAD
 extern bool hall_disable_fp_pk;
 
+=======
+>>>>>>> origin/android16-base
 enum qpnp_pon_version {
 	QPNP_PON_GEN1_V1,
 	QPNP_PON_GEN1_V2,
@@ -981,6 +984,7 @@ static int qpnp_pon_input_dispatch(struct qpnp_pon *pon, u32 pon_type)
 		input_sync(pon->pon_input);
 	}
 
+<<<<<<< HEAD
 	if (cfg->key_code == KEY_POWER) {
 		pr_err("powerkey already pressed");
 	}
@@ -991,6 +995,10 @@ static int qpnp_pon_input_dispatch(struct qpnp_pon *pon, u32 pon_type)
 	} else {
 		pr_info("Hall sensor disable power key!\n");
 	}
+=======
+	input_report_key(pon->pon_input, cfg->key_code, key_status);
+	input_sync(pon->pon_input);
+>>>>>>> origin/android16-base
 
 	cfg->old_state = !!key_status;
 

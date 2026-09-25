@@ -167,7 +167,11 @@ bool __init wg_ratelimiter_selftest(void)
 	++test;
 #endif
 
+<<<<<<< HEAD
 	for (trials = TRIALS_BEFORE_GIVING_UP;;) {
+=======
+	for (trials = TRIALS_BEFORE_GIVING_UP; IS_ENABLED(DEBUG_RATELIMITER_TIMINGS);) {
+>>>>>>> origin/android16-base
 		int test_count = 0, ret;
 
 		ret = timings_test(skb4, hdr4, skb6, hdr6, &test_count);
@@ -176,7 +180,10 @@ bool __init wg_ratelimiter_selftest(void)
 				test += test_count;
 				goto err;
 			}
+<<<<<<< HEAD
 			msleep(500);
+=======
+>>>>>>> origin/android16-base
 			continue;
 		} else if (ret < 0) {
 			test += test_count;
@@ -195,7 +202,10 @@ bool __init wg_ratelimiter_selftest(void)
 				test += test_count;
 				goto err;
 			}
+<<<<<<< HEAD
 			msleep(50);
+=======
+>>>>>>> origin/android16-base
 			continue;
 		}
 		test += test_count;

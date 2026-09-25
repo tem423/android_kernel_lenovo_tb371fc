@@ -112,17 +112,31 @@ int drm_getunique(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
 	struct drm_unique *u = data;
+<<<<<<< HEAD
 	struct drm_master *master = file_priv->master;
 
 	mutex_lock(&master->dev->master_mutex);
 	if (u->unique_len >= master->unique_len) {
 		if (copy_to_user(u->unique, master->unique, master->unique_len)) {
 			mutex_unlock(&master->dev->master_mutex);
+=======
+	struct drm_master *master;
+
+	mutex_lock(&dev->master_mutex);
+	master = file_priv->master;
+	if (u->unique_len >= master->unique_len) {
+		if (copy_to_user(u->unique, master->unique, master->unique_len)) {
+			mutex_unlock(&dev->master_mutex);
+>>>>>>> origin/android16-base
 			return -EFAULT;
 		}
 	}
 	u->unique_len = master->unique_len;
+<<<<<<< HEAD
 	mutex_unlock(&master->dev->master_mutex);
+=======
+	mutex_unlock(&dev->master_mutex);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -457,7 +471,17 @@ EXPORT_SYMBOL(drm_invalid_op);
  */
 static int drm_copy_field(char __user *buf, size_t *buf_len, const char *value)
 {
+<<<<<<< HEAD
 	int len;
+=======
+	size_t len;
+
+	/* don't attempt to copy a NULL pointer */
+	if (WARN_ONCE(!value, "BUG: the value to copy was not set!")) {
+		*buf_len = 0;
+		return 0;
+	}
+>>>>>>> origin/android16-base
 
 	/* don't overflow userbuf */
 	len = strlen(value);
@@ -796,6 +820,12 @@ long drm_ioctl(struct file *filp,
 	if (drm_dev_is_unplugged(dev))
 		return -ENODEV;
 
+<<<<<<< HEAD
+=======
+       if (DRM_IOCTL_TYPE(cmd) != DRM_IOCTL_BASE)
+               return -ENOTTY;
+
+>>>>>>> origin/android16-base
 	is_driver_ioctl = nr >= DRM_COMMAND_BASE && nr < DRM_COMMAND_END;
 
 	if (is_driver_ioctl) {

@@ -110,10 +110,17 @@ int run_tests(int secs)
 
 	sprintf(buf, "./inconsistency-check -t %i", secs);
 	ret = system(buf);
+<<<<<<< HEAD
 	if (ret)
 		return ret;
 	ret = system("./nanosleep");
 	return ret;
+=======
+	if (WIFEXITED(ret) && WEXITSTATUS(ret))
+		return WEXITSTATUS(ret);
+	ret = system("./nanosleep");
+	return WIFEXITED(ret) ? WEXITSTATUS(ret) : 0;
+>>>>>>> origin/android16-base
 }
 
 

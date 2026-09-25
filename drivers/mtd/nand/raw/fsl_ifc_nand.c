@@ -34,7 +34,11 @@
 
 #define ERR_BYTE		0xFF /* Value returned for read
 					bytes when read failed	*/
+<<<<<<< HEAD
 #define IFC_TIMEOUT_MSECS	500  /* Maximum number of mSecs to wait
+=======
+#define IFC_TIMEOUT_MSECS	1000 /* Maximum timeout to wait
+>>>>>>> origin/android16-base
 					for IFC NAND Machine	*/
 
 struct fsl_ifc_ctrl;

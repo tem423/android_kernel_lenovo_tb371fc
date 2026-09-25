@@ -394,7 +394,11 @@ static int __init com90io_init(void)
 	err = com90io_probe(dev);
 
 	if (err) {
+<<<<<<< HEAD
 		free_netdev(dev);
+=======
+		free_arcdev(dev);
+>>>>>>> origin/android16-base
 		return err;
 	}
 
@@ -417,7 +421,11 @@ static void __exit com90io_exit(void)
 
 	free_irq(dev->irq, dev);
 	release_region(dev->base_addr, ARCNET_TOTAL_SIZE);
+<<<<<<< HEAD
 	free_netdev(dev);
+=======
+	free_arcdev(dev);
+>>>>>>> origin/android16-base
 }
 
 module_init(com90io_init)

@@ -258,7 +258,12 @@ static int da9052_regulator_set_voltage_time_sel(struct regulator_dev *rdev,
 	case DA9052_ID_BUCK3:
 	case DA9052_ID_LDO2:
 	case DA9052_ID_LDO3:
+<<<<<<< HEAD
 		ret = (new_sel - old_sel) * info->step_uV / 6250;
+=======
+		ret = DIV_ROUND_UP(abs(new_sel - old_sel) * info->step_uV,
+				   6250);
+>>>>>>> origin/android16-base
 		break;
 	}
 
@@ -420,7 +425,11 @@ static int da9052_regulator_probe(struct platform_device *pdev)
 	config.dev = &pdev->dev;
 	config.driver_data = regulator;
 	config.regmap = da9052->regmap;
+<<<<<<< HEAD
 	if (pdata && pdata->regulators) {
+=======
+	if (pdata) {
+>>>>>>> origin/android16-base
 		config.init_data = pdata->regulators[cell->id];
 	} else {
 #ifdef CONFIG_OF

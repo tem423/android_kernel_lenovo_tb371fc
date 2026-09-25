@@ -36,7 +36,12 @@
  */
 
 /*	
+<<<<<<< HEAD
  * asmlinkage __wsum csum_partial(const void *buf, int len, __wsum sum);
+=======
+ * unsigned int csum_partial(const unsigned char *buf, int len,
+ *                           unsigned int sum);
+>>>>>>> origin/android16-base
  */
 
 .text
@@ -48,6 +53,7 @@ ENTRY(csum_partial)
 	   * Fortunately, it is easy to convert 2-byte alignment to 4-byte
 	   * alignment for the unrolled loop.
 	   */
+<<<<<<< HEAD
 	mov	r4, r0
 	tst	#3, r0		! Check alignment.
 	bt/s	2f		! Jump if alignment is ok.
@@ -73,6 +79,13 @@ ENTRY(csum_partial)
 	bt	2f
 21:
 	! buf is 2 byte aligned (len could be 0)
+=======
+	mov	r5, r1
+	mov	r4, r0
+	tst	#2, r0		! Check alignment.
+	bt	2f		! Jump if alignment is ok.
+	!
+>>>>>>> origin/android16-base
 	add	#-2, r5		! Alignment uses up two bytes.
 	cmp/pz	r5		!
 	bt/s	1f		! Jump if we had at least two bytes.
@@ -80,17 +93,27 @@ ENTRY(csum_partial)
 	bra	6f
 	 add	#2, r5		! r5 was < 2.  Deal with it.
 1:
+<<<<<<< HEAD
+=======
+	mov	r5, r1		! Save new len for later use.
+>>>>>>> origin/android16-base
 	mov.w	@r4+, r0
 	extu.w	r0, r0
 	addc	r0, r6
 	bf	2f
 	add	#1, r6
 2:
+<<<<<<< HEAD
 	! buf is 4 byte aligned (len could be 0)
 	mov	r5, r1
 	mov	#-5, r0
 	shld	r0, r1
 	tst	r1, r1
+=======
+	mov	#-5, r0
+	shld	r0, r5
+	tst	r5, r5
+>>>>>>> origin/android16-base
 	bt/s	4f		! if it's =0, go to 4f
 	 clrt
 	.align	2
@@ -112,6 +135,7 @@ ENTRY(csum_partial)
 	addc	r0, r6
 	addc	r2, r6
 	movt	r0
+<<<<<<< HEAD
 	dt	r1
 	bf/s	3b
 	 cmp/eq	#1, r0
@@ -125,11 +149,26 @@ ENTRY(csum_partial)
 	! 4 bytes or more remaining
 	mov	r0, r1
 	shlr2	r1
+=======
+	dt	r5
+	bf/s	3b
+	 cmp/eq	#1, r0
+	! here, we know r5==0
+	addc	r5, r6			! add carry to r6
+4:
+	mov	r1, r0
+	and	#0x1c, r0
+	tst	r0, r0
+	bt/s	6f
+	 mov	r0, r5
+	shlr2	r5
+>>>>>>> origin/android16-base
 	mov	#0, r2
 5:
 	addc	r2, r6
 	mov.l	@r4+, r2
 	movt	r0
+<<<<<<< HEAD
 	dt	r1
 	bf/s	5b
 	 cmp/eq	#1, r0
@@ -137,6 +176,15 @@ ENTRY(csum_partial)
 	addc	r1, r6		! r1==0 here, so it means add carry-bit
 6:
 	! 3 bytes or less remaining
+=======
+	dt	r5
+	bf/s	5b
+	 cmp/eq	#1, r0
+	addc	r2, r6
+	addc	r5, r6		! r5==0 here, so it means add carry-bit
+6:
+	mov	r1, r5
+>>>>>>> origin/android16-base
 	mov	#3, r0
 	and	r0, r5
 	tst	r5, r5
@@ -162,6 +210,7 @@ ENTRY(csum_partial)
 	mov	#0, r0
 	addc	r0, r6
 9:
+<<<<<<< HEAD
 	! Check if the buffer was misaligned, if so realign sum
 	mov	r7, r0
 	tst	#1, r0
@@ -172,6 +221,8 @@ ENTRY(csum_partial)
 	shlr8	r0
 	or	r0, r6
 10:
+=======
+>>>>>>> origin/android16-base
 	rts
 	 mov	r6, r0
 

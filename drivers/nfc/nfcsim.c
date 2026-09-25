@@ -201,8 +201,12 @@ static void nfcsim_recv_wq(struct work_struct *work)
 
 		if (!IS_ERR(skb))
 			dev_kfree_skb(skb);
+<<<<<<< HEAD
 
 		skb = ERR_PTR(-ENODEV);
+=======
+		return;
+>>>>>>> origin/android16-base
 	}
 
 	dev->cb(dev->nfc_digital_dev, dev->arg, skb);
@@ -346,10 +350,13 @@ static struct dentry *nfcsim_debugfs_root;
 static void nfcsim_debugfs_init(void)
 {
 	nfcsim_debugfs_root = debugfs_create_dir("nfcsim", NULL);
+<<<<<<< HEAD
 
 	if (!nfcsim_debugfs_root)
 		pr_err("Could not create debugfs entry\n");
 
+=======
+>>>>>>> origin/android16-base
 }
 
 static void nfcsim_debugfs_remove(void)

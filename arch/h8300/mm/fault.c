@@ -52,7 +52,11 @@ asmlinkage int do_page_fault(struct pt_regs *regs, unsigned long address,
 	printk(" at virtual address %08lx\n", address);
 	if (!user_mode(regs))
 		die("Oops", regs, error_code);
+<<<<<<< HEAD
 	do_exit(SIGKILL);
+=======
+	make_task_dead(SIGKILL);
+>>>>>>> origin/android16-base
 
 	return 1;
 }

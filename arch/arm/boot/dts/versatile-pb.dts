@@ -7,7 +7,11 @@
 
 	amba {
 		/* The Versatile PB is using more SIC IRQ lines than the AB */
+<<<<<<< HEAD
 		sic: intc@10003000 {
+=======
+		sic: interrupt-controller@10003000 {
+>>>>>>> origin/android16-base
 			clear-mask = <0xffffffff>;
 			/*
 			 * Valid interrupt lines mask according to

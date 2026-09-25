@@ -118,7 +118,11 @@ static int pch_ptp_match(struct sk_buff *skb, u16 uid_hi, u32 uid_lo, u16 seqid)
 {
 	u8 *data = skb->data;
 	unsigned int offset;
+<<<<<<< HEAD
 	u16 *hi, *id;
+=======
+	u16 hi, id;
+>>>>>>> origin/android16-base
 	u32 lo;
 
 	if (ptp_classify_raw(skb) == PTP_CLASS_NONE)
@@ -129,6 +133,7 @@ static int pch_ptp_match(struct sk_buff *skb, u16 uid_hi, u32 uid_lo, u16 seqid)
 	if (skb->len < offset + OFF_PTP_SEQUENCE_ID + sizeof(seqid))
 		return 0;
 
+<<<<<<< HEAD
 	hi = (u16 *)(data + offset + OFF_PTP_SOURCE_UUID);
 	id = (u16 *)(data + offset + OFF_PTP_SEQUENCE_ID);
 
@@ -137,6 +142,13 @@ static int pch_ptp_match(struct sk_buff *skb, u16 uid_hi, u32 uid_lo, u16 seqid)
 	return (uid_hi == *hi &&
 		uid_lo == lo &&
 		seqid  == *id);
+=======
+	hi = get_unaligned_be16(data + offset + OFF_PTP_SOURCE_UUID + 0);
+	lo = get_unaligned_be32(data + offset + OFF_PTP_SOURCE_UUID + 2);
+	id = get_unaligned_be16(data + offset + OFF_PTP_SEQUENCE_ID);
+
+	return (uid_hi == hi && uid_lo == lo && seqid == id);
+>>>>>>> origin/android16-base
 }
 
 static void
@@ -146,7 +158,10 @@ pch_rx_timestamp(struct pch_gbe_adapter *adapter, struct sk_buff *skb)
 	struct pci_dev *pdev;
 	u64 ns;
 	u32 hi, lo, val;
+<<<<<<< HEAD
 	u16 uid, seq;
+=======
+>>>>>>> origin/android16-base
 
 	if (!adapter->hwts_rx_en)
 		return;
@@ -162,10 +177,14 @@ pch_rx_timestamp(struct pch_gbe_adapter *adapter, struct sk_buff *skb)
 	lo = pch_src_uuid_lo_read(pdev);
 	hi = pch_src_uuid_hi_read(pdev);
 
+<<<<<<< HEAD
 	uid = hi & 0xffff;
 	seq = (hi >> 16) & 0xffff;
 
 	if (!pch_ptp_match(skb, htons(uid), htonl(lo), htons(seq)))
+=======
+	if (!pch_ptp_match(skb, hi, lo, hi >> 16))
+>>>>>>> origin/android16-base
 		goto out;
 
 	ns = pch_rx_snap_read(pdev);
@@ -1184,6 +1203,10 @@ static void pch_gbe_tx_queue(struct pch_gbe_adapter *adapter,
 		buffer_info->dma = 0;
 		buffer_info->time_stamp = 0;
 		tx_ring->next_to_use = ring_num;
+<<<<<<< HEAD
+=======
+		dev_kfree_skb_any(skb);
+>>>>>>> origin/android16-base
 		return;
 	}
 	buffer_info->mapped = true;
@@ -2498,6 +2521,10 @@ static void pch_gbe_remove(struct pci_dev *pdev)
 	unregister_netdev(netdev);
 
 	pch_gbe_phy_hw_reset(&adapter->hw);
+<<<<<<< HEAD
+=======
+	pci_dev_put(adapter->ptp_pdev);
+>>>>>>> origin/android16-base
 
 	free_netdev(netdev);
 }
@@ -2546,9 +2573,19 @@ static int pch_gbe_probe(struct pci_dev *pdev,
 	adapter->pdev = pdev;
 	adapter->hw.back = adapter;
 	adapter->hw.reg = pcim_iomap_table(pdev)[PCH_GBE_PCI_BAR];
+<<<<<<< HEAD
 	adapter->pdata = (struct pch_gbe_privdata *)pci_id->driver_data;
 	if (adapter->pdata && adapter->pdata->platform_init)
 		adapter->pdata->platform_init(pdev);
+=======
+
+	adapter->pdata = (struct pch_gbe_privdata *)pci_id->driver_data;
+	if (adapter->pdata && adapter->pdata->platform_init) {
+		ret = adapter->pdata->platform_init(pdev);
+		if (ret)
+			goto err_free_netdev;
+	}
+>>>>>>> origin/android16-base
 
 	adapter->ptp_pdev =
 		pci_get_domain_bus_and_slot(pci_domain_nr(adapter->pdev->bus),
@@ -2575,7 +2612,11 @@ static int pch_gbe_probe(struct pci_dev *pdev,
 	/* setup the private structure */
 	ret = pch_gbe_sw_init(adapter);
 	if (ret)
+<<<<<<< HEAD
 		goto err_free_netdev;
+=======
+		goto err_put_dev;
+>>>>>>> origin/android16-base
 
 	/* Initialize PHY */
 	ret = pch_gbe_init_phy(adapter);
@@ -2633,6 +2674,11 @@ static int pch_gbe_probe(struct pci_dev *pdev,
 
 err_free_adapter:
 	pch_gbe_phy_hw_reset(&adapter->hw);
+<<<<<<< HEAD
+=======
+err_put_dev:
+	pci_dev_put(adapter->ptp_pdev);
+>>>>>>> origin/android16-base
 err_free_netdev:
 	free_netdev(netdev);
 	return ret;
@@ -2643,7 +2689,11 @@ err_free_netdev:
  */
 static int pch_gbe_minnow_platform_init(struct pci_dev *pdev)
 {
+<<<<<<< HEAD
 	unsigned long flags = GPIOF_DIR_OUT | GPIOF_INIT_HIGH | GPIOF_EXPORT;
+=======
+	unsigned long flags = GPIOF_OUT_INIT_HIGH;
+>>>>>>> origin/android16-base
 	unsigned gpio = MINNOW_PHY_RESET_GPIO;
 	int ret;
 

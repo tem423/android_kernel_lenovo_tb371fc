@@ -3356,15 +3356,27 @@ static int sd_probe(struct device *dev)
 	}
 
 	device_initialize(&sdkp->dev);
+<<<<<<< HEAD
 	sdkp->dev.parent = dev;
+=======
+	sdkp->dev.parent = get_device(dev);
+>>>>>>> origin/android16-base
 	sdkp->dev.class = &sd_disk_class;
 	dev_set_name(&sdkp->dev, "%s", dev_name(dev));
 
 	error = device_add(&sdkp->dev);
+<<<<<<< HEAD
 	if (error)
 		goto out_free_index;
 
 	get_device(dev);
+=======
+	if (error) {
+		put_device(&sdkp->dev);
+		goto out;
+	}
+
+>>>>>>> origin/android16-base
 	dev_set_drvdata(dev, sdkp);
 
 	get_device(&sdkp->dev);	/* prevent release before async_schedule */

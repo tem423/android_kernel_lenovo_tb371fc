@@ -861,7 +861,11 @@ static inline void _gcm_sg_unmap_and_advance(struct gcm_sg_walk *gw,
 					     unsigned int nbytes)
 {
 	gw->walk_bytes_remain -= nbytes;
+<<<<<<< HEAD
 	scatterwalk_unmap(&gw->walk);
+=======
+	scatterwalk_unmap(gw->walk_ptr);
+>>>>>>> origin/android16-base
 	scatterwalk_advance(&gw->walk, nbytes);
 	scatterwalk_done(&gw->walk, 0, gw->walk_bytes_remain);
 	gw->walk_ptr = NULL;
@@ -936,7 +940,11 @@ static int gcm_out_walk_go(struct gcm_sg_walk *gw, unsigned int minbytesneeded)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	scatterwalk_unmap(&gw->walk);
+=======
+	scatterwalk_unmap(gw->walk_ptr);
+>>>>>>> origin/android16-base
 	gw->walk_ptr = NULL;
 
 	gw->ptr = gw->buf;

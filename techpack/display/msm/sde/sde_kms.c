@@ -1199,8 +1199,11 @@ static void sde_kms_complete_commit(struct msm_kms *kms,
 			pr_err("Connector Post kickoff failed rc=%d\n",
 					 rc);
 		}
+<<<<<<< HEAD
 
 		sde_connector_fod_notify(connector);
+=======
+>>>>>>> origin/android16-base
 	}
 
 	_sde_kms_drm_check_dpms(old_state, DRM_PANEL_EVENT_BLANK);
@@ -1932,6 +1935,7 @@ static void _sde_kms_hw_destroy(struct sde_kms *sde_kms,
 		msm_iounmap(pdev, sde_kms->sid);
 	sde_kms->sid = NULL;
 
+<<<<<<< HEAD
 	if (sde_kms->hw_sw_fuse)
 		sde_hw_sw_fuse_destroy(sde_kms->hw_sw_fuse);
 	sde_kms->hw_sw_fuse = NULL;
@@ -1940,6 +1944,8 @@ static void _sde_kms_hw_destroy(struct sde_kms *sde_kms,
 		msm_iounmap(pdev, sde_kms->sw_fuse);
 	sde_kms->sw_fuse = NULL;
 
+=======
+>>>>>>> origin/android16-base
 	if (sde_kms->reg_dma)
 		msm_iounmap(pdev, sde_kms->reg_dma);
 	sde_kms->reg_dma = NULL;
@@ -3562,6 +3568,7 @@ static int _sde_kms_hw_init_ioremap(struct sde_kms *sde_kms,
 	if (rc)
 		SDE_ERROR("dbg base register sid failed: %d\n", rc);
 
+<<<<<<< HEAD
 	sde_kms->sw_fuse = msm_ioremap(platformdev, "swfuse_phys",
 					"swfuse_phys");
 	if (IS_ERR(sde_kms->sw_fuse)) {
@@ -3575,6 +3582,8 @@ static int _sde_kms_hw_init_ioremap(struct sde_kms *sde_kms,
 		if (rc)
 			SDE_ERROR("dbg base register sw_fuse failed: %d\n", rc);
 	}
+=======
+>>>>>>> origin/android16-base
 error:
 	return rc;
 }
@@ -3779,6 +3788,7 @@ static int _sde_kms_hw_init_blocks(struct sde_kms *sde_kms,
 		goto perf_err;
 	}
 
+<<<<<<< HEAD
 	if (sde_kms->sw_fuse) {
 		sde_kms->hw_sw_fuse = sde_hw_sw_fuse_init(sde_kms->sw_fuse,
 				sde_kms->sw_fuse_len, sde_kms->catalog);
@@ -3790,6 +3800,8 @@ static int _sde_kms_hw_init_blocks(struct sde_kms *sde_kms,
 	} else {
 		sde_kms->hw_sw_fuse = NULL;
 	}
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * _sde_kms_drm_obj_init should create the DRM related objects
 	 * i.e. CRTCs, planes, encoders, connectors and so forth
@@ -3967,6 +3979,7 @@ int sde_kms_handle_recovery(struct drm_encoder *encoder)
 	SDE_EVT32(DRMID(encoder), MSM_ENC_ACTIVE_REGION);
 	return sde_encoder_wait_for_event(encoder, MSM_ENC_ACTIVE_REGION);
 }
+<<<<<<< HEAD
 
 void sde_kms_kickoff_count(struct sde_kms *sde_kms)
 {
@@ -3981,3 +3994,5 @@ void sde_kms_kickoff_count(struct sde_kms *sde_kms)
 
 	return;
 }
+=======
+>>>>>>> origin/android16-base

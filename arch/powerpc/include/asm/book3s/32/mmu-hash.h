@@ -34,14 +34,28 @@
 #define BAT_PHYS_ADDR(x) ((u32)((x & 0x00000000fffe0000ULL) | \
 				((x & 0x0000000e00000000ULL) >> 24) | \
 				((x & 0x0000000100000000ULL) >> 30)))
+<<<<<<< HEAD
 #else
 #define BAT_PHYS_ADDR(x) (x)
+=======
+#define PHYS_BAT_ADDR(x) (((u64)(x) & 0x00000000fffe0000ULL) | \
+			  (((u64)(x) << 24) & 0x0000000e00000000ULL) | \
+			  (((u64)(x) << 30) & 0x0000000100000000ULL))
+#else
+#define BAT_PHYS_ADDR(x) (x)
+#define PHYS_BAT_ADDR(x) ((x) & 0xfffe0000)
+>>>>>>> origin/android16-base
 #endif
 
 struct ppc_bat {
 	u32 batu;
 	u32 batl;
 };
+<<<<<<< HEAD
+=======
+
+typedef struct page *pgtable_t;
+>>>>>>> origin/android16-base
 #endif /* !__ASSEMBLY__ */
 
 /*

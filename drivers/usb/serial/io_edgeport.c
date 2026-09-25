@@ -846,11 +846,20 @@ static void edge_bulk_out_data_callback(struct urb *urb)
 static void edge_bulk_out_cmd_callback(struct urb *urb)
 {
 	struct edgeport_port *edge_port = urb->context;
+<<<<<<< HEAD
 	int status = urb->status;
 
 	atomic_dec(&CmdUrbs);
 	dev_dbg(&urb->dev->dev, "%s - FREE URB %p (outstanding %d)\n",
 		__func__, urb, atomic_read(&CmdUrbs));
+=======
+	struct device *dev = &urb->dev->dev;
+	int status = urb->status;
+
+	atomic_dec(&CmdUrbs);
+	dev_dbg(dev, "%s - FREE URB %p (outstanding %d)\n", __func__, urb,
+		atomic_read(&CmdUrbs));
+>>>>>>> origin/android16-base
 
 
 	/* clean up the transfer buffer */
@@ -860,8 +869,12 @@ static void edge_bulk_out_cmd_callback(struct urb *urb)
 	usb_free_urb(urb);
 
 	if (status) {
+<<<<<<< HEAD
 		dev_dbg(&urb->dev->dev,
 			"%s - nonzero write bulk status received: %d\n",
+=======
+		dev_dbg(dev, "%s - nonzero write bulk status received: %d\n",
+>>>>>>> origin/android16-base
 			__func__, status);
 		return;
 	}
@@ -3021,6 +3034,7 @@ static int edge_startup(struct usb_serial *serial)
 				response = -ENODEV;
 			}
 
+<<<<<<< HEAD
 			usb_free_urb(edge_serial->interrupt_read_urb);
 			kfree(edge_serial->interrupt_in_buffer);
 
@@ -3030,17 +3044,42 @@ static int edge_startup(struct usb_serial *serial)
 			kfree(edge_serial);
 
 			return response;
+=======
+			goto error;
+>>>>>>> origin/android16-base
 		}
 
 		/* start interrupt read for this edgeport this interrupt will
 		 * continue as long as the edgeport is connected */
 		response = usb_submit_urb(edge_serial->interrupt_read_urb,
 								GFP_KERNEL);
+<<<<<<< HEAD
 		if (response)
 			dev_err(ddev, "%s - Error %d submitting control urb\n",
 				__func__, response);
 	}
 	return response;
+=======
+		if (response) {
+			dev_err(ddev, "%s - Error %d submitting control urb\n",
+				__func__, response);
+
+			goto error;
+		}
+	}
+	return response;
+
+error:
+	usb_free_urb(edge_serial->interrupt_read_urb);
+	kfree(edge_serial->interrupt_in_buffer);
+
+	usb_free_urb(edge_serial->read_urb);
+	kfree(edge_serial->bulk_in_buffer);
+
+	kfree(edge_serial);
+
+	return response;
+>>>>>>> origin/android16-base
 }
 
 

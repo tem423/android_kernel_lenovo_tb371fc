@@ -235,9 +235,15 @@ static int ssc_probe(struct platform_device *pdev)
 	clk_disable_unprepare(ssc->clk);
 
 	ssc->irq = platform_get_irq(pdev, 0);
+<<<<<<< HEAD
 	if (!ssc->irq) {
 		dev_dbg(&pdev->dev, "could not get irq\n");
 		return -ENXIO;
+=======
+	if (ssc->irq < 0) {
+		dev_dbg(&pdev->dev, "could not get irq\n");
+		return ssc->irq;
+>>>>>>> origin/android16-base
 	}
 
 	mutex_lock(&user_lock);

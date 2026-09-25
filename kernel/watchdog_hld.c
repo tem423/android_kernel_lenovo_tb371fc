@@ -91,11 +91,23 @@ static bool watchdog_check_timestamp(void)
 	__this_cpu_write(last_timestamp, now);
 	return true;
 }
+<<<<<<< HEAD
 #else
 static inline bool watchdog_check_timestamp(void)
 {
 	return true;
 }
+=======
+
+static void watchdog_init_timestamp(void)
+{
+	__this_cpu_write(nmi_rearmed, 0);
+	__this_cpu_write(last_timestamp, ktime_get_mono_fast_ns());
+}
+#else
+static inline bool watchdog_check_timestamp(void) { return true; }
+static inline void watchdog_init_timestamp(void) { }
+>>>>>>> origin/android16-base
 #endif
 
 static struct perf_event_attr wd_hw_attr = {
@@ -114,14 +126,23 @@ static void watchdog_overflow_callback(struct perf_event *event,
 	/* Ensure the watchdog never gets throttled */
 	event->hw.interrupts = 0;
 
+<<<<<<< HEAD
+=======
+	if (!watchdog_check_timestamp())
+		return;
+
+>>>>>>> origin/android16-base
 	if (__this_cpu_read(watchdog_nmi_touch) == true) {
 		__this_cpu_write(watchdog_nmi_touch, false);
 		return;
 	}
 
+<<<<<<< HEAD
 	if (!watchdog_check_timestamp())
 		return;
 
+=======
+>>>>>>> origin/android16-base
 	/* check for a hardlockup
 	 * This is done by making sure our timer interrupt
 	 * is incrementing.  The timer interrupt should have
@@ -195,6 +216,10 @@ void hardlockup_detector_perf_enable(void)
 	if (!atomic_fetch_inc(&watchdog_cpus))
 		pr_info("Enabled. Permanently consumes one hw-PMU counter.\n");
 
+<<<<<<< HEAD
+=======
+	watchdog_init_timestamp();
+>>>>>>> origin/android16-base
 	perf_event_enable(this_cpu_read(watchdog_ev));
 }
 

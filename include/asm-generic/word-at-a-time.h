@@ -38,7 +38,11 @@ static inline long find_zero(unsigned long mask)
 	return (mask >> 8) ? byte : byte + 1;
 }
 
+<<<<<<< HEAD
 static inline bool has_zero(unsigned long val, unsigned long *data, const struct word_at_a_time *c)
+=======
+static inline unsigned long has_zero(unsigned long val, unsigned long *data, const struct word_at_a_time *c)
+>>>>>>> origin/android16-base
 {
 	unsigned long rhs = val | c->low_bits;
 	*data = rhs;

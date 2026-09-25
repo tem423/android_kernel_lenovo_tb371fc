@@ -67,7 +67,15 @@ struct tcs3472_data {
 	u8 control;
 	u8 atime;
 	u8 apers;
+<<<<<<< HEAD
 	u16 buffer[8]; /* 4 16-bit channels + 64-bit timestamp */
+=======
+	/* Ensure timestamp is naturally aligned */
+	struct {
+		u16 chans[4];
+		s64 timestamp __aligned(8);
+	} scan;
+>>>>>>> origin/android16-base
 };
 
 static const struct iio_event_spec tcs3472_events[] = {
@@ -389,10 +397,17 @@ static irqreturn_t tcs3472_trigger_handler(int irq, void *p)
 		if (ret < 0)
 			goto done;
 
+<<<<<<< HEAD
 		data->buffer[j++] = ret;
 	}
 
 	iio_push_to_buffers_with_timestamp(indio_dev, data->buffer,
+=======
+		data->scan.chans[j++] = ret;
+	}
+
+	iio_push_to_buffers_with_timestamp(indio_dev, &data->scan,
+>>>>>>> origin/android16-base
 		iio_get_time_ns(indio_dev));
 
 done:
@@ -535,7 +550,12 @@ static int tcs3472_probe(struct i2c_client *client,
 	return 0;
 
 free_irq:
+<<<<<<< HEAD
 	free_irq(client->irq, indio_dev);
+=======
+	if (client->irq)
+		free_irq(client->irq, indio_dev);
+>>>>>>> origin/android16-base
 buffer_cleanup:
 	iio_triggered_buffer_cleanup(indio_dev);
 	return ret;
@@ -563,7 +583,12 @@ static int tcs3472_remove(struct i2c_client *client)
 	struct iio_dev *indio_dev = i2c_get_clientdata(client);
 
 	iio_device_unregister(indio_dev);
+<<<<<<< HEAD
 	free_irq(client->irq, indio_dev);
+=======
+	if (client->irq)
+		free_irq(client->irq, indio_dev);
+>>>>>>> origin/android16-base
 	iio_triggered_buffer_cleanup(indio_dev);
 	tcs3472_powerdown(iio_priv(indio_dev));
 

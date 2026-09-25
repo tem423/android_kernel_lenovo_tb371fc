@@ -98,8 +98,11 @@ static int chameleon_parse_gdd(struct mcb_bus *bus,
 	mdev->mem.end = mdev->mem.start + size - 1;
 	mdev->mem.flags = IORESOURCE_MEM;
 
+<<<<<<< HEAD
 	mdev->is_added = false;
 
+=======
+>>>>>>> origin/android16-base
 	ret = mcb_device_register(bus, mdev);
 	if (ret < 0)
 		goto err;
@@ -129,7 +132,11 @@ static void chameleon_parse_bar(void __iomem *base,
 	}
 }
 
+<<<<<<< HEAD
 static int chameleon_get_bar(char __iomem **base, phys_addr_t mapbase,
+=======
+static int chameleon_get_bar(void __iomem **base, phys_addr_t mapbase,
+>>>>>>> origin/android16-base
 			     struct chameleon_bar **cb)
 {
 	struct chameleon_bar *c;
@@ -178,12 +185,20 @@ int chameleon_parse_cells(struct mcb_bus *bus, phys_addr_t mapbase,
 {
 	struct chameleon_fpga_header *header;
 	struct chameleon_bar *cb;
+<<<<<<< HEAD
 	char __iomem *p = base;
+=======
+	void __iomem *p = base;
+>>>>>>> origin/android16-base
 	int num_cells = 0;
 	uint32_t dtype;
 	int bar_count;
 	int ret;
 	u32 hsize;
+<<<<<<< HEAD
+=======
+	u32 table_size;
+>>>>>>> origin/android16-base
 
 	hsize = sizeof(struct chameleon_fpga_header);
 
@@ -238,12 +253,25 @@ int chameleon_parse_cells(struct mcb_bus *bus, phys_addr_t mapbase,
 		num_cells++;
 	}
 
+<<<<<<< HEAD
 	if (num_cells == 0)
 		num_cells = -EINVAL;
 
 	kfree(cb);
 	kfree(header);
 	return num_cells;
+=======
+	if (num_cells == 0) {
+		ret = -EINVAL;
+		goto free_bar;
+	}
+
+	table_size = p - base;
+	pr_debug("%d cell(s) found. Chameleon table size: 0x%04x bytes\n", num_cells, table_size);
+	kfree(cb);
+	kfree(header);
+	return table_size;
+>>>>>>> origin/android16-base
 
 free_bar:
 	kfree(cb);

@@ -446,7 +446,11 @@ static int bnxt_set_ringparam(struct net_device *dev,
 
 	if ((ering->rx_pending > BNXT_MAX_RX_DESC_CNT) ||
 	    (ering->tx_pending > BNXT_MAX_TX_DESC_CNT) ||
+<<<<<<< HEAD
 	    (ering->tx_pending <= MAX_SKB_FRAGS))
+=======
+	    (ering->tx_pending < BNXT_MIN_TX_DESC_CNT))
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	if (netif_running(dev))
@@ -1377,9 +1381,13 @@ static int bnxt_set_pauseparam(struct net_device *dev,
 		}
 
 		link_info->autoneg |= BNXT_AUTONEG_FLOW_CTRL;
+<<<<<<< HEAD
 		if (bp->hwrm_spec_code >= 0x10201)
 			link_info->req_flow_ctrl =
 				PORT_PHY_CFG_REQ_AUTO_PAUSE_AUTONEG_PAUSE;
+=======
+		link_info->req_flow_ctrl = 0;
+>>>>>>> origin/android16-base
 	} else {
 		/* when transition from auto pause to force pause,
 		 * force a link change
@@ -2300,7 +2308,11 @@ static int bnxt_get_module_eeprom(struct net_device *dev,
 	/* Read A2 portion of the EEPROM */
 	if (length) {
 		start -= ETH_MODULE_SFF_8436_LEN;
+<<<<<<< HEAD
 		rc = bnxt_read_sfp_module_eeprom_info(bp, I2C_DEV_ADDR_A2, 1,
+=======
+		rc = bnxt_read_sfp_module_eeprom_info(bp, I2C_DEV_ADDR_A2, 0,
+>>>>>>> origin/android16-base
 						      start, length, data);
 	}
 	return rc;

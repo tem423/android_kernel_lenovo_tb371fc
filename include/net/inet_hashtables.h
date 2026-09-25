@@ -232,8 +232,14 @@ void inet_hashinfo2_init(struct inet_hashinfo *h, const char *name,
 			 unsigned long low_limit,
 			 unsigned long high_limit);
 
+<<<<<<< HEAD
 bool inet_ehash_insert(struct sock *sk, struct sock *osk);
 bool inet_ehash_nolisten(struct sock *sk, struct sock *osk);
+=======
+bool inet_ehash_insert(struct sock *sk, struct sock *osk, bool *found_dup_sk);
+bool inet_ehash_nolisten(struct sock *sk, struct sock *osk,
+			 bool *found_dup_sk);
+>>>>>>> origin/android16-base
 int __inet_hash(struct sock *sk, struct sock *osk);
 int inet_hash(struct sock *sk);
 void inet_unhash(struct sock *sk);
@@ -406,7 +412,11 @@ static inline void sk_rcv_saddr_set(struct sock *sk, __be32 addr)
 }
 
 int __inet_hash_connect(struct inet_timewait_death_row *death_row,
+<<<<<<< HEAD
 			struct sock *sk, u32 port_offset,
+=======
+			struct sock *sk, u64 port_offset,
+>>>>>>> origin/android16-base
 			int (*check_established)(struct inet_timewait_death_row *,
 						 struct sock *, __u16,
 						 struct inet_timewait_sock **));

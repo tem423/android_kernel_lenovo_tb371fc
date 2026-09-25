@@ -201,11 +201,14 @@ struct sdhci_msm_pltfm_data {
 	struct sdhci_msm_pin_data *pin_data;
 	struct sdhci_pinctrl_data *pctrl_data;
 	int status_gpio; /* card detection GPIO that is configured as IRQ */
+<<<<<<< HEAD
 	/* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 	int pwr_gpio; /* External power enable pin for Redriver IC */
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+=======
+>>>>>>> origin/android16-base
 	struct sdhci_msm_bus_voting_data *voting_data;
 	u32 *sup_clk_table;
 	unsigned char sup_clk_cnt;
@@ -270,6 +273,7 @@ struct sdhci_msm_debug_data {
 	struct sdhci_host copy_host;
 };
 
+<<<<<<< HEAD
 //BH201LN driver--ernest.zhang@bayhubtech.com modify at 20190620 begin
 #ifdef CONFIG_MMC_SDHCI_BH201
 
@@ -351,6 +355,8 @@ typedef struct ggc_platform_data
 } ggc_platform_t;
 //BH201LN driver--ernest.zhang@bayhubtech.com modify at 20190620 end
 #endif
+=======
+>>>>>>> origin/android16-base
 struct sdhci_msm_host {
 	struct platform_device	*pdev;
 	void __iomem *core_mem;    /* MSM SDCC mapped address */
@@ -400,6 +406,7 @@ struct sdhci_msm_host {
 	const struct sdhci_msm_offset *offset;
 	bool core_3_0v_support;
 	bool pltfm_init_done;
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 	ggc_platform_t  ggc;
@@ -408,6 +415,8 @@ struct sdhci_msm_host {
 	u32 sdr50_notuning_sela_rx_inject;
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+=======
+>>>>>>> origin/android16-base
 	struct sdhci_msm_regs_restore regs_restore;
 	bool use_7nm_dll;
 	int soc_min_rev;
@@ -418,6 +427,10 @@ struct sdhci_msm_host {
 	bool reg_store;
 	bool vbias_skip_wa;
 	struct reset_control *core_reset;
+<<<<<<< HEAD
+=======
+	u32 minor;
+>>>>>>> origin/android16-base
 };
 
 extern char *saved_command_line;
@@ -431,6 +444,7 @@ void sdhci_msm_pm_qos_cpu_init(struct sdhci_host *host,
 void sdhci_msm_pm_qos_cpu_vote(struct sdhci_host *host,
 		struct sdhci_msm_pm_qos_latency *latency, int cpu);
 bool sdhci_msm_pm_qos_cpu_unvote(struct sdhci_host *host, int cpu, bool async);
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
 #ifdef CONFIG_MMC_SDHCI_BH201
 #define CORE_FREQ_100MHZ        (100 * 1000 * 1000)
@@ -462,4 +476,8 @@ static inline bool bht_target_host(struct sdhci_host *host)
   0x00020006, 0x40000400, 0x12200310, 0x3A314177}
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+=======
+
+
+>>>>>>> origin/android16-base
 #endif /* __SDHCI_MSM_H__ */

@@ -28,7 +28,11 @@
 #include "ehci-fsl.h"
 
 #define DRIVER_DESC "Freescale EHCI Host controller driver"
+<<<<<<< HEAD
 #define DRV_NAME "ehci-fsl"
+=======
+#define DRV_NAME "fsl-ehci"
+>>>>>>> origin/android16-base
 
 static struct hc_driver __read_mostly fsl_ehci_hc_driver;
 

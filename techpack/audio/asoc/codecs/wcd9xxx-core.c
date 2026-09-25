@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
+<<<<<<< HEAD
 /* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2011-2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/kernel.h>
@@ -1197,9 +1201,18 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 		wcd9xxx_set_intf_type(WCD9XXX_INTERFACE_TYPE_I2C);
 
 		return ret;
+<<<<<<< HEAD
 	}
 
 	pr_err("%s: I2C probe in wrong state\n", __func__);
+=======
+	} else {
+		ret = -EINVAL;
+		pr_err("%s: I2C probe in wrong state, ret %d\n", __func__, ret);
+		goto fail;
+	}
+
+>>>>>>> origin/android16-base
 
 
 err_device_init:

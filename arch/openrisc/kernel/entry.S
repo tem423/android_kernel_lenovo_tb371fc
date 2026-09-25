@@ -177,7 +177,10 @@ handler:							;\
 	l.sw    PT_GPR28(r1),r28					;\
 	l.sw    PT_GPR29(r1),r29					;\
 	/* r30 already save */					;\
+<<<<<<< HEAD
 /*        l.sw    PT_GPR30(r1),r30*/					;\
+=======
+>>>>>>> origin/android16-base
 	l.sw    PT_GPR31(r1),r31					;\
 	TRACE_IRQS_OFF_ENTRY						;\
 	/* Store -1 in orig_gpr11 for non-syscall exceptions */	;\
@@ -215,9 +218,14 @@ handler:							;\
 	l.sw    PT_GPR27(r1),r27					;\
 	l.sw    PT_GPR28(r1),r28					;\
 	l.sw    PT_GPR29(r1),r29					;\
+<<<<<<< HEAD
 	/* r31 already saved */					;\
 	l.sw    PT_GPR30(r1),r30					;\
 /*        l.sw    PT_GPR31(r1),r31	*/				;\
+=======
+	/* r30 already saved */						;\
+	l.sw    PT_GPR31(r1),r31					;\
+>>>>>>> origin/android16-base
 	/* Store -1 in orig_gpr11 for non-syscall exceptions */	;\
 	l.addi	r30,r0,-1					;\
 	l.sw	PT_ORIG_GPR11(r1),r30				;\
@@ -551,6 +559,10 @@ EXCEPTION_ENTRY(_external_irq_handler)
 	l.bnf	1f			// ext irq enabled, all ok.
 	l.nop
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_PRINTK
+>>>>>>> origin/android16-base
 	l.addi  r1,r1,-0x8
 	l.movhi r3,hi(42f)
 	l.ori	r3,r3,lo(42f)
@@ -564,6 +576,10 @@ EXCEPTION_ENTRY(_external_irq_handler)
 		.string "\n\rESR interrupt bug: in _external_irq_handler (ESR %x)\n\r"
 		.align 4
 	.previous
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> origin/android16-base
 
 	l.ori	r4,r4,SPR_SR_IEE	// fix the bug
 //	l.sw	PT_SR(r1),r4

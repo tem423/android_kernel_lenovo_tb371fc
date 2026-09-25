@@ -21,9 +21,12 @@
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
  */
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> origin/android16-base
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -40,7 +43,11 @@
 #define ADJ_SETOFFSET 0x0100
 
 #include <sys/syscall.h>
+<<<<<<< HEAD
 static int clock_adjtime(clockid_t id, struct timex *tx)
+=======
+int clock_adjtime(clockid_t id, struct timex *tx)
+>>>>>>> origin/android16-base
 {
 	return syscall(__NR_clock_adjtime, id, tx);
 }
@@ -62,6 +69,7 @@ int clear_time_state(void)
 #define NUM_FREQ_OUTOFRANGE 4
 #define NUM_FREQ_INVALID 2
 
+<<<<<<< HEAD
 long valid_freq[NUM_FREQ_VALID] = {
 	-499<<16,
 	-450<<16,
@@ -101,6 +109,49 @@ long outofrange_freq[NUM_FREQ_OUTOFRANGE] = {
 	-550<<16,
 	550<<16,
 	1000<<16,
+=======
+#define SHIFTED_PPM (1 << 16)
+
+long valid_freq[NUM_FREQ_VALID] = {
+	 -499 * SHIFTED_PPM,
+	 -450 * SHIFTED_PPM,
+	 -400 * SHIFTED_PPM,
+	 -350 * SHIFTED_PPM,
+	 -300 * SHIFTED_PPM,
+	 -250 * SHIFTED_PPM,
+	 -200 * SHIFTED_PPM,
+	 -150 * SHIFTED_PPM,
+	 -100 * SHIFTED_PPM,
+	  -75 * SHIFTED_PPM,
+	  -50 * SHIFTED_PPM,
+	  -25 * SHIFTED_PPM,
+	  -10 * SHIFTED_PPM,
+	   -5 * SHIFTED_PPM,
+	   -1 * SHIFTED_PPM,
+	-1000,
+	    1 * SHIFTED_PPM,
+	    5 * SHIFTED_PPM,
+	   10 * SHIFTED_PPM,
+	   25 * SHIFTED_PPM,
+	   50 * SHIFTED_PPM,
+	   75 * SHIFTED_PPM,
+	  100 * SHIFTED_PPM,
+	  150 * SHIFTED_PPM,
+	  200 * SHIFTED_PPM,
+	  250 * SHIFTED_PPM,
+	  300 * SHIFTED_PPM,
+	  350 * SHIFTED_PPM,
+	  400 * SHIFTED_PPM,
+	  450 * SHIFTED_PPM,
+	  499 * SHIFTED_PPM,
+};
+
+long outofrange_freq[NUM_FREQ_OUTOFRANGE] = {
+	-1000 * SHIFTED_PPM,
+	 -550 * SHIFTED_PPM,
+	  550 * SHIFTED_PPM,
+	 1000 * SHIFTED_PPM,
+>>>>>>> origin/android16-base
 };
 
 #define LONG_MAX (~0UL>>1)

@@ -110,4 +110,9 @@ int dlpar_workqueue_init(void);
 
 void pseries_setup_rfi_flush(void);
 
+<<<<<<< HEAD
+=======
+void pseries_rng_init(void);
+
+>>>>>>> origin/android16-base
 #endif /* _PSERIES_PSERIES_H */

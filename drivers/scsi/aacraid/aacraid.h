@@ -2037,8 +2037,13 @@ struct aac_srb_reply
 };
 
 struct aac_srb_unit {
+<<<<<<< HEAD
 	struct aac_srb		srb;
 	struct aac_srb_reply	srb_reply;
+=======
+	struct aac_srb_reply	srb_reply;
+	struct aac_srb		srb;
+>>>>>>> origin/android16-base
 };
 
 /*

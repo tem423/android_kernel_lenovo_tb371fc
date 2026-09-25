@@ -73,7 +73,11 @@ struct vsp1_partition_window {
  * @wpf: The WPF partition window configuration
  */
 struct vsp1_partition {
+<<<<<<< HEAD
 	struct vsp1_partition_window rpf;
+=======
+	struct vsp1_partition_window rpf[VSP1_MAX_RPF];
+>>>>>>> origin/android16-base
 	struct vsp1_partition_window uds_sink;
 	struct vsp1_partition_window uds_source;
 	struct vsp1_partition_window sru;

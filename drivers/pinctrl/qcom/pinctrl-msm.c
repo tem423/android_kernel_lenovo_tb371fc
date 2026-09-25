@@ -44,6 +44,7 @@
 #define PS_HOLD_OFFSET 0x820
 #define QUP_MASK       GENMASK(5, 0)
 
+<<<<<<< HEAD
 #define SEQ_printf(m, x...)			\
   do {						\
 	if (m)					\
@@ -52,6 +53,8 @@
 		pr_info(x);			\
   } while (0)
 
+=======
+>>>>>>> origin/android16-base
 /**
  * struct msm_pinctrl - state for a pinctrl-msm device
  * @dev:            device handle.
@@ -533,10 +536,13 @@ static void msm_gpio_dbg_show_one(struct seq_file *s,
 	int pull;
 	int val;
 	u32 ctl_reg, io_reg;
+<<<<<<< HEAD
 #ifdef CONFIG_HW_PM_DEBUG
 	int irq_enable;
 	u32 intr_reg;
 #endif /* CONFIG_HW_PM_DEBUG */
+=======
+>>>>>>> origin/android16-base
 
 	static const char * const pulls_keeper[] = {
 		"no pull",
@@ -568,6 +574,7 @@ static void msm_gpio_dbg_show_one(struct seq_file *s,
 	else
 		val = !!(io_reg & BIT(g->in_bit));
 
+<<<<<<< HEAD
 #ifdef CONFIG_HW_PM_DEBUG
 	/* Kona doesn't have dirr conn gpios,should add bitmap for
 	 other platforms during dirr conn irq mask/unmask (enable)*/
@@ -579,6 +586,8 @@ static void msm_gpio_dbg_show_one(struct seq_file *s,
 		irq_enable);
 #else /* CONFIG_HW_PM_DEBUG */
 
+=======
+>>>>>>> origin/android16-base
 	seq_printf(s, " %-8s: %-3s", g->name, is_out ? "out" : "in");
 	seq_printf(s, " %-4s func%d", val ? "high" : "low", func);
 	seq_printf(s, " %dmA", msm_regval_to_drive(drive));
@@ -587,14 +596,20 @@ static void msm_gpio_dbg_show_one(struct seq_file *s,
 	else
 		seq_printf(s, " %s", pulls_keeper[pull]);
 	seq_puts(s, "\n");
+<<<<<<< HEAD
 #endif /* CONFIG_HW_PM_DEBUG */
 }
 
 #define PRINT_ALL_GPIO_STATUS
+=======
+}
+
+>>>>>>> origin/android16-base
 static void msm_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
 {
 	unsigned gpio = chip->base;
 	unsigned i;
+<<<<<<< HEAD
 #ifndef PRINT_ALL_GPIO_STATUS
 	const char *label;
 #endif
@@ -610,6 +625,11 @@ static void msm_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
 		msm_gpio_dbg_show_one(s, NULL, chip, i, gpio);
 		//seq_puts(s, "\n");
 	}
+=======
+
+	for (i = 0; i < chip->ngpio; i++, gpio++)
+		msm_gpio_dbg_show_one(s, NULL, chip, i, gpio);
+>>>>>>> origin/android16-base
 }
 
 #else

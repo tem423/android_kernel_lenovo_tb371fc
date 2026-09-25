@@ -495,7 +495,11 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_port(const char *s)
  * Workaround for failed writing desc register of planes.
  * Needed with MPC5121 DIU rev 2.0 silicon.
  */
+<<<<<<< HEAD
 void wr_reg_wa(u32 *reg, u32 val)
+=======
+static void wr_reg_wa(u32 *reg, u32 val)
+>>>>>>> origin/android16-base
 {
 	do {
 		out_be32(reg, val);

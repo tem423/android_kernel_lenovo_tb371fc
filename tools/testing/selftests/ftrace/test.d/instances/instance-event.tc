@@ -43,7 +43,11 @@ instance_read() {
 
 instance_set() {
         while :; do
+<<<<<<< HEAD
                 echo 1 > foo/events/sched/sched_switch
+=======
+                echo 1 > foo/events/sched/sched_switch/enable
+>>>>>>> origin/android16-base
         done 2> /dev/null
 }
 

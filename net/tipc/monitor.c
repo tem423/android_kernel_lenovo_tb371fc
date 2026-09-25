@@ -130,7 +130,11 @@ static void map_set(u64 *up_map, int i, unsigned int v)
 
 static int map_get(u64 up_map, int i)
 {
+<<<<<<< HEAD
 	return (up_map & (1 << i)) >> i;
+=======
+	return (up_map & (1ULL << i)) >> i;
+>>>>>>> origin/android16-base
 }
 
 static struct tipc_peer *peer_prev(struct tipc_peer *peer)
@@ -457,6 +461,11 @@ void tipc_mon_rcv(struct net *net, void *data, u16 dlen, u32 addr,
 	state->probing = false;
 
 	/* Sanity check received domain record */
+<<<<<<< HEAD
+=======
+	if (new_member_cnt > MAX_MON_DOMAIN)
+		return;
+>>>>>>> origin/android16-base
 	if (dlen < dom_rec_len(arrv_dom, 0))
 		return;
 	if (dlen != dom_rec_len(arrv_dom, new_member_cnt))

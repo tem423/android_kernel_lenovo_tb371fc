@@ -88,6 +88,7 @@ enum qdio_irq_states {
 static inline int do_sqbs(u64 token, unsigned char state, int queue,
 			  int *start, int *count)
 {
+<<<<<<< HEAD
 	register unsigned long _ccq asm ("0") = *count;
 	register unsigned long _token asm ("1") = token;
 	unsigned long _queuestart = ((unsigned long)queue << 32) | *start;
@@ -97,6 +98,17 @@ static inline int do_sqbs(u64 token, unsigned char state, int queue,
 		: "+d" (_ccq), "+d" (_queuestart)
 		: "d" ((unsigned long)state), "d" (_token)
 		: "memory", "cc");
+=======
+	unsigned long _queuestart = ((unsigned long)queue << 32) | *start;
+	unsigned long _ccq = *count;
+
+	asm volatile(
+		"	lgr	1,%[token]\n"
+		"	.insn	rsy,0xeb000000008a,%[qs],%[ccq],0(%[state])"
+		: [ccq] "+&d" (_ccq), [qs] "+&d" (_queuestart)
+		: [state] "a" ((unsigned long)state), [token] "d" (token)
+		: "memory", "cc", "1");
+>>>>>>> origin/android16-base
 	*count = _ccq & 0xff;
 	*start = _queuestart & 0xff;
 
@@ -106,6 +118,7 @@ static inline int do_sqbs(u64 token, unsigned char state, int queue,
 static inline int do_eqbs(u64 token, unsigned char *state, int queue,
 			  int *start, int *count, int ack)
 {
+<<<<<<< HEAD
 	register unsigned long _ccq asm ("0") = *count;
 	register unsigned long _token asm ("1") = token;
 	unsigned long _queuestart = ((unsigned long)queue << 32) | *start;
@@ -116,6 +129,19 @@ static inline int do_eqbs(u64 token, unsigned char *state, int queue,
 		: "+d" (_ccq), "+d" (_queuestart), "+d" (_state)
 		: "d" (_token)
 		: "memory", "cc");
+=======
+	unsigned long _queuestart = ((unsigned long)queue << 32) | *start;
+	unsigned long _state = (unsigned long)ack << 63;
+	unsigned long _ccq = *count;
+
+	asm volatile(
+		"	lgr	1,%[token]\n"
+		"	.insn	rrf,0xb99c0000,%[qs],%[state],%[ccq],0"
+		: [ccq] "+&d" (_ccq), [qs] "+&d" (_queuestart),
+		  [state] "+&d" (_state)
+		: [token] "d" (token)
+		: "memory", "cc", "1");
+>>>>>>> origin/android16-base
 	*count = _ccq & 0xff;
 	*start = _queuestart & 0xff;
 	*state = _state & 0xff;

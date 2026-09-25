@@ -74,8 +74,13 @@ static int cio_dac_write_raw(struct iio_dev *indio_dev,
 	if (mask != IIO_CHAN_INFO_RAW)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	/* DAC can only accept up to a 16-bit value */
 	if ((unsigned int)val > 65535)
+=======
+	/* DAC can only accept up to a 12-bit value */
+	if ((unsigned int)val > 4095)
+>>>>>>> origin/android16-base
 		return -EINVAL;
 
 	priv->chan_out_states[chan->channel] = val;

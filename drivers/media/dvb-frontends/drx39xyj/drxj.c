@@ -12287,7 +12287,12 @@ struct dvb_frontend *drx39xxj_attach(struct i2c_adapter *i2c)
 	if (state == NULL)
 		goto error;
 
+<<<<<<< HEAD
 	demod = kmalloc(sizeof(struct drx_demod_instance), GFP_KERNEL);
+=======
+	demod = kmemdup(&drxj_default_demod_g,
+			sizeof(struct drx_demod_instance), GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (demod == NULL)
 		goto error;
 
@@ -12311,8 +12316,11 @@ struct dvb_frontend *drx39xxj_attach(struct i2c_adapter *i2c)
 	state->demod = demod;
 
 	/* setup the demod data */
+<<<<<<< HEAD
 	memcpy(demod, &drxj_default_demod_g, sizeof(struct drx_demod_instance));
 
+=======
+>>>>>>> origin/android16-base
 	demod->my_i2c_dev_addr = demod_addr;
 	demod->my_common_attr = demod_comm_attr;
 	demod->my_i2c_dev_addr->user_data = state;
@@ -12367,7 +12375,11 @@ error:
 
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(drx39xxj_attach);
+=======
+EXPORT_SYMBOL_GPL(drx39xxj_attach);
+>>>>>>> origin/android16-base
 
 static const struct dvb_frontend_ops drx39xxj_ops = {
 	.delsys = { SYS_ATSC, SYS_DVBC_ANNEX_B },

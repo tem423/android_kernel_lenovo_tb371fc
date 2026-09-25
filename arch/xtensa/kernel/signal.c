@@ -455,7 +455,11 @@ static void do_signal(struct pt_regs *regs)
 		/* Set up the stack frame */
 		ret = setup_frame(&ksig, sigmask_to_save(), regs);
 		signal_setup_done(ret, &ksig, 0);
+<<<<<<< HEAD
 		if (current->ptrace & PT_SINGLESTEP)
+=======
+		if (test_thread_flag(TIF_SINGLESTEP))
+>>>>>>> origin/android16-base
 			task_pt_regs(current)->icountlevel = 1;
 
 		return;
@@ -481,7 +485,11 @@ static void do_signal(struct pt_regs *regs)
 	/* If there's no signal to deliver, we just restore the saved mask.  */
 	restore_saved_sigmask();
 
+<<<<<<< HEAD
 	if (current->ptrace & PT_SINGLESTEP)
+=======
+	if (test_thread_flag(TIF_SINGLESTEP))
+>>>>>>> origin/android16-base
 		task_pt_regs(current)->icountlevel = 1;
 	return;
 }

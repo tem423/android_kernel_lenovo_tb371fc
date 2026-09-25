@@ -158,6 +158,29 @@ static unsigned long kallsyms_sym_address(int idx)
 	return kallsyms_relative_base - 1 - kallsyms_offsets[idx];
 }
 
+<<<<<<< HEAD
+=======
+#if defined(CONFIG_CFI_CLANG) && defined(CONFIG_THINLTO)
+/*
+ * LLVM appends a hash to static function names when ThinLTO and CFI are
+ * both enabled, which causes confusion and potentially breaks user space
+ * tools, so we will strip the postfix from expanded symbol names.
+ */
+static inline char *cleanup_symbol_name(char *s)
+{
+	char *res = NULL;
+
+	res = strrchr(s, '$');
+	if (res)
+		*res = '\0';
+
+	return res;
+}
+#else
+static inline char *cleanup_symbol_name(char *s) { return NULL; }
+#endif
+
+>>>>>>> origin/android16-base
 /* Lookup the address for this symbol. Returns 0 if not found. */
 unsigned long kallsyms_lookup_name(const char *name)
 {
@@ -170,6 +193,12 @@ unsigned long kallsyms_lookup_name(const char *name)
 
 		if (strcmp(namebuf, name) == 0)
 			return kallsyms_sym_address(i);
+<<<<<<< HEAD
+=======
+
+		if (cleanup_symbol_name(namebuf) && strcmp(namebuf, name) == 0)
+			return kallsyms_sym_address(i);
+>>>>>>> origin/android16-base
 	}
 	return module_kallsyms_lookup_name(name);
 }
@@ -268,6 +297,7 @@ int kallsyms_lookup_size_offset(unsigned long addr, unsigned long *symbolsize,
 	       !!__bpf_address_lookup(addr, symbolsize, offset, namebuf);
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_CFI_CLANG
 /*
  * LLVM appends .cfi to function names when CONFIG_CFI_CLANG is enabled,
@@ -292,6 +322,8 @@ static inline void cleanup_symbol_name(char *s)
 static inline void cleanup_symbol_name(char *s) {}
 #endif
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Lookup an address
  * - modname is set to NULL if it's in the kernel.

@@ -1566,7 +1566,10 @@ void bgmac_enet_remove(struct bgmac *bgmac)
 	phy_disconnect(bgmac->net_dev->phydev);
 	netif_napi_del(&bgmac->napi);
 	bgmac_dma_free(bgmac);
+<<<<<<< HEAD
 	free_netdev(bgmac->net_dev);
+=======
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(bgmac_enet_remove);
 

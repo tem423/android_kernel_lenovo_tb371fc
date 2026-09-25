@@ -459,8 +459,14 @@ retry:
 		 */
 		dev->mode_config.delayed_event = true;
 		if (dev->mode_config.poll_enabled)
+<<<<<<< HEAD
 			schedule_delayed_work(&dev->mode_config.output_poll_work,
 					      0);
+=======
+			mod_delayed_work(system_wq,
+					 &dev->mode_config.output_poll_work,
+					 0);
+>>>>>>> origin/android16-base
 	}
 
 	/* Re-enable polling in case the global poll config changed. */

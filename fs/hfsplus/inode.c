@@ -187,11 +187,19 @@ static void hfsplus_get_perms(struct inode *inode,
 	mode = be16_to_cpu(perms->mode);
 
 	i_uid_write(inode, be32_to_cpu(perms->owner));
+<<<<<<< HEAD
 	if (!i_uid_read(inode) && !mode)
 		inode->i_uid = sbi->uid;
 
 	i_gid_write(inode, be32_to_cpu(perms->group));
 	if (!i_gid_read(inode) && !mode)
+=======
+	if ((test_bit(HFSPLUS_SB_UID, &sbi->flags)) || (!i_uid_read(inode) && !mode))
+		inode->i_uid = sbi->uid;
+
+	i_gid_write(inode, be32_to_cpu(perms->group));
+	if ((test_bit(HFSPLUS_SB_GID, &sbi->flags)) || (!i_gid_read(inode) && !mode))
+>>>>>>> origin/android16-base
 		inode->i_gid = sbi->gid;
 
 	if (dir) {
@@ -476,8 +484,16 @@ int hfsplus_cat_read_inode(struct inode *inode, struct hfs_find_data *fd)
 	if (type == HFSPLUS_FOLDER) {
 		struct hfsplus_cat_folder *folder = &entry.folder;
 
+<<<<<<< HEAD
 		if (fd->entrylength < sizeof(struct hfsplus_cat_folder))
 			/* panic? */;
+=======
+		if (fd->entrylength < sizeof(struct hfsplus_cat_folder)) {
+			pr_err("bad catalog folder entry\n");
+			res = -EIO;
+			goto out;
+		}
+>>>>>>> origin/android16-base
 		hfs_bnode_read(fd->bnode, &entry, fd->entryoffset,
 					sizeof(struct hfsplus_cat_folder));
 		hfsplus_get_perms(inode, &folder->permissions, 1);
@@ -497,8 +513,16 @@ int hfsplus_cat_read_inode(struct inode *inode, struct hfs_find_data *fd)
 	} else if (type == HFSPLUS_FILE) {
 		struct hfsplus_cat_file *file = &entry.file;
 
+<<<<<<< HEAD
 		if (fd->entrylength < sizeof(struct hfsplus_cat_file))
 			/* panic? */;
+=======
+		if (fd->entrylength < sizeof(struct hfsplus_cat_file)) {
+			pr_err("bad catalog file entry\n");
+			res = -EIO;
+			goto out;
+		}
+>>>>>>> origin/android16-base
 		hfs_bnode_read(fd->bnode, &entry, fd->entryoffset,
 					sizeof(struct hfsplus_cat_file));
 
@@ -529,6 +553,10 @@ int hfsplus_cat_read_inode(struct inode *inode, struct hfs_find_data *fd)
 		pr_err("bad catalog entry used to create inode\n");
 		res = -EIO;
 	}
+<<<<<<< HEAD
+=======
+out:
+>>>>>>> origin/android16-base
 	return res;
 }
 
@@ -537,6 +565,10 @@ int hfsplus_cat_write_inode(struct inode *inode)
 	struct inode *main_inode = inode;
 	struct hfs_find_data fd;
 	hfsplus_cat_entry entry;
+<<<<<<< HEAD
+=======
+	int res = 0;
+>>>>>>> origin/android16-base
 
 	if (HFSPLUS_IS_RSRC(inode))
 		main_inode = HFSPLUS_I(inode)->rsrc_inode;
@@ -555,8 +587,16 @@ int hfsplus_cat_write_inode(struct inode *inode)
 	if (S_ISDIR(main_inode->i_mode)) {
 		struct hfsplus_cat_folder *folder = &entry.folder;
 
+<<<<<<< HEAD
 		if (fd.entrylength < sizeof(struct hfsplus_cat_folder))
 			/* panic? */;
+=======
+		if (fd.entrylength < sizeof(struct hfsplus_cat_folder)) {
+			pr_err("bad catalog folder entry\n");
+			res = -EIO;
+			goto out;
+		}
+>>>>>>> origin/android16-base
 		hfs_bnode_read(fd.bnode, &entry, fd.entryoffset,
 					sizeof(struct hfsplus_cat_folder));
 		/* simple node checks? */
@@ -581,8 +621,16 @@ int hfsplus_cat_write_inode(struct inode *inode)
 	} else {
 		struct hfsplus_cat_file *file = &entry.file;
 
+<<<<<<< HEAD
 		if (fd.entrylength < sizeof(struct hfsplus_cat_file))
 			/* panic? */;
+=======
+		if (fd.entrylength < sizeof(struct hfsplus_cat_file)) {
+			pr_err("bad catalog file entry\n");
+			res = -EIO;
+			goto out;
+		}
+>>>>>>> origin/android16-base
 		hfs_bnode_read(fd.bnode, &entry, fd.entryoffset,
 					sizeof(struct hfsplus_cat_file));
 		hfsplus_inode_write_fork(inode, &file->data_fork);
@@ -603,5 +651,9 @@ int hfsplus_cat_write_inode(struct inode *inode)
 	set_bit(HFSPLUS_I_CAT_DIRTY, &HFSPLUS_I(inode)->flags);
 out:
 	hfs_find_exit(&fd);
+<<<<<<< HEAD
 	return 0;
+=======
+	return res;
+>>>>>>> origin/android16-base
 }

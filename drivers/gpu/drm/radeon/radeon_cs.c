@@ -265,7 +265,12 @@ int radeon_cs_parser_init(struct radeon_cs_parser *p, void *data)
 {
 	struct drm_radeon_cs *cs = data;
 	uint64_t *chunk_array_ptr;
+<<<<<<< HEAD
 	unsigned size, i;
+=======
+	u64 size;
+	unsigned i;
+>>>>>>> origin/android16-base
 	u32 ring = RADEON_CS_RING_GFX;
 	s32 priority = 0;
 

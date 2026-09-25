@@ -183,6 +183,10 @@ static void cros_ec_keyb_process(struct cros_ec_keyb *ckdev,
 					"changed: [r%d c%d]: byte %02x\n",
 					row, col, new_state);
 
+<<<<<<< HEAD
+=======
+				input_event(idev, EV_MSC, MSC_SCAN, pos);
+>>>>>>> origin/android16-base
 				input_report_key(idev, keycodes[pos],
 						 new_state);
 			}

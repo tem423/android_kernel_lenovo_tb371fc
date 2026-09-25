@@ -144,9 +144,14 @@ struct dino_device
 {
 	struct pci_hba_data	hba;	/* 'C' inheritance - must be first */
 	spinlock_t		dinosaur_pen;
+<<<<<<< HEAD
 	unsigned long		txn_addr; /* EIR addr to generate interrupt */ 
 	u32			txn_data; /* EIR data assign to each dino */ 
 	u32 			imr;	  /* IRQ's which are enabled */ 
+=======
+	u32 			imr;	  /* IRQ's which are enabled */ 
+	struct gsc_irq		gsc_irq;
+>>>>>>> origin/android16-base
 	int			global_irq[DINO_LOCAL_IRQS]; /* map IMR bit to global irq */
 #ifdef DINO_DEBUG
 	unsigned int		dino_irr0; /* save most recent IRQ line stat */
@@ -160,6 +165,7 @@ struct dino_device
 	(struct dino_device *)__pdata; })
 
 
+<<<<<<< HEAD
 /* Check if PCI device is behind a Card-mode Dino. */
 static int pci_dev_is_behind_card_dino(struct pci_dev *dev)
 {
@@ -169,6 +175,8 @@ static int pci_dev_is_behind_card_dino(struct pci_dev *dev)
 	return is_card_dino(&dino_dev->hba.dev->id);
 }
 
+=======
+>>>>>>> origin/android16-base
 /*
  * Dino Configuration Space Accessor Functions
  */
@@ -352,14 +360,53 @@ static void dino_unmask_irq(struct irq_data *d)
 	if (tmp & DINO_MASK_IRQ(local_irq)) {
 		DBG(KERN_WARNING "%s(): IRQ asserted! (ILR 0x%x)\n",
 				__func__, tmp);
+<<<<<<< HEAD
 		gsc_writel(dino_dev->txn_data, dino_dev->txn_addr);
 	}
 }
 
+=======
+		gsc_writel(dino_dev->gsc_irq.txn_data, dino_dev->gsc_irq.txn_addr);
+	}
+}
+
+#ifdef CONFIG_SMP
+static int dino_set_affinity_irq(struct irq_data *d, const struct cpumask *dest,
+				bool force)
+{
+	struct dino_device *dino_dev = irq_data_get_irq_chip_data(d);
+	struct cpumask tmask;
+	int cpu_irq;
+	u32 eim;
+
+	if (!cpumask_and(&tmask, dest, cpu_online_mask))
+		return -EINVAL;
+
+	cpu_irq = cpu_check_affinity(d, &tmask);
+	if (cpu_irq < 0)
+		return cpu_irq;
+
+	dino_dev->gsc_irq.txn_addr = txn_affinity_addr(d->irq, cpu_irq);
+	eim = ((u32) dino_dev->gsc_irq.txn_addr) | dino_dev->gsc_irq.txn_data;
+	__raw_writel(eim, dino_dev->hba.base_addr+DINO_IAR0);
+
+	irq_data_update_effective_affinity(d, &tmask);
+
+	return IRQ_SET_MASK_OK;
+}
+#endif
+
+>>>>>>> origin/android16-base
 static struct irq_chip dino_interrupt_type = {
 	.name		= "GSC-PCI",
 	.irq_unmask	= dino_unmask_irq,
 	.irq_mask	= dino_mask_irq,
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_SMP
+	.irq_set_affinity = dino_set_affinity_irq,
+#endif
+>>>>>>> origin/android16-base
 };
 
 
@@ -452,6 +499,18 @@ static void quirk_cirrus_cardbus(struct pci_dev *dev)
 DECLARE_PCI_FIXUP_ENABLE(PCI_VENDOR_ID_CIRRUS, PCI_DEVICE_ID_CIRRUS_6832, quirk_cirrus_cardbus );
 
 #ifdef CONFIG_TULIP
+<<<<<<< HEAD
+=======
+/* Check if PCI device is behind a Card-mode Dino. */
+static int pci_dev_is_behind_card_dino(struct pci_dev *dev)
+{
+	struct dino_device *dino_dev;
+
+	dino_dev = DINO_DEV(parisc_walk_tree(dev->bus->bridge));
+	return is_card_dino(&dino_dev->hba.dev->id);
+}
+
+>>>>>>> origin/android16-base
 static void pci_fixup_tulip(struct pci_dev *dev)
 {
 	if (!pci_dev_is_behind_card_dino(dev))
@@ -811,7 +870,10 @@ static int __init dino_common_init(struct parisc_device *dev,
 {
 	int status;
 	u32 eim;
+<<<<<<< HEAD
 	struct gsc_irq gsc_irq;
+=======
+>>>>>>> origin/android16-base
 	struct resource *res;
 
 	pcibios_register_hba(&dino_dev->hba);
@@ -826,10 +888,15 @@ static int __init dino_common_init(struct parisc_device *dev,
 	**   still only has 11 IRQ input lines - just map some of them
 	**   to a different processor.
 	*/
+<<<<<<< HEAD
 	dev->irq = gsc_alloc_irq(&gsc_irq);
 	dino_dev->txn_addr = gsc_irq.txn_addr;
 	dino_dev->txn_data = gsc_irq.txn_data;
 	eim = ((u32) gsc_irq.txn_addr) | gsc_irq.txn_data;
+=======
+	dev->irq = gsc_alloc_irq(&dino_dev->gsc_irq);
+	eim = ((u32) dino_dev->gsc_irq.txn_addr) | dino_dev->gsc_irq.txn_data;
+>>>>>>> origin/android16-base
 
 	/* 
 	** Dino needs a PA "IRQ" to get a processor's attention.

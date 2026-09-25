@@ -488,13 +488,20 @@ next2:
 			break;
 	}
 out:
+<<<<<<< HEAD
+=======
+	btrfs_free_path(path);
+>>>>>>> origin/android16-base
 	fs_info->qgroup_flags |= flags;
 	if (!(fs_info->qgroup_flags & BTRFS_QGROUP_STATUS_FLAG_ON))
 		clear_bit(BTRFS_FS_QUOTA_ENABLED, &fs_info->flags);
 	else if (fs_info->qgroup_flags & BTRFS_QGROUP_STATUS_FLAG_RESCAN &&
 		 ret >= 0)
 		ret = qgroup_rescan_init(fs_info, rescan_progress, 0);
+<<<<<<< HEAD
 	btrfs_free_path(path);
+=======
+>>>>>>> origin/android16-base
 
 	if (ret < 0) {
 		ulist_free(fs_info->qgroup_ulist);
@@ -1035,6 +1042,24 @@ out_add_root:
 		fs_info->qgroup_rescan_running = true;
 	        btrfs_queue_work(fs_info->qgroup_rescan_workers,
 	                         &fs_info->qgroup_rescan_work);
+<<<<<<< HEAD
+=======
+	} else {
+		/*
+		 * We have set both BTRFS_FS_QUOTA_ENABLED and
+		 * BTRFS_QGROUP_STATUS_FLAG_ON, so we can only fail with
+		 * -EINPROGRESS. That can happen because someone started the
+		 * rescan worker by calling quota rescan ioctl before we
+		 * attempted to initialize the rescan worker. Failure due to
+		 * quotas disabled in the meanwhile is not possible, because
+		 * we are holding a write lock on fs_info->subvol_sem, which
+		 * is also acquired when disabling quotas.
+		 * Ignore such error, and any other error would need to undo
+		 * everything we did in the transaction we just committed.
+		 */
+		ASSERT(ret == -EINPROGRESS);
+		ret = 0;
+>>>>>>> origin/android16-base
 	}
 
 out_free_path:
@@ -1100,7 +1125,13 @@ int btrfs_quota_disable(struct btrfs_fs_info *fs_info)
 		goto end_trans;
 	}
 
+<<<<<<< HEAD
 	list_del(&quota_root->dirty_list);
+=======
+	spin_lock(&fs_info->trans_lock);
+	list_del(&quota_root->dirty_list);
+	spin_unlock(&fs_info->trans_lock);
+>>>>>>> origin/android16-base
 
 	btrfs_tree_lock(quota_root->node);
 	clean_tree_block(fs_info, quota_root->node);
@@ -2078,8 +2109,11 @@ int btrfs_qgroup_account_extent(struct btrfs_trans_handle *trans, u64 bytenr,
 	if (nr_old_roots == 0 && nr_new_roots == 0)
 		goto out_free;
 
+<<<<<<< HEAD
 	BUG_ON(!fs_info->quota_root);
 
+=======
+>>>>>>> origin/android16-base
 	trace_btrfs_qgroup_account_extent(fs_info, trans->transid, bytenr,
 					num_bytes, nr_old_roots, nr_new_roots);
 
@@ -2353,6 +2387,7 @@ int btrfs_qgroup_inherit(struct btrfs_trans_handle *trans, u64 srcid,
 		dstgroup->rsv_rfer = inherit->lim.rsv_rfer;
 		dstgroup->rsv_excl = inherit->lim.rsv_excl;
 
+<<<<<<< HEAD
 		ret = update_qgroup_limit_item(trans, dstgroup);
 		if (ret) {
 			fs_info->qgroup_flags |= BTRFS_QGROUP_STATUS_FLAG_INCONSISTENT;
@@ -2361,6 +2396,9 @@ int btrfs_qgroup_inherit(struct btrfs_trans_handle *trans, u64 srcid,
 				   dstgroup->qgroupid);
 			goto unlock;
 		}
+=======
+		qgroup_dirty(fs_info, dstgroup);
+>>>>>>> origin/android16-base
 	}
 
 	if (srcid) {
@@ -2774,6 +2812,15 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+static bool rescan_should_stop(struct btrfs_fs_info *fs_info)
+{
+	return btrfs_fs_closing(fs_info) ||
+		test_bit(BTRFS_FS_STATE_REMOUNTING, &fs_info->fs_state);
+}
+
+>>>>>>> origin/android16-base
 static void btrfs_qgroup_rescan_worker(struct btrfs_work *work)
 {
 	struct btrfs_fs_info *fs_info = container_of(work, struct btrfs_fs_info,
@@ -2782,6 +2829,10 @@ static void btrfs_qgroup_rescan_worker(struct btrfs_work *work)
 	struct btrfs_trans_handle *trans = NULL;
 	int err = -ENOMEM;
 	int ret = 0;
+<<<<<<< HEAD
+=======
+	bool stopped = false;
+>>>>>>> origin/android16-base
 
 	path = btrfs_alloc_path();
 	if (!path)
@@ -2794,7 +2845,11 @@ static void btrfs_qgroup_rescan_worker(struct btrfs_work *work)
 	path->skip_locking = 1;
 
 	err = 0;
+<<<<<<< HEAD
 	while (!err && !btrfs_fs_closing(fs_info)) {
+=======
+	while (!err && !(stopped = rescan_should_stop(fs_info))) {
+>>>>>>> origin/android16-base
 		trans = btrfs_start_transaction(fs_info->fs_root, 0);
 		if (IS_ERR(trans)) {
 			err = PTR_ERR(trans);
@@ -2837,7 +2892,11 @@ out:
 	}
 
 	mutex_lock(&fs_info->qgroup_rescan_lock);
+<<<<<<< HEAD
 	if (!btrfs_fs_closing(fs_info))
+=======
+	if (!stopped)
+>>>>>>> origin/android16-base
 		fs_info->qgroup_flags &= ~BTRFS_QGROUP_STATUS_FLAG_RESCAN;
 	if (trans) {
 		ret = update_qgroup_status_item(trans);
@@ -2856,7 +2915,11 @@ out:
 
 	btrfs_end_transaction(trans);
 
+<<<<<<< HEAD
 	if (btrfs_fs_closing(fs_info)) {
+=======
+	if (stopped) {
+>>>>>>> origin/android16-base
 		btrfs_info(fs_info, "qgroup scan paused");
 	} else if (err >= 0) {
 		btrfs_info(fs_info, "qgroup scan completed%s",

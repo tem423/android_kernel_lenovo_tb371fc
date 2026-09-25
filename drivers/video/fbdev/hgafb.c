@@ -286,7 +286,11 @@ static int hga_card_detect(void)
 
 	hga_vram = ioremap(0xb0000, hga_vram_len);
 	if (!hga_vram)
+<<<<<<< HEAD
 		goto error;
+=======
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 
 	if (request_region(0x3b0, 12, "hgafb"))
 		release_io_ports = 1;
@@ -346,13 +350,26 @@ static int hga_card_detect(void)
 			hga_type_name = "Hercules";
 			break;
 	}
+<<<<<<< HEAD
 	return 1;
+=======
+	return 0;
+>>>>>>> origin/android16-base
 error:
 	if (release_io_ports)
 		release_region(0x3b0, 12);
 	if (release_io_port)
 		release_region(0x3bf, 1);
+<<<<<<< HEAD
 	return 0;
+=======
+
+	iounmap(hga_vram);
+
+	pr_err("hgafb: HGA card not detected.\n");
+
+	return -EINVAL;
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -550,6 +567,7 @@ static struct fb_ops hgafb_ops = {
 static int hgafb_probe(struct platform_device *pdev)
 {
 	struct fb_info *info;
+<<<<<<< HEAD
 
 	if (! hga_card_detect()) {
 		printk(KERN_INFO "hgafb: HGA card not detected.\n");
@@ -557,6 +575,13 @@ static int hgafb_probe(struct platform_device *pdev)
 			iounmap(hga_vram);
 		return -EINVAL;
 	}
+=======
+	int ret;
+
+	ret = hga_card_detect();
+	if (ret)
+		return ret;
+>>>>>>> origin/android16-base
 
 	printk(KERN_INFO "hgafb: %s with %ldK of memory detected.\n",
 		hga_type_name, hga_vram_len/1024);

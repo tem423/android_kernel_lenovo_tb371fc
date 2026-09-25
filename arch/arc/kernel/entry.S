@@ -169,7 +169,11 @@ tracesys:
 
 	; Do the Sys Call as we normally would.
 	; Validate the Sys Call number
+<<<<<<< HEAD
 	cmp     r8,  NR_syscalls
+=======
+	cmp     r8,  NR_syscalls - 1
+>>>>>>> origin/android16-base
 	mov.hi  r0, -ENOSYS
 	bhi     tracesys_exit
 
@@ -191,6 +195,10 @@ tracesys_exit:
 	st  r0, [sp, PT_r0]     ; sys call return value in pt_regs
 
 	;POST Sys Call Ptrace Hook
+<<<<<<< HEAD
+=======
+	mov r0, sp		; pt_regs needed
+>>>>>>> origin/android16-base
 	bl  @syscall_trace_exit
 	b   ret_from_exception ; NOT ret_from_system_call at is saves r0 which
 	; we'd done before calling post hook above
@@ -252,7 +260,11 @@ ENTRY(EV_Trap)
 	;============ Normal syscall case
 
 	; syscall num shd not exceed the total system calls avail
+<<<<<<< HEAD
 	cmp     r8,  NR_syscalls
+=======
+	cmp     r8,  NR_syscalls - 1
+>>>>>>> origin/android16-base
 	mov.hi  r0, -ENOSYS
 	bhi     .Lret_from_system_call
 

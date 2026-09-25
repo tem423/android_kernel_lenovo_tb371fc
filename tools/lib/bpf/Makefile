@@ -179,7 +179,11 @@ define do_install
 	if [ ! -d '$(DESTDIR_SQ)$2' ]; then		\
 		$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$2';	\
 	fi;						\
+<<<<<<< HEAD
 	$(INSTALL) $1 $(if $3,-m $3,) '$(DESTDIR_SQ)$2'
+=======
+	$(INSTALL) $(if $3,-m $3,) $1 '$(DESTDIR_SQ)$2'
+>>>>>>> origin/android16-base
 endef
 
 install_lib: all_cmd

@@ -198,7 +198,13 @@ static int ax88172a_bind(struct usbnet *dev, struct usb_interface *intf)
 	u8 buf[ETH_ALEN];
 	struct ax88172a_private *priv;
 
+<<<<<<< HEAD
 	usbnet_get_endpoints(dev, intf);
+=======
+	ret = usbnet_get_endpoints(dev, intf);
+	if (ret)
+		return ret;
+>>>>>>> origin/android16-base
 
 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
 	if (!priv)

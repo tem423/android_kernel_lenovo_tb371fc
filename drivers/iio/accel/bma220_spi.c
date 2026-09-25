@@ -76,7 +76,15 @@ static const int bma220_scale_table[][4] = {
 struct bma220_data {
 	struct spi_device *spi_device;
 	struct mutex lock;
+<<<<<<< HEAD
 	s8 buffer[16]; /* 3x8-bit channels + 5x8 padding + 8x8 timestamp */
+=======
+	struct {
+		s8 chans[3];
+		/* Ensure timestamp is naturally aligned. */
+		s64 timestamp __aligned(8);
+	} scan;
+>>>>>>> origin/android16-base
 	u8 tx_buf[2] ____cacheline_aligned;
 };
 
@@ -107,12 +115,20 @@ static irqreturn_t bma220_trigger_handler(int irq, void *p)
 
 	mutex_lock(&data->lock);
 	data->tx_buf[0] = BMA220_REG_ACCEL_X | BMA220_READ_MASK;
+<<<<<<< HEAD
 	ret = spi_write_then_read(spi, data->tx_buf, 1, data->buffer,
+=======
+	ret = spi_write_then_read(spi, data->tx_buf, 1, &data->scan.chans,
+>>>>>>> origin/android16-base
 				  ARRAY_SIZE(bma220_channels) - 1);
 	if (ret < 0)
 		goto err;
 
+<<<<<<< HEAD
 	iio_push_to_buffers_with_timestamp(indio_dev, data->buffer,
+=======
+	iio_push_to_buffers_with_timestamp(indio_dev, &data->scan,
+>>>>>>> origin/android16-base
 					   pf->timestamp);
 err:
 	mutex_unlock(&data->lock);

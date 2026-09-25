@@ -1118,8 +1118,14 @@ out5:
 	if (host->platdata && host->platdata->cd_setup &&
 	    !(mmc->caps & MMC_CAP_NEEDS_POLL))
 		host->platdata->cd_setup(mmc, 0);
+<<<<<<< HEAD
 out_clk:
 	clk_disable_unprepare(host->clk);
+=======
+
+	clk_disable_unprepare(host->clk);
+out_clk:
+>>>>>>> origin/android16-base
 	clk_put(host->clk);
 out_irq:
 	free_irq(host->irq, host);

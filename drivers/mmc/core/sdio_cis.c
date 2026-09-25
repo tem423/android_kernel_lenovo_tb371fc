@@ -24,6 +24,11 @@
 #include "sdio_cis.h"
 #include "sdio_ops.h"
 
+<<<<<<< HEAD
+=======
+#define SDIO_READ_CIS_TIMEOUT_MS  (10 * 1000) /* 10s */
+
+>>>>>>> origin/android16-base
 static int cistpl_vers_1(struct mmc_card *card, struct sdio_func *func,
 			 const unsigned char *buf, unsigned size)
 {
@@ -271,6 +276,11 @@ static int sdio_read_cis(struct mmc_card *card, struct sdio_func *func)
 
 	do {
 		unsigned char tpl_code, tpl_link;
+<<<<<<< HEAD
+=======
+		unsigned long timeout = jiffies +
+			msecs_to_jiffies(SDIO_READ_CIS_TIMEOUT_MS);
+>>>>>>> origin/android16-base
 
 		ret = mmc_io_rw_direct(card, 0, 0, ptr++, 0, &tpl_code);
 		if (ret)
@@ -329,6 +339,11 @@ static int sdio_read_cis(struct mmc_card *card, struct sdio_func *func)
 			prev = &this->next;
 
 			if (ret == -ENOENT) {
+<<<<<<< HEAD
+=======
+				if (time_after(jiffies, timeout))
+					break;
+>>>>>>> origin/android16-base
 				/* warn about unknown tuples */
 				pr_warn_ratelimited("%s: queuing unknown"
 				       " CIS tuple 0x%02x (%u bytes)\n",
@@ -389,12 +404,15 @@ int sdio_read_func_cis(struct sdio_func *func)
 		return ret;
 
 	/*
+<<<<<<< HEAD
 	 * Since we've linked to tuples in the card structure,
 	 * we must make sure we have a reference to it.
 	 */
 	get_device(&func->card->dev);
 
 	/*
+=======
+>>>>>>> origin/android16-base
 	 * Vendor/device id is optional for function CIS, so
 	 * copy it from the card structure as needed.
 	 */
@@ -419,11 +437,14 @@ void sdio_free_func_cis(struct sdio_func *func)
 	}
 
 	func->tuples = NULL;
+<<<<<<< HEAD
 
 	/*
 	 * We have now removed the link to the tuples in the
 	 * card structure, so remove the reference.
 	 */
 	put_device(&func->card->dev);
+=======
+>>>>>>> origin/android16-base
 }
 

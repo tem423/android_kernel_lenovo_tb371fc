@@ -725,6 +725,7 @@ static void dasd_profile_start(struct dasd_block *block,
 	 * we count each request only once.
 	 */
 	device = cqr->startdev;
+<<<<<<< HEAD
 	if (device->profile.data) {
 		counter = 1; /* request is not yet queued on the start device */
 		list_for_each(l, &device->ccw_queue)
@@ -737,6 +738,22 @@ static void dasd_profile_start(struct dasd_block *block,
 		if (rq_data_dir(req) == READ)
 			device->profile.data->dasd_read_nr_req[counter]++;
 	}
+=======
+	if (!device->profile.data)
+		return;
+
+	spin_lock(get_ccwdev_lock(device->cdev));
+	counter = 1; /* request is not yet queued on the start device */
+	list_for_each(l, &device->ccw_queue)
+		if (++counter >= 31)
+			break;
+	spin_unlock(get_ccwdev_lock(device->cdev));
+
+	spin_lock(&device->profile.lock);
+	device->profile.data->dasd_io_nr_req[counter]++;
+	if (rq_data_dir(req) == READ)
+		device->profile.data->dasd_read_nr_req[counter]++;
+>>>>>>> origin/android16-base
 	spin_unlock(&device->profile.lock);
 }
 
@@ -2826,6 +2843,7 @@ static void _dasd_wake_block_flush_cb(struct dasd_ccw_req *cqr, void *data)
  * Requeue a request back to the block request queue
  * only works for block requests
  */
+<<<<<<< HEAD
 static int _dasd_requeue_request(struct dasd_ccw_req *cqr)
 {
 	struct dasd_block *block = cqr->block;
@@ -2855,6 +2873,34 @@ static int dasd_flush_block_queue(struct dasd_block *block)
 
 	INIT_LIST_HEAD(&flush_queue);
 	spin_lock_bh(&block->queue_lock);
+=======
+static void _dasd_requeue_request(struct dasd_ccw_req *cqr)
+{
+	struct request *req;
+
+	/*
+	 * If the request is an ERP request there is nothing to requeue.
+	 * This will be done with the remaining original request.
+	 */
+	if (cqr->refers)
+		return;
+	spin_lock_irq(&cqr->dq->lock);
+	req = (struct request *) cqr->callback_data;
+	blk_mq_requeue_request(req, true);
+	spin_unlock_irq(&cqr->dq->lock);
+
+	return;
+}
+
+static int _dasd_requests_to_flushqueue(struct dasd_block *block,
+					struct list_head *flush_queue)
+{
+	struct dasd_ccw_req *cqr, *n;
+	unsigned long flags;
+	int rc, i;
+
+	spin_lock_irqsave(&block->queue_lock, flags);
+>>>>>>> origin/android16-base
 	rc = 0;
 restart:
 	list_for_each_entry_safe(cqr, n, &block->ccw_queue, blocklist) {
@@ -2869,13 +2915,41 @@ restart:
 		 * is returned from the dasd_device layer.
 		 */
 		cqr->callback = _dasd_wake_block_flush_cb;
+<<<<<<< HEAD
 		for (i = 0; cqr != NULL; cqr = cqr->refers, i++)
 			list_move_tail(&cqr->blocklist, &flush_queue);
+=======
+		for (i = 0; cqr; cqr = cqr->refers, i++)
+			list_move_tail(&cqr->blocklist, flush_queue);
+>>>>>>> origin/android16-base
 		if (i > 1)
 			/* moved more than one request - need to restart */
 			goto restart;
 	}
+<<<<<<< HEAD
 	spin_unlock_bh(&block->queue_lock);
+=======
+	spin_unlock_irqrestore(&block->queue_lock, flags);
+
+	return rc;
+}
+
+/*
+ * Go through all request on the dasd_block request queue, cancel them
+ * on the respective dasd_device, and return them to the generic
+ * block layer.
+ */
+static int dasd_flush_block_queue(struct dasd_block *block)
+{
+	struct dasd_ccw_req *cqr, *n;
+	struct list_head flush_queue;
+	unsigned long flags;
+	int rc;
+
+	INIT_LIST_HEAD(&flush_queue);
+	rc = _dasd_requests_to_flushqueue(block, &flush_queue);
+
+>>>>>>> origin/android16-base
 	/* Now call the callback function of flushed requests */
 restart_cb:
 	list_for_each_entry_safe(cqr, n, &flush_queue, blocklist) {
@@ -2934,7 +3008,12 @@ static blk_status_t do_dasd_request(struct blk_mq_hw_ctx *hctx,
 
 	basedev = block->base;
 	spin_lock_irq(&dq->lock);
+<<<<<<< HEAD
 	if (basedev->state < DASD_STATE_READY) {
+=======
+	if (basedev->state < DASD_STATE_READY ||
+	    test_bit(DASD_FLAG_OFFLINE, &basedev->flags)) {
+>>>>>>> origin/android16-base
 		DBF_DEV_EVENT(DBF_ERR, basedev,
 			      "device not ready for request %p", req);
 		rc = BLK_STS_IOERR;
@@ -3420,8 +3499,11 @@ void dasd_generic_remove(struct ccw_device *cdev)
 	struct dasd_device *device;
 	struct dasd_block *block;
 
+<<<<<<< HEAD
 	cdev->handler = NULL;
 
+=======
+>>>>>>> origin/android16-base
 	device = dasd_device_from_cdev(cdev);
 	if (IS_ERR(device)) {
 		dasd_remove_sysfs_files(cdev);
@@ -3440,6 +3522,10 @@ void dasd_generic_remove(struct ccw_device *cdev)
 	 * no quite down yet.
 	 */
 	dasd_set_target_state(device, DASD_STATE_NEW);
+<<<<<<< HEAD
+=======
+	cdev->handler = NULL;
+>>>>>>> origin/android16-base
 	/* dasd_delete_device destroys the device reference. */
 	block = device->block;
 	dasd_delete_device(device);
@@ -3826,6 +3912,7 @@ EXPORT_SYMBOL_GPL(dasd_generic_verify_path);
  */
 static int dasd_generic_requeue_all_requests(struct dasd_device *device)
 {
+<<<<<<< HEAD
 	struct list_head requeue_queue;
 	struct dasd_ccw_req *cqr, *n;
 	struct dasd_ccw_req *refers;
@@ -3880,10 +3967,39 @@ static int dasd_generic_requeue_all_requests(struct dasd_device *device)
 		 * all erp requests (cqr->refers) have a cqr->block
 		 * pointer copy from the original cqr
 		 */
+=======
+	struct dasd_block *block = device->block;
+	struct list_head requeue_queue;
+	struct dasd_ccw_req *cqr, *n;
+	int rc;
+
+	if (!block)
+		return 0;
+
+	INIT_LIST_HEAD(&requeue_queue);
+	rc = _dasd_requests_to_flushqueue(block, &requeue_queue);
+
+	/* Now call the callback function of flushed requests */
+restart_cb:
+	list_for_each_entry_safe(cqr, n, &requeue_queue, blocklist) {
+		wait_event(dasd_flush_wq, (cqr->status < DASD_CQR_QUEUED));
+		/* Process finished ERP request. */
+		if (cqr->refers) {
+			spin_lock_bh(&block->queue_lock);
+			__dasd_process_erp(block->base, cqr);
+			spin_unlock_bh(&block->queue_lock);
+			/* restart list_for_xx loop since dasd_process_erp
+			 * might remove multiple elements
+			 */
+			goto restart_cb;
+		}
+		_dasd_requeue_request(cqr);
+>>>>>>> origin/android16-base
 		list_del_init(&cqr->blocklist);
 		cqr->block->base->discipline->free_cp(
 			cqr, (struct request *) cqr->callback_data);
 	}
+<<<<<<< HEAD
 
 	/*
 	 * if requests remain then they are internal request
@@ -3895,6 +4011,8 @@ static int dasd_generic_requeue_all_requests(struct dasd_device *device)
 		list_splice_tail(&requeue_queue, &device->ccw_queue);
 		spin_unlock_irq(get_ccwdev_lock(device->cdev));
 	}
+=======
+>>>>>>> origin/android16-base
 	dasd_schedule_device_bh(device);
 	return rc;
 }

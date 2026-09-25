@@ -247,7 +247,11 @@ static int __init oxnas_rps_timer_init(struct device_node *np)
 	}
 
 	rps->irq = irq_of_parse_and_map(np, 0);
+<<<<<<< HEAD
 	if (rps->irq < 0) {
+=======
+	if (!rps->irq) {
+>>>>>>> origin/android16-base
 		ret = -EINVAL;
 		goto err_iomap;
 	}

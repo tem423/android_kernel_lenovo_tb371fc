@@ -67,20 +67,42 @@ int nilfs_bmap_lookup_at_level(struct nilfs_bmap *bmap, __u64 key, int level,
 
 	down_read(&bmap->b_sem);
 	ret = bmap->b_ops->bop_lookup(bmap, key, level, ptrp);
+<<<<<<< HEAD
 	if (ret < 0) {
 		ret = nilfs_bmap_convert_error(bmap, __func__, ret);
 		goto out;
 	}
+=======
+	if (ret < 0)
+		goto out;
+
+>>>>>>> origin/android16-base
 	if (NILFS_BMAP_USE_VBN(bmap)) {
 		ret = nilfs_dat_translate(nilfs_bmap_get_dat(bmap), *ptrp,
 					  &blocknr);
 		if (!ret)
 			*ptrp = blocknr;
+<<<<<<< HEAD
+=======
+		else if (ret == -ENOENT) {
+			/*
+			 * If there was no valid entry in DAT for the block
+			 * address obtained by b_ops->bop_lookup, then pass
+			 * internal code -EINVAL to nilfs_bmap_convert_error
+			 * to treat it as metadata corruption.
+			 */
+			ret = -EINVAL;
+		}
+>>>>>>> origin/android16-base
 	}
 
  out:
 	up_read(&bmap->b_sem);
+<<<<<<< HEAD
 	return ret;
+=======
+	return nilfs_bmap_convert_error(bmap, __func__, ret);
+>>>>>>> origin/android16-base
 }
 
 int nilfs_bmap_lookup_contig(struct nilfs_bmap *bmap, __u64 key, __u64 *ptrp,

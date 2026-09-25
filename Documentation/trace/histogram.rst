@@ -39,7 +39,11 @@ Documentation written by Tom Zanussi
   will use the event's kernel stacktrace as the key.  The keywords
   'keys' or 'key' can be used to specify keys, and the keywords
   'values', 'vals', or 'val' can be used to specify values.  Compound
+<<<<<<< HEAD
   keys consisting of up to two fields can be specified by the 'keys'
+=======
+  keys consisting of up to three fields can be specified by the 'keys'
+>>>>>>> origin/android16-base
   keyword.  Hashing a compound key produces a unique entry in the
   table for each unique combination of component keys, and can be
   useful for providing more fine-grained summaries of event data.
@@ -191,7 +195,11 @@ Documentation written by Tom Zanussi
                                 with the event, in nanoseconds.  May be
 			        modified by .usecs to have timestamps
 			        interpreted as microseconds.
+<<<<<<< HEAD
     cpu                    int  the cpu on which the event occurred.
+=======
+    common_cpu             int  the cpu on which the event occurred.
+>>>>>>> origin/android16-base
     ====================== ==== =======================================
 
 Extended error information

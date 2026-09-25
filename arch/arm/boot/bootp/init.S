@@ -16,7 +16,11 @@
  *  size immediately following the kernel, we could build this into
  *  a binary blob, and concatenate the zImage using the cat command.
  */
+<<<<<<< HEAD
 		.section .start,#alloc,#execinstr
+=======
+		.section .start, "ax"
+>>>>>>> origin/android16-base
 		.type	_start, #function
 		.globl	_start
 

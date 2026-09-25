@@ -380,9 +380,15 @@ static int copy_stack_state(struct bpf_func_state *dst,
 /* do_check() starts with zero-sized stack in struct bpf_verifier_state to
  * make it consume minimal amount of memory. check_stack_write() access from
  * the program calls into realloc_func_state() to grow the stack size.
+<<<<<<< HEAD
  * Note there is a non-zero 'parent' pointer inside bpf_verifier_state
  * which this function copies over. It points to previous bpf_verifier_state
  * which is never reallocated
+=======
+ * Note there is a non-zero parent pointer inside each reg of bpf_verifier_state
+ * which this function copies over. It points to corresponding reg in previous
+ * bpf_verifier_state which is never reallocated
+>>>>>>> origin/android16-base
  */
 static int realloc_func_state(struct bpf_func_state *state, int size,
 			      bool copy_old)
@@ -467,7 +473,10 @@ static int copy_verifier_state(struct bpf_verifier_state *dst_state,
 	}
 	dst_state->speculative = src->speculative;
 	dst_state->curframe = src->curframe;
+<<<<<<< HEAD
 	dst_state->parent = src->parent;
+=======
+>>>>>>> origin/android16-base
 	for (i = 0; i <= src->curframe; i++) {
 		dst = dst_state->frame[i];
 		if (!dst) {
@@ -739,6 +748,10 @@ static void init_reg_state(struct bpf_verifier_env *env,
 	for (i = 0; i < MAX_BPF_REG; i++) {
 		mark_reg_not_init(env, regs, i);
 		regs[i].live = REG_LIVE_NONE;
+<<<<<<< HEAD
+=======
+		regs[i].parent = NULL;
+>>>>>>> origin/android16-base
 	}
 
 	/* frame pointer */
@@ -883,6 +896,7 @@ next:
 	return 0;
 }
 
+<<<<<<< HEAD
 static
 struct bpf_verifier_state *skip_callee(struct bpf_verifier_env *env,
 				       const struct bpf_verifier_state *state,
@@ -951,6 +965,23 @@ static int mark_reg_read(struct bpf_verifier_env *env,
 			return -EFAULT;
 		/* ... then we depend on parent's value */
 		parent->frame[parent->curframe]->regs[regno].live |= REG_LIVE_READ;
+=======
+/* Parentage chain of this register (or stack slot) should take care of all
+ * issues like callee-saved registers, stack slot allocation time, etc.
+ */
+static int mark_reg_read(struct bpf_verifier_env *env,
+			 const struct bpf_reg_state *state,
+			 struct bpf_reg_state *parent)
+{
+	bool writes = parent == state->parent; /* Observe write marks */
+
+	while (parent) {
+		/* if read wasn't screened by an earlier write ... */
+		if (writes && state->live & REG_LIVE_WRITTEN)
+			break;
+		/* ... then we depend on parent's value */
+		parent->live |= REG_LIVE_READ;
+>>>>>>> origin/android16-base
 		state = parent;
 		parent = state->parent;
 		writes = true;
@@ -976,7 +1007,14 @@ static int check_reg_arg(struct bpf_verifier_env *env, u32 regno,
 			verbose(env, "R%d !read_ok\n", regno);
 			return -EACCES;
 		}
+<<<<<<< HEAD
 		return mark_reg_read(env, vstate, vstate->parent, regno);
+=======
+		/* We don't need to worry about FP liveness because it's read-only */
+		if (regno != BPF_REG_FP)
+			return mark_reg_read(env, &regs[regno],
+					     regs[regno].parent);
+>>>>>>> origin/android16-base
 	} else {
 		/* check whether register used as dest operand can be written to */
 		if (regno == BPF_REG_FP) {
@@ -1013,6 +1051,26 @@ static bool register_is_null(struct bpf_reg_state *reg)
 	return reg->type == SCALAR_VALUE && tnum_equals_const(reg->var_off, 0);
 }
 
+<<<<<<< HEAD
+=======
+static bool register_is_const(struct bpf_reg_state *reg)
+{
+	return reg->type == SCALAR_VALUE && tnum_is_const(reg->var_off);
+}
+
+static void save_register_state(struct bpf_func_state *state,
+				int spi, struct bpf_reg_state *reg)
+{
+	int i;
+
+	state->stack[spi].spilled_ptr = *reg;
+	state->stack[spi].spilled_ptr.live |= REG_LIVE_WRITTEN;
+
+	for (i = 0; i < BPF_REG_SIZE; i++)
+		state->stack[spi].slot_type[i] = STACK_SPILL;
+}
+
+>>>>>>> origin/android16-base
 /* check_stack_read/write functions track spill/fill of registers,
  * stack boundary and alignment are checked in check_mem_access()
  */
@@ -1022,7 +1080,11 @@ static int check_stack_write(struct bpf_verifier_env *env,
 {
 	struct bpf_func_state *cur; /* state of the current function */
 	int i, slot = -off - 1, spi = slot / BPF_REG_SIZE, err;
+<<<<<<< HEAD
 	enum bpf_reg_type type;
+=======
+	struct bpf_reg_state *reg = NULL;
+>>>>>>> origin/android16-base
 
 	err = realloc_func_state(state, round_up(slot + 1, BPF_REG_SIZE),
 				 true);
@@ -1039,14 +1101,40 @@ static int check_stack_write(struct bpf_verifier_env *env,
 	}
 
 	cur = env->cur_state->frame[env->cur_state->curframe];
+<<<<<<< HEAD
 	if (value_regno >= 0 &&
 	    is_spillable_regtype((type = cur->regs[value_regno].type))) {
 
+=======
+	if (value_regno >= 0)
+		reg = &cur->regs[value_regno];
+	if (!env->allow_ptr_leaks) {
+		bool sanitize = reg && is_spillable_regtype(reg->type);
+
+		for (i = 0; i < size; i++) {
+			u8 type = state->stack[spi].slot_type[i];
+
+			if (type != STACK_MISC && type != STACK_ZERO) {
+				sanitize = true;
+				break;
+			}
+		}
+
+		if (sanitize)
+			env->insn_aux_data[insn_idx].sanitize_stack_spill = true;
+	}
+
+	if (reg && size == BPF_REG_SIZE && register_is_const(reg) &&
+	    !register_is_null(reg) && env->allow_ptr_leaks) {
+		save_register_state(state, spi, reg);
+	} else if (reg && is_spillable_regtype(reg->type)) {
+>>>>>>> origin/android16-base
 		/* register containing pointer is being spilled into stack */
 		if (size != BPF_REG_SIZE) {
 			verbose(env, "invalid size of register spill\n");
 			return -EACCES;
 		}
+<<<<<<< HEAD
 
 		if (state != cur && type == PTR_TO_STACK) {
 			verbose(env, "cannot spill pointers to stack into stack frame of the caller\n");
@@ -1089,6 +1177,22 @@ static int check_stack_write(struct bpf_verifier_env *env,
 
 		/* regular write of data into stack */
 		state->stack[spi].spilled_ptr = (struct bpf_reg_state) {};
+=======
+		if (state != cur && reg->type == PTR_TO_STACK) {
+			verbose(env, "cannot spill pointers to stack into stack frame of the caller\n");
+			return -EINVAL;
+		}
+		save_register_state(state, spi, reg);
+	} else {
+		u8 type = STACK_MISC;
+
+		/* regular write of data into stack destroys any spilled ptr */
+		state->stack[spi].spilled_ptr.type = NOT_INIT;
+		/* Mark slots as STACK_MISC if they belonged to spilled ptr. */
+		if (state->stack[spi].slot_type[0] == STACK_SPILL)
+			for (i = 0; i < BPF_REG_SIZE; i++)
+				state->stack[spi].slot_type[i] = STACK_MISC;
+>>>>>>> origin/android16-base
 
 		/* only mark the slot as written if all 8 bytes were written
 		 * otherwise read propagation may incorrectly stop too soon
@@ -1102,10 +1206,17 @@ static int check_stack_write(struct bpf_verifier_env *env,
 			state->stack[spi].spilled_ptr.live |= REG_LIVE_WRITTEN;
 
 		/* when we zero initialize stack slots mark them as such */
+<<<<<<< HEAD
 		if (value_regno >= 0 &&
 		    register_is_null(&cur->regs[value_regno]))
 			type = STACK_ZERO;
 
+=======
+		if (reg && register_is_null(reg))
+			type = STACK_ZERO;
+
+		/* Mark slots affected by this stack write. */
+>>>>>>> origin/android16-base
 		for (i = 0; i < size; i++)
 			state->stack[spi].slot_type[(slot - i) % BPF_REG_SIZE] =
 				type;
@@ -1113,6 +1224,7 @@ static int check_stack_write(struct bpf_verifier_env *env,
 	return 0;
 }
 
+<<<<<<< HEAD
 /* registers of every function are unique and mark_reg_read() propagates
  * the liveness in the following cases:
  * - from callee into caller for R1 - R5 that were used as arguments
@@ -1168,6 +1280,8 @@ static void mark_stack_slot_read(struct bpf_verifier_env *env,
 	}
 }
 
+=======
+>>>>>>> origin/android16-base
 static int check_stack_read(struct bpf_verifier_env *env,
 			    struct bpf_func_state *reg_state /* func where register points to */,
 			    int off, int size, int value_regno)
@@ -1175,6 +1289,10 @@ static int check_stack_read(struct bpf_verifier_env *env,
 	struct bpf_verifier_state *vstate = env->cur_state;
 	struct bpf_func_state *state = vstate->frame[vstate->curframe];
 	int i, slot = -off - 1, spi = slot / BPF_REG_SIZE;
+<<<<<<< HEAD
+=======
+	struct bpf_reg_state *reg;
+>>>>>>> origin/android16-base
 	u8 *stype;
 
 	if (reg_state->allocated_stack <= slot) {
@@ -1183,11 +1301,28 @@ static int check_stack_read(struct bpf_verifier_env *env,
 		return -EACCES;
 	}
 	stype = reg_state->stack[spi].slot_type;
+<<<<<<< HEAD
 
 	if (stype[0] == STACK_SPILL) {
 		if (size != BPF_REG_SIZE) {
 			verbose(env, "invalid size of register spill\n");
 			return -EACCES;
+=======
+	reg = &reg_state->stack[spi].spilled_ptr;
+
+	if (stype[0] == STACK_SPILL) {
+		if (size != BPF_REG_SIZE) {
+			if (reg->type != SCALAR_VALUE) {
+				verbose(env, "invalid size of register fill\n");
+				return -EACCES;
+			}
+			if (value_regno >= 0) {
+				mark_reg_unknown(env, state->regs, value_regno);
+				state->regs[value_regno].live |= REG_LIVE_WRITTEN;
+			}
+			mark_reg_read(env, reg, reg->parent);
+			return 0;
+>>>>>>> origin/android16-base
 		}
 		for (i = 1; i < BPF_REG_SIZE; i++) {
 			if (stype[(slot - i) % BPF_REG_SIZE] != STACK_SPILL) {
@@ -1198,16 +1333,24 @@ static int check_stack_read(struct bpf_verifier_env *env,
 
 		if (value_regno >= 0) {
 			/* restore register state from stack */
+<<<<<<< HEAD
 			state->regs[value_regno] = reg_state->stack[spi].spilled_ptr;
+=======
+			state->regs[value_regno] = *reg;
+>>>>>>> origin/android16-base
 			/* mark reg as written since spilled pointer state likely
 			 * has its liveness marks cleared by is_state_visited()
 			 * which resets stack/reg liveness for state transitions
 			 */
 			state->regs[value_regno].live |= REG_LIVE_WRITTEN;
 		}
+<<<<<<< HEAD
 		mark_stack_slot_read(env, vstate, vstate->parent, spi,
 				     reg_state->frameno);
 		return 0;
+=======
+		mark_reg_read(env, reg, reg->parent);
+>>>>>>> origin/android16-base
 	} else {
 		int zeros = 0;
 
@@ -1222,8 +1365,12 @@ static int check_stack_read(struct bpf_verifier_env *env,
 				off, i, size);
 			return -EACCES;
 		}
+<<<<<<< HEAD
 		mark_stack_slot_read(env, vstate, vstate->parent, spi,
 				     reg_state->frameno);
+=======
+		mark_reg_read(env, reg, reg->parent);
+>>>>>>> origin/android16-base
 		if (value_regno >= 0) {
 			if (zeros == size) {
 				/* any size read into register is zero extended,
@@ -1236,8 +1383,13 @@ static int check_stack_read(struct bpf_verifier_env *env,
 			}
 			state->regs[value_regno].live |= REG_LIVE_WRITTEN;
 		}
+<<<<<<< HEAD
 		return 0;
 	}
+=======
+	}
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static int check_stack_access(struct bpf_verifier_env *env,
@@ -1855,6 +2007,32 @@ static int check_xadd(struct bpf_verifier_env *env, int insn_idx, struct bpf_ins
 				BPF_SIZE(insn->code), BPF_WRITE, -1, true);
 }
 
+<<<<<<< HEAD
+=======
+static int __check_stack_boundary(struct bpf_verifier_env *env, u32 regno,
+				  int off, int access_size,
+				  bool zero_size_allowed)
+{
+	struct bpf_reg_state *reg = cur_regs(env) + regno;
+
+	if (off >= 0 || off < -MAX_BPF_STACK || off + access_size > 0 ||
+	    access_size < 0 || (access_size == 0 && !zero_size_allowed)) {
+		if (tnum_is_const(reg->var_off)) {
+			verbose(env, "invalid stack type R%d off=%d access_size=%d\n",
+				regno, off, access_size);
+		} else {
+			char tn_buf[48];
+
+			tnum_strn(tn_buf, sizeof(tn_buf), reg->var_off);
+			verbose(env, "invalid stack type R%d var_off=%s access_size=%d\n",
+				regno, tn_buf, access_size);
+		}
+		return -EACCES;
+	}
+	return 0;
+}
+
+>>>>>>> origin/android16-base
 /* when register 'regno' is passed into function that will read 'access_size'
  * bytes from that pointer, make sure that it's within stack boundary
  * and all elements of stack are initialized.
@@ -1867,7 +2045,11 @@ static int check_stack_boundary(struct bpf_verifier_env *env, int regno,
 {
 	struct bpf_reg_state *reg = cur_regs(env) + regno;
 	struct bpf_func_state *state = func(env, reg);
+<<<<<<< HEAD
 	int off, i, slot, spi;
+=======
+	int err, min_off, max_off, i, j, slot, spi;
+>>>>>>> origin/android16-base
 
 	if (reg->type != PTR_TO_STACK) {
 		/* Allow zero-byte read from NULL, regardless of pointer type */
@@ -1881,6 +2063,7 @@ static int check_stack_boundary(struct bpf_verifier_env *env, int regno,
 		return -EACCES;
 	}
 
+<<<<<<< HEAD
 	/* Only allow fixed-offset stack reads */
 	if (!tnum_is_const(reg->var_off)) {
 		char tn_buf[48];
@@ -1896,6 +2079,59 @@ static int check_stack_boundary(struct bpf_verifier_env *env, int regno,
 		verbose(env, "invalid stack type R%d off=%d access_size=%d\n",
 			regno, off, access_size);
 		return -EACCES;
+=======
+	if (tnum_is_const(reg->var_off)) {
+		min_off = max_off = reg->var_off.value + reg->off;
+		err = __check_stack_boundary(env, regno, min_off, access_size,
+					     zero_size_allowed);
+		if (err)
+			return err;
+	} else {
+		/* Variable offset is prohibited for unprivileged mode for
+		 * simplicity since it requires corresponding support in
+		 * Spectre masking for stack ALU.
+		 * See also retrieve_ptr_limit().
+		 */
+		if (!env->allow_ptr_leaks) {
+			char tn_buf[48];
+
+			tnum_strn(tn_buf, sizeof(tn_buf), reg->var_off);
+			verbose(env, "R%d indirect variable offset stack access prohibited for !root, var_off=%s\n",
+				regno, tn_buf);
+			return -EACCES;
+		}
+		/* Only initialized buffer on stack is allowed to be accessed
+		 * with variable offset. With uninitialized buffer it's hard to
+		 * guarantee that whole memory is marked as initialized on
+		 * helper return since specific bounds are unknown what may
+		 * cause uninitialized stack leaking.
+		 */
+		if (meta && meta->raw_mode)
+			meta = NULL;
+
+		if (reg->smax_value >= BPF_MAX_VAR_OFF ||
+		    reg->smax_value <= -BPF_MAX_VAR_OFF) {
+			verbose(env, "R%d unbounded indirect variable offset stack access\n",
+				regno);
+			return -EACCES;
+		}
+		min_off = reg->smin_value + reg->off;
+		max_off = reg->smax_value + reg->off;
+		err = __check_stack_boundary(env, regno, min_off, access_size,
+					     zero_size_allowed);
+		if (err) {
+			verbose(env, "R%d min value is outside of stack bound\n",
+				regno);
+			return err;
+		}
+		err = __check_stack_boundary(env, regno, max_off, access_size,
+					     zero_size_allowed);
+		if (err) {
+			verbose(env, "R%d max value is outside of stack bound\n",
+				regno);
+			return err;
+		}
+>>>>>>> origin/android16-base
 	}
 
 	if (meta && meta->raw_mode) {
@@ -1904,10 +2140,17 @@ static int check_stack_boundary(struct bpf_verifier_env *env, int regno,
 		return 0;
 	}
 
+<<<<<<< HEAD
 	for (i = 0; i < access_size; i++) {
 		u8 *stype;
 
 		slot = -(off + i) - 1;
+=======
+	for (i = min_off; i < max_off + access_size; i++) {
+		u8 *stype;
+
+		slot = -i - 1;
+>>>>>>> origin/android16-base
 		spi = slot / BPF_REG_SIZE;
 		if (state->allocated_stack <= slot)
 			goto err;
@@ -1919,18 +2162,47 @@ static int check_stack_boundary(struct bpf_verifier_env *env, int regno,
 			*stype = STACK_MISC;
 			goto mark;
 		}
+<<<<<<< HEAD
 err:
 		verbose(env, "invalid indirect read from stack off %d+%d size %d\n",
 			off, i, access_size);
+=======
+		if (state->stack[spi].slot_type[0] == STACK_SPILL &&
+		    state->stack[spi].spilled_ptr.type == SCALAR_VALUE) {
+			__mark_reg_unknown(&state->stack[spi].spilled_ptr);
+			for (j = 0; j < BPF_REG_SIZE; j++)
+				state->stack[spi].slot_type[j] = STACK_MISC;
+			goto mark;
+		}
+
+err:
+		if (tnum_is_const(reg->var_off)) {
+			verbose(env, "invalid indirect read from stack off %d+%d size %d\n",
+				min_off, i - min_off, access_size);
+		} else {
+			char tn_buf[48];
+
+			tnum_strn(tn_buf, sizeof(tn_buf), reg->var_off);
+			verbose(env, "invalid indirect read from stack var_off %s+%d size %d\n",
+				tn_buf, i - min_off, access_size);
+		}
+>>>>>>> origin/android16-base
 		return -EACCES;
 mark:
 		/* reading any byte out of 8-byte 'spill_slot' will cause
 		 * the whole slot to be marked as 'read'
 		 */
+<<<<<<< HEAD
 		mark_stack_slot_read(env, env->cur_state, env->cur_state->parent,
 				     spi, state->frameno);
 	}
 	return update_stack_depth(env, state, off);
+=======
+		mark_reg_read(env, &state->stack[spi].spilled_ptr,
+			      state->stack[spi].spilled_ptr.parent);
+	}
+	return update_stack_depth(env, state, min_off);
+>>>>>>> origin/android16-base
 }
 
 static int check_helper_mem_access(struct bpf_verifier_env *env, int regno,
@@ -2384,11 +2656,21 @@ static int check_func_call(struct bpf_verifier_env *env, struct bpf_insn *insn,
 			state->curframe + 1 /* frameno within this callchain */,
 			subprog /* subprog number within this prog */);
 
+<<<<<<< HEAD
 	/* copy r1 - r5 args that callee can access */
 	for (i = BPF_REG_1; i <= BPF_REG_5; i++)
 		callee->regs[i] = caller->regs[i];
 
 	/* after the call regsiters r0 - r5 were scratched */
+=======
+	/* copy r1 - r5 args that callee can access.  The copy includes parent
+	 * pointers, which connects us up to the liveness chain
+	 */
+	for (i = BPF_REG_1; i <= BPF_REG_5; i++)
+		callee->regs[i] = caller->regs[i];
+
+	/* after the call registers r0 - r5 were scratched */
+>>>>>>> origin/android16-base
 	for (i = 0; i < CALLER_SAVED_REGS; i++) {
 		mark_reg_not_init(env, caller->regs, caller_saved[i]);
 		check_reg_arg(env, caller_saved[i], DST_OP_NO_MARK);
@@ -2729,6 +3011,7 @@ static struct bpf_insn_aux_data *cur_aux(struct bpf_verifier_env *env)
 	return &env->insn_aux_data[env->insn_idx];
 }
 
+<<<<<<< HEAD
 static int retrieve_ptr_limit(const struct bpf_reg_state *ptr_reg,
 			      u32 *ptr_limit, u8 opcode, bool off_is_neg)
 {
@@ -2755,6 +3038,45 @@ static int retrieve_ptr_limit(const struct bpf_reg_state *ptr_reg,
 	default:
 		return -EINVAL;
 	}
+=======
+enum {
+	REASON_BOUNDS	= -1,
+	REASON_TYPE	= -2,
+	REASON_PATHS	= -3,
+	REASON_LIMIT	= -4,
+	REASON_STACK	= -5,
+};
+
+static int retrieve_ptr_limit(const struct bpf_reg_state *ptr_reg,
+			      u32 *alu_limit, bool mask_to_left)
+{
+	u32 max = 0, ptr_limit = 0;
+
+	switch (ptr_reg->type) {
+	case PTR_TO_STACK:
+		/* Offset 0 is out-of-bounds, but acceptable start for the
+		 * left direction, see BPF_REG_FP. Also, unknown scalar
+		 * offset where we would need to deal with min/max bounds is
+		 * currently prohibited for unprivileged.
+		 */
+		max = MAX_BPF_STACK + mask_to_left;
+		ptr_limit = -(ptr_reg->var_off.value + ptr_reg->off);
+		break;
+	case PTR_TO_MAP_VALUE:
+		max = ptr_reg->map_ptr->value_size;
+		ptr_limit = (mask_to_left ?
+			     ptr_reg->smin_value :
+			     ptr_reg->umax_value) + ptr_reg->off;
+		break;
+	default:
+		return REASON_TYPE;
+	}
+
+	if (ptr_limit >= max)
+		return REASON_LIMIT;
+	*alu_limit = ptr_limit;
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 static bool can_skip_alu_sanitation(const struct bpf_verifier_env *env,
@@ -2772,7 +3094,11 @@ static int update_alu_sanitation_state(struct bpf_insn_aux_data *aux,
 	if (aux->alu_state &&
 	    (aux->alu_state != alu_state ||
 	     aux->alu_limit != alu_limit))
+<<<<<<< HEAD
 		return -EACCES;
+=======
+		return REASON_PATHS;
+>>>>>>> origin/android16-base
 
 	/* Corresponding fixup done in fixup_bpf_calls(). */
 	aux->alu_state = alu_state;
@@ -2791,6 +3117,7 @@ static int sanitize_val_alu(struct bpf_verifier_env *env,
 	return update_alu_sanitation_state(aux, BPF_ALU_NON_POINTER, 0);
 }
 
+<<<<<<< HEAD
 static int sanitize_ptr_alu(struct bpf_verifier_env *env,
 			    struct bpf_insn *insn,
 			    const struct bpf_reg_state *ptr_reg,
@@ -2799,11 +3126,60 @@ static int sanitize_ptr_alu(struct bpf_verifier_env *env,
 {
 	struct bpf_verifier_state *vstate = env->cur_state;
 	struct bpf_insn_aux_data *aux = cur_aux(env);
+=======
+static bool sanitize_needed(u8 opcode)
+{
+	return opcode == BPF_ADD || opcode == BPF_SUB;
+}
+
+struct bpf_sanitize_info {
+	struct bpf_insn_aux_data aux;
+	bool mask_to_left;
+};
+
+static struct bpf_verifier_state *
+sanitize_speculative_path(struct bpf_verifier_env *env,
+			  const struct bpf_insn *insn,
+			  u32 next_idx, u32 curr_idx)
+{
+	struct bpf_verifier_state *branch;
+	struct bpf_reg_state *regs;
+
+	branch = push_stack(env, next_idx, curr_idx, true);
+	if (branch && insn) {
+		regs = branch->frame[branch->curframe]->regs;
+		if (BPF_SRC(insn->code) == BPF_K) {
+			mark_reg_unknown(env, regs, insn->dst_reg);
+		} else if (BPF_SRC(insn->code) == BPF_X) {
+			mark_reg_unknown(env, regs, insn->dst_reg);
+			mark_reg_unknown(env, regs, insn->src_reg);
+		}
+	}
+	return branch;
+}
+
+static int sanitize_ptr_alu(struct bpf_verifier_env *env,
+			    struct bpf_insn *insn,
+			    const struct bpf_reg_state *ptr_reg,
+			    const struct bpf_reg_state *off_reg,
+			    struct bpf_reg_state *dst_reg,
+			    struct bpf_sanitize_info *info,
+			    const bool commit_window)
+{
+	struct bpf_insn_aux_data *aux = commit_window ? cur_aux(env) : &info->aux;
+	struct bpf_verifier_state *vstate = env->cur_state;
+	bool off_is_imm = tnum_is_const(off_reg->var_off);
+	bool off_is_neg = off_reg->smin_value < 0;
+>>>>>>> origin/android16-base
 	bool ptr_is_dst_reg = ptr_reg == dst_reg;
 	u8 opcode = BPF_OP(insn->code);
 	u32 alu_state, alu_limit;
 	struct bpf_reg_state tmp;
 	bool ret;
+<<<<<<< HEAD
+=======
+	int err;
+>>>>>>> origin/android16-base
 
 	if (can_skip_alu_sanitation(env, insn))
 		return 0;
@@ -2815,6 +3191,7 @@ static int sanitize_ptr_alu(struct bpf_verifier_env *env,
 	if (vstate->speculative)
 		goto do_sim;
 
+<<<<<<< HEAD
 	alu_state  = off_is_neg ? BPF_ALU_NEG_VALUE : 0;
 	alu_state |= ptr_is_dst_reg ?
 		     BPF_ALU_SANITIZE_SRC : BPF_ALU_SANITIZE_DST;
@@ -2824,6 +3201,55 @@ static int sanitize_ptr_alu(struct bpf_verifier_env *env,
 	if (update_alu_sanitation_state(aux, alu_state, alu_limit))
 		return -EACCES;
 do_sim:
+=======
+	if (!commit_window) {
+		if (!tnum_is_const(off_reg->var_off) &&
+		    (off_reg->smin_value < 0) != (off_reg->smax_value < 0))
+			return REASON_BOUNDS;
+
+		info->mask_to_left = (opcode == BPF_ADD &&  off_is_neg) ||
+				     (opcode == BPF_SUB && !off_is_neg);
+	}
+
+	err = retrieve_ptr_limit(ptr_reg, &alu_limit, info->mask_to_left);
+	if (err < 0)
+		return err;
+
+	if (commit_window) {
+		/* In commit phase we narrow the masking window based on
+		 * the observed pointer move after the simulated operation.
+		 */
+		alu_state = info->aux.alu_state;
+		alu_limit = abs(info->aux.alu_limit - alu_limit);
+	} else {
+		alu_state  = off_is_neg ? BPF_ALU_NEG_VALUE : 0;
+		alu_state |= off_is_imm ? BPF_ALU_IMMEDIATE : 0;
+		alu_state |= ptr_is_dst_reg ?
+			     BPF_ALU_SANITIZE_SRC : BPF_ALU_SANITIZE_DST;
+
+		/* Limit pruning on unknown scalars to enable deep search for
+		 * potential masking differences from other program paths.
+		 */
+		if (!off_is_imm)
+			env->explore_alu_limits = true;
+	}
+
+	err = update_alu_sanitation_state(aux, alu_state, alu_limit);
+	if (err < 0)
+		return err;
+do_sim:
+	/* If we're in commit phase, we're done here given we already
+	 * pushed the truncated dst_reg into the speculative verification
+	 * stack.
+	 *
+	 * Also, when register is a known constant, we rewrite register-based
+	 * operation to immediate-based, and thus do not need masking (and as
+	 * a consequence, do not need to simulate the zero-truncation either).
+	 */
+	if (commit_window || off_is_imm)
+		return 0;
+
+>>>>>>> origin/android16-base
 	/* Simulate and find potential out-of-bounds access under
 	 * speculative execution from truncation as a result of
 	 * masking when off was not within expected range. If off
@@ -2837,10 +3263,105 @@ do_sim:
 		tmp = *dst_reg;
 		*dst_reg = *ptr_reg;
 	}
+<<<<<<< HEAD
 	ret = push_stack(env, env->insn_idx + 1, env->insn_idx, true);
 	if (!ptr_is_dst_reg && ret)
 		*dst_reg = tmp;
 	return !ret ? -EFAULT : 0;
+=======
+	ret = sanitize_speculative_path(env, NULL, env->insn_idx + 1,
+					env->insn_idx);
+	if (!ptr_is_dst_reg && ret)
+		*dst_reg = tmp;
+	return !ret ? REASON_STACK : 0;
+}
+
+static void sanitize_mark_insn_seen(struct bpf_verifier_env *env)
+{
+	struct bpf_verifier_state *vstate = env->cur_state;
+
+	/* If we simulate paths under speculation, we don't update the
+	 * insn as 'seen' such that when we verify unreachable paths in
+	 * the non-speculative domain, sanitize_dead_code() can still
+	 * rewrite/sanitize them.
+	 */
+	if (!vstate->speculative)
+		env->insn_aux_data[env->insn_idx].seen = true;
+}
+
+static int sanitize_err(struct bpf_verifier_env *env,
+			const struct bpf_insn *insn, int reason,
+			const struct bpf_reg_state *off_reg,
+			const struct bpf_reg_state *dst_reg)
+{
+	static const char *err = "pointer arithmetic with it prohibited for !root";
+	const char *op = BPF_OP(insn->code) == BPF_ADD ? "add" : "sub";
+	u32 dst = insn->dst_reg, src = insn->src_reg;
+
+	switch (reason) {
+	case REASON_BOUNDS:
+		verbose(env, "R%d has unknown scalar with mixed signed bounds, %s\n",
+			off_reg == dst_reg ? dst : src, err);
+		break;
+	case REASON_TYPE:
+		verbose(env, "R%d has pointer with unsupported alu operation, %s\n",
+			off_reg == dst_reg ? src : dst, err);
+		break;
+	case REASON_PATHS:
+		verbose(env, "R%d tried to %s from different maps, paths or scalars, %s\n",
+			dst, op, err);
+		break;
+	case REASON_LIMIT:
+		verbose(env, "R%d tried to %s beyond pointer bounds, %s\n",
+			dst, op, err);
+		break;
+	case REASON_STACK:
+		verbose(env, "R%d could not be pushed for speculative verification, %s\n",
+			dst, err);
+		break;
+	default:
+		verbose(env, "verifier internal error: unknown reason (%d)\n",
+			reason);
+		break;
+	}
+
+	return -EACCES;
+}
+
+static int sanitize_check_bounds(struct bpf_verifier_env *env,
+				 const struct bpf_insn *insn,
+				 const struct bpf_reg_state *dst_reg)
+{
+	u32 dst = insn->dst_reg;
+
+	/* For unprivileged we require that resulting offset must be in bounds
+	 * in order to be able to sanitize access later on.
+	 */
+	if (env->allow_ptr_leaks)
+		return 0;
+
+	switch (dst_reg->type) {
+	case PTR_TO_STACK:
+		if (check_stack_access(env, dst_reg, dst_reg->off +
+				       dst_reg->var_off.value, 1)) {
+			verbose(env, "R%d stack pointer arithmetic goes out of range, "
+				"prohibited for !root\n", dst);
+			return -EACCES;
+		}
+		break;
+	case PTR_TO_MAP_VALUE:
+		if (check_map_access(env, dst, dst_reg->off, 1, false)) {
+			verbose(env, "R%d pointer arithmetic of map value goes out of range, "
+				"prohibited for !root\n", dst);
+			return -EACCES;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 /* Handles arithmetic on a pointer and a scalar: computes new min/max and var_off.
@@ -2861,8 +3382,14 @@ static int adjust_ptr_min_max_vals(struct bpf_verifier_env *env,
 	    smin_ptr = ptr_reg->smin_value, smax_ptr = ptr_reg->smax_value;
 	u64 umin_val = off_reg->umin_value, umax_val = off_reg->umax_value,
 	    umin_ptr = ptr_reg->umin_value, umax_ptr = ptr_reg->umax_value;
+<<<<<<< HEAD
 	u32 dst = insn->dst_reg, src = insn->src_reg;
 	u8 opcode = BPF_OP(insn->code);
+=======
+	struct bpf_sanitize_info info = {};
+	u8 opcode = BPF_OP(insn->code);
+	u32 dst = insn->dst_reg;
+>>>>>>> origin/android16-base
 	int ret;
 
 	dst_reg = &regs[dst];
@@ -2899,12 +3426,15 @@ static int adjust_ptr_min_max_vals(struct bpf_verifier_env *env,
 			dst);
 		return -EACCES;
 	}
+<<<<<<< HEAD
 	if (ptr_reg->type == PTR_TO_MAP_VALUE &&
 	    !env->allow_ptr_leaks && !known && (smin_val < 0) != (smax_val < 0)) {
 		verbose(env, "R%d has unknown scalar with mixed signed bounds, pointer arithmetic with it prohibited for !root\n",
 			off_reg == dst_reg ? dst : src);
 		return -EACCES;
 	}
+=======
+>>>>>>> origin/android16-base
 
 	/* In case of 'scalar += pointer', dst_reg inherits pointer type and id.
 	 * The id may be overwritten later if we create a new variable offset.
@@ -2916,6 +3446,7 @@ static int adjust_ptr_min_max_vals(struct bpf_verifier_env *env,
 	    !check_reg_sane_offset(env, ptr_reg, ptr_reg->type))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	switch (opcode) {
 	case BPF_ADD:
 		ret = sanitize_ptr_alu(env, insn, ptr_reg, dst_reg, smin_val < 0);
@@ -2923,6 +3454,17 @@ static int adjust_ptr_min_max_vals(struct bpf_verifier_env *env,
 			verbose(env, "R%d tried to add from different maps or paths\n", dst);
 			return ret;
 		}
+=======
+	if (sanitize_needed(opcode)) {
+		ret = sanitize_ptr_alu(env, insn, ptr_reg, off_reg, dst_reg,
+				       &info, false);
+		if (ret < 0)
+			return sanitize_err(env, insn, ret, off_reg, dst_reg);
+	}
+
+	switch (opcode) {
+	case BPF_ADD:
+>>>>>>> origin/android16-base
 		/* We can take a fixed offset as long as it doesn't overflow
 		 * the s32 'off' field
 		 */
@@ -2973,11 +3515,14 @@ static int adjust_ptr_min_max_vals(struct bpf_verifier_env *env,
 		}
 		break;
 	case BPF_SUB:
+<<<<<<< HEAD
 		ret = sanitize_ptr_alu(env, insn, ptr_reg, dst_reg, smin_val < 0);
 		if (ret < 0) {
 			verbose(env, "R%d tried to sub from different maps or paths\n", dst);
 			return ret;
 		}
+=======
+>>>>>>> origin/android16-base
 		if (dst_reg == off_reg) {
 			/* scalar -= pointer.  Creates an unknown scalar */
 			verbose(env, "R%d tried to subtract pointer from scalar\n",
@@ -3058,6 +3603,7 @@ static int adjust_ptr_min_max_vals(struct bpf_verifier_env *env,
 	__reg_deduce_bounds(dst_reg);
 	__reg_bound_offset(dst_reg);
 
+<<<<<<< HEAD
 	/* For unprivileged we require that resulting offset must be in bounds
 	 * in order to be able to sanitize access later on.
 	 */
@@ -3074,6 +3620,15 @@ static int adjust_ptr_min_max_vals(struct bpf_verifier_env *env,
 				"prohibited for !root\n", dst);
 			return -EACCES;
 		}
+=======
+	if (sanitize_check_bounds(env, insn, dst_reg) < 0)
+		return -EACCES;
+	if (sanitize_needed(opcode)) {
+		ret = sanitize_ptr_alu(env, insn, dst_reg, off_reg, dst_reg,
+				       &info, true);
+		if (ret < 0)
+			return sanitize_err(env, insn, ret, off_reg, dst_reg);
+>>>>>>> origin/android16-base
 	}
 
 	return 0;
@@ -3094,7 +3649,10 @@ static int adjust_scalar_min_max_vals(struct bpf_verifier_env *env,
 	s64 smin_val, smax_val;
 	u64 umin_val, umax_val;
 	u64 insn_bitness = (BPF_CLASS(insn->code) == BPF_ALU64) ? 64 : 32;
+<<<<<<< HEAD
 	u32 dst = insn->dst_reg;
+=======
+>>>>>>> origin/android16-base
 	int ret;
 
 	if (insn_bitness == 32) {
@@ -3128,6 +3686,7 @@ static int adjust_scalar_min_max_vals(struct bpf_verifier_env *env,
 		return 0;
 	}
 
+<<<<<<< HEAD
 	switch (opcode) {
 	case BPF_ADD:
 		ret = sanitize_val_alu(env, insn);
@@ -3135,6 +3694,16 @@ static int adjust_scalar_min_max_vals(struct bpf_verifier_env *env,
 			verbose(env, "R%d tried to add from different pointers or scalars\n", dst);
 			return ret;
 		}
+=======
+	if (sanitize_needed(opcode)) {
+		ret = sanitize_val_alu(env, insn);
+		if (ret < 0)
+			return sanitize_err(env, insn, ret, NULL, NULL);
+	}
+
+	switch (opcode) {
+	case BPF_ADD:
+>>>>>>> origin/android16-base
 		if (signed_add_overflows(dst_reg->smin_value, smin_val) ||
 		    signed_add_overflows(dst_reg->smax_value, smax_val)) {
 			dst_reg->smin_value = S64_MIN;
@@ -3154,11 +3723,14 @@ static int adjust_scalar_min_max_vals(struct bpf_verifier_env *env,
 		dst_reg->var_off = tnum_add(dst_reg->var_off, src_reg.var_off);
 		break;
 	case BPF_SUB:
+<<<<<<< HEAD
 		ret = sanitize_val_alu(env, insn);
 		if (ret < 0) {
 			verbose(env, "R%d tried to sub from different pointers or scalars\n", dst);
 			return ret;
 		}
+=======
+>>>>>>> origin/android16-base
 		if (signed_sub_overflows(dst_reg->smin_value, smax_val) ||
 		    signed_sub_overflows(dst_reg->smax_value, smin_val)) {
 			/* Overflow possible, we know nothing */
@@ -3360,6 +3932,10 @@ static int adjust_scalar_min_max_vals(struct bpf_verifier_env *env,
 		coerce_reg_to_size(dst_reg, 4);
 	}
 
+<<<<<<< HEAD
+=======
+	__update_reg_bounds(dst_reg);
+>>>>>>> origin/android16-base
 	__reg_deduce_bounds(dst_reg);
 	__reg_bound_offset(dst_reg);
 	return 0;
@@ -3625,7 +4201,11 @@ static void find_good_pkt_pointers(struct bpf_verifier_state *vstate,
 
 	new_range = dst_reg->off;
 	if (range_right_open)
+<<<<<<< HEAD
 		new_range--;
+=======
+		new_range++;
+>>>>>>> origin/android16-base
 
 	/* Examples for register markings:
 	 *
@@ -4118,8 +4698,14 @@ static int check_cond_jmp_op(struct bpf_verifier_env *env,
 	struct bpf_verifier_state *this_branch = env->cur_state;
 	struct bpf_verifier_state *other_branch;
 	struct bpf_reg_state *regs = this_branch->frame[this_branch->curframe]->regs;
+<<<<<<< HEAD
 	struct bpf_reg_state *dst_reg, *other_branch_regs;
 	u8 opcode = BPF_OP(insn->code);
+=======
+	struct bpf_reg_state *dst_reg, *other_branch_regs, *src_reg = NULL;
+	u8 opcode = BPF_OP(insn->code);
+	int pred = -1;
+>>>>>>> origin/android16-base
 	int err;
 
 	if (opcode > BPF_JSLE) {
@@ -4143,6 +4729,10 @@ static int check_cond_jmp_op(struct bpf_verifier_env *env,
 				insn->src_reg);
 			return -EACCES;
 		}
+<<<<<<< HEAD
+=======
+		src_reg = &regs[insn->src_reg];
+>>>>>>> origin/android16-base
 	} else {
 		if (insn->src_reg != BPF_REG_0) {
 			verbose(env, "BPF_JMP uses reserved fields\n");
@@ -4157,6 +4747,7 @@ static int check_cond_jmp_op(struct bpf_verifier_env *env,
 
 	dst_reg = &regs[insn->dst_reg];
 
+<<<<<<< HEAD
 	if (BPF_SRC(insn->code) == BPF_K) {
 		int pred = is_branch_taken(dst_reg, insn->imm, opcode);
 
@@ -4170,6 +4761,37 @@ static int check_cond_jmp_op(struct bpf_verifier_env *env,
 			 */
 			return 0;
 		}
+=======
+	if (BPF_SRC(insn->code) == BPF_K)
+		pred = is_branch_taken(dst_reg, insn->imm, opcode);
+	else if (src_reg->type == SCALAR_VALUE &&
+		 tnum_is_const(src_reg->var_off))
+		pred = is_branch_taken(dst_reg, src_reg->var_off.value,
+				       opcode);
+
+	if (pred == 1) {
+		/* Only follow the goto, ignore fall-through. If needed, push
+		 * the fall-through branch for simulation under speculative
+		 * execution.
+		 */
+		if (!env->allow_ptr_leaks &&
+		    !sanitize_speculative_path(env, insn, *insn_idx + 1,
+					       *insn_idx))
+			return -EFAULT;
+		*insn_idx += insn->off;
+		return 0;
+	} else if (pred == 0) {
+		/* Only follow the fall-through branch, since that's where the
+		 * program will go. If needed, push the goto branch for
+		 * simulation under speculative execution.
+		 */
+		if (!env->allow_ptr_leaks &&
+		    !sanitize_speculative_path(env, insn,
+					       *insn_idx + insn->off + 1,
+					       *insn_idx))
+			return -EFAULT;
+		return 0;
+>>>>>>> origin/android16-base
 	}
 
 	other_branch = push_stack(env, *insn_idx + insn->off + 1, *insn_idx,
@@ -4635,6 +5257,7 @@ static bool range_within(struct bpf_reg_state *old,
 	       old->smax_value >= cur->smax_value;
 }
 
+<<<<<<< HEAD
 /* Maximum number of register states that can exist at once */
 #define ID_MAP_SIZE	(MAX_BPF_REG + MAX_BPF_STACK / BPF_REG_SIZE)
 struct idpair {
@@ -4642,6 +5265,8 @@ struct idpair {
 	u32 cur;
 };
 
+=======
+>>>>>>> origin/android16-base
 /* If in the old state two registers had the same id, then they need to have
  * the same id in the new state as well.  But that id could be different from
  * the old state, so we need to track the mapping from old to new ids.
@@ -4652,11 +5277,19 @@ struct idpair {
  * So we look through our idmap to see if this old id has been seen before.  If
  * so, we require the new id to match; otherwise, we add the id pair to the map.
  */
+<<<<<<< HEAD
 static bool check_ids(u32 old_id, u32 cur_id, struct idpair *idmap)
 {
 	unsigned int i;
 
 	for (i = 0; i < ID_MAP_SIZE; i++) {
+=======
+static bool check_ids(u32 old_id, u32 cur_id, struct bpf_id_pair *idmap)
+{
+	unsigned int i;
+
+	for (i = 0; i < BPF_ID_MAP_SIZE; i++) {
+>>>>>>> origin/android16-base
 		if (!idmap[i].old) {
 			/* Reached an empty slot; haven't seen this id before */
 			idmap[i].old = old_id;
@@ -4672,8 +5305,13 @@ static bool check_ids(u32 old_id, u32 cur_id, struct idpair *idmap)
 }
 
 /* Returns true if (rold safe implies rcur safe) */
+<<<<<<< HEAD
 static bool regsafe(struct bpf_reg_state *rold, struct bpf_reg_state *rcur,
 		    struct idpair *idmap)
+=======
+static bool regsafe(struct bpf_verifier_env *env, struct bpf_reg_state *rold,
+		    struct bpf_reg_state *rcur, struct bpf_id_pair *idmap)
+>>>>>>> origin/android16-base
 {
 	bool equal;
 
@@ -4681,7 +5319,11 @@ static bool regsafe(struct bpf_reg_state *rold, struct bpf_reg_state *rcur,
 		/* explored state didn't use this */
 		return true;
 
+<<<<<<< HEAD
 	equal = memcmp(rold, rcur, offsetof(struct bpf_reg_state, frameno)) == 0;
+=======
+	equal = memcmp(rold, rcur, offsetof(struct bpf_reg_state, parent)) == 0;
+>>>>>>> origin/android16-base
 
 	if (rold->type == PTR_TO_STACK)
 		/* two stack pointers are equal only if they're pointing to
@@ -4699,6 +5341,11 @@ static bool regsafe(struct bpf_reg_state *rold, struct bpf_reg_state *rcur,
 		return false;
 	switch (rold->type) {
 	case SCALAR_VALUE:
+<<<<<<< HEAD
+=======
+		if (env->explore_alu_limits)
+			return false;
+>>>>>>> origin/android16-base
 		if (rcur->type == SCALAR_VALUE) {
 			/* new val must satisfy old val knowledge */
 			return range_within(rold, rcur) &&
@@ -4775,9 +5422,14 @@ static bool regsafe(struct bpf_reg_state *rold, struct bpf_reg_state *rcur,
 	return false;
 }
 
+<<<<<<< HEAD
 static bool stacksafe(struct bpf_func_state *old,
 		      struct bpf_func_state *cur,
 		      struct idpair *idmap)
+=======
+static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
+		      struct bpf_func_state *cur, struct bpf_id_pair *idmap)
+>>>>>>> origin/android16-base
 {
 	int i, spi;
 
@@ -4819,9 +5471,14 @@ static bool stacksafe(struct bpf_func_state *old,
 			continue;
 		if (old->stack[spi].slot_type[0] != STACK_SPILL)
 			continue;
+<<<<<<< HEAD
 		if (!regsafe(&old->stack[spi].spilled_ptr,
 			     &cur->stack[spi].spilled_ptr,
 			     idmap))
+=======
+		if (!regsafe(env, &old->stack[spi].spilled_ptr,
+			     &cur->stack[spi].spilled_ptr, idmap))
+>>>>>>> origin/android16-base
 			/* when explored and current stack slot are both storing
 			 * spilled registers, check that stored pointers types
 			 * are the same as well.
@@ -4863,6 +5520,7 @@ static bool stacksafe(struct bpf_func_state *old,
  * whereas register type in current state is meaningful, it means that
  * the current state will reach 'bpf_exit' instruction safely
  */
+<<<<<<< HEAD
 static bool func_states_equal(struct bpf_func_state *old,
 			      struct bpf_func_state *cur)
 {
@@ -4886,6 +5544,23 @@ static bool func_states_equal(struct bpf_func_state *old,
 out_free:
 	kfree(idmap);
 	return ret;
+=======
+static bool func_states_equal(struct bpf_verifier_env *env, struct bpf_func_state *old,
+			      struct bpf_func_state *cur)
+{
+	int i;
+
+	memset(env->idmap_scratch, 0, sizeof(env->idmap_scratch));
+	for (i = 0; i < MAX_BPF_REG; i++)
+		if (!regsafe(env, &old->regs[i], &cur->regs[i],
+			     env->idmap_scratch))
+			return false;
+
+	if (!stacksafe(env, old, cur, env->idmap_scratch))
+		return false;
+
+	return true;
+>>>>>>> origin/android16-base
 }
 
 static bool states_equal(struct bpf_verifier_env *env,
@@ -4909,7 +5584,11 @@ static bool states_equal(struct bpf_verifier_env *env,
 	for (i = 0; i <= old->curframe; i++) {
 		if (old->frame[i]->callsite != cur->frame[i]->callsite)
 			return false;
+<<<<<<< HEAD
 		if (!func_states_equal(old->frame[i], cur->frame[i]))
+=======
+		if (!func_states_equal(env, old->frame[i], cur->frame[i]))
+>>>>>>> origin/android16-base
 			return false;
 	}
 	return true;
@@ -4920,7 +5599,11 @@ static bool states_equal(struct bpf_verifier_env *env,
  * equivalent state (jump target or such) we didn't arrive by the straight-line
  * code, so read marks in the state must propagate to the parent regardless
  * of the state's write marks. That's what 'parent == state->parent' comparison
+<<<<<<< HEAD
  * in mark_reg_read() and mark_stack_slot_read() is for.
+=======
+ * in mark_reg_read() is for.
+>>>>>>> origin/android16-base
  */
 static int propagate_liveness(struct bpf_verifier_env *env,
 			      const struct bpf_verifier_state *vstate,
@@ -4941,7 +5624,12 @@ static int propagate_liveness(struct bpf_verifier_env *env,
 		if (vparent->frame[vparent->curframe]->regs[i].live & REG_LIVE_READ)
 			continue;
 		if (vstate->frame[vstate->curframe]->regs[i].live & REG_LIVE_READ) {
+<<<<<<< HEAD
 			err = mark_reg_read(env, vstate, vparent, i);
+=======
+			err = mark_reg_read(env, &vstate->frame[vstate->curframe]->regs[i],
+					    &vparent->frame[vstate->curframe]->regs[i]);
+>>>>>>> origin/android16-base
 			if (err)
 				return err;
 		}
@@ -4956,7 +5644,12 @@ static int propagate_liveness(struct bpf_verifier_env *env,
 			if (parent->stack[i].spilled_ptr.live & REG_LIVE_READ)
 				continue;
 			if (state->stack[i].spilled_ptr.live & REG_LIVE_READ)
+<<<<<<< HEAD
 				mark_stack_slot_read(env, vstate, vparent, i, frame);
+=======
+				mark_reg_read(env, &state->stack[i].spilled_ptr,
+					      &parent->stack[i].spilled_ptr);
+>>>>>>> origin/android16-base
 		}
 	}
 	return err;
@@ -4966,7 +5659,11 @@ static int is_state_visited(struct bpf_verifier_env *env, int insn_idx)
 {
 	struct bpf_verifier_state_list *new_sl;
 	struct bpf_verifier_state_list *sl;
+<<<<<<< HEAD
 	struct bpf_verifier_state *cur = env->cur_state;
+=======
+	struct bpf_verifier_state *cur = env->cur_state, *new;
+>>>>>>> origin/android16-base
 	int i, j, err, states_cnt = 0;
 
 	sl = env->explored_states[insn_idx];
@@ -5012,16 +5709,28 @@ static int is_state_visited(struct bpf_verifier_env *env, int insn_idx)
 		return -ENOMEM;
 
 	/* add new state to the head of linked list */
+<<<<<<< HEAD
 	err = copy_verifier_state(&new_sl->state, cur);
 	if (err) {
 		free_verifier_state(&new_sl->state, false);
+=======
+	new = &new_sl->state;
+	err = copy_verifier_state(new, cur);
+	if (err) {
+		free_verifier_state(new, false);
+>>>>>>> origin/android16-base
 		kfree(new_sl);
 		return err;
 	}
 	new_sl->next = env->explored_states[insn_idx];
 	env->explored_states[insn_idx] = new_sl;
 	/* connect new state to parentage chain */
+<<<<<<< HEAD
 	cur->parent = &new_sl->state;
+=======
+	for (i = 0; i < BPF_REG_FP; i++)
+		cur_regs(env)[i].parent = &new->frame[new->curframe]->regs[i];
+>>>>>>> origin/android16-base
 	/* clear write marks in current state: the writes we did are not writes
 	 * our child did, so they don't screen off its reads from us.
 	 * (There are no read marks in current state, because reads always mark
@@ -5034,9 +5743,19 @@ static int is_state_visited(struct bpf_verifier_env *env, int insn_idx)
 	/* all stack frames are accessible from callee, clear them all */
 	for (j = 0; j <= cur->curframe; j++) {
 		struct bpf_func_state *frame = cur->frame[j];
+<<<<<<< HEAD
 
 		for (i = 0; i < frame->allocated_stack / BPF_REG_SIZE; i++)
 			frame->stack[i].spilled_ptr.live = REG_LIVE_NONE;
+=======
+		struct bpf_func_state *newframe = new->frame[j];
+
+		for (i = 0; i < frame->allocated_stack / BPF_REG_SIZE; i++) {
+			frame->stack[i].spilled_ptr.live = REG_LIVE_NONE;
+			frame->stack[i].spilled_ptr.parent =
+						&newframe->stack[i].spilled_ptr;
+		}
+>>>>>>> origin/android16-base
 	}
 	return 0;
 }
@@ -5140,7 +5859,11 @@ static int do_check(struct bpf_verifier_env *env)
 		}
 
 		regs = cur_regs(env);
+<<<<<<< HEAD
 		env->insn_aux_data[env->insn_idx].seen = true;
+=======
+		sanitize_mark_insn_seen(env);
+>>>>>>> origin/android16-base
 
 		if (class == BPF_ALU || class == BPF_ALU64) {
 			err = check_alu_op(env, insn);
@@ -5358,7 +6081,11 @@ process_bpf_exit:
 					return err;
 
 				env->insn_idx++;
+<<<<<<< HEAD
 				env->insn_aux_data[env->insn_idx].seen = true;
+=======
+				sanitize_mark_insn_seen(env);
+>>>>>>> origin/android16-base
 			} else {
 				verbose(env, "invalid BPF_LD mode\n");
 				return -EINVAL;
@@ -5576,6 +6303,10 @@ static int adjust_insn_aux_data(struct bpf_verifier_env *env, u32 prog_len,
 				u32 off, u32 cnt)
 {
 	struct bpf_insn_aux_data *new_data, *old_data = env->insn_aux_data;
+<<<<<<< HEAD
+=======
+	bool old_seen = old_data[off].seen;
+>>>>>>> origin/android16-base
 	int i;
 
 	if (cnt == 1)
@@ -5587,8 +6318,15 @@ static int adjust_insn_aux_data(struct bpf_verifier_env *env, u32 prog_len,
 	memcpy(new_data, old_data, sizeof(struct bpf_insn_aux_data) * off);
 	memcpy(new_data + off + cnt - 1, old_data + off,
 	       sizeof(struct bpf_insn_aux_data) * (prog_len - off - cnt + 1));
+<<<<<<< HEAD
 	for (i = off; i < off + cnt - 1; i++)
 		new_data[i].seen = true;
+=======
+	for (i = off; i < off + cnt - 1; i++) {
+		/* Expand insni[off]'s seen count to the patched range. */
+		new_data[i].seen = old_seen;
+	}
+>>>>>>> origin/android16-base
 	env->insn_aux_data = new_data;
 	vfree(old_data);
 	return 0;
@@ -5684,6 +6422,7 @@ static int convert_ctx_accesses(struct bpf_verifier_env *env)
 	insn = env->prog->insnsi + delta;
 
 	for (i = 0; i < insn_cnt; i++, insn++) {
+<<<<<<< HEAD
 		if (insn->code == (BPF_LDX | BPF_MEM | BPF_B) ||
 		    insn->code == (BPF_LDX | BPF_MEM | BPF_H) ||
 		    insn->code == (BPF_LDX | BPF_MEM | BPF_W) ||
@@ -5712,6 +6451,35 @@ static int convert_ctx_accesses(struct bpf_verifier_env *env)
 				 * overwrite the same stack slot with appropriate value
 				 */
 				*insn,
+=======
+		bool ctx_access;
+
+		if (insn->code == (BPF_LDX | BPF_MEM | BPF_B) ||
+		    insn->code == (BPF_LDX | BPF_MEM | BPF_H) ||
+		    insn->code == (BPF_LDX | BPF_MEM | BPF_W) ||
+		    insn->code == (BPF_LDX | BPF_MEM | BPF_DW)) {
+			type = BPF_READ;
+			ctx_access = true;
+		} else if (insn->code == (BPF_STX | BPF_MEM | BPF_B) ||
+			   insn->code == (BPF_STX | BPF_MEM | BPF_H) ||
+			   insn->code == (BPF_STX | BPF_MEM | BPF_W) ||
+			   insn->code == (BPF_STX | BPF_MEM | BPF_DW) ||
+			   insn->code == (BPF_ST | BPF_MEM | BPF_B) ||
+			   insn->code == (BPF_ST | BPF_MEM | BPF_H) ||
+			   insn->code == (BPF_ST | BPF_MEM | BPF_W) ||
+			   insn->code == (BPF_ST | BPF_MEM | BPF_DW)) {
+			type = BPF_WRITE;
+			ctx_access = BPF_CLASS(insn->code) == BPF_STX;
+		} else {
+			continue;
+		}
+
+		if (type == BPF_WRITE &&
+		    env->insn_aux_data[i + delta].sanitize_stack_spill) {
+			struct bpf_insn patch[] = {
+				*insn,
+				BPF_ST_NOSPEC(),
+>>>>>>> origin/android16-base
 			};
 
 			cnt = ARRAY_SIZE(patch);
@@ -5725,6 +6493,12 @@ static int convert_ctx_accesses(struct bpf_verifier_env *env)
 			continue;
 		}
 
+<<<<<<< HEAD
+=======
+		if (!ctx_access)
+			continue;
+
+>>>>>>> origin/android16-base
 		if (env->insn_aux_data[i + delta].ptr_type != PTR_TO_CTX)
 			continue;
 
@@ -5781,7 +6555,11 @@ static int convert_ctx_accesses(struct bpf_verifier_env *env)
 					insn_buf[cnt++] = BPF_ALU64_IMM(BPF_RSH,
 									insn->dst_reg,
 									shift);
+<<<<<<< HEAD
 				insn_buf[cnt++] = BPF_ALU64_IMM(BPF_AND, insn->dst_reg,
+=======
+				insn_buf[cnt++] = BPF_ALU32_IMM(BPF_AND, insn->dst_reg,
+>>>>>>> origin/android16-base
 								(1ULL << size * 8) - 1);
 			}
 		}
@@ -6011,6 +6789,7 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 		    insn->code == (BPF_ALU | BPF_DIV | BPF_X)) {
 			bool is64 = BPF_CLASS(insn->code) == BPF_ALU64;
 			struct bpf_insn mask_and_div[] = {
+<<<<<<< HEAD
 				BPF_MOV32_REG(insn->src_reg, insn->src_reg),
 				/* Rx div 0 -> 0 */
 				BPF_JMP_IMM(BPF_JNE, insn->src_reg, 0, 2),
@@ -6023,16 +6802,39 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 				/* Rx mod 0 -> Rx */
 				BPF_JMP_IMM(BPF_JEQ, insn->src_reg, 0, 1),
 				*insn,
+=======
+				BPF_MOV_REG(BPF_CLASS(insn->code), BPF_REG_AX, insn->src_reg),
+				/* [R,W]x div 0 -> 0 */
+				BPF_JMP_IMM(BPF_JEQ, BPF_REG_AX, 0, 2),
+				BPF_RAW_REG(*insn, insn->dst_reg, BPF_REG_AX),
+				BPF_JMP_IMM(BPF_JA, 0, 0, 1),
+				BPF_ALU_REG(BPF_CLASS(insn->code), BPF_XOR, insn->dst_reg, insn->dst_reg),
+			};
+			struct bpf_insn mask_and_mod[] = {
+				BPF_MOV_REG(BPF_CLASS(insn->code), BPF_REG_AX, insn->src_reg),
+				BPF_JMP_IMM(BPF_JEQ, BPF_REG_AX, 0, 1 + (is64 ? 0 : 1)),
+				BPF_RAW_REG(*insn, insn->dst_reg, BPF_REG_AX),
+				BPF_JMP_IMM(BPF_JA, 0, 0, 1),
+				BPF_MOV32_REG(insn->dst_reg, insn->dst_reg),
+>>>>>>> origin/android16-base
 			};
 			struct bpf_insn *patchlet;
 
 			if (insn->code == (BPF_ALU64 | BPF_DIV | BPF_X) ||
 			    insn->code == (BPF_ALU | BPF_DIV | BPF_X)) {
+<<<<<<< HEAD
 				patchlet = mask_and_div + (is64 ? 1 : 0);
 				cnt = ARRAY_SIZE(mask_and_div) - (is64 ? 1 : 0);
 			} else {
 				patchlet = mask_and_mod + (is64 ? 1 : 0);
 				cnt = ARRAY_SIZE(mask_and_mod) - (is64 ? 1 : 0);
+=======
+				patchlet = mask_and_div;
+				cnt = ARRAY_SIZE(mask_and_div);
+			} else {
+				patchlet = mask_and_mod;
+				cnt = ARRAY_SIZE(mask_and_mod) - (is64 ? 2 : 0);
+>>>>>>> origin/android16-base
 			}
 
 			new_prog = bpf_patch_insn_data(env, i + delta, patchlet, cnt);
@@ -6070,7 +6872,11 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 			const u8 code_sub = BPF_ALU64 | BPF_SUB | BPF_X;
 			struct bpf_insn insn_buf[16];
 			struct bpf_insn *patch = &insn_buf[0];
+<<<<<<< HEAD
 			bool issrc, isneg;
+=======
+			bool issrc, isneg, isimm;
+>>>>>>> origin/android16-base
 			u32 off_reg;
 
 			aux = &env->insn_aux_data[i + delta];
@@ -6081,6 +6887,7 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 			isneg = aux->alu_state & BPF_ALU_NEG_VALUE;
 			issrc = (aux->alu_state & BPF_ALU_SANITIZE) ==
 				BPF_ALU_SANITIZE_SRC;
+<<<<<<< HEAD
 
 			off_reg = issrc ? insn->src_reg : insn->dst_reg;
 			if (isneg)
@@ -6098,11 +6905,35 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 				*patch++ = BPF_ALU64_REG(BPF_AND, off_reg,
 							 BPF_REG_AX);
 			}
+=======
+			isimm = aux->alu_state & BPF_ALU_IMMEDIATE;
+
+			off_reg = issrc ? insn->src_reg : insn->dst_reg;
+			if (isimm) {
+				*patch++ = BPF_MOV32_IMM(BPF_REG_AX, aux->alu_limit);
+			} else {
+				if (isneg)
+					*patch++ = BPF_ALU64_IMM(BPF_MUL, off_reg, -1);
+				*patch++ = BPF_MOV32_IMM(BPF_REG_AX, aux->alu_limit);
+				*patch++ = BPF_ALU64_REG(BPF_SUB, BPF_REG_AX, off_reg);
+				*patch++ = BPF_ALU64_REG(BPF_OR, BPF_REG_AX, off_reg);
+				*patch++ = BPF_ALU64_IMM(BPF_NEG, BPF_REG_AX, 0);
+				*patch++ = BPF_ALU64_IMM(BPF_ARSH, BPF_REG_AX, 63);
+				*patch++ = BPF_ALU64_REG(BPF_AND, BPF_REG_AX, off_reg);
+			}
+			if (!issrc)
+				*patch++ = BPF_MOV64_REG(insn->dst_reg, insn->src_reg);
+			insn->src_reg = BPF_REG_AX;
+>>>>>>> origin/android16-base
 			if (isneg)
 				insn->code = insn->code == code_add ?
 					     code_sub : code_add;
 			*patch++ = *insn;
+<<<<<<< HEAD
 			if (issrc && isneg)
+=======
+			if (issrc && isneg && !isimm)
+>>>>>>> origin/android16-base
 				*patch++ = BPF_ALU64_IMM(BPF_MUL, off_reg, -1);
 			cnt = patch - insn_buf;
 
@@ -6289,7 +7120,11 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr)
 	/* 'struct bpf_verifier_env' can be global, but since it's not small,
 	 * allocate/free it every time bpf_check() is called
 	 */
+<<<<<<< HEAD
 	env = kzalloc(sizeof(struct bpf_verifier_env), GFP_KERNEL);
+=======
+	env = kvzalloc(sizeof(struct bpf_verifier_env), GFP_KERNEL);
+>>>>>>> origin/android16-base
 	if (!env)
 		return -ENOMEM;
 	log = &env->log;
@@ -6325,6 +7160,12 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr)
 	if (!IS_ENABLED(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS))
 		env->strict_alignment = true;
 
+<<<<<<< HEAD
+=======
+	if (attr->prog_flags & BPF_F_ANY_ALIGNMENT)
+		env->strict_alignment = false;
+
+>>>>>>> origin/android16-base
 	ret = replace_map_fd_with_map_ptr(env);
 	if (ret < 0)
 		goto skip_full_check;
@@ -6413,6 +7254,10 @@ err_unlock:
 	mutex_unlock(&bpf_verifier_lock);
 	vfree(env->insn_aux_data);
 err_free_env:
+<<<<<<< HEAD
 	kfree(env);
+=======
+	kvfree(env);
+>>>>>>> origin/android16-base
 	return ret;
 }

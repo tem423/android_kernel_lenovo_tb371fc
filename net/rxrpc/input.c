@@ -446,7 +446,11 @@ static void rxrpc_input_data(struct rxrpc_call *call, struct sk_buff *skb,
 	if (state >= RXRPC_CALL_COMPLETE)
 		return;
 
+<<<<<<< HEAD
 	if (call->state == RXRPC_CALL_SERVER_RECV_REQUEST) {
+=======
+	if (state == RXRPC_CALL_SERVER_RECV_REQUEST) {
+>>>>>>> origin/android16-base
 		unsigned long timo = READ_ONCE(call->next_req_timo);
 		unsigned long now, expect_req_by;
 

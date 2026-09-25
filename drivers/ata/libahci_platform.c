@@ -421,14 +421,32 @@ struct ahci_host_priv *ahci_platform_get_resources(struct platform_device *pdev,
 		}
 	}
 
+<<<<<<< HEAD
 	hpriv->nports = child_nodes = of_get_child_count(dev->of_node);
+=======
+	/*
+	 * Too many sub-nodes most likely means having something wrong with
+	 * the firmware.
+	 */
+	child_nodes = of_get_child_count(dev->of_node);
+	if (child_nodes > AHCI_MAX_PORTS) {
+		rc = -EINVAL;
+		goto err_out;
+	}
+>>>>>>> origin/android16-base
 
 	/*
 	 * If no sub-node was found, we still need to set nports to
 	 * one in order to be able to use the
 	 * ahci_platform_[en|dis]able_[phys|regulators] functions.
 	 */
+<<<<<<< HEAD
 	if (!child_nodes)
+=======
+	if (child_nodes)
+		hpriv->nports = child_nodes;
+	else
+>>>>>>> origin/android16-base
 		hpriv->nports = 1;
 
 	hpriv->phys = devm_kcalloc(dev, hpriv->nports, sizeof(*hpriv->phys), GFP_KERNEL);
@@ -544,11 +562,20 @@ int ahci_platform_init_host(struct platform_device *pdev,
 	int i, irq, n_ports, rc;
 
 	irq = platform_get_irq(pdev, 0);
+<<<<<<< HEAD
 	if (irq <= 0) {
+=======
+	if (irq < 0) {
+>>>>>>> origin/android16-base
 		if (irq != -EPROBE_DEFER)
 			dev_err(dev, "no irq\n");
 		return irq;
 	}
+<<<<<<< HEAD
+=======
+	if (!irq)
+		return -EINVAL;
+>>>>>>> origin/android16-base
 
 	hpriv->irq = irq;
 

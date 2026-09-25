@@ -200,6 +200,10 @@ static const struct dma_fence_ops timeline_fence_ops = {
  */
 static void sync_timeline_signal(struct sync_timeline *obj, unsigned int inc)
 {
+<<<<<<< HEAD
+=======
+	LIST_HEAD(signalled);
+>>>>>>> origin/android16-base
 	struct sync_pt *pt, *next;
 
 	trace_sync_timeline(obj);
@@ -212,6 +216,7 @@ static void sync_timeline_signal(struct sync_timeline *obj, unsigned int inc)
 		if (!timeline_fence_signaled(&pt->base))
 			break;
 
+<<<<<<< HEAD
 		list_del_init(&pt->link);
 		rb_erase(&pt->node, &obj->pt_tree);
 
@@ -223,10 +228,25 @@ static void sync_timeline_signal(struct sync_timeline *obj, unsigned int inc)
 		 * prevent deadlocking on timeline->lock inside
 		 * timeline_fence_release().
 		 */
+=======
+		dma_fence_get(&pt->base);
+
+		list_move_tail(&pt->link, &signalled);
+		rb_erase(&pt->node, &obj->pt_tree);
+
+>>>>>>> origin/android16-base
 		dma_fence_signal_locked(&pt->base);
 	}
 
 	spin_unlock_irq(&obj->lock);
+<<<<<<< HEAD
+=======
+
+	list_for_each_entry_safe(pt, next, &signalled, link) {
+		list_del_init(&pt->link);
+		dma_fence_put(&pt->base);
+	}
+>>>>>>> origin/android16-base
 }
 
 /**

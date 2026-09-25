@@ -132,13 +132,21 @@ static irqreturn_t i2s_irq_handler(int irq, void *dev_id)
 
 		/* Error Handling: TX */
 		if (isr[i] & ISR_TXFO) {
+<<<<<<< HEAD
 			dev_err(dev->dev, "TX overrun (ch_id=%d)\n", i);
+=======
+			dev_err_ratelimited(dev->dev, "TX overrun (ch_id=%d)\n", i);
+>>>>>>> origin/android16-base
 			irq_valid = true;
 		}
 
 		/* Error Handling: TX */
 		if (isr[i] & ISR_RXFO) {
+<<<<<<< HEAD
 			dev_err(dev->dev, "RX overrun (ch_id=%d)\n", i);
+=======
+			dev_err_ratelimited(dev->dev, "RX overrun (ch_id=%d)\n", i);
+>>>>>>> origin/android16-base
 			irq_valid = true;
 		}
 	}

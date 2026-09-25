@@ -684,6 +684,10 @@ spufs_init_isolated_loader(void)
 		return;
 
 	loader = of_get_property(dn, "loader", &size);
+<<<<<<< HEAD
+=======
+	of_node_put(dn);
+>>>>>>> origin/android16-base
 	if (!loader)
 		return;
 

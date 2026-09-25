@@ -119,6 +119,13 @@ static void clk_generated_best_diff(struct clk_rate_request *req,
 		tmp_rate = parent_rate;
 	else
 		tmp_rate = parent_rate / div;
+<<<<<<< HEAD
+=======
+
+	if (tmp_rate < req->min_rate || tmp_rate > req->max_rate)
+		return;
+
+>>>>>>> origin/android16-base
 	tmp_diff = abs(req->rate - tmp_rate);
 
 	if (*best_diff < 0 || *best_diff > tmp_diff) {

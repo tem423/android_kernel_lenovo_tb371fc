@@ -128,6 +128,15 @@ long arch_ptrace(struct task_struct *child, long request,
 	unsigned long tmp;
 	long ret = -EIO;
 
+<<<<<<< HEAD
+=======
+	unsigned long user_regs_struct_size = sizeof(struct user_regs_struct);
+#ifdef CONFIG_64BIT
+	if (is_compat_task())
+		user_regs_struct_size /= 2;
+#endif
+
+>>>>>>> origin/android16-base
 	switch (request) {
 
 	/* Read the word at location addr in the USER area.  For ptraced
@@ -183,14 +192,22 @@ long arch_ptrace(struct task_struct *child, long request,
 		return copy_regset_to_user(child,
 					   task_user_regset_view(current),
 					   REGSET_GENERAL,
+<<<<<<< HEAD
 					   0, sizeof(struct user_regs_struct),
+=======
+					   0, user_regs_struct_size,
+>>>>>>> origin/android16-base
 					   datap);
 
 	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
 		return copy_regset_from_user(child,
 					     task_user_regset_view(current),
 					     REGSET_GENERAL,
+<<<<<<< HEAD
 					     0, sizeof(struct user_regs_struct),
+=======
+					     0, user_regs_struct_size,
+>>>>>>> origin/android16-base
 					     datap);
 
 	case PTRACE_GETFPREGS:	/* Get the child FPU state. */
@@ -304,6 +321,14 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
 			}
 		}
 		break;
+<<<<<<< HEAD
+=======
+	case PTRACE_GETREGS:
+	case PTRACE_SETREGS:
+	case PTRACE_GETFPREGS:
+	case PTRACE_SETFPREGS:
+		return arch_ptrace(child, request, addr, data);
+>>>>>>> origin/android16-base
 
 	default:
 		ret = compat_ptrace_request(child, request, addr, data);

@@ -20,7 +20,11 @@ struct i40e_diag_reg_test_info {
 	u32 stride;	/* bytes between each element */
 };
 
+<<<<<<< HEAD
 extern struct i40e_diag_reg_test_info i40e_reg_list[];
+=======
+extern const struct i40e_diag_reg_test_info i40e_reg_list[];
+>>>>>>> origin/android16-base
 
 i40e_status i40e_diag_reg_test(struct i40e_hw *hw);
 i40e_status i40e_diag_eeprom_test(struct i40e_hw *hw);

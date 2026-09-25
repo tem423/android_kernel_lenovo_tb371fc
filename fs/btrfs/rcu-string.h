@@ -18,7 +18,15 @@ static inline struct rcu_string *rcu_string_strdup(const char *src, gfp_t mask)
 					 (len * sizeof(char)), mask);
 	if (!ret)
 		return ret;
+<<<<<<< HEAD
 	strncpy(ret->str, src, len);
+=======
+	/* Warn if the source got unexpectedly truncated. */
+	if (WARN_ON(strscpy(ret->str, src, len) < 0)) {
+		kfree(ret);
+		return NULL;
+	}
+>>>>>>> origin/android16-base
 	return ret;
 }
 

@@ -779,6 +779,10 @@ struct i40iw_allocate_stag_info {
 	bool use_hmc_fcn_index;
 	u8 hmc_fcn_index;
 	bool use_pf_rid;
+<<<<<<< HEAD
+=======
+	bool all_memory;
+>>>>>>> origin/android16-base
 };
 
 struct i40iw_reg_ns_stag_info {
@@ -797,6 +801,10 @@ struct i40iw_reg_ns_stag_info {
 	bool use_hmc_fcn_index;
 	u8 hmc_fcn_index;
 	bool use_pf_rid;
+<<<<<<< HEAD
+=======
+	bool all_memory;
+>>>>>>> origin/android16-base
 };
 
 struct i40iw_fast_reg_stag_info {

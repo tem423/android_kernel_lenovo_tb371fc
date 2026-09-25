@@ -817,6 +817,15 @@ static int exynos_adc_probe(struct platform_device *pdev)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	/* leave out any TS related code if unreachable */
+	if (IS_REACHABLE(CONFIG_INPUT)) {
+		has_ts = of_property_read_bool(pdev->dev.of_node,
+					       "has-touchscreen") || pdata;
+	}
+
+>>>>>>> origin/android16-base
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0) {
 		dev_err(&pdev->dev, "no irq resource?\n");
@@ -824,11 +833,23 @@ static int exynos_adc_probe(struct platform_device *pdev)
 	}
 	info->irq = irq;
 
+<<<<<<< HEAD
 	irq = platform_get_irq(pdev, 1);
 	if (irq == -EPROBE_DEFER)
 		return irq;
 
 	info->tsirq = irq;
+=======
+	if (has_ts) {
+		irq = platform_get_irq(pdev, 1);
+		if (irq == -EPROBE_DEFER)
+			return irq;
+
+		info->tsirq = irq;
+	} else {
+		info->tsirq = -1;
+	}
+>>>>>>> origin/android16-base
 
 	info->dev = &pdev->dev;
 
@@ -895,12 +916,15 @@ static int exynos_adc_probe(struct platform_device *pdev)
 	if (info->data->init_hw)
 		info->data->init_hw(info);
 
+<<<<<<< HEAD
 	/* leave out any TS related code if unreachable */
 	if (IS_REACHABLE(CONFIG_INPUT)) {
 		has_ts = of_property_read_bool(pdev->dev.of_node,
 					       "has-touchscreen") || pdata;
 	}
 
+=======
+>>>>>>> origin/android16-base
 	if (pdata)
 		info->delay = pdata->delay;
 	else

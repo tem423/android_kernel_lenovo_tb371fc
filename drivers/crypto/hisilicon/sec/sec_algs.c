@@ -457,7 +457,11 @@ static void sec_skcipher_alg_callback(struct sec_bd_info *sec_resp,
 		 */
 	}
 
+<<<<<<< HEAD
 	mutex_lock(&ctx->queue->queuelock);
+=======
+	spin_lock_bh(&ctx->queue->queuelock);
+>>>>>>> origin/android16-base
 	/* Put the IV in place for chained cases */
 	switch (ctx->cipher_alg) {
 	case SEC_C_AES_CBC_128:
@@ -517,7 +521,11 @@ static void sec_skcipher_alg_callback(struct sec_bd_info *sec_resp,
 			list_del(&backlog_req->backlog_head);
 		}
 	}
+<<<<<<< HEAD
 	mutex_unlock(&ctx->queue->queuelock);
+=======
+	spin_unlock_bh(&ctx->queue->queuelock);
+>>>>>>> origin/android16-base
 
 	mutex_lock(&sec_req->lock);
 	list_del(&sec_req_el->head);
@@ -806,7 +814,11 @@ static int sec_alg_skcipher_crypto(struct skcipher_request *skreq,
 	 */
 
 	/* Grab a big lock for a long time to avoid concurrency issues */
+<<<<<<< HEAD
 	mutex_lock(&queue->queuelock);
+=======
+	spin_lock_bh(&queue->queuelock);
+>>>>>>> origin/android16-base
 
 	/*
 	 * Can go on to queue if we have space in either:
@@ -822,6 +834,7 @@ static int sec_alg_skcipher_crypto(struct skcipher_request *skreq,
 		ret = -EBUSY;
 		if ((skreq->base.flags & CRYPTO_TFM_REQ_MAY_BACKLOG)) {
 			list_add_tail(&sec_req->backlog_head, &ctx->backlog);
+<<<<<<< HEAD
 			mutex_unlock(&queue->queuelock);
 			goto out;
 		}
@@ -831,6 +844,17 @@ static int sec_alg_skcipher_crypto(struct skcipher_request *skreq,
 	}
 	ret = sec_send_request(sec_req, queue);
 	mutex_unlock(&queue->queuelock);
+=======
+			spin_unlock_bh(&queue->queuelock);
+			goto out;
+		}
+
+		spin_unlock_bh(&queue->queuelock);
+		goto err_free_elements;
+	}
+	ret = sec_send_request(sec_req, queue);
+	spin_unlock_bh(&queue->queuelock);
+>>>>>>> origin/android16-base
 	if (ret)
 		goto err_free_elements;
 
@@ -889,7 +913,11 @@ static int sec_alg_skcipher_init(struct crypto_skcipher *tfm)
 	if (IS_ERR(ctx->queue))
 		return PTR_ERR(ctx->queue);
 
+<<<<<<< HEAD
 	mutex_init(&ctx->queue->queuelock);
+=======
+	spin_lock_init(&ctx->queue->queuelock);
+>>>>>>> origin/android16-base
 	ctx->queue->havesoftqueue = false;
 
 	return 0;

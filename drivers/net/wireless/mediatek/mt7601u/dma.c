@@ -160,8 +160,12 @@ mt7601u_rx_process_entry(struct mt7601u_dev *dev, struct mt7601u_dma_buf_rx *e)
 
 	if (new_p) {
 		/* we have one extra ref from the allocator */
+<<<<<<< HEAD
 		__free_pages(e->p, MT_RX_ORDER);
 
+=======
+		put_page(e->p);
+>>>>>>> origin/android16-base
 		e->p = new_p;
 	}
 }
@@ -318,7 +322,10 @@ static int mt7601u_dma_submit_tx(struct mt7601u_dev *dev,
 	}
 
 	e = &q->e[q->end];
+<<<<<<< HEAD
 	e->skb = skb;
+=======
+>>>>>>> origin/android16-base
 	usb_fill_bulk_urb(e->urb, usb_dev, snd_pipe, skb->data, skb->len,
 			  mt7601u_complete_tx, q);
 	ret = usb_submit_urb(e->urb, GFP_ATOMIC);
@@ -336,6 +343,10 @@ static int mt7601u_dma_submit_tx(struct mt7601u_dev *dev,
 
 	q->end = (q->end + 1) % q->entries;
 	q->used++;
+<<<<<<< HEAD
+=======
+	e->skb = skb;
+>>>>>>> origin/android16-base
 
 	if (q->used >= q->entries)
 		ieee80211_stop_queue(dev->hw, skb_get_queue_mapping(skb));

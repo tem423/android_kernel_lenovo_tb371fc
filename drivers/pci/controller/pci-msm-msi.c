@@ -86,7 +86,11 @@ static void msm_msi_unmask_irq(struct irq_data *data)
 }
 
 static struct irq_chip msm_msi_irq_chip = {
+<<<<<<< HEAD
 	.name = "msm_pci_msi",
+=======
+	.name = "gic_msm_pci_msi",
+>>>>>>> origin/android16-base
 	.irq_enable = msm_msi_unmask_irq,
 	.irq_disable = msm_msi_mask_irq,
 	.irq_mask = msm_msi_mask_irq,

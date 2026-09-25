@@ -504,13 +504,20 @@ static int hisi_lpc_acpi_probe(struct device *hostdev)
 {
 	struct acpi_device *adev = ACPI_COMPANION(hostdev);
 	struct acpi_device *child;
+<<<<<<< HEAD
+=======
+	struct platform_device *pdev;
+>>>>>>> origin/android16-base
 	int ret;
 
 	/* Only consider the children of the host */
 	list_for_each_entry(child, &adev->children, node) {
 		const char *hid = acpi_device_hid(child);
 		const struct hisi_lpc_acpi_cell *cell;
+<<<<<<< HEAD
 		struct platform_device *pdev;
+=======
+>>>>>>> origin/android16-base
 		const struct resource *res;
 		bool found = false;
 		int num_res;
@@ -573,22 +580,39 @@ static int hisi_lpc_acpi_probe(struct device *hostdev)
 
 		ret = platform_device_add_resources(pdev, res, num_res);
 		if (ret)
+<<<<<<< HEAD
 			goto fail;
+=======
+			goto fail_put_device;
+>>>>>>> origin/android16-base
 
 		ret = platform_device_add_data(pdev, cell->pdata,
 					       cell->pdata_size);
 		if (ret)
+<<<<<<< HEAD
 			goto fail;
 
 		ret = platform_device_add(pdev);
 		if (ret)
 			goto fail;
+=======
+			goto fail_put_device;
+
+		ret = platform_device_add(pdev);
+		if (ret)
+			goto fail_put_device;
+>>>>>>> origin/android16-base
 
 		acpi_device_set_enumerated(child);
 	}
 
 	return 0;
 
+<<<<<<< HEAD
+=======
+fail_put_device:
+	platform_device_put(pdev);
+>>>>>>> origin/android16-base
 fail:
 	hisi_lpc_acpi_remove(hostdev);
 	return ret;

@@ -50,7 +50,11 @@ int sunxi_ccu_set_mmc_timing_mode(struct clk *clk, bool new_mode)
 EXPORT_SYMBOL_GPL(sunxi_ccu_set_mmc_timing_mode);
 
 /**
+<<<<<<< HEAD
  * sunxi_ccu_set_mmc_timing_mode: Get the current MMC clock timing mode
+=======
+ * sunxi_ccu_get_mmc_timing_mode: Get the current MMC clock timing mode
+>>>>>>> origin/android16-base
  * @clk: clock to query
  *
  * Returns 0 if the clock is in old timing mode, > 0 if it is in

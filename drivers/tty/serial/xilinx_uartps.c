@@ -365,6 +365,11 @@ static irqreturn_t cdns_uart_isr(int irq, void *dev_id)
 		isrstatus &= ~CDNS_UART_IXR_TXEMPTY;
 	}
 
+<<<<<<< HEAD
+=======
+	isrstatus &= port->read_status_mask;
+	isrstatus &= ~port->ignore_status_mask;
+>>>>>>> origin/android16-base
 	/*
 	 * Skip RX processing if RX is disabled as RXEMPTY will never be set
 	 * as read bytes will not be removed from the FIFO.
@@ -591,9 +596,16 @@ static void cdns_uart_start_tx(struct uart_port *port)
 	if (uart_circ_empty(&port->state->xmit))
 		return;
 
+<<<<<<< HEAD
 	cdns_uart_handle_tx(port);
 
 	writel(CDNS_UART_IXR_TXEMPTY, port->membase + CDNS_UART_ISR);
+=======
+	writel(CDNS_UART_IXR_TXEMPTY, port->membase + CDNS_UART_ISR);
+
+	cdns_uart_handle_tx(port);
+
+>>>>>>> origin/android16-base
 	/* Enable the TX Empty interrupt */
 	writel(CDNS_UART_IXR_TXEMPTY, port->membase + CDNS_UART_IER);
 }

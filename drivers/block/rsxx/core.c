@@ -179,15 +179,26 @@ static ssize_t rsxx_cram_read(struct file *fp, char __user *ubuf,
 {
 	struct rsxx_cardinfo *card = file_inode(fp)->i_private;
 	char *buf;
+<<<<<<< HEAD
 	ssize_t st;
+=======
+	int st;
+>>>>>>> origin/android16-base
 
 	buf = kzalloc(cnt, GFP_KERNEL);
 	if (!buf)
 		return -ENOMEM;
 
 	st = rsxx_creg_read(card, CREG_ADD_CRAM + (u32)*ppos, cnt, buf, 1);
+<<<<<<< HEAD
 	if (!st)
 		st = copy_to_user(ubuf, buf, cnt);
+=======
+	if (!st) {
+		if (copy_to_user(ubuf, buf, cnt))
+			st = -EFAULT;
+	}
+>>>>>>> origin/android16-base
 	kfree(buf);
 	if (st)
 		return st;
@@ -881,6 +892,10 @@ static int rsxx_pci_probe(struct pci_dev *dev,
 	card->event_wq = create_singlethread_workqueue(DRIVER_NAME"_event");
 	if (!card->event_wq) {
 		dev_err(CARD_TO_DEV(card), "Failed card event setup.\n");
+<<<<<<< HEAD
+=======
+		st = -ENOMEM;
+>>>>>>> origin/android16-base
 		goto failed_event_handler;
 	}
 

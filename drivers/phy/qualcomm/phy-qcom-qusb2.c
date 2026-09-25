@@ -395,7 +395,11 @@ static void qusb2_phy_set_tune2_param(struct qusb2_phy *qphy)
 {
 	struct device *dev = &qphy->phy->dev;
 	const struct qusb2_phy_cfg *cfg = qphy->cfg;
+<<<<<<< HEAD
 	u8 *val;
+=======
+	u8 *val, hstx_trim;
+>>>>>>> origin/android16-base
 
 	/* efuse register is optional */
 	if (!qphy->cell)
@@ -409,7 +413,17 @@ static void qusb2_phy_set_tune2_param(struct qusb2_phy *qphy)
 	 * set while configuring the phy.
 	 */
 	val = nvmem_cell_read(qphy->cell, NULL);
+<<<<<<< HEAD
 	if (IS_ERR(val) || !val[0]) {
+=======
+	if (IS_ERR(val)) {
+		dev_dbg(dev, "failed to read a valid hs-tx trim value\n");
+		return;
+	}
+	hstx_trim = val[0];
+	kfree(val);
+	if (!hstx_trim) {
+>>>>>>> origin/android16-base
 		dev_dbg(dev, "failed to read a valid hs-tx trim value\n");
 		return;
 	}
@@ -417,12 +431,19 @@ static void qusb2_phy_set_tune2_param(struct qusb2_phy *qphy)
 	/* Fused TUNE1/2 value is the higher nibble only */
 	if (cfg->update_tune1_with_efuse)
 		qusb2_write_mask(qphy->base, cfg->regs[QUSB2PHY_PORT_TUNE1],
+<<<<<<< HEAD
 				 val[0] << HSTX_TRIM_SHIFT,
 				 HSTX_TRIM_MASK);
 	else
 		qusb2_write_mask(qphy->base, cfg->regs[QUSB2PHY_PORT_TUNE2],
 				 val[0] << HSTX_TRIM_SHIFT,
 				 HSTX_TRIM_MASK);
+=======
+				 hstx_trim << HSTX_TRIM_SHIFT, HSTX_TRIM_MASK);
+	else
+		qusb2_write_mask(qphy->base, cfg->regs[QUSB2PHY_PORT_TUNE2],
+				 hstx_trim << HSTX_TRIM_SHIFT, HSTX_TRIM_MASK);
+>>>>>>> origin/android16-base
 }
 
 static int qusb2_phy_set_mode(struct phy *phy, enum phy_mode mode)

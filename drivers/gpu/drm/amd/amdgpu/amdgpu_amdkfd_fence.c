@@ -88,7 +88,11 @@ struct amdgpu_amdkfd_fence *to_amdgpu_amdkfd_fence(struct dma_fence *f)
 		return NULL;
 
 	fence = container_of(f, struct amdgpu_amdkfd_fence, base);
+<<<<<<< HEAD
 	if (fence && f->ops == &amdkfd_fence_ops)
+=======
+	if (f->ops == &amdkfd_fence_ops)
+>>>>>>> origin/android16-base
 		return fence;
 
 	return NULL;

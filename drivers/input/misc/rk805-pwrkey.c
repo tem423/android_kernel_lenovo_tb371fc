@@ -106,6 +106,10 @@ static struct platform_driver rk805_pwrkey_driver = {
 };
 module_platform_driver(rk805_pwrkey_driver);
 
+<<<<<<< HEAD
+=======
+MODULE_ALIAS("platform:rk805-pwrkey");
+>>>>>>> origin/android16-base
 MODULE_AUTHOR("Joseph Chen <chenjh@rock-chips.com>");
 MODULE_DESCRIPTION("RK805 PMIC Power Key driver");
 MODULE_LICENSE("GPL");

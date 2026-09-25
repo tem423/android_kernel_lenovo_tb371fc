@@ -660,6 +660,11 @@ static int cec_release(struct inode *inode, struct file *filp)
 		list_del(&data->xfer_list);
 	}
 	mutex_unlock(&adap->lock);
+<<<<<<< HEAD
+=======
+
+	mutex_lock(&fh->lock);
+>>>>>>> origin/android16-base
 	while (!list_empty(&fh->msgs)) {
 		struct cec_msg_entry *entry =
 			list_first_entry(&fh->msgs, struct cec_msg_entry, list);
@@ -677,6 +682,10 @@ static int cec_release(struct inode *inode, struct file *filp)
 			kfree(entry);
 		}
 	}
+<<<<<<< HEAD
+=======
+	mutex_unlock(&fh->lock);
+>>>>>>> origin/android16-base
 	kfree(fh);
 
 	cec_put_device(devnode);

@@ -7,6 +7,15 @@
 #include <dt-bindings/reset/imx7-reset.h>
 
 / {
+<<<<<<< HEAD
+=======
+	aliases {
+		usb0 = &usbotg1;
+		usb1 = &usbotg2;
+		usb2 = &usbh;
+	};
+
+>>>>>>> origin/android16-base
 	cpus {
 		cpu0: cpu@0 {
 			clock-frequency = <996000000>;

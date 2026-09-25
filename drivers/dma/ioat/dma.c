@@ -653,7 +653,11 @@ static void __cleanup(struct ioatdma_chan *ioat_chan, dma_addr_t phys_complete)
 	if (active - i == 0) {
 		dev_dbg(to_dev(ioat_chan), "%s: cancel completion timeout\n",
 			__func__);
+<<<<<<< HEAD
 		mod_timer(&ioat_chan->timer, jiffies + IDLE_TIMEOUT);
+=======
+		mod_timer_pending(&ioat_chan->timer, jiffies + IDLE_TIMEOUT);
+>>>>>>> origin/android16-base
 	}
 
 	/* microsecond delay by sysfs variable  per pending descriptor */
@@ -679,7 +683,11 @@ static void ioat_cleanup(struct ioatdma_chan *ioat_chan)
 
 		if (chanerr &
 		    (IOAT_CHANERR_HANDLE_MASK | IOAT_CHANERR_RECOVER_MASK)) {
+<<<<<<< HEAD
 			mod_timer(&ioat_chan->timer, jiffies + IDLE_TIMEOUT);
+=======
+			mod_timer_pending(&ioat_chan->timer, jiffies + IDLE_TIMEOUT);
+>>>>>>> origin/android16-base
 			ioat_eh(ioat_chan);
 		}
 	}
@@ -876,7 +884,11 @@ static void check_active(struct ioatdma_chan *ioat_chan)
 	}
 
 	if (test_and_clear_bit(IOAT_CHAN_ACTIVE, &ioat_chan->state))
+<<<<<<< HEAD
 		mod_timer(&ioat_chan->timer, jiffies + IDLE_TIMEOUT);
+=======
+		mod_timer_pending(&ioat_chan->timer, jiffies + IDLE_TIMEOUT);
+>>>>>>> origin/android16-base
 }
 
 void ioat_timer_event(struct timer_list *t)

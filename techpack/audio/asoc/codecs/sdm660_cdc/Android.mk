@@ -4,7 +4,11 @@
 
 AUDIO_CHIPSET := audio
 # Build/Package only in case of supported target
+<<<<<<< HEAD
 ifeq ($(call is-board-platform-in-list, sdm660),true)
+=======
+ifeq ($(call is-board-platform-in-list, sdm660 msm8953 msm8937),true)
+>>>>>>> origin/android16-base
 
 LOCAL_PATH := $(call my-dir)
 

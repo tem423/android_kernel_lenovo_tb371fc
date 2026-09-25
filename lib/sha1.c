@@ -10,6 +10,10 @@
 #include <linux/export.h>
 #include <linux/bitops.h>
 #include <linux/cryptohash.h>
+<<<<<<< HEAD
+=======
+#include <linux/string.h>
+>>>>>>> origin/android16-base
 #include <asm/unaligned.h>
 
 /*
@@ -55,7 +59,12 @@
 #define SHA_ROUND(t, input, fn, constant, A, B, C, D, E) do { \
 	__u32 TEMP = input(t); setW(t, TEMP); \
 	E += TEMP + rol32(A,5) + (fn) + (constant); \
+<<<<<<< HEAD
 	B = ror32(B, 2); } while (0)
+=======
+	B = ror32(B, 2); \
+	TEMP = E; E = D; D = C; C = B; B = A; A = TEMP; } while (0)
+>>>>>>> origin/android16-base
 
 #define T_0_15(t, A, B, C, D, E)  SHA_ROUND(t, SHA_SRC, (((C^D)&B)^D) , 0x5a827999, A, B, C, D, E )
 #define T_16_19(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, (((C^D)&B)^D) , 0x5a827999, A, B, C, D, E )
@@ -82,6 +91,10 @@
 void sha_transform(__u32 *digest, const char *data, __u32 *array)
 {
 	__u32 A, B, C, D, E;
+<<<<<<< HEAD
+=======
+	unsigned int i = 0;
+>>>>>>> origin/android16-base
 
 	A = digest[0];
 	B = digest[1];
@@ -90,6 +103,7 @@ void sha_transform(__u32 *digest, const char *data, __u32 *array)
 	E = digest[4];
 
 	/* Round 1 - iterations 0-16 take their input from 'data' */
+<<<<<<< HEAD
 	T_0_15( 0, A, B, C, D, E);
 	T_0_15( 1, E, A, B, C, D);
 	T_0_15( 2, D, E, A, B, C);
@@ -178,6 +192,26 @@ void sha_transform(__u32 *digest, const char *data, __u32 *array)
 	T_60_79(77, D, E, A, B, C);
 	T_60_79(78, C, D, E, A, B);
 	T_60_79(79, B, C, D, E, A);
+=======
+	for (; i < 16; ++i)
+		T_0_15(i, A, B, C, D, E);
+
+	/* Round 1 - tail. Input from 512-bit mixing array */
+	for (; i < 20; ++i)
+		T_16_19(i, A, B, C, D, E);
+
+	/* Round 2 */
+	for (; i < 40; ++i)
+		T_20_39(i, A, B, C, D, E);
+
+	/* Round 3 */
+	for (; i < 60; ++i)
+		T_40_59(i, A, B, C, D, E);
+
+	/* Round 4 */
+	for (; i < 80; ++i)
+		T_60_79(i, A, B, C, D, E);
+>>>>>>> origin/android16-base
 
 	digest[0] += A;
 	digest[1] += B;

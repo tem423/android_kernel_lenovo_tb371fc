@@ -49,7 +49,17 @@ static u32 _rtl8821ae_phy_rf_serial_read(struct ieee80211_hw *hw,
 static void _rtl8821ae_phy_rf_serial_write(struct ieee80211_hw *hw,
 					   enum radio_path rfpath, u32 offset,
 					   u32 data);
+<<<<<<< HEAD
 static u32 _rtl8821ae_phy_calculate_bit_shift(u32 bitmask);
+=======
+static u32 _rtl8821ae_phy_calculate_bit_shift(u32 bitmask)
+{
+	if (WARN_ON_ONCE(!bitmask))
+		return 0;
+
+	return __ffs(bitmask);
+}
+>>>>>>> origin/android16-base
 static bool _rtl8821ae_phy_bb8821a_config_parafile(struct ieee80211_hw *hw);
 /*static bool _rtl8812ae_phy_config_mac_with_headerfile(struct ieee80211_hw *hw);*/
 static bool _rtl8821ae_phy_config_mac_with_headerfile(struct ieee80211_hw *hw);
@@ -296,6 +306,7 @@ static void _rtl8821ae_phy_rf_serial_write(struct ieee80211_hw *hw,
 		 rfpath, pphyreg->rf3wire_offset, data_and_addr);
 }
 
+<<<<<<< HEAD
 static u32 _rtl8821ae_phy_calculate_bit_shift(u32 bitmask)
 {
 	u32 i;
@@ -307,6 +318,8 @@ static u32 _rtl8821ae_phy_calculate_bit_shift(u32 bitmask)
 	return i;
 }
 
+=======
+>>>>>>> origin/android16-base
 bool rtl8821ae_phy_mac_config(struct ieee80211_hw *hw)
 {
 	bool rtstatus = 0;
@@ -1608,7 +1621,11 @@ static void _rtl8821ae_phy_txpower_by_rate_configuration(struct ieee80211_hw *hw
 }
 
 /* string is in decimal */
+<<<<<<< HEAD
 static bool _rtl8812ae_get_integer_from_string(char *str, u8 *pint)
+=======
+static bool _rtl8812ae_get_integer_from_string(const char *str, u8 *pint)
+>>>>>>> origin/android16-base
 {
 	u16 i = 0;
 	*pint = 0;
@@ -1626,6 +1643,7 @@ static bool _rtl8812ae_get_integer_from_string(char *str, u8 *pint)
 	return true;
 }
 
+<<<<<<< HEAD
 static bool _rtl8812ae_eq_n_byte(u8 *str1, u8 *str2, u32 num)
 {
 	if (num == 0)
@@ -1638,6 +1656,8 @@ static bool _rtl8812ae_eq_n_byte(u8 *str1, u8 *str2, u32 num)
 	return true;
 }
 
+=======
+>>>>>>> origin/android16-base
 static s8 _rtl8812ae_phy_get_chnl_idx_of_txpwr_lmt(struct ieee80211_hw *hw,
 					      u8 band, u8 channel)
 {
@@ -1664,10 +1684,18 @@ static s8 _rtl8812ae_phy_get_chnl_idx_of_txpwr_lmt(struct ieee80211_hw *hw,
 	return channel_index;
 }
 
+<<<<<<< HEAD
 static void _rtl8812ae_phy_set_txpower_limit(struct ieee80211_hw *hw, u8 *pregulation,
 				      u8 *pband, u8 *pbandwidth,
 				      u8 *prate_section, u8 *prf_path,
 				      u8 *pchannel, u8 *ppower_limit)
+=======
+static void _rtl8812ae_phy_set_txpower_limit(struct ieee80211_hw *hw,
+				      const char *pregulation,
+				      const char *pband, const char *pbandwidth,
+				      const char *prate_section, const char *prf_path,
+				      const char *pchannel, const char *ppower_limit)
+>>>>>>> origin/android16-base
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &rtlpriv->phy;
@@ -1675,8 +1703,13 @@ static void _rtl8812ae_phy_set_txpower_limit(struct ieee80211_hw *hw, u8 *pregul
 	u8 channel_index;
 	s8 power_limit = 0, prev_power_limit, ret;
 
+<<<<<<< HEAD
 	if (!_rtl8812ae_get_integer_from_string((char *)pchannel, &channel) ||
 	    !_rtl8812ae_get_integer_from_string((char *)ppower_limit,
+=======
+	if (!_rtl8812ae_get_integer_from_string(pchannel, &channel) ||
+	    !_rtl8812ae_get_integer_from_string(ppower_limit,
+>>>>>>> origin/android16-base
 						&power_limit)) {
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 			 "Illegal index of pwr_lmt table [chnl %d][val %d]\n",
@@ -1686,6 +1719,7 @@ static void _rtl8812ae_phy_set_txpower_limit(struct ieee80211_hw *hw, u8 *pregul
 	power_limit = power_limit > MAX_POWER_INDEX ?
 		      MAX_POWER_INDEX : power_limit;
 
+<<<<<<< HEAD
 	if (_rtl8812ae_eq_n_byte(pregulation, (u8 *)("FCC"), 3))
 		regulation = 0;
 	else if (_rtl8812ae_eq_n_byte(pregulation, (u8 *)("MKK"), 3))
@@ -1722,6 +1756,44 @@ static void _rtl8812ae_phy_set_txpower_limit(struct ieee80211_hw *hw, u8 *pregul
 		bandwidth = 3;
 
 	if (_rtl8812ae_eq_n_byte(pband, (u8 *)("2.4G"), 4)) {
+=======
+	if (strcmp(pregulation, "FCC") == 0)
+		regulation = 0;
+	else if (strcmp(pregulation, "MKK") == 0)
+		regulation = 1;
+	else if (strcmp(pregulation, "ETSI") == 0)
+		regulation = 2;
+	else if (strcmp(pregulation, "WW13") == 0)
+		regulation = 3;
+
+	if (strcmp(prate_section, "CCK") == 0)
+		rate_section = 0;
+	else if (strcmp(prate_section, "OFDM") == 0)
+		rate_section = 1;
+	else if (strcmp(prate_section, "HT") == 0 &&
+		 strcmp(prf_path, "1T") == 0)
+		rate_section = 2;
+	else if (strcmp(prate_section, "HT") == 0 &&
+		 strcmp(prf_path, "2T") == 0)
+		rate_section = 3;
+	else if (strcmp(prate_section, "VHT") == 0 &&
+		 strcmp(prf_path, "1T") == 0)
+		rate_section = 4;
+	else if (strcmp(prate_section, "VHT") == 0 &&
+		 strcmp(prf_path, "2T") == 0)
+		rate_section = 5;
+
+	if (strcmp(pbandwidth, "20M") == 0)
+		bandwidth = 0;
+	else if (strcmp(pbandwidth, "40M") == 0)
+		bandwidth = 1;
+	else if (strcmp(pbandwidth, "80M") == 0)
+		bandwidth = 2;
+	else if (strcmp(pbandwidth, "160M") == 0)
+		bandwidth = 3;
+
+	if (strcmp(pband, "2.4G") == 0) {
+>>>>>>> origin/android16-base
 		ret = _rtl8812ae_phy_get_chnl_idx_of_txpwr_lmt(hw,
 							       BAND_ON_2_4G,
 							       channel);
@@ -1745,7 +1817,11 @@ static void _rtl8812ae_phy_set_txpower_limit(struct ieee80211_hw *hw, u8 *pregul
 			  regulation, bandwidth, rate_section, channel_index,
 			  rtlphy->txpwr_limit_2_4g[regulation][bandwidth]
 				[rate_section][channel_index][RF90_PATH_A]);
+<<<<<<< HEAD
 	} else if (_rtl8812ae_eq_n_byte(pband, (u8 *)("5G"), 2)) {
+=======
+	} else if (strcmp(pband, "5G") == 0) {
+>>>>>>> origin/android16-base
 		ret = _rtl8812ae_phy_get_chnl_idx_of_txpwr_lmt(hw,
 							       BAND_ON_5G,
 							       channel);
@@ -1776,10 +1852,17 @@ static void _rtl8812ae_phy_set_txpower_limit(struct ieee80211_hw *hw, u8 *pregul
 }
 
 static void _rtl8812ae_phy_config_bb_txpwr_lmt(struct ieee80211_hw *hw,
+<<<<<<< HEAD
 					  u8 *regulation, u8 *band,
 					  u8 *bandwidth, u8 *rate_section,
 					  u8 *rf_path, u8 *channel,
 					  u8 *power_limit)
+=======
+					  const char *regulation, const char *band,
+					  const char *bandwidth, const char *rate_section,
+					  const char *rf_path, const char *channel,
+					  const char *power_limit)
+>>>>>>> origin/android16-base
 {
 	_rtl8812ae_phy_set_txpower_limit(hw, regulation, band, bandwidth,
 					 rate_section, rf_path, channel,
@@ -1792,7 +1875,11 @@ static void _rtl8821ae_phy_read_and_config_txpwr_lmt(struct ieee80211_hw *hw)
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
 	u32 i = 0;
 	u32 array_len;
+<<<<<<< HEAD
 	u8 **array;
+=======
+	const char **array;
+>>>>>>> origin/android16-base
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE) {
 		array_len = RTL8812AE_TXPWR_LMT_ARRAY_LEN;
@@ -1806,6 +1893,7 @@ static void _rtl8821ae_phy_read_and_config_txpwr_lmt(struct ieee80211_hw *hw)
 		 "\n");
 
 	for (i = 0; i < array_len; i += 7) {
+<<<<<<< HEAD
 		u8 *regulation = array[i];
 		u8 *band = array[i+1];
 		u8 *bandwidth = array[i+2];
@@ -1813,6 +1901,15 @@ static void _rtl8821ae_phy_read_and_config_txpwr_lmt(struct ieee80211_hw *hw)
 		u8 *rf_path = array[i+4];
 		u8 *chnl = array[i+5];
 		u8 *val = array[i+6];
+=======
+		const char *regulation = array[i];
+		const char *band = array[i+1];
+		const char *bandwidth = array[i+2];
+		const char *rate = array[i+3];
+		const char *rf_path = array[i+4];
+		const char *chnl = array[i+5];
+		const char *val = array[i+6];
+>>>>>>> origin/android16-base
 
 		_rtl8812ae_phy_config_bb_txpwr_lmt(hw, regulation, band,
 						   bandwidth, rate, rf_path,

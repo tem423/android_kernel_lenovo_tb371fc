@@ -47,10 +47,17 @@ test_trace() {
 	fi
 	echo "testing $line for >$x<"
 	match=`echo $line | sed -e "s/>$x<//"`
+<<<<<<< HEAD
 	if [ "$line" == "$match" ]; then
 	    fail "$line does not have >$x< in it"
 	fi
 	let x=$x+2
+=======
+	if [ "$line" = "$match" ]; then
+	    fail "$line does not have >$x< in it"
+	fi
+	x=$((x+2))
+>>>>>>> origin/android16-base
     done
 }
 

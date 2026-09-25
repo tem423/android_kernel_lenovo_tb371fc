@@ -34,7 +34,11 @@ static int w1_strong_pullup = 1;
 module_param_named(strong_pullup, w1_strong_pullup, int, 0);
 
 /* enable/disable CRC checking on DS28E04-100 memory accesses */
+<<<<<<< HEAD
 static char w1_enable_crccheck = 1;
+=======
+static bool w1_enable_crccheck = true;
+>>>>>>> origin/android16-base
 
 #define W1_EEPROM_SIZE		512
 #define W1_PAGE_COUNT		16
@@ -341,15 +345,20 @@ static BIN_ATTR_RW(pio, 1);
 static ssize_t crccheck_show(struct device *dev, struct device_attribute *attr,
 			     char *buf)
 {
+<<<<<<< HEAD
 	if (put_user(w1_enable_crccheck + 0x30, buf))
 		return -EFAULT;
 
 	return sizeof(w1_enable_crccheck);
+=======
+	return sysfs_emit(buf, "%d\n", w1_enable_crccheck);
+>>>>>>> origin/android16-base
 }
 
 static ssize_t crccheck_store(struct device *dev, struct device_attribute *attr,
 			      const char *buf, size_t count)
 {
+<<<<<<< HEAD
 	char val;
 
 	if (count != 1 || !buf)
@@ -367,6 +376,14 @@ static ssize_t crccheck_store(struct device *dev, struct device_attribute *attr,
 	w1_enable_crccheck = val;
 
 	return sizeof(w1_enable_crccheck);
+=======
+	int err = kstrtobool(buf, &w1_enable_crccheck);
+
+	if (err)
+		return err;
+
+	return count;
+>>>>>>> origin/android16-base
 }
 
 static DEVICE_ATTR_RW(crccheck);

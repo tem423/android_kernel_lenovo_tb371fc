@@ -918,14 +918,34 @@ static int msm8916_wcd_digital_probe(struct platform_device *pdev)
 	ret = clk_prepare_enable(priv->mclk);
 	if (ret < 0) {
 		dev_err(dev, "failed to enable mclk %d\n", ret);
+<<<<<<< HEAD
 		return ret;
+=======
+		goto err_clk;
+>>>>>>> origin/android16-base
 	}
 
 	dev_set_drvdata(dev, priv);
 
+<<<<<<< HEAD
 	return devm_snd_soc_register_component(dev, &msm8916_wcd_digital,
 				      msm8916_wcd_digital_dai,
 				      ARRAY_SIZE(msm8916_wcd_digital_dai));
+=======
+	ret = devm_snd_soc_register_component(dev, &msm8916_wcd_digital,
+				      msm8916_wcd_digital_dai,
+				      ARRAY_SIZE(msm8916_wcd_digital_dai));
+	if (ret)
+		goto err_mclk;
+
+	return 0;
+
+err_mclk:
+	clk_disable_unprepare(priv->mclk);
+err_clk:
+	clk_disable_unprepare(priv->ahbclk);
+	return ret;
+>>>>>>> origin/android16-base
 }
 
 static int msm8916_wcd_digital_remove(struct platform_device *pdev)

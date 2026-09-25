@@ -448,12 +448,20 @@ plip_bh_timeout_error(struct net_device *dev, struct net_local *nl,
 	}
 	rcv->state = PLIP_PK_DONE;
 	if (rcv->skb) {
+<<<<<<< HEAD
 		kfree_skb(rcv->skb);
+=======
+		dev_kfree_skb_irq(rcv->skb);
+>>>>>>> origin/android16-base
 		rcv->skb = NULL;
 	}
 	snd->state = PLIP_PK_DONE;
 	if (snd->skb) {
+<<<<<<< HEAD
 		dev_kfree_skb(snd->skb);
+=======
+		dev_consume_skb_irq(snd->skb);
+>>>>>>> origin/android16-base
 		snd->skb = NULL;
 	}
 	spin_unlock_irq(&nl->lock);

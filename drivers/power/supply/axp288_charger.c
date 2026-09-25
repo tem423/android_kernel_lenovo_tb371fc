@@ -175,6 +175,7 @@ static inline int axp288_charger_set_cv(struct axp288_chrg_info *info, int cv)
 	u8 reg_val;
 	int ret;
 
+<<<<<<< HEAD
 	if (cv <= CV_4100MV) {
 		reg_val = CHRG_CCCV_CV_4100MV;
 		cv = CV_4100MV;
@@ -187,6 +188,20 @@ static inline int axp288_charger_set_cv(struct axp288_chrg_info *info, int cv)
 	} else {
 		reg_val = CHRG_CCCV_CV_4350MV;
 		cv = CV_4350MV;
+=======
+	if (cv >= CV_4350MV) {
+		reg_val = CHRG_CCCV_CV_4350MV;
+		cv = CV_4350MV;
+	} else if (cv >= CV_4200MV) {
+		reg_val = CHRG_CCCV_CV_4200MV;
+		cv = CV_4200MV;
+	} else if (cv >= CV_4150MV) {
+		reg_val = CHRG_CCCV_CV_4150MV;
+		cv = CV_4150MV;
+	} else {
+		reg_val = CHRG_CCCV_CV_4100MV;
+		cv = CV_4100MV;
+>>>>>>> origin/android16-base
 	}
 
 	reg_val = reg_val << CHRG_CCCV_CV_BIT_POS;
@@ -378,8 +393,13 @@ static int axp288_charger_usb_set_property(struct power_supply *psy,
 			dev_warn(&info->pdev->dev, "set charge current failed\n");
 		break;
 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+<<<<<<< HEAD
 		scaled_val = min(val->intval, info->max_cv);
 		scaled_val = DIV_ROUND_CLOSEST(scaled_val, 1000);
+=======
+		scaled_val = DIV_ROUND_CLOSEST(val->intval, 1000);
+		scaled_val = min(scaled_val, info->max_cv);
+>>>>>>> origin/android16-base
 		ret = axp288_charger_set_cv(info, scaled_val);
 		if (ret < 0)
 			dev_warn(&info->pdev->dev, "set charge voltage failed\n");
@@ -555,6 +575,7 @@ out:
 
 /*
  * The HP Pavilion x2 10 series comes in a number of variants:
+<<<<<<< HEAD
  * Bay Trail SoC    + AXP288 PMIC, DMI_BOARD_NAME: "815D"
  * Cherry Trail SoC + AXP288 PMIC, DMI_BOARD_NAME: "813E"
  * Cherry Trail SoC + TI PMIC,     DMI_BOARD_NAME: "827C" or "82F4"
@@ -563,6 +584,17 @@ out:
  *
  * 1. All variants use a Type-C connector which the AXP288 does not support, so
  * when using a Type-C charger it is not recognized. Unlike most AXP288 devices,
+=======
+ * Bay Trail SoC    + AXP288 PMIC, Micro-USB, DMI_BOARD_NAME: "8021"
+ * Bay Trail SoC    + AXP288 PMIC, Type-C,    DMI_BOARD_NAME: "815D"
+ * Cherry Trail SoC + AXP288 PMIC, Type-C,    DMI_BOARD_NAME: "813E"
+ * Cherry Trail SoC + TI PMIC,     Type-C,    DMI_BOARD_NAME: "827C" or "82F4"
+ *
+ * The variants with the AXP288 + Type-C connector are all kinds of special:
+ *
+ * 1. They use a Type-C connector which the AXP288 does not support, so when
+ * using a Type-C charger it is not recognized. Unlike most AXP288 devices,
+>>>>>>> origin/android16-base
  * this model actually has mostly working ACPI AC / Battery code, the ACPI code
  * "solves" this by simply setting the input_current_limit to 3A.
  * There are still some issues with the ACPI code, so we use this native driver,
@@ -585,12 +617,26 @@ out:
  */
 static const struct dmi_system_id axp288_hp_x2_dmi_ids[] = {
 	{
+<<<<<<< HEAD
 		/*
 		 * Bay Trail model has "Hewlett-Packard" as sys_vendor, Cherry
 		 * Trail model has "HP", so we only match on product_name.
 		 */
 		.matches = {
 			DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion x2 Detachable"),
+=======
+		.matches = {
+			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "HP Pavilion x2 Detachable"),
+			DMI_EXACT_MATCH(DMI_BOARD_NAME, "815D"),
+		},
+	},
+	{
+		.matches = {
+			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "HP"),
+			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "HP Pavilion x2 Detachable"),
+			DMI_EXACT_MATCH(DMI_BOARD_NAME, "813E"),
+>>>>>>> origin/android16-base
 		},
 	},
 	{} /* Terminating entry */

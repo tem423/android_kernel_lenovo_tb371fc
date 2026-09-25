@@ -778,6 +778,10 @@ static int _rtl92e_sta_up(struct net_device *dev, bool is_silent_reset)
 	else
 		netif_wake_queue(dev);
 
+<<<<<<< HEAD
+=======
+	priv->bfirst_after_down = false;
+>>>>>>> origin/android16-base
 	return 0;
 }
 
@@ -2579,13 +2583,21 @@ static void _rtl92e_pci_disconnect(struct pci_dev *pdev)
 			free_irq(dev->irq, dev);
 			priv->irq = 0;
 		}
+<<<<<<< HEAD
 		free_rtllib(dev);
+=======
+>>>>>>> origin/android16-base
 
 		if (dev->mem_start != 0) {
 			iounmap((void __iomem *)dev->mem_start);
 			release_mem_region(pci_resource_start(pdev, 1),
 					pci_resource_len(pdev, 1));
 		}
+<<<<<<< HEAD
+=======
+
+		free_rtllib(dev);
+>>>>>>> origin/android16-base
 	} else {
 		priv = rtllib_priv(dev);
 	}

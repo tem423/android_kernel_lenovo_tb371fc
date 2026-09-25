@@ -2228,6 +2228,10 @@ err_sw_init:
 err_ioremap:
 	free_netdev(netdev);
 err_alloc_netdev:
+<<<<<<< HEAD
+=======
+	pci_disable_pcie_error_reporting(pdev);
+>>>>>>> origin/android16-base
 	pci_release_mem_regions(pdev);
 err_pci_reg:
 err_dma:

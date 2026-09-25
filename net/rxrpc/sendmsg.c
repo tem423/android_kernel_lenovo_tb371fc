@@ -440,6 +440,15 @@ static int rxrpc_send_data(struct rxrpc_sock *rx,
 
 success:
 	ret = copied;
+<<<<<<< HEAD
+=======
+	if (READ_ONCE(call->state) == RXRPC_CALL_COMPLETE) {
+		read_lock_bh(&call->state_lock);
+		if (call->error < 0)
+			ret = call->error;
+		read_unlock_bh(&call->state_lock);
+	}
+>>>>>>> origin/android16-base
 out:
 	call->tx_pending = skb;
 	_leave(" = %d", ret);
@@ -683,7 +692,11 @@ int rxrpc_do_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg, size_t len)
 			if (call->tx_total_len != -1 ||
 			    call->tx_pending ||
 			    call->tx_top != 0)
+<<<<<<< HEAD
 				goto error_put;
+=======
+				goto out_put_unlock;
+>>>>>>> origin/android16-base
 			call->tx_total_len = p.call.tx_total_len;
 		}
 	}
@@ -703,7 +716,11 @@ int rxrpc_do_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg, size_t len)
 		/* Fall through */
 	case 1:
 		if (p.call.timeouts.hard > 0) {
+<<<<<<< HEAD
 			j = msecs_to_jiffies(p.call.timeouts.hard);
+=======
+			j = p.call.timeouts.hard * HZ;
+>>>>>>> origin/android16-base
 			now = jiffies;
 			j += now;
 			WRITE_ONCE(call->expect_term_by, j);

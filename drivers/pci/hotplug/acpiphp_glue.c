@@ -540,6 +540,10 @@ static void enable_slot(struct acpiphp_slot *slot, bool bridge)
 			slot->flags &= ~SLOT_ENABLED;
 			continue;
 		}
+<<<<<<< HEAD
+=======
+		pci_dev_put(dev);
+>>>>>>> origin/android16-base
 	}
 }
 

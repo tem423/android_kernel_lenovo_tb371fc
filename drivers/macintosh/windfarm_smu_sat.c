@@ -172,6 +172,10 @@ static void wf_sat_release(struct kref *ref)
 
 	if (sat->nr >= 0)
 		sats[sat->nr] = NULL;
+<<<<<<< HEAD
+=======
+	of_node_put(sat->node);
+>>>>>>> origin/android16-base
 	kfree(sat);
 }
 

@@ -33,6 +33,10 @@
 
 #include "pat_internal.h"
 #include "mm_internal.h"
+<<<<<<< HEAD
+=======
+#include "../../mm/internal.h"	/* is_cow_mapping() */
+>>>>>>> origin/android16-base
 
 #undef pr_fmt
 #define pr_fmt(fmt) "" fmt
@@ -74,7 +78,11 @@ int pat_debug_enable;
 static int __init pat_debug_setup(char *str)
 {
 	pat_debug_enable = 1;
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/android16-base
 }
 __setup("debugpat", pat_debug_setup);
 
@@ -954,6 +962,41 @@ static void free_pfn_range(u64 paddr, unsigned long size)
 		free_memtype(paddr, paddr + size);
 }
 
+<<<<<<< HEAD
+=======
+static int get_pat_info(struct vm_area_struct *vma, resource_size_t *paddr,
+		pgprot_t *pgprot)
+{
+	unsigned long prot;
+
+	VM_WARN_ON_ONCE(!(vma->vm_flags & VM_PAT));
+
+	/*
+	 * We need the starting PFN and cachemode used for track_pfn_remap()
+	 * that covered the whole VMA. For most mappings, we can obtain that
+	 * information from the page tables. For COW mappings, we might now
+	 * suddenly have anon folios mapped and follow_phys() will fail.
+	 *
+	 * Fallback to using vma->vm_pgoff, see remap_pfn_range_notrack(), to
+	 * detect the PFN. If we need the cachemode as well, we're out of luck
+	 * for now and have to fail fork().
+	 */
+	if (!follow_phys(vma, vma->vm_start, 0, &prot, paddr)) {
+		if (pgprot)
+			*pgprot = __pgprot(prot);
+		return 0;
+	}
+	if (is_cow_mapping(vma->vm_flags)) {
+		if (pgprot)
+			return -EINVAL;
+		*paddr = (resource_size_t)vma->vm_pgoff << PAGE_SHIFT;
+		return 0;
+	}
+	WARN_ON_ONCE(1);
+	return -EINVAL;
+}
+
+>>>>>>> origin/android16-base
 /*
  * track_pfn_copy is called when vma that is covering the pfnmap gets
  * copied through copy_page_range().
@@ -964,11 +1007,15 @@ static void free_pfn_range(u64 paddr, unsigned long size)
 int track_pfn_copy(struct vm_area_struct *vma)
 {
 	resource_size_t paddr;
+<<<<<<< HEAD
 	unsigned long prot;
+=======
+>>>>>>> origin/android16-base
 	unsigned long vma_size = vma->vm_end - vma->vm_start;
 	pgprot_t pgprot;
 
 	if (vma->vm_flags & VM_PAT) {
+<<<<<<< HEAD
 		/*
 		 * reserve the whole chunk covered by vma. We need the
 		 * starting address and protection from pte.
@@ -978,6 +1025,11 @@ int track_pfn_copy(struct vm_area_struct *vma)
 			return -EINVAL;
 		}
 		pgprot = __pgprot(prot);
+=======
+		if (get_pat_info(vma, &paddr, &pgprot))
+			return -EINVAL;
+		/* reserve the whole chunk covered by vma. */
+>>>>>>> origin/android16-base
 		return reserve_pfn_range(paddr, vma_size, &pgprot, 1);
 	}
 
@@ -1052,7 +1104,10 @@ void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
 		 unsigned long size)
 {
 	resource_size_t paddr;
+<<<<<<< HEAD
 	unsigned long prot;
+=======
+>>>>>>> origin/android16-base
 
 	if (vma && !(vma->vm_flags & VM_PAT))
 		return;
@@ -1060,11 +1115,16 @@ void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
 	/* free the chunk starting from pfn or the whole chunk */
 	paddr = (resource_size_t)pfn << PAGE_SHIFT;
 	if (!paddr && !size) {
+<<<<<<< HEAD
 		if (follow_phys(vma, vma->vm_start, 0, &prot, &paddr)) {
 			WARN_ON_ONCE(1);
 			return;
 		}
 
+=======
+		if (get_pat_info(vma, &paddr, NULL))
+			return;
+>>>>>>> origin/android16-base
 		size = vma->vm_end - vma->vm_start;
 	}
 	free_pfn_range(paddr, size);
@@ -1131,12 +1191,20 @@ static void *memtype_seq_start(struct seq_file *seq, loff_t *pos)
 
 static void *memtype_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 {
+<<<<<<< HEAD
+=======
+	kfree(v);
+>>>>>>> origin/android16-base
 	++*pos;
 	return memtype_get_idx(*pos);
 }
 
 static void memtype_seq_stop(struct seq_file *seq, void *v)
 {
+<<<<<<< HEAD
+=======
+	kfree(v);
+>>>>>>> origin/android16-base
 }
 
 static int memtype_seq_show(struct seq_file *seq, void *v)
@@ -1145,7 +1213,10 @@ static int memtype_seq_show(struct seq_file *seq, void *v)
 
 	seq_printf(seq, "%s @ 0x%Lx-0x%Lx\n", cattr_name(print_entry->type),
 			print_entry->start, print_entry->end);
+<<<<<<< HEAD
 	kfree(print_entry);
+=======
+>>>>>>> origin/android16-base
 
 	return 0;
 }

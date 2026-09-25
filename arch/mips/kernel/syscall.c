@@ -235,6 +235,7 @@ SYSCALL_DEFINE3(cachectl, char *, addr, int, nbytes, int, op)
 {
 	return -ENOSYS;
 }
+<<<<<<< HEAD
 
 /*
  * If we ever come here the user sp is bad.  Zap the process right away.
@@ -244,3 +245,5 @@ asmlinkage void bad_stack(void)
 {
 	do_exit(SIGSEGV);
 }
+=======
+>>>>>>> origin/android16-base

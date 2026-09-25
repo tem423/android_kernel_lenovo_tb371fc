@@ -35,6 +35,10 @@ hwdep_read_resp_buf(struct snd_efw *efw, char __user *buf, long remained,
 	type = SNDRV_FIREWIRE_EVENT_EFW_RESPONSE;
 	if (copy_to_user(buf, &type, sizeof(type)))
 		return -EFAULT;
+<<<<<<< HEAD
+=======
+	count += sizeof(type);
+>>>>>>> origin/android16-base
 	remained -= sizeof(type);
 	buf += sizeof(type);
 

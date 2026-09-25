@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
+<<<<<<< HEAD
 /* Copyright (c) 2015-2019, The Linux Foundation. All rights reserved.
+=======
+/*
+ * Copyright (c) 2015-2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 
 #include <linux/kernel.h>
@@ -9,6 +14,11 @@
 #include <linux/of.h>
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
+<<<<<<< HEAD
+=======
+#include <linux/gpio.h>
+#include <linux/of_gpio.h>
+>>>>>>> origin/android16-base
 #include "../../../drivers/clk/qcom/common.h"
 #include <linux/pinctrl/consumer.h>
 #include <linux/platform_device.h>
@@ -29,6 +39,11 @@ enum {
 	AUDIO_EXT_CLK_LPASS_CORE_HW_VOTE,
 	AUDIO_EXT_CLK_LPASS8,
 	AUDIO_EXT_CLK_LPASS_AUDIO_HW_VOTE,
+<<<<<<< HEAD
+=======
+	AUDIO_EXT_CLK_PM660_PMI,
+	AUDIO_EXT_CLK_DIV_CLK2,
+>>>>>>> origin/android16-base
 	AUDIO_EXT_CLK_LPASS_MAX,
 	AUDIO_EXT_CLK_EXTERNAL_PLL = AUDIO_EXT_CLK_LPASS_MAX,
 	AUDIO_EXT_CLK_MAX,
@@ -44,6 +59,10 @@ struct pinctrl_info {
 struct audio_ext_clk {
 	struct pinctrl_info pnctrl_info;
 	struct clk_fixed_factor fact;
+<<<<<<< HEAD
+=======
+	int gpio;
+>>>>>>> origin/android16-base
 };
 
 struct audio_ext_clk_priv {
@@ -70,8 +89,11 @@ static int audio_ext_clk_prepare(struct clk_hw *hw)
 	if ((clk_priv->clk_src >= AUDIO_EXT_CLK_LPASS) &&
 		(clk_priv->clk_src < AUDIO_EXT_CLK_LPASS_MAX))  {
 		clk_priv->clk_cfg.enable = 1;
+<<<<<<< HEAD
 		trace_printk("%s: vote for %d clock\n",
 			__func__, clk_priv->clk_src);
+=======
+>>>>>>> origin/android16-base
 		ret = afe_set_lpass_clk_cfg(IDX_RSVD_3, &clk_priv->clk_cfg);
 		if (ret < 0) {
 			pr_err_ratelimited("%s afe_set_digital_codec_core_clock failed\n",
@@ -105,7 +127,11 @@ static void audio_ext_clk_unprepare(struct clk_hw *hw)
 		ret = pinctrl_select_state(pnctrl_info->pinctrl,
 					   pnctrl_info->sleep);
 		if (ret) {
+<<<<<<< HEAD
 			pr_err("%s: active state select failed with %d\n",
+=======
+			pr_err("%s: sleep state select failed with %d\n",
+>>>>>>> origin/android16-base
 				__func__, ret);
 			return;
 		}
@@ -114,8 +140,11 @@ static void audio_ext_clk_unprepare(struct clk_hw *hw)
 	if ((clk_priv->clk_src >= AUDIO_EXT_CLK_LPASS) &&
 		(clk_priv->clk_src < AUDIO_EXT_CLK_LPASS_MAX))  {
 		clk_priv->clk_cfg.enable = 0;
+<<<<<<< HEAD
 		trace_printk("%s: unvote for %d clock\n",
 			__func__, clk_priv->clk_src);
+=======
+>>>>>>> origin/android16-base
 		ret = afe_set_lpass_clk_cfg(IDX_RSVD_3, &clk_priv->clk_cfg);
 		if (ret < 0)
 			pr_err_ratelimited("%s: afe_set_lpass_clk_cfg failed, ret = %d\n",
@@ -150,7 +179,11 @@ static int lpass_hw_vote_prepare(struct clk_hw *hw)
 	int ret;
 
 	if (clk_priv->clk_src == AUDIO_EXT_CLK_LPASS_CORE_HW_VOTE)  {
+<<<<<<< HEAD
 		trace_printk("%s: vote for %d clock\n",
+=======
+		pr_debug("%s: vote for %d clock\n",
+>>>>>>> origin/android16-base
 			__func__, clk_priv->clk_src);
 		ret = afe_vote_lpass_core_hw(AFE_LPASS_CORE_HW_MACRO_BLOCK,
 			"LPASS_HW_MACRO",
@@ -163,7 +196,11 @@ static int lpass_hw_vote_prepare(struct clk_hw *hw)
 	}
 
 	if (clk_priv->clk_src == AUDIO_EXT_CLK_LPASS_AUDIO_HW_VOTE)  {
+<<<<<<< HEAD
 		trace_printk("%s: vote for %d clock\n",
+=======
+		pr_debug("%s: vote for %d clock\n",
+>>>>>>> origin/android16-base
 			__func__, clk_priv->clk_src);
 		ret = afe_vote_lpass_core_hw(AFE_LPASS_CORE_HW_DCODEC_BLOCK,
 			"LPASS_HW_DCODEC",
@@ -184,7 +221,11 @@ static void lpass_hw_vote_unprepare(struct clk_hw *hw)
 	int ret = 0;
 
 	if (clk_priv->clk_src == AUDIO_EXT_CLK_LPASS_CORE_HW_VOTE) {
+<<<<<<< HEAD
 		trace_printk("%s: unvote for %d clock\n",
+=======
+		pr_debug("%s: unvote for %d clock\n",
+>>>>>>> origin/android16-base
 			__func__, clk_priv->clk_src);
 		ret = afe_unvote_lpass_core_hw(
 			AFE_LPASS_CORE_HW_MACRO_BLOCK,
@@ -196,7 +237,11 @@ static void lpass_hw_vote_unprepare(struct clk_hw *hw)
 	}
 
 	if (clk_priv->clk_src == AUDIO_EXT_CLK_LPASS_AUDIO_HW_VOTE) {
+<<<<<<< HEAD
 		trace_printk("%s: unvote for %d clock\n",
+=======
+		pr_debug("%s: unvote for %d clock\n",
+>>>>>>> origin/android16-base
 			__func__, clk_priv->clk_src);
 		ret = afe_unvote_lpass_core_hw(
 			AFE_LPASS_CORE_HW_DCODEC_BLOCK,
@@ -387,6 +432,35 @@ static struct audio_ext_clk audio_clk_array[] = {
 			},
 		},
 	},
+<<<<<<< HEAD
+=======
+	{
+		.gpio = -EINVAL,
+		.fact = {
+			.mult = 1,
+			.div = 1,
+			.hw.init = &(struct clk_init_data){
+				.name = "audio_ext_pm660_pmi_clk",
+				.parent_names = (const char *[]){ "div_clk1" },
+				.num_parents = 1,
+				.ops = &audio_ext_clk_dummy_ops,
+			},
+		},
+	},
+	{
+		.pnctrl_info = {NULL},
+		.fact = {
+			.mult = 1,
+			.div = 1,
+			.hw.init = &(struct clk_init_data){
+				.name = "audio_ext_div_clk2",
+				.parent_names = (const char *[]){ "div_clk2" },
+				.num_parents = 1,
+				.ops = &audio_ext_clk_ops,
+			},
+		},
+	},
+>>>>>>> origin/android16-base
 };
 
 static int audio_get_pinctrl(struct platform_device *pdev)
@@ -510,6 +584,10 @@ static int audio_ref_clk_probe(struct platform_device *pdev)
 	int ret;
 	struct audio_ext_clk_priv *clk_priv;
 	u32 clk_freq = 0, clk_id = 0, clk_src = 0, use_pinctrl = 0;
+<<<<<<< HEAD
+=======
+	int clk_gpio;
+>>>>>>> origin/android16-base
 
 	clk_priv = devm_kzalloc(&pdev->dev, sizeof(*clk_priv), GFP_KERNEL);
 	if (!clk_priv)
@@ -581,11 +659,37 @@ static int audio_ref_clk_probe(struct platform_device *pdev)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	clk_gpio = of_get_named_gpio(pdev->dev.of_node,
+				"qcom,audio-ref-clk-gpio", 0);
+	if (clk_gpio > 0) {
+		ret = gpio_request(clk_gpio, "EXT_CLK");
+		if (ret) {
+			dev_err(&pdev->dev,
+				"Request ext clk gpio failed %d, err:%d\n",
+				clk_gpio, ret);
+			return ret;
+		}
+		if (of_property_read_bool(pdev->dev.of_node,
+				"qcom,node_has_rpm_clock")) {
+			clk_priv->audio_clk.gpio = clk_gpio;
+		}
+	}
+
+>>>>>>> origin/android16-base
 	ret = audio_get_clk_data(pdev);
 	if (ret) {
 		dev_err(&pdev->dev, "%s: clk_init is failed\n",
 			__func__);
+<<<<<<< HEAD
 		audio_put_pinctrl(pdev);
+=======
+		if (use_pinctrl)
+			audio_put_pinctrl(pdev);
+		if (clk_priv->audio_clk.gpio > 0)
+			gpio_free(clk_priv->audio_clk.gpio);
+>>>>>>> origin/android16-base
 		return ret;
 	}
 	return 0;
@@ -593,7 +697,15 @@ static int audio_ref_clk_probe(struct platform_device *pdev)
 
 static int audio_ref_clk_remove(struct platform_device *pdev)
 {
+<<<<<<< HEAD
 	audio_put_pinctrl(pdev);
+=======
+	struct audio_ext_clk_priv *clk_priv = platform_get_drvdata(pdev);
+
+	audio_put_pinctrl(pdev);
+	if (clk_priv->audio_clk.gpio > 0)
+		gpio_free(clk_priv->audio_clk.gpio);
+>>>>>>> origin/android16-base
 
 	return 0;
 }

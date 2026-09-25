@@ -137,6 +137,14 @@ struct dm_snapshot {
 	 * for them to be committed.
 	 */
 	struct bio_list bios_queued_during_merge;
+<<<<<<< HEAD
+=======
+
+	/*
+	 * Flush data after merge.
+	 */
+	struct bio flush_bio;
+>>>>>>> origin/android16-base
 };
 
 /*
@@ -789,7 +797,11 @@ static int dm_add_exception(void *context, chunk_t old, chunk_t new)
 static uint32_t __minimum_chunk_size(struct origin *o)
 {
 	struct dm_snapshot *snap;
+<<<<<<< HEAD
 	unsigned chunk_size = 0;
+=======
+	unsigned chunk_size = rounddown_pow_of_two(UINT_MAX);
+>>>>>>> origin/android16-base
 
 	if (o)
 		list_for_each_entry(snap, &o->snapshots, list)
@@ -1061,6 +1073,20 @@ shut:
 
 static void error_bios(struct bio *bio);
 
+<<<<<<< HEAD
+=======
+static int flush_data(struct dm_snapshot *s)
+{
+	struct bio *flush_bio = &s->flush_bio;
+
+	bio_reset(flush_bio);
+	bio_set_dev(flush_bio, s->origin->bdev);
+	flush_bio->bi_opf = REQ_OP_WRITE | REQ_PREFLUSH;
+
+	return submit_bio_wait(flush_bio);
+}
+
+>>>>>>> origin/android16-base
 static void merge_callback(int read_err, unsigned long write_err, void *context)
 {
 	struct dm_snapshot *s = context;
@@ -1074,6 +1100,14 @@ static void merge_callback(int read_err, unsigned long write_err, void *context)
 		goto shut;
 	}
 
+<<<<<<< HEAD
+=======
+	if (flush_data(s) < 0) {
+		DMERR("Flush after merge failed: shutting down merge");
+		goto shut;
+	}
+
+>>>>>>> origin/android16-base
 	if (s->store->type->commit_merge(s->store,
 					 s->num_merging_chunks) < 0) {
 		DMERR("Write error in exception store: shutting down merge");
@@ -1198,6 +1232,10 @@ static int snapshot_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	s->first_merging_chunk = 0;
 	s->num_merging_chunks = 0;
 	bio_list_init(&s->bios_queued_during_merge);
+<<<<<<< HEAD
+=======
+	bio_init(&s->flush_bio, NULL, 0);
+>>>>>>> origin/android16-base
 
 	/* Allocate hash table for COW data */
 	if (init_hash_tables(s)) {
@@ -1264,6 +1302,10 @@ static int snapshot_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 
 	if (!s->store->chunk_size) {
 		ti->error = "Chunk size not set";
+<<<<<<< HEAD
+=======
+		r = -EINVAL;
+>>>>>>> origin/android16-base
 		goto bad_read_metadata;
 	}
 
@@ -1391,6 +1433,11 @@ static void snapshot_dtr(struct dm_target *ti)
 
 	mutex_destroy(&s->lock);
 
+<<<<<<< HEAD
+=======
+	bio_uninit(&s->flush_bio);
+
+>>>>>>> origin/android16-base
 	dm_put_device(ti, s->cow);
 
 	dm_put_device(ti, s->origin);

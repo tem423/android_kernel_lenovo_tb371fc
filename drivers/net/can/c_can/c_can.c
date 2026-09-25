@@ -212,6 +212,7 @@ static const struct can_bittiming_const c_can_bittiming_const = {
 	.brp_inc = 1,
 };
 
+<<<<<<< HEAD
 static inline void c_can_pm_runtime_enable(const struct c_can_priv *priv)
 {
 	if (priv->device)
@@ -224,6 +225,8 @@ static inline void c_can_pm_runtime_disable(const struct c_can_priv *priv)
 		pm_runtime_disable(priv->device);
 }
 
+=======
+>>>>>>> origin/android16-base
 static inline void c_can_pm_runtime_get_sync(const struct c_can_priv *priv)
 {
 	if (priv->device)
@@ -1003,7 +1006,10 @@ static int c_can_handle_bus_err(struct net_device *dev,
 
 	/* common for all type of bus errors */
 	priv->can.can_stats.bus_error++;
+<<<<<<< HEAD
 	stats->rx_errors++;
+=======
+>>>>>>> origin/android16-base
 
 	/* propagate the error condition to the CAN stack */
 	skb = alloc_can_err_skb(dev, &cf);
@@ -1020,26 +1026,50 @@ static int c_can_handle_bus_err(struct net_device *dev,
 	case LEC_STUFF_ERROR:
 		netdev_dbg(dev, "stuff error\n");
 		cf->data[2] |= CAN_ERR_PROT_STUFF;
+<<<<<<< HEAD
+=======
+		stats->rx_errors++;
+>>>>>>> origin/android16-base
 		break;
 	case LEC_FORM_ERROR:
 		netdev_dbg(dev, "form error\n");
 		cf->data[2] |= CAN_ERR_PROT_FORM;
+<<<<<<< HEAD
+=======
+		stats->rx_errors++;
+>>>>>>> origin/android16-base
 		break;
 	case LEC_ACK_ERROR:
 		netdev_dbg(dev, "ack error\n");
 		cf->data[3] = CAN_ERR_PROT_LOC_ACK;
+<<<<<<< HEAD
+=======
+		stats->tx_errors++;
+>>>>>>> origin/android16-base
 		break;
 	case LEC_BIT1_ERROR:
 		netdev_dbg(dev, "bit1 error\n");
 		cf->data[2] |= CAN_ERR_PROT_BIT1;
+<<<<<<< HEAD
+=======
+		stats->tx_errors++;
+>>>>>>> origin/android16-base
 		break;
 	case LEC_BIT0_ERROR:
 		netdev_dbg(dev, "bit0 error\n");
 		cf->data[2] |= CAN_ERR_PROT_BIT0;
+<<<<<<< HEAD
+=======
+		stats->tx_errors++;
+>>>>>>> origin/android16-base
 		break;
 	case LEC_CRC_ERROR:
 		netdev_dbg(dev, "CRC error\n");
 		cf->data[3] = CAN_ERR_PROT_LOC_CRC_SEQ;
+<<<<<<< HEAD
+=======
+		stats->rx_errors++;
+>>>>>>> origin/android16-base
 		break;
 	default:
 		break;
@@ -1318,7 +1348,10 @@ static const struct net_device_ops c_can_netdev_ops = {
 
 int register_c_can_dev(struct net_device *dev)
 {
+<<<<<<< HEAD
 	struct c_can_priv *priv = netdev_priv(dev);
+=======
+>>>>>>> origin/android16-base
 	int err;
 
 	/* Deactivate pins to prevent DRA7 DCAN IP from being
@@ -1328,28 +1361,40 @@ int register_c_can_dev(struct net_device *dev)
 	 */
 	pinctrl_pm_select_sleep_state(dev->dev.parent);
 
+<<<<<<< HEAD
 	c_can_pm_runtime_enable(priv);
 
+=======
+>>>>>>> origin/android16-base
 	dev->flags |= IFF_ECHO;	/* we support local echo */
 	dev->netdev_ops = &c_can_netdev_ops;
 
 	err = register_candev(dev);
+<<<<<<< HEAD
 	if (err)
 		c_can_pm_runtime_disable(priv);
 	else
 		devm_can_led_init(dev);
 
+=======
+	if (!err)
+		devm_can_led_init(dev);
+>>>>>>> origin/android16-base
 	return err;
 }
 EXPORT_SYMBOL_GPL(register_c_can_dev);
 
 void unregister_c_can_dev(struct net_device *dev)
 {
+<<<<<<< HEAD
 	struct c_can_priv *priv = netdev_priv(dev);
 
 	unregister_candev(dev);
 
 	c_can_pm_runtime_disable(priv);
+=======
+	unregister_candev(dev);
+>>>>>>> origin/android16-base
 }
 EXPORT_SYMBOL_GPL(unregister_c_can_dev);
 

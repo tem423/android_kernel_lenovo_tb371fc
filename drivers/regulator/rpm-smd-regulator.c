@@ -2042,7 +2042,10 @@ int __init rpm_smd_regulator_driver_init(void)
 
 	return platform_driver_register(&rpm_vreg_resource_driver);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(rpm_smd_regulator_driver_init);
+=======
+>>>>>>> origin/android16-base
 
 static void __exit rpm_vreg_exit(void)
 {

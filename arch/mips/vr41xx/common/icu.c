@@ -653,8 +653,11 @@ static int icu_get_irq(unsigned int irq)
 
 	printk(KERN_ERR "spurious ICU interrupt: %04x,%04x\n", pend1, pend2);
 
+<<<<<<< HEAD
 	atomic_inc(&irq_err_count);
 
+=======
+>>>>>>> origin/android16-base
 	return -1;
 }
 

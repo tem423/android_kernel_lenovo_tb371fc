@@ -138,12 +138,23 @@ static void pcrypt_aead_enc(struct padata_priv *padata)
 {
 	struct pcrypt_request *preq = pcrypt_padata_request(padata);
 	struct aead_request *req = pcrypt_request_ctx(preq);
+<<<<<<< HEAD
 
 	padata->info = crypto_aead_encrypt(req);
 
 	if (padata->info == -EINPROGRESS)
 		return;
 
+=======
+	int ret;
+
+	ret = crypto_aead_encrypt(req);
+
+	if (ret == -EINPROGRESS)
+		return;
+
+	padata->info = ret;
+>>>>>>> origin/android16-base
 	padata_do_serial(padata);
 }
 
@@ -172,6 +183,13 @@ static int pcrypt_aead_encrypt(struct aead_request *req)
 	err = pcrypt_do_parallel(padata, &ctx->cb_cpu, &pencrypt);
 	if (!err)
 		return -EINPROGRESS;
+<<<<<<< HEAD
+=======
+	if (err == -EBUSY) {
+		/* try non-parallel mode */
+		return crypto_aead_encrypt(creq);
+	}
+>>>>>>> origin/android16-base
 
 	return err;
 }
@@ -180,12 +198,23 @@ static void pcrypt_aead_dec(struct padata_priv *padata)
 {
 	struct pcrypt_request *preq = pcrypt_padata_request(padata);
 	struct aead_request *req = pcrypt_request_ctx(preq);
+<<<<<<< HEAD
 
 	padata->info = crypto_aead_decrypt(req);
 
 	if (padata->info == -EINPROGRESS)
 		return;
 
+=======
+	int ret;
+
+	ret = crypto_aead_decrypt(req);
+
+	if (ret == -EINPROGRESS)
+		return;
+
+	padata->info = ret;
+>>>>>>> origin/android16-base
 	padata_do_serial(padata);
 }
 
@@ -214,6 +243,13 @@ static int pcrypt_aead_decrypt(struct aead_request *req)
 	err = pcrypt_do_parallel(padata, &ctx->cb_cpu, &pdecrypt);
 	if (!err)
 		return -EINPROGRESS;
+<<<<<<< HEAD
+=======
+	if (err == -EBUSY) {
+		/* try non-parallel mode */
+		return crypto_aead_decrypt(creq);
+	}
+>>>>>>> origin/android16-base
 
 	return err;
 }

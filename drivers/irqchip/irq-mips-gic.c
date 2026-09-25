@@ -48,7 +48,11 @@ void __iomem *mips_gic_base;
 
 DEFINE_PER_CPU_READ_MOSTLY(unsigned long[GIC_MAX_LONGS], pcpu_masks);
 
+<<<<<<< HEAD
 static DEFINE_SPINLOCK(gic_lock);
+=======
+static DEFINE_RAW_SPINLOCK(gic_lock);
+>>>>>>> origin/android16-base
 static struct irq_domain *gic_irq_domain;
 static struct irq_domain *gic_ipi_domain;
 static int gic_shared_intrs;
@@ -207,7 +211,11 @@ static int gic_set_type(struct irq_data *d, unsigned int type)
 
 	irq = GIC_HWIRQ_TO_SHARED(d->hwirq);
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&gic_lock, flags);
+=======
+	raw_spin_lock_irqsave(&gic_lock, flags);
+>>>>>>> origin/android16-base
 	switch (type & IRQ_TYPE_SENSE_MASK) {
 	case IRQ_TYPE_EDGE_FALLING:
 		pol = GIC_POL_FALLING_EDGE;
@@ -247,7 +255,11 @@ static int gic_set_type(struct irq_data *d, unsigned int type)
 	else
 		irq_set_chip_handler_name_locked(d, &gic_level_irq_controller,
 						 handle_level_irq, NULL);
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&gic_lock, flags);
+=======
+	raw_spin_unlock_irqrestore(&gic_lock, flags);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -265,7 +277,11 @@ static int gic_set_affinity(struct irq_data *d, const struct cpumask *cpumask,
 		return -EINVAL;
 
 	/* Assumption : cpumask refers to a single CPU */
+<<<<<<< HEAD
 	spin_lock_irqsave(&gic_lock, flags);
+=======
+	raw_spin_lock_irqsave(&gic_lock, flags);
+>>>>>>> origin/android16-base
 
 	/* Re-route this IRQ */
 	write_gic_map_vp(irq, BIT(mips_cm_vp_id(cpu)));
@@ -276,7 +292,11 @@ static int gic_set_affinity(struct irq_data *d, const struct cpumask *cpumask,
 		set_bit(irq, per_cpu_ptr(pcpu_masks, cpu));
 
 	irq_data_update_effective_affinity(d, cpumask_of(cpu));
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&gic_lock, flags);
+=======
+	raw_spin_unlock_irqrestore(&gic_lock, flags);
+>>>>>>> origin/android16-base
 
 	return IRQ_SET_MASK_OK;
 }
@@ -354,12 +374,20 @@ static void gic_mask_local_irq_all_vpes(struct irq_data *d)
 	cd = irq_data_get_irq_chip_data(d);
 	cd->mask = false;
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&gic_lock, flags);
+=======
+	raw_spin_lock_irqsave(&gic_lock, flags);
+>>>>>>> origin/android16-base
 	for_each_online_cpu(cpu) {
 		write_gic_vl_other(mips_cm_vp_id(cpu));
 		write_gic_vo_rmask(BIT(intr));
 	}
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&gic_lock, flags);
+=======
+	raw_spin_unlock_irqrestore(&gic_lock, flags);
+>>>>>>> origin/android16-base
 }
 
 static void gic_unmask_local_irq_all_vpes(struct irq_data *d)
@@ -372,11 +400,16 @@ static void gic_unmask_local_irq_all_vpes(struct irq_data *d)
 	cd = irq_data_get_irq_chip_data(d);
 	cd->mask = true;
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&gic_lock, flags);
+=======
+	raw_spin_lock_irqsave(&gic_lock, flags);
+>>>>>>> origin/android16-base
 	for_each_online_cpu(cpu) {
 		write_gic_vl_other(mips_cm_vp_id(cpu));
 		write_gic_vo_smask(BIT(intr));
 	}
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&gic_lock, flags);
 }
 
@@ -391,13 +424,46 @@ static void gic_all_vpes_irq_cpu_online(struct irq_data *d)
 	write_gic_vl_map(mips_gic_vx_map_reg(intr), cd->map);
 	if (cd->mask)
 		write_gic_vl_smask(BIT(intr));
+=======
+	raw_spin_unlock_irqrestore(&gic_lock, flags);
+}
+
+static void gic_all_vpes_irq_cpu_online(void)
+{
+	static const unsigned int local_intrs[] = {
+		GIC_LOCAL_INT_TIMER,
+		GIC_LOCAL_INT_PERFCTR,
+		GIC_LOCAL_INT_FDC,
+	};
+	unsigned long flags;
+	int i;
+
+	raw_spin_lock_irqsave(&gic_lock, flags);
+
+	for (i = 0; i < ARRAY_SIZE(local_intrs); i++) {
+		unsigned int intr = local_intrs[i];
+		struct gic_all_vpes_chip_data *cd;
+
+		if (!gic_local_irq_is_routable(intr))
+			continue;
+		cd = &gic_all_vpes_chip_data[intr];
+		write_gic_vl_map(mips_gic_vx_map_reg(intr), cd->map);
+		if (cd->mask)
+			write_gic_vl_smask(BIT(intr));
+	}
+
+	raw_spin_unlock_irqrestore(&gic_lock, flags);
+>>>>>>> origin/android16-base
 }
 
 static struct irq_chip gic_all_vpes_local_irq_controller = {
 	.name			= "MIPS GIC Local",
 	.irq_mask		= gic_mask_local_irq_all_vpes,
 	.irq_unmask		= gic_unmask_local_irq_all_vpes,
+<<<<<<< HEAD
 	.irq_cpu_online		= gic_all_vpes_irq_cpu_online,
+=======
+>>>>>>> origin/android16-base
 };
 
 static void __gic_irq_dispatch(void)
@@ -421,11 +487,19 @@ static int gic_shared_irq_domain_map(struct irq_domain *d, unsigned int virq,
 
 	data = irq_get_irq_data(virq);
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&gic_lock, flags);
 	write_gic_map_pin(intr, GIC_MAP_PIN_MAP_TO_PIN | gic_cpu_pin);
 	write_gic_map_vp(intr, BIT(mips_cm_vp_id(cpu)));
 	irq_data_update_effective_affinity(data, cpumask_of(cpu));
 	spin_unlock_irqrestore(&gic_lock, flags);
+=======
+	raw_spin_lock_irqsave(&gic_lock, flags);
+	write_gic_map_pin(intr, GIC_MAP_PIN_MAP_TO_PIN | gic_cpu_pin);
+	write_gic_map_vp(intr, BIT(mips_cm_vp_id(cpu)));
+	irq_data_update_effective_affinity(data, cpumask_of(cpu));
+	raw_spin_unlock_irqrestore(&gic_lock, flags);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -476,6 +550,13 @@ static int gic_irq_domain_map(struct irq_domain *d, unsigned int virq,
 	intr = GIC_HWIRQ_TO_LOCAL(hwirq);
 	map = GIC_MAP_PIN_MAP_TO_PIN | gic_cpu_pin;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * If adding support for more per-cpu interrupts, keep the the
+	 * array in gic_all_vpes_irq_cpu_online() in sync.
+	 */
+>>>>>>> origin/android16-base
 	switch (intr) {
 	case GIC_LOCAL_INT_TIMER:
 		/* CONFIG_MIPS_CMP workaround (see __gic_init) */
@@ -514,12 +595,20 @@ static int gic_irq_domain_map(struct irq_domain *d, unsigned int virq,
 	if (!gic_local_irq_is_routable(intr))
 		return -EPERM;
 
+<<<<<<< HEAD
 	spin_lock_irqsave(&gic_lock, flags);
+=======
+	raw_spin_lock_irqsave(&gic_lock, flags);
+>>>>>>> origin/android16-base
 	for_each_online_cpu(cpu) {
 		write_gic_vl_other(mips_cm_vp_id(cpu));
 		write_gic_vo_map(mips_gic_vx_map_reg(intr), map);
 	}
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&gic_lock, flags);
+=======
+	raw_spin_unlock_irqrestore(&gic_lock, flags);
+>>>>>>> origin/android16-base
 
 	return 0;
 }
@@ -662,8 +751,13 @@ static int gic_cpu_startup(unsigned int cpu)
 	/* Clear all local IRQ masks (ie. disable all local interrupts) */
 	write_gic_vl_rmask(~0);
 
+<<<<<<< HEAD
 	/* Invoke irq_cpu_online callbacks to enable desired interrupts */
 	irq_cpu_online();
+=======
+	/* Enable desired interrupts */
+	gic_all_vpes_irq_cpu_online();
+>>>>>>> origin/android16-base
 
 	return 0;
 }

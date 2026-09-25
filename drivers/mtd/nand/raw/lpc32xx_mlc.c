@@ -316,8 +316,14 @@ static int lpc32xx_nand_device_ready(struct mtd_info *mtd)
 	return 0;
 }
 
+<<<<<<< HEAD
 static irqreturn_t lpc3xxx_nand_irq(int irq, struct lpc32xx_nand_host *host)
 {
+=======
+static irqreturn_t lpc3xxx_nand_irq(int irq, void *data)
+{
+	struct lpc32xx_nand_host *host = data;
+>>>>>>> origin/android16-base
 	uint8_t sr;
 
 	/* Clear interrupt flag by reading status */
@@ -790,7 +796,11 @@ static int lpc32xx_nand_probe(struct platform_device *pdev)
 		goto release_dma_chan;
 	}
 
+<<<<<<< HEAD
 	if (request_irq(host->irq, (irq_handler_t)&lpc3xxx_nand_irq,
+=======
+	if (request_irq(host->irq, &lpc3xxx_nand_irq,
+>>>>>>> origin/android16-base
 			IRQF_TRIGGER_HIGH, DRV_NAME, host)) {
 		dev_err(&pdev->dev, "Error requesting NAND IRQ\n");
 		res = -ENXIO;

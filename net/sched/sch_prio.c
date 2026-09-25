@@ -184,7 +184,11 @@ prio_destroy(struct Qdisc *sch)
 	tcf_block_put(q->block);
 	prio_offload(sch, NULL);
 	for (prio = 0; prio < q->bands; prio++)
+<<<<<<< HEAD
 		qdisc_destroy(q->queues[prio]);
+=======
+		qdisc_put(q->queues[prio]);
+>>>>>>> origin/android16-base
 }
 
 static int prio_tune(struct Qdisc *sch, struct nlattr *opt,
@@ -215,7 +219,11 @@ static int prio_tune(struct Qdisc *sch, struct nlattr *opt,
 					      extack);
 		if (!queues[i]) {
 			while (i > oldbands)
+<<<<<<< HEAD
 				qdisc_destroy(queues[--i]);
+=======
+				qdisc_put(queues[--i]);
+>>>>>>> origin/android16-base
 			return -ENOMEM;
 		}
 	}
@@ -234,7 +242,11 @@ static int prio_tune(struct Qdisc *sch, struct nlattr *opt,
 
 		qdisc_tree_reduce_backlog(child, child->q.qlen,
 					  child->qstats.backlog);
+<<<<<<< HEAD
 		qdisc_destroy(child);
+=======
+		qdisc_put(child);
+>>>>>>> origin/android16-base
 	}
 
 	for (i = oldbands; i < q->bands; i++) {

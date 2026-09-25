@@ -616,7 +616,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(cx22702_attach);
+=======
+EXPORT_SYMBOL_GPL(cx22702_attach);
+>>>>>>> origin/android16-base
 
 static const struct dvb_frontend_ops cx22702_ops = {
 	.delsys = { SYS_DVBT },

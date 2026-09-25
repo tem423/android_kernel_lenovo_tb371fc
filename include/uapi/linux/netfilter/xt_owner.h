@@ -5,9 +5,16 @@
 #include <linux/types.h>
 
 enum {
+<<<<<<< HEAD
 	XT_OWNER_UID    = 1 << 0,
 	XT_OWNER_GID    = 1 << 1,
 	XT_OWNER_SOCKET = 1 << 2,
+=======
+	XT_OWNER_UID          = 1 << 0,
+	XT_OWNER_GID          = 1 << 1,
+	XT_OWNER_SOCKET       = 1 << 2,
+	XT_OWNER_SUPPL_GROUPS = 1 << 3,
+>>>>>>> origin/android16-base
 };
 
 struct xt_owner_match_info {

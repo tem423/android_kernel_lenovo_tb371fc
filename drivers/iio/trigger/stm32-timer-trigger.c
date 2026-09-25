@@ -884,6 +884,10 @@ static struct platform_driver stm32_timer_trigger_driver = {
 };
 module_platform_driver(stm32_timer_trigger_driver);
 
+<<<<<<< HEAD
 MODULE_ALIAS("platform: stm32-timer-trigger");
+=======
+MODULE_ALIAS("platform:stm32-timer-trigger");
+>>>>>>> origin/android16-base
 MODULE_DESCRIPTION("STMicroelectronics STM32 Timer Trigger driver");
 MODULE_LICENSE("GPL v2");

@@ -5771,7 +5771,11 @@ static int hpsa_scsi_host_alloc(struct ctlr_info *h)
 {
 	struct Scsi_Host *sh;
 
+<<<<<<< HEAD
 	sh = scsi_host_alloc(&hpsa_driver_template, sizeof(h));
+=======
+	sh = scsi_host_alloc(&hpsa_driver_template, sizeof(struct ctlr_info *));
+>>>>>>> origin/android16-base
 	if (sh == NULL) {
 		dev_err(&h->pdev->dev, "scsi_host_alloc failed\n");
 		return -ENOMEM;
@@ -8133,6 +8137,14 @@ static void hpsa_undo_allocations_after_kdump_soft_reset(struct ctlr_info *h)
 		destroy_workqueue(h->rescan_ctlr_wq);
 		h->rescan_ctlr_wq = NULL;
 	}
+<<<<<<< HEAD
+=======
+	if (h->monitor_ctlr_wq) {
+		destroy_workqueue(h->monitor_ctlr_wq);
+		h->monitor_ctlr_wq = NULL;
+	}
+
+>>>>>>> origin/android16-base
 	kfree(h);				/* init_one 1 */
 }
 
@@ -8481,8 +8493,13 @@ static void hpsa_event_monitor_worker(struct work_struct *work)
 
 	spin_lock_irqsave(&h->lock, flags);
 	if (!h->remove_in_progress)
+<<<<<<< HEAD
 		schedule_delayed_work(&h->event_monitor_work,
 					HPSA_EVENT_MONITOR_INTERVAL);
+=======
+		queue_delayed_work(h->monitor_ctlr_wq, &h->event_monitor_work,
+				HPSA_EVENT_MONITOR_INTERVAL);
+>>>>>>> origin/android16-base
 	spin_unlock_irqrestore(&h->lock, flags);
 }
 
@@ -8527,7 +8544,11 @@ static void hpsa_monitor_ctlr_worker(struct work_struct *work)
 
 	spin_lock_irqsave(&h->lock, flags);
 	if (!h->remove_in_progress)
+<<<<<<< HEAD
 		schedule_delayed_work(&h->monitor_ctlr_work,
+=======
+		queue_delayed_work(h->monitor_ctlr_wq, &h->monitor_ctlr_work,
+>>>>>>> origin/android16-base
 				h->heartbeat_sample_interval);
 	spin_unlock_irqrestore(&h->lock, flags);
 }
@@ -8695,6 +8716,15 @@ reinit_after_soft_reset:
 		goto clean7;	/* aer/h */
 	}
 
+<<<<<<< HEAD
+=======
+	h->monitor_ctlr_wq = hpsa_create_controller_wq(h, "monitor");
+	if (!h->monitor_ctlr_wq) {
+		rc = -ENOMEM;
+		goto clean7;
+	}
+
+>>>>>>> origin/android16-base
 	/*
 	 * At this point, the controller is ready to take commands.
 	 * Now, if reset_devices and the hard reset didn't work, try
@@ -8781,7 +8811,11 @@ reinit_after_soft_reset:
 	/* hook into SCSI subsystem */
 	rc = hpsa_scsi_add_host(h);
 	if (rc)
+<<<<<<< HEAD
 		goto clean7; /* perf, sg, cmd, irq, shost, pci, lu, aer/h */
+=======
+		goto clean8; /* lastlogicals, perf, sg, cmd, irq, shost, pci, lu, aer/h */
+>>>>>>> origin/android16-base
 
 	/* Monitor the controller for firmware lockups */
 	h->heartbeat_sample_interval = HEARTBEAT_SAMPLE_INTERVAL;
@@ -8796,6 +8830,11 @@ reinit_after_soft_reset:
 				HPSA_EVENT_MONITOR_INTERVAL);
 	return 0;
 
+<<<<<<< HEAD
+=======
+clean8: /* lastlogicals, perf, sg, cmd, irq, shost, pci, lu, aer/h */
+	kfree(h->lastlogicals);
+>>>>>>> origin/android16-base
 clean7: /* perf, sg, cmd, irq, shost, pci, lu, aer/h */
 	hpsa_free_performant_mode(h);
 	h->access.set_intr_mask(h, HPSA_INTR_OFF);
@@ -8824,7 +8863,15 @@ clean1:	/* wq/aer/h */
 		destroy_workqueue(h->rescan_ctlr_wq);
 		h->rescan_ctlr_wq = NULL;
 	}
+<<<<<<< HEAD
 	kfree(h);
+=======
+	if (h->monitor_ctlr_wq) {
+		destroy_workqueue(h->monitor_ctlr_wq);
+		h->monitor_ctlr_wq = NULL;
+	}
+	hpda_free_ctlr_info(h);
+>>>>>>> origin/android16-base
 	return rc;
 }
 
@@ -8971,6 +9018,10 @@ static void hpsa_remove_one(struct pci_dev *pdev)
 	cancel_delayed_work_sync(&h->event_monitor_work);
 	destroy_workqueue(h->rescan_ctlr_wq);
 	destroy_workqueue(h->resubmit_wq);
+<<<<<<< HEAD
+=======
+	destroy_workqueue(h->monitor_ctlr_wq);
+>>>>>>> origin/android16-base
 
 	hpsa_delete_sas_host(h);
 
@@ -9682,7 +9733,12 @@ static int hpsa_add_sas_host(struct ctlr_info *h)
 	return 0;
 
 free_sas_phy:
+<<<<<<< HEAD
 	hpsa_free_sas_phy(hpsa_sas_phy);
+=======
+	sas_phy_free(hpsa_sas_phy->phy);
+	kfree(hpsa_sas_phy);
+>>>>>>> origin/android16-base
 free_sas_port:
 	hpsa_free_sas_port(hpsa_sas_port);
 free_sas_node:
@@ -9718,10 +9774,19 @@ static int hpsa_add_sas_device(struct hpsa_sas_node *hpsa_sas_node,
 
 	rc = hpsa_sas_port_add_rphy(hpsa_sas_port, rphy);
 	if (rc)
+<<<<<<< HEAD
 		goto free_sas_port;
 
 	return 0;
 
+=======
+		goto free_sas_rphy;
+
+	return 0;
+
+free_sas_rphy:
+	sas_rphy_free(rphy);
+>>>>>>> origin/android16-base
 free_sas_port:
 	hpsa_free_sas_port(hpsa_sas_port);
 	device->sas_port = NULL;

@@ -32,8 +32,16 @@ int main(int argc, char **argv)
 	rc = read(fd, buf, sizeof(buf));
 	if (rc != 0) {
 		fprintf(stderr, "Reading a new var should return EOF\n");
+<<<<<<< HEAD
 		return EXIT_FAILURE;
 	}
 
+=======
+		close(fd);
+		return EXIT_FAILURE;
+	}
+
+	close(fd);
+>>>>>>> origin/android16-base
 	return EXIT_SUCCESS;
 }

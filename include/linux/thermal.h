@@ -581,12 +581,21 @@ static inline void thermal_zone_device_update_temp(
 static inline void thermal_zone_set_trips(struct thermal_zone_device *tz)
 { }
 static inline struct thermal_cooling_device *
+<<<<<<< HEAD
 thermal_cooling_device_register(char *type, void *devdata,
+=======
+thermal_cooling_device_register(const char *type, void *devdata,
+>>>>>>> origin/android16-base
 	const struct thermal_cooling_device_ops *ops)
 { return ERR_PTR(-ENODEV); }
 static inline struct thermal_cooling_device *
 thermal_of_cooling_device_register(struct device_node *np,
+<<<<<<< HEAD
 	char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
+=======
+	const char *type, void *devdata,
+	const struct thermal_cooling_device_ops *ops)
+>>>>>>> origin/android16-base
 { return ERR_PTR(-ENODEV); }
 static inline void thermal_cooling_device_unregister(
 	struct thermal_cooling_device *cdev)

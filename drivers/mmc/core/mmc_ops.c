@@ -23,7 +23,13 @@
 #include "host.h"
 #include "mmc_ops.h"
 
+<<<<<<< HEAD
 #define MMC_OPS_TIMEOUT_MS	(10 * 60 * 1000) /* 10 minute timeout */
+=======
+#define MMC_OPS_TIMEOUT_MS		(10 * 60 * 1000) /* 10min*/
+#define MMC_BKOPS_TIMEOUT_MS		(120 * 1000) /* 120s */
+#define MMC_CACHE_FLUSH_TIMEOUT_MS	(30 * 1000) /* 30s */
+>>>>>>> origin/android16-base
 
 static const u8 tuning_blk_pattern_4bit[] = {
 	0xff, 0x0f, 0xff, 0x00, 0xff, 0xcc, 0xc3, 0xcc,
@@ -458,8 +464,13 @@ int mmc_switch_status(struct mmc_card *card)
 	return __mmc_switch_status(card, true);
 }
 
+<<<<<<< HEAD
 static int mmc_poll_for_busy(struct mmc_card *card, unsigned int timeout_ms,
 			bool send_status, bool retry_crc_err)
+=======
+int mmc_poll_for_busy(struct mmc_card *card, unsigned int timeout_ms,
+		      bool send_status, bool retry_crc_err)
+>>>>>>> origin/android16-base
 {
 	struct mmc_host *host = card->host;
 	int err;
@@ -468,10 +479,13 @@ static int mmc_poll_for_busy(struct mmc_card *card, unsigned int timeout_ms,
 	bool expired = false;
 	bool busy = false;
 
+<<<<<<< HEAD
 	/* We have an unspecified cmd timeout, use the fallback value. */
 	if (!timeout_ms)
 		timeout_ms = MMC_OPS_TIMEOUT_MS;
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * In cases when not allowed to poll by using CMD13 or because we aren't
 	 * capable of polling by using ->card_busy(), then rely on waiting the
@@ -516,6 +530,10 @@ static int mmc_poll_for_busy(struct mmc_card *card, unsigned int timeout_ms,
 
 	return 0;
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL_GPL(mmc_poll_for_busy);
+>>>>>>> origin/android16-base
 
 /**
  *	__mmc_switch - modify EXT_CSD register
@@ -544,6 +562,15 @@ int __mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 
 	mmc_retune_hold(host);
 
+<<<<<<< HEAD
+=======
+	if (!timeout_ms) {
+		pr_warn("%s: unspecified timeout for CMD6 - use generic\n",
+			mmc_hostname(host));
+		timeout_ms = card->ext_csd.generic_cmd6_time;
+	}
+
+>>>>>>> origin/android16-base
 	/*
 	 * If the cmd timeout and the max_busy_timeout of the host are both
 	 * specified, let's validate them. A failure means we need to prevent
@@ -552,7 +579,11 @@ int __mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 	 * which also means they are on their own when it comes to deal with the
 	 * busy timeout.
 	 */
+<<<<<<< HEAD
 	if (!(host->caps & MMC_CAP_NEED_RSP_BUSY) && timeout_ms &&
+=======
+	if (!(host->caps & MMC_CAP_NEED_RSP_BUSY) &&
+>>>>>>> origin/android16-base
 	    host->max_busy_timeout && (timeout_ms > host->max_busy_timeout))
 		use_r1b_resp = false;
 
@@ -564,10 +595,13 @@ int __mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 	cmd.flags = MMC_CMD_AC;
 	if (use_r1b_resp) {
 		cmd.flags |= MMC_RSP_SPI_R1B | MMC_RSP_R1B;
+<<<<<<< HEAD
 		/*
 		 * A busy_timeout of zero means the host can decide to use
 		 * whatever value it finds suitable.
 		 */
+=======
+>>>>>>> origin/android16-base
 		cmd.busy_timeout = timeout_ms;
 	} else {
 		cmd.flags |= MMC_RSP_SPI_R1 | MMC_RSP_R1;
@@ -914,6 +948,7 @@ int mmc_can_ext_csd(struct mmc_card *card)
 	return (card && card->csd.mmca_vsn > CSD_SPEC_VER_3);
 }
 
+<<<<<<< HEAD
 /**
  *	mmc_stop_bkops - stop ongoing BKOPS
  *	@card: MMC card to check BKOPS
@@ -942,6 +977,8 @@ int mmc_stop_bkops(struct mmc_card *card)
 	return err;
 }
 
+=======
+>>>>>>> origin/android16-base
 static int mmc_read_bkops_status(struct mmc_card *card)
 {
 	int err;
@@ -964,6 +1001,7 @@ static int mmc_read_bkops_status(struct mmc_card *card)
 }
 
 /**
+<<<<<<< HEAD
  *	mmc_start_bkops - start BKOPS for supported cards
  *	@card: MMC card to start BKOPS
  *	@from_exception: A flag to indicate if this function was
@@ -980,6 +1018,19 @@ void mmc_start_bkops(struct mmc_card *card, bool from_exception)
 	bool use_busy_signal;
 
 	if (!card->ext_csd.man_bkops_en || mmc_card_doing_bkops(card))
+=======
+ *	mmc_run_bkops - Run BKOPS for supported cards
+ *	@card: MMC card to run BKOPS for
+ *
+ *	Run background operations synchronously for cards having manual BKOPS
+ *	enabled and in case it reports urgent BKOPS level.
+*/
+void mmc_run_bkops(struct mmc_card *card)
+{
+	int err;
+
+	if (!card->ext_csd.man_bkops_en)
+>>>>>>> origin/android16-base
 		return;
 
 	err = mmc_read_bkops_status(card);
@@ -989,6 +1040,7 @@ void mmc_start_bkops(struct mmc_card *card, bool from_exception)
 		return;
 	}
 
+<<<<<<< HEAD
 	if (!card->ext_csd.raw_bkops_status)
 		return;
 
@@ -1027,6 +1079,28 @@ void mmc_start_bkops(struct mmc_card *card, bool from_exception)
 		mmc_retune_release(card->host);
 }
 EXPORT_SYMBOL(mmc_start_bkops);
+=======
+	if (!card->ext_csd.raw_bkops_status ||
+	    card->ext_csd.raw_bkops_status < EXT_CSD_BKOPS_LEVEL_2)
+		return;
+
+	mmc_retune_hold(card->host);
+
+	/*
+	 * For urgent BKOPS status, LEVEL_2 and higher, let's execute
+	 * synchronously. Future wise, we may consider to start BKOPS, for less
+	 * urgent levels by using an asynchronous background task, when idle.
+	 */
+	err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
+			 EXT_CSD_BKOPS_START, 1, MMC_BKOPS_TIMEOUT_MS);
+	if (err)
+		pr_warn("%s: Error %d starting bkops\n",
+			mmc_hostname(card->host), err);
+
+	mmc_retune_release(card->host);
+}
+EXPORT_SYMBOL(mmc_run_bkops);
+>>>>>>> origin/android16-base
 
 /*
  * Flush the cache to the non-volatile storage.
@@ -1036,11 +1110,19 @@ int mmc_flush_cache(struct mmc_card *card)
 	int err = 0;
 
 	if (mmc_card_mmc(card) &&
+<<<<<<< HEAD
 			(card->ext_csd.cache_size > 0) &&
 			(card->ext_csd.cache_ctrl & 1) &&
 			(!(card->quirks & MMC_QUIRK_CACHE_DISABLE))) {
 		err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
 				EXT_CSD_FLUSH_CACHE, 1, 0);
+=======
+			mmc_cache_enabled(card->host) &&
+			(!(card->quirks & MMC_QUIRK_CACHE_DISABLE))) {
+		err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
+				 EXT_CSD_FLUSH_CACHE, 1,
+				 MMC_CACHE_FLUSH_TIMEOUT_MS);
+>>>>>>> origin/android16-base
 		if (err)
 			pr_err("%s: cache flush error %d\n",
 					mmc_hostname(card->host), err);

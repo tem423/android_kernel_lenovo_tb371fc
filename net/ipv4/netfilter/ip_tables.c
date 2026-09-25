@@ -1432,6 +1432,11 @@ translate_compat_table(struct net *net,
 	if (!newinfo)
 		goto out_unlock;
 
+<<<<<<< HEAD
+=======
+	memset(newinfo->entries, 0, size);
+
+>>>>>>> origin/android16-base
 	newinfo->number = compatr->num_entries;
 	for (i = 0; i < NF_INET_NUMHOOKS; i++) {
 		newinfo->hook_entry[i] = compatr->hook_entry[i];

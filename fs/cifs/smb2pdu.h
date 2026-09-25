@@ -222,7 +222,11 @@ struct smb2_negotiate_req {
 	__le32 NegotiateContextOffset; /* SMB3.1.1 only. MBZ earlier */
 	__le16 NegotiateContextCount;  /* SMB3.1.1 only. MBZ earlier */
 	__le16 Reserved2;
+<<<<<<< HEAD
 	__le16 Dialects[1]; /* One dialect (vers=) at a time for now */
+=======
+	__le16 Dialects[4]; /* BB expand this if autonegotiate > 4 dialects */
+>>>>>>> origin/android16-base
 } __packed;
 
 /* Dialects */
@@ -257,12 +261,28 @@ struct smb2_neg_context {
 	/* Followed by array of data */
 } __packed;
 
+<<<<<<< HEAD
 #define SMB311_SALT_SIZE			32
+=======
+#define SMB311_LINUX_CLIENT_SALT_SIZE			32
+>>>>>>> origin/android16-base
 /* Hash Algorithm Types */
 #define SMB2_PREAUTH_INTEGRITY_SHA512	cpu_to_le16(0x0001)
 #define SMB2_PREAUTH_HASH_SIZE 64
 
+<<<<<<< HEAD
 #define MIN_PREAUTH_CTXT_DATA_LEN	(SMB311_SALT_SIZE + 6)
+=======
+/*
+ * SaltLength that the server send can be zero, so the only three required
+ * fields (all __le16) end up six bytes total, so the minimum context data len
+ * in the response is six bytes which accounts for
+ *
+ *      HashAlgorithmCount, SaltLength, and 1 HashAlgorithm.
+ */
+#define MIN_PREAUTH_CTXT_DATA_LEN 6
+
+>>>>>>> origin/android16-base
 struct smb2_preauth_neg_context {
 	__le16	ContextType; /* 1 */
 	__le16	DataLength;
@@ -270,7 +290,11 @@ struct smb2_preauth_neg_context {
 	__le16	HashAlgorithmCount; /* 1 */
 	__le16	SaltLength;
 	__le16	HashAlgorithms; /* HashAlgorithms[0] since only one defined */
+<<<<<<< HEAD
 	__u8	Salt[SMB311_SALT_SIZE];
+=======
+	__u8	Salt[SMB311_LINUX_CLIENT_SALT_SIZE];
+>>>>>>> origin/android16-base
 } __packed;
 
 /* Encryption Algorithms Ciphers */
@@ -602,7 +626,11 @@ struct smb2_tree_disconnect_rsp {
 #define SMB2_CREATE_SD_BUFFER			"SecD" /* security descriptor */
 #define SMB2_CREATE_DURABLE_HANDLE_REQUEST	"DHnQ"
 #define SMB2_CREATE_DURABLE_HANDLE_RECONNECT	"DHnC"
+<<<<<<< HEAD
 #define SMB2_CREATE_ALLOCATION_SIZE		"AISi"
+=======
+#define SMB2_CREATE_ALLOCATION_SIZE		"AlSi"
+>>>>>>> origin/android16-base
 #define SMB2_CREATE_QUERY_MAXIMAL_ACCESS_REQUEST "MxAc"
 #define SMB2_CREATE_TIMEWARP_REQUEST		"TWrp"
 #define SMB2_CREATE_QUERY_ON_DISK_ID		"QFid"

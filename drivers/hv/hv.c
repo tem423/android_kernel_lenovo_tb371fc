@@ -115,7 +115,11 @@ static void hv_stimer0_isr(void)
 
 	hv_cpu = this_cpu_ptr(hv_context.cpu_context);
 	hv_cpu->clk_evt->event_handler(hv_cpu->clk_evt);
+<<<<<<< HEAD
 	add_interrupt_randomness(stimer0_vector, 0);
+=======
+	add_interrupt_randomness(stimer0_vector);
+>>>>>>> origin/android16-base
 }
 
 static int hv_ce_set_next_event(unsigned long delta,

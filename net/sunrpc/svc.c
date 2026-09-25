@@ -1146,6 +1146,25 @@ static __printf(2,3) void svc_printk(struct svc_rqst *rqstp, const char *fmt, ..
 
 extern void svc_tcp_prep_reply_hdr(struct svc_rqst *);
 
+<<<<<<< HEAD
+=======
+__be32
+svc_return_autherr(struct svc_rqst *rqstp, __be32 auth_err)
+{
+	set_bit(RQ_AUTHERR, &rqstp->rq_flags);
+	return auth_err;
+}
+EXPORT_SYMBOL_GPL(svc_return_autherr);
+
+static __be32
+svc_get_autherr(struct svc_rqst *rqstp, __be32 *statp)
+{
+	if (test_and_clear_bit(RQ_AUTHERR, &rqstp->rq_flags))
+		return *statp;
+	return rpc_auth_ok;
+}
+
+>>>>>>> origin/android16-base
 /*
  * Common routine for processing the RPC request.
  */
@@ -1296,11 +1315,17 @@ svc_process_common(struct svc_rqst *rqstp, struct kvec *argv, struct kvec *resv)
 				procp->pc_release(rqstp);
 			goto dropit;
 		}
+<<<<<<< HEAD
 		if (*statp == rpc_autherr_badcred) {
 			if (procp->pc_release)
 				procp->pc_release(rqstp);
 			goto err_bad_auth;
 		}
+=======
+		auth_stat = svc_get_autherr(rqstp, statp);
+		if (auth_stat != rpc_auth_ok)
+			goto err_release_bad_auth;
+>>>>>>> origin/android16-base
 		if (*statp == rpc_success && procp->pc_encode &&
 		    !procp->pc_encode(rqstp, resv->iov_base + resv->iov_len)) {
 			dprintk("svc: failed to encode reply\n");
@@ -1330,7 +1355,11 @@ svc_process_common(struct svc_rqst *rqstp, struct kvec *argv, struct kvec *resv)
 
  sendit:
 	if (svc_authorise(rqstp))
+<<<<<<< HEAD
 		goto close;
+=======
+		goto close_xprt;
+>>>>>>> origin/android16-base
 	return 1;		/* Caller can now send it */
 
  dropit:
@@ -1339,6 +1368,11 @@ svc_process_common(struct svc_rqst *rqstp, struct kvec *argv, struct kvec *resv)
 	return 0;
 
  close:
+<<<<<<< HEAD
+=======
+	svc_authorise(rqstp);
+close_xprt:
+>>>>>>> origin/android16-base
 	if (rqstp->rq_xprt && test_bit(XPT_TEMP, &rqstp->rq_xprt->xpt_flags))
 		svc_close_xprt(rqstp->rq_xprt);
 	dprintk("svc: svc_process close\n");
@@ -1347,7 +1381,11 @@ svc_process_common(struct svc_rqst *rqstp, struct kvec *argv, struct kvec *resv)
 err_short_len:
 	svc_printk(rqstp, "short len %zd, dropping request\n",
 			argv->iov_len);
+<<<<<<< HEAD
 	goto close;
+=======
+	goto close_xprt;
+>>>>>>> origin/android16-base
 
 err_bad_rpc:
 	serv->sv_stats->rpcbadfmt++;
@@ -1357,6 +1395,12 @@ err_bad_rpc:
 	svc_putnl(resv, 2);
 	goto sendit;
 
+<<<<<<< HEAD
+=======
+err_release_bad_auth:
+	if (procp->pc_release)
+		procp->pc_release(rqstp);
+>>>>>>> origin/android16-base
 err_bad_auth:
 	dprintk("svc: authentication failed (%d)\n", ntohl(auth_stat));
 	serv->sv_stats->rpcbadauth++;

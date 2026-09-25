@@ -647,7 +647,11 @@ static void __init npcm7xx_clk_init(struct device_node *clk_np)
 	return;
 
 npcm7xx_init_fail:
+<<<<<<< HEAD
 	kfree(npcm7xx_clk_data->hws);
+=======
+	kfree(npcm7xx_clk_data);
+>>>>>>> origin/android16-base
 npcm7xx_init_np_err:
 	iounmap(clk_base);
 npcm7xx_init_error:

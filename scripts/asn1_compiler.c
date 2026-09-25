@@ -629,7 +629,11 @@ int main(int argc, char **argv)
 	p = strrchr(argv[1], '/');
 	p = p ? p + 1 : argv[1];
 	grammar_name = strdup(p);
+<<<<<<< HEAD
 	if (!p) {
+=======
+	if (!grammar_name) {
+>>>>>>> origin/android16-base
 		perror(NULL);
 		exit(1);
 	}

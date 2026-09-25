@@ -129,9 +129,15 @@ static int nfcmrvl_spi_parse_dt(struct device_node *node,
 	}
 
 	ret = irq_of_parse_and_map(node, 0);
+<<<<<<< HEAD
 	if (ret < 0) {
 		pr_err("Unable to get irq, error: %d\n", ret);
 		return ret;
+=======
+	if (!ret) {
+		pr_err("Unable to get irq\n");
+		return -EINVAL;
+>>>>>>> origin/android16-base
 	}
 	pdata->irq = ret;
 

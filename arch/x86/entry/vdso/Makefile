@@ -180,7 +180,11 @@ quiet_cmd_vdso = VDSO    $@
 
 VDSO_LDFLAGS = -shared $(call ld-option, --hash-style=both) \
 	$(call ld-option, --build-id) $(call ld-option, --eh-frame-hdr) \
+<<<<<<< HEAD
 	-Bsymbolic
+=======
+	-Bsymbolic -z noexecstack
+>>>>>>> origin/android16-base
 GCOV_PROFILE := n
 
 quiet_cmd_vdso_and_check = VDSO    $@

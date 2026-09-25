@@ -616,6 +616,14 @@ static int pm2fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
+=======
+	if (!var->pixclock) {
+		DPRINTK("pixclock is zero\n");
+		return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	if (PICOS2KHZ(var->pixclock) > PM2_MAX_PIXCLOCK) {
 		DPRINTK("pixclock too high (%ldKHz)\n",
 			PICOS2KHZ(var->pixclock));
@@ -1524,8 +1532,15 @@ static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	}
 
 	info = framebuffer_alloc(sizeof(struct pm2fb_par), &pdev->dev);
+<<<<<<< HEAD
 	if (!info)
 		return -ENOMEM;
+=======
+	if (!info) {
+		err = -ENOMEM;
+		goto err_exit_disable;
+	}
+>>>>>>> origin/android16-base
 	default_par = info->par;
 
 	switch (pdev->device) {
@@ -1706,6 +1721,11 @@ static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	release_mem_region(pm2fb_fix.mmio_start, pm2fb_fix.mmio_len);
  err_exit_neither:
 	framebuffer_release(info);
+<<<<<<< HEAD
+=======
+ err_exit_disable:
+	pci_disable_device(pdev);
+>>>>>>> origin/android16-base
 	return retval;
 }
 
@@ -1732,6 +1752,10 @@ static void pm2fb_remove(struct pci_dev *pdev)
 	fb_dealloc_cmap(&info->cmap);
 	kfree(info->pixmap.addr);
 	framebuffer_release(info);
+<<<<<<< HEAD
+=======
+	pci_disable_device(pdev);
+>>>>>>> origin/android16-base
 }
 
 static const struct pci_device_id pm2fb_id_table[] = {

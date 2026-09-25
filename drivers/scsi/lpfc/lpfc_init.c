@@ -5854,8 +5854,11 @@ lpfc_sli4_driver_resource_setup(struct lpfc_hba *phba)
 	LPFC_MBOXQ_t *mboxq;
 	MAILBOX_t *mb;
 	int rc, i, max_buf_size;
+<<<<<<< HEAD
 	uint8_t pn_page[LPFC_MAX_SUPPORTED_PAGES] = {0};
 	struct lpfc_mqe *mqe;
+=======
+>>>>>>> origin/android16-base
 	int longs;
 	int fof_vectors = 0;
 	int extra;
@@ -6150,6 +6153,7 @@ lpfc_sli4_driver_resource_setup(struct lpfc_hba *phba)
 
 	lpfc_nvme_mod_param_dep(phba);
 
+<<<<<<< HEAD
 	/* Get the Supported Pages if PORT_CAPABILITIES is supported by port. */
 	lpfc_supported_pages(mboxq);
 	rc = lpfc_sli_issue_mbox(phba, mboxq, MBX_POLL);
@@ -6176,6 +6180,8 @@ lpfc_sli4_driver_resource_setup(struct lpfc_hba *phba)
 		}
 	}
 
+=======
+>>>>>>> origin/android16-base
 	/*
 	 * Get sli4 parameters that override parameters from Port capabilities.
 	 * If this call fails, it isn't critical unless the SLI4 parameters come
@@ -10517,6 +10523,7 @@ lpfc_sli4_hba_unset(struct lpfc_hba *phba)
 	phba->pport->work_port_events = 0;
 }
 
+<<<<<<< HEAD
  /**
  * lpfc_pc_sli4_params_get - Get the SLI4_PARAMS port capabilities.
  * @phba: Pointer to HBA context object.
@@ -10589,6 +10596,8 @@ lpfc_pc_sli4_params_get(struct lpfc_hba *phba, LPFC_MBOXQ_t *mboxq)
 	return rc;
 }
 
+=======
+>>>>>>> origin/android16-base
 /**
  * lpfc_get_sli4_parameters - Get the SLI4 Config PARAMETERS.
  * @phba: Pointer to HBA context object.
@@ -10647,7 +10656,12 @@ lpfc_get_sli4_parameters(struct lpfc_hba *phba, LPFC_MBOXQ_t *mboxq)
 	else
 		phba->sli3_options &= ~LPFC_SLI4_PHWQ_ENABLED;
 	sli4_params->sge_supp_len = mbx_sli4_parameters->sge_supp_len;
+<<<<<<< HEAD
 	sli4_params->loopbk_scope = bf_get(loopbk_scope, mbx_sli4_parameters);
+=======
+	sli4_params->loopbk_scope = bf_get(cfg_loopbk_scope,
+					   mbx_sli4_parameters);
+>>>>>>> origin/android16-base
 	sli4_params->oas_supported = bf_get(cfg_oas, mbx_sli4_parameters);
 	sli4_params->cqv = bf_get(cfg_cqv, mbx_sli4_parameters);
 	sli4_params->mqv = bf_get(cfg_mqv, mbx_sli4_parameters);
@@ -11527,7 +11541,11 @@ out:
 int
 lpfc_sli4_request_firmware_update(struct lpfc_hba *phba, uint8_t fw_upgrade)
 {
+<<<<<<< HEAD
 	uint8_t file_name[ELX_MODEL_NAME_SIZE];
+=======
+	char file_name[ELX_FW_NAME_SIZE] = {0};
+>>>>>>> origin/android16-base
 	int ret;
 	const struct firmware *fw;
 
@@ -11536,7 +11554,11 @@ lpfc_sli4_request_firmware_update(struct lpfc_hba *phba, uint8_t fw_upgrade)
 	    LPFC_SLI_INTF_IF_TYPE_2)
 		return -EPERM;
 
+<<<<<<< HEAD
 	snprintf(file_name, ELX_MODEL_NAME_SIZE, "%s.grp", phba->ModelName);
+=======
+	scnprintf(file_name, sizeof(file_name), "%s.grp", phba->ModelName);
+>>>>>>> origin/android16-base
 
 	if (fw_upgrade == INT_FW_UPGRADE) {
 		ret = request_firmware_nowait(THIS_MODULE, FW_ACTION_HOTPLUG,

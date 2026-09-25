@@ -273,6 +273,10 @@ enum {
  *	  { u64		time_enabled; } && PERF_FORMAT_TOTAL_TIME_ENABLED
  *	  { u64		time_running; } && PERF_FORMAT_TOTAL_TIME_RUNNING
  *	  { u64		id;           } && PERF_FORMAT_ID
+<<<<<<< HEAD
+=======
+ *	  { u64		lost;         } && PERF_FORMAT_LOST
+>>>>>>> origin/android16-base
  *	} && !PERF_FORMAT_GROUP
  *
  *	{ u64		nr;
@@ -280,6 +284,10 @@ enum {
  *	  { u64		time_running; } && PERF_FORMAT_TOTAL_TIME_RUNNING
  *	  { u64		value;
  *	    { u64	id;           } && PERF_FORMAT_ID
+<<<<<<< HEAD
+=======
+ *	    { u64	lost;         } && PERF_FORMAT_LOST
+>>>>>>> origin/android16-base
  *	  }		cntr[nr];
  *	} && PERF_FORMAT_GROUP
  * };
@@ -289,8 +297,14 @@ enum perf_event_read_format {
 	PERF_FORMAT_TOTAL_TIME_RUNNING		= 1U << 1,
 	PERF_FORMAT_ID				= 1U << 2,
 	PERF_FORMAT_GROUP			= 1U << 3,
+<<<<<<< HEAD
 
 	PERF_FORMAT_MAX = 1U << 4,		/* non-ABI */
+=======
+	PERF_FORMAT_LOST			= 1U << 4,
+
+	PERF_FORMAT_MAX = 1U << 5,		/* non-ABI */
+>>>>>>> origin/android16-base
 };
 
 #define PERF_ATTR_SIZE_VER0	64	/* sizeof first published struct */

@@ -473,7 +473,11 @@ config SCSI_MVUMI
 
 config SCSI_DPT_I2O
 	tristate "Adaptec I2O RAID support "
+<<<<<<< HEAD
 	depends on SCSI && PCI && VIRT_TO_BUS
+=======
+	depends on SCSI && PCI
+>>>>>>> origin/android16-base
 	help
 	  This driver supports all of Adaptec's I2O based RAID controllers as 
 	  well as the DPT SmartRaid V cards.  This is an Adaptec maintained
@@ -1252,7 +1256,11 @@ source "drivers/scsi/arm/Kconfig"
 
 config JAZZ_ESP
 	bool "MIPS JAZZ FAS216 SCSI support"
+<<<<<<< HEAD
 	depends on MACH_JAZZ && SCSI
+=======
+	depends on MACH_JAZZ && SCSI=y
+>>>>>>> origin/android16-base
 	select SCSI_SPI_ATTRS
 	help
 	  This is the driver for the onboard SCSI host adapter of MIPS Magnum

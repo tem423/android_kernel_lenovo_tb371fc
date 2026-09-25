@@ -72,9 +72,12 @@ static int brcmstb_restart_handler(struct notifier_block *this,
 		return NOTIFY_DONE;
 	}
 
+<<<<<<< HEAD
 	while (1)
 		;
 
+=======
+>>>>>>> origin/android16-base
 	return NOTIFY_DONE;
 }
 

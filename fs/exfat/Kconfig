@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 config EXFAT_FS
 	tristate "exFAT fs support"
 	select NLS
@@ -30,10 +31,32 @@ config EXFAT_DEFAULT_CODEPAGE
 	depends on EXFAT_FS
 	help
 	  This option should be set to the codepage of your exFAT filesystems.
+=======
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+config EXFAT_FS
+	tristate "exFAT filesystem support"
+	select BUFFER_HEAD
+	select NLS
+	select LEGACY_DIRECT_IO
+	help
+	  This allows you to mount devices formatted with the exFAT file system.
+	  exFAT is typically used on SD-Cards or USB sticks.
+
+	  To compile this as a module, choose M here: the module will be called
+	  exfat.
+>>>>>>> origin/android16-base
 
 config EXFAT_DEFAULT_IOCHARSET
 	string "Default iocharset for exFAT"
 	default "utf8"
 	depends on EXFAT_FS
 	help
+<<<<<<< HEAD
 	  Set this to the default input/output character set you'd like exFAT to use.
+=======
+	  Set this to the default input/output character set to use for
+	  converting between the encoding is used for user visible filename and
+	  UTF-16 character that exfat filesystem use, and can be overridden with
+	  the "iocharset" mount option for exFAT filesystems.
+>>>>>>> origin/android16-base

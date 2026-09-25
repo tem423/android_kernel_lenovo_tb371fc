@@ -938,6 +938,10 @@ static void igb_configure_msix(struct igb_adapter *adapter)
  **/
 static int igb_request_msix(struct igb_adapter *adapter)
 {
+<<<<<<< HEAD
+=======
+	unsigned int num_q_vectors = adapter->num_q_vectors;
+>>>>>>> origin/android16-base
 	struct net_device *netdev = adapter->netdev;
 	int i, err = 0, vector = 0, free_vector = 0;
 
@@ -946,7 +950,17 @@ static int igb_request_msix(struct igb_adapter *adapter)
 	if (err)
 		goto err_out;
 
+<<<<<<< HEAD
 	for (i = 0; i < adapter->num_q_vectors; i++) {
+=======
+	if (num_q_vectors > MAX_Q_VECTORS) {
+		num_q_vectors = MAX_Q_VECTORS;
+		dev_warn(&adapter->pdev->dev,
+			 "The number of queue vectors (%d) is higher than max allowed (%d)\n",
+			 adapter->num_q_vectors, MAX_Q_VECTORS);
+	}
+	for (i = 0; i < num_q_vectors; i++) {
+>>>>>>> origin/android16-base
 		struct igb_q_vector *q_vector = adapter->q_vector[i];
 
 		vector++;
@@ -1204,8 +1218,17 @@ static int igb_alloc_q_vector(struct igb_adapter *adapter,
 	if (!q_vector) {
 		q_vector = kzalloc(size, GFP_KERNEL);
 	} else if (size > ksize(q_vector)) {
+<<<<<<< HEAD
 		kfree_rcu(q_vector, rcu);
 		q_vector = kzalloc(size, GFP_KERNEL);
+=======
+		struct igb_q_vector *new_q_vector;
+
+		new_q_vector = kzalloc(size, GFP_KERNEL);
+		if (new_q_vector)
+			kfree_rcu(q_vector, rcu);
+		q_vector = new_q_vector;
+>>>>>>> origin/android16-base
 	} else {
 		memset(q_vector, 0, size);
 	}
@@ -1685,14 +1708,24 @@ static bool is_any_txtime_enabled(struct igb_adapter *adapter)
  **/
 static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
 {
+<<<<<<< HEAD
 	struct igb_ring *ring = adapter->tx_ring[queue];
 	struct net_device *netdev = adapter->netdev;
 	struct e1000_hw *hw = &adapter->hw;
+=======
+	struct net_device *netdev = adapter->netdev;
+	struct e1000_hw *hw = &adapter->hw;
+	struct igb_ring *ring;
+>>>>>>> origin/android16-base
 	u32 tqavcc, tqavctrl;
 	u16 value;
 
 	WARN_ON(hw->mac.type != e1000_i210);
 	WARN_ON(queue < 0 || queue > 1);
+<<<<<<< HEAD
+=======
+	ring = adapter->tx_ring[queue];
+>>>>>>> origin/android16-base
 
 	/* If any of the Qav features is enabled, configure queues as SR and
 	 * with HIGH PRIO. If none is, then configure them with LOW PRIO and
@@ -3495,6 +3528,10 @@ err_sw_init:
 err_ioremap:
 	free_netdev(netdev);
 err_alloc_etherdev:
+<<<<<<< HEAD
+=======
+	pci_disable_pcie_error_reporting(pdev);
+>>>>>>> origin/android16-base
 	pci_release_mem_regions(pdev);
 err_pci_reg:
 err_dma:
@@ -3508,6 +3545,10 @@ static int igb_disable_sriov(struct pci_dev *pdev)
 	struct net_device *netdev = pci_get_drvdata(pdev);
 	struct igb_adapter *adapter = netdev_priv(netdev);
 	struct e1000_hw *hw = &adapter->hw;
+<<<<<<< HEAD
+=======
+	unsigned long flags;
+>>>>>>> origin/android16-base
 
 	/* reclaim resources allocated to VFs */
 	if (adapter->vf_data) {
@@ -3520,12 +3561,20 @@ static int igb_disable_sriov(struct pci_dev *pdev)
 			pci_disable_sriov(pdev);
 			msleep(500);
 		}
+<<<<<<< HEAD
 
+=======
+		spin_lock_irqsave(&adapter->vfs_lock, flags);
+>>>>>>> origin/android16-base
 		kfree(adapter->vf_mac_list);
 		adapter->vf_mac_list = NULL;
 		kfree(adapter->vf_data);
 		adapter->vf_data = NULL;
 		adapter->vfs_allocated_count = 0;
+<<<<<<< HEAD
+=======
+		spin_unlock_irqrestore(&adapter->vfs_lock, flags);
+>>>>>>> origin/android16-base
 		wr32(E1000_IOVCTL, E1000_IOVCTL_REUSE_VFQ);
 		wrfl();
 		msleep(100);
@@ -3721,8 +3770,14 @@ static void igb_probe_vfs(struct igb_adapter *adapter)
 	struct pci_dev *pdev = adapter->pdev;
 	struct e1000_hw *hw = &adapter->hw;
 
+<<<<<<< HEAD
 	/* Virtualization features not supported on i210 family. */
 	if ((hw->mac.type == e1000_i210) || (hw->mac.type == e1000_i211))
+=======
+	/* Virtualization features not supported on i210 and 82580 family. */
+	if ((hw->mac.type == e1000_i210) || (hw->mac.type == e1000_i211) ||
+	    (hw->mac.type == e1000_82580))
+>>>>>>> origin/android16-base
 		return;
 
 	/* Of the below we really only want the effect of getting
@@ -3846,6 +3901,12 @@ static int igb_sw_init(struct igb_adapter *adapter)
 
 	spin_lock_init(&adapter->nfc_lock);
 	spin_lock_init(&adapter->stats64_lock);
+<<<<<<< HEAD
+=======
+
+	/* init spinlock to avoid concurrency of VF resources */
+	spin_lock_init(&adapter->vfs_lock);
+>>>>>>> origin/android16-base
 #ifdef CONFIG_PCI_IOV
 	switch (hw->mac.type) {
 	case e1000_82576:
@@ -4561,6 +4622,13 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
 static void igb_set_rx_buffer_len(struct igb_adapter *adapter,
 				  struct igb_ring *rx_ring)
 {
+<<<<<<< HEAD
+=======
+#if (PAGE_SIZE < 8192)
+	struct e1000_hw *hw = &adapter->hw;
+#endif
+
+>>>>>>> origin/android16-base
 	/* set build_skb and buffer size flags */
 	clear_ring_build_skb_enabled(rx_ring);
 	clear_ring_uses_large_buffer(rx_ring);
@@ -4571,10 +4639,16 @@ static void igb_set_rx_buffer_len(struct igb_adapter *adapter,
 	set_ring_build_skb_enabled(rx_ring);
 
 #if (PAGE_SIZE < 8192)
+<<<<<<< HEAD
 	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB)
 		return;
 
 	set_ring_uses_large_buffer(rx_ring);
+=======
+	if (adapter->max_frame_size > IGB_MAX_FRAME_BUILD_SKB ||
+	    rd32(E1000_RCTL) & E1000_RCTL_SBP)
+		set_ring_uses_large_buffer(rx_ring);
+>>>>>>> origin/android16-base
 #endif
 }
 
@@ -4684,6 +4758,11 @@ static void igb_clean_tx_ring(struct igb_ring *tx_ring)
 					       DMA_TO_DEVICE);
 		}
 
+<<<<<<< HEAD
+=======
+		tx_buffer->next_to_watch = NULL;
+
+>>>>>>> origin/android16-base
 		/* move us one more past the eop_desc for start of next pkt */
 		tx_buffer++;
 		i++;
@@ -5335,7 +5414,12 @@ static void igb_watchdog_task(struct work_struct *work)
 				break;
 			}
 
+<<<<<<< HEAD
 			if (adapter->link_speed != SPEED_1000)
+=======
+			if (adapter->link_speed != SPEED_1000 ||
+			    !hw->phy.ops.read_reg)
+>>>>>>> origin/android16-base
 				goto no_wait;
 
 			/* wait for Remote receiver status OK */
@@ -6486,23 +6570,86 @@ void igb_update_stats(struct igb_adapter *adapter)
 	}
 }
 
+<<<<<<< HEAD
 static void igb_tsync_interrupt(struct igb_adapter *adapter)
 {
 	struct e1000_hw *hw = &adapter->hw;
 	struct ptp_clock_event event;
 	struct timespec64 ts;
 	u32 ack = 0, tsauxc, sec, nsec, tsicr = rd32(E1000_TSICR);
+=======
+static void igb_perout(struct igb_adapter *adapter, int tsintr_tt)
+{
+	int pin = ptp_find_pin(adapter->ptp_clock, PTP_PF_PEROUT, tsintr_tt);
+	struct e1000_hw *hw = &adapter->hw;
+	struct timespec64 ts;
+	u32 tsauxc;
+
+	if (pin < 0 || pin >= IGB_N_PEROUT)
+		return;
+
+	spin_lock(&adapter->tmreg_lock);
+	ts = timespec64_add(adapter->perout[pin].start,
+			    adapter->perout[pin].period);
+	/* u32 conversion of tv_sec is safe until y2106 */
+	wr32((tsintr_tt == 1) ? E1000_TRGTTIML1 : E1000_TRGTTIML0, ts.tv_nsec);
+	wr32((tsintr_tt == 1) ? E1000_TRGTTIMH1 : E1000_TRGTTIMH0, (u32)ts.tv_sec);
+	tsauxc = rd32(E1000_TSAUXC);
+	tsauxc |= TSAUXC_EN_TT0;
+	wr32(E1000_TSAUXC, tsauxc);
+	adapter->perout[pin].start = ts;
+	spin_unlock(&adapter->tmreg_lock);
+}
+
+static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
+{
+	int pin = ptp_find_pin(adapter->ptp_clock, PTP_PF_EXTTS, tsintr_tt);
+	struct e1000_hw *hw = &adapter->hw;
+	struct ptp_clock_event event;
+	u32 sec, nsec;
+
+	if (pin < 0 || pin >= IGB_N_EXTTS)
+		return;
+
+	nsec = rd32((tsintr_tt == 1) ? E1000_AUXSTMPL1 : E1000_AUXSTMPL0);
+	sec  = rd32((tsintr_tt == 1) ? E1000_AUXSTMPH1 : E1000_AUXSTMPH0);
+	event.type = PTP_CLOCK_EXTTS;
+	event.index = tsintr_tt;
+	event.timestamp = sec * 1000000000ULL + nsec;
+	ptp_clock_event(adapter->ptp_clock, &event);
+}
+
+static void igb_tsync_interrupt(struct igb_adapter *adapter)
+{
+	const u32 mask = (TSINTR_SYS_WRAP | E1000_TSICR_TXTS |
+			  TSINTR_TT0 | TSINTR_TT1 |
+			  TSINTR_AUTT0 | TSINTR_AUTT1);
+	struct e1000_hw *hw = &adapter->hw;
+	u32 tsicr = rd32(E1000_TSICR);
+	struct ptp_clock_event event;
+
+	if (hw->mac.type == e1000_82580) {
+		/* 82580 has a hardware bug that requires an explicit
+		 * write to clear the TimeSync interrupt cause.
+		 */
+		wr32(E1000_TSICR, tsicr & mask);
+	}
+>>>>>>> origin/android16-base
 
 	if (tsicr & TSINTR_SYS_WRAP) {
 		event.type = PTP_CLOCK_PPS;
 		if (adapter->ptp_caps.pps)
 			ptp_clock_event(adapter->ptp_clock, &event);
+<<<<<<< HEAD
 		ack |= TSINTR_SYS_WRAP;
+=======
+>>>>>>> origin/android16-base
 	}
 
 	if (tsicr & E1000_TSICR_TXTS) {
 		/* retrieve hardware timestamp */
 		schedule_work(&adapter->ptp_tx_work);
+<<<<<<< HEAD
 		ack |= E1000_TSICR_TXTS;
 	}
 
@@ -6557,6 +6704,21 @@ static void igb_tsync_interrupt(struct igb_adapter *adapter)
 
 	/* acknowledge the interrupts */
 	wr32(E1000_TSICR, ack);
+=======
+	}
+
+	if (tsicr & TSINTR_TT0)
+		igb_perout(adapter, 0);
+
+	if (tsicr & TSINTR_TT1)
+		igb_perout(adapter, 1);
+
+	if (tsicr & TSINTR_AUTT0)
+		igb_extts(adapter, 0);
+
+	if (tsicr & TSINTR_AUTT1)
+		igb_extts(adapter, 1);
+>>>>>>> origin/android16-base
 }
 
 static irqreturn_t igb_msix_other(int irq, void *data)
@@ -7146,7 +7308,11 @@ static void igb_vf_reset_msg(struct igb_adapter *adapter, u32 vf)
 {
 	struct e1000_hw *hw = &adapter->hw;
 	unsigned char *vf_mac = adapter->vf_data[vf].vf_mac_addresses;
+<<<<<<< HEAD
 	u32 reg, msgbuf[3];
+=======
+	u32 reg, msgbuf[3] = {};
+>>>>>>> origin/android16-base
 	u8 *addr = (u8 *)(&msgbuf[1]);
 
 	/* process all the same items cleared in a function level reset */
@@ -7395,6 +7561,23 @@ static int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
 	struct vf_mac_filter *entry = NULL;
 	int ret = 0;
 
+<<<<<<< HEAD
+=======
+	if ((vf_data->flags & IGB_VF_FLAG_PF_SET_MAC) &&
+	    !vf_data->trusted) {
+		dev_warn(&pdev->dev,
+			 "VF %d requested MAC filter but is administratively denied\n",
+			  vf);
+		return -EINVAL;
+	}
+	if (!is_valid_ether_addr(addr)) {
+		dev_warn(&pdev->dev,
+			 "VF %d attempted to set invalid MAC filter\n",
+			  vf);
+		return -EINVAL;
+	}
+
+>>>>>>> origin/android16-base
 	switch (info) {
 	case E1000_VF_MAC_FILTER_CLR:
 		/* remove all unicast MAC filters related to the current VF */
@@ -7408,6 +7591,7 @@ static int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
 		}
 		break;
 	case E1000_VF_MAC_FILTER_ADD:
+<<<<<<< HEAD
 		if ((vf_data->flags & IGB_VF_FLAG_PF_SET_MAC) &&
 		    !vf_data->trusted) {
 			dev_warn(&pdev->dev,
@@ -7422,6 +7606,8 @@ static int igb_set_vf_mac_filter(struct igb_adapter *adapter, const int vf,
 			return -EINVAL;
 		}
 
+=======
+>>>>>>> origin/android16-base
 		/* try to find empty slot in the list */
 		list_for_each(pos, &adapter->vf_macs.l) {
 			entry = list_entry(pos, struct vf_mac_filter, l);
@@ -7589,8 +7775,15 @@ unlock:
 static void igb_msg_task(struct igb_adapter *adapter)
 {
 	struct e1000_hw *hw = &adapter->hw;
+<<<<<<< HEAD
 	u32 vf;
 
+=======
+	unsigned long flags;
+	u32 vf;
+
+	spin_lock_irqsave(&adapter->vfs_lock, flags);
+>>>>>>> origin/android16-base
 	for (vf = 0; vf < adapter->vfs_allocated_count; vf++) {
 		/* process any reset requests */
 		if (!igb_check_for_rst(hw, vf))
@@ -7604,6 +7797,10 @@ static void igb_msg_task(struct igb_adapter *adapter)
 		if (!igb_check_for_ack(hw, vf))
 			igb_rcv_ack_from_vf(adapter, vf);
 	}
+<<<<<<< HEAD
+=======
+	spin_unlock_irqrestore(&adapter->vfs_lock, flags);
+>>>>>>> origin/android16-base
 }
 
 /**
@@ -9035,6 +9232,14 @@ static pci_ers_result_t igb_io_error_detected(struct pci_dev *pdev,
 	struct net_device *netdev = pci_get_drvdata(pdev);
 	struct igb_adapter *adapter = netdev_priv(netdev);
 
+<<<<<<< HEAD
+=======
+	if (state == pci_channel_io_normal) {
+		dev_warn(&pdev->dev, "Non-correctable non-fatal error reported.\n");
+		return PCI_ERS_RESULT_CAN_RECOVER;
+	}
+
+>>>>>>> origin/android16-base
 	netif_device_detach(netdev);
 
 	if (state == pci_channel_io_perm_failure)
@@ -9110,6 +9315,13 @@ static void igb_io_resume(struct pci_dev *pdev)
 	struct igb_adapter *adapter = netdev_priv(netdev);
 
 	if (netif_running(netdev)) {
+<<<<<<< HEAD
+=======
+		if (!test_bit(__IGB_DOWN, &adapter->state)) {
+			dev_dbg(&pdev->dev, "Resuming from non-fatal error, do nothing.\n");
+			return;
+		}
+>>>>>>> origin/android16-base
 		if (igb_up(adapter)) {
 			dev_err(&pdev->dev, "igb_up failed after reset\n");
 			return;
@@ -9432,11 +9644,18 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
 	struct e1000_hw *hw = &adapter->hw;
 	u32 dmac_thr;
 	u16 hwm;
+<<<<<<< HEAD
 
 	if (hw->mac.type > e1000_82580) {
 		if (adapter->flags & IGB_FLAG_DMAC) {
 			u32 reg;
 
+=======
+	u32 reg;
+
+	if (hw->mac.type > e1000_82580) {
+		if (adapter->flags & IGB_FLAG_DMAC) {
+>>>>>>> origin/android16-base
 			/* force threshold to 0. */
 			wr32(E1000_DMCTXTH, 0);
 
@@ -9469,7 +9688,10 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
 			/* Disable BMC-to-OS Watchdog Enable */
 			if (hw->mac.type != e1000_i354)
 				reg &= ~E1000_DMACR_DC_BMC2OSW_EN;
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/android16-base
 			wr32(E1000_DMACR, reg);
 
 			/* no lower threshold to disable
@@ -9486,12 +9708,21 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
 			 */
 			wr32(E1000_DMCTXTH, (IGB_MIN_TXPBSIZE -
 			     (IGB_TX_BUF_4096 + adapter->max_frame_size)) >> 6);
+<<<<<<< HEAD
 
 			/* make low power state decision controlled
 			 * by DMA coal
 			 */
 			reg = rd32(E1000_PCIEMISC);
 			reg &= ~E1000_PCIEMISC_LX_DECISION;
+=======
+		}
+
+		if (hw->mac.type >= e1000_i210 ||
+		    (adapter->flags & IGB_FLAG_DMAC)) {
+			reg = rd32(E1000_PCIEMISC);
+			reg |= E1000_PCIEMISC_LX_DECISION;
+>>>>>>> origin/android16-base
 			wr32(E1000_PCIEMISC, reg);
 		} /* endif adapter->dmac is not disabled */
 	} else if (hw->mac.type == e1000_82580) {

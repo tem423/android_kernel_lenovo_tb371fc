@@ -114,6 +114,10 @@ static int do_statfs_native(struct kstatfs *st, struct statfs __user *p)
 	if (sizeof(buf) == sizeof(*st))
 		memcpy(&buf, st, sizeof(*st));
 	else {
+<<<<<<< HEAD
+=======
+		memset(&buf, 0, sizeof(buf));
+>>>>>>> origin/android16-base
 		if (sizeof buf.f_blocks == 4) {
 			if ((st->f_blocks | st->f_bfree | st->f_bavail |
 			     st->f_bsize | st->f_frsize) &
@@ -142,7 +146,10 @@ static int do_statfs_native(struct kstatfs *st, struct statfs __user *p)
 		buf.f_namelen = st->f_namelen;
 		buf.f_frsize = st->f_frsize;
 		buf.f_flags = st->f_flags;
+<<<<<<< HEAD
 		memset(buf.f_spare, 0, sizeof(buf.f_spare));
+=======
+>>>>>>> origin/android16-base
 	}
 	if (copy_to_user(p, &buf, sizeof(buf)))
 		return -EFAULT;
@@ -155,6 +162,10 @@ static int do_statfs64(struct kstatfs *st, struct statfs64 __user *p)
 	if (sizeof(buf) == sizeof(*st))
 		memcpy(&buf, st, sizeof(*st));
 	else {
+<<<<<<< HEAD
+=======
+		memset(&buf, 0, sizeof(buf));
+>>>>>>> origin/android16-base
 		buf.f_type = st->f_type;
 		buf.f_bsize = st->f_bsize;
 		buf.f_blocks = st->f_blocks;
@@ -166,7 +177,10 @@ static int do_statfs64(struct kstatfs *st, struct statfs64 __user *p)
 		buf.f_namelen = st->f_namelen;
 		buf.f_frsize = st->f_frsize;
 		buf.f_flags = st->f_flags;
+<<<<<<< HEAD
 		memset(buf.f_spare, 0, sizeof(buf.f_spare));
+=======
+>>>>>>> origin/android16-base
 	}
 	if (copy_to_user(p, &buf, sizeof(buf)))
 		return -EFAULT;

@@ -204,6 +204,10 @@ static int bbc_beep_probe(struct platform_device *op)
 
 	info = &state->u.bbc;
 	info->clock_freq = of_getintprop_default(dp, "clock-frequency", 0);
+<<<<<<< HEAD
+=======
+	of_node_put(dp);
+>>>>>>> origin/android16-base
 	if (!info->clock_freq)
 		goto out_free;
 

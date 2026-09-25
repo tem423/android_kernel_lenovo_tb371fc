@@ -4,7 +4,11 @@
 
 #include <uapi/asm/setup.h>
 
+<<<<<<< HEAD
 #define COMMAND_LINE_SIZE 2048
+=======
+#define COMMAND_LINE_SIZE 4096
+>>>>>>> origin/android16-base
 
 #include <linux/linkage.h>
 #include <asm/page_types.h>
@@ -91,6 +95,7 @@ extern unsigned long _brk_end;
 void *extend_brk(size_t size, size_t align);
 
 /*
+<<<<<<< HEAD
  * Reserve space in the brk section.  The name must be unique within
  * the file, and somewhat descriptive.  The size is in bytes.  Must be
  * used at file scope.
@@ -112,6 +117,18 @@ void *extend_brk(size_t size, size_t align);
 			" .popsection"					\
 			: : "i" (sz));					\
 	}
+=======
+ * Reserve space in the .brk section, which is a block of memory from which the
+ * caller is allowed to allocate very early (before even memblock is available)
+ * by calling extend_brk().  All allocated memory will be eventually converted
+ * to memblock.  Any leftover unallocated memory will be freed.
+ *
+ * The size is in bytes.
+ */
+#define RESERVE_BRK(name, size)					\
+	__section(.bss..brk) __aligned(1) __used	\
+	static char __brk_##name[size]
+>>>>>>> origin/android16-base
 
 /* Helper for reserving space for arrays of things */
 #define RESERVE_BRK_ARRAY(type, name, entries)		\
@@ -129,6 +146,7 @@ asmlinkage void __init x86_64_start_reservations(char *real_mode_data);
 
 #endif /* __i386__ */
 #endif /* _SETUP */
+<<<<<<< HEAD
 #else
 #define RESERVE_BRK(name,sz)				\
 	.pushsection .brk_reservation,"aw",@nobits;	\
@@ -137,4 +155,21 @@ asmlinkage void __init x86_64_start_reservations(char *real_mode_data);
 	.size .brk.name,.-1b;				\
 	.popsection
 #endif /* __ASSEMBLY__ */
+=======
+
+#else  /* __ASSEMBLY */
+
+.macro __RESERVE_BRK name, size
+	.pushsection .bss..brk, "aw"
+GLOBAL(__brk_\name)
+	.skip \size
+END(__brk_\name)
+	.popsection
+.endm
+
+#define RESERVE_BRK(name, size) __RESERVE_BRK name, size
+
+#endif /* __ASSEMBLY__ */
+
+>>>>>>> origin/android16-base
 #endif /* _ASM_X86_SETUP_H */

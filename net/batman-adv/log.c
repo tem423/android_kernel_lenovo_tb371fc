@@ -205,6 +205,10 @@ static const struct file_operations batadv_log_fops = {
 	.read           = batadv_log_read,
 	.poll           = batadv_log_poll,
 	.llseek         = no_llseek,
+<<<<<<< HEAD
+=======
+	.owner          = THIS_MODULE,
+>>>>>>> origin/android16-base
 };
 
 /**

@@ -357,6 +357,10 @@ static int qedi_alloc_and_init_sb(struct qedi_ctx *qedi,
 	ret = qedi_ops->common->sb_init(qedi->cdev, sb_info, sb_virt, sb_phys,
 				       sb_id, QED_SB_TYPE_STORAGE);
 	if (ret) {
+<<<<<<< HEAD
+=======
+		dma_free_coherent(&qedi->pdev->dev, sizeof(*sb_virt), sb_virt, sb_phys);
+>>>>>>> origin/android16-base
 		QEDI_ERR(&qedi->dbg_ctx,
 			 "Status block initialization failed for id = %d.\n",
 			  sb_id);
@@ -629,7 +633,11 @@ static struct qedi_ctx *qedi_host_alloc(struct pci_dev *pdev)
 		goto exit_setup_shost;
 	}
 
+<<<<<<< HEAD
 	shost->max_id = QEDI_MAX_ISCSI_CONNS_PER_HBA;
+=======
+	shost->max_id = QEDI_MAX_ISCSI_CONNS_PER_HBA - 1;
+>>>>>>> origin/android16-base
 	shost->max_channel = 0;
 	shost->max_lun = ~0;
 	shost->max_cmd_len = 16;
@@ -1507,7 +1515,11 @@ static int qedi_alloc_global_queues(struct qedi_ctx *qedi)
 {
 	u32 *list;
 	int i;
+<<<<<<< HEAD
 	int status = 0, rc;
+=======
+	int status;
+>>>>>>> origin/android16-base
 	u32 *pbl;
 	dma_addr_t page;
 	int num_pages;
@@ -1518,14 +1530,22 @@ static int qedi_alloc_global_queues(struct qedi_ctx *qedi)
 	 */
 	if (!qedi->num_queues) {
 		QEDI_ERR(&qedi->dbg_ctx, "No MSI-X vectors available!\n");
+<<<<<<< HEAD
 		return 1;
+=======
+		return -ENOMEM;
+>>>>>>> origin/android16-base
 	}
 
 	/* Make sure we allocated the PBL that will contain the physical
 	 * addresses of our queues
 	 */
 	if (!qedi->p_cpuq) {
+<<<<<<< HEAD
 		status = 1;
+=======
+		status = -EINVAL;
+>>>>>>> origin/android16-base
 		goto mem_alloc_failure;
 	}
 
@@ -1540,6 +1560,7 @@ static int qedi_alloc_global_queues(struct qedi_ctx *qedi)
 		  "qedi->global_queues=%p.\n", qedi->global_queues);
 
 	/* Allocate DMA coherent buffers for BDQ */
+<<<<<<< HEAD
 	rc = qedi_alloc_bdq(qedi);
 	if (rc)
 		goto mem_alloc_failure;
@@ -1547,6 +1568,15 @@ static int qedi_alloc_global_queues(struct qedi_ctx *qedi)
 	/* Allocate DMA coherent buffers for NVM_ISCSI_CFG */
 	rc = qedi_alloc_nvm_iscsi_cfg(qedi);
 	if (rc)
+=======
+	status = qedi_alloc_bdq(qedi);
+	if (status)
+		goto mem_alloc_failure;
+
+	/* Allocate DMA coherent buffers for NVM_ISCSI_CFG */
+	status = qedi_alloc_nvm_iscsi_cfg(qedi);
+	if (status)
+>>>>>>> origin/android16-base
 		goto mem_alloc_failure;
 
 	/* Allocate a CQ and an associated PBL for each MSI-X
@@ -1559,6 +1589,10 @@ static int qedi_alloc_global_queues(struct qedi_ctx *qedi)
 		if (!qedi->global_queues[i]) {
 			QEDI_ERR(&qedi->dbg_ctx,
 				 "Unable to allocation global queue %d.\n", i);
+<<<<<<< HEAD
+=======
+			status = -ENOMEM;
+>>>>>>> origin/android16-base
 			goto mem_alloc_failure;
 		}
 
@@ -1863,8 +1897,14 @@ static int qedi_cpu_offline(unsigned int cpu)
 	struct qedi_percpu_s *p = this_cpu_ptr(&qedi_percpu);
 	struct qedi_work *work, *tmp;
 	struct task_struct *thread;
+<<<<<<< HEAD
 
 	spin_lock_bh(&p->p_work_lock);
+=======
+	unsigned long flags;
+
+	spin_lock_irqsave(&p->p_work_lock, flags);
+>>>>>>> origin/android16-base
 	thread = p->iothread;
 	p->iothread = NULL;
 
@@ -1875,7 +1915,11 @@ static int qedi_cpu_offline(unsigned int cpu)
 			kfree(work);
 	}
 
+<<<<<<< HEAD
 	spin_unlock_bh(&p->p_work_lock);
+=======
+	spin_unlock_irqrestore(&p->p_work_lock, flags);
+>>>>>>> origin/android16-base
 	if (thread)
 		kthread_stop(thread);
 	return 0;
@@ -2129,7 +2173,11 @@ qedi_show_boot_tgt_info(struct qedi_ctx *qedi, int type,
 			     chap_name);
 		break;
 	case ISCSI_BOOT_TGT_CHAP_SECRET:
+<<<<<<< HEAD
 		rc = sprintf(buf, "%.*s\n", NVM_ISCSI_CFG_CHAP_NAME_MAX_LEN,
+=======
+		rc = sprintf(buf, "%.*s\n", NVM_ISCSI_CFG_CHAP_PWD_MAX_LEN,
+>>>>>>> origin/android16-base
 			     chap_secret);
 		break;
 	case ISCSI_BOOT_TGT_REV_CHAP_NAME:
@@ -2137,7 +2185,11 @@ qedi_show_boot_tgt_info(struct qedi_ctx *qedi, int type,
 			     mchap_name);
 		break;
 	case ISCSI_BOOT_TGT_REV_CHAP_SECRET:
+<<<<<<< HEAD
 		rc = sprintf(buf, "%.*s\n", NVM_ISCSI_CFG_CHAP_NAME_MAX_LEN,
+=======
+		rc = sprintf(buf, "%.*s\n", NVM_ISCSI_CFG_CHAP_PWD_MAX_LEN,
+>>>>>>> origin/android16-base
 			     mchap_secret);
 		break;
 	case ISCSI_BOOT_TGT_FLAGS:
@@ -2580,7 +2632,11 @@ static int __qedi_probe(struct pci_dev *pdev, int mode)
 			QEDI_ERR(&qedi->dbg_ctx,
 				 "Unable to start offload thread!\n");
 			rc = -ENODEV;
+<<<<<<< HEAD
 			goto free_cid_que;
+=======
+			goto free_tmf_thread;
+>>>>>>> origin/android16-base
 		}
 
 		/* F/w needs 1st task context memory entry for performance */
@@ -2600,6 +2656,11 @@ static int __qedi_probe(struct pci_dev *pdev, int mode)
 
 	return 0;
 
+<<<<<<< HEAD
+=======
+free_tmf_thread:
+	destroy_workqueue(qedi->tmf_thread);
+>>>>>>> origin/android16-base
 free_cid_que:
 	qedi_release_cid_que(qedi);
 free_uio:

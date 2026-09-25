@@ -950,11 +950,25 @@ struct amdgpu_gfx {
 	/* NGG */
 	struct amdgpu_ngg		ngg;
 
+<<<<<<< HEAD
+=======
+	/* gfx off */
+	bool                            gfx_off_state; /* true: enabled, false: disabled */
+	struct mutex                    gfx_off_mutex;
+	uint32_t                        gfx_off_req_count; /* default 1, enable gfx off: dec 1, disable gfx off: add 1 */
+	struct delayed_work             gfx_off_delay_work;
+
+>>>>>>> origin/android16-base
 	/* pipe reservation */
 	struct mutex			pipe_reserve_mutex;
 	DECLARE_BITMAP			(pipe_reserve_bitmap, AMDGPU_MAX_COMPUTE_QUEUES);
 };
 
+<<<<<<< HEAD
+=======
+int amdgpu_file_to_fpriv(struct file *filp, struct amdgpu_fpriv **fpriv);
+
+>>>>>>> origin/android16-base
 int amdgpu_ib_get(struct amdgpu_device *adev, struct amdgpu_vm *vm,
 		  unsigned size, struct amdgpu_ib *ib);
 void amdgpu_ib_free(struct amdgpu_device *adev, struct amdgpu_ib *ib,
@@ -1774,6 +1788,10 @@ void amdgpu_device_program_register_sequence(struct amdgpu_device *adev,
 					     const u32 array_size);
 
 bool amdgpu_device_is_px(struct drm_device *dev);
+<<<<<<< HEAD
+=======
+void amdgpu_gfx_off_ctrl(struct amdgpu_device *adev, bool enable);
+>>>>>>> origin/android16-base
 /* atpx handler */
 #if defined(CONFIG_VGA_SWITCHEROO)
 void amdgpu_register_atpx_handler(void);

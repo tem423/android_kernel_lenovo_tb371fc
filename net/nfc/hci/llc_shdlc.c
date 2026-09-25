@@ -134,7 +134,11 @@ static bool llc_shdlc_x_lteq_y_lt_z(int x, int y, int z)
 		return ((y >= x) || (y < z)) ? true : false;
 }
 
+<<<<<<< HEAD
 static struct sk_buff *llc_shdlc_alloc_skb(struct llc_shdlc *shdlc,
+=======
+static struct sk_buff *llc_shdlc_alloc_skb(const struct llc_shdlc *shdlc,
+>>>>>>> origin/android16-base
 					   int payload_len)
 {
 	struct sk_buff *skb;
@@ -148,7 +152,11 @@ static struct sk_buff *llc_shdlc_alloc_skb(struct llc_shdlc *shdlc,
 }
 
 /* immediately sends an S frame. */
+<<<<<<< HEAD
 static int llc_shdlc_send_s_frame(struct llc_shdlc *shdlc,
+=======
+static int llc_shdlc_send_s_frame(const struct llc_shdlc *shdlc,
+>>>>>>> origin/android16-base
 				  enum sframe_type sframe_type, int nr)
 {
 	int r;
@@ -170,7 +178,11 @@ static int llc_shdlc_send_s_frame(struct llc_shdlc *shdlc,
 }
 
 /* immediately sends an U frame. skb may contain optional payload */
+<<<<<<< HEAD
 static int llc_shdlc_send_u_frame(struct llc_shdlc *shdlc,
+=======
+static int llc_shdlc_send_u_frame(const struct llc_shdlc *shdlc,
+>>>>>>> origin/android16-base
 				  struct sk_buff *skb,
 				  enum uframe_modifier uframe_modifier)
 {
@@ -372,7 +384,11 @@ static void llc_shdlc_connect_complete(struct llc_shdlc *shdlc, int r)
 	wake_up(shdlc->connect_wq);
 }
 
+<<<<<<< HEAD
 static int llc_shdlc_connect_initiate(struct llc_shdlc *shdlc)
+=======
+static int llc_shdlc_connect_initiate(const struct llc_shdlc *shdlc)
+>>>>>>> origin/android16-base
 {
 	struct sk_buff *skb;
 
@@ -388,7 +404,11 @@ static int llc_shdlc_connect_initiate(struct llc_shdlc *shdlc)
 	return llc_shdlc_send_u_frame(shdlc, skb, U_FRAME_RSET);
 }
 
+<<<<<<< HEAD
 static int llc_shdlc_connect_send_ua(struct llc_shdlc *shdlc)
+=======
+static int llc_shdlc_connect_send_ua(const struct llc_shdlc *shdlc)
+>>>>>>> origin/android16-base
 {
 	struct sk_buff *skb;
 

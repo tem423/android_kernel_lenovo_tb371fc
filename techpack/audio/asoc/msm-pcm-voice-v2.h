@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
+<<<<<<< HEAD
 /* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2012-2015, 2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/android16-base
  */
 #ifndef _MSM_PCM_VOICE_H
 #define _MSM_PCM_VOICE_H
@@ -31,4 +35,9 @@ struct msm_voice {
 	int capture_start;
 };
 
+<<<<<<< HEAD
+=======
+int msm_voice_get_probe_status(void);
+
+>>>>>>> origin/android16-base
 #endif /*_MSM_PCM_VOICE_H*/

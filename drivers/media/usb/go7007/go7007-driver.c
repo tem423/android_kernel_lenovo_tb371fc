@@ -88,7 +88,11 @@ static int go7007_load_encoder(struct go7007 *go)
 	const struct firmware *fw_entry;
 	char fw_name[] = "go7007/go7007fw.bin";
 	void *bounce;
+<<<<<<< HEAD
 	int fw_len, rv = 0;
+=======
+	int fw_len;
+>>>>>>> origin/android16-base
 	u16 intr_val, intr_data;
 
 	if (go->boot_fw == NULL) {
@@ -117,9 +121,17 @@ static int go7007_load_encoder(struct go7007 *go)
 	    go7007_read_interrupt(go, &intr_val, &intr_data) < 0 ||
 			(intr_val & ~0x1) != 0x5a5a) {
 		v4l2_err(go, "error transferring firmware\n");
+<<<<<<< HEAD
 		rv = -1;
 	}
 	return rv;
+=======
+		kfree(go->boot_fw);
+		go->boot_fw = NULL;
+		return -1;
+	}
+	return 0;
+>>>>>>> origin/android16-base
 }
 
 MODULE_FIRMWARE("go7007/go7007fw.bin");
@@ -699,21 +711,29 @@ struct go7007 *go7007_alloc(const struct go7007_board_info *board,
 						struct device *dev)
 {
 	struct go7007 *go;
+<<<<<<< HEAD
 	int i;
+=======
+>>>>>>> origin/android16-base
 
 	go = kzalloc(sizeof(struct go7007), GFP_KERNEL);
 	if (go == NULL)
 		return NULL;
 	go->dev = dev;
 	go->board_info = board;
+<<<<<<< HEAD
 	go->board_id = 0;
 	go->tuner_type = -1;
 	go->channel_number = 0;
 	go->name[0] = 0;
+=======
+	go->tuner_type = -1;
+>>>>>>> origin/android16-base
 	mutex_init(&go->hw_lock);
 	init_waitqueue_head(&go->frame_waitq);
 	spin_lock_init(&go->spinlock);
 	go->status = STATUS_INIT;
+<<<<<<< HEAD
 	memset(&go->i2c_adapter, 0, sizeof(go->i2c_adapter));
 	go->i2c_adapter_online = 0;
 	go->interrupt_available = 0;
@@ -742,6 +762,14 @@ struct go7007 *go7007_alloc(const struct go7007_board_info *board,
 		go->modet_map[i] = 0;
 	go->audio_deliver = NULL;
 	go->audio_enabled = 0;
+=======
+	init_waitqueue_head(&go->interrupt_waitq);
+	go7007_update_board(go);
+	go->format = V4L2_PIX_FMT_MJPEG;
+	go->bitrate = 1500000;
+	go->fps_scale = 1;
+	go->aspect_ratio = GO7007_RATIO_1_1;
+>>>>>>> origin/android16-base
 
 	return go;
 }

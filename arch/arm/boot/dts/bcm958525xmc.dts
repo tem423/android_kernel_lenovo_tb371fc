@@ -90,8 +90,13 @@
 	};
 };
 
+<<<<<<< HEAD
 &nand {
 	nandcs@0 {
+=======
+&nand_controller {
+	nand@0 {
+>>>>>>> origin/android16-base
 		compatible = "brcm,nandcs";
 		reg = <0>;
 		nand-on-flash-bbt;

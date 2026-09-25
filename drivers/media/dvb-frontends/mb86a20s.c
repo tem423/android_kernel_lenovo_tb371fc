@@ -2097,7 +2097,11 @@ struct dvb_frontend *mb86a20s_attach(const struct mb86a20s_config *config,
 	dev_info(&i2c->dev, "Detected a Fujitsu mb86a20s frontend\n");
 	return &state->frontend;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(mb86a20s_attach);
+=======
+EXPORT_SYMBOL_GPL(mb86a20s_attach);
+>>>>>>> origin/android16-base
 
 static const struct dvb_frontend_ops mb86a20s_ops = {
 	.delsys = { SYS_ISDBT },

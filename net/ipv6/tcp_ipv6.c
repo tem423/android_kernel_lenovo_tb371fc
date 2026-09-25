@@ -97,7 +97,11 @@ static void inet6_sk_rx_dst_set(struct sock *sk, const struct sk_buff *skb)
 	if (dst && dst_hold_safe(dst)) {
 		const struct rt6_info *rt = (const struct rt6_info *)dst;
 
+<<<<<<< HEAD
 		sk->sk_rx_dst = dst;
+=======
+		rcu_assign_pointer(sk->sk_rx_dst, dst);
+>>>>>>> origin/android16-base
 		inet_sk(sk)->rx_dst_ifindex = skb->skb_iif;
 		inet6_sk(sk)->rx_dst_cookie = rt6_get_cookie(rt);
 	}
@@ -206,7 +210,11 @@ static int tcp_v6_connect(struct sock *sk, struct sockaddr *uaddr,
 	    !ipv6_addr_equal(&sk->sk_v6_daddr, &usin->sin6_addr)) {
 		tp->rx_opt.ts_recent = 0;
 		tp->rx_opt.ts_recent_stamp = 0;
+<<<<<<< HEAD
 		tp->write_seq = 0;
+=======
+		WRITE_ONCE(tp->write_seq, 0);
+>>>>>>> origin/android16-base
 	}
 
 	sk->sk_v6_daddr = usin->sin6_addr;
@@ -229,7 +237,12 @@ static int tcp_v6_connect(struct sock *sk, struct sockaddr *uaddr,
 		sin.sin_port = usin->sin6_port;
 		sin.sin_addr.s_addr = usin->sin6_addr.s6_addr32[3];
 
+<<<<<<< HEAD
 		icsk->icsk_af_ops = &ipv6_mapped;
+=======
+		/* Paired with READ_ONCE() in tcp_(get|set)sockopt() */
+		WRITE_ONCE(icsk->icsk_af_ops, &ipv6_mapped);
+>>>>>>> origin/android16-base
 		sk->sk_backlog_rcv = tcp_v4_do_rcv;
 #ifdef CONFIG_TCP_MD5SIG
 		tp->af_specific = &tcp_sock_ipv6_mapped_specific;
@@ -239,7 +252,12 @@ static int tcp_v6_connect(struct sock *sk, struct sockaddr *uaddr,
 
 		if (err) {
 			icsk->icsk_ext_hdr_len = exthdrlen;
+<<<<<<< HEAD
 			icsk->icsk_af_ops = &ipv6_specific;
+=======
+			/* Paired with READ_ONCE() in tcp_(get|set)sockopt() */
+			WRITE_ONCE(icsk->icsk_af_ops, &ipv6_specific);
+>>>>>>> origin/android16-base
 			sk->sk_backlog_rcv = tcp_v6_do_rcv;
 #ifdef CONFIG_TCP_MD5SIG
 			tp->af_specific = &tcp_sock_ipv6_specific;
@@ -257,6 +275,10 @@ static int tcp_v6_connect(struct sock *sk, struct sockaddr *uaddr,
 	fl6.flowi6_proto = IPPROTO_TCP;
 	fl6.daddr = sk->sk_v6_daddr;
 	fl6.saddr = saddr ? *saddr : np->saddr;
+<<<<<<< HEAD
+=======
+	fl6.flowlabel = ip6_make_flowinfo(np->tclass, np->flow_label);
+>>>>>>> origin/android16-base
 	fl6.flowi6_oif = sk->sk_bound_dev_if;
 	fl6.flowi6_mark = sk->sk_mark;
 	fl6.fl6_dport = usin->sin6_port;
@@ -304,10 +326,18 @@ static int tcp_v6_connect(struct sock *sk, struct sockaddr *uaddr,
 
 	if (likely(!tp->repair)) {
 		if (!tp->write_seq)
+<<<<<<< HEAD
 			tp->write_seq = secure_tcpv6_seq(np->saddr.s6_addr32,
 							 sk->sk_v6_daddr.s6_addr32,
 							 inet->inet_sport,
 							 inet->inet_dport);
+=======
+			WRITE_ONCE(tp->write_seq,
+				   secure_tcpv6_seq(np->saddr.s6_addr32,
+						    sk->sk_v6_daddr.s6_addr32,
+						    inet->inet_sport,
+						    inet->inet_dport));
+>>>>>>> origin/android16-base
 		tp->tsoffset = secure_tcpv6_ts_off(sock_net(sk),
 						   np->saddr.s6_addr32,
 						   sk->sk_v6_daddr.s6_addr32);
@@ -326,6 +356,11 @@ static int tcp_v6_connect(struct sock *sk, struct sockaddr *uaddr,
 
 late_failure:
 	tcp_set_state(sk, TCP_CLOSE);
+<<<<<<< HEAD
+=======
+	if (!(sk->sk_userlocks & SOCK_BINDADDR_LOCK))
+		inet_reset_saddr(sk);
+>>>>>>> origin/android16-base
 failure:
 	inet->inet_dport = 0;
 	sk->sk_route_caps = 0;
@@ -335,11 +370,27 @@ failure:
 static void tcp_v6_mtu_reduced(struct sock *sk)
 {
 	struct dst_entry *dst;
+<<<<<<< HEAD
+=======
+	u32 mtu;
+>>>>>>> origin/android16-base
 
 	if ((1 << sk->sk_state) & (TCPF_LISTEN | TCPF_CLOSE))
 		return;
 
+<<<<<<< HEAD
 	dst = inet6_csk_update_pmtu(sk, tcp_sk(sk)->mtu_info);
+=======
+	mtu = READ_ONCE(tcp_sk(sk)->mtu_info);
+
+	/* Drop requests trying to increase our current mss.
+	 * Check done in __ip6_rt_update_pmtu() is too late.
+	 */
+	if (tcp_mtu_to_mss(sk, mtu) >= tcp_sk(sk)->mss_cache)
+		return;
+
+	dst = inet6_csk_update_pmtu(sk, mtu);
+>>>>>>> origin/android16-base
 	if (!dst)
 		return;
 
@@ -418,6 +469,11 @@ static void tcp_v6_err(struct sk_buff *skb, struct inet6_skb_parm *opt,
 	}
 
 	if (type == ICMPV6_PKT_TOOBIG) {
+<<<<<<< HEAD
+=======
+		u32 mtu = ntohl(info);
+
+>>>>>>> origin/android16-base
 		/* We are not interested in TCP_LISTEN and open_requests
 		 * (SYN-ACKs send out by Linux are always <576bytes so
 		 * they should go through unfragmented).
@@ -428,7 +484,15 @@ static void tcp_v6_err(struct sk_buff *skb, struct inet6_skb_parm *opt,
 		if (!ip6_sk_accept_pmtu(sk))
 			goto out;
 
+<<<<<<< HEAD
 		tp->mtu_info = ntohl(info);
+=======
+		if (mtu < IPV6_MIN_MTU)
+			goto out;
+
+		WRITE_ONCE(tp->mtu_info, mtu);
+
+>>>>>>> origin/android16-base
 		if (!sock_owned_by_user(sk))
 			tcp_v6_mtu_reduced(sk);
 		else if (!test_and_set_bit(TCP_MTU_REDUCED_DEFERRED,
@@ -502,7 +566,12 @@ static int tcp_v6_send_synack(const struct sock *sk, struct dst_entry *dst,
 		opt = ireq->ipv6_opt;
 		if (!opt)
 			opt = rcu_dereference(np->opt);
+<<<<<<< HEAD
 		err = ip6_xmit(sk, skb, fl6, sk->sk_mark, opt, np->tclass);
+=======
+		err = ip6_xmit(sk, skb, fl6, skb->mark ? : sk->sk_mark, opt,
+			       np->tclass);
+>>>>>>> origin/android16-base
 		rcu_read_unlock();
 		err = net_xmit_eval(err);
 	}
@@ -772,7 +841,11 @@ struct request_sock_ops tcp6_request_sock_ops __read_mostly = {
 	.syn_ack_timeout =	tcp_syn_ack_timeout,
 };
 
+<<<<<<< HEAD
 static const struct tcp_request_sock_ops tcp_request_sock_ipv6_ops = {
+=======
+const struct tcp_request_sock_ops tcp_request_sock_ipv6_ops = {
+>>>>>>> origin/android16-base
 	.mss_clamp	=	IPV6_MIN_MTU - sizeof(struct tcphdr) -
 				sizeof(struct ipv6hdr),
 #ifdef CONFIG_TCP_MD5SIG
@@ -1038,6 +1111,14 @@ static int tcp_v6_conn_request(struct sock *sk, struct sk_buff *skb)
 	if (!ipv6_unicast_destination(skb))
 		goto drop;
 
+<<<<<<< HEAD
+=======
+	if (ipv6_addr_v4mapped(&ipv6_hdr(skb)->saddr)) {
+		__IP6_INC_STATS(sock_net(sk), NULL, IPSTATS_MIB_INHDRERRORS);
+		return 0;
+	}
+
+>>>>>>> origin/android16-base
 	return tcp_conn_request(&tcp6_request_sock_ops,
 				&tcp_request_sock_ipv6_ops, sk, skb);
 
@@ -1068,6 +1149,10 @@ static struct sock *tcp_v6_syn_recv_sock(const struct sock *sk, struct sk_buff *
 	struct ipv6_txoptions *opt;
 	struct tcp6_sock *newtcp6sk;
 	struct inet_sock *newinet;
+<<<<<<< HEAD
+=======
+	bool found_dup_sk = false;
+>>>>>>> origin/android16-base
 	struct tcp_sock *newtp;
 	struct sock *newsk;
 #ifdef CONFIG_TCP_MD5SIG
@@ -1151,7 +1236,10 @@ static struct sock *tcp_v6_syn_recv_sock(const struct sock *sk, struct sk_buff *
 	 */
 
 	newsk->sk_gso_type = SKB_GSO_TCPV6;
+<<<<<<< HEAD
 	ip6_dst_store(newsk, dst, NULL, NULL);
+=======
+>>>>>>> origin/android16-base
 	inet6_sk_rx_dst_set(newsk, skb);
 
 	newtcp6sk = (struct tcp6_sock *)newsk;
@@ -1163,6 +1251,11 @@ static struct sock *tcp_v6_syn_recv_sock(const struct sock *sk, struct sk_buff *
 
 	memcpy(newnp, np, sizeof(struct ipv6_pinfo));
 
+<<<<<<< HEAD
+=======
+	ip6_dst_store(newsk, dst, NULL, NULL);
+
+>>>>>>> origin/android16-base
 	newsk->sk_v6_daddr = ireq->ir_v6_rmt_addr;
 	newnp->saddr = ireq->ir_v6_loc_addr;
 	newsk->sk_v6_rcv_saddr = ireq->ir_v6_loc_addr;
@@ -1236,12 +1329,18 @@ static struct sock *tcp_v6_syn_recv_sock(const struct sock *sk, struct sk_buff *
 		tcp_done(newsk);
 		goto out;
 	}
+<<<<<<< HEAD
 	*own_req = inet_ehash_nolisten(newsk, req_to_sk(req_unhash));
+=======
+	*own_req = inet_ehash_nolisten(newsk, req_to_sk(req_unhash),
+				       &found_dup_sk);
+>>>>>>> origin/android16-base
 	if (*own_req) {
 		tcp_move_syn(newtp, req);
 
 		/* Clone pktoptions received with SYN, if we own the req */
 		if (ireq->pktopts) {
+<<<<<<< HEAD
 			newnp->pktoptions = skb_clone(ireq->pktopts,
 						      sk_gfp_mask(sk, GFP_ATOMIC));
 			consume_skb(ireq->pktopts);
@@ -1250,6 +1349,22 @@ static struct sock *tcp_v6_syn_recv_sock(const struct sock *sk, struct sk_buff *
 				tcp_v6_restore_cb(newnp->pktoptions);
 				skb_set_owner_r(newnp->pktoptions, newsk);
 			}
+=======
+			newnp->pktoptions = skb_clone_and_charge_r(ireq->pktopts, newsk);
+			consume_skb(ireq->pktopts);
+			ireq->pktopts = NULL;
+			if (newnp->pktoptions)
+				tcp_v6_restore_cb(newnp->pktoptions);
+		}
+	} else {
+		if (!req_unhash && found_dup_sk) {
+			/* This code path should only be executed in the
+			 * syncookie case only
+			 */
+			bh_unlock_sock(newsk);
+			sock_put(newsk);
+			newsk = NULL;
+>>>>>>> origin/android16-base
 		}
 	}
 
@@ -1308,18 +1423,33 @@ static int tcp_v6_do_rcv(struct sock *sk, struct sk_buff *skb)
 					       --ANK (980728)
 	 */
 	if (np->rxopt.all)
+<<<<<<< HEAD
 		opt_skb = skb_clone(skb, sk_gfp_mask(sk, GFP_ATOMIC));
 
 	if (sk->sk_state == TCP_ESTABLISHED) { /* Fast path */
 		struct dst_entry *dst = sk->sk_rx_dst;
+=======
+		opt_skb = skb_clone_and_charge_r(skb, sk);
+
+	if (sk->sk_state == TCP_ESTABLISHED) { /* Fast path */
+		struct dst_entry *dst;
+
+		dst = rcu_dereference_protected(sk->sk_rx_dst,
+						lockdep_sock_is_held(sk));
+>>>>>>> origin/android16-base
 
 		sock_rps_save_rxhash(sk, skb);
 		sk_mark_napi_id(sk, skb);
 		if (dst) {
 			if (inet_sk(sk)->rx_dst_ifindex != skb->skb_iif ||
 			    dst->ops->check(dst, np->rx_dst_cookie) == NULL) {
+<<<<<<< HEAD
 				dst_release(dst);
 				sk->sk_rx_dst = NULL;
+=======
+				RCU_INIT_POINTER(sk->sk_rx_dst, NULL);
+				dst_release(dst);
+>>>>>>> origin/android16-base
 			}
 		}
 
@@ -1387,7 +1517,10 @@ ipv6_pktoptions:
 		if (np->repflow)
 			np->flow_label = ip6_flowlabel(ipv6_hdr(opt_skb));
 		if (ipv6_opt_accepted(sk, opt_skb, &TCP_SKB_CB(opt_skb)->header.h6)) {
+<<<<<<< HEAD
 			skb_set_owner_r(opt_skb, sk);
+=======
+>>>>>>> origin/android16-base
 			tcp_v6_restore_cb(opt_skb);
 			opt_skb = xchg(&np->pktoptions, opt_skb);
 		} else {
@@ -1664,7 +1797,11 @@ static void tcp_v6_early_demux(struct sk_buff *skb)
 		skb->sk = sk;
 		skb->destructor = sock_edemux;
 		if (sk_fullsock(sk)) {
+<<<<<<< HEAD
 			struct dst_entry *dst = READ_ONCE(sk->sk_rx_dst);
+=======
+			struct dst_entry *dst = rcu_dereference(sk->sk_rx_dst);
+>>>>>>> origin/android16-base
 
 			if (dst)
 				dst = dst_check(dst, inet6_sk(sk)->rx_dst_cookie);
@@ -1757,12 +1894,15 @@ static int tcp_v6_init_sock(struct sock *sk)
 	return 0;
 }
 
+<<<<<<< HEAD
 static void tcp_v6_destroy_sock(struct sock *sk)
 {
 	tcp_v4_destroy_sock(sk);
 	inet6_destroy_sock(sk);
 }
 
+=======
+>>>>>>> origin/android16-base
 #ifdef CONFIG_PROC_FS
 /* Proc filesystem TCPv6 sock list dumping. */
 static void get_openreq6(struct seq_file *seq,
@@ -1840,7 +1980,11 @@ static void get_tcp6_sock(struct seq_file *seq, struct sock *sp, int i)
 		 * we might find a transient negative value.
 		 */
 		rx_queue = max_t(int, READ_ONCE(tp->rcv_nxt) -
+<<<<<<< HEAD
 				      tp->copied_seq, 0);
+=======
+				      READ_ONCE(tp->copied_seq), 0);
+>>>>>>> origin/android16-base
 
 	if (inet->transparent)
 		state_seq |= 0x80;
@@ -1854,7 +1998,11 @@ static void get_tcp6_sock(struct seq_file *seq, struct sock *sp, int i)
 		   dest->s6_addr32[0], dest->s6_addr32[1],
 		   dest->s6_addr32[2], dest->s6_addr32[3], destp,
 		   state_seq,
+<<<<<<< HEAD
 		   tp->write_seq - tp->snd_una,
+=======
+		   READ_ONCE(tp->write_seq) - tp->snd_una,
+>>>>>>> origin/android16-base
 		   rx_queue,
 		   timer_active,
 		   jiffies_delta_to_clock_t(timer_expires - jiffies),
@@ -1959,7 +2107,11 @@ struct proto tcpv6_prot = {
 	.accept			= inet_csk_accept,
 	.ioctl			= tcp_ioctl,
 	.init			= tcp_v6_init_sock,
+<<<<<<< HEAD
 	.destroy		= tcp_v6_destroy_sock,
+=======
+	.destroy		= tcp_v4_destroy_sock,
+>>>>>>> origin/android16-base
 	.shutdown		= tcp_shutdown,
 	.setsockopt		= tcp_setsockopt,
 	.getsockopt		= tcp_getsockopt,

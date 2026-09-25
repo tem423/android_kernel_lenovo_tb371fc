@@ -237,7 +237,11 @@ static void dwc3_omap_set_mailbox(struct dwc3_omap *omap,
 		break;
 
 	case OMAP_DWC3_ID_FLOAT:
+<<<<<<< HEAD
 		if (omap->vbus_reg)
+=======
+		if (omap->vbus_reg && regulator_is_enabled(omap->vbus_reg))
+>>>>>>> origin/android16-base
 			regulator_disable(omap->vbus_reg);
 		val = dwc3_omap_read_utmi_ctrl(omap);
 		val |= USBOTGSS_UTMI_OTG_CTRL_IDDIG;
@@ -432,8 +436,18 @@ static int dwc3_omap_extcon_register(struct dwc3_omap *omap)
 
 		if (extcon_get_state(edev, EXTCON_USB) == true)
 			dwc3_omap_set_mailbox(omap, OMAP_DWC3_VBUS_VALID);
+<<<<<<< HEAD
 		if (extcon_get_state(edev, EXTCON_USB_HOST) == true)
 			dwc3_omap_set_mailbox(omap, OMAP_DWC3_ID_GROUND);
+=======
+		else
+			dwc3_omap_set_mailbox(omap, OMAP_DWC3_VBUS_OFF);
+
+		if (extcon_get_state(edev, EXTCON_USB_HOST) == true)
+			dwc3_omap_set_mailbox(omap, OMAP_DWC3_ID_GROUND);
+		else
+			dwc3_omap_set_mailbox(omap, OMAP_DWC3_ID_FLOAT);
+>>>>>>> origin/android16-base
 
 		omap->edev = edev;
 	}
@@ -521,11 +535,20 @@ static int dwc3_omap_probe(struct platform_device *pdev)
 	if (ret) {
 		dev_err(dev, "failed to request IRQ #%d --> %d\n",
 			omap->irq, ret);
+<<<<<<< HEAD
 		goto err1;
+=======
+		goto err2;
+>>>>>>> origin/android16-base
 	}
 	dwc3_omap_enable_irqs(omap);
 	return 0;
 
+<<<<<<< HEAD
+=======
+err2:
+	of_platform_depopulate(dev);
+>>>>>>> origin/android16-base
 err1:
 	pm_runtime_put_sync(dev);
 	pm_runtime_disable(dev);

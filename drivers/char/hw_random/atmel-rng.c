@@ -96,6 +96,10 @@ static int atmel_trng_probe(struct platform_device *pdev)
 
 err_register:
 	clk_disable_unprepare(trng->clk);
+<<<<<<< HEAD
+=======
+	atmel_trng_disable(trng);
+>>>>>>> origin/android16-base
 	return ret;
 }
 

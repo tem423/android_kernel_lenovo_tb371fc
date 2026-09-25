@@ -16,7 +16,11 @@ static inline void setup_8250_early_printk_port(unsigned long base,
 	unsigned int reg_shift, unsigned int timeout) {}
 #endif
 
+<<<<<<< HEAD
 extern void set_handler(unsigned long offset, void *addr, unsigned long len);
+=======
+void set_handler(unsigned long offset, const void *addr, unsigned long len);
+>>>>>>> origin/android16-base
 extern void set_uncached_handler(unsigned long offset, void *addr, unsigned long len);
 
 typedef void (*vi_handler_t)(void);

@@ -170,7 +170,10 @@
 		};
 
 		gmac: ethernet@8000 {
+<<<<<<< HEAD
 			#interrupt-cells = <1>;
+=======
+>>>>>>> origin/android16-base
 			compatible = "snps,dwmac";
 			reg = <0x8000 0x2000>;
 			interrupts = <10>;

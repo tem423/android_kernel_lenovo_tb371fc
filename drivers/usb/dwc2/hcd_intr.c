@@ -500,7 +500,11 @@ static int dwc2_update_urb_state(struct dwc2_hsotg *hsotg,
 						      &short_read);
 
 	if (urb->actual_length + xfer_length > urb->length) {
+<<<<<<< HEAD
 		dev_warn(hsotg->dev, "%s(): trimming xfer length\n", __func__);
+=======
+		dev_dbg(hsotg->dev, "%s(): trimming xfer length\n", __func__);
+>>>>>>> origin/android16-base
 		xfer_length = urb->length - urb->actual_length;
 	}
 
@@ -1977,6 +1981,21 @@ error:
 		qtd->error_count++;
 		dwc2_update_urb_state_abn(hsotg, chan, chnum, qtd->urb,
 					  qtd, DWC2_HC_XFER_XACT_ERR);
+<<<<<<< HEAD
+=======
+		/*
+		 * We can get here after a completed transaction
+		 * (urb->actual_length >= urb->length) which was not reported
+		 * as completed. If that is the case, and we do not abort
+		 * the transfer, a transfer of size 0 will be enqueued
+		 * subsequently. If urb->actual_length is not DMA-aligned,
+		 * the buffer will then point to an unaligned address, and
+		 * the resulting behavior is undefined. Bail out in that
+		 * situation.
+		 */
+		if (qtd->urb->actual_length >= qtd->urb->length)
+			qtd->error_count = 3;
+>>>>>>> origin/android16-base
 		dwc2_hcd_save_data_toggle(hsotg, chan, chnum, qtd);
 		dwc2_halt_channel(hsotg, chan, qtd, DWC2_HC_XFER_XACT_ERR);
 	}
@@ -2033,6 +2052,7 @@ static void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
 {
 	struct dwc2_qtd *qtd;
 	struct dwc2_host_chan *chan;
+<<<<<<< HEAD
 	u32 hcint, hcintmsk;
 
 	chan = hsotg->hc_ptr_array[chnum];
@@ -2042,6 +2062,19 @@ static void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
 	if (!chan) {
 		dev_err(hsotg->dev, "## hc_ptr_array for channel is NULL ##\n");
 		dwc2_writel(hsotg, hcint, HCINT(chnum));
+=======
+	u32 hcint, hcintraw, hcintmsk;
+
+	chan = hsotg->hc_ptr_array[chnum];
+
+	hcintraw = dwc2_readl(hsotg, HCINT(chnum));
+	hcintmsk = dwc2_readl(hsotg, HCINTMSK(chnum));
+	hcint = hcintraw & hcintmsk;
+	dwc2_writel(hsotg, hcint, HCINT(chnum));
+
+	if (!chan) {
+		dev_err(hsotg->dev, "## hc_ptr_array for channel is NULL ##\n");
+>>>>>>> origin/android16-base
 		return;
 	}
 
@@ -2050,11 +2083,17 @@ static void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
 			 chnum);
 		dev_vdbg(hsotg->dev,
 			 "  hcint 0x%08x, hcintmsk 0x%08x, hcint&hcintmsk 0x%08x\n",
+<<<<<<< HEAD
 			 hcint, hcintmsk, hcint & hcintmsk);
 	}
 
 	dwc2_writel(hsotg, hcint, HCINT(chnum));
 
+=======
+			 hcintraw, hcintmsk, hcint);
+	}
+
+>>>>>>> origin/android16-base
 	/*
 	 * If we got an interrupt after someone called
 	 * dwc2_hcd_endpoint_disable() we don't want to crash below
@@ -2064,8 +2103,12 @@ static void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
 		return;
 	}
 
+<<<<<<< HEAD
 	chan->hcint = hcint;
 	hcint &= hcintmsk;
+=======
+	chan->hcint = hcintraw;
+>>>>>>> origin/android16-base
 
 	/*
 	 * If the channel was halted due to a dequeue, the qtd list might

@@ -166,7 +166,11 @@
 };
 
 &i2c0 {
+<<<<<<< HEAD
 	hym8563: hym8563@51 {
+=======
+	hym8563: rtc@51 {
+>>>>>>> origin/android16-base
 		compatible = "haoyu,hym8563";
 		reg = <0x51>;
 		#clock-cells = <0>;

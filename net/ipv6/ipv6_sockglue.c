@@ -166,15 +166,27 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
 		rtnl_lock();
 	lock_sock(sk);
 
+<<<<<<< HEAD
+=======
+	/* Another thread has converted the socket into IPv4 with
+	 * IPV6_ADDRFORM concurrently.
+	 */
+	if (unlikely(sk->sk_family != AF_INET6))
+		goto unlock;
+
+>>>>>>> origin/android16-base
 	switch (optname) {
 
 	case IPV6_ADDRFORM:
 		if (optlen < sizeof(int))
 			goto e_inval;
 		if (val == PF_INET) {
+<<<<<<< HEAD
 			struct ipv6_txoptions *opt;
 			struct sk_buff *pktopt;
 
+=======
+>>>>>>> origin/android16-base
 			if (sk->sk_type == SOCK_RAW)
 				break;
 
@@ -205,7 +217,10 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
 				break;
 			}
 
+<<<<<<< HEAD
 			fl6_free_socklist(sk);
+=======
+>>>>>>> origin/android16-base
 			__ipv6_sock_mc_close(sk);
 			__ipv6_sock_ac_close(sk);
 
@@ -222,8 +237,15 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
 				sock_prot_inuse_add(net, sk->sk_prot, -1);
 				sock_prot_inuse_add(net, &tcp_prot, 1);
 				local_bh_enable();
+<<<<<<< HEAD
 				sk->sk_prot = &tcp_prot;
 				icsk->icsk_af_ops = &ipv4_specific;
+=======
+				/* Paired with READ_ONCE(sk->sk_prot) in inet6_stream_ops */
+				WRITE_ONCE(sk->sk_prot, &tcp_prot);
+				/* Paired with READ_ONCE() in tcp_(get|set)sockopt() */
+				WRITE_ONCE(icsk->icsk_af_ops, &ipv4_specific);
+>>>>>>> origin/android16-base
 				sk->sk_socket->ops = &inet_stream_ops;
 				sk->sk_family = PF_INET;
 				tcp_sync_mss(sk, icsk->icsk_pmtu_cookie);
@@ -236,6 +258,7 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
 				sock_prot_inuse_add(net, sk->sk_prot, -1);
 				sock_prot_inuse_add(net, prot, 1);
 				local_bh_enable();
+<<<<<<< HEAD
 				sk->sk_prot = prot;
 				sk->sk_socket->ops = &inet_dgram_ops;
 				sk->sk_family = PF_INET;
@@ -248,6 +271,21 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
 			}
 			pktopt = xchg(&np->pktoptions, NULL);
 			kfree_skb(pktopt);
+=======
+				/* Paired with READ_ONCE(sk->sk_prot) in inet6_dgram_ops */
+				WRITE_ONCE(sk->sk_prot, prot);
+				sk->sk_socket->ops = &inet_dgram_ops;
+				sk->sk_family = PF_INET;
+			}
+
+			/* Disable all options not to allocate memory anymore,
+			 * but there is still a race.  See the lockless path
+			 * in udpv6_sendmsg() and ipv6_local_rxpmtu().
+			 */
+			np->rxopt.all = 0;
+
+			inet6_cleanup_sock(sk);
+>>>>>>> origin/android16-base
 
 			/*
 			 * ... and add it to the refcnt debug socks count
@@ -913,6 +951,10 @@ pref_skip_coa:
 		break;
 	}
 
+<<<<<<< HEAD
+=======
+unlock:
+>>>>>>> origin/android16-base
 	release_sock(sk);
 	if (needs_rtnl)
 		rtnl_unlock();

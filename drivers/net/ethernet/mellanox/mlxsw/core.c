@@ -439,7 +439,12 @@ static void mlxsw_emad_trans_timeout_schedule(struct mlxsw_reg_trans *trans)
 	if (trans->core->fw_flash_in_progress)
 		timeout = msecs_to_jiffies(MLXSW_EMAD_TIMEOUT_DURING_FW_FLASH_MS);
 
+<<<<<<< HEAD
 	queue_delayed_work(trans->core->emad_wq, &trans->timeout_dw, timeout);
+=======
+	queue_delayed_work(trans->core->emad_wq, &trans->timeout_dw,
+			   timeout << trans->retries);
+>>>>>>> origin/android16-base
 }
 
 static int mlxsw_emad_transmit(struct mlxsw_core *mlxsw_core,
@@ -560,7 +565,11 @@ free_skb:
 
 static const struct mlxsw_listener mlxsw_emad_rx_listener =
 	MLXSW_RXL(mlxsw_emad_rx_listener_func, ETHEMAD, TRAP_TO_CPU, false,
+<<<<<<< HEAD
 		  EMAD, DISCARD);
+=======
+		  EMAD, FORWARD);
+>>>>>>> origin/android16-base
 
 static int mlxsw_emad_init(struct mlxsw_core *mlxsw_core)
 {

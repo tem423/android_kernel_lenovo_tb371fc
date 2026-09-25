@@ -72,7 +72,11 @@ static ssize_t node_read_meminfo(struct device *dev,
 	si_meminfo_node(&i, nid);
 	sreclaimable = node_page_state(pgdat, NR_SLAB_RECLAIMABLE);
 	sunreclaimable = node_page_state(pgdat, NR_SLAB_UNRECLAIMABLE);
+<<<<<<< HEAD
 	n = sprintf(buf,
+=======
+	n = sysfs_emit(buf,
+>>>>>>> origin/android16-base
 		       "Node %d MemTotal:       %8lu kB\n"
 		       "Node %d MemFree:        %8lu kB\n"
 		       "Node %d MemUsed:        %8lu kB\n"
@@ -350,6 +354,10 @@ static int register_node(struct node *node, int num)
  */
 void unregister_node(struct node *node)
 {
+<<<<<<< HEAD
+=======
+	compaction_unregister_node(node);
+>>>>>>> origin/android16-base
 	hugetlb_unregister_node(node);		/* no-op, if memoryless node */
 
 	device_unregister(&node->dev);
