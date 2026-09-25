@@ -1,1 +1,0 @@
-/home/smith/kernels/tb371fc/android_kernel_lenovo_tb371fc/drivers/pinctrl/pinctrl-utils.h
