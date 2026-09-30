@@ -134,3 +134,4 @@ source "drivers/staging/qcacld-3.0/Kconfig"
 >>>>>>> origin/4.19.325
 
 endif # STAGING
+source "drivers/staging/qcacld-3.0/Kconfig"

@@ -176,7 +176,7 @@ int kswapd_threads_current = DEF_KSWAPD_THREADS_PER_NODE;
 /*
  * From 0 .. 100.  Higher means more swappy.
  */
-int vm_swappiness = 60;
+int vm_swappiness = 150;
 /*
  * The total number of pages which are beyond the high watermark within all
  * zones.
@@ -1572,6 +1572,7 @@ unsigned long reclaim_clean_pages_from_list(struct zone *zone,
 unsigned long reclaim_pages_from_list(struct list_head *page_list,
 					struct vm_area_struct *vma)
 {
+	pr_info("fzrpl: enter\n");
 	struct scan_control sc = {
 		.gfp_mask = GFP_KERNEL,
 		.priority = DEF_PRIORITY,

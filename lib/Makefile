@@ -140,14 +140,13 @@ obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
 obj-$(CONFIG_BCH) += bch.o
 obj-$(CONFIG_LZO_COMPRESS) += lzo/
 obj-$(CONFIG_LZO_DECOMPRESS) += lzo/
-<<<<<<< HEAD
 obj-$(CONFIG_LZ4_COMPRESS) += lz4/
 obj-$(CONFIG_LZ4HC_COMPRESS) += lz4/
 obj-$(CONFIG_LZ4_DECOMPRESS) += lz4/
-=======
-obj-$(CONFIG_LZ4) += lz4/
-obj-$(CONFIG_LZ4HC) += lz4/
->>>>>>> origin/4.19.325
+obj-$(CONFIG_LZ4K_COMPRESS) += lz4k/
+obj-$(CONFIG_LZ4K_DECOMPRESS) += lz4k/
+obj-$(CONFIG_LZ4KD_COMPRESS) += lz4kd/
+obj-$(CONFIG_LZ4KD_DECOMPRESS) += lz4kd/
 obj-$(CONFIG_ZSTD_COMPRESS) += zstd/
 obj-$(CONFIG_ZSTD_DECOMPRESS) += zstd/
 obj-$(CONFIG_XZ_DEC) += xz/
@@ -207,10 +206,6 @@ obj-$(CONFIG_MPILIB) += mpi/
 obj-$(CONFIG_SIGNATURE) += digsig.o
 
 lib-$(CONFIG_CLZ_TAB) += clz_tab.o
-<<<<<<< HEAD
-=======
-lib-$(CONFIG_LIB_MEMNEQ) += memneq.o
->>>>>>> origin/4.19.325
 
 obj-$(CONFIG_DDR) += jedec_ddr_data.o
 
