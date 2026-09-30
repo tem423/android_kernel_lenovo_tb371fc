@@ -444,12 +444,20 @@ void __init rockchip_clk_register_branches(
 				      struct rockchip_clk_branch *list,
 				      unsigned int nr_clk)
 {
+<<<<<<< HEAD
 	struct clk *clk = NULL;
+=======
+	struct clk *clk;
+>>>>>>> origin/4.19.325
 	unsigned int idx;
 	unsigned long flags;
 
 	for (idx = 0; idx < nr_clk; idx++, list++) {
 		flags = list->flags;
+<<<<<<< HEAD
+=======
+		clk = NULL;
+>>>>>>> origin/4.19.325
 
 		/* catch simple muxes */
 		switch (list->branch_type) {

@@ -21,6 +21,10 @@
 
 #include <linux/types.h>
 #include <linux/prctl.h>
+<<<<<<< HEAD
+=======
+#include <linux/module.h>
+>>>>>>> origin/4.19.325
 
 #include <linux/uaccess.h>
 #include <asm/reg.h>

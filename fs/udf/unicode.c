@@ -247,7 +247,11 @@ static int udf_name_from_CS0(struct super_block *sb,
 	}
 
 	if (translate) {
+<<<<<<< HEAD
 		if (str_o_len <= 2 && str_o[0] == '.' &&
+=======
+		if (str_o_len > 0 && str_o_len <= 2 && str_o[0] == '.' &&
+>>>>>>> origin/4.19.325
 		    (str_o_len == 1 || str_o[1] == '.'))
 			needsCRC = 1;
 		if (needsCRC) {

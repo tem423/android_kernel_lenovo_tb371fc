@@ -10,7 +10,10 @@
 #include <linux/netdevice.h>
 #include <linux/skbuff.h>
 #include <linux/timer.h>
+<<<<<<< HEAD
 #include <linux/pm_wakeup.h>
+=======
+>>>>>>> origin/4.19.325
 
 #define MAX_MQ_NUM 16
 #define MAX_CLIENT_NUM 2
@@ -100,9 +103,12 @@ struct qmi_info {
 	bool ps_enabled;
 	bool dl_msg_active;
 	bool ps_ignore_grant;
+<<<<<<< HEAD
 	bool wakelock_active;
 	struct wakeup_source *ws;
 	int ps_ext;
+=======
+>>>>>>> origin/4.19.325
 };
 
 enum data_ep_type_enum_v01 {
@@ -220,7 +226,10 @@ wda_qmi_client_init(void *port, struct svc_info *psvc, struct qmi_info *qmi);
 void wda_qmi_client_exit(void *wda_data);
 int wda_set_powersave_mode(void *wda_data, u8 enable);
 void qmi_rmnet_flush_ps_wq(void);
+<<<<<<< HEAD
 int dfc_qmap_set_powersave(u8 enable, u8 num_bearers, u8 *bearer_id);
+=======
+>>>>>>> origin/4.19.325
 #else
 static inline int
 wda_qmi_client_init(void *port, struct svc_info *psvc, struct qmi_info *qmi)
@@ -239,10 +248,13 @@ static inline int wda_set_powersave_mode(void *wda_data, u8 enable)
 static inline void qmi_rmnet_flush_ps_wq(void)
 {
 }
+<<<<<<< HEAD
 static inline int dfc_qmap_set_powersave(u8 enable, u8 num_bearers,
 		u8 *bearer_id)
 {
 	return -EINVAL;
 }
+=======
+>>>>>>> origin/4.19.325
 #endif
 #endif /*_RMNET_QMI_I_H*/

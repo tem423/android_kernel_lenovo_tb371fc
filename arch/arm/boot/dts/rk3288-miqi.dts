@@ -146,7 +146,11 @@
 		vin-supply = <&vcc_sys>;
 	};
 
+<<<<<<< HEAD
 	hym8563: hym8563@51 {
+=======
+	hym8563: rtc@51 {
+>>>>>>> origin/4.19.325
 		compatible = "haoyu,hym8563";
 		reg = <0x51>;
 		#clock-cells = <0>;

@@ -46,6 +46,10 @@
 #define MAX_PSTATE_SHIFT	32
 #define LPSTATE_SHIFT		48
 #define GPSTATE_SHIFT		56
+<<<<<<< HEAD
+=======
+#define MAX_NR_CHIPS		32
+>>>>>>> origin/4.19.325
 
 #define MAX_RAMP_DOWN_TIME				5120
 /*
@@ -1051,12 +1055,26 @@ static int init_chip_info(void)
 	unsigned int *chip;
 	unsigned int cpu, i;
 	unsigned int prev_chip_id = UINT_MAX;
+<<<<<<< HEAD
+=======
+	cpumask_t *chip_cpu_mask;
+>>>>>>> origin/4.19.325
 	int ret = 0;
 
 	chip = kcalloc(num_possible_cpus(), sizeof(*chip), GFP_KERNEL);
 	if (!chip)
 		return -ENOMEM;
 
+<<<<<<< HEAD
+=======
+	/* Allocate a chip cpu mask large enough to fit mask for all chips */
+	chip_cpu_mask = kcalloc(MAX_NR_CHIPS, sizeof(cpumask_t), GFP_KERNEL);
+	if (!chip_cpu_mask) {
+		ret = -ENOMEM;
+		goto free_and_return;
+	}
+
+>>>>>>> origin/4.19.325
 	for_each_possible_cpu(cpu) {
 		unsigned int id = cpu_to_chip_id(cpu);
 
@@ -1064,22 +1082,39 @@ static int init_chip_info(void)
 			prev_chip_id = id;
 			chip[nr_chips++] = id;
 		}
+<<<<<<< HEAD
+=======
+		cpumask_set_cpu(cpu, &chip_cpu_mask[nr_chips-1]);
+>>>>>>> origin/4.19.325
 	}
 
 	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
 	if (!chips) {
 		ret = -ENOMEM;
+<<<<<<< HEAD
 		goto free_and_return;
+=======
+		goto out_free_chip_cpu_mask;
+>>>>>>> origin/4.19.325
 	}
 
 	for (i = 0; i < nr_chips; i++) {
 		chips[i].id = chip[i];
+<<<<<<< HEAD
 		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
+=======
+		cpumask_copy(&chips[i].mask, &chip_cpu_mask[i]);
+>>>>>>> origin/4.19.325
 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
 		for_each_cpu(cpu, &chips[i].mask)
 			per_cpu(chip_info, cpu) =  &chips[i];
 	}
 
+<<<<<<< HEAD
+=======
+out_free_chip_cpu_mask:
+	kfree(chip_cpu_mask);
+>>>>>>> origin/4.19.325
 free_and_return:
 	kfree(chip);
 	return ret;

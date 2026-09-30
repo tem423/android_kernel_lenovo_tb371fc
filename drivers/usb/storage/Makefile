@@ -6,7 +6,11 @@
 # Rewritten to use lists instead of if-statements.
 #
 
+<<<<<<< HEAD
 ccflags-y := -Idrivers/scsi
+=======
+ccflags-y := -I $(srctree)/drivers/scsi
+>>>>>>> origin/4.19.325
 
 obj-$(CONFIG_USB_UAS)		+= uas.o
 obj-$(CONFIG_USB_STORAGE)	+= usb-storage.o

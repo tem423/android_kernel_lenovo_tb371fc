@@ -57,6 +57,10 @@
 #define SR_FD		0x00008000
 #define SR_MD		0x40000000
 
+<<<<<<< HEAD
+=======
+#define SR_USER_MASK	0x00000303	// M, Q, S, T bits
+>>>>>>> origin/4.19.325
 /*
  * DSP structure and data
  */

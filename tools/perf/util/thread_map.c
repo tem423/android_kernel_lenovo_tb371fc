@@ -313,13 +313,20 @@ struct thread_map *thread_map__new_by_tid_str(const char *tid_str)
 		threads->nr = ntasks;
 	}
 out:
+<<<<<<< HEAD
+=======
+	strlist__delete(slist);
+>>>>>>> origin/4.19.325
 	if (threads)
 		refcount_set(&threads->refcnt, 1);
 	return threads;
 
 out_free_threads:
 	zfree(&threads);
+<<<<<<< HEAD
 	strlist__delete(slist);
+=======
+>>>>>>> origin/4.19.325
 	goto out;
 }
 

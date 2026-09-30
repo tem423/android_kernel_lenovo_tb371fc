@@ -56,20 +56,39 @@ static int gdm_usb_recv(void *priv_dev,
 
 static int request_mac_address(struct lte_udev *udev)
 {
+<<<<<<< HEAD
 	u8 buf[16] = {0,};
 	struct hci_packet *hci = (struct hci_packet *)buf;
+=======
+	struct hci_packet *hci;
+>>>>>>> origin/4.19.325
 	struct usb_device *usbdev = udev->usbdev;
 	int actual;
 	int ret = -1;
 
+<<<<<<< HEAD
+=======
+	hci = kmalloc(struct_size(hci, data, 1), GFP_KERNEL);
+	if (!hci)
+		return -ENOMEM;
+
+>>>>>>> origin/4.19.325
 	hci->cmd_evt = gdm_cpu_to_dev16(udev->gdm_ed, LTE_GET_INFORMATION);
 	hci->len = gdm_cpu_to_dev16(udev->gdm_ed, 1);
 	hci->data[0] = MAC_ADDRESS;
 
+<<<<<<< HEAD
 	ret = usb_bulk_msg(usbdev, usb_sndbulkpipe(usbdev, 2), buf, 5,
 			   &actual, 1000);
 
 	udev->request_mac_addr = 1;
+=======
+	ret = usb_bulk_msg(usbdev, usb_sndbulkpipe(usbdev, 2), hci, 5,
+			   &actual, 1000);
+
+	udev->request_mac_addr = 1;
+	kfree(hci);
+>>>>>>> origin/4.19.325
 
 	return ret;
 }

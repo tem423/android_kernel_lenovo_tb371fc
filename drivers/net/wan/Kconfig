@@ -295,6 +295,10 @@ config SLIC_DS26522
 	tristate "Slic Maxim ds26522 card support"
 	depends on SPI
 	depends on FSL_SOC || ARCH_MXC || ARCH_LAYERSCAPE || COMPILE_TEST
+<<<<<<< HEAD
+=======
+	select BITREVERSE
+>>>>>>> origin/4.19.325
 	help
 	  This module initializes and configures the slic maxim card
 	  in T1 or E1 mode.

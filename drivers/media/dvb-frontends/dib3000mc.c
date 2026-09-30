@@ -938,7 +938,11 @@ error:
 	kfree(st);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(dib3000mc_attach);
+=======
+EXPORT_SYMBOL_GPL(dib3000mc_attach);
+>>>>>>> origin/4.19.325
 
 static const struct dvb_frontend_ops dib3000mc_ops = {
 	.delsys = { SYS_DVBT },

@@ -788,6 +788,10 @@ static void bnx2x_tpa_stop(struct bnx2x *bp, struct bnx2x_fastpath *fp,
 			BNX2X_ERR("skb_put is about to fail...  pad %d  len %d  rx_buf_size %d\n",
 				  pad, len, fp->rx_buf_size);
 			bnx2x_panic();
+<<<<<<< HEAD
+=======
+			bnx2x_frag_free(fp, new_data);
+>>>>>>> origin/4.19.325
 			return;
 		}
 #endif
@@ -2668,7 +2672,12 @@ int bnx2x_nic_load(struct bnx2x *bp, int load_mode)
 	}
 
 	/* Allocated memory for FW statistics  */
+<<<<<<< HEAD
 	if (bnx2x_alloc_fw_stats_mem(bp))
+=======
+	rc = bnx2x_alloc_fw_stats_mem(bp);
+	if (rc)
+>>>>>>> origin/4.19.325
 		LOAD_ERROR_EXIT(bp, load_error0);
 
 	/* request pf to initialize status blocks */

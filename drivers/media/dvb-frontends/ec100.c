@@ -309,7 +309,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(ec100_attach);
+=======
+EXPORT_SYMBOL_GPL(ec100_attach);
+>>>>>>> origin/4.19.325
 
 static const struct dvb_frontend_ops ec100_ops = {
 	.delsys = { SYS_DVBT },

@@ -497,12 +497,19 @@ int __init ima_fs_init(void)
 
 	return 0;
 out:
+<<<<<<< HEAD
+=======
+	securityfs_remove(ima_policy);
+>>>>>>> origin/4.19.325
 	securityfs_remove(violations);
 	securityfs_remove(runtime_measurements_count);
 	securityfs_remove(ascii_runtime_measurements);
 	securityfs_remove(binary_runtime_measurements);
 	securityfs_remove(ima_symlink);
 	securityfs_remove(ima_dir);
+<<<<<<< HEAD
 	securityfs_remove(ima_policy);
+=======
+>>>>>>> origin/4.19.325
 	return -1;
 }

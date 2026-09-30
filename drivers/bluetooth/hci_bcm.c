@@ -1052,7 +1052,16 @@ static int bcm_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	dev->dev = &pdev->dev;
+<<<<<<< HEAD
 	dev->irq = platform_get_irq(pdev, 0);
+=======
+
+	ret = platform_get_irq(pdev, 0);
+	if (ret < 0)
+		return ret;
+
+	dev->irq = ret;
+>>>>>>> origin/4.19.325
 
 	if (has_acpi_companion(&pdev->dev)) {
 		ret = bcm_acpi_probe(dev);

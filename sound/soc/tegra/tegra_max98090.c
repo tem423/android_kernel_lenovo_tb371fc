@@ -188,6 +188,10 @@ static struct snd_soc_dai_link tegra_max98090_dai = {
 
 static struct snd_soc_card snd_soc_tegra_max98090 = {
 	.name = "tegra-max98090",
+<<<<<<< HEAD
+=======
+	.driver_name = "tegra",
+>>>>>>> origin/4.19.325
 	.owner = THIS_MODULE,
 	.dai_link = &tegra_max98090_dai,
 	.num_links = 1,

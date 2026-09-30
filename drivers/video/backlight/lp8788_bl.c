@@ -195,6 +195,10 @@ static int lp8788_backlight_register(struct lp8788_bl *bl)
 	int init_brt;
 	char *name;
 
+<<<<<<< HEAD
+=======
+	memset(&props, 0, sizeof(struct backlight_properties));
+>>>>>>> origin/4.19.325
 	props.type = BACKLIGHT_PLATFORM;
 	props.max_brightness = MAX_BRIGHTNESS;
 

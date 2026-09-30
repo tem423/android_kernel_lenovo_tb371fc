@@ -39,7 +39,10 @@ obj-$(CONFIG_AF_KCM)		+= kcm/
 obj-$(CONFIG_STREAM_PARSER)	+= strparser/
 obj-$(CONFIG_ATM)		+= atm/
 obj-$(CONFIG_L2TP)		+= l2tp/
+<<<<<<< HEAD
 obj-$(CONFIG_DECNET)		+= decnet/
+=======
+>>>>>>> origin/4.19.325
 obj-$(CONFIG_PHONET)		+= phonet/
 ifneq ($(CONFIG_VLAN_8021Q),)
 obj-y				+= 8021q/

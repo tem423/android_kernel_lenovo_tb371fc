@@ -286,6 +286,10 @@
 			clock-names = "PCLK", "PCICLK";
 			pinctrl-names = "default";
 			pinctrl-0 = <&pci_default_pins>;
+<<<<<<< HEAD
+=======
+			device_type = "pci";
+>>>>>>> origin/4.19.325
 			#address-cells = <3>;
 			#size-cells = <2>;
 			#interrupt-cells = <1>;

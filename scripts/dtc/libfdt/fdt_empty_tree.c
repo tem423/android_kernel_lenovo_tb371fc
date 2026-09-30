@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2012 David Gibson, IBM Corporation.
@@ -47,6 +48,12 @@
  *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=======
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+/*
+ * libfdt - Flat Device Tree manipulation
+ * Copyright (C) 2012 David Gibson, IBM Corporation.
+>>>>>>> origin/4.19.325
  */
 #include "libfdt_env.h"
 

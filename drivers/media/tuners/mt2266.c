@@ -345,7 +345,11 @@ struct dvb_frontend * mt2266_attach(struct dvb_frontend *fe, struct i2c_adapter 
 	mt2266_calibrate(priv);
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(mt2266_attach);
+=======
+EXPORT_SYMBOL_GPL(mt2266_attach);
+>>>>>>> origin/4.19.325
 
 MODULE_AUTHOR("Olivier DANET");
 MODULE_DESCRIPTION("Microtune MT2266 silicon tuner driver");

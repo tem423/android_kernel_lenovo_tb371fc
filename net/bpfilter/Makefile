@@ -5,7 +5,11 @@
 
 hostprogs-y := bpfilter_umh
 bpfilter_umh-objs := main.o
+<<<<<<< HEAD
 KBUILD_HOSTCFLAGS += -I. -Itools/include/ -Itools/include/uapi
+=======
+KBUILD_HOSTCFLAGS += -I $(srctree)/. -I $(srctree)/tools/include/ -I $(srctree)/tools/include/uapi
+>>>>>>> origin/4.19.325
 HOSTCC := $(CC)
 
 ifeq ($(CONFIG_BPFILTER_UMH), y)

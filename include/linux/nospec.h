@@ -9,6 +9,13 @@
 
 struct task_struct;
 
+<<<<<<< HEAD
+=======
+#ifndef barrier_nospec
+# define barrier_nospec() do { } while (0)
+#endif
+
+>>>>>>> origin/4.19.325
 /**
  * array_index_mask_nospec() - generate a ~0 mask when index < size, 0 otherwise
  * @index: array element index

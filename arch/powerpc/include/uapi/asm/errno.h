@@ -2,6 +2,10 @@
 #ifndef _ASM_POWERPC_ERRNO_H
 #define _ASM_POWERPC_ERRNO_H
 
+<<<<<<< HEAD
+=======
+#undef	EDEADLOCK
+>>>>>>> origin/4.19.325
 #include <asm-generic/errno.h>
 
 #undef	EDEADLOCK

@@ -303,6 +303,10 @@ static int rockchip_pdm_runtime_resume(struct device *dev)
 
 	ret = clk_prepare_enable(pdm->hclk);
 	if (ret) {
+<<<<<<< HEAD
+=======
+		clk_disable_unprepare(pdm->clk);
+>>>>>>> origin/4.19.325
 		dev_err(pdm->dev, "hclock enable failed %d\n", ret);
 		return ret;
 	}

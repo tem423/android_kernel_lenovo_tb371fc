@@ -361,7 +361,11 @@ struct s5c73m3_ctrls {
 
 enum s5c73m3_gpio_id {
 	STBY,
+<<<<<<< HEAD
 	RST,
+=======
+	RSET,
+>>>>>>> origin/4.19.325
 	GPIO_NUM,
 };
 

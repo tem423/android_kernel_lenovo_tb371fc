@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
  *
@@ -16,6 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *                                                                   USA
+=======
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
+>>>>>>> origin/4.19.325
  */
 
 %option noyywrap nounput noinput never-interactive
@@ -212,14 +218,22 @@ static void PRINTF(1, 2) lexical_error(const char *fmt, ...);
 <*>\&{LABEL}	{	/* label reference */
 			DPRINT("Ref: %s\n", yytext+1);
 			yylval.labelref = xstrdup(yytext+1);
+<<<<<<< HEAD
 			return DT_REF;
+=======
+			return DT_LABEL_REF;
+>>>>>>> origin/4.19.325
 		}
 
 <*>"&{/"{PATHCHAR}*\}	{	/* new-style path reference */
 			yytext[yyleng-1] = '\0';
 			DPRINT("Ref: %s\n", yytext+2);
 			yylval.labelref = xstrdup(yytext+2);
+<<<<<<< HEAD
 			return DT_REF;
+=======
+			return DT_PATH_REF;
+>>>>>>> origin/4.19.325
 		}
 
 <BYTESTRING>[0-9a-fA-F]{2} {

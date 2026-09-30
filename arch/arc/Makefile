@@ -91,6 +91,7 @@ libs-y		+= arch/arc/lib/ $(LIBGCC)
 
 boot		:= arch/arc/boot
 
+<<<<<<< HEAD
 #default target for make without any arguments.
 KBUILD_IMAGE	:= $(boot)/bootpImage
 
@@ -108,5 +109,13 @@ $(boot_targets): vmlinux
 dtbs: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts
 
+=======
+boot_targets := uImage uImage.bin uImage.gz uImage.lzma
+
+PHONY += $(boot_targets)
+$(boot_targets): vmlinux
+	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
+
+>>>>>>> origin/4.19.325
 archclean:
 	$(Q)$(MAKE) $(clean)=$(boot)

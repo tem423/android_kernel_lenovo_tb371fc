@@ -97,7 +97,11 @@
 			    FTGMAC100_INT_RPKT_BUF)
 
 /* All the interrupts we care about */
+<<<<<<< HEAD
 #define FTGMAC100_INT_ALL (FTGMAC100_INT_RPKT_BUF  |  \
+=======
+#define FTGMAC100_INT_ALL (FTGMAC100_INT_RXTX  |  \
+>>>>>>> origin/4.19.325
 			   FTGMAC100_INT_BAD)
 
 /*

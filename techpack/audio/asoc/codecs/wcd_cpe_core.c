@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
+<<<<<<< HEAD
 /* Copyright (c) 2014-2019, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2014-2019, 2021, The Linux Foundation. All rights reserved.
+>>>>>>> origin/4.19.325
  */
 
 #include <linux/module.h>
@@ -18,7 +22,11 @@
 #include <soc/qcom/pm.h>
 #include <dsp/audio_cal_utils.h>
 #include <asoc/core.h>
+<<<<<<< HEAD
 #include "cpe_core.h"
+=======
+#include <asoc/cpe_core.h>
+>>>>>>> origin/4.19.325
 #include "cpe_err.h"
 #include "cpe_cmi.h"
 #include "wcd_cpe_core.h"
@@ -116,6 +124,11 @@ struct wcd_cpe_attribute {
 			 ssize_t count);
 };
 
+<<<<<<< HEAD
+=======
+static u64 wcd_cpe_dma_mask = DMA_BIT_MASK(32);
+
+>>>>>>> origin/4.19.325
 #define WCD_CPE_ATTR(_name, _mode, _show, _store) \
 static struct wcd_cpe_attribute cpe_attr_##_name = { \
 	.attr = {.name = __stringify(_name), .mode = _mode}, \
@@ -639,7 +652,11 @@ void *wcd_cpe_get_core_handle(
 		goto done;
 	}
 
+<<<<<<< HEAD
 	core = wcd_get_cpe_core(component);
+=======
+	core = wcd_get_cpe_core(core_d->component);
+>>>>>>> origin/4.19.325
 
 	if (!core)
 		dev_err(component->dev,
@@ -2034,6 +2051,11 @@ struct wcd_cpe_core *wcd_cpe_init(const char *img_fname,
 			__func__);
 		goto schedule_dload_work;
 	}
+<<<<<<< HEAD
+=======
+	core->dev->coherent_dma_mask = DMA_BIT_MASK(32);
+	core->dev->dma_mask = &wcd_cpe_dma_mask;
+>>>>>>> origin/4.19.325
 
 	arch_setup_dma_ops(core->dev, 0, 0, NULL, 0);
 	core->cpe_dump_v_addr = dma_alloc_coherent(core->dev,

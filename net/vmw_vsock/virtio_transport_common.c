@@ -27,6 +27,13 @@
 /* How long to wait for graceful shutdown of a connection */
 #define VSOCK_CLOSE_TIMEOUT (8 * HZ)
 
+<<<<<<< HEAD
+=======
+uint virtio_transport_max_vsock_pkt_buf_size = 64 * 1024;
+module_param(virtio_transport_max_vsock_pkt_buf_size, uint, 0444);
+EXPORT_SYMBOL_GPL(virtio_transport_max_vsock_pkt_buf_size);
+
+>>>>>>> origin/4.19.325
 static const struct virtio_transport *virtio_transport_get_ops(void)
 {
 	const struct vsock_transport *t = vsock_core_get_transport();
@@ -348,7 +355,11 @@ static s64 virtio_transport_has_space(struct vsock_sock *vsk)
 	struct virtio_vsock_sock *vvs = vsk->trans;
 	s64 bytes;
 
+<<<<<<< HEAD
 	bytes = vvs->peer_buf_alloc - (vvs->tx_cnt - vvs->peer_fwd_cnt);
+=======
+	bytes = (s64)vvs->peer_buf_alloc - (vvs->tx_cnt - vvs->peer_fwd_cnt);
+>>>>>>> origin/4.19.325
 	if (bytes < 0)
 		bytes = 0;
 
@@ -646,6 +657,10 @@ void virtio_transport_destruct(struct vsock_sock *vsk)
 	struct virtio_vsock_sock *vvs = vsk->trans;
 
 	kfree(vvs);
+<<<<<<< HEAD
+=======
+	vsk->trans = NULL;
+>>>>>>> origin/4.19.325
 }
 EXPORT_SYMBOL_GPL(virtio_transport_destruct);
 
@@ -1033,10 +1048,17 @@ void virtio_transport_recv_pkt(struct virtio_transport *t,
 
 	vsk = vsock_sk(sk);
 
+<<<<<<< HEAD
 	space_available = virtio_transport_space_update(sk, pkt);
 
 	lock_sock(sk);
 
+=======
+	lock_sock(sk);
+
+	space_available = virtio_transport_space_update(sk, pkt);
+
+>>>>>>> origin/4.19.325
 	/* Update CID in case it has changed after a transport reset event */
 	vsk->local_addr.svm_cid = dst.svm_cid;
 
@@ -1079,7 +1101,11 @@ EXPORT_SYMBOL_GPL(virtio_transport_recv_pkt);
 
 void virtio_transport_free_pkt(struct virtio_vsock_pkt *pkt)
 {
+<<<<<<< HEAD
 	kfree(pkt->buf);
+=======
+	kvfree(pkt->buf);
+>>>>>>> origin/4.19.325
 	kfree(pkt);
 }
 EXPORT_SYMBOL_GPL(virtio_transport_free_pkt);

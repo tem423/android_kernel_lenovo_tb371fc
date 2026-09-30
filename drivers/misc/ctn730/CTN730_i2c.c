@@ -46,6 +46,11 @@
 #define DRIVER_CARD "CTN730 NFC"
 #define DRIVER_DESC "NFC WLC driver for CTN730 "
 
+<<<<<<< HEAD
+=======
+extern register_hardware_info(const char *name, const char *model);
+
+>>>>>>> origin/4.19.325
 struct ctn730_dev	{
 	wait_queue_head_t read_wq;
 	struct mutex read_mutex;
@@ -444,6 +449,10 @@ static int ctn730_probe(struct i2c_client *client,
 	ctn730_disable_irq(ctn730_dev);
 
 	i2c_set_clientdata(client, ctn730_dev);
+<<<<<<< HEAD
+=======
+	register_hardware_info("pen-charger","ctn730");
+>>>>>>> origin/4.19.325
 
 	pr_err("%s : success\n", __func__);
 	return 0;

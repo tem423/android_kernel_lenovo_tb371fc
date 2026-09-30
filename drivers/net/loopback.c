@@ -59,12 +59,15 @@
 #include <net/net_namespace.h>
 #include <linux/u64_stats_sync.h>
 
+<<<<<<< HEAD
 struct pcpu_lstats {
 	u64			packets;
 	u64			bytes;
 	struct u64_stats_sync	syncp;
 };
 
+=======
+>>>>>>> origin/4.19.325
 /* The higher levels take care of making this non-reentrant (it's
  * called with bh's disabled).
  */
@@ -210,7 +213,11 @@ static __net_init int loopback_net_init(struct net *net)
 	int err;
 
 	err = -ENOMEM;
+<<<<<<< HEAD
 	dev = alloc_netdev(0, "lo", NET_NAME_UNKNOWN, loopback_setup);
+=======
+	dev = alloc_netdev(0, "lo", NET_NAME_PREDICTABLE, loopback_setup);
+>>>>>>> origin/4.19.325
 	if (!dev)
 		goto out;
 

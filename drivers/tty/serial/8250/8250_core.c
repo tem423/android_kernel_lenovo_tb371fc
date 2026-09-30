@@ -1125,6 +1125,10 @@ void serial8250_unregister_port(int line)
 		uart->port.type = PORT_UNKNOWN;
 		uart->port.dev = &serial8250_isa_devs->dev;
 		uart->capabilities = 0;
+<<<<<<< HEAD
+=======
+		serial8250_init_port(uart);
+>>>>>>> origin/4.19.325
 		serial8250_apply_quirks(uart);
 		uart_add_one_port(&serial8250_reg, &uart->port);
 	} else {

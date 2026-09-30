@@ -5,7 +5,11 @@
 
 / {
 	model = "AST2500 EVB";
+<<<<<<< HEAD
 	compatible = "aspeed,ast2500";
+=======
+	compatible = "aspeed,ast2500-evb", "aspeed,ast2500";
+>>>>>>> origin/4.19.325
 
 	aliases {
 		serial4 = &uart5;

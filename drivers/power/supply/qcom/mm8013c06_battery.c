@@ -103,12 +103,16 @@ int mm8013_read_reg(struct i2c_client *client, u8 reg)
     int ret = 0;
 
     ret = i2c_smbus_read_word_data(client, reg);
+<<<<<<< HEAD
     if (ret < 0) {
         /* MM8013 NACKs occasionally during its measurement cycle;
          * retry once after a short delay to avoid spurious failures. */
         usleep_range(1000, 2000);
         ret = i2c_smbus_read_word_data(client, reg);
     }
+=======
+
+>>>>>>> origin/4.19.325
     if (ret < 0)
         dev_err(&client->dev, "%s: err %d\n", __func__, ret);
 
@@ -131,7 +135,11 @@ int mm8013_soc(int *val)
 /*Linden code for JLINDEN-11308 by huyh10 at 20230711 start*/
         if (soc < 0) {
             *val = chip->bat_soc;
+<<<<<<< HEAD
             ret = 0;
+=======
+            ret = -EINVAL;
+>>>>>>> origin/4.19.325
         }
 /*Linden code for JLINDEN-11308 by huyh10 at 20230711 end*/
         else if (soc > 100)
@@ -207,12 +215,19 @@ int mm8013_current(int *val)
             *val = chip->bat_curr;
         }
 /*Linden code for JLINDEN-11308 by huyh10 at 20230711 end*/
+<<<<<<< HEAD
         if (curr >= 0) {
             if (curr > 32767) {
                 curr -= 65536;
             }
             *val = curr*1000;
         }
+=======
+        if (curr > 32767) {
+            curr -= 65536;
+        }
+        *val = curr*1000;
+>>>>>>> origin/4.19.325
     } else {
         *val = MM8013_DEFAULT_CURRENT*1000;
     }
@@ -247,12 +262,19 @@ int mm8013_current_avg(int *val)
             *val = chip->curr_avg;
         }
 /*Linden code for JLINDEN-11308 by huyh10 at 20230711 end*/
+<<<<<<< HEAD
         if (curr >= 0) {
             if (curr > 32767) {
                 curr -= 65536;
             }
             *val = curr*1000;
         }
+=======
+        if (curr > 32767) {
+            curr -= 65536;
+        }
+        *val = curr*1000;
+>>>>>>> origin/4.19.325
     } else {
         *val = MM8013_DEFAULT_CURRENT*1000;
     }
@@ -749,7 +771,11 @@ static const struct power_supply_desc mm8013_psy_desc = {
 
 static const struct of_device_id match_table[] = {
 	{
+<<<<<<< HEAD
 		.compatible	= "mitsumi,mm8013c06",
+=======
+		.compatible	= "nvt,mm8013c06",
+>>>>>>> origin/4.19.325
 	},
 	{ },
 };

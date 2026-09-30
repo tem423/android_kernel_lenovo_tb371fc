@@ -197,6 +197,10 @@ static const struct of_device_id uniphier_regulator_match[] = {
 	},
 	{ /* Sentinel */ },
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(of, uniphier_regulator_match);
+>>>>>>> origin/4.19.325
 
 static struct platform_driver uniphier_regulator_driver = {
 	.probe = uniphier_regulator_probe,

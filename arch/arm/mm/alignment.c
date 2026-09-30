@@ -936,6 +936,12 @@ do_alignment(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 	if (type == TYPE_LDST)
 		do_alignment_finish_ldst(addr, instr, regs, offset);
 
+<<<<<<< HEAD
+=======
+	if (thumb_mode(regs))
+		regs->ARM_cpsr = it_advance(regs->ARM_cpsr);
+
+>>>>>>> origin/4.19.325
 	return 0;
 
  bad_or_fault:

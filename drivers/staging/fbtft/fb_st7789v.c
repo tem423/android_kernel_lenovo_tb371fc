@@ -76,6 +76,11 @@ enum st7789v_command {
  */
 static int init_display(struct fbtft_par *par)
 {
+<<<<<<< HEAD
+=======
+	par->fbtftops.reset(par);
+
+>>>>>>> origin/4.19.325
 	/* turn off sleep mode */
 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
 	mdelay(120);

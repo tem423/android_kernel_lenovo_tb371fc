@@ -31,8 +31,16 @@ FEATURE_TESTS_BASIC :=                  \
         backtrace                       \
         dwarf                           \
         dwarf_getlocations              \
+<<<<<<< HEAD
         fortify-source                  \
         sync-compare-and-swap           \
+=======
+        eventfd                         \
+        fortify-source                  \
+        sync-compare-and-swap           \
+        get_current_dir_name            \
+        gettid				\
+>>>>>>> origin/4.19.325
         glibc                           \
         gtk2                            \
         gtk2-infobar                    \
@@ -47,7 +55,10 @@ FEATURE_TESTS_BASIC :=                  \
         numa_num_possible_cpus          \
         libperl                         \
         libpython                       \
+<<<<<<< HEAD
         libpython-version               \
+=======
+>>>>>>> origin/4.19.325
         libslang                        \
         libcrypto                       \
         libunwind                       \

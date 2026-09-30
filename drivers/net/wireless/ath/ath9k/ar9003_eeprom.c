@@ -3351,7 +3351,12 @@ found:
 			"Found block at %x: code=%d ref=%d length=%d major=%d minor=%d\n",
 			cptr, code, reference, length, major, minor);
 		if ((!AR_SREV_9485(ah) && length >= 1024) ||
+<<<<<<< HEAD
 		    (AR_SREV_9485(ah) && length > EEPROM_DATA_LEN_9485)) {
+=======
+		    (AR_SREV_9485(ah) && length > EEPROM_DATA_LEN_9485) ||
+		    (length > cptr)) {
+>>>>>>> origin/4.19.325
 			ath_dbg(common, EEPROM, "Skipping bad header\n");
 			cptr -= COMP_HDR_LEN;
 			continue;
@@ -5614,7 +5619,11 @@ unsigned int ar9003_get_paprd_scale_factor(struct ath_hw *ah,
 
 static u8 ar9003_get_eepmisc(struct ath_hw *ah)
 {
+<<<<<<< HEAD
 	return ah->eeprom.map4k.baseEepHeader.eepMisc;
+=======
+	return ah->eeprom.ar9300_eep.baseEepHeader.opCapFlags.eepMisc;
+>>>>>>> origin/4.19.325
 }
 
 const struct eeprom_ops eep_ar9300_ops = {

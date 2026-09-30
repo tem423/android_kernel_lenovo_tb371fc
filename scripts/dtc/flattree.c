@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
  *
@@ -16,6 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *                                                                   USA
+=======
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
+>>>>>>> origin/4.19.325
  */
 
 #include "dtc.h"
@@ -393,7 +399,11 @@ void dt_to_blob(FILE *f, struct dt_info *dti, int version)
 			padlen = 0;
 			if (quiet < 1)
 				fprintf(stderr,
+<<<<<<< HEAD
 					"Warning: blob size %d >= minimum size %d\n",
+=======
+					"Warning: blob size %"PRIu32" >= minimum size %d\n",
+>>>>>>> origin/4.19.325
 					fdt32_to_cpu(fdt.totalsize), minsize);
 		}
 	}
@@ -525,7 +535,11 @@ void dt_to_asm(FILE *f, struct dt_info *dti, int version)
 	fprintf(f, "/* Memory reserve map from source file */\n");
 
 	/*
+<<<<<<< HEAD
 	 * Use .long on high and low halfs of u64s to avoid .quad
+=======
+	 * Use .long on high and low halves of u64s to avoid .quad
+>>>>>>> origin/4.19.325
 	 * as it appears .quad isn't available in some assemblers.
 	 */
 	for (re = dti->reservelist; re; re = re->next) {
@@ -692,7 +706,11 @@ static struct property *flat_read_property(struct inbuf *dtbuf,
 
 	val = flat_read_data(dtbuf, proplen);
 
+<<<<<<< HEAD
 	return build_property(name, val);
+=======
+	return build_property(name, val, NULL);
+>>>>>>> origin/4.19.325
 }
 
 
@@ -750,7 +768,11 @@ static struct node *unflatten_tree(struct inbuf *dtbuf,
 	char *flatname;
 	uint32_t val;
 
+<<<<<<< HEAD
 	node = build_node(NULL, NULL);
+=======
+	node = build_node(NULL, NULL, NULL);
+>>>>>>> origin/4.19.325
 
 	flatname = flat_read_string(dtbuf);
 

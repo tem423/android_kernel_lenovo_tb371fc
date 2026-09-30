@@ -956,6 +956,7 @@ module_exit(HardwareInfo_mod_exit);
 MODULE_AUTHOR("Wang zhuquan / Modified for QCOM SM8250");
 MODULE_DESCRIPTION("Huaqin Hardware Info driver for Snapdragon 870");
 MODULE_LICENSE("GPL");
+<<<<<<< HEAD
 
 /* V27O: stubs for i2c-hid/goodix/focaltech hardware-info registration
  * (the provider driver is absent on the public tree) */
@@ -968,3 +969,5 @@ void unregister_hardware_info(const char *name)
 {
 }
 EXPORT_SYMBOL(unregister_hardware_info);
+=======
+>>>>>>> origin/4.19.325

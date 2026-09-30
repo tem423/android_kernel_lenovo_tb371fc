@@ -1630,7 +1630,11 @@ ds1685_rtc_poweroff(struct platform_device *pdev)
 		unreachable();
 	}
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(ds1685_rtc_poweroff);
+=======
+EXPORT_SYMBOL_GPL(ds1685_rtc_poweroff);
+>>>>>>> origin/4.19.325
 /* ----------------------------------------------------------------------- */
 
 

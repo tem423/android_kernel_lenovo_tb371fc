@@ -1,9 +1,14 @@
+<<<<<<< HEAD
+=======
+/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+>>>>>>> origin/4.19.325
 #ifndef LIBFDT_ENV_H
 #define LIBFDT_ENV_H
 /*
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
  * Copyright 2012 Kim Phillips, Freescale Semiconductor.
+<<<<<<< HEAD
  *
  * libfdt is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -52,10 +57,19 @@
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+=======
+ */
+
+#include <stdbool.h>
+>>>>>>> origin/4.19.325
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+<<<<<<< HEAD
+=======
+#include <limits.h>
+>>>>>>> origin/4.19.325
 
 #ifdef __CHECKER__
 #define FDT_FORCE __attribute__((force))

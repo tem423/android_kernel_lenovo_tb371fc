@@ -1967,7 +1967,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(stv0900_attach);
+=======
+EXPORT_SYMBOL_GPL(stv0900_attach);
+>>>>>>> origin/4.19.325
 
 MODULE_PARM_DESC(debug, "Set debug");
 

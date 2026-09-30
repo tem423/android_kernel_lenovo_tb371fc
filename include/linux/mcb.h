@@ -66,7 +66,10 @@ static inline struct mcb_bus *to_mcb_bus(struct device *dev)
 struct mcb_device {
 	struct device dev;
 	struct mcb_bus *bus;
+<<<<<<< HEAD
 	bool is_added;
+=======
+>>>>>>> origin/4.19.325
 	struct mcb_driver *driver;
 	u16 id;
 	int inst;

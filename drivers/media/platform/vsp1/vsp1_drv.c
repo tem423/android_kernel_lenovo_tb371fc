@@ -882,8 +882,15 @@ static int vsp1_probe(struct platform_device *pdev)
 	}
 
 done:
+<<<<<<< HEAD
 	if (ret)
 		pm_runtime_disable(&pdev->dev);
+=======
+	if (ret) {
+		pm_runtime_disable(&pdev->dev);
+		rcar_fcp_put(vsp1->fcp);
+	}
+>>>>>>> origin/4.19.325
 
 	return ret;
 }

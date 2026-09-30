@@ -642,7 +642,12 @@ static int ingenic_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
 			break;
 
 		default:
+<<<<<<< HEAD
 			unreachable();
+=======
+			/* unreachable */
+			break;
+>>>>>>> origin/4.19.325
 		}
 	}
 

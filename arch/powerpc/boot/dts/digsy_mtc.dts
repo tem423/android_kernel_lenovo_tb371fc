@@ -20,7 +20,11 @@
 	model = "intercontrol,digsy-mtc";
 	compatible = "intercontrol,digsy-mtc";
 
+<<<<<<< HEAD
 	memory {
+=======
+	memory@0 {
+>>>>>>> origin/4.19.325
 		reg = <0x00000000 0x02000000>;	// 32MB
 	};
 

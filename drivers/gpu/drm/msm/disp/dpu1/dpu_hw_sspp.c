@@ -146,11 +146,21 @@ static inline int _sspp_subblk_offset(struct dpu_hw_pipe *ctx,
 		u32 *idx)
 {
 	int rc = 0;
+<<<<<<< HEAD
 	const struct dpu_sspp_sub_blks *sblk = ctx->cap->sblk;
 
 	if (!ctx)
 		return -EINVAL;
 
+=======
+	const struct dpu_sspp_sub_blks *sblk;
+
+	if (!ctx || !ctx->cap || !ctx->cap->sblk)
+		return -EINVAL;
+
+	sblk = ctx->cap->sblk;
+
+>>>>>>> origin/4.19.325
 	switch (s_id) {
 	case DPU_SSPP_SRC:
 		*idx = sblk->src_blk.base;
@@ -413,7 +423,11 @@ static void _dpu_hw_sspp_setup_scaler3(struct dpu_hw_pipe *ctx,
 
 	(void)pe;
 	if (_sspp_subblk_offset(ctx, DPU_SSPP_SCALER_QSEED3, &idx) || !sspp
+<<<<<<< HEAD
 		|| !scaler3_cfg || !ctx || !ctx->cap || !ctx->cap->sblk)
+=======
+		|| !scaler3_cfg)
+>>>>>>> origin/4.19.325
 		return;
 
 	dpu_hw_setup_scaler3(&ctx->hw, scaler3_cfg, idx,

@@ -137,7 +137,11 @@ static int newque(struct ipc_namespace *ns, struct ipc_params *params)
 	key_t key = params->key;
 	int msgflg = params->flg;
 
+<<<<<<< HEAD
 	msq = kvmalloc(sizeof(*msq), GFP_KERNEL);
+=======
+	msq = kvmalloc(sizeof(*msq), GFP_KERNEL_ACCOUNT);
+>>>>>>> origin/4.19.325
 	if (unlikely(!msq))
 		return -ENOMEM;
 

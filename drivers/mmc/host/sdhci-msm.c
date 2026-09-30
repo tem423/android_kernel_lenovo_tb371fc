@@ -1425,7 +1425,11 @@ void sdhci_msm_exit_dbg_mode(struct sdhci_host *host)
 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
 	struct sdhci_msm_host *msm_host = pltfm_host->priv;
 	struct platform_device *pdev = msm_host->pdev;
+<<<<<<< HEAD
 	u32 minor;
+=======
+    u32 minor;
+>>>>>>> origin/4.19.325
 
 	minor = IPCAT_MINOR_MASK(readl_relaxed(host->ioaddr +
 				SDCC_IP_CATALOG));
@@ -3267,7 +3271,11 @@ static irqreturn_t sdhci_msm_pwr_irq(int irq, void *data)
 
 	/* Handle BUS ON/OFF*/
 	if (irq_status & CORE_PWRCTL_BUS_ON) {
+<<<<<<< HEAD
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
+=======
+		/* huaqin add for SD card bringup by liufurong at 20190201 start */
+>>>>>>> origin/4.19.325
 #ifdef CONFIG_MMC_SDHCI_BH201
 		if (bht_target_host(host)) {
 			if(gpio_is_valid(msm_host->pdata->status_gpio)){
@@ -3347,7 +3355,11 @@ static irqreturn_t sdhci_msm_pwr_irq(int irq, void *data)
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
 			ret = sdhci_msm_setup_vreg(msm_host->pdata,
 					false, false);
+<<<<<<< HEAD
         }
+=======
+		}
+>>>>>>> origin/4.19.325
 		if (!ret) {
 			ret = sdhci_msm_setup_pins(msm_host->pdata, false);
 			ret |= sdhci_msm_set_vdd_io_vol(msm_host->pdata,
@@ -5867,8 +5879,11 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	/* Setup PWRCTL irq */
 	msm_host->pwr_irq = platform_get_irq_byname(pdev, "pwr_irq");
 	if (msm_host->pwr_irq < 0) {
+<<<<<<< HEAD
 		dev_err(&pdev->dev, "Failed to get pwr_irq by name (%d)\n",
 				msm_host->pwr_irq);
+=======
+>>>>>>> origin/4.19.325
 		goto vreg_deinit;
 	}
 	ret = devm_request_threaded_irq(&pdev->dev, msm_host->pwr_irq, NULL,
@@ -6179,7 +6194,12 @@ static int sdhci_msm_remove(struct platform_device *pdev)
 		sdhci_msm_bus_unregister(msm_host);
 
 	sdhci_pltfm_free(pdev);
+<<<<<<< HEAD
 	sdcard_intr_free();
+=======
+
+    sdcard_intr_free();
+>>>>>>> origin/4.19.325
 	return 0;
 }
 

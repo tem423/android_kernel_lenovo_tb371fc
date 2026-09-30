@@ -8,6 +8,10 @@
  */
 #ifndef __EVENTS_INTERNAL_H__
 #define __EVENTS_INTERNAL_H__
+<<<<<<< HEAD
+=======
+#include <linux/rcupdate.h>
+>>>>>>> origin/4.19.325
 
 /* Interrupt types. */
 enum xen_irq_type {
@@ -33,15 +37,31 @@ enum xen_irq_type {
 struct irq_info {
 	struct list_head list;
 	struct list_head eoi_list;
+<<<<<<< HEAD
 	short refcnt;
 	short spurious_cnt;
 	enum xen_irq_type type;	/* type */
+=======
+	struct rcu_work rwork;
+	short refcnt;
+	short spurious_cnt;
+	short type;		/* type */
+	u8 mask_reason;		/* Why is event channel masked */
+#define EVT_MASK_REASON_EXPLICIT	0x01
+#define EVT_MASK_REASON_TEMPORARY	0x02
+#define EVT_MASK_REASON_EOI_PENDING	0x04
+	u8 is_active;		/* Is event just being handled? */
+>>>>>>> origin/4.19.325
 	unsigned irq;
 	unsigned int evtchn;	/* event channel */
 	unsigned short cpu;	/* cpu bound */
 	unsigned short eoi_cpu;	/* EOI must happen on this cpu */
 	unsigned int irq_epoch;	/* If eoi_cpu valid: irq_epoch of event */
 	u64 eoi_time;		/* Time in jiffies when to EOI. */
+<<<<<<< HEAD
+=======
+	raw_spinlock_t lock;
+>>>>>>> origin/4.19.325
 
 	union {
 		unsigned short virq;
@@ -67,12 +87,19 @@ struct evtchn_ops {
 	unsigned (*nr_channels)(void);
 
 	int (*setup)(struct irq_info *info);
+<<<<<<< HEAD
+=======
+	void (*remove)(evtchn_port_t port, unsigned int cpu);
+>>>>>>> origin/4.19.325
 	void (*bind_to_cpu)(struct irq_info *info, unsigned cpu);
 
 	void (*clear_pending)(unsigned port);
 	void (*set_pending)(unsigned port);
 	bool (*is_pending)(unsigned port);
+<<<<<<< HEAD
 	bool (*test_and_set_mask)(unsigned port);
+=======
+>>>>>>> origin/4.19.325
 	void (*mask)(unsigned port);
 	void (*unmask)(unsigned port);
 
@@ -109,6 +136,16 @@ static inline int xen_evtchn_port_setup(struct irq_info *info)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static inline void xen_evtchn_port_remove(evtchn_port_t evtchn,
+					  unsigned int cpu)
+{
+	if (evtchn_ops->remove)
+		evtchn_ops->remove(evtchn, cpu);
+}
+
+>>>>>>> origin/4.19.325
 static inline void xen_evtchn_port_bind_to_cpu(struct irq_info *info,
 					       unsigned cpu)
 {
@@ -130,11 +167,14 @@ static inline bool test_evtchn(unsigned port)
 	return evtchn_ops->is_pending(port);
 }
 
+<<<<<<< HEAD
 static inline bool test_and_set_mask(unsigned port)
 {
 	return evtchn_ops->test_and_set_mask(port);
 }
 
+=======
+>>>>>>> origin/4.19.325
 static inline void mask_evtchn(unsigned port)
 {
 	return evtchn_ops->mask(port);

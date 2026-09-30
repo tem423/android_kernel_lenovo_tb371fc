@@ -95,6 +95,10 @@ config TOUCHSCREEN_AD7879_SPI
 config TOUCHSCREEN_ADC
 	tristate "Generic ADC based resistive touchscreen"
 	depends on IIO
+<<<<<<< HEAD
+=======
+	select IIO_BUFFER
+>>>>>>> origin/4.19.325
 	select IIO_BUFFER_CB
 	help
 	  Say Y here if you want to use the generic ADC
@@ -1363,8 +1367,16 @@ source "drivers/input/touchscreen/goodix/Kconfig"
 source "drivers/input/touchscreen/synaptics_tcm/Kconfig"
 
 source "drivers/input/touchscreen/focaltech_touch/Kconfig"
+<<<<<<< HEAD
 source "drivers/input/touchscreen/nt36532/Kconfig"
 
 source "drivers/input/touchscreen/nt36xxx/Kconfig"
 
+=======
+
+source "drivers/input/touchscreen/nt36xxx/Kconfig"
+
+source "drivers/input/touchscreen/nt36532/Kconfig"
+
+>>>>>>> origin/4.19.325
 endif

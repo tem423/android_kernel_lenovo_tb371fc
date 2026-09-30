@@ -3,7 +3,11 @@
 #define _NFT_FIB_H_
 
 struct nft_fib {
+<<<<<<< HEAD
 	enum nft_registers	dreg:8;
+=======
+	u8			dreg;
+>>>>>>> origin/4.19.325
 	u8			result;
 	u32			flags;
 };

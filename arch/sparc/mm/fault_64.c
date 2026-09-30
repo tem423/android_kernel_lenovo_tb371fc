@@ -435,7 +435,11 @@ good_area:
 
 	fault = handle_mm_fault(vma, address, flags);
 
+<<<<<<< HEAD
 	if ((fault & VM_FAULT_RETRY) && fatal_signal_pending(current))
+=======
+	if (fault_signal_pending(fault, regs))
+>>>>>>> origin/4.19.325
 		goto exit_exception;
 
 	if (unlikely(fault & VM_FAULT_ERROR)) {

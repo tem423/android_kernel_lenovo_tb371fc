@@ -97,8 +97,15 @@ static int pvr2_dvb_feed_thread(void *data)
 	return stat;
 }
 
+<<<<<<< HEAD
 static void pvr2_dvb_notify(struct pvr2_dvb_adapter *adap)
 {
+=======
+static void pvr2_dvb_notify(void *ptr)
+{
+	struct pvr2_dvb_adapter *adap = ptr;
+
+>>>>>>> origin/4.19.325
 	wake_up(&adap->buffer_wait_data);
 }
 
@@ -158,7 +165,11 @@ static int pvr2_dvb_stream_do_start(struct pvr2_dvb_adapter *adap)
 	}
 
 	pvr2_stream_set_callback(pvr->video_stream.stream,
+<<<<<<< HEAD
 				 (pvr2_stream_callback) pvr2_dvb_notify, adap);
+=======
+				 pvr2_dvb_notify, adap);
+>>>>>>> origin/4.19.325
 
 	ret = pvr2_stream_set_buffer_count(stream, PVR2_DVB_BUFFER_COUNT);
 	if (ret < 0) return ret;

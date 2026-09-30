@@ -98,11 +98,19 @@ static long cmm_alloc_pages(long nr, long *counter,
 		(*counter)++;
 		spin_unlock(&cmm_lock);
 		nr--;
+<<<<<<< HEAD
+=======
+		cond_resched();
+>>>>>>> origin/4.19.325
 	}
 	return nr;
 }
 
+<<<<<<< HEAD
 static long cmm_free_pages(long nr, long *counter, struct cmm_page_array **list)
+=======
+static long __cmm_free_pages(long nr, long *counter, struct cmm_page_array **list)
+>>>>>>> origin/4.19.325
 {
 	struct cmm_page_array *pa;
 	unsigned long addr;
@@ -126,6 +134,24 @@ static long cmm_free_pages(long nr, long *counter, struct cmm_page_array **list)
 	return nr;
 }
 
+<<<<<<< HEAD
+=======
+static long cmm_free_pages(long nr, long *counter, struct cmm_page_array **list)
+{
+	long inc = 0;
+
+	while (nr) {
+		inc = min(256L, nr);
+		nr -= inc;
+		inc = __cmm_free_pages(inc, counter, list);
+		if (inc)
+			break;
+		cond_resched();
+	}
+	return nr + inc;
+}
+
+>>>>>>> origin/4.19.325
 static int cmm_oom_notify(struct notifier_block *self,
 			  unsigned long dummy, void *parm)
 {

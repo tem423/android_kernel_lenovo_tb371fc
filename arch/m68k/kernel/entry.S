@@ -160,9 +160,18 @@ do_trace_entry:
 	jbsr	syscall_trace
 	RESTORE_SWITCH_STACK
 	addql	#4,%sp
+<<<<<<< HEAD
 	movel	%sp@(PT_OFF_ORIG_D0),%d0
 	cmpl	#NR_syscalls,%d0
 	jcs	syscall
+=======
+	addql	#1,%d0			| optimization for cmpil #-1,%d0
+	jeq	ret_from_syscall
+	movel	%sp@(PT_OFF_ORIG_D0),%d0
+	cmpl	#NR_syscalls,%d0
+	jcs	syscall
+	jra	ret_from_syscall
+>>>>>>> origin/4.19.325
 badsys:
 	movel	#-ENOSYS,%sp@(PT_OFF_D0)
 	jra	ret_from_syscall
@@ -422,7 +431,13 @@ resume:
 	movec	%a0,%dfc
 
 	/* restore status register */
+<<<<<<< HEAD
 	movew	%a1@(TASK_THREAD+THREAD_SR),%sr
+=======
+	movew	%a1@(TASK_THREAD+THREAD_SR),%d0
+	oriw	#0x0700,%d0
+	movew	%d0,%sr
+>>>>>>> origin/4.19.325
 
 	rts
 

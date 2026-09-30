@@ -340,7 +340,11 @@ int afs_check_permit(struct afs_vnode *vnode, struct key *key,
 int afs_permission(struct inode *inode, int mask)
 {
 	struct afs_vnode *vnode = AFS_FS_I(inode);
+<<<<<<< HEAD
 	afs_access_t uninitialized_var(access);
+=======
+	afs_access_t access;
+>>>>>>> origin/4.19.325
 	struct key *key;
 	int ret;
 

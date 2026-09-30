@@ -145,12 +145,20 @@ struct bnxt_qplib_swqe {
 		/* Send, with imm, inval key */
 		struct {
 			union {
+<<<<<<< HEAD
 				__be32	imm_data;
+=======
+				u32	imm_data;
+>>>>>>> origin/4.19.325
 				u32	inv_key;
 			};
 			u32		q_key;
 			u32		dst_qp;
+<<<<<<< HEAD
 			u16		avid;
+=======
+			u32		avid;
+>>>>>>> origin/4.19.325
 		} send;
 
 		/* Send Raw Ethernet and QP1 */
@@ -163,7 +171,11 @@ struct bnxt_qplib_swqe {
 		/* RDMA write, with imm, read */
 		struct {
 			union {
+<<<<<<< HEAD
 				__be32	imm_data;
+=======
+				u32	imm_data;
+>>>>>>> origin/4.19.325
 				u32	inv_key;
 			};
 			u64		remote_va;
@@ -349,7 +361,11 @@ struct bnxt_qplib_cqe {
 	u32				length;
 	u64				wr_id;
 	union {
+<<<<<<< HEAD
 		__be32			immdata;
+=======
+		u32			immdata;
+>>>>>>> origin/4.19.325
 		u32			invrkey;
 	};
 	u64				qp_handle;

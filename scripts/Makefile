@@ -10,6 +10,12 @@
 
 HOST_EXTRACFLAGS += -I$(srctree)/tools/include
 
+<<<<<<< HEAD
+=======
+CRYPTO_LIBS = $(shell pkg-config --libs libcrypto 2> /dev/null || echo -lcrypto)
+CRYPTO_CFLAGS = $(shell pkg-config --cflags libcrypto 2> /dev/null)
+
+>>>>>>> origin/4.19.325
 hostprogs-$(CONFIG_BUILD_BIN2C)  += bin2c
 hostprogs-$(CONFIG_KALLSYMS)     += kallsyms
 hostprogs-$(CONFIG_LOGO)         += pnmtologo
@@ -23,8 +29,15 @@ hostprogs-$(CONFIG_SYSTEM_EXTRA_CERTIFICATE) += insert-sys-cert
 
 HOSTCFLAGS_sortextable.o = -I$(srctree)/tools/include
 HOSTCFLAGS_asn1_compiler.o = -I$(srctree)/include
+<<<<<<< HEAD
 HOSTLDLIBS_sign-file = -lcrypto
 HOSTLDLIBS_extract-cert = -lcrypto
+=======
+HOSTCFLAGS_sign-file.o = $(CRYPTO_CFLAGS)
+HOSTLDLIBS_sign-file = $(CRYPTO_LIBS)
+HOSTCFLAGS_extract-cert.o = $(CRYPTO_CFLAGS)
+HOSTLDLIBS_extract-cert = $(CRYPTO_LIBS)
+>>>>>>> origin/4.19.325
 
 always		:= $(hostprogs-y) $(hostprogs-m)
 
@@ -41,8 +54,15 @@ build_unifdef: $(obj)/unifdef
 subdir-$(CONFIG_MODVERSIONS) += genksyms
 subdir-y                     += mod
 subdir-$(CONFIG_SECURITY_SELINUX) += selinux
+<<<<<<< HEAD
 subdir-$(CONFIG_DTC)         += dtc
 subdir-$(CONFIG_GDB_SCRIPTS) += gdb
 
 # Let clean descend into subdirs
 subdir-	+= basic kconfig package gcc-plugins
+=======
+subdir-$(CONFIG_GDB_SCRIPTS) += gdb
+
+# Let clean descend into subdirs
+subdir-	+= basic dtc kconfig package gcc-plugins
+>>>>>>> origin/4.19.325

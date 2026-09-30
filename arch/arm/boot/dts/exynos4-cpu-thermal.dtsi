@@ -10,7 +10,11 @@
 / {
 thermal-zones {
 	cpu_thermal: cpu-thermal {
+<<<<<<< HEAD
 		thermal-sensors = <&tmu 0>;
+=======
+		thermal-sensors = <&tmu>;
+>>>>>>> origin/4.19.325
 		polling-delay-passive = <0>;
 		polling-delay = <0>;
 		trips {

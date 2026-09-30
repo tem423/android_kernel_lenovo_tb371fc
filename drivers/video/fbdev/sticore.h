@@ -237,7 +237,11 @@ struct sti_rom_font {
 	 u8 height;
 	 u8 font_type;		/* language type */
 	 u8 bytes_per_char;
+<<<<<<< HEAD
 	u32 next_font;
+=======
+	s32 next_font;		/* note: signed int */
+>>>>>>> origin/4.19.325
 	 u8 underline_height;
 	 u8 underline_pos;
 	 u8 res008[2];

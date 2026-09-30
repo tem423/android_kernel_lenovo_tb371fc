@@ -163,6 +163,11 @@ static int send_acknowledge(struct nci_spi *nspi, u8 acknowledge)
 	int ret;
 
 	skb = nci_skb_alloc(nspi->ndev, 0, GFP_KERNEL);
+<<<<<<< HEAD
+=======
+	if (!skb)
+		return -ENOMEM;
+>>>>>>> origin/4.19.325
 
 	/* add the NCI SPI header to the start of the buffer */
 	hdr = skb_push(skb, NCI_SPI_HDR_LEN);

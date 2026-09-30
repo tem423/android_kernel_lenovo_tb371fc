@@ -107,7 +107,11 @@ static void umc_set_speeds(u8 speeds[])
 static void umc_set_pio_mode(ide_hwif_t *hwif, ide_drive_t *drive)
 {
 	ide_hwif_t *mate = hwif->mate;
+<<<<<<< HEAD
 	unsigned long uninitialized_var(flags);
+=======
+	unsigned long flags;
+>>>>>>> origin/4.19.325
 	const u8 pio = drive->pio_mode - XFER_PIO_0;
 
 	printk("%s: setting umc8672 to PIO mode%d (speed %d)\n",

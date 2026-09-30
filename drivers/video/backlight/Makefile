@@ -61,4 +61,8 @@ obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
 obj-$(CONFIG_BACKLIGHT_ARCXCNN) 	+= arcxcnn_bl.o
 obj-$(CONFIG_BACKLIGHT_RAVE_SP)		+= rave-sp-backlight.o
 obj-$(CONFIG_BACKLIGHT_KTZ8866A) += ktz8866a.o
+<<<<<<< HEAD
 obj-$(CONFIG_BACKLIGHT_KTZ8866B) += ktz8866b.o
+=======
+obj-$(CONFIG_BACKLIGHT_KTZ8866B) += ktz8866b.o
+>>>>>>> origin/4.19.325

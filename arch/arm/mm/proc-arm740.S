@@ -132,7 +132,11 @@ __arm740_setup:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/4.19.325
 	.type	__arm740_proc_info,#object
 __arm740_proc_info:
 	.long	0x41807400

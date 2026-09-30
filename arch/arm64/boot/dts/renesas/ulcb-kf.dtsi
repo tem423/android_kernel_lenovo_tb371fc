@@ -165,7 +165,11 @@
 	};
 
 	scif1_pins: scif1 {
+<<<<<<< HEAD
 		groups = "scif1_data_b", "scif1_ctrl";
+=======
+		groups = "scif1_data_b";
+>>>>>>> origin/4.19.325
 		function = "scif1";
 	};
 
@@ -178,7 +182,10 @@
 &scif1 {
 	pinctrl-0 = <&scif1_pins>;
 	pinctrl-names = "default";
+<<<<<<< HEAD
 	uart-has-rtscts;
+=======
+>>>>>>> origin/4.19.325
 
 	status = "okay";
 };

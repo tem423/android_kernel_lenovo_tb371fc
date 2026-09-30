@@ -117,6 +117,10 @@ config PSTORE_CONSOLE
 config PSTORE_PMSG
 	bool "Log user space messages"
 	depends on PSTORE
+<<<<<<< HEAD
+=======
+	select RT_MUTEXES
+>>>>>>> origin/4.19.325
 	help
 	  When the option is enabled, pstore will export a character
 	  interface /dev/pmsg0 to log user space messages. On reboot

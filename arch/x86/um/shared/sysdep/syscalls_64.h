@@ -10,13 +10,21 @@
 #include <linux/msg.h>
 #include <linux/shm.h>
 
+<<<<<<< HEAD
 typedef long syscall_handler_t(void);
+=======
+typedef long syscall_handler_t(long, long, long, long, long, long);
+>>>>>>> origin/4.19.325
 
 extern syscall_handler_t *sys_call_table[];
 
 #define EXECUTE_SYSCALL(syscall, regs) \
+<<<<<<< HEAD
 	(((long (*)(long, long, long, long, long, long)) \
 	  (*sys_call_table[syscall]))(UPT_SYSCALL_ARG1(&regs->regs), \
+=======
+	(((*sys_call_table[syscall]))(UPT_SYSCALL_ARG1(&regs->regs), \
+>>>>>>> origin/4.19.325
 		 		      UPT_SYSCALL_ARG2(&regs->regs), \
 				      UPT_SYSCALL_ARG3(&regs->regs), \
 				      UPT_SYSCALL_ARG4(&regs->regs), \

@@ -96,20 +96,42 @@ static int __init tpm_clocksource_init(unsigned long rate)
 static int tpm_set_next_event(unsigned long delta,
 				struct clock_event_device *evt)
 {
+<<<<<<< HEAD
 	unsigned long next, now;
 
 	next = tpm_read_counter();
 	next += delta;
+=======
+	unsigned long next, prev, now;
+
+	prev = tpm_read_counter();
+	next = prev + delta;
+>>>>>>> origin/4.19.325
 	writel(next, timer_base + TPM_C0V);
 	now = tpm_read_counter();
 
 	/*
+<<<<<<< HEAD
+=======
+	 * Need to wait CNT increase at least 1 cycle to make sure
+	 * the C0V has been updated into HW.
+	 */
+	if ((next & 0xffffffff) != readl(timer_base + TPM_C0V))
+		while (now == tpm_read_counter())
+			;
+
+	/*
+>>>>>>> origin/4.19.325
 	 * NOTE: We observed in a very small probability, the bus fabric
 	 * contention between GPU and A7 may results a few cycles delay
 	 * of writing CNT registers which may cause the min_delta event got
 	 * missed, so we need add a ETIME check here in case it happened.
 	 */
+<<<<<<< HEAD
 	return (int)(next - now) <= 0 ? -ETIME : 0;
+=======
+	return (now - prev) >= delta ? -ETIME : 0;
+>>>>>>> origin/4.19.325
 }
 
 static int tpm_set_state_oneshot(struct clock_event_device *evt)

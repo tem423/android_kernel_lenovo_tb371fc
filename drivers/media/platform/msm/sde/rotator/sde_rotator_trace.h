@@ -8,7 +8,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM sde_rotator
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/media/platform/msm/sde/rotator
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE sde_rotator_trace
 

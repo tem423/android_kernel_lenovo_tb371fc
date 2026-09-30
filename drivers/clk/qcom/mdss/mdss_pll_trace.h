@@ -103,5 +103,9 @@ TRACE_EVENT(mdss_pll_trace_counter,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/clk/qcom/mdss
+=======
+#define TRACE_INCLUDE_PATH ../../drivers/clk/qcom/mdss/
+>>>>>>> origin/4.19.325
 #include <trace/define_trace.h>

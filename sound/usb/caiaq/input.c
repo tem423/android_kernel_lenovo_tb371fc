@@ -817,6 +817,10 @@ int snd_usb_caiaq_input_init(struct snd_usb_caiaqdev *cdev)
 
 	default:
 		/* no input methods supported on this device */
+<<<<<<< HEAD
+=======
+		ret = -EINVAL;
+>>>>>>> origin/4.19.325
 		goto exit_free_idev;
 	}
 
@@ -841,15 +845,32 @@ exit_free_idev:
 	return ret;
 }
 
+<<<<<<< HEAD
 void snd_usb_caiaq_input_free(struct snd_usb_caiaqdev *cdev)
+=======
+void snd_usb_caiaq_input_disconnect(struct snd_usb_caiaqdev *cdev)
+>>>>>>> origin/4.19.325
 {
 	if (!cdev || !cdev->input_dev)
 		return;
 
 	usb_kill_urb(cdev->ep4_in_urb);
+<<<<<<< HEAD
 	usb_free_urb(cdev->ep4_in_urb);
 	cdev->ep4_in_urb = NULL;
 
 	input_unregister_device(cdev->input_dev);
+=======
+	input_unregister_device(cdev->input_dev);
+}
+
+void snd_usb_caiaq_input_free(struct snd_usb_caiaqdev *cdev)
+{
+	if (!cdev || !cdev->input_dev)
+		return;
+
+	usb_free_urb(cdev->ep4_in_urb);
+	cdev->ep4_in_urb = NULL;
+>>>>>>> origin/4.19.325
 	cdev->input_dev = NULL;
 }

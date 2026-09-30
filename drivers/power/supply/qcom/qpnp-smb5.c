@@ -24,6 +24,10 @@
 #include "smb5-lib.h"
 #include "schgm-flash.h"
 #include <linux/of_gpio.h>
+<<<<<<< HEAD
+=======
+#include "mm8013c06_battery.h"
+>>>>>>> origin/4.19.325
 
 static struct smb_params smb5_pmi632_params = {
 	.fcc			= {
@@ -2569,7 +2573,11 @@ static int smb5_configure_recharging(struct smb5 *chip)
 	union power_supply_propval pval;
 	/* Configure VBATT-based or automatic recharging */
 
+<<<<<<< HEAD
 	exfg_psy = power_supply_get_by_name("bq27541-0");
+=======
+	exfg_psy = power_supply_get_by_name("bms");
+>>>>>>> origin/4.19.325
 	if (exfg_psy)
 		rc = power_supply_get_property(exfg_psy,
 				POWER_SUPPLY_PROP_GAUGE_VOLTAGE, &pval);

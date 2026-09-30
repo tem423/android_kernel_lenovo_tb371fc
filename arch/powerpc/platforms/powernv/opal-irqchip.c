@@ -282,11 +282,20 @@ int __init opal_event_init(void)
 		else
 			name = kasprintf(GFP_KERNEL, "opal");
 
+<<<<<<< HEAD
+=======
+		if (!name)
+			continue;
+>>>>>>> origin/4.19.325
 		/* Install interrupt handler */
 		rc = request_irq(r->start, opal_interrupt, r->flags & IRQD_TRIGGER_MASK,
 				 name, NULL);
 		if (rc) {
 			pr_warn("Error %d requesting OPAL irq %d\n", rc, (int)r->start);
+<<<<<<< HEAD
+=======
+			kfree(name);
+>>>>>>> origin/4.19.325
 			continue;
 		}
 	}

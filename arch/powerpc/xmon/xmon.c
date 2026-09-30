@@ -1154,7 +1154,11 @@ static int cpu_cmd(void)
 	unsigned long cpu, first_cpu, last_cpu;
 	int timeout;
 
+<<<<<<< HEAD
 	if (!scanhex(&cpu)) {
+=======
+	if (!scanhex(&cpu) || cpu >= num_possible_cpus()) {
+>>>>>>> origin/4.19.325
 		/* print cpus waiting or in xmon */
 		printf("cpus stopped:");
 		last_cpu = first_cpu = NR_CPUS;
@@ -2485,7 +2489,11 @@ static void dump_pacas(void)
 
 	termch = c;	/* Put c back, it wasn't 'a' */
 
+<<<<<<< HEAD
 	if (scanhex(&num))
+=======
+	if (scanhex(&num) && num < num_possible_cpus())
+>>>>>>> origin/4.19.325
 		dump_one_paca(num);
 	else
 		dump_one_paca(xmon_owner);
@@ -2568,7 +2576,11 @@ static void dump_xives(void)
 
 	termch = c;	/* Put c back, it wasn't 'a' */
 
+<<<<<<< HEAD
 	if (scanhex(&num))
+=======
+	if (scanhex(&num) && num < num_possible_cpus())
+>>>>>>> origin/4.19.325
 		dump_one_xive(num);
 	else
 		dump_one_xive(xmon_owner);

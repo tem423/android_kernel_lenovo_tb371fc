@@ -691,7 +691,11 @@ ref
 no-jd
     BIOS setup but without jack-detection
 intel
+<<<<<<< HEAD
     Intel DG45* mobos
+=======
+    Intel D*45* mobos
+>>>>>>> origin/4.19.325
 dell-m6-amic
     Dell desktops/laptops with analog mics
 dell-m6-dmic

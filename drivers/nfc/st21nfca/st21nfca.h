@@ -152,6 +152,10 @@ struct st21nfca_se_info {
 
 	se_io_cb_t cb;
 	void *cb_context;
+<<<<<<< HEAD
+=======
+	struct work_struct timeout_work;
+>>>>>>> origin/4.19.325
 };
 
 struct st21nfca_hci_info {

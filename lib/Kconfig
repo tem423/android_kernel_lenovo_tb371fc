@@ -16,7 +16,10 @@ config BITREVERSE
 config HAVE_ARCH_BITREVERSE
 	bool
 	default n
+<<<<<<< HEAD
 	depends on BITREVERSE
+=======
+>>>>>>> origin/4.19.325
 	help
 	  This option enables the use of hardware bit-reversal instructions on
 	  architectures which support such operations.
@@ -71,6 +74,14 @@ config INDIRECT_PIO
 
 	  When in doubt, say N.
 
+<<<<<<< HEAD
+=======
+source "lib/crypto/Kconfig"
+
+config LIB_MEMNEQ
+	bool
+
+>>>>>>> origin/4.19.325
 config CRC_CCITT
 	tristate "CRC-CCITT functions"
 	help
@@ -259,6 +270,15 @@ config LZO_COMPRESS
 config LZO_DECOMPRESS
 	tristate
 
+<<<<<<< HEAD
+=======
+config LZ4
+ 	tristate
+ 
+config LZ4HC
+ 	tristate
+
+>>>>>>> origin/4.19.325
 config LZ4_COMPRESS
 	tristate
 

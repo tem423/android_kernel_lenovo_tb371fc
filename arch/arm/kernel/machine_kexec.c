@@ -15,6 +15,10 @@
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
 #include <asm/cacheflush.h>
+<<<<<<< HEAD
+=======
+#include <asm/kexec-internal.h>
+>>>>>>> origin/4.19.325
 #include <asm/fncpy.h>
 #include <asm/mach-types.h>
 #include <asm/smp_plat.h>
@@ -24,11 +28,14 @@
 extern void relocate_new_kernel(void);
 extern const unsigned int relocate_new_kernel_size;
 
+<<<<<<< HEAD
 extern unsigned long kexec_start_address;
 extern unsigned long kexec_indirection_page;
 extern unsigned long kexec_mach_type;
 extern unsigned long kexec_boot_atags;
 
+=======
+>>>>>>> origin/4.19.325
 static atomic_t waiting_for_crash_ipi;
 
 /*
@@ -161,6 +168,10 @@ void (*kexec_reinit)(void);
 void machine_kexec(struct kimage *image)
 {
 	unsigned long page_list, reboot_entry_phys;
+<<<<<<< HEAD
+=======
+	struct kexec_relocate_data *data;
+>>>>>>> origin/4.19.325
 	void (*reboot_entry)(void);
 	void *reboot_code_buffer;
 
@@ -176,6 +187,7 @@ void machine_kexec(struct kimage *image)
 
 	reboot_code_buffer = page_address(image->control_code_page);
 
+<<<<<<< HEAD
 	/* Prepare parameters for reboot_code_buffer*/
 	set_kernel_text_rw();
 	kexec_start_address = image->start;
@@ -183,11 +195,22 @@ void machine_kexec(struct kimage *image)
 	kexec_mach_type = machine_arch_type;
 	kexec_boot_atags = image->arch.kernel_r2;
 
+=======
+>>>>>>> origin/4.19.325
 	/* copy our kernel relocation code to the control code page */
 	reboot_entry = fncpy(reboot_code_buffer,
 			     &relocate_new_kernel,
 			     relocate_new_kernel_size);
 
+<<<<<<< HEAD
+=======
+	data = reboot_code_buffer + relocate_new_kernel_size;
+	data->kexec_start_address = image->start;
+	data->kexec_indirection_page = page_list;
+	data->kexec_mach_type = machine_arch_type;
+	data->kexec_r2 = image->arch.kernel_r2;
+
+>>>>>>> origin/4.19.325
 	/* get the identity mapping physical address for the reboot code */
 	reboot_entry_phys = virt_to_idmap(reboot_entry);
 

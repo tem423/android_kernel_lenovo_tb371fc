@@ -27,6 +27,10 @@ static inline cycles_t get_cycles(void)
 {
 	return mfspr(SPR_TTCR);
 }
+<<<<<<< HEAD
+=======
+#define get_cycles get_cycles
+>>>>>>> origin/4.19.325
 
 /* This isn't really used any more */
 #define CLOCK_TICK_RATE 1000

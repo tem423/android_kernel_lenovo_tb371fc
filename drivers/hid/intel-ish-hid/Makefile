@@ -20,4 +20,8 @@ obj-$(CONFIG_INTEL_ISH_HID) += intel-ishtp-hid.o
 intel-ishtp-hid-objs := ishtp-hid.o
 intel-ishtp-hid-objs += ishtp-hid-client.o
 
+<<<<<<< HEAD
 ccflags-y += -Idrivers/hid/intel-ish-hid/ishtp
+=======
+ccflags-y += -I $(srctree)/$(src)/ishtp
+>>>>>>> origin/4.19.325

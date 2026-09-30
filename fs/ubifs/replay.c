@@ -232,7 +232,12 @@ static bool inode_still_linked(struct ubifs_info *c, struct replay_entry *rino)
 	 */
 	list_for_each_entry_reverse(r, &c->replay_list, list) {
 		ubifs_assert(c, r->sqnum >= rino->sqnum);
+<<<<<<< HEAD
 		if (key_inum(c, &r->key) == key_inum(c, &rino->key))
+=======
+		if (key_inum(c, &r->key) == key_inum(c, &rino->key) &&
+		    key_type(c, &r->key) == UBIFS_INO_KEY)
+>>>>>>> origin/4.19.325
 			return r->deletion == 0;
 
 	}

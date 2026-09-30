@@ -281,7 +281,11 @@ DEFINE_EVENT(udc_log_req, usb_gadget_giveback_request,
 /* this part has to be here */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/usb/gadget/udc
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

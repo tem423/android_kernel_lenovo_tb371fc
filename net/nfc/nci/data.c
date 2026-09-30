@@ -130,7 +130,11 @@ static int nci_queue_tx_data_frags(struct nci_dev *ndev,
 
 		skb_frag = nci_skb_alloc(ndev,
 					 (NCI_DATA_HDR_SIZE + frag_len),
+<<<<<<< HEAD
 					 GFP_KERNEL);
+=======
+					 GFP_ATOMIC);
+>>>>>>> origin/4.19.325
 		if (skb_frag == NULL) {
 			rc = -ENOMEM;
 			goto free_exit;
@@ -291,8 +295,15 @@ void nci_rx_data_packet(struct nci_dev *ndev, struct sk_buff *skb)
 		 nci_plen(skb->data));
 
 	conn_info = nci_get_conn_info_by_conn_id(ndev, nci_conn_id(skb->data));
+<<<<<<< HEAD
 	if (!conn_info)
 		return;
+=======
+	if (!conn_info) {
+		kfree_skb(skb);
+		return;
+	}
+>>>>>>> origin/4.19.325
 
 	/* strip the nci data header */
 	skb_pull(skb, NCI_DATA_HDR_SIZE);

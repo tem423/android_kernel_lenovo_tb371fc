@@ -100,6 +100,12 @@ int scmi_driver_register(struct scmi_driver *driver, struct module *owner,
 {
 	int retval;
 
+<<<<<<< HEAD
+=======
+	if (!driver->probe)
+		return -EINVAL;
+
+>>>>>>> origin/4.19.325
 	driver->driver.bus = &scmi_bus_type;
 	driver->driver.name = driver->name;
 	driver->driver.owner = owner;

@@ -19,6 +19,10 @@
 #include <errno.h>
 
 #include "../kselftest.h"
+<<<<<<< HEAD
+=======
+#include "current_stack_pointer.h"
+>>>>>>> origin/4.19.325
 
 #ifndef SS_AUTODISARM
 #define SS_AUTODISARM  (1U << 31)
@@ -40,12 +44,15 @@ void my_usr1(int sig, siginfo_t *si, void *u)
 	stack_t stk;
 	struct stk_data *p;
 
+<<<<<<< HEAD
 #if __s390x__
 	register unsigned long sp asm("%15");
 #else
 	register unsigned long sp asm("sp");
 #endif
 
+=======
+>>>>>>> origin/4.19.325
 	if (sp < (unsigned long)sstack ||
 			sp >= (unsigned long)sstack + SIGSTKSZ) {
 		ksft_exit_fail_msg("SP is not on sigaltstack\n");

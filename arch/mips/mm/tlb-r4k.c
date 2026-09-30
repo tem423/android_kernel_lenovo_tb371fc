@@ -424,6 +424,10 @@ int has_transparent_hugepage(void)
 	}
 	return mask == PM_HUGE_MASK;
 }
+<<<<<<< HEAD
+=======
+EXPORT_SYMBOL(has_transparent_hugepage);
+>>>>>>> origin/4.19.325
 
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE  */
 

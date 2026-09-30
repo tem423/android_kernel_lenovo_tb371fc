@@ -64,7 +64,11 @@
 
 #ifdef CONFIG_STACKPROTECTOR
 #include <linux/stackprotector.h>
+<<<<<<< HEAD
 unsigned long __stack_chk_guard __read_mostly;
+=======
+unsigned long __stack_chk_guard __ro_after_init;
+>>>>>>> origin/4.19.325
 EXPORT_SYMBOL(__stack_chk_guard);
 #endif
 
@@ -465,7 +469,11 @@ static void tls_thread_switch(struct task_struct *next)
 
 	if (is_compat_thread(task_thread_info(next)))
 		write_sysreg(next->thread.uw.tp_value, tpidrro_el0);
+<<<<<<< HEAD
 	else if (!arm64_kernel_unmapped_at_el0())
+=======
+	else
+>>>>>>> origin/4.19.325
 		write_sysreg(0, tpidrro_el0);
 
 	write_sysreg(*task_user_tls(next), tpidr_el0);

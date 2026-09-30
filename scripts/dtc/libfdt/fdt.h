@@ -1,9 +1,14 @@
+<<<<<<< HEAD
+=======
+/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+>>>>>>> origin/4.19.325
 #ifndef FDT_H
 #define FDT_H
 /*
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
  * Copyright 2012 Kim Phillips, Freescale Semiconductor.
+<<<<<<< HEAD
  *
  * libfdt is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -50,6 +55,8 @@
  *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=======
+>>>>>>> origin/4.19.325
  */
 
 #ifndef __ASSEMBLY__

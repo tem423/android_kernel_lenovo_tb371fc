@@ -276,7 +276,12 @@ static __inline__ __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
 	"	.set	pop"
 	: "=&r" (sum), "=&r" (tmp)
 	: "r" (saddr), "r" (daddr),
+<<<<<<< HEAD
 	  "0" (htonl(len)), "r" (htonl(proto)), "r" (sum));
+=======
+	  "0" (htonl(len)), "r" (htonl(proto)), "r" (sum)
+	: "memory");
+>>>>>>> origin/4.19.325
 
 	return csum_fold(sum);
 }

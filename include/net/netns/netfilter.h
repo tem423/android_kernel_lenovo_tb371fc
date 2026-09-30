@@ -23,9 +23,12 @@ struct netns_nf {
 	struct nf_hook_entries __rcu *hooks_arp[NF_ARP_NUMHOOKS];
 #endif
 	struct nf_hook_entries __rcu *hooks_bridge[NF_INET_NUMHOOKS];
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_DECNET)
 	struct nf_hook_entries __rcu *hooks_decnet[NF_DN_NUMHOOKS];
 #endif
+=======
+>>>>>>> origin/4.19.325
 #if IS_ENABLED(CONFIG_NF_DEFRAG_IPV4)
 	bool			defrag_ipv4;
 #endif

@@ -398,7 +398,11 @@ int hfsplus_hash_dentry(const struct dentry *dentry, struct qstr *str)
 	astr = str->name;
 	len = str->len;
 	while (len > 0) {
+<<<<<<< HEAD
 		int uninitialized_var(dsize);
+=======
+		int dsize;
+>>>>>>> origin/4.19.325
 		size = asc2unichar(sb, astr, len, &c);
 		astr += size;
 		len -= size;

@@ -1739,7 +1739,11 @@ static void omap_sham_done_task(unsigned long data)
 		if (test_and_clear_bit(FLAGS_OUTPUT_READY, &dd->flags))
 			goto finish;
 	} else if (test_bit(FLAGS_DMA_READY, &dd->flags)) {
+<<<<<<< HEAD
 		if (test_and_clear_bit(FLAGS_DMA_ACTIVE, &dd->flags)) {
+=======
+		if (test_bit(FLAGS_DMA_ACTIVE, &dd->flags)) {
+>>>>>>> origin/4.19.325
 			omap_sham_update_dma_stop(dd);
 			if (dd->err) {
 				err = dd->err;

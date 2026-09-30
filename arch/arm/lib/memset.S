@@ -19,6 +19,10 @@
 ENTRY(mmioset)
 ENTRY(memset)
 UNWIND( .fnstart         )
+<<<<<<< HEAD
+=======
+	and	r1, r1, #255		@ cast to unsigned char
+>>>>>>> origin/4.19.325
 	ands	r3, r0, #3		@ 1 unaligned?
 	mov	ip, r0			@ preserve r0 as return value
 	bne	6f			@ 1

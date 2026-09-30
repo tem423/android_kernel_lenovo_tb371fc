@@ -234,6 +234,11 @@ int kgdb_arch_handle_exception(int exception_vector, int signo,
 		 */
 		if (!kernel_active_single_step())
 			kernel_enable_single_step(linux_regs);
+<<<<<<< HEAD
+=======
+		else
+			kernel_rewind_single_step(linux_regs);
+>>>>>>> origin/4.19.325
 		err = 0;
 		break;
 	default:

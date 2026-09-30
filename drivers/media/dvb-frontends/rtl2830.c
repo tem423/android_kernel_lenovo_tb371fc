@@ -619,7 +619,11 @@ static int rtl2830_pid_filter(struct dvb_frontend *fe, u8 index, u16 pid, int on
 		index, pid, onoff);
 
 	/* skip invalid PIDs (0x2000) */
+<<<<<<< HEAD
 	if (pid > 0x1fff || index > 32)
+=======
+	if (pid > 0x1fff || index >= 32)
+>>>>>>> origin/4.19.325
 		return 0;
 
 	if (onoff)

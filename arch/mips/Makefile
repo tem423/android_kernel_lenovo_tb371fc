@@ -325,7 +325,11 @@ KBUILD_LDFLAGS		+= -m $(ld-emul)
 
 ifdef CONFIG_MIPS
 CHECKFLAGS += $(shell $(CC) $(KBUILD_CFLAGS) -dM -E -x c /dev/null | \
+<<<<<<< HEAD
 	egrep -vw '__GNUC_(|MINOR_|PATCHLEVEL_)_' | \
+=======
+	egrep -vw '__GNUC_(MINOR_|PATCHLEVEL_)?_' | \
+>>>>>>> origin/4.19.325
 	sed -e "s/^\#define /-D'/" -e "s/ /'='/" -e "s/$$/'/" -e 's/\$$/&&/g')
 endif
 
@@ -419,6 +423,7 @@ endif
 CLEAN_FILES += vmlinux.32 vmlinux.64
 
 # device-trees
+<<<<<<< HEAD
 core-$(CONFIG_BUILTIN_DTB) += arch/mips/boot/dts/
 
 %.dtb %.dtb.S %.dtb.o: | scripts
@@ -431,6 +436,9 @@ dtbs: scripts
 PHONY += dtbs_install
 dtbs_install:
 	$(Q)$(MAKE) $(dtbinst)=arch/mips/boot/dts
+=======
+core-y += arch/mips/boot/dts/
+>>>>>>> origin/4.19.325
 
 archprepare:
 ifdef CONFIG_MIPS32_N32
@@ -473,8 +481,11 @@ define archhelp
 	echo '  uImage.lzma          - U-Boot image (lzma)'
 	echo '  uImage.lzo           - U-Boot image (lzo)'
 	echo '  uzImage.bin          - U-Boot image (self-extracting)'
+<<<<<<< HEAD
 	echo '  dtbs                 - Device-tree blobs for enabled boards'
 	echo '  dtbs_install         - Install dtbs to $(INSTALL_DTBS_PATH)'
+=======
+>>>>>>> origin/4.19.325
 	echo
 	echo '  These will be default as appropriate for a configured platform.'
 	echo

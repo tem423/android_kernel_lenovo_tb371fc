@@ -11,12 +11,38 @@
 
 #include <asm/dwarf.h>
 
+<<<<<<< HEAD
 #ifdef __ASSEMBLY__
 
+=======
+>>>>>>> origin/4.19.325
 #define ASM_NL		 `	/* use '`' to mark new line in macro */
 #define __ALIGN		.align 4
 #define __ALIGN_STR	__stringify(__ALIGN)
 
+<<<<<<< HEAD
+=======
+#ifdef __ASSEMBLY__
+
+.macro ST2 e, o, off
+#ifdef CONFIG_ARC_HAS_LL64
+	std	\e, [sp, \off]
+#else
+	st	\e, [sp, \off]
+	st	\o, [sp, \off+4]
+#endif
+.endm
+
+.macro LD2 e, o, off
+#ifdef CONFIG_ARC_HAS_LL64
+	ldd	\e, [sp, \off]
+#else
+	ld	\e, [sp, \off]
+	ld	\o, [sp, \off+4]
+#endif
+.endm
+
+>>>>>>> origin/4.19.325
 /* annotation for data we want in DCCM - if enabled in .config */
 .macro ARCFP_DATA nm
 #ifdef CONFIG_ARC_HAS_DCCM

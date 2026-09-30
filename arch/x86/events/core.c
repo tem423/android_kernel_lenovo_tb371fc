@@ -2096,6 +2096,10 @@ static int x86_pmu_event_init(struct perf_event *event)
 	if (err) {
 		if (event->destroy)
 			event->destroy(event);
+<<<<<<< HEAD
+=======
+		event->destroy = NULL;
+>>>>>>> origin/4.19.325
 	}
 
 	if (READ_ONCE(x86_pmu.attr_rdpmc) &&

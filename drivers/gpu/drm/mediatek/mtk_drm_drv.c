@@ -425,6 +425,10 @@ static int mtk_drm_bind(struct device *dev)
 err_deinit:
 	mtk_drm_kms_deinit(drm);
 err_free:
+<<<<<<< HEAD
+=======
+	private->drm = NULL;
+>>>>>>> origin/4.19.325
 	drm_dev_put(drm);
 	return ret;
 }

@@ -32,7 +32,10 @@ extern const char raid6_empty_zero_page[PAGE_SIZE];
 
 #include <errno.h>
 #include <inttypes.h>
+<<<<<<< HEAD
 #include <limits.h>
+=======
+>>>>>>> origin/4.19.325
 #include <stddef.h>
 #include <sys/mman.h>
 #include <sys/types.h>

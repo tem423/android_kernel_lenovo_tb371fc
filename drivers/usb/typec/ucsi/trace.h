@@ -136,7 +136,11 @@ DEFINE_EVENT(ucsi_log_connector_status, ucsi_register_port,
 /* This part must be outside protection */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/usb/typec/ucsi
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

@@ -80,7 +80,11 @@
 	clocks = <&ref12>;
 };
 
+<<<<<<< HEAD
 &sdhci {
+=======
+&mmc {
+>>>>>>> origin/4.19.325
 	status = "okay";
 };
 

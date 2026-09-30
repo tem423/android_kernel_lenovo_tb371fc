@@ -35,7 +35,11 @@ static inline unsigned long random_get_entropy(void)
 {
 	if (mach_random_get_entropy)
 		return mach_random_get_entropy();
+<<<<<<< HEAD
 	return 0;
+=======
+	return random_get_entropy_fallback();
+>>>>>>> origin/4.19.325
 }
 #define random_get_entropy	random_get_entropy
 

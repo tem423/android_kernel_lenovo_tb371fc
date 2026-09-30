@@ -94,7 +94,13 @@ static int lz4_compress_crypto(struct crypto_tfm *tfm, const u8 *src,
 static int __lz4_decompress_crypto(const u8 *src, unsigned int slen,
 				   u8 *dst, unsigned int *dlen, void *ctx)
 {
+<<<<<<< HEAD
 	int out_len = LZ4_decompress_safe(src, dst, slen, *dlen);
+=======
+	int out_len;
+
+	out_len = LZ4_decompress_safe(src, dst, slen, *dlen);
+>>>>>>> origin/4.19.325
 
 	if (out_len < 0)
 		return -EINVAL;
@@ -170,4 +176,8 @@ module_exit(lz4_mod_fini);
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("LZ4 Compression Algorithm");
+<<<<<<< HEAD
 MODULE_ALIAS_CRYPTO("lz4");
+=======
+MODULE_ALIAS_CRYPTO("lz4");
+>>>>>>> origin/4.19.325

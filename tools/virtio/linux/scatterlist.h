@@ -2,6 +2,10 @@
 #ifndef SCATTERLIST_H
 #define SCATTERLIST_H
 #include <linux/kernel.h>
+<<<<<<< HEAD
+=======
+#include <linux/bug.h>
+>>>>>>> origin/4.19.325
 
 struct scatterlist {
 	unsigned long	page_link;

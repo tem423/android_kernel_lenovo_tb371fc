@@ -18,6 +18,10 @@
 #include <linux/smp.h>
 #include <linux/atomic.h>
 #include <asm/pgalloc.h>
+<<<<<<< HEAD
+=======
+#include <asm/processor.h>
+>>>>>>> origin/4.19.325
 #include <asm/smp.h>
 #include <asm/bl_bit.h>
 

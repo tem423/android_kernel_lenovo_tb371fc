@@ -13,7 +13,10 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+<<<<<<< HEAD
 #define _GNU_SOURCE
+=======
+>>>>>>> origin/4.19.325
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <sys/types.h>

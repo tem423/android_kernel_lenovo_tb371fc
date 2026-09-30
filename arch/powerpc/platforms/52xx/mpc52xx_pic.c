@@ -340,7 +340,11 @@ static int mpc52xx_irqhost_map(struct irq_domain *h, unsigned int virq,
 {
 	int l1irq;
 	int l2irq;
+<<<<<<< HEAD
 	struct irq_chip *uninitialized_var(irqchip);
+=======
+	struct irq_chip *irqchip;
+>>>>>>> origin/4.19.325
 	void *hndlr;
 	int type;
 	u32 reg;

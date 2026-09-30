@@ -47,7 +47,11 @@ CHECKFLAGS      += -D__NDS32_EB__
 endif
 
 boot := arch/nds32/boot
+<<<<<<< HEAD
 core-$(BUILTIN_DTB) += $(boot)/dts/
+=======
+core-y += $(boot)/dts/
+>>>>>>> origin/4.19.325
 
 .PHONY: FORCE
 

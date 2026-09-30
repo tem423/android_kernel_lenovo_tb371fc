@@ -21,7 +21,11 @@ CFLAGS_physaddr.o		:= $(nostackp)
 CFLAGS_setup_nx.o		:= $(nostackp)
 CFLAGS_mem_encrypt_identity.o	:= $(nostackp)
 
+<<<<<<< HEAD
 CFLAGS_fault.o := -I$(src)/../include/asm/trace
+=======
+CFLAGS_fault.o := -I $(srctree)/$(src)/../include/asm/trace
+>>>>>>> origin/4.19.325
 
 obj-$(CONFIG_X86_PAT)		+= pat_rbtree.o
 

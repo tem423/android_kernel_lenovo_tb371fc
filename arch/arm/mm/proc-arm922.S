@@ -426,7 +426,11 @@ arm922_crval:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/4.19.325
 
 	.type	__arm922_proc_info,#object
 __arm922_proc_info:

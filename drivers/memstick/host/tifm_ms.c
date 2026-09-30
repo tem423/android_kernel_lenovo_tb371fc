@@ -200,7 +200,11 @@ static unsigned int tifm_ms_transfer_data(struct tifm_ms *host)
 		host->block_pos);
 
 	while (length) {
+<<<<<<< HEAD
 		unsigned int uninitialized_var(p_off);
+=======
+		unsigned int p_off;
+>>>>>>> origin/4.19.325
 
 		if (host->req->long_data) {
 			pg = nth_page(sg_page(&host->req->sg),

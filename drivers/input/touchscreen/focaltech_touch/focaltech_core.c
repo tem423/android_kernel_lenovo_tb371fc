@@ -1693,10 +1693,13 @@ static int fts_ts_resume(struct device *dev)
 *****************************************************************************/
 static int fts_ts_check_dt(struct device_node *np)
 {
+<<<<<<< HEAD
 	/* V27O: do not hard-fail probe when the DRM panel is not registered
 	 * yet; the old -ENODEV path permanently killed touch on this device. */
 	return 0;
 
+=======
+>>>>>>> origin/4.19.325
 	int i;
 	int count;
 	struct device_node *node;

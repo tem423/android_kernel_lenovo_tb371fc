@@ -411,6 +411,10 @@ static const struct of_device_id sti_sas_dev_match[] = {
 	},
 	{},
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(of, sti_sas_dev_match);
+>>>>>>> origin/4.19.325
 
 static int sti_sas_driver_probe(struct platform_device *pdev)
 {

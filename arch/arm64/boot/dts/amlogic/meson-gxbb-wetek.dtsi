@@ -6,6 +6,10 @@
  */
 
 #include "meson-gxbb.dtsi"
+<<<<<<< HEAD
+=======
+#include <dt-bindings/gpio/gpio.h>
+>>>>>>> origin/4.19.325
 
 / {
 	aliases {

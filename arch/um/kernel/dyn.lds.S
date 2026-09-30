@@ -6,6 +6,15 @@ OUTPUT_ARCH(ELF_ARCH)
 ENTRY(_start)
 jiffies = jiffies_64;
 
+<<<<<<< HEAD
+=======
+VERSION {
+  {
+    local: *;
+  };
+}
+
+>>>>>>> origin/4.19.325
 SECTIONS
 {
   PROVIDE (__executable_start = START);

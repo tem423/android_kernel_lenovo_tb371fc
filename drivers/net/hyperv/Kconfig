@@ -2,5 +2,9 @@ config HYPERV_NET
 	tristate "Microsoft Hyper-V virtual network driver"
 	depends on HYPERV
 	select UCS2_STRING
+<<<<<<< HEAD
+=======
+	select NLS
+>>>>>>> origin/4.19.325
 	help
 	  Select this option to enable the Hyper-V virtual network driver.

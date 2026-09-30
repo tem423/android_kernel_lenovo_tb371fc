@@ -133,6 +133,13 @@ static int holtek_kbd_input_event(struct input_dev *dev, unsigned int type,
 		return -ENODEV;
 
 	boot_hid = usb_get_intfdata(boot_interface);
+<<<<<<< HEAD
+=======
+	if (list_empty(&boot_hid->inputs)) {
+		hid_err(hid, "no inputs found\n");
+		return -ENODEV;
+	}
+>>>>>>> origin/4.19.325
 	boot_hid_input = list_first_entry(&boot_hid->inputs,
 		struct hid_input, list);
 

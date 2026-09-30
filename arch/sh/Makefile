@@ -191,8 +191,13 @@ cpuincdir-y			+= cpu-common	# Must be last
 drivers-y			+= arch/sh/drivers/
 drivers-$(CONFIG_OPROFILE)	+= arch/sh/oprofile/
 
+<<<<<<< HEAD
 cflags-y	+= $(foreach d, $(cpuincdir-y), -Iarch/sh/include/$(d)) \
 		   $(foreach d, $(machdir-y), -Iarch/sh/include/$(d))
+=======
+cflags-y	+= $(foreach d, $(cpuincdir-y), -I $(srctree)/arch/sh/include/$(d)) \
+		   $(foreach d, $(machdir-y), -I $(srctree)/arch/sh/include/$(d))
+>>>>>>> origin/4.19.325
 
 KBUILD_CFLAGS		+= -pipe $(cflags-y)
 KBUILD_CPPFLAGS		+= $(cflags-y)

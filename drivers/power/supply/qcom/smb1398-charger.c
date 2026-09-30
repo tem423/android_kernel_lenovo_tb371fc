@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021 The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+>>>>>>> origin/4.19.325
  */
 
 #define pr_fmt(fmt) "SMB1398: %s: " fmt, __func__
@@ -248,7 +251,10 @@
 #define COMBO_PRE_REGULATOR		2
 #define SMB1394_DIV2_CP_PRY		3
 #define SMB1394_DIV2_CP_SECY		4
+<<<<<<< HEAD
 #define SMB1398_MAX_IIN			5000
+=======
+>>>>>>> origin/4.19.325
 
 #define IS_SMB1394(role) \
 	(role == SMB1394_DIV2_CP_PRY || role == SMB1394_DIV2_CP_SECY)
@@ -369,6 +375,10 @@ struct smb1398_chip {
 	bool			usb_present;
 };
 
+<<<<<<< HEAD
+=======
+extern register_hardware_info(const char *name, const char *model);
+>>>>>>> origin/4.19.325
 static int smb1398_read(struct smb1398_chip *chip, u16 reg, u8 *val)
 {
 	int rc = 0, value = 0;
@@ -442,9 +452,12 @@ static int smb1398_set_iin_ma(struct smb1398_chip *chip, int iin_ma)
 	int rc = 0;
 	u8 val;
 
+<<<<<<< HEAD
 	if (iin_ma > SMB1398_MAX_IIN)
 		iin_ma = SMB1398_MAX_IIN;
 
+=======
+>>>>>>> origin/4.19.325
 	val = iin_ma / IIN_STEP_MA;
 	rc = smb1398_masked_write(chip, IIN_SS_DAC_TARGET_REG,
 			IIN_SS_DAC_VALUE_MASK, val);
@@ -2268,6 +2281,10 @@ static int smb1398_div2_cp_master_probe(struct smb1398_chip *chip)
 				rc);
 		return rc;
 	}
+<<<<<<< HEAD
+=======
+	register_hardware_info("charge-pump", "charge-pump-master");
+>>>>>>> origin/4.19.325
 	dev_dbg(chip->dev, "smb1398 DIV2_CP master is probed successfully\n");
 
 	return 0;
@@ -2497,6 +2514,10 @@ static int smb1398_div2_cp_slave_probe(struct smb1398_chip *chip)
 				rc);
 		return rc;
 	}
+<<<<<<< HEAD
+=======
+	register_hardware_info("charge-pump", "charge-pump-slave");
+>>>>>>> origin/4.19.325
 	dev_dbg(chip->dev, "smb1398 DIV2_CP slave probe successfully\n");
 
 	return 0;

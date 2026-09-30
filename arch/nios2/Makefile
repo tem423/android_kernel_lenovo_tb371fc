@@ -58,12 +58,15 @@ all: vmImage
 archclean:
 	$(Q)$(MAKE) $(clean)=$(nios2-boot)
 
+<<<<<<< HEAD
 %.dtb: | scripts
 	$(Q)$(MAKE) $(build)=$(nios2-boot) $(nios2-boot)/$@
 
 dtbs:
 	$(Q)$(MAKE) $(build)=$(nios2-boot) $(nios2-boot)/$@
 
+=======
+>>>>>>> origin/4.19.325
 $(BOOT_TARGETS): vmlinux
 	$(Q)$(MAKE) $(build)=$(nios2-boot) $(nios2-boot)/$@
 
@@ -76,5 +79,8 @@ define archhelp
   echo  '                     (your) ~/bin/$(INSTALLKERNEL) or'
   echo  '                     (distribution) /sbin/$(INSTALLKERNEL) or'
   echo  '                     install to $$(INSTALL_PATH)'
+<<<<<<< HEAD
   echo  '  dtbs            - Build device tree blobs for enabled boards'
+=======
+>>>>>>> origin/4.19.325
 endef

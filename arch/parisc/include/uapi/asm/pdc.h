@@ -443,6 +443,10 @@ struct pdc_model {		/* for PDC_MODEL */
 	unsigned long arch_rev;
 	unsigned long pot_key;
 	unsigned long curr_key;
+<<<<<<< HEAD
+=======
+	unsigned long width;	/* default of PSW_W bit (1=enabled) */
+>>>>>>> origin/4.19.325
 };
 
 struct pdc_cache_cf {		/* for PDC_CACHE  (I/D-caches) */

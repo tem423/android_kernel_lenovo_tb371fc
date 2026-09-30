@@ -18,7 +18,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM hid
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/hid
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE hid-trace
 

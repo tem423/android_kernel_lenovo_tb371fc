@@ -2880,8 +2880,15 @@ static int __maybe_unused marvell_nfc_resume(struct device *dev)
 		return ret;
 
 	ret = clk_prepare_enable(nfc->reg_clk);
+<<<<<<< HEAD
 	if (ret < 0)
 		return ret;
+=======
+	if (ret < 0) {
+		clk_disable_unprepare(nfc->core_clk);
+		return ret;
+	}
+>>>>>>> origin/4.19.325
 
 	/*
 	 * Reset nfc->selected_chip so the next command will cause the timing

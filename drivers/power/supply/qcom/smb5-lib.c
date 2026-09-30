@@ -23,6 +23,10 @@
 #include "storm-watch.h"
 #include "schgm-flash.h"
 #include "lenovo-jeita.h"
+<<<<<<< HEAD
+=======
+#include "mm8013c06_battery.h"
+>>>>>>> origin/4.19.325
 
 extern int boost_en;
 
@@ -47,7 +51,11 @@ extern int boost_en;
 
 static void update_sw_icl_max(struct smb_charger *chg, int pst);
 static int smblib_get_prop_typec_mode(struct smb_charger *chg);
+<<<<<<< HEAD
 extern int usb_is_plugin(bool enabled);
+=======
+//extern int usb_is_plugin(bool enabled);
+>>>>>>> origin/4.19.325
 bool usb_in;
 int usb_status = 0;
 u8 typec_stat = 0;
@@ -982,6 +990,7 @@ int smblib_get_prop_from_bms(struct smb_charger *chg,
 {
 	int rc;
 
+<<<<<<< HEAD
 	if (!chg->bms_psy) {
 		/* V27N: fg-gen4 not probed on public tree. Fake sane battery values
 		 * so ZUI battery-safety (temp/level) does not power the device off. */
@@ -1002,6 +1011,10 @@ int smblib_get_prop_from_bms(struct smb_charger *chg,
 			return -EINVAL;
 		}
 	}
+=======
+	if (!chg->bms_psy)
+		return -EINVAL;
+>>>>>>> origin/4.19.325
 
 	rc = power_supply_get_property(chg->bms_psy, psp, val);
 
@@ -1014,6 +1027,7 @@ int smblib_get_prop_from_exfg(struct smb_charger *chg,
 	int rc;
 
 	if (!chg->exfg_psy){
+<<<<<<< HEAD
 		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
 		if(!chg->exfg_psy){
 			if (!chg->bms_psy) {
@@ -1029,6 +1043,11 @@ int smblib_get_prop_from_exfg(struct smb_charger *chg,
 					return 0;
 				}
 			}
+=======
+		chg->exfg_psy = power_supply_get_by_name("bms");
+		if(!chg->exfg_psy){
+			smblib_err(chg, "exfg not found\n");
+>>>>>>> origin/4.19.325
 			rc = power_supply_get_property(chg->bms_psy, psp, val);
 
 			return rc;
@@ -3419,12 +3438,38 @@ int smblib_get_prop_usb_online(struct smb_charger *chg,
 	int rc = 0;
 	u8 stat;
 
+<<<<<<< HEAD
 	/* p124: report VBUS presence for ONLINE. Tying ONLINE to the
 	 * input-suspend vote made the Lenovo battery HAL see "charger
 	 * gone" during a suspend hold, cancel the suspend, see the
 	 * charger again, re-suspend ... in a ~30ms feedback loop
 	 * (ICL vote storm + load ~22 + status/saver flapping). */
 	return smblib_get_prop_usb_present(chg, val);
+=======
+	if (get_client_vote_locked(chg->usb_icl_votable, USER_VOTER) == 0) {
+		val->intval = false;
+		return rc;
+	}
+
+	if (is_client_vote_enabled_locked(chg->usb_icl_votable,
+					CHG_TERMINATION_VOTER)) {
+		rc = smblib_get_prop_usb_present(chg, val);
+		return rc;
+	}
+
+	rc = smblib_read(chg, POWER_PATH_STATUS_REG, &stat);
+	if (rc < 0) {
+		smblib_err(chg, "Couldn't read POWER_PATH_STATUS rc=%d\n",
+			rc);
+		return rc;
+	}
+	smblib_dbg(chg, PR_REGISTER, "POWER_PATH_STATUS = 0x%02x\n",
+		   stat);
+
+	val->intval = (stat & USE_USBIN_BIT) &&
+		      (stat & VALID_INPUT_POWER_SOURCE_STS_BIT);
+	return rc;
+>>>>>>> origin/4.19.325
 }
 
 int smblib_get_usb_online(struct smb_charger *chg,
@@ -7639,10 +7684,17 @@ static void smblib_usb_plugin_work(struct work_struct *work)
 	smblib_err(chg,"enter usb_plugin_work\n");
 	if (usb_in) {
 		smblib_err(chg, "usb is plugin\n");
+<<<<<<< HEAD
 		usb_is_plugin(true);
 	} else {
 		smblib_err(chg, "usb is plugout\n");
 		usb_is_plugin(false);
+=======
+		//usb_is_plugin(true);
+	} else {
+		smblib_err(chg, "usb is plugout\n");
+		//usb_is_plugin(false);
+>>>>>>> origin/4.19.325
 	}
 }
 
@@ -8381,6 +8433,7 @@ static void smblib_iio_deinit(struct smb_charger *chg)
 		iio_channel_release(chg->iio.smb_temp_chan);
 }
 
+<<<<<<< HEAD
 
 /* Lenovo TB371FC vendor battery HAL ABI shim.
  * vendor.lenovo.hardware.battery@2.0-service expects
@@ -8520,6 +8573,8 @@ static void lenovo_battery_abi_attach(struct work_struct *work)
 				msecs_to_jiffies(1000));
 }
 
+=======
+>>>>>>> origin/4.19.325
 int smblib_init(struct smb_charger *chg)
 {
 	union power_supply_propval prop_val;
@@ -8637,7 +8692,11 @@ int smblib_init(struct smb_charger *chg)
 		}
 
 		chg->bms_psy = power_supply_get_by_name("bms");
+<<<<<<< HEAD
 		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
+=======
+		chg->exfg_psy = power_supply_get_by_name("bms");
+>>>>>>> origin/4.19.325
 		if (chg->sec_pl_present) {
 			chg->pl.psy = power_supply_get_by_name("parallel");
 			if (chg->pl.psy) {
@@ -8691,12 +8750,15 @@ int smblib_init(struct smb_charger *chg)
 	if (!chg->pd_ws)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	if (!lenovo_battery_abi_attached) {
 		lenovo_battery_abi_attached = 1;
 		schedule_delayed_work(&lenovo_battery_abi_work,
 				msecs_to_jiffies(1000));
 	}
 
+=======
+>>>>>>> origin/4.19.325
 	return rc;
 }
 

@@ -290,7 +290,10 @@ EXPORT_SYMBOL(drm_connector_init);
 
 /**
  * drm_connector_attach_edid_property - attach edid property.
+<<<<<<< HEAD
  * @dev: DRM device
+=======
+>>>>>>> origin/4.19.325
  * @connector: the connector
  *
  * Some connector types like DRM_MODE_CONNECTOR_VIRTUAL do not get a
@@ -429,6 +432,12 @@ void drm_connector_cleanup(struct drm_connector *connector)
 	mutex_destroy(&connector->mutex);
 
 	memset(connector, 0, sizeof(*connector));
+<<<<<<< HEAD
+=======
+
+	if (dev->registered)
+		drm_sysfs_hotplug_event(dev);
+>>>>>>> origin/4.19.325
 }
 EXPORT_SYMBOL(drm_connector_cleanup);
 

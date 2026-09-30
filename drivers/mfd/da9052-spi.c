@@ -42,7 +42,11 @@ static int da9052_spi_probe(struct spi_device *spi)
 	spi_set_drvdata(spi, da9052);
 
 	config = da9052_regmap_config;
+<<<<<<< HEAD
 	config.read_flag_mask = 1;
+=======
+	config.write_flag_mask = 1;
+>>>>>>> origin/4.19.325
 	config.reg_bits = 7;
 	config.pad_bits = 1;
 	config.val_bits = 8;

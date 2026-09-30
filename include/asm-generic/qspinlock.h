@@ -47,7 +47,11 @@ static __always_inline int queued_spin_is_locked(struct qspinlock *lock)
  */
 static __always_inline int queued_spin_value_unlocked(struct qspinlock lock)
 {
+<<<<<<< HEAD
 	return !atomic_read(&lock.val);
+=======
+	return !lock.val.counter;
+>>>>>>> origin/4.19.325
 }
 
 /**

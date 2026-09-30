@@ -262,9 +262,15 @@ static __init int vdso_setup(char *s)
 	unsigned long val;
 
 	err = kstrtoul(s, 10, &val);
+<<<<<<< HEAD
 	if (err)
 		return err;
 	vdso_enabled = val;
 	return 0;
+=======
+	if (!err)
+		vdso_enabled = val;
+	return 1;
+>>>>>>> origin/4.19.325
 }
 __setup("vdso=", vdso_setup);

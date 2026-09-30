@@ -131,7 +131,11 @@ TRACE_EVENT(hyp_assign_end,
 #endif /* _TRACE_SECURE_BUFFER_H */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/soc/qcom
+=======
+#define TRACE_INCLUDE_PATH ../../drivers/soc/qcom/
+>>>>>>> origin/4.19.325
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace_secure_buffer

@@ -152,9 +152,16 @@ static void __veth_xdp_flush(struct veth_rq *rq)
 {
 	/* Write ptr_ring before reading rx_notify_masked */
 	smp_mb();
+<<<<<<< HEAD
 	if (!rq->rx_notify_masked) {
 		rq->rx_notify_masked = true;
 		napi_schedule(&rq->xdp_napi);
+=======
+	if (!READ_ONCE(rq->rx_notify_masked) &&
+	    napi_schedule_prep(&rq->xdp_napi)) {
+		WRITE_ONCE(rq->rx_notify_masked, true);
+		__napi_schedule(&rq->xdp_napi);
+>>>>>>> origin/4.19.325
 	}
 }
 
@@ -180,6 +187,10 @@ static netdev_tx_t veth_xmit(struct sk_buff *skb, struct net_device *dev)
 {
 	struct veth_priv *rcv_priv, *priv = netdev_priv(dev);
 	struct veth_rq *rq = NULL;
+<<<<<<< HEAD
+=======
+	int ret = NETDEV_TX_OK;
+>>>>>>> origin/4.19.325
 	struct net_device *rcv;
 	int length = skb->len;
 	bool rcv_xdp = false;
@@ -187,7 +198,11 @@ static netdev_tx_t veth_xmit(struct sk_buff *skb, struct net_device *dev)
 
 	rcu_read_lock();
 	rcv = rcu_dereference(priv->peer);
+<<<<<<< HEAD
 	if (unlikely(!rcv)) {
+=======
+	if (unlikely(!rcv) || !pskb_may_pull(skb, ETH_HLEN)) {
+>>>>>>> origin/4.19.325
 		kfree_skb(skb);
 		goto drop;
 	}
@@ -197,8 +212,11 @@ static netdev_tx_t veth_xmit(struct sk_buff *skb, struct net_device *dev)
 	if (rxq < rcv->real_num_rx_queues) {
 		rq = &rcv_priv->rq[rxq];
 		rcv_xdp = rcu_access_pointer(rq->xdp_prog);
+<<<<<<< HEAD
 		if (rcv_xdp)
 			skb_record_rx_queue(skb, rxq);
+=======
+>>>>>>> origin/4.19.325
 	}
 
 	if (likely(veth_forward_skb(rcv, skb, rq, rcv_xdp) == NET_RX_SUCCESS)) {
@@ -211,6 +229,10 @@ static netdev_tx_t veth_xmit(struct sk_buff *skb, struct net_device *dev)
 	} else {
 drop:
 		atomic64_inc(&priv->dropped);
+<<<<<<< HEAD
+=======
+		ret = NET_XMIT_DROP;
+>>>>>>> origin/4.19.325
 	}
 
 	if (rcv_xdp)
@@ -218,7 +240,11 @@ drop:
 
 	rcu_read_unlock();
 
+<<<<<<< HEAD
 	return NETDEV_TX_OK;
+=======
+	return ret;
+>>>>>>> origin/4.19.325
 }
 
 static u64 veth_stats_one(struct pcpu_vstats *result, struct net_device *dev)
@@ -625,8 +651,15 @@ static int veth_poll(struct napi_struct *napi, int budget)
 		/* Write rx_notify_masked before reading ptr_ring */
 		smp_store_mb(rq->rx_notify_masked, false);
 		if (unlikely(!__ptr_ring_empty(&rq->xdp_ring))) {
+<<<<<<< HEAD
 			rq->rx_notify_masked = true;
 			napi_schedule(&rq->xdp_napi);
+=======
+			if (napi_schedule_prep(&rq->xdp_napi)) {
+				WRITE_ONCE(rq->rx_notify_masked, true);
+				__napi_schedule(&rq->xdp_napi);
+			}
+>>>>>>> origin/4.19.325
 		}
 	}
 

@@ -81,6 +81,10 @@ static void __init meson_smp_prepare_cpus(const char *scu_compatible,
 	}
 
 	sram_base = of_iomap(node, 0);
+<<<<<<< HEAD
+=======
+	of_node_put(node);
+>>>>>>> origin/4.19.325
 	if (!sram_base) {
 		pr_err("Couldn't map SRAM registers\n");
 		return;
@@ -101,6 +105,10 @@ static void __init meson_smp_prepare_cpus(const char *scu_compatible,
 	}
 
 	scu_base = of_iomap(node, 0);
+<<<<<<< HEAD
+=======
+	of_node_put(node);
+>>>>>>> origin/4.19.325
 	if (!scu_base) {
 		pr_err("Couldn't map SCU registers\n");
 		return;

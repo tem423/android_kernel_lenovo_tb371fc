@@ -418,7 +418,11 @@ struct bna_ib {
 /* Tx object */
 
 /* Tx datapath control structure */
+<<<<<<< HEAD
 #define BNA_Q_NAME_SIZE		16
+=======
+#define BNA_Q_NAME_SIZE		(IFNAMSIZ + 6)
+>>>>>>> origin/4.19.325
 struct bna_tcb {
 	/* Fast path */
 	void			**sw_qpt;

@@ -119,7 +119,11 @@ int __of_attach_node_sysfs(struct device_node *np)
 	struct property *pp;
 	int rc;
 
+<<<<<<< HEAD
 	if (!of_kset)
+=======
+	if (!IS_ENABLED(CONFIG_SYSFS) || !of_kset)
+>>>>>>> origin/4.19.325
 		return 0;
 
 	np->kobj.kset = of_kset;

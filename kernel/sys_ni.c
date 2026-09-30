@@ -255,6 +255,10 @@ COND_SYSCALL_COMPAT(keyctl);
 
 /* mm/fadvise.c */
 COND_SYSCALL(fadvise64_64);
+<<<<<<< HEAD
+=======
+COND_SYSCALL_COMPAT(fadvise64_64);
+>>>>>>> origin/4.19.325
 
 /* mm/, CONFIG_MMU only */
 COND_SYSCALL(swapon);

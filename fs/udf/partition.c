@@ -65,7 +65,11 @@ uint32_t udf_get_pblock_virt15(struct super_block *sb, uint32_t block,
 	}
 
 	if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB) {
+<<<<<<< HEAD
 		loc = le32_to_cpu(((__le32 *)(iinfo->i_ext.i_data +
+=======
+		loc = le32_to_cpu(((__le32 *)(iinfo->i_data +
+>>>>>>> origin/4.19.325
 			vdata->s_start_offset))[block]);
 		goto translate;
 	}

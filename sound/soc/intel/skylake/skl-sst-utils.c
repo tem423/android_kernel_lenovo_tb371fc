@@ -317,6 +317,10 @@ int snd_skl_parse_uuids(struct sst_dsp *ctx, const struct firmware *fw,
 		module->instance_id = devm_kzalloc(ctx->dev, size, GFP_KERNEL);
 		if (!module->instance_id) {
 			ret = -ENOMEM;
+<<<<<<< HEAD
+=======
+			kfree(module);
+>>>>>>> origin/4.19.325
 			goto free_uuid_list;
 		}
 

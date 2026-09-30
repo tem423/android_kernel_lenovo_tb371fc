@@ -199,7 +199,11 @@ sa110_crval:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/4.19.325
 
 	.type	__sa110_proc_info,#object
 __sa110_proc_info:

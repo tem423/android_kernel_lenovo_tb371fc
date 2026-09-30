@@ -39,6 +39,10 @@ get_cycles (void)
 	ret = ia64_getreg(_IA64_REG_AR_ITC);
 	return ret;
 }
+<<<<<<< HEAD
+=======
+#define get_cycles get_cycles
+>>>>>>> origin/4.19.325
 
 extern void ia64_cpu_local_tick (void);
 extern unsigned long long ia64_native_sched_clock (void);

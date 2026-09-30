@@ -92,6 +92,11 @@ SECTIONS
 		CPUIDLE_TEXT
 		LOCK_TEXT
 		KPROBES_TEXT
+<<<<<<< HEAD
+=======
+		IRQENTRY_TEXT
+		SOFTIRQENTRY_TEXT
+>>>>>>> origin/4.19.325
 		*(.fixup)
 		*(.gnu.warning)
 	}

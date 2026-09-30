@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
  *
@@ -16,6 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *                                                                   USA
+=======
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
+>>>>>>> origin/4.19.325
  */
 %{
 #include <stdio.h>
@@ -70,7 +76,12 @@ extern bool treesource_error;
 %token <byte> DT_BYTE
 %token <data> DT_STRING
 %token <labelref> DT_LABEL
+<<<<<<< HEAD
 %token <labelref> DT_REF
+=======
+%token <labelref> DT_LABEL_REF
+%token <labelref> DT_PATH_REF
+>>>>>>> origin/4.19.325
 %token DT_INCBIN
 
 %type <data> propdata
@@ -83,6 +94,10 @@ extern bool treesource_error;
 %type <data> bytestring
 %type <prop> propdef
 %type <proplist> proplist
+<<<<<<< HEAD
+=======
+%type <labelref> dt_ref
+>>>>>>> origin/4.19.325
 
 %type <node> devicetree
 %type <node> nodedef
@@ -158,6 +173,11 @@ memreserve:
 		}
 	;
 
+<<<<<<< HEAD
+=======
+dt_ref: DT_LABEL_REF | DT_PATH_REF;
+
+>>>>>>> origin/4.19.325
 devicetree:
 	  '/' nodedef
 		{
@@ -167,7 +187,11 @@ devicetree:
 		{
 			$$ = merge_nodes($1, $3);
 		}
+<<<<<<< HEAD
 	| DT_REF nodedef
+=======
+	| dt_ref nodedef
+>>>>>>> origin/4.19.325
 		{
 			/*
 			 * We rely on the rule being always:
@@ -176,9 +200,18 @@ devicetree:
 			 */
 			if (!($<flags>-1 & DTSF_PLUGIN))
 				ERROR(&@2, "Label or path %s not found", $1);
+<<<<<<< HEAD
 			$$ = add_orphan_node(name_node(build_node(NULL, NULL), ""), $2, $1);
 		}
 	| devicetree DT_LABEL DT_REF nodedef
+=======
+			$$ = add_orphan_node(
+					name_node(build_node(NULL, NULL, NULL),
+						  ""),
+					$2, $1);
+		}
+	| devicetree DT_LABEL dt_ref nodedef
+>>>>>>> origin/4.19.325
 		{
 			struct node *target = get_node_by_ref($1, $3);
 
@@ -189,7 +222,11 @@ devicetree:
 				ERROR(&@3, "Label or path %s not found", $3);
 			$$ = $1;
 		}
+<<<<<<< HEAD
 	| devicetree DT_REF nodedef
+=======
+	| devicetree DT_PATH_REF nodedef
+>>>>>>> origin/4.19.325
 		{
 			/*
 			 * We rely on the rule being always:
@@ -208,7 +245,30 @@ devicetree:
 			}
 			$$ = $1;
 		}
+<<<<<<< HEAD
 	| devicetree DT_DEL_NODE DT_REF ';'
+=======
+	| devicetree DT_LABEL_REF nodedef
+		{
+			struct node *target = get_node_by_ref($1, $2);
+
+			if (target) {
+				merge_nodes(target, $3);
+			} else {
+				/*
+				 * We rely on the rule being always:
+				 *   versioninfo plugindecl memreserves devicetree
+				 * so $-1 is what we want (plugindecl)
+				 */
+				if ($<flags>-1 & DTSF_PLUGIN)
+					add_orphan_node($1, $3, $2);
+				else
+					ERROR(&@2, "Label or path %s not found", $2);
+			}
+			$$ = $1;
+		}
+	| devicetree DT_DEL_NODE dt_ref ';'
+>>>>>>> origin/4.19.325
 		{
 			struct node *target = get_node_by_ref($1, $3);
 
@@ -220,7 +280,11 @@ devicetree:
 
 			$$ = $1;
 		}
+<<<<<<< HEAD
 	| devicetree DT_OMIT_NO_REF DT_REF ';'
+=======
+	| devicetree DT_OMIT_NO_REF dt_ref ';'
+>>>>>>> origin/4.19.325
 		{
 			struct node *target = get_node_by_ref($1, $3);
 
@@ -237,7 +301,11 @@ devicetree:
 nodedef:
 	  '{' proplist subnodes '}' ';'
 		{
+<<<<<<< HEAD
 			$$ = build_node($2, $3);
+=======
+			$$ = build_node($2, $3, &@$);
+>>>>>>> origin/4.19.325
 		}
 	;
 
@@ -255,11 +323,19 @@ proplist:
 propdef:
 	  DT_PROPNODENAME '=' propdata ';'
 		{
+<<<<<<< HEAD
 			$$ = build_property($1, $3);
 		}
 	| DT_PROPNODENAME ';'
 		{
 			$$ = build_property($1, empty_data);
+=======
+			$$ = build_property($1, $3, &@$);
+		}
+	| DT_PROPNODENAME ';'
+		{
+			$$ = build_property($1, empty_data, &@$);
+>>>>>>> origin/4.19.325
 		}
 	| DT_DEL_PROP DT_PROPNODENAME ';'
 		{
@@ -285,8 +361,14 @@ propdata:
 		{
 			$$ = data_merge($1, $3);
 		}
+<<<<<<< HEAD
 	| propdataprefix DT_REF
 		{
+=======
+	| propdataprefix dt_ref
+		{
+			$1 = data_add_marker($1, TYPE_STRING, $2);
+>>>>>>> origin/4.19.325
 			$$ = data_add_marker($1, REF_PATH, $2);
 		}
 	| propdataprefix DT_INCBIN '(' DT_STRING ',' integer_prim ',' integer_prim ')'
@@ -340,22 +422,43 @@ arrayprefix:
 	DT_BITS DT_LITERAL '<'
 		{
 			unsigned long long bits;
+<<<<<<< HEAD
 
 			bits = $2;
 
 			if ((bits !=  8) && (bits != 16) &&
 			    (bits != 32) && (bits != 64)) {
+=======
+			enum markertype type = TYPE_UINT32;
+
+			bits = $2;
+
+			switch (bits) {
+			case 8: type = TYPE_UINT8; break;
+			case 16: type = TYPE_UINT16; break;
+			case 32: type = TYPE_UINT32; break;
+			case 64: type = TYPE_UINT64; break;
+			default:
+>>>>>>> origin/4.19.325
 				ERROR(&@2, "Array elements must be"
 				      " 8, 16, 32 or 64-bits");
 				bits = 32;
 			}
 
+<<<<<<< HEAD
 			$$.data = empty_data;
+=======
+			$$.data = data_add_marker(empty_data, type, NULL);
+>>>>>>> origin/4.19.325
 			$$.bits = bits;
 		}
 	| '<'
 		{
+<<<<<<< HEAD
 			$$.data = empty_data;
+=======
+			$$.data = data_add_marker(empty_data, TYPE_UINT32, NULL);
+>>>>>>> origin/4.19.325
 			$$.bits = 32;
 		}
 	| arrayprefix integer_prim
@@ -377,7 +480,11 @@ arrayprefix:
 
 			$$.data = data_append_integer($1.data, $2, $1.bits);
 		}
+<<<<<<< HEAD
 	| arrayprefix DT_REF
+=======
+	| arrayprefix dt_ref
+>>>>>>> origin/4.19.325
 		{
 			uint64_t val = ~0ULL >> (64 - $1.bits);
 
@@ -499,7 +606,11 @@ integer_unary:
 bytestring:
 	  /* empty */
 		{
+<<<<<<< HEAD
 			$$ = empty_data;
+=======
+			$$ = data_add_marker(empty_data, TYPE_UINT8, NULL);
+>>>>>>> origin/4.19.325
 		}
 	| bytestring DT_BYTE
 		{
@@ -534,7 +645,11 @@ subnode:
 		}
 	| DT_DEL_NODE DT_PROPNODENAME ';'
 		{
+<<<<<<< HEAD
 			$$ = name_node(build_node_delete(), $2);
+=======
+			$$ = name_node(build_node_delete(&@$), $2);
+>>>>>>> origin/4.19.325
 		}
 	| DT_OMIT_NO_REF subnode
 		{

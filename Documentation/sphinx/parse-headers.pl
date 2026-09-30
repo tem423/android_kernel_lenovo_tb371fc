@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/usr/bin/perl
+=======
+#!/usr/bin/env perl
+>>>>>>> origin/4.19.325
 use strict;
 use Text::Tabs;
 use Getopt::Long;

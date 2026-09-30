@@ -31,7 +31,10 @@
 #include "asoc/wcd-mbhc-v2.h"
 #include "codecs/wcd938x/wcd938x-mbhc.h"
 #include "codecs/wsa881x.h"
+<<<<<<< HEAD
 #include "codecs/wsa883x/wsa883x.h"
+=======
+>>>>>>> origin/4.19.325
 #include "codecs/wcd938x/wcd938x.h"
 #include "codecs/wcd937x/wcd937x-mbhc.h"
 #include "codecs/wcd937x/wcd937x.h"
@@ -7826,6 +7829,7 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 	if (!strcmp(component->name_prefix, "SpkrLeft")) {
 		dev_dbg(component->dev, "%s: setting left ch map to codec %s\n",
 			__func__, component->name);
+<<<<<<< HEAD
 		if (strnstr(component->name, "wsa883x", sizeof(component->name)))
 			wsa883x_set_channel_map(component, &spkleft_ports[0],
 					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
@@ -7834,6 +7838,12 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 			wsa881x_set_channel_map(component, &spkleft_ports[0],
 					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
 					&ch_rate[0], &spkleft_port_types[0]);
+=======
+		/* 直接使用 wsa881x，不检查 wsa883x */
+		wsa881x_set_channel_map(component, &spkleft_ports[0],
+				WSA881X_MAX_SWR_PORTS, &ch_mask[0],
+				&ch_rate[0], &spkleft_port_types[0]);
+>>>>>>> origin/4.19.325
 		if (dapm->component) {
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft IN");
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft SPKR");
@@ -7841,6 +7851,7 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 	} else if (!strcmp(component->name_prefix, "SpkrRight")) {
 		dev_dbg(component->dev, "%s: setting right ch map to codec %s\n",
 			__func__, component->name);
+<<<<<<< HEAD
 		if (strnstr(component->name, "wsa883x", sizeof(component->name)))
 			wsa883x_set_channel_map(component, &spkright_ports[0],
 					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
@@ -7849,6 +7860,12 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 			wsa881x_set_channel_map(component, &spkright_ports[0],
 					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
 					&ch_rate[0], &spkright_port_types[0]);
+=======
+		/* 直接使用 wsa881x，不检查 wsa883x */
+		wsa881x_set_channel_map(component, &spkright_ports[0],
+				WSA881X_MAX_SWR_PORTS, &ch_mask[0],
+				&ch_rate[0], &spkright_port_types[0]);
+>>>>>>> origin/4.19.325
 		if (dapm->component) {
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrRight IN");
 			snd_soc_dapm_ignore_suspend(dapm, "SpkrRight SPKR");
@@ -7859,6 +7876,10 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 		ret = -EINVAL;
 		goto err;
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/4.19.325
 	pdata = snd_soc_card_get_drvdata(component->card);
 	if (!pdata->codec_root) {
 		entry = snd_info_create_subdir(card->module, "codecs",
@@ -7871,12 +7892,19 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 		}
 		pdata->codec_root = entry;
 	}
+<<<<<<< HEAD
 	if (strnstr(component->name, "wsa883x", sizeof(component->name)))
 		wsa883x_codec_info_create_codec_entry(pdata->codec_root,
 						      component);
 	else
 		wsa881x_codec_info_create_codec_entry(pdata->codec_root,
 						      component);
+=======
+
+	/* 直接使用 wsa881x，不检查 wsa883x */
+	wsa881x_codec_info_create_codec_entry(pdata->codec_root, component);
+
+>>>>>>> origin/4.19.325
 err:
 	return ret;
 }
@@ -8367,6 +8395,7 @@ static int msm_audio_ssr_register(struct device *dev)
 	return ret;
 }
 
+<<<<<<< HEAD
 static void parse_cps_configuration(struct platform_device *pdev,
 			struct msm_asoc_mach_data *pdata)
 {
@@ -8475,6 +8504,16 @@ static void parse_cps_configuration(struct platform_device *pdev,
 		}
 	}
 }
+=======
+#if 0
+static void parse_cps_configuration(struct platform_device *pdev,
+			struct msm_asoc_mach_data *pdata)
+{
+	/* CPS not supported for wsa881x, just return */
+	return;
+}
+#endif
+>>>>>>> origin/4.19.325
 
 static int msm_asoc_machine_probe(struct platform_device *pdev)
 {
@@ -8668,9 +8707,17 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 		atomic_set(&(pdata->mi2s_gpio_ref_count[index]), 0);
 	}
 
+<<<<<<< HEAD
 	/* parse cps configuration from dt */
 	if (of_property_read_bool(pdev->dev.of_node, "qcom,cps_reg_phy_addr"))
 		parse_cps_configuration(pdev, pdata);
+=======
+/* parse cps configuration from dt - disabled for wsa881x */
+#if 0
+if (of_property_read_bool(pdev->dev.of_node, "qcom,cps_reg_phy_addr"))
+	parse_cps_configuration(pdev, pdata);
+#endif
+>>>>>>> origin/4.19.325
 
 	/* Register LPASS audio hw vote */
 	lpass_audio_hw_vote = devm_clk_get(&pdev->dev, "lpass_audio_hw_vote");
@@ -8724,4 +8771,8 @@ module_platform_driver(kona_asoc_machine_driver);
 MODULE_DESCRIPTION("ALSA SoC msm");
 MODULE_LICENSE("GPL v2");
 MODULE_ALIAS("platform:" DRV_NAME);
+<<<<<<< HEAD
 MODULE_DEVICE_TABLE(of, kona_asoc_machine_of_match);
+=======
+MODULE_DEVICE_TABLE(of, kona_asoc_machine_of_match);
+>>>>>>> origin/4.19.325

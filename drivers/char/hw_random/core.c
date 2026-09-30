@@ -15,6 +15,10 @@
 #include <linux/err.h>
 #include <linux/fs.h>
 #include <linux/hw_random.h>
+<<<<<<< HEAD
+=======
+#include <linux/random.h>
+>>>>>>> origin/4.19.325
 #include <linux/kernel.h>
 #include <linux/kthread.h>
 #include <linux/sched/signal.h>
@@ -23,10 +27,19 @@
 #include <linux/random.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
+<<<<<<< HEAD
+=======
+#include <linux/string.h>
+>>>>>>> origin/4.19.325
 #include <linux/uaccess.h>
 
 #define RNG_MODULE_NAME		"hw_random"
 
+<<<<<<< HEAD
+=======
+#define RNG_BUFFER_SIZE (SMP_CACHE_BYTES < 32 ? 32 : SMP_CACHE_BYTES)
+
+>>>>>>> origin/4.19.325
 static struct hwrng *current_rng;
 /* the current rng has been explicitly chosen by user via sysfs */
 static int cur_rng_set_by_user;
@@ -58,7 +71,11 @@ static inline int rng_get_data(struct hwrng *rng, u8 *buffer, size_t size,
 
 static size_t rng_buffer_size(void)
 {
+<<<<<<< HEAD
 	return SMP_CACHE_BYTES < 32 ? 32 : SMP_CACHE_BYTES;
+=======
+	return RNG_BUFFER_SIZE;
+>>>>>>> origin/4.19.325
 }
 
 static void add_early_randomness(struct hwrng *rng)
@@ -201,6 +218,10 @@ static inline int rng_get_data(struct hwrng *rng, u8 *buffer, size_t size,
 static ssize_t rng_dev_read(struct file *filp, char __user *buf,
 			    size_t size, loff_t *offp)
 {
+<<<<<<< HEAD
+=======
+	u8 buffer[RNG_BUFFER_SIZE];
+>>>>>>> origin/4.19.325
 	ssize_t ret = 0;
 	int err = 0;
 	int bytes_read, len;
@@ -228,6 +249,7 @@ static ssize_t rng_dev_read(struct file *filp, char __user *buf,
 			if (bytes_read < 0) {
 				err = bytes_read;
 				goto out_unlock_reading;
+<<<<<<< HEAD
 			}
 			data_avail = bytes_read;
 		}
@@ -239,23 +261,51 @@ static ssize_t rng_dev_read(struct file *filp, char __user *buf,
 			}
 		} else {
 			len = data_avail;
+=======
+			} else if (bytes_read == 0 &&
+				   (filp->f_flags & O_NONBLOCK)) {
+				err = -EAGAIN;
+				goto out_unlock_reading;
+			}
+
+			data_avail = bytes_read;
+		}
+
+		len = data_avail;
+		if (len) {
+>>>>>>> origin/4.19.325
 			if (len > size)
 				len = size;
 
 			data_avail -= len;
 
+<<<<<<< HEAD
 			if (copy_to_user(buf + ret, rng_buffer + data_avail,
 								len)) {
 				err = -EFAULT;
 				goto out_unlock_reading;
+=======
+			memcpy(buffer, rng_buffer + data_avail, len);
+		}
+		mutex_unlock(&reading_mutex);
+		put_rng(rng);
+
+		if (len) {
+			if (copy_to_user(buf + ret, buffer, len)) {
+				err = -EFAULT;
+				goto out;
+>>>>>>> origin/4.19.325
 			}
 
 			size -= len;
 			ret += len;
 		}
 
+<<<<<<< HEAD
 		mutex_unlock(&reading_mutex);
 		put_rng(rng);
+=======
+>>>>>>> origin/4.19.325
 
 		if (need_resched())
 			schedule_timeout_interruptible(1);
@@ -266,6 +316,10 @@ static ssize_t rng_dev_read(struct file *filp, char __user *buf,
 		}
 	}
 out:
+<<<<<<< HEAD
+=======
+	memzero_explicit(buffer, sizeof(buffer));
+>>>>>>> origin/4.19.325
 	return ret ? : err;
 
 out_unlock_reading:

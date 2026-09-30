@@ -31,14 +31,19 @@ CROSS_COMPILE := $(call cc-cross-prefix, h8300-unknown-linux- h8300-linux-)
 endif
 
 core-y	+= arch/$(ARCH)/kernel/ arch/$(ARCH)/mm/
+<<<<<<< HEAD
 ifneq '$(CONFIG_H8300_BUILTIN_DTB)' '""'
 core-y += arch/h8300/boot/dts/
 endif
+=======
+core-y	+= arch/$(ARCH)/boot/dts/
+>>>>>>> origin/4.19.325
 
 libs-y	+= arch/$(ARCH)/lib/
 
 boot := arch/h8300/boot
 
+<<<<<<< HEAD
 %.dtb %.dtb.S %.dtb.o: | scripts
 	$(Q)$(MAKE) $(build)=arch/h8300/boot/dts arch/h8300/boot/dts/$@
 
@@ -46,6 +51,8 @@ PHONY += dtbs
 dtbs: scripts
 	$(Q)$(MAKE) $(build)=arch/h8300/boot/dts
 
+=======
+>>>>>>> origin/4.19.325
 archmrproper:
 
 archclean:

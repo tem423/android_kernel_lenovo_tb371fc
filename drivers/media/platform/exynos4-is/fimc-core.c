@@ -1255,7 +1255,11 @@ int __init fimc_register_driver(void)
 	return platform_driver_register(&fimc_driver);
 }
 
+<<<<<<< HEAD
 void __exit fimc_unregister_driver(void)
+=======
+void fimc_unregister_driver(void)
+>>>>>>> origin/4.19.325
 {
 	platform_driver_unregister(&fimc_driver);
 }

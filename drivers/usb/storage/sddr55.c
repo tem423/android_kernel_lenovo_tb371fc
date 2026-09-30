@@ -553,8 +553,13 @@ static int sddr55_reset(struct us_data *us)
 
 static unsigned long sddr55_get_capacity(struct us_data *us) {
 
+<<<<<<< HEAD
 	unsigned char uninitialized_var(manufacturerID);
 	unsigned char uninitialized_var(deviceID);
+=======
+	unsigned char manufacturerID;
+	unsigned char deviceID;
+>>>>>>> origin/4.19.325
 	int result;
 	struct sddr55_card_info *info = (struct sddr55_card_info *)us->extra;
 

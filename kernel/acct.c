@@ -331,6 +331,11 @@ static comp_t encode_comp_t(unsigned long value)
 		exp++;
 	}
 
+<<<<<<< HEAD
+=======
+	if (exp > (((comp_t) ~0U) >> MANTSIZE))
+		return (comp_t) ~0U;
+>>>>>>> origin/4.19.325
 	/*
 	 * Clean it up and polish it off.
 	 */

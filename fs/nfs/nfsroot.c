@@ -169,10 +169,17 @@ static int __init root_nfs_cat(char *dest, const char *src,
 	size_t len = strlen(dest);
 
 	if (len && dest[len - 1] != ',')
+<<<<<<< HEAD
 		if (strlcat(dest, ",", destlen) > destlen)
 			return -1;
 
 	if (strlcat(dest, src, destlen) > destlen)
+=======
+		if (strlcat(dest, ",", destlen) >= destlen)
+			return -1;
+
+	if (strlcat(dest, src, destlen) >= destlen)
+>>>>>>> origin/4.19.325
 		return -1;
 	return 0;
 }

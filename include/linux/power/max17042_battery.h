@@ -82,7 +82,11 @@ enum max17042_register {
 	MAX17042_RelaxCFG	= 0x2A,
 	MAX17042_MiscCFG	= 0x2B,
 	MAX17042_TGAIN		= 0x2C,
+<<<<<<< HEAD
 	MAx17042_TOFF		= 0x2D,
+=======
+	MAX17042_TOFF		= 0x2D,
+>>>>>>> origin/4.19.325
 	MAX17042_CGAIN		= 0x2E,
 	MAX17042_COFF		= 0x2F,
 

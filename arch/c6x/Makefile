@@ -40,9 +40,13 @@ boot := arch/$(ARCH)/boot
 DTB:=$(subst dtbImage.,,$(filter dtbImage.%, $(MAKECMDGOALS)))
 export DTB
 
+<<<<<<< HEAD
 ifneq ($(DTB),)
 core-y	+= $(boot)/dts/
 endif
+=======
+core-y	+= $(boot)/dts/
+>>>>>>> origin/4.19.325
 
 # With make 3.82 we cannot mix normal and wildcard targets
 

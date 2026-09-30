@@ -131,8 +131,12 @@ xchk_inode_flags(
 		goto bad;
 
 	/* rt flags require rt device */
+<<<<<<< HEAD
 	if ((flags & (XFS_DIFLAG_REALTIME | XFS_DIFLAG_RTINHERIT)) &&
 	    !mp->m_rtdev_targp)
+=======
+	if ((flags & XFS_DIFLAG_REALTIME) && !mp->m_rtdev_targp)
+>>>>>>> origin/4.19.325
 		goto bad;
 
 	/* new rt bitmap flag only valid for rbmino */

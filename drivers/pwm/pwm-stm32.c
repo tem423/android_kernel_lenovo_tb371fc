@@ -337,6 +337,12 @@ static int stm32_pwm_config(struct stm32_pwm *priv, int ch,
 
 	prd = div;
 
+<<<<<<< HEAD
+=======
+	if (!prd)
+		return -EINVAL;
+
+>>>>>>> origin/4.19.325
 	if (prescaler > MAX_TIM_PSC)
 		return -EINVAL;
 
@@ -448,8 +454,14 @@ static int stm32_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 
 	enabled = pwm->state.enabled;
 
+<<<<<<< HEAD
 	if (enabled && !state->enabled) {
 		stm32_pwm_disable(priv, pwm->hwpwm);
+=======
+	if (!state->enabled) {
+		if (enabled)
+			stm32_pwm_disable(priv, pwm->hwpwm);
+>>>>>>> origin/4.19.325
 		return 0;
 	}
 

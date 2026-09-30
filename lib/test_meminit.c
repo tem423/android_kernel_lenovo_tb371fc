@@ -337,6 +337,10 @@ static int __init do_kmem_cache_size_bulk(int size, int *total_failures)
 		if (num)
 			kmem_cache_free_bulk(c, num, objects);
 	}
+<<<<<<< HEAD
+=======
+	kmem_cache_destroy(c);
+>>>>>>> origin/4.19.325
 	*total_failures += fail;
 	return 1;
 }

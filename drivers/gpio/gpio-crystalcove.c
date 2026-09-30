@@ -99,7 +99,11 @@ static inline int to_reg(int gpio, enum ctrl_register reg_type)
 		case 0x5e:
 			return GPIOPANELCTL;
 		default:
+<<<<<<< HEAD
 			return -EOPNOTSUPP;
+=======
+			return -ENOTSUPP;
+>>>>>>> origin/4.19.325
 		}
 	}
 

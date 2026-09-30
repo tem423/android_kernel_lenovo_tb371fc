@@ -20,7 +20,11 @@ $(obj)/vmlinux.bin: vmlinux FORCE
 $(obj)/vmlinux.gz: $(obj)/vmlinux.bin FORCE
 	$(call if_changed,gzip)
 
+<<<<<<< HEAD
 $(obj)/vmImage: $(obj)/vmlinux.gz
+=======
+$(obj)/vmImage: $(obj)/vmlinux.gz FORCE
+>>>>>>> origin/4.19.325
 	$(call if_changed,uimage)
 	@$(kecho) 'Kernel: $@ is ready'
 
@@ -45,6 +49,7 @@ $(obj)/linked_dtb.o: $(obj)/system.dtb
 
 obj-$(CONFIG_NIOS2_DTB_SOURCE_BOOL) += linked_dtb.o
 
+<<<<<<< HEAD
 targets += $(dtb-y)
 
 # Rule to build device tree blobs with make command
@@ -53,5 +58,7 @@ $(obj)/%.dtb: $(src)/dts/%.dts FORCE
 
 $(obj)/dtbs: $(addprefix $(obj)/, $(dtb-y))
 
+=======
+>>>>>>> origin/4.19.325
 install:
 	sh $(srctree)/$(src)/install.sh $(KERNELRELEASE) $(BOOTIMAGE) System.map "$(INSTALL_PATH)"

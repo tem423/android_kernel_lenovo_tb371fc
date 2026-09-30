@@ -69,6 +69,10 @@ static int pxa2xx_flash_probe(struct platform_device *pdev)
 	if (!info->map.virt) {
 		printk(KERN_WARNING "Failed to ioremap %s\n",
 		       info->map.name);
+<<<<<<< HEAD
+=======
+		kfree(info);
+>>>>>>> origin/4.19.325
 		return -ENOMEM;
 	}
 	info->map.cached =
@@ -91,6 +95,10 @@ static int pxa2xx_flash_probe(struct platform_device *pdev)
 		iounmap((void *)info->map.virt);
 		if (info->map.cached)
 			iounmap(info->map.cached);
+<<<<<<< HEAD
+=======
+		kfree(info);
+>>>>>>> origin/4.19.325
 		return -EIO;
 	}
 	info->mtd->dev.parent = &pdev->dev;

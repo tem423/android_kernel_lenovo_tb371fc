@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * Copyright 2007 Jon Loeliger, Freescale Semiconductor, Inc.
  *
@@ -15,6 +16,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *                                                                   USA
+=======
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ * Copyright 2007 Jon Loeliger, Freescale Semiconductor, Inc.
+>>>>>>> origin/4.19.325
  */
 
 #ifndef SRCPOS_H
@@ -74,6 +80,10 @@ struct srcpos {
     int last_line;
     int last_column;
     struct srcfile_state *file;
+<<<<<<< HEAD
+=======
+    struct srcpos *next;
+>>>>>>> origin/4.19.325
 };
 
 #define YYLTYPE struct srcpos
@@ -93,6 +103,7 @@ struct srcpos {
 				YYRHSLOC(Rhs, 0).last_column;			\
 			(Current).file = YYRHSLOC (Rhs, 0).file;		\
 		}								\
+<<<<<<< HEAD
 	} while (0)
 
 
@@ -106,6 +117,20 @@ extern struct srcpos srcpos_empty;
 extern void srcpos_update(struct srcpos *pos, const char *text, int len);
 extern struct srcpos *srcpos_copy(struct srcpos *pos);
 extern char *srcpos_string(struct srcpos *pos);
+=======
+		(Current).next = NULL;						\
+	} while (0)
+
+
+extern void srcpos_update(struct srcpos *pos, const char *text, int len);
+extern struct srcpos *srcpos_copy(struct srcpos *pos);
+extern struct srcpos *srcpos_extend(struct srcpos *new_srcpos,
+				    struct srcpos *old_srcpos);
+extern char *srcpos_string(struct srcpos *pos);
+extern char *srcpos_string_first(struct srcpos *pos, int level);
+extern char *srcpos_string_last(struct srcpos *pos, int level);
+
+>>>>>>> origin/4.19.325
 
 extern void PRINTF(3, 0) srcpos_verror(struct srcpos *pos, const char *prefix,
 					const char *fmt, va_list va);

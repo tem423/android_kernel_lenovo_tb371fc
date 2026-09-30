@@ -1,7 +1,12 @@
+<<<<<<< HEAD
+=======
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+>>>>>>> origin/4.19.325
 /*
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2016 Free Electrons
  * Copyright (C) 2016 NextThing Co.
+<<<<<<< HEAD
  *
  * libfdt is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -48,6 +53,8 @@
  *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=======
+>>>>>>> origin/4.19.325
  */
 #include "libfdt_env.h"
 
@@ -93,11 +100,19 @@ static uint32_t overlay_get_target_phandle(const void *fdto, int fragment)
  * @pathp: pointer which receives the path of the target (or NULL)
  *
  * overlay_get_target() retrieves the target offset in the base
+<<<<<<< HEAD
  * device tree of a fragment, no matter how the actual targetting is
  * done (through a phandle or a path)
  *
  * returns:
  *      the targetted node offset in the base device tree
+=======
+ * device tree of a fragment, no matter how the actual targeting is
+ * done (through a phandle or a path)
+ *
+ * returns:
+ *      the targeted node offset in the base device tree
+>>>>>>> origin/4.19.325
  *      Negative error code on error
  */
 static int overlay_get_target(const void *fdt, const void *fdto,
@@ -697,7 +712,11 @@ static int get_path_len(const void *fdt, int nodeoffset)
 	int len = 0, namelen;
 	const char *name;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	for (;;) {
 		name = fdt_get_name(fdt, nodeoffset, &namelen);
@@ -863,11 +882,23 @@ static int overlay_symbol_update(void *fdt, void *fdto)
 
 int fdt_overlay_apply(void *fdt, void *fdto)
 {
+<<<<<<< HEAD
 	uint32_t delta = fdt_get_max_phandle(fdt);
 	int ret;
 
 	FDT_CHECK_HEADER(fdt);
 	FDT_CHECK_HEADER(fdto);
+=======
+	uint32_t delta;
+	int ret;
+
+	FDT_RO_PROBE(fdt);
+	FDT_RO_PROBE(fdto);
+
+	ret = fdt_find_max_phandle(fdt, &delta);
+	if (ret)
+		goto err;
+>>>>>>> origin/4.19.325
 
 	ret = overlay_adjust_local_phandles(fdto, delta);
 	if (ret)

@@ -341,6 +341,10 @@ late_initcall(cpm_init);
 static int __init cpm_powersave_off(char *arg)
 {
 	cpm.powersave_off = 1;
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/4.19.325
 }
 __setup("powersave=off", cpm_powersave_off);

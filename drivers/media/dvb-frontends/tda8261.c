@@ -200,7 +200,11 @@ exit:
 	return NULL;
 }
 
+<<<<<<< HEAD
 EXPORT_SYMBOL(tda8261_attach);
+=======
+EXPORT_SYMBOL_GPL(tda8261_attach);
+>>>>>>> origin/4.19.325
 
 MODULE_AUTHOR("Manu Abraham");
 MODULE_DESCRIPTION("TDA8261 8PSK/QPSK Tuner");

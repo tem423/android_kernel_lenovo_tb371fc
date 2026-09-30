@@ -80,28 +80,41 @@ LIBGCC := $(shell $(CC) $(KBUILD_CFLAGS) -print-libgcc-file-name)
 head-y		:= arch/xtensa/kernel/head.o
 core-y		+= arch/xtensa/kernel/ arch/xtensa/mm/
 core-y		+= $(buildvar) $(buildplf)
+<<<<<<< HEAD
+=======
+core-y 		+= arch/xtensa/boot/dts/
+>>>>>>> origin/4.19.325
 
 libs-y		+= arch/xtensa/lib/ $(LIBGCC)
 drivers-$(CONFIG_OPROFILE)	+= arch/xtensa/oprofile/
 
+<<<<<<< HEAD
 ifneq ($(CONFIG_BUILTIN_DTB),"")
 core-$(CONFIG_OF) += arch/xtensa/boot/dts/
 endif
 
+=======
+>>>>>>> origin/4.19.325
 boot		:= arch/xtensa/boot
 
 all Image zImage uImage: vmlinux
 	$(Q)$(MAKE) $(build)=$(boot) $@
 
+<<<<<<< HEAD
 %.dtb:
 	$(Q)$(MAKE) $(build)=$(boot)/dts $(boot)/dts/$@
 
 dtbs: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts
 
+=======
+>>>>>>> origin/4.19.325
 define archhelp
   @echo '* Image       - Kernel ELF image with reset vector'
   @echo '* zImage      - Compressed kernel image (arch/xtensa/boot/images/zImage.*)'
   @echo '* uImage      - U-Boot wrapped image'
+<<<<<<< HEAD
   @echo '  dtbs        - Build device tree blobs for enabled boards'
+=======
+>>>>>>> origin/4.19.325
 endef

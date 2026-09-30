@@ -92,13 +92,20 @@ void mmc_retune_enable(struct mmc_host *host)
 
 /*
  * Pause re-tuning for a small set of operations.  The pause begins after the
+<<<<<<< HEAD
  * next command and after first doing re-tuning.
+=======
+ * next command.
+>>>>>>> origin/4.19.325
  */
 void mmc_retune_pause(struct mmc_host *host)
 {
 	if (!host->retune_paused) {
 		host->retune_paused = 1;
+<<<<<<< HEAD
 		mmc_retune_needed(host);
+=======
+>>>>>>> origin/4.19.325
 		mmc_retune_hold(host);
 	}
 }
@@ -625,6 +632,19 @@ static struct attribute_group clk_scaling_attr_grp = {
 	.attrs = clk_scaling_attrs,
 };
 
+<<<<<<< HEAD
+=======
+static int mmc_validate_host_caps(struct mmc_host *host)
+{
+	if (host->caps & MMC_CAP_SDIO_IRQ && !host->ops->enable_sdio_irq) {
+		dev_warn(host->parent, "missing ->enable_sdio_irq() ops\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+>>>>>>> origin/4.19.325
 /**
  *	mmc_add_host - initialise host hardware
  *	@host: mmc host
@@ -637,8 +657,14 @@ int mmc_add_host(struct mmc_host *host)
 {
 	int err;
 
+<<<<<<< HEAD
 	WARN_ON((host->caps & MMC_CAP_SDIO_IRQ) &&
 		!host->ops->enable_sdio_irq);
+=======
+	err = mmc_validate_host_caps(host);
+	if (err)
+		return err;
+>>>>>>> origin/4.19.325
 
 	err = device_add(&host->class_dev);
 	if (err)
@@ -715,6 +741,10 @@ EXPORT_SYMBOL(mmc_remove_host);
  */
 void mmc_free_host(struct mmc_host *host)
 {
+<<<<<<< HEAD
+=======
+	cancel_delayed_work_sync(&host->detect);
+>>>>>>> origin/4.19.325
 	mmc_crypto_free_host(host);
 	mmc_pwrseq_free(host);
 	put_device(&host->class_dev);

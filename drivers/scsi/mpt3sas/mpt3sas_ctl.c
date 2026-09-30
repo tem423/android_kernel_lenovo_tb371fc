@@ -654,7 +654,11 @@ _ctl_do_mpt_command(struct MPT3SAS_ADAPTER *ioc, struct mpt3_ioctl_command karg,
 	struct _pcie_device *pcie_device = NULL;
 	u32 ioc_state;
 	u16 smid;
+<<<<<<< HEAD
 	u8 timeout;
+=======
+	unsigned long timeout;
+>>>>>>> origin/4.19.325
 	u8 issue_reset;
 	u32 sz, sz_arg;
 	void *psge;

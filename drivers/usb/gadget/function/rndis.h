@@ -183,6 +183,10 @@ typedef struct rndis_params {
 
 	void			*v;
 	struct list_head	resp_queue;
+<<<<<<< HEAD
+=======
+	spinlock_t		resp_lock;
+>>>>>>> origin/4.19.325
 } rndis_params;
 
 /* RNDIS Message parser and other useless functions */

@@ -43,6 +43,10 @@ static const struct platform_device_id db1200_pids[] = {
 	},
 	{},
 };
+<<<<<<< HEAD
+=======
+MODULE_DEVICE_TABLE(platform, db1200_pids);
+>>>>>>> origin/4.19.325
 
 /*-------------------------  AC97 PART  ---------------------------*/
 

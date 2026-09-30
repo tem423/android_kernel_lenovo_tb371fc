@@ -96,7 +96,11 @@ static void ich_force_hpet_resume(void)
 static void ich_force_enable_hpet(struct pci_dev *dev)
 {
 	u32 val;
+<<<<<<< HEAD
 	u32 uninitialized_var(rcba);
+=======
+	u32 rcba;
+>>>>>>> origin/4.19.325
 	int err = 0;
 
 	if (hpet_address || force_hpet_address)
@@ -186,7 +190,11 @@ static void hpet_print_force_info(void)
 static void old_ich_force_hpet_resume(void)
 {
 	u32 val;
+<<<<<<< HEAD
 	u32 uninitialized_var(gen_cntl);
+=======
+	u32 gen_cntl;
+>>>>>>> origin/4.19.325
 
 	if (!force_hpet_address || !cached_dev)
 		return;
@@ -208,7 +216,11 @@ static void old_ich_force_hpet_resume(void)
 static void old_ich_force_enable_hpet(struct pci_dev *dev)
 {
 	u32 val;
+<<<<<<< HEAD
 	u32 uninitialized_var(gen_cntl);
+=======
+	u32 gen_cntl;
+>>>>>>> origin/4.19.325
 
 	if (hpet_address || force_hpet_address)
 		return;
@@ -299,7 +311,11 @@ static void vt8237_force_hpet_resume(void)
 
 static void vt8237_force_enable_hpet(struct pci_dev *dev)
 {
+<<<<<<< HEAD
 	u32 uninitialized_var(val);
+=======
+	u32 val;
+>>>>>>> origin/4.19.325
 
 	if (hpet_address || force_hpet_address)
 		return;
@@ -430,7 +446,11 @@ static void nvidia_force_hpet_resume(void)
 
 static void nvidia_force_enable_hpet(struct pci_dev *dev)
 {
+<<<<<<< HEAD
 	u32 uninitialized_var(val);
+=======
+	u32 val;
+>>>>>>> origin/4.19.325
 
 	if (hpet_address || force_hpet_address)
 		return;

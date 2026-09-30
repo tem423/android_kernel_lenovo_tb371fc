@@ -51,7 +51,10 @@ endif
 
 config PQ2ADS
 	bool
+<<<<<<< HEAD
 	default n
+=======
+>>>>>>> origin/4.19.325
 
 config 8260
 	bool

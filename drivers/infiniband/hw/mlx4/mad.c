@@ -2158,7 +2158,11 @@ static int mlx4_ib_alloc_demux_ctx(struct mlx4_ib_dev *dev,
 				       struct mlx4_ib_demux_ctx *ctx,
 				       int port)
 {
+<<<<<<< HEAD
 	char name[12];
+=======
+	char name[21];
+>>>>>>> origin/4.19.325
 	int ret = 0;
 	int i;
 

@@ -228,7 +228,11 @@ static int register_pcpu(struct pcpu *pcpu)
 
 	err = device_register(dev);
 	if (err) {
+<<<<<<< HEAD
 		pcpu_release(dev);
+=======
+		put_device(dev);
+>>>>>>> origin/4.19.325
 		return err;
 	}
 

@@ -246,7 +246,11 @@ static int tb10x_gpio_probe(struct platform_device *pdev)
 				handle_edge_irq, IRQ_NOREQUEST, IRQ_NOPROBE,
 				IRQ_GC_INIT_MASK_CACHE);
 		if (ret)
+<<<<<<< HEAD
 			return ret;
+=======
+			goto err_remove_domain;
+>>>>>>> origin/4.19.325
 
 		gc = tb10x_gpio->domain->gc->gc[0];
 		gc->reg_base                         = tb10x_gpio->base;
@@ -260,6 +264,13 @@ static int tb10x_gpio_probe(struct platform_device *pdev)
 	}
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+err_remove_domain:
+	irq_domain_remove(tb10x_gpio->domain);
+	return ret;
+>>>>>>> origin/4.19.325
 }
 
 static int tb10x_gpio_remove(struct platform_device *pdev)

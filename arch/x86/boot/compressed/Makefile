@@ -57,6 +57,13 @@ else
 KBUILD_LDFLAGS += $(shell $(LD) --help 2>&1 | grep -q "\-z noreloc-overflow" \
 	&& echo "-z noreloc-overflow -pie --no-dynamic-linker")
 endif
+<<<<<<< HEAD
+=======
+
+KBUILD_LDFLAGS += -z noexecstack
+KBUILD_LDFLAGS += $(call ld-option,--no-warn-rwx-segments)
+
+>>>>>>> origin/4.19.325
 LDFLAGS_vmlinux := -T
 
 hostprogs-y	:= mkpiggy

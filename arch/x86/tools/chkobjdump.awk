@@ -10,6 +10,10 @@ BEGIN {
 
 /^GNU objdump/ {
 	verstr = ""
+<<<<<<< HEAD
+=======
+	gsub(/\(.*\)/, "");
+>>>>>>> origin/4.19.325
 	for (i = 3; i <= NF; i++)
 		if (match($(i), "^[0-9]")) {
 			verstr = $(i);

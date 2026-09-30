@@ -235,6 +235,11 @@ void hclge_mac_start_phy(struct hclge_dev *hdev)
 	if (!phydev)
 		return;
 
+<<<<<<< HEAD
+=======
+	phy_loopback(phydev, false);
+
+>>>>>>> origin/4.19.325
 	phy_start(phydev);
 }
 

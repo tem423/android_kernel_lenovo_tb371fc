@@ -530,7 +530,11 @@
 		};
 
 		mipi_phy: mipi-video-phy {
+<<<<<<< HEAD
 			compatible = "samsung,s5pv210-mipi-video-phy";
+=======
+			compatible = "samsung,exynos5420-mipi-video-phy";
+>>>>>>> origin/4.19.325
 			syscon = <&pmu_system_controller>;
 			#phy-cells = <1>;
 		};

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
  *
@@ -16,6 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *                                                                   USA
+=======
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
+>>>>>>> origin/4.19.325
  */
 
 #include "dtc.h"
@@ -34,7 +40,11 @@ static struct node *read_fstree(const char *dirname)
 	if (!d)
 		die("Couldn't opendir() \"%s\": %s\n", dirname, strerror(errno));
 
+<<<<<<< HEAD
 	tree = build_node(NULL, NULL);
+=======
+	tree = build_node(NULL, NULL, NULL);
+>>>>>>> origin/4.19.325
 
 	while ((de = readdir(d)) != NULL) {
 		char *tmpname;
@@ -60,7 +70,12 @@ static struct node *read_fstree(const char *dirname)
 			} else {
 				prop = build_property(xstrdup(de->d_name),
 						      data_copy_file(pfile,
+<<<<<<< HEAD
 								     st.st_size));
+=======
+								     st.st_size),
+						      NULL);
+>>>>>>> origin/4.19.325
 				add_property(tree, prop);
 				fclose(pfile);
 			}

@@ -70,7 +70,11 @@ static char version[] =
 		BNXT_RE_DESC " v" ROCE_DRV_MODULE_VERSION "\n";
 
 MODULE_AUTHOR("Eddie Wai <eddie.wai@broadcom.com>");
+<<<<<<< HEAD
 MODULE_DESCRIPTION(BNXT_RE_DESC " Driver");
+=======
+MODULE_DESCRIPTION(BNXT_RE_DESC);
+>>>>>>> origin/4.19.325
 MODULE_LICENSE("Dual BSD/GPL");
 
 /* globals */

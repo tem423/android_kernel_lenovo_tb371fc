@@ -26,7 +26,11 @@
 	model = "phytec,pcm032";
 	compatible = "phytec,pcm032";
 
+<<<<<<< HEAD
 	memory {
+=======
+	memory@0 {
+>>>>>>> origin/4.19.325
 		reg = <0x00000000 0x08000000>;	// 128MB
 	};
 

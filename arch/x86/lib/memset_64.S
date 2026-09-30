@@ -6,8 +6,11 @@
 #include <asm/alternative-asm.h>
 #include <asm/export.h>
 
+<<<<<<< HEAD
 .weak memset
 
+=======
+>>>>>>> origin/4.19.325
 /*
  * ISO C memset - set a memory block to a byte value. This function uses fast
  * string to get better performance than the original function. The code is
@@ -19,7 +22,13 @@
  *
  * rax   original destination
  */
+<<<<<<< HEAD
 ENTRY(memset)
+=======
+.weak memset
+.p2align 4, 0x90
+memset:
+>>>>>>> origin/4.19.325
 ENTRY(__memset)
 	/*
 	 * Some CPUs support enhanced REP MOVSB/STOSB feature. It is recommended

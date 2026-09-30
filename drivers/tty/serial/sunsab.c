@@ -1140,7 +1140,17 @@ static int __init sunsab_init(void)
 		}
 	}
 
+<<<<<<< HEAD
 	return platform_driver_register(&sab_driver);
+=======
+	err = platform_driver_register(&sab_driver);
+	if (err) {
+		kfree(sunsab_ports);
+		sunsab_ports = NULL;
+	}
+
+	return err;
+>>>>>>> origin/4.19.325
 }
 
 static void __exit sunsab_exit(void)

@@ -190,7 +190,11 @@ fa526_cr1_set:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/4.19.325
 
 	.type	__fa526_proc_info,#object
 __fa526_proc_info:

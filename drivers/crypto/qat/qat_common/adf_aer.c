@@ -139,7 +139,12 @@ static void adf_device_reset_worker(struct work_struct *work)
 	if (adf_dev_init(accel_dev) || adf_dev_start(accel_dev)) {
 		/* The device hanged and we can't restart it so stop here */
 		dev_err(&GET_DEV(accel_dev), "Restart device failed\n");
+<<<<<<< HEAD
 		kfree(reset_data);
+=======
+		if (reset_data->mode == ADF_DEV_RESET_ASYNC)
+			kfree(reset_data);
+>>>>>>> origin/4.19.325
 		WARN(1, "QAT: device restart failed. Device is unusable\n");
 		return;
 	}
@@ -147,10 +152,17 @@ static void adf_device_reset_worker(struct work_struct *work)
 	clear_bit(ADF_STATUS_RESTARTING, &accel_dev->status);
 
 	/* The dev is back alive. Notify the caller if in sync mode */
+<<<<<<< HEAD
 	if (reset_data->mode == ADF_DEV_RESET_SYNC)
 		complete(&reset_data->compl);
 	else
 		kfree(reset_data);
+=======
+	if (reset_data->mode == ADF_DEV_RESET_ASYNC)
+		kfree(reset_data);
+	else
+		complete(&reset_data->compl);
+>>>>>>> origin/4.19.325
 }
 
 static int adf_dev_aer_schedule_reset(struct adf_accel_dev *accel_dev,
@@ -182,6 +194,10 @@ static int adf_dev_aer_schedule_reset(struct adf_accel_dev *accel_dev,
 		if (!timeout) {
 			dev_err(&GET_DEV(accel_dev),
 				"Reset device timeout expired\n");
+<<<<<<< HEAD
+=======
+			cancel_work_sync(&reset_data->reset_work);
+>>>>>>> origin/4.19.325
 			ret = -EFAULT;
 		}
 		kfree(reset_data);

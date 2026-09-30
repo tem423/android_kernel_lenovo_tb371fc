@@ -54,6 +54,10 @@ int __init bcm_kona_smc_init(void)
 		return -ENODEV;
 
 	prop_val = of_get_address(node, 0, &prop_size, NULL);
+<<<<<<< HEAD
+=======
+	of_node_put(node);
+>>>>>>> origin/4.19.325
 	if (!prop_val)
 		return -EINVAL;
 

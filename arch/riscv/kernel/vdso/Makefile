@@ -17,6 +17,12 @@ obj-vdso := $(addprefix $(obj)/, $(obj-vdso))
 
 obj-y += vdso.o vdso-syms.o
 CPPFLAGS_vdso.lds += -P -C -U$(ARCH)
+<<<<<<< HEAD
+=======
+ifneq ($(filter vgettimeofday, $(vdso-syms)),)
+CPPFLAGS_vdso.lds += -DHAS_VGETTIMEOFDAY
+endif
+>>>>>>> origin/4.19.325
 
 # Disable gcov profiling for VDSO code
 GCOV_PROFILE := n

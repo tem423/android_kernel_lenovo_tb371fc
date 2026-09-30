@@ -322,8 +322,11 @@ void __init parse_early_options(char *cmdline);
 /* Data marked not to be saved by software suspend */
 #define __nosavedata __section(.data..nosave)
 
+<<<<<<< HEAD
 #define __rticdata
 
+=======
+>>>>>>> origin/4.19.325
 #ifdef MODULE
 #define __exit_p(x) x
 #else

@@ -50,5 +50,9 @@ DEFINE_EVENT(hda_pm, azx_runtime_resume,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../sound/pci/hda
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #include <trace/define_trace.h>

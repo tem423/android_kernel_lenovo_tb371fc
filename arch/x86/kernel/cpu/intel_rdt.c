@@ -563,6 +563,11 @@ static void domain_add_cpu(int cpu, struct rdt_resource *r)
 	}
 
 	if (r->mon_capable && domain_setup_mon_state(r, d)) {
+<<<<<<< HEAD
+=======
+		kfree(d->ctrl_val);
+		kfree(d->mbps_val);
+>>>>>>> origin/4.19.325
 		kfree(d);
 		return;
 	}

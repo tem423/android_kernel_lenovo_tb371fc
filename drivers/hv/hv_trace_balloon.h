@@ -39,7 +39,11 @@ TRACE_EVENT(balloon_status,
 	);
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/hv
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE hv_trace_balloon
 #endif /* _HV_TRACE_BALLOON_H */

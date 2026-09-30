@@ -3123,7 +3123,12 @@ static void pnv_ioda_setup_pe_res(struct pnv_ioda_pe *pe,
 	int index;
 	int64_t rc;
 
+<<<<<<< HEAD
 	if (!res || !res->flags || res->start > res->end)
+=======
+	if (!res || !res->flags || res->start > res->end ||
+	    res->flags & IORESOURCE_UNSET)
+>>>>>>> origin/4.19.325
 		return;
 
 	if (res->flags & IORESOURCE_IO) {

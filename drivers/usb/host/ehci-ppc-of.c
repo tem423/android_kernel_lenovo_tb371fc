@@ -148,6 +148,10 @@ static int ehci_hcd_ppc_of_probe(struct platform_device *op)
 		} else {
 			ehci->has_amcc_usb23 = 1;
 		}
+<<<<<<< HEAD
+=======
+		of_node_put(np);
+>>>>>>> origin/4.19.325
 	}
 
 	if (of_get_property(dn, "big-endian", NULL)) {

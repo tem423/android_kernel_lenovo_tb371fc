@@ -11,6 +11,10 @@
 #include <linux/uaccess.h>
 #include <asm/prctl.h> /* XXX This should get the constants from libc */
 #include <os.h>
+<<<<<<< HEAD
+=======
+#include <registers.h>
+>>>>>>> origin/4.19.325
 
 long arch_prctl(struct task_struct *task, int option,
 		unsigned long __user *arg2)
@@ -35,7 +39,11 @@ long arch_prctl(struct task_struct *task, int option,
 	switch (option) {
 	case ARCH_SET_FS:
 	case ARCH_SET_GS:
+<<<<<<< HEAD
 		ret = restore_registers(pid, &current->thread.regs.regs);
+=======
+		ret = restore_pid_registers(pid, &current->thread.regs.regs);
+>>>>>>> origin/4.19.325
 		if (ret)
 			return ret;
 		break;

@@ -1,9 +1,14 @@
+<<<<<<< HEAD
+=======
+// SPDX-License-Identifier: GPL-2.0-or-later
+>>>>>>> origin/4.19.325
 /*
  * Copyright 2011 The Chromium Authors, All Rights Reserved.
  * Copyright 2008 Jon Loeliger, Freescale Semiconductor, Inc.
  *
  * util_is_printable_string contributed by
  *	Pantelis Antoniou <pantelis.antoniou AT gmail.com>
+<<<<<<< HEAD
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,6 +24,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *                                                                   USA
+=======
+>>>>>>> origin/4.19.325
  */
 
 #include <ctype.h>
@@ -46,6 +53,7 @@ char *xstrdup(const char *s)
 	return d;
 }
 
+<<<<<<< HEAD
 /* based in part from (3) vsnprintf */
 int xasprintf(char **strp, const char *fmt, ...)
 {
@@ -72,10 +80,59 @@ int xasprintf(char **strp, const char *fmt, ...)
 		else		/* glibc 2.0 */
 			size *= 2; /* twice the old size */
 	}
+=======
+int xavsprintf_append(char **strp, const char *fmt, va_list ap)
+{
+	int n, size = 0;	/* start with 128 bytes */
+	char *p;
+	va_list ap_copy;
+
+	p = *strp;
+	if (p)
+		size = strlen(p);
+
+	va_copy(ap_copy, ap);
+	n = vsnprintf(NULL, 0, fmt, ap_copy) + 1;
+	va_end(ap_copy);
+
+	p = xrealloc(p, size + n);
+
+	n = vsnprintf(p + size, n, fmt, ap);
+
+>>>>>>> origin/4.19.325
 	*strp = p;
 	return strlen(p);
 }
 
+<<<<<<< HEAD
+=======
+int xasprintf_append(char **strp, const char *fmt, ...)
+{
+	int n;
+	va_list ap;
+
+	va_start(ap, fmt);
+	n = xavsprintf_append(strp, fmt, ap);
+	va_end(ap);
+
+	return n;
+}
+
+int xasprintf(char **strp, const char *fmt, ...)
+{
+	int n;
+	va_list ap;
+
+	*strp = NULL;
+
+	va_start(ap, fmt);
+	n = xavsprintf_append(strp, fmt, ap);
+	va_end(ap);
+
+	return n;
+}
+
+>>>>>>> origin/4.19.325
 char *join_path(const char *path, const char *name)
 {
 	int lenp = strlen(path);
@@ -227,11 +284,19 @@ char get_escape_char(const char *s, int *i)
 	return val;
 }
 
+<<<<<<< HEAD
 int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len)
 {
 	int fd = 0;	/* assume stdin */
 	char *buf = NULL;
 	off_t bufsize = 1024, offset = 0;
+=======
+int utilfdt_read_err(const char *filename, char **buffp, size_t *len)
+{
+	int fd = 0;	/* assume stdin */
+	char *buf = NULL;
+	size_t bufsize = 1024, offset = 0;
+>>>>>>> origin/4.19.325
 	int ret = 0;
 
 	*buffp = NULL;
@@ -264,6 +329,7 @@ int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len)
 		free(buf);
 	else
 		*buffp = buf;
+<<<<<<< HEAD
 	*len = bufsize;
 	return ret;
 }
@@ -278,6 +344,17 @@ char *utilfdt_read_len(const char *filename, off_t *len)
 {
 	char *buff;
 	int ret = utilfdt_read_err_len(filename, &buff, len);
+=======
+	if (len)
+		*len = bufsize;
+	return ret;
+}
+
+char *utilfdt_read(const char *filename, size_t *len)
+{
+	char *buff;
+	int ret = utilfdt_read_err(filename, &buff, len);
+>>>>>>> origin/4.19.325
 
 	if (ret) {
 		fprintf(stderr, "Couldn't open blob from '%s': %s\n", filename,
@@ -288,12 +365,15 @@ char *utilfdt_read_len(const char *filename, off_t *len)
 	return buff;
 }
 
+<<<<<<< HEAD
 char *utilfdt_read(const char *filename)
 {
 	off_t len;
 	return utilfdt_read_len(filename, &len);
 }
 
+=======
+>>>>>>> origin/4.19.325
 int utilfdt_write_err(const char *filename, const void *blob)
 {
 	int fd = 1;	/* assume stdout */

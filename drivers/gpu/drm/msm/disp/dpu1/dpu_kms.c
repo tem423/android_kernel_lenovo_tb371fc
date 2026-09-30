@@ -97,8 +97,13 @@ static int _dpu_danger_signal_status(struct seq_file *s,
 					&status);
 	} else {
 		seq_puts(s, "\nSafe signal status:\n");
+<<<<<<< HEAD
 		if (kms->hw_mdp->ops.get_danger_status)
 			kms->hw_mdp->ops.get_danger_status(kms->hw_mdp,
+=======
+		if (kms->hw_mdp->ops.get_safe_status)
+			kms->hw_mdp->ops.get_safe_status(kms->hw_mdp,
+>>>>>>> origin/4.19.325
 					&status);
 	}
 	pm_runtime_put_sync(&kms->pdev->dev);
@@ -654,11 +659,19 @@ static void _dpu_kms_hw_destroy(struct dpu_kms *dpu_kms)
 	_dpu_kms_mmu_destroy(dpu_kms);
 
 	if (dpu_kms->catalog) {
+<<<<<<< HEAD
 		for (i = 0; i < dpu_kms->catalog->vbif_count; i++) {
 			u32 vbif_idx = dpu_kms->catalog->vbif[i].id;
 
 			if ((vbif_idx < VBIF_MAX) && dpu_kms->hw_vbif[vbif_idx])
 				dpu_hw_vbif_destroy(dpu_kms->hw_vbif[vbif_idx]);
+=======
+		for (i = 0; i < ARRAY_SIZE(dpu_kms->hw_vbif); i++) {
+			if (dpu_kms->hw_vbif[i]) {
+				dpu_hw_vbif_destroy(dpu_kms->hw_vbif[i]);
+				dpu_kms->hw_vbif[i] = NULL;
+			}
+>>>>>>> origin/4.19.325
 		}
 	}
 
@@ -1092,7 +1105,11 @@ static int dpu_kms_hw_init(struct msm_kms *kms)
 	for (i = 0; i < dpu_kms->catalog->vbif_count; i++) {
 		u32 vbif_idx = dpu_kms->catalog->vbif[i].id;
 
+<<<<<<< HEAD
 		dpu_kms->hw_vbif[i] = dpu_hw_vbif_init(vbif_idx,
+=======
+		dpu_kms->hw_vbif[vbif_idx] = dpu_hw_vbif_init(vbif_idx,
+>>>>>>> origin/4.19.325
 				dpu_kms->vbif[vbif_idx], dpu_kms->catalog);
 		if (IS_ERR_OR_NULL(dpu_kms->hw_vbif[vbif_idx])) {
 			rc = PTR_ERR(dpu_kms->hw_vbif[vbif_idx]);

@@ -123,6 +123,10 @@ struct xhci_hcd_mtk {
 	struct phy **phys;
 	int num_phys;
 	bool lpm_support;
+<<<<<<< HEAD
+=======
+	bool u2_lpm_disable;
+>>>>>>> origin/4.19.325
 	/* usb remote wakeup */
 	bool uwk_en;
 	struct regmap *uwk;

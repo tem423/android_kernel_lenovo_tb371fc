@@ -121,7 +121,11 @@ static int qcom_wdt_restart(struct watchdog_device *wdd, unsigned long action,
 	 */
 	wmb();
 
+<<<<<<< HEAD
 	msleep(150);
+=======
+	mdelay(150);
+>>>>>>> origin/4.19.325
 	return 0;
 }
 

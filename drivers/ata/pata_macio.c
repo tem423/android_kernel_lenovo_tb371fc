@@ -537,7 +537,12 @@ static enum ata_completion_errors pata_macio_qc_prep(struct ata_queued_cmd *qc)
 
 		while (sg_len) {
 			/* table overflow should never happen */
+<<<<<<< HEAD
 			BUG_ON (pi++ >= MAX_DCMDS);
+=======
+			if (WARN_ON_ONCE(pi >= MAX_DCMDS))
+				return AC_ERR_SYSTEM;
+>>>>>>> origin/4.19.325
 
 			len = (sg_len < MAX_DBDMA_SEG) ? sg_len : MAX_DBDMA_SEG;
 			table->command = cpu_to_le16(write ? OUTPUT_MORE: INPUT_MORE);
@@ -549,11 +554,20 @@ static enum ata_completion_errors pata_macio_qc_prep(struct ata_queued_cmd *qc)
 			addr += len;
 			sg_len -= len;
 			++table;
+<<<<<<< HEAD
+=======
+			++pi;
+>>>>>>> origin/4.19.325
 		}
 	}
 
 	/* Should never happen according to Tejun */
+<<<<<<< HEAD
 	BUG_ON(!pi);
+=======
+	if (WARN_ON_ONCE(!pi))
+		return AC_ERR_SYSTEM;
+>>>>>>> origin/4.19.325
 
 	/* Convert the last command to an input/output */
 	table--;

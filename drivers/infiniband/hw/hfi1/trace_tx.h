@@ -848,6 +848,10 @@ DEFINE_EVENT(
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/infiniband/hw/hfi1
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #define TRACE_INCLUDE_FILE trace_tx
 #include <trace/define_trace.h>

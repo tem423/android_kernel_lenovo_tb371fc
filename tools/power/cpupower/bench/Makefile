@@ -27,7 +27,11 @@ $(OUTPUT)cpufreq-bench: $(OBJS)
 
 all: $(OUTPUT)cpufreq-bench
 
+<<<<<<< HEAD
 install:
+=======
+install: $(OUTPUT)cpufreq-bench
+>>>>>>> origin/4.19.325
 	mkdir -p $(DESTDIR)/$(sbindir)
 	mkdir -p $(DESTDIR)/$(bindir)
 	mkdir -p $(DESTDIR)/$(docdir)

@@ -145,5 +145,9 @@ TRACE_EVENT(applptr,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../sound/core
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #include <trace/define_trace.h>

@@ -1775,6 +1775,10 @@ static int tsi148_dma_list_add(struct vme_dma_list *list,
 	return 0;
 
 err_dma:
+<<<<<<< HEAD
+=======
+	list_del(&entry->list);
+>>>>>>> origin/4.19.325
 err_dest:
 err_source:
 err_align:

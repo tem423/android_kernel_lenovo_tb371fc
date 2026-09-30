@@ -265,7 +265,11 @@ void *edac_align_ptr(void **p, unsigned size, int n_elems)
 	else
 		return (char *)ptr;
 
+<<<<<<< HEAD
 	r = (unsigned long)p % align;
+=======
+	r = (unsigned long)ptr % align;
+>>>>>>> origin/4.19.325
 
 	if (r == 0)
 		return (char *)ptr;

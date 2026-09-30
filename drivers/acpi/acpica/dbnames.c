@@ -571,6 +571,12 @@ acpi_status acpi_db_display_objects(char *obj_type_arg, char *display_count_arg)
 		object_info =
 		    ACPI_ALLOCATE_ZEROED(sizeof(struct acpi_object_info));
 
+<<<<<<< HEAD
+=======
+		if (!object_info)
+			return (AE_NO_MEMORY);
+
+>>>>>>> origin/4.19.325
 		/* Walk the namespace from the root */
 
 		(void)acpi_walk_namespace(ACPI_TYPE_ANY, ACPI_ROOT_OBJECT,

@@ -75,6 +75,15 @@ extern void mss2_init(void);
 static inline void mss2_init(void) {}
 #endif
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_MACH_D2NET_DT
+void d2net_init(void);
+#else
+static inline void d2net_init(void) {}
+#endif
+
+>>>>>>> origin/4.19.325
 /*****************************************************************************
  * Helpers to access Orion registers
  ****************************************************************************/

@@ -177,6 +177,10 @@ static inline cycles_t get_cycles(void)
 {
 	return (cycles_t) get_tod_clock() >> 2;
 }
+<<<<<<< HEAD
+=======
+#define get_cycles get_cycles
+>>>>>>> origin/4.19.325
 
 int get_phys_clock(unsigned long *clock);
 void init_cpu_timer(void);

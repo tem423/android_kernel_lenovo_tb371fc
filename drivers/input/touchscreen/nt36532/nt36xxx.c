@@ -103,10 +103,14 @@ extern int32_t nvt_set_charger(uint8_t charger_on_off);
 /*Spinel code for charging by wangxin77 at 2023/03/06 end*/
 
 /* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 start */
+<<<<<<< HEAD
 /* TB371FC p133: default-arm double-tap wake. The Lenovo HAL never sends
  * the SYN_CONFIG WAKEUP_ON switch on the self-built kernel, so the flag
  * stayed false and suspend took the plain-sleep path. */
 bool nvt_gesture_flag = true;
+=======
+bool nvt_gesture_flag = false;
+>>>>>>> origin/4.19.325
 EXPORT_SYMBOL(nvt_gesture_flag);
 /* Spinel code for OSPINEL-192 by dingying3 at 2023/3/6 end */
 struct nvt_ts_data *ts;
@@ -1205,6 +1209,7 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 	}
 
 	if (keycode > 0) {
+<<<<<<< HEAD
 		/* TB371FC p146: report on the dedicated wake keyboard device.
 		 * ZUI input policy (mTpWakeUp=false) drops wake attempts from
 		 * the touch panel device, so report like a power button. */
@@ -1212,6 +1217,12 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 		input_sync(ts->wake_input_dev);
 		input_report_key(ts->wake_input_dev, keycode, 0);
 		input_sync(ts->wake_input_dev);
+=======
+		input_report_key(ts->input_dev, keycode, 1);
+		input_sync(ts->input_dev);
+		input_report_key(ts->input_dev, keycode, 0);
+		input_sync(ts->input_dev);
+>>>>>>> origin/4.19.325
 	}
 }
 #endif
@@ -1709,10 +1720,13 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 	if (bTouchIsAwake == 0) {
 		input_id = (uint8_t)(point_data[1] >> 3);
 		nvt_ts_wakeup_gesture_report(input_id, point_data);
+<<<<<<< HEAD
 		/* TB371FC p174: report only. The recovery (full fw download,
 		 * stock nvt_ts_resume) runs synchronously at the START of
 		 * dsi_display_enable - before any panel-on command - and is
 		 * what actually clears gesture mode for the panel (TASK-022). */
+=======
+>>>>>>> origin/4.19.325
 		mutex_unlock(&ts->lock);
 		return IRQ_HANDLED;
 	}
@@ -2256,9 +2270,13 @@ static int nvt_ts_check_dt(struct device_node *np)
 		panel = of_drm_find_panel(node);
 		of_node_put(node);
 		if (!IS_ERR(panel)) {
+<<<<<<< HEAD
 			/* TB371FC p142: keep the panel reference so the wake
 			 * gesture notifier registers (was commented out). */
 			active_panel = panel;
+=======
+			//active_panel = panel;
+>>>>>>> origin/4.19.325
 			return 0;
 		}
 	}
@@ -2668,6 +2686,7 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		goto err_input_register_device_failed;
 	}
 
+<<<<<<< HEAD
 	/* TB371FC p146: dedicated wake keyboard device (TASK-022). A plain
 	 * KEY_WAKEUP keyboard is treated as wake-capable by the framework
 	 * (like gpio-keys), unlike the touch panel device. */
@@ -2686,6 +2705,8 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		goto err_input_register_device_failed;
 	}
 
+=======
+>>>>>>> origin/4.19.325
 	if (ts->pen_support) {
 		//---allocate pen input device---
 		ts->pen_input_dev = input_allocate_device();
@@ -3372,12 +3393,16 @@ static int nvt_drm_panel_notifier_callback(struct notifier_block *self, unsigned
 		} else if (event == DRM_PANEL_EVENT_BLANK) {
 			if (*blank == DRM_PANEL_BLANK_UNBLANK) {
 				NVT_LOG("hid-keyboard,%s,event=%lu, *blank=%d\n",__func__, event, *blank);
+<<<<<<< HEAD
 			/* TB371FC p174: run the stock resume (full fw download)
 			 * synchronously, BEFORE the panel-on commands of this
 			 * enable: a panel enable against an IC still armed in
 			 * gesture mode blacks the panel (n84, TASK-022). The
 			 * bTouchIsAwake guard dedupes the double notify. */
 			nvt_ts_resume(&ts->client->dev);
+=======
+				nvt_ts_resume(&ts->client->dev);
+>>>>>>> origin/4.19.325
 				kb_hid_resume();
 			}
 		}

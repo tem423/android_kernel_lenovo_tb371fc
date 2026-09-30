@@ -255,6 +255,12 @@ cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -n -f -9 > $@) || \
 # ---------------------------------------------------------------------------
 DTC ?= $(objtree)/scripts/dtc/dtc
 
+<<<<<<< HEAD
+=======
+# Silence warnings
+DTC_FLAGS += -q
+
+>>>>>>> origin/4.19.325
 # Disable noisy checks by default
 ifeq ($(findstring 1,$(KBUILD_ENABLE_EXTRA_GCC_CHECKS)),)
 DTC_FLAGS += -Wno-unit_address_vs_reg
@@ -304,7 +310,11 @@ endif
 
 quiet_cmd_dtc = DTC     $@
 cmd_dtc = mkdir -p $(dir ${dtc-tmp}) ; \
+<<<<<<< HEAD
 	$(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \
+=======
+	$(HOSTCC) -E $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \
+>>>>>>> origin/4.19.325
 	$(DTC) -O dtb -o $@ -b 0 \
 		$(addprefix -i,$(dir $<) $(DTC_INCLUDE)) $(DTC_FLAGS) \
 		-d $(depfile).dtc.tmp $(dtc-tmp) ; \
@@ -315,6 +325,14 @@ $(obj)/%.dtb: $(src)/%.dts $(DTC) FORCE
 
 dtc-tmp = $(subst $(comma),_,$(dot-target).dts.tmp)
 
+<<<<<<< HEAD
+=======
+# mkdtimg
+#----------------------------------------------------------------------------
+quiet_cmd_mkdtimg = DTBOIMG $@
+cmd_mkdtimg = $(srctree)/scripts/mkdtboimg.py create $@ --page_size=4096 $(filter-out FORCE,$^)
+
+>>>>>>> origin/4.19.325
 # cat
 # ---------------------------------------------------------------------------
 # Concatentate multiple files together

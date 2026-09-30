@@ -340,8 +340,11 @@ static void bictcp_cong_avoid(struct sock *sk, u32 ack, u32 acked)
 		return;
 
 	if (tcp_in_slow_start(tp)) {
+<<<<<<< HEAD
 		if (hystart && after(ack, ca->end_seq))
 			bictcp_hystart_reset(sk);
+=======
+>>>>>>> origin/4.19.325
 		acked = tcp_slow_start(tp, acked);
 		if (!acked)
 			return;
@@ -383,6 +386,12 @@ static void hystart_update(struct sock *sk, u32 delay)
 	if (ca->found & hystart_detect)
 		return;
 
+<<<<<<< HEAD
+=======
+	if (after(tp->snd_una, ca->end_seq))
+		bictcp_hystart_reset(sk);
+
+>>>>>>> origin/4.19.325
 	if (hystart_detect & HYSTART_ACK_TRAIN) {
 		u32 now = bictcp_clock();
 

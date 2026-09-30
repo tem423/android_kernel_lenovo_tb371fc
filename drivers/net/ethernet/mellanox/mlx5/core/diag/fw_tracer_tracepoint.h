@@ -73,6 +73,10 @@ TRACE_EVENT(mlx5_fw,
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/ethernet/mellanox/mlx5/core/diag/diag
+=======
+#define TRACE_INCLUDE_PATH ./diag
+>>>>>>> origin/4.19.325
 #define TRACE_INCLUDE_FILE fw_tracer_tracepoint
 #include <trace/define_trace.h>

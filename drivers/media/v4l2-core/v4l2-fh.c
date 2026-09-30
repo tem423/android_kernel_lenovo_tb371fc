@@ -104,6 +104,10 @@ int v4l2_fh_release(struct file *filp)
 		v4l2_fh_del(fh);
 		v4l2_fh_exit(fh);
 		kfree(fh);
+<<<<<<< HEAD
+=======
+		filp->private_data = NULL;
+>>>>>>> origin/4.19.325
 	}
 	return 0;
 }

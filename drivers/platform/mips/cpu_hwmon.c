@@ -164,6 +164,12 @@ static int __init loongson_hwmon_init(void)
 		goto fail_hwmon_device_register;
 	}
 
+<<<<<<< HEAD
+=======
+	if (!csr_temp_enable && !loongson_chiptemp[0])
+		return -ENODEV;
+
+>>>>>>> origin/4.19.325
 	nr_packages = loongson_sysconf.nr_cpus /
 		loongson_sysconf.cores_per_package;
 

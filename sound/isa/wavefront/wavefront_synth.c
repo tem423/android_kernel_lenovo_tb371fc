@@ -1092,7 +1092,12 @@ wavefront_send_sample (snd_wavefront_t *dev,
 
 			if (dataptr < data_end) {
 		
+<<<<<<< HEAD
 				__get_user (sample_short, dataptr);
+=======
+				if (get_user(sample_short, dataptr))
+					return -EFAULT;
+>>>>>>> origin/4.19.325
 				dataptr += skip;
 		
 				if (data_is_unsigned) { /* GUS ? */

@@ -237,6 +237,12 @@ static int esp_xmit(struct xfrm_state *x, struct sk_buff *skb,  netdev_features_
 
 	secpath_reset(skb);
 
+<<<<<<< HEAD
+=======
+	if (skb_needs_linearize(skb, skb->dev->features) &&
+	    __skb_linearize(skb))
+		return -ENOMEM;
+>>>>>>> origin/4.19.325
 	return 0;
 }
 

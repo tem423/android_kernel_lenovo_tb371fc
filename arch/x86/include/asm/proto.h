@@ -4,6 +4,11 @@
 
 #include <asm/ldt.h>
 
+<<<<<<< HEAD
+=======
+struct task_struct;
+
+>>>>>>> origin/4.19.325
 /* misc architecture specific prototypes */
 
 void syscall_init(void);

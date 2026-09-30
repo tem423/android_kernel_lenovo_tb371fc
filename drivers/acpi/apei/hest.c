@@ -215,7 +215,11 @@ err:
 static int __init setup_hest_disable(char *str)
 {
 	hest_disable = HEST_DISABLED;
+<<<<<<< HEAD
 	return 0;
+=======
+	return 1;
+>>>>>>> origin/4.19.325
 }
 
 __setup("hest_disable", setup_hest_disable);

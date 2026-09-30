@@ -184,7 +184,11 @@ int atl_hw_reset(struct atl_hw *hw)
 			continue;
 
 		/* if (reg != 0xf1a7) */
+<<<<<<< HEAD
 			break;
+=======
+		break;
+>>>>>>> origin/4.19.325
 
 		/* if (host_load_done) */
 		/* 	continue; */

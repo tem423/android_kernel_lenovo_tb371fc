@@ -20,7 +20,11 @@
 
 /* driver definitions */
 #define DRIVER_AUTHOR "Joonyoung Shim <jy0922.shim@samsung.com>";
+<<<<<<< HEAD
 #define DRIVER_CARD "Silicon Labs Si470x FM Radio Receiver"
+=======
+#define DRIVER_CARD "Silicon Labs Si470x FM Radio"
+>>>>>>> origin/4.19.325
 #define DRIVER_DESC "I2C radio driver for Si470x FM Radio Receivers"
 #define DRIVER_VERSION "1.0.2"
 
@@ -381,7 +385,11 @@ static int si470x_i2c_probe(struct i2c_client *client,
 	if (radio->hdl.error) {
 		retval = radio->hdl.error;
 		dev_err(&client->dev, "couldn't register control\n");
+<<<<<<< HEAD
 		goto err_dev;
+=======
+		goto err_all;
+>>>>>>> origin/4.19.325
 	}
 
 	/* video device initialization */
@@ -465,7 +473,10 @@ err_rds:
 	kfree(radio->buffer);
 err_ctrl:
 	v4l2_ctrl_handler_free(&radio->hdl);
+<<<<<<< HEAD
 err_dev:
+=======
+>>>>>>> origin/4.19.325
 	v4l2_device_unregister(&radio->v4l2_dev);
 err_radio:
 	kfree(radio);

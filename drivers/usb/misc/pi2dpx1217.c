@@ -141,6 +141,10 @@ struct ssusb_redriver {
 	u64	debug_val;
 };
 
+<<<<<<< HEAD
+=======
+extern register_hardware_info(const char *name, const char *model);
+>>>>>>> origin/4.19.325
 static void ssusb_redriver_debugfs_entries(struct ssusb_redriver *redriver);
 
 static int redriver_i2c_reg_get(struct ssusb_redriver *redriver,
@@ -657,6 +661,10 @@ static int redriver_i2c_probe(struct i2c_client *client,
 			&redriver->panic_nb);
 	redriver_parse_dt(redriver);
 	ssusb_redriver_debugfs_entries(redriver);
+<<<<<<< HEAD
+=======
+	register_hardware_info("typec-redriver","diodes-pi2dpx");
+>>>>>>> origin/4.19.325
 	dev_err(&client->dev, "USB 3.1 Gen1/Gen2 Re-Driver Probed.\n");
 
 	return 0;

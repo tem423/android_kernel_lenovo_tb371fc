@@ -31,7 +31,11 @@
 #include <linux/i8042.h>
 
 #define ASUS_WMI_KEY_IGNORE (-1)
+<<<<<<< HEAD
 #define ASUS_WMI_BRN_DOWN	0x20
+=======
+#define ASUS_WMI_BRN_DOWN	0x2e
+>>>>>>> origin/4.19.325
 #define ASUS_WMI_BRN_UP		0x2f
 
 struct module;

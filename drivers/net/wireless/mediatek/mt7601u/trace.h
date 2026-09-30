@@ -393,7 +393,11 @@ TRACE_EVENT(set_shared_key,
 #endif
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/net/wireless/mediatek/mt7601u
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace
 

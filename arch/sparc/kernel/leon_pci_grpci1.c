@@ -696,7 +696,11 @@ err1:
 	return err;
 }
 
+<<<<<<< HEAD
 static const struct of_device_id grpci1_of_match[] __initconst = {
+=======
+static const struct of_device_id grpci1_of_match[] = {
+>>>>>>> origin/4.19.325
 	{
 	 .name = "GAISLER_PCIFBRG",
 	 },

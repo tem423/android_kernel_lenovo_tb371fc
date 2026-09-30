@@ -22,6 +22,10 @@
 #include <linux/falloc.h>
 #include <linux/fcntl.h>
 #include <linux/memfd.h>
+<<<<<<< HEAD
+=======
+#include <linux/types.h>
+>>>>>>> origin/4.19.325
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>

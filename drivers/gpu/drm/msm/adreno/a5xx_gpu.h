@@ -44,6 +44,10 @@ struct a5xx_gpu {
 	uint64_t preempt_iova[MSM_GPU_MAX_RINGS];
 
 	atomic_t preempt_state;
+<<<<<<< HEAD
+=======
+	spinlock_t preempt_start_lock;
+>>>>>>> origin/4.19.325
 	struct timer_list preempt_timer;
 };
 

@@ -283,6 +283,10 @@ int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 	return 0;
 
 unregister:
+<<<<<<< HEAD
+=======
+	of_node_put(child);
+>>>>>>> origin/4.19.325
 	mdiobus_unregister(mdio);
 	return rc;
 }

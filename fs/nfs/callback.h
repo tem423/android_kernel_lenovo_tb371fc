@@ -168,7 +168,11 @@ struct cb_devicenotifyitem {
 };
 
 struct cb_devicenotifyargs {
+<<<<<<< HEAD
 	int				 ndevs;
+=======
+	uint32_t			 ndevs;
+>>>>>>> origin/4.19.325
 	struct cb_devicenotifyitem	 *devs;
 };
 

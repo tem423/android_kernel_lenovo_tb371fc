@@ -21,7 +21,11 @@
  *
  */
 
+<<<<<<< HEAD
 #if !defined(_AMDGPU_TRACE_H) || defined(TRACE_HEADER_MULTI_READ)
+=======
+#if !defined(_AMDGPU_TRACE_H_) || defined(TRACE_HEADER_MULTI_READ)
+>>>>>>> origin/4.19.325
 #define _AMDGPU_TRACE_H_
 
 #include <linux/stringify.h>

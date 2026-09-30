@@ -120,6 +120,10 @@ struct mrp_applicant {
 	struct sk_buff		*pdu;
 	struct rb_root		mad;
 	struct rcu_head		rcu;
+<<<<<<< HEAD
+=======
+	bool			active;
+>>>>>>> origin/4.19.325
 };
 
 struct mrp_port {

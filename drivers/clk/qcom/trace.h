@@ -43,7 +43,11 @@ DEFINE_EVENT(clk_measure_support, clk_measure,
 /* This part must be outside protection */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/clk/qcom
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

@@ -26,15 +26,24 @@ asm (
 "	.popsection				\n"
 );
 
+<<<<<<< HEAD
 extern char kernel_headers_data;
 extern char kernel_headers_data_end;
+=======
+extern char kernel_headers_data[];
+extern char kernel_headers_data_end[];
+>>>>>>> origin/4.19.325
 
 static ssize_t
 ikheaders_read(struct file *file,  struct kobject *kobj,
 	       struct bin_attribute *bin_attr,
 	       char *buf, loff_t off, size_t len)
 {
+<<<<<<< HEAD
 	memcpy(buf, &kernel_headers_data + off, len);
+=======
+	memcpy(buf, &kernel_headers_data[off], len);
+>>>>>>> origin/4.19.325
 	return len;
 }
 
@@ -48,8 +57,13 @@ static struct bin_attribute kheaders_attr __ro_after_init = {
 
 static int __init ikheaders_init(void)
 {
+<<<<<<< HEAD
 	kheaders_attr.size = (&kernel_headers_data_end -
 			      &kernel_headers_data);
+=======
+	kheaders_attr.size = (kernel_headers_data_end -
+			      kernel_headers_data);
+>>>>>>> origin/4.19.325
 	return sysfs_create_bin_file(kernel_kobj, &kheaders_attr);
 }
 

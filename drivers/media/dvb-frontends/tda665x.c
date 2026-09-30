@@ -239,7 +239,11 @@ struct dvb_frontend *tda665x_attach(struct dvb_frontend *fe,
 
 	return fe;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(tda665x_attach);
+=======
+EXPORT_SYMBOL_GPL(tda665x_attach);
+>>>>>>> origin/4.19.325
 
 MODULE_DESCRIPTION("TDA665x driver");
 MODULE_AUTHOR("Manu Abraham");

@@ -1618,7 +1618,11 @@ of_get_next_port(const struct device_node *parent,
 				return NULL;
 			}
 			prev = port;
+<<<<<<< HEAD
 		} while (of_node_cmp(port->name, "port") != 0);
+=======
+		} while (!of_node_name_eq(port, "port"));
+>>>>>>> origin/4.19.325
 	}
 
 	return port;
@@ -1638,7 +1642,11 @@ of_get_next_endpoint(const struct device_node *parent,
 		if (!ep)
 			return NULL;
 		prev = ep;
+<<<<<<< HEAD
 	} while (of_node_cmp(ep->name, "endpoint") != 0);
+=======
+	} while (!of_node_name_eq(ep, "endpoint"));
+>>>>>>> origin/4.19.325
 
 	return ep;
 }

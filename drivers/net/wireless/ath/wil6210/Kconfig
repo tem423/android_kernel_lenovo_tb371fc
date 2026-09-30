@@ -1,6 +1,10 @@
 config WIL6210
 	tristate "Wilocity 60g WiFi card wil6210 support"
 	select WANT_DEV_COREDUMP
+<<<<<<< HEAD
+=======
+	select CRC32
+>>>>>>> origin/4.19.325
 	depends on CFG80211
 	depends on PCI
 	default n

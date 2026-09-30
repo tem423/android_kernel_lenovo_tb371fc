@@ -4,8 +4,11 @@
 
 #include <asm/processor.h>
 
+<<<<<<< HEAD
 extern void check_bugs(void);
 
+=======
+>>>>>>> origin/4.19.325
 #if defined(CONFIG_CPU_SUP_INTEL)
 void check_mpx_erratum(struct cpuinfo_x86 *c);
 #else

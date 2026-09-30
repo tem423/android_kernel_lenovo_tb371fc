@@ -877,7 +877,11 @@ static int spi_test_run_iter(struct spi_device *spi,
 		test.transfers[i].len = len;
 		if (test.transfers[i].tx_buf)
 			test.transfers[i].tx_buf += tx_off;
+<<<<<<< HEAD
 		if (test.transfers[i].tx_buf)
+=======
+		if (test.transfers[i].rx_buf)
+>>>>>>> origin/4.19.325
 			test.transfers[i].rx_buf += rx_off;
 	}
 

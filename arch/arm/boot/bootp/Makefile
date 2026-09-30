@@ -8,7 +8,11 @@
 
 GCOV_PROFILE	:= n
 
+<<<<<<< HEAD
 LDFLAGS_bootp	:=-p --no-undefined -X \
+=======
+LDFLAGS_bootp	:= --no-undefined -X \
+>>>>>>> origin/4.19.325
 		 --defsym initrd_phys=$(INITRD_PHYS) \
 		 --defsym params_phys=$(PARAMS_PHYS) -T
 AFLAGS_initrd.o :=-DINITRD=\"$(INITRD)\"

@@ -424,6 +424,10 @@ static void powermate_disconnect(struct usb_interface *intf)
 		pm->requires_update = 0;
 		usb_kill_urb(pm->irq);
 		input_unregister_device(pm->input);
+<<<<<<< HEAD
+=======
+		usb_kill_urb(pm->config);
+>>>>>>> origin/4.19.325
 		usb_free_urb(pm->irq);
 		usb_free_urb(pm->config);
 		powermate_free_buffers(interface_to_usbdev(intf), pm);

@@ -168,7 +168,11 @@ static inline int ddebug_remove_module(const char *mod)
 static inline int ddebug_dyndbg_module_param_cb(char *param, char *val,
 						const char *modname)
 {
+<<<<<<< HEAD
 	if (strstr(param, "dyndbg")) {
+=======
+	if (!strcmp(param, "dyndbg")) {
+>>>>>>> origin/4.19.325
 		/* avoid pr_warn(), which wants pr_fmt() fully defined */
 		printk(KERN_WARNING "dyndbg param is supported only in "
 			"CONFIG_DYNAMIC_DEBUG builds\n");

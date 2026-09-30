@@ -56,7 +56,11 @@ scmi_hwmon_is_visible(const void *drvdata, enum hwmon_sensor_types type,
 	const struct scmi_sensors *scmi_sensors = drvdata;
 
 	sensor = *(scmi_sensors->info[type] + channel);
+<<<<<<< HEAD
 	if (sensor && sensor->name)
+=======
+	if (sensor)
+>>>>>>> origin/4.19.325
 		return S_IRUGO;
 
 	return 0;

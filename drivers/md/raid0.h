@@ -6,6 +6,10 @@ struct strip_zone {
 	sector_t zone_end;	/* Start of the next zone (in sectors) */
 	sector_t dev_start;	/* Zone offset in real dev (in sectors) */
 	int	 nb_dev;	/* # of devices attached to the zone */
+<<<<<<< HEAD
+=======
+	int	 disk_shift;	/* start disk for the original layout */
+>>>>>>> origin/4.19.325
 };
 
 /* Linux 3.14 (20d0189b101) made an unintended change to

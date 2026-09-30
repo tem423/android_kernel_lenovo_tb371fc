@@ -31,8 +31,13 @@ $(obj)/parse.tab.h: $(src)/parse.y FORCE
 endif
 
 # -I needed for generated C source (shipped source)
+<<<<<<< HEAD
 HOSTCFLAGS_parse.tab.o := -I$(src)
 HOSTCFLAGS_lex.lex.o := -I$(src)
+=======
+HOSTCFLAGS_parse.tab.o := -I $(srctree)/$(src)
+HOSTCFLAGS_lex.lex.o := -I $(srctree)/$(src)
+>>>>>>> origin/4.19.325
 
 # dependencies on generated files need to be listed explicitly
 $(obj)/lex.lex.o: $(obj)/parse.tab.h

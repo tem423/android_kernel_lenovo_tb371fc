@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2018-2020 The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+=======
+>>>>>>> origin/4.19.325
  */
 
 #define pr_fmt(fmt)	"FG: %s: " fmt, __func__
@@ -31,6 +34,7 @@
 #define FG_MEM_IF_PM8150B		0x0D
 #define FG_ADC_RR_PM8150B		0x13
 
+<<<<<<< HEAD
 #define SDAM_CYCLE_COUNT_OFFSET		0x81
 #define SDAM_CAP_LEARN_OFFSET		0x91
 #define SDAM_FG_PARAM_LENGTH		20
@@ -38,6 +42,14 @@
 #define SDAM_COOKIE_OFFSET_4BYTE	0x95
 #define SDAM_COOKIE_4BYTE		0x12345678
 
+=======
+#define SDAM_COOKIE_OFFSET		0x80
+#define SDAM_CYCLE_COUNT_OFFSET		0x81
+#define SDAM_CAP_LEARN_OFFSET		0x91
+#define SDAM_COOKIE			0xA5
+#define SDAM_FG_PARAM_LENGTH		20
+
+>>>>>>> origin/4.19.325
 #define FG_SRAM_LEN			972
 #define PROFILE_LEN			416
 #define PROFILE_COMP_LEN		24
@@ -1304,7 +1316,11 @@ static int fg_gen4_store_learned_capacity(void *data, int64_t learned_cap_uah)
 	struct fg_dev *fg;
 	int16_t cc_mah;
 	int rc;
+<<<<<<< HEAD
 	u32 cookie_4byte = SDAM_COOKIE_4BYTE;
+=======
+	u8 cookie = SDAM_COOKIE;
+>>>>>>> origin/4.19.325
 
 	if (!chip)
 		return -ENODEV;
@@ -1331,8 +1347,13 @@ static int fg_gen4_store_learned_capacity(void *data, int64_t learned_cap_uah)
 			return rc;
 		}
 
+<<<<<<< HEAD
 		rc = nvmem_device_write(chip->fg_nvmem,
 			SDAM_COOKIE_OFFSET_4BYTE, 1, &cookie_4byte);
+=======
+		rc = nvmem_device_write(chip->fg_nvmem, SDAM_COOKIE_OFFSET, 1,
+					&cookie);
+>>>>>>> origin/4.19.325
 		if (rc < 0) {
 			pr_err("Error in writing cookie to SDAM, rc=%d\n", rc);
 			return rc;
@@ -2379,17 +2400,29 @@ static bool is_sdam_cookie_set(struct fg_gen4_chip *chip)
 {
 	struct fg_dev *fg = &chip->fg;
 	int rc;
+<<<<<<< HEAD
 	u32 cookie_4byte;
 
 	rc = nvmem_device_read(chip->fg_nvmem, SDAM_COOKIE_OFFSET_4BYTE, 4,
 			&cookie_4byte);
+=======
+	u8 cookie;
+
+	rc = nvmem_device_read(chip->fg_nvmem, SDAM_COOKIE_OFFSET, 1,
+				&cookie);
+>>>>>>> origin/4.19.325
 	if (rc < 0) {
 		pr_err("Error in reading SDAM_COOKIE rc=%d\n", rc);
 		return false;
 	}
 
+<<<<<<< HEAD
 	fg_dbg(fg, FG_STATUS, "cookie_4byte: %08x\n", cookie_4byte);
 	return (cookie_4byte == SDAM_COOKIE_4BYTE);
+=======
+	fg_dbg(fg, FG_STATUS, "cookie: %x\n", cookie);
+	return (cookie == SDAM_COOKIE);
+>>>>>>> origin/4.19.325
 }
 
 static void fg_gen4_clear_sdam(struct fg_gen4_chip *chip)
@@ -2413,9 +2446,14 @@ static void fg_gen4_clear_sdam(struct fg_gen4_chip *chip)
 static void fg_gen4_post_profile_load(struct fg_gen4_chip *chip)
 {
 	struct fg_dev *fg = &chip->fg;
+<<<<<<< HEAD
 	int rc = 0, act_cap_mah;
 	u8 buf[16] = {0};
 	u32 cookie_4byte = 0;
+=======
+	int rc, act_cap_mah;
+	u8 buf[16] = {0};
+>>>>>>> origin/4.19.325
 
 	if (chip->dt.multi_profile_load &&
 		chip->batt_age_level != chip->last_batt_age_level) {
@@ -2469,6 +2507,7 @@ static void fg_gen4_post_profile_load(struct fg_gen4_chip *chip)
 				pr_err("Error in writing learned capacity to SDAM, rc=%d\n",
 					rc);
 		}
+<<<<<<< HEAD
 
 		/* Set the COOKIE to prevent rechecking the SRAM again */
 		cookie_4byte = SDAM_COOKIE_4BYTE;
@@ -2476,6 +2515,8 @@ static void fg_gen4_post_profile_load(struct fg_gen4_chip *chip)
 			SDAM_COOKIE_OFFSET_4BYTE, 4, (u8 *)&cookie_4byte);
 		if (rc < 0)
 			pr_err("Failed to set SDAM cookie, rc=%d\n", rc);
+=======
+>>>>>>> origin/4.19.325
 	}
 
 	/* Restore the cycle counters so that it would be valid at this point */
@@ -4130,8 +4171,11 @@ static void soc_scale_work(struct work_struct *work)
 
 	mutex_unlock(&chip->soc_scale_lock);
 	if (chip->prev_soc_scale_msoc != chip->soc_scale_msoc) {
+<<<<<<< HEAD
 		/* update MSOC */
 		fg_gen4_write_scale_msoc(chip);
+=======
+>>>>>>> origin/4.19.325
 		if (batt_psy_initialized(fg))
 			power_supply_changed(fg->batt_psy);
 	}

@@ -42,7 +42,13 @@ struct rpmsg_channel_info {
  * rpmsg_device - device that belong to the rpmsg bus
  * @dev: the device struct
  * @id: device id (used to match between rpmsg drivers and devices)
+<<<<<<< HEAD
  * @driver_override: driver name to force a match
+=======
+ * @driver_override: driver name to force a match; do not set directly,
+ *                   because core frees it; use driver_set_override() to
+ *                   set or clear it.
+>>>>>>> origin/4.19.325
  * @src: local address
  * @dst: destination address
  * @ept: the rpmsg endpoint of this channel
@@ -51,7 +57,11 @@ struct rpmsg_channel_info {
 struct rpmsg_device {
 	struct device dev;
 	struct rpmsg_device_id id;
+<<<<<<< HEAD
 	char *driver_override;
+=======
+	const char *driver_override;
+>>>>>>> origin/4.19.325
 	u32 src;
 	u32 dst;
 	struct rpmsg_endpoint *ept;
@@ -119,6 +129,11 @@ struct rpmsg_driver {
 
 #if IS_ENABLED(CONFIG_RPMSG)
 
+<<<<<<< HEAD
+=======
+int rpmsg_register_device_override(struct rpmsg_device *rpdev,
+				   const char *driver_override);
+>>>>>>> origin/4.19.325
 int register_rpmsg_device(struct rpmsg_device *dev);
 void unregister_rpmsg_device(struct rpmsg_device *dev);
 int __register_rpmsg_driver(struct rpmsg_driver *drv, struct module *owner);
@@ -146,6 +161,15 @@ int rpmsg_set_sigs(struct rpmsg_endpoint *ept, u32 sigs);
 
 #else
 
+<<<<<<< HEAD
+=======
+static inline int rpmsg_register_device_override(struct rpmsg_device *rpdev,
+						 const char *driver_override)
+{
+	return -ENXIO;
+}
+
+>>>>>>> origin/4.19.325
 static inline int register_rpmsg_device(struct rpmsg_device *dev)
 {
 	return -ENXIO;
@@ -186,7 +210,11 @@ static inline struct rpmsg_endpoint *rpmsg_create_ept(struct rpmsg_device *rpdev
 	/* This shouldn't be possible */
 	WARN_ON(1);
 
+<<<<<<< HEAD
 	return ERR_PTR(-ENXIO);
+=======
+	return NULL;
+>>>>>>> origin/4.19.325
 }
 
 static inline int rpmsg_send(struct rpmsg_endpoint *ept, void *data, int len)

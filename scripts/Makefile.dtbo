@@ -15,7 +15,11 @@ cmd_dtbo_verify = $(foreach m,\
 	$(addprefix $(obj)/,$($(@F)-base)),\
 		$(if $(m),\
 			$(DTC_OVERLAY_TEST) $(m) $@ \
+<<<<<<< HEAD
 			$(dot-target).$(patsubst $(obj)/%.dtb,%,$(m)).tmp;))\
+=======
+			$(dot-target).$(subst /,-,$(patsubst $(obj)/%.dtb,%,$(m))).tmp;))\
+>>>>>>> origin/4.19.325
 			true
 else
 cmd_dtbo_verify = true

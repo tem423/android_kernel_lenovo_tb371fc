@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Linux kernel
 ============
 
@@ -17,3 +18,13 @@ See Documentation/00-INDEX for a list of what is contained in each file.
 Please read the Documentation/process/changes.rst file, as it contains the
 requirements for building and running the kernel, and information about
 the problems which may result by upgrading your kernel.
+=======
+这是我自己用tb q706f内核修改的，不属于官方内核
+目前因为apr超时音频无法使用
+触摸驱动来自https://github.com/ila-embsys/linux-android-msm-lenovo-p12
+ktz8866ab驱动来自tb321fu
+mm8013c06_battery驱动来自tb360zu
+其他电池驱动来自tbq706所以功能不全充电速度慢
+ctn730来自tbq706f(不知道能不能用)
+基线是https://github.com/UtsavBalar1231/kernel_xiaomi_sm8250 的android14-base
+>>>>>>> origin/4.19.325

@@ -391,6 +391,11 @@ struct pcie_service_card {
 	struct mwifiex_msix_context share_irq_ctx;
 	struct work_struct work;
 	unsigned long work_flags;
+<<<<<<< HEAD
+=======
+
+	bool pci_reset_ongoing;
+>>>>>>> origin/4.19.325
 };
 
 static inline int

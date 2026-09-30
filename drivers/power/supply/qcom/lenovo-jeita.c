@@ -14,6 +14,10 @@
 #include <linux/pmic-voter.h>
 #include "lenovo-jeita.h"
 #include "smb5-lib.h"
+<<<<<<< HEAD
+=======
+#include "mm8013c06_battery.h"
+>>>>>>> origin/4.19.325
 
 #define JEITA_VOTER		"LENOVO_JEITA_VOTER"
 #define BATT_MAINTAINCE_VOTER		"BATT_MAINTAINCE_VOTER"
@@ -456,7 +460,11 @@ static int get_batt_maintaince_fv(struct lenovo_jeita_info *chip){
 	int batt_maintaince_fv = 0;
 	int recharge_voltage = 0;
 
+<<<<<<< HEAD
 	exfg_psy = power_supply_get_by_name("bq27541-0");
+=======
+	exfg_psy = power_supply_get_by_name("bms");
+>>>>>>> origin/4.19.325
 	if (exfg_psy)
 		rc = power_supply_get_property(exfg_psy,
 				POWER_SUPPLY_PROP_GAUGE_VOLTAGE, &exfgpval);
@@ -534,7 +542,11 @@ static int handle_jeita(struct lenovo_jeita_info *chip)
 	}
 
 	power_supply_get_property(chip->usb_psy, POWER_SUPPLY_PROP_REAL_TYPE, &pval);
+<<<<<<< HEAD
 	pr_debug("%s : POWER_SUPPLY_PROP_REAL_TYPE : %d\n", __FUNCTION__, pval.intval);
+=======
+	pr_err("%s : POWER_SUPPLY_PROP_REAL_TYPE : %d\n", __FUNCTION__, pval.intval);
+>>>>>>> origin/4.19.325
 	if (pval.intval == POWER_SUPPLY_TYPE_USB_HVDCP_3) {
 		memcpy(chip->jeita_fcc_config->fcc_cfg, chip->jeita_fcc_config->hvdcp3_fcc_cfg, sizeof(struct range_data)*JEITA_STEP);
 	} else {

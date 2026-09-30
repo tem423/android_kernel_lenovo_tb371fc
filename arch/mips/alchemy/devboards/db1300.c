@@ -17,7 +17,10 @@
 #include <linux/interrupt.h>
 #include <linux/ata_platform.h>
 #include <linux/mmc/host.h>
+<<<<<<< HEAD
 #include <linux/module.h>
+=======
+>>>>>>> origin/4.19.325
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/rawnand.h>
 #include <linux/mtd/partitions.h>
@@ -449,6 +452,10 @@ static struct platform_device db1300_ide_dev = {
 
 /**********************************************************************/
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_MMC_AU1X
+>>>>>>> origin/4.19.325
 static irqreturn_t db1300_mmc_cd(int irq, void *ptr)
 {
 	disable_irq_nosync(irq);
@@ -457,6 +464,7 @@ static irqreturn_t db1300_mmc_cd(int irq, void *ptr)
 
 static irqreturn_t db1300_mmc_cdfn(int irq, void *ptr)
 {
+<<<<<<< HEAD
 	void (*mmc_cd)(struct mmc_host *, unsigned long);
 
 	/* link against CONFIG_MMC=m.  We can only be called once MMC core has
@@ -465,6 +473,9 @@ static irqreturn_t db1300_mmc_cdfn(int irq, void *ptr)
 	mmc_cd = symbol_get(mmc_detect_change);
 	mmc_cd(ptr, msecs_to_jiffies(200));
 	symbol_put(mmc_detect_change);
+=======
+	mmc_detect_change(ptr, msecs_to_jiffies(200));
+>>>>>>> origin/4.19.325
 
 	msleep(100);	/* debounce */
 	if (irq == DB1300_SD1_INSERT_INT)
@@ -634,6 +645,10 @@ static struct platform_device db1300_sd0_dev = {
 	.resource	= au1300_sd0_res,
 	.num_resources	= ARRAY_SIZE(au1300_sd0_res),
 };
+<<<<<<< HEAD
+=======
+#endif /* CONFIG_MMC_AU1X */
+>>>>>>> origin/4.19.325
 
 /**********************************************************************/
 
@@ -764,8 +779,15 @@ static struct platform_device *db1300_dev[] __initdata = {
 	&db1300_5waysw_dev,
 	&db1300_nand_dev,
 	&db1300_ide_dev,
+<<<<<<< HEAD
 	&db1300_sd0_dev,
 	&db1300_sd1_dev,
+=======
+#ifdef CONFIG_MMC_AU1X
+	&db1300_sd0_dev,
+	&db1300_sd1_dev,
+#endif
+>>>>>>> origin/4.19.325
 	&db1300_lcd_dev,
 	&db1300_ac97_dev,
 	&db1300_i2s_dev,

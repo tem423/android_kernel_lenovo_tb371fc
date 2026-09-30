@@ -10,6 +10,10 @@
 #include <linux/efi.h>
 #include <linux/fs.h>
 #include <linux/ctype.h>
+<<<<<<< HEAD
+=======
+#include <linux/kmemleak.h>
+>>>>>>> origin/4.19.325
 #include <linux/slab.h>
 #include <linux/uuid.h>
 
@@ -106,6 +110,10 @@ static int efivarfs_create(struct inode *dir, struct dentry *dentry,
 	var->var.VariableName[i] = '\0';
 
 	inode->i_private = var;
+<<<<<<< HEAD
+=======
+	kmemleak_ignore(var);
+>>>>>>> origin/4.19.325
 
 	err = efivar_entry_add(var, &efivarfs_list);
 	if (err)

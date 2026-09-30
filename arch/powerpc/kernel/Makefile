@@ -15,11 +15,20 @@ CFLAGS_prom_init.o      += -fPIC
 CFLAGS_btext.o		+= -fPIC
 endif
 
+<<<<<<< HEAD
+=======
+CFLAGS_setup_32.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
+>>>>>>> origin/4.19.325
 CFLAGS_cputable.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
 CFLAGS_prom_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
 CFLAGS_btext.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
 CFLAGS_prom.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
 
+<<<<<<< HEAD
+=======
+CFLAGS_prom_init.o += $(call cc-option, -fno-stack-protector)
+
+>>>>>>> origin/4.19.325
 ifdef CONFIG_FUNCTION_TRACER
 # Do not trace early boot code
 CFLAGS_REMOVE_cputable.o = $(CC_FLAGS_FTRACE)

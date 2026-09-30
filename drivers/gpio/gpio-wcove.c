@@ -110,7 +110,11 @@ static inline unsigned int to_reg(int gpio, enum ctrl_register reg_type)
 	unsigned int reg;
 
 	if (gpio >= WCOVE_GPIO_NUM)
+<<<<<<< HEAD
 		return -EOPNOTSUPP;
+=======
+		return -ENOTSUPP;
+>>>>>>> origin/4.19.325
 
 	if (reg_type == CTRL_IN)
 		reg = GPIO_IN_CTRL_BASE + gpio;

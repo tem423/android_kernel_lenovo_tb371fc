@@ -383,7 +383,11 @@ static int __init sq_api_init(void)
 	if (unlikely(!sq_cache))
 		return ret;
 
+<<<<<<< HEAD
 	sq_bitmap = kzalloc(size, GFP_KERNEL);
+=======
+	sq_bitmap = kcalloc(size, sizeof(long), GFP_KERNEL);
+>>>>>>> origin/4.19.325
 	if (unlikely(!sq_bitmap))
 		goto out;
 

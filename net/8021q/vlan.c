@@ -277,7 +277,12 @@ static int register_vlan_device(struct net_device *real_dev, u16 vlan_id)
 	return 0;
 
 out_free_newdev:
+<<<<<<< HEAD
 	if (new_dev->reg_state == NETREG_UNINITIALIZED)
+=======
+	if (new_dev->reg_state == NETREG_UNINITIALIZED ||
+	    new_dev->reg_state == NETREG_UNREGISTERED)
+>>>>>>> origin/4.19.325
 		free_netdev(new_dev);
 	return err;
 }

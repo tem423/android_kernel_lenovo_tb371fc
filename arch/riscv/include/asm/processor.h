@@ -30,6 +30,11 @@
 
 #ifndef __ASSEMBLY__
 
+<<<<<<< HEAD
+=======
+#include <asm/barrier.h>
+
+>>>>>>> origin/4.19.325
 struct task_struct;
 struct pt_regs;
 

@@ -463,7 +463,11 @@ arm1020e_crval:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/4.19.325
 
 	.type	__arm1020e_proc_info,#object
 __arm1020e_proc_info:

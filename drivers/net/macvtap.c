@@ -132,11 +132,23 @@ static void macvtap_setup(struct net_device *dev)
 	dev->tx_queue_len = TUN_READQ_SIZE;
 }
 
+<<<<<<< HEAD
+=======
+static struct net *macvtap_link_net(const struct net_device *dev)
+{
+	return dev_net(macvlan_dev_real_dev(dev));
+}
+
+>>>>>>> origin/4.19.325
 static struct rtnl_link_ops macvtap_link_ops __read_mostly = {
 	.kind		= "macvtap",
 	.setup		= macvtap_setup,
 	.newlink	= macvtap_newlink,
 	.dellink	= macvtap_dellink,
+<<<<<<< HEAD
+=======
+	.get_link_net	= macvtap_link_net,
+>>>>>>> origin/4.19.325
 	.priv_size      = sizeof(struct macvtap_dev),
 };
 

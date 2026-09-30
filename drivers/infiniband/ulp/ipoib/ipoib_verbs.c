@@ -277,7 +277,11 @@ void ipoib_event(struct ib_event_handler *handler,
 		return;
 
 	ipoib_dbg(priv, "Event %d on device %s port %d\n", record->event,
+<<<<<<< HEAD
 		  record->device->name, record->element.port_num);
+=======
+		  dev_name(&record->device->dev), record->element.port_num);
+>>>>>>> origin/4.19.325
 
 	if (record->event == IB_EVENT_SM_CHANGE ||
 	    record->event == IB_EVENT_CLIENT_REREGISTER) {

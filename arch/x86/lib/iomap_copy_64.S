@@ -22,6 +22,10 @@
  */
 ENTRY(__iowrite32_copy)
 	movl %edx,%ecx
+<<<<<<< HEAD
 	rep movsd
+=======
+	rep movsl
+>>>>>>> origin/4.19.325
 	ret
 ENDPROC(__iowrite32_copy)

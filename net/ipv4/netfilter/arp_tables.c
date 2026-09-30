@@ -1194,6 +1194,11 @@ static int translate_compat_table(struct net *net,
 	if (!newinfo)
 		goto out_unlock;
 
+<<<<<<< HEAD
+=======
+	memset(newinfo->entries, 0, size);
+
+>>>>>>> origin/4.19.325
 	newinfo->number = compatr->num_entries;
 	for (i = 0; i < NF_ARP_NUMHOOKS; i++) {
 		newinfo->hook_entry[i] = compatr->hook_entry[i];

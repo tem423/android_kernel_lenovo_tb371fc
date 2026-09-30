@@ -74,7 +74,11 @@ TRACE_EVENT(rpmh_send_msg,
 #endif /* _TRACE_RPMH_H */
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/soc/qcom
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace-rpmh

@@ -43,6 +43,14 @@ int tpm_read_log_efi(struct tpm_chip *chip)
 	log_size = log_tbl->size;
 	memunmap(log_tbl);
 
+<<<<<<< HEAD
+=======
+	if (!log_size) {
+		pr_warn("UEFI TPM log area empty\n");
+		return -EIO;
+	}
+
+>>>>>>> origin/4.19.325
 	log_tbl = memremap(efi.tpm_log, sizeof(*log_tbl) + log_size,
 			   MEMREMAP_WB);
 	if (!log_tbl) {

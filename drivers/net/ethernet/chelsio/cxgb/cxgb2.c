@@ -1153,6 +1153,10 @@ static int init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
 	if (!adapter->registered_device_map) {
 		pr_err("%s: could not register any net devices\n",
 		       pci_name(pdev));
+<<<<<<< HEAD
+=======
+		err = -EINVAL;
+>>>>>>> origin/4.19.325
 		goto out_release_adapter_res;
 	}
 

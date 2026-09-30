@@ -145,6 +145,14 @@ static int nft_flow_offload_validate(const struct nft_ctx *ctx,
 {
 	unsigned int hook_mask = (1 << NF_INET_FORWARD);
 
+<<<<<<< HEAD
+=======
+	if (ctx->family != NFPROTO_IPV4 &&
+	    ctx->family != NFPROTO_IPV6 &&
+	    ctx->family != NFPROTO_INET)
+		return -EOPNOTSUPP;
+
+>>>>>>> origin/4.19.325
 	return nft_chain_validate_hooks(ctx->chain, hook_mask);
 }
 
@@ -169,18 +177,48 @@ static int nft_flow_offload_init(const struct nft_ctx *ctx,
 	if (IS_ERR(flowtable))
 		return PTR_ERR(flowtable);
 
+<<<<<<< HEAD
 	priv->flowtable = flowtable;
 	flowtable->use++;
+=======
+	if (!nft_use_inc(&flowtable->use))
+		return -EMFILE;
+
+	priv->flowtable = flowtable;
+>>>>>>> origin/4.19.325
 
 	return nf_ct_netns_get(ctx->net, ctx->family);
 }
 
+<<<<<<< HEAD
 static void nft_flow_offload_destroy(const struct nft_ctx *ctx,
 				     const struct nft_expr *expr)
 {
 	struct nft_flow_offload *priv = nft_expr_priv(expr);
 
 	priv->flowtable->use--;
+=======
+static void nft_flow_offload_deactivate(const struct nft_ctx *ctx,
+					const struct nft_expr *expr,
+					enum nft_trans_phase phase)
+{
+	struct nft_flow_offload *priv = nft_expr_priv(expr);
+
+	nf_tables_deactivate_flowtable(ctx, priv->flowtable, phase);
+}
+
+static void nft_flow_offload_activate(const struct nft_ctx *ctx,
+				      const struct nft_expr *expr)
+{
+	struct nft_flow_offload *priv = nft_expr_priv(expr);
+
+	nft_use_inc_restore(&priv->flowtable->use);
+}
+
+static void nft_flow_offload_destroy(const struct nft_ctx *ctx,
+				     const struct nft_expr *expr)
+{
+>>>>>>> origin/4.19.325
 	nf_ct_netns_put(ctx->net, ctx->family);
 }
 
@@ -203,6 +241,11 @@ static const struct nft_expr_ops nft_flow_offload_ops = {
 	.size		= NFT_EXPR_SIZE(sizeof(struct nft_flow_offload)),
 	.eval		= nft_flow_offload_eval,
 	.init		= nft_flow_offload_init,
+<<<<<<< HEAD
+=======
+	.activate	= nft_flow_offload_activate,
+	.deactivate	= nft_flow_offload_deactivate,
+>>>>>>> origin/4.19.325
 	.destroy	= nft_flow_offload_destroy,
 	.validate	= nft_flow_offload_validate,
 	.dump		= nft_flow_offload_dump,

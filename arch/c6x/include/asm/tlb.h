@@ -2,8 +2,11 @@
 #ifndef _ASM_C6X_TLB_H
 #define _ASM_C6X_TLB_H
 
+<<<<<<< HEAD
 #define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
 
+=======
+>>>>>>> origin/4.19.325
 #include <asm-generic/tlb.h>
 
 #endif /* _ASM_C6X_TLB_H */

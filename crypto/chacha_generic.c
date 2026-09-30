@@ -31,7 +31,11 @@ static int chacha_stream_xor(struct skcipher_request *req,
 		unsigned int nbytes = walk.nbytes;
 
 		if (nbytes < walk.total)
+<<<<<<< HEAD
 			nbytes = round_down(nbytes, walk.stride);
+=======
+			nbytes = round_down(nbytes, CHACHA_BLOCK_SIZE);
+>>>>>>> origin/4.19.325
 
 		chacha_crypt_generic(state, walk.dst.virt.addr,
 				     walk.src.virt.addr, nbytes, ctx->nrounds);

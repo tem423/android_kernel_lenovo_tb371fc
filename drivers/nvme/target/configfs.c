@@ -464,10 +464,24 @@ static ssize_t nvmet_ns_enable_store(struct config_item *item,
 	if (strtobool(page, &enable))
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	/*
+	 * take a global nvmet_config_sem because the disable routine has a
+	 * window where it releases the subsys-lock, giving a chance to
+	 * a parallel enable to concurrently execute causing the disable to
+	 * have a misaccounting of the ns percpu_ref.
+	 */
+	down_write(&nvmet_config_sem);
+>>>>>>> origin/4.19.325
 	if (enable)
 		ret = nvmet_ns_enable(ns);
 	else
 		nvmet_ns_disable(ns);
+<<<<<<< HEAD
+=======
+	up_write(&nvmet_config_sem);
+>>>>>>> origin/4.19.325
 
 	return ret ? ret : count;
 }

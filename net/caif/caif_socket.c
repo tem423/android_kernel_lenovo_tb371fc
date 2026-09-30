@@ -539,7 +539,12 @@ static int caif_seqpkt_sendmsg(struct socket *sock, struct msghdr *msg,
 		goto err;
 
 	ret = -EINVAL;
+<<<<<<< HEAD
 	if (unlikely(msg->msg_iter.iov->iov_base == NULL))
+=======
+	if (unlikely(msg->msg_iter.nr_segs == 0) ||
+	    unlikely(msg->msg_iter.iov->iov_base == NULL))
+>>>>>>> origin/4.19.325
 		goto err;
 	noblock = msg->msg_flags & MSG_DONTWAIT;
 
@@ -1021,6 +1026,10 @@ static void caif_sock_destructor(struct sock *sk)
 		return;
 	}
 	sk_stream_kill_queues(&cf_sk->sk);
+<<<<<<< HEAD
+=======
+	WARN_ON(sk->sk_forward_alloc);
+>>>>>>> origin/4.19.325
 	caif_free_client(&cf_sk->layer);
 }
 

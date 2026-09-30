@@ -135,7 +135,11 @@ static int get_kobj_path_length(struct kobject *kobj)
 	return length;
 }
 
+<<<<<<< HEAD
 static void fill_kobj_path(struct kobject *kobj, char *path, int length)
+=======
+static int fill_kobj_path(struct kobject *kobj, char *path, int length)
+>>>>>>> origin/4.19.325
 {
 	struct kobject *parent;
 
@@ -144,12 +148,22 @@ static void fill_kobj_path(struct kobject *kobj, char *path, int length)
 		int cur = strlen(kobject_name(parent));
 		/* back up enough to print this name with '/' */
 		length -= cur;
+<<<<<<< HEAD
+=======
+		if (length <= 0)
+			return -EINVAL;
+>>>>>>> origin/4.19.325
 		memcpy(path + length, kobject_name(parent), cur);
 		*(path + --length) = '/';
 	}
 
 	pr_debug("kobject: '%s' (%p): %s: path = '%s'\n", kobject_name(kobj),
 		 kobj, __func__, path);
+<<<<<<< HEAD
+=======
+
+	return 0;
+>>>>>>> origin/4.19.325
 }
 
 /**
@@ -165,13 +179,24 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
 	char *path;
 	int len;
 
+<<<<<<< HEAD
+=======
+retry:
+>>>>>>> origin/4.19.325
 	len = get_kobj_path_length(kobj);
 	if (len == 0)
 		return NULL;
 	path = kzalloc(len, gfp_mask);
 	if (!path)
 		return NULL;
+<<<<<<< HEAD
 	fill_kobj_path(kobj, path, len);
+=======
+	if (fill_kobj_path(kobj, path, len)) {
+		kfree(path);
+		goto retry;
+	}
+>>>>>>> origin/4.19.325
 
 	return path;
 }
@@ -829,6 +854,14 @@ int kset_register(struct kset *k)
 	if (!k)
 		return -EINVAL;
 
+<<<<<<< HEAD
+=======
+	if (!k->kobj.ktype) {
+		pr_err("must have a ktype to be initialized properly!\n");
+		return -EINVAL;
+	}
+
+>>>>>>> origin/4.19.325
 	kset_init(k);
 	err = kobject_add_internal(&k->kobj);
 	if (err)

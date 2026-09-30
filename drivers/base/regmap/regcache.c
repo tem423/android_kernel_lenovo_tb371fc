@@ -347,6 +347,12 @@ int regcache_sync(struct regmap *map)
 	const char *name;
 	bool bypass;
 
+<<<<<<< HEAD
+=======
+	if (WARN_ON(map->cache_type == REGCACHE_NONE))
+		return -EINVAL;
+
+>>>>>>> origin/4.19.325
 	BUG_ON(!map->cache_ops);
 
 	map->lock(map->lock_arg);
@@ -416,6 +422,12 @@ int regcache_sync_region(struct regmap *map, unsigned int min,
 	const char *name;
 	bool bypass;
 
+<<<<<<< HEAD
+=======
+	if (WARN_ON(map->cache_type == REGCACHE_NONE))
+		return -EINVAL;
+
+>>>>>>> origin/4.19.325
 	BUG_ON(!map->cache_ops);
 
 	map->lock(map->lock_arg);

@@ -73,6 +73,10 @@ struct kcm_sock {
 	struct work_struct tx_work;
 	struct list_head wait_psock_list;
 	struct sk_buff *seq_skb;
+<<<<<<< HEAD
+=======
+	struct mutex tx_mutex;
+>>>>>>> origin/4.19.325
 	u32 tx_stopped : 1;
 
 	/* Don't use bit fields here, these are set under different locks */

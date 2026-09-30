@@ -1378,7 +1378,11 @@ static int wm8998_probe(struct platform_device *pdev)
 
 	ret = arizona_init_spk_irqs(arizona);
 	if (ret < 0)
+<<<<<<< HEAD
 		return ret;
+=======
+		goto err_pm_disable;
+>>>>>>> origin/4.19.325
 
 	ret = devm_snd_soc_register_component(&pdev->dev,
 					      &soc_component_dev_wm8998,
@@ -1393,6 +1397,11 @@ static int wm8998_probe(struct platform_device *pdev)
 
 err_spk_irqs:
 	arizona_free_spk_irqs(arizona);
+<<<<<<< HEAD
+=======
+err_pm_disable:
+	pm_runtime_disable(&pdev->dev);
+>>>>>>> origin/4.19.325
 
 	return ret;
 }

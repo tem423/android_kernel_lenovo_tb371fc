@@ -122,7 +122,11 @@ int x25_lapb_receive_frame(struct sk_buff *skb, struct net_device *dev,
 
 	if (!pskb_may_pull(skb, 1)) {
 		x25_neigh_put(nb);
+<<<<<<< HEAD
 		return 0;
+=======
+		goto drop;
+>>>>>>> origin/4.19.325
 	}
 
 	switch (skb->data[0]) {

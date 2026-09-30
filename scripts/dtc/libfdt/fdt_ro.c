@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
@@ -47,6 +48,12 @@
  *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=======
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+/*
+ * libfdt - Flat Device Tree manipulation
+ * Copyright (C) 2006 David Gibson, IBM Corporation.
+>>>>>>> origin/4.19.325
  */
 #include "libfdt_env.h"
 
@@ -76,14 +83,75 @@ static int fdt_nodename_eq_(const void *fdt, int offset,
 		return 0;
 }
 
+<<<<<<< HEAD
 const char *fdt_string(const void *fdt, int stroffset)
 {
 	return (const char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
+=======
+const char *fdt_get_string(const void *fdt, int stroffset, int *lenp)
+{
+	uint32_t absoffset = stroffset + fdt_off_dt_strings(fdt);
+	size_t len;
+	int err;
+	const char *s, *n;
+
+	err = fdt_ro_probe_(fdt);
+	if (err != 0)
+		goto fail;
+
+	err = -FDT_ERR_BADOFFSET;
+	if (absoffset >= fdt_totalsize(fdt))
+		goto fail;
+	len = fdt_totalsize(fdt) - absoffset;
+
+	if (fdt_magic(fdt) == FDT_MAGIC) {
+		if (stroffset < 0)
+			goto fail;
+		if (fdt_version(fdt) >= 17) {
+			if (stroffset >= fdt_size_dt_strings(fdt))
+				goto fail;
+			if ((fdt_size_dt_strings(fdt) - stroffset) < len)
+				len = fdt_size_dt_strings(fdt) - stroffset;
+		}
+	} else if (fdt_magic(fdt) == FDT_SW_MAGIC) {
+		if ((stroffset >= 0)
+		    || (stroffset < -fdt_size_dt_strings(fdt)))
+			goto fail;
+		if ((-stroffset) < len)
+			len = -stroffset;
+	} else {
+		err = -FDT_ERR_INTERNAL;
+		goto fail;
+	}
+
+	s = (const char *)fdt + absoffset;
+	n = memchr(s, '\0', len);
+	if (!n) {
+		/* missing terminating NULL */
+		err = -FDT_ERR_TRUNCATED;
+		goto fail;
+	}
+
+	if (lenp)
+		*lenp = n - s;
+	return s;
+
+fail:
+	if (lenp)
+		*lenp = err;
+	return NULL;
+}
+
+const char *fdt_string(const void *fdt, int stroffset)
+{
+	return fdt_get_string(fdt, stroffset, NULL);
+>>>>>>> origin/4.19.325
 }
 
 static int fdt_string_eq_(const void *fdt, int stroffset,
 			  const char *s, int len)
 {
+<<<<<<< HEAD
 	const char *p = fdt_string(fdt, stroffset);
 
 	return (strlen(p) == len) && (memcmp(p, s, len) == 0);
@@ -120,16 +188,104 @@ int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
 	FDT_CHECK_HEADER(fdt);
 	*address = fdt64_to_cpu(fdt_mem_rsv_(fdt, n)->address);
 	*size = fdt64_to_cpu(fdt_mem_rsv_(fdt, n)->size);
+=======
+	int slen;
+	const char *p = fdt_get_string(fdt, stroffset, &slen);
+
+	return p && (slen == len) && (memcmp(p, s, len) == 0);
+}
+
+int fdt_find_max_phandle(const void *fdt, uint32_t *phandle)
+{
+	uint32_t max = 0;
+	int offset = -1;
+
+	while (true) {
+		uint32_t value;
+
+		offset = fdt_next_node(fdt, offset, NULL);
+		if (offset < 0) {
+			if (offset == -FDT_ERR_NOTFOUND)
+				break;
+
+			return offset;
+		}
+
+		value = fdt_get_phandle(fdt, offset);
+
+		if (value > max)
+			max = value;
+	}
+
+	if (phandle)
+		*phandle = max;
+
+	return 0;
+}
+
+int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
+{
+	uint32_t max;
+	int err;
+
+	err = fdt_find_max_phandle(fdt, &max);
+	if (err < 0)
+		return err;
+
+	if (max == FDT_MAX_PHANDLE)
+		return -FDT_ERR_NOPHANDLES;
+
+	if (phandle)
+		*phandle = max + 1;
+
+	return 0;
+}
+
+static const struct fdt_reserve_entry *fdt_mem_rsv(const void *fdt, int n)
+{
+	int offset = n * sizeof(struct fdt_reserve_entry);
+	int absoffset = fdt_off_mem_rsvmap(fdt) + offset;
+
+	if (absoffset < fdt_off_mem_rsvmap(fdt))
+		return NULL;
+	if (absoffset > fdt_totalsize(fdt) - sizeof(struct fdt_reserve_entry))
+		return NULL;
+	return fdt_mem_rsv_(fdt, n);
+}
+
+int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
+{
+	const struct fdt_reserve_entry *re;
+
+	FDT_RO_PROBE(fdt);
+	re = fdt_mem_rsv(fdt, n);
+	if (!re)
+		return -FDT_ERR_BADOFFSET;
+
+	*address = fdt64_ld(&re->address);
+	*size = fdt64_ld(&re->size);
+>>>>>>> origin/4.19.325
 	return 0;
 }
 
 int fdt_num_mem_rsv(const void *fdt)
 {
+<<<<<<< HEAD
 	int i = 0;
 
 	while (fdt64_to_cpu(fdt_mem_rsv_(fdt, i)->size) != 0)
 		i++;
 	return i;
+=======
+	int i;
+	const struct fdt_reserve_entry *re;
+
+	for (i = 0; (re = fdt_mem_rsv(fdt, i)) != NULL; i++) {
+		if (fdt64_ld(&re->size) == 0)
+			return i;
+	}
+	return -FDT_ERR_TRUNCATED;
+>>>>>>> origin/4.19.325
 }
 
 static int nextprop_(const void *fdt, int offset)
@@ -161,7 +317,11 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset,
 {
 	int depth;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	for (depth = 0;
 	     (offset >= 0) && (depth >= 0);
@@ -187,7 +347,11 @@ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen)
 	const char *p = path;
 	int offset = 0;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	/* see if we have an alias */
 	if (*path != '/') {
@@ -237,7 +401,11 @@ const char *fdt_get_name(const void *fdt, int nodeoffset, int *len)
 	const char *nameptr;
 	int err;
 
+<<<<<<< HEAD
 	if (((err = fdt_check_header(fdt)) != 0)
+=======
+	if (((err = fdt_ro_probe_(fdt)) != 0)
+>>>>>>> origin/4.19.325
 	    || ((err = fdt_check_node_offset_(fdt, nodeoffset)) < 0))
 			goto fail;
 
@@ -303,7 +471,11 @@ static const struct fdt_property *fdt_get_property_by_offset_(const void *fdt,
 	prop = fdt_offset_ptr_(fdt, offset);
 
 	if (lenp)
+<<<<<<< HEAD
 		*lenp = fdt32_to_cpu(prop->len);
+=======
+		*lenp = fdt32_ld(&prop->len);
+>>>>>>> origin/4.19.325
 
 	return prop;
 }
@@ -340,7 +512,11 @@ static const struct fdt_property *fdt_get_property_namelen_(const void *fdt,
 			offset = -FDT_ERR_INTERNAL;
 			break;
 		}
+<<<<<<< HEAD
 		if (fdt_string_eq_(fdt, fdt32_to_cpu(prop->nameoff),
+=======
+		if (fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff),
+>>>>>>> origin/4.19.325
 				   name, namelen)) {
 			if (poffset)
 				*poffset = offset;
@@ -393,7 +569,11 @@ const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
 
 	/* Handle realignment */
 	if (fdt_version(fdt) < 0x10 && (poffset + sizeof(*prop)) % 8 &&
+<<<<<<< HEAD
 	    fdt32_to_cpu(prop->len) >= 8)
+=======
+	    fdt32_ld(&prop->len) >= 8)
+>>>>>>> origin/4.19.325
 		return prop->data + 4;
 	return prop->data;
 }
@@ -406,12 +586,31 @@ const void *fdt_getprop_by_offset(const void *fdt, int offset,
 	prop = fdt_get_property_by_offset_(fdt, offset, lenp);
 	if (!prop)
 		return NULL;
+<<<<<<< HEAD
 	if (namep)
 		*namep = fdt_string(fdt, fdt32_to_cpu(prop->nameoff));
 
 	/* Handle realignment */
 	if (fdt_version(fdt) < 0x10 && (offset + sizeof(*prop)) % 8 &&
 	    fdt32_to_cpu(prop->len) >= 8)
+=======
+	if (namep) {
+		const char *name;
+		int namelen;
+		name = fdt_get_string(fdt, fdt32_ld(&prop->nameoff),
+				      &namelen);
+		if (!name) {
+			if (lenp)
+				*lenp = namelen;
+			return NULL;
+		}
+		*namep = name;
+	}
+
+	/* Handle realignment */
+	if (fdt_version(fdt) < 0x10 && (offset + sizeof(*prop)) % 8 &&
+	    fdt32_ld(&prop->len) >= 8)
+>>>>>>> origin/4.19.325
 		return prop->data + 4;
 	return prop->data;
 }
@@ -436,7 +635,11 @@ uint32_t fdt_get_phandle(const void *fdt, int nodeoffset)
 			return 0;
 	}
 
+<<<<<<< HEAD
 	return fdt32_to_cpu(*php);
+=======
+	return fdt32_ld(php);
+>>>>>>> origin/4.19.325
 }
 
 const char *fdt_get_alias_namelen(const void *fdt,
@@ -462,7 +665,11 @@ int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
 	int offset, depth, namelen;
 	const char *name;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	if (buflen < 2)
 		return -FDT_ERR_NOSPACE;
@@ -514,7 +721,11 @@ int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
 	int offset, depth;
 	int supernodeoffset = -FDT_ERR_INTERNAL;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	if (supernodedepth < 0)
 		return -FDT_ERR_NOTFOUND;
@@ -573,7 +784,11 @@ int fdt_node_offset_by_prop_value(const void *fdt, int startoffset,
 	const void *val;
 	int len;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	/* FIXME: The algorithm here is pretty horrible: we scan each
 	 * property of a node in fdt_getprop(), then if that didn't
@@ -599,7 +814,11 @@ int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
 	if ((phandle == 0) || (phandle == -1))
 		return -FDT_ERR_BADPHANDLE;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	/* FIXME: The algorithm here is pretty horrible: we
 	 * potentially scan each property of a node in
@@ -752,7 +971,11 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
 {
 	int offset, err;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	/* FIXME: The algorithm here is pretty horrible: we scan each
 	 * property of a node in fdt_node_check_compatible(), then if
@@ -771,3 +994,69 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
 
 	return offset; /* error from fdt_next_node() */
 }
+<<<<<<< HEAD
+=======
+
+int fdt_check_full(const void *fdt, size_t bufsize)
+{
+	int err;
+	int num_memrsv;
+	int offset, nextoffset = 0;
+	uint32_t tag;
+	unsigned depth = 0;
+	const void *prop;
+	const char *propname;
+
+	if (bufsize < FDT_V1_SIZE)
+		return -FDT_ERR_TRUNCATED;
+	err = fdt_check_header(fdt);
+	if (err != 0)
+		return err;
+	if (bufsize < fdt_totalsize(fdt))
+		return -FDT_ERR_TRUNCATED;
+
+	num_memrsv = fdt_num_mem_rsv(fdt);
+	if (num_memrsv < 0)
+		return num_memrsv;
+
+	while (1) {
+		offset = nextoffset;
+		tag = fdt_next_tag(fdt, offset, &nextoffset);
+
+		if (nextoffset < 0)
+			return nextoffset;
+
+		switch (tag) {
+		case FDT_NOP:
+			break;
+
+		case FDT_END:
+			if (depth != 0)
+				return -FDT_ERR_BADSTRUCTURE;
+			return 0;
+
+		case FDT_BEGIN_NODE:
+			depth++;
+			if (depth > INT_MAX)
+				return -FDT_ERR_BADSTRUCTURE;
+			break;
+
+		case FDT_END_NODE:
+			if (depth == 0)
+				return -FDT_ERR_BADSTRUCTURE;
+			depth--;
+			break;
+
+		case FDT_PROP:
+			prop = fdt_getprop_by_offset(fdt, offset, &propname,
+						     &err);
+			if (!prop)
+				return err;
+			break;
+
+		default:
+			return -FDT_ERR_INTERNAL;
+		}
+	}
+}
+>>>>>>> origin/4.19.325

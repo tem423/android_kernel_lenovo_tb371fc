@@ -169,7 +169,11 @@ static int __init com20020_init(void)
 		dev->irq = 9;
 
 	if (com20020isa_probe(dev)) {
+<<<<<<< HEAD
 		free_netdev(dev);
+=======
+		free_arcdev(dev);
+>>>>>>> origin/4.19.325
 		return -EIO;
 	}
 
@@ -182,7 +186,11 @@ static void __exit com20020_exit(void)
 	unregister_netdev(my_dev);
 	free_irq(my_dev->irq, my_dev);
 	release_region(my_dev->base_addr, ARCNET_TOTAL_SIZE);
+<<<<<<< HEAD
 	free_netdev(my_dev);
+=======
+	free_arcdev(my_dev);
+>>>>>>> origin/4.19.325
 }
 
 #ifndef MODULE

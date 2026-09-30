@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
@@ -47,6 +48,12 @@
  *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=======
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+/*
+ * libfdt - Flat Device Tree manipulation
+ * Copyright (C) 2006 David Gibson, IBM Corporation.
+>>>>>>> origin/4.19.325
  */
 #include "libfdt_env.h"
 
@@ -67,9 +74,15 @@ static int fdt_blocks_misordered_(const void *fdt,
 		    (fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt)));
 }
 
+<<<<<<< HEAD
 static int fdt_rw_check_header_(void *fdt)
 {
 	FDT_CHECK_HEADER(fdt);
+=======
+static int fdt_rw_probe_(void *fdt)
+{
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	if (fdt_version(fdt) < 17)
 		return -FDT_ERR_BADVERSION;
@@ -82,10 +95,17 @@ static int fdt_rw_check_header_(void *fdt)
 	return 0;
 }
 
+<<<<<<< HEAD
 #define FDT_RW_CHECK_HEADER(fdt) \
 	{ \
 		int err_; \
 		if ((err_ = fdt_rw_check_header_(fdt)) != 0) \
+=======
+#define FDT_RW_PROBE(fdt) \
+	{ \
+		int err_; \
+		if ((err_ = fdt_rw_probe_(fdt)) != 0) \
+>>>>>>> origin/4.19.325
 			return err_; \
 	}
 
@@ -136,6 +156,17 @@ static int fdt_splice_struct_(void *fdt, void *p,
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+/* Must only be used to roll back in case of error */
+static void fdt_del_last_string_(void *fdt, const char *s)
+{
+	int newlen = strlen(s) + 1;
+
+	fdt_set_size_dt_strings(fdt, fdt_size_dt_strings(fdt) - newlen);
+}
+
+>>>>>>> origin/4.19.325
 static int fdt_splice_string_(void *fdt, int newlen)
 {
 	void *p = (char *)fdt
@@ -149,7 +180,11 @@ static int fdt_splice_string_(void *fdt, int newlen)
 	return 0;
 }
 
+<<<<<<< HEAD
 static int fdt_find_add_string_(void *fdt, const char *s)
+=======
+static int fdt_find_add_string_(void *fdt, const char *s, int *allocated)
+>>>>>>> origin/4.19.325
 {
 	char *strtab = (char *)fdt + fdt_off_dt_strings(fdt);
 	const char *p;
@@ -157,6 +192,11 @@ static int fdt_find_add_string_(void *fdt, const char *s)
 	int len = strlen(s) + 1;
 	int err;
 
+<<<<<<< HEAD
+=======
+	*allocated = 0;
+
+>>>>>>> origin/4.19.325
 	p = fdt_find_string_(strtab, fdt_size_dt_strings(fdt), s);
 	if (p)
 		/* found it */
@@ -167,6 +207,11 @@ static int fdt_find_add_string_(void *fdt, const char *s)
 	if (err)
 		return err;
 
+<<<<<<< HEAD
+=======
+	*allocated = 1;
+
+>>>>>>> origin/4.19.325
 	memcpy(new, s, len);
 	return (new - strtab);
 }
@@ -176,7 +221,11 @@ int fdt_add_mem_rsv(void *fdt, uint64_t address, uint64_t size)
 	struct fdt_reserve_entry *re;
 	int err;
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	re = fdt_mem_rsv_w_(fdt, fdt_num_mem_rsv(fdt));
 	err = fdt_splice_mem_rsv_(fdt, re, 0, 1);
@@ -192,7 +241,11 @@ int fdt_del_mem_rsv(void *fdt, int n)
 {
 	struct fdt_reserve_entry *re = fdt_mem_rsv_w_(fdt, n);
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	if (n >= fdt_num_mem_rsv(fdt))
 		return -FDT_ERR_NOTFOUND;
@@ -225,11 +278,19 @@ static int fdt_add_property_(void *fdt, int nodeoffset, const char *name,
 	int nextoffset;
 	int namestroff;
 	int err;
+<<<<<<< HEAD
+=======
+	int allocated;
+>>>>>>> origin/4.19.325
 
 	if ((nextoffset = fdt_check_node_offset_(fdt, nodeoffset)) < 0)
 		return nextoffset;
 
+<<<<<<< HEAD
 	namestroff = fdt_find_add_string_(fdt, name);
+=======
+	namestroff = fdt_find_add_string_(fdt, name, &allocated);
+>>>>>>> origin/4.19.325
 	if (namestroff < 0)
 		return namestroff;
 
@@ -237,8 +298,16 @@ static int fdt_add_property_(void *fdt, int nodeoffset, const char *name,
 	proplen = sizeof(**prop) + FDT_TAGALIGN(len);
 
 	err = fdt_splice_struct_(fdt, *prop, 0, proplen);
+<<<<<<< HEAD
 	if (err)
 		return err;
+=======
+	if (err) {
+		if (allocated)
+			fdt_del_last_string_(fdt, name);
+		return err;
+	}
+>>>>>>> origin/4.19.325
 
 	(*prop)->tag = cpu_to_fdt32(FDT_PROP);
 	(*prop)->nameoff = cpu_to_fdt32(namestroff);
@@ -252,7 +321,11 @@ int fdt_set_name(void *fdt, int nodeoffset, const char *name)
 	int oldlen, newlen;
 	int err;
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	namep = (char *)(uintptr_t)fdt_get_name(fdt, nodeoffset, &oldlen);
 	if (!namep)
@@ -275,7 +348,11 @@ int fdt_setprop_placeholder(void *fdt, int nodeoffset, const char *name,
 	struct fdt_property *prop;
 	int err;
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	err = fdt_resize_property_(fdt, nodeoffset, name, len, &prop);
 	if (err == -FDT_ERR_NOTFOUND)
@@ -308,7 +385,11 @@ int fdt_appendprop(void *fdt, int nodeoffset, const char *name,
 	struct fdt_property *prop;
 	int err, oldlen, newlen;
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	prop = fdt_get_property_w(fdt, nodeoffset, name, &oldlen);
 	if (prop) {
@@ -334,7 +415,11 @@ int fdt_delprop(void *fdt, int nodeoffset, const char *name)
 	struct fdt_property *prop;
 	int len, proplen;
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	prop = fdt_get_property_w(fdt, nodeoffset, name, &len);
 	if (!prop)
@@ -354,7 +439,11 @@ int fdt_add_subnode_namelen(void *fdt, int parentoffset,
 	uint32_t tag;
 	fdt32_t *endtag;
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	offset = fdt_subnode_offset_namelen(fdt, parentoffset, name, namelen);
 	if (offset >= 0)
@@ -394,7 +483,11 @@ int fdt_del_node(void *fdt, int nodeoffset)
 {
 	int endoffset;
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	endoffset = fdt_node_end_offset_(fdt, nodeoffset);
 	if (endoffset < 0)
@@ -435,7 +528,11 @@ int fdt_open_into(const void *fdt, void *buf, int bufsize)
 	const char *fdtend = fdtstart + fdt_totalsize(fdt);
 	char *tmp;
 
+<<<<<<< HEAD
 	FDT_CHECK_HEADER(fdt);
+=======
+	FDT_RO_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
 		* sizeof(struct fdt_reserve_entry);
@@ -494,7 +591,11 @@ int fdt_pack(void *fdt)
 {
 	int mem_rsv_size;
 
+<<<<<<< HEAD
 	FDT_RW_CHECK_HEADER(fdt);
+=======
+	FDT_RW_PROBE(fdt);
+>>>>>>> origin/4.19.325
 
 	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
 		* sizeof(struct fdt_reserve_entry);

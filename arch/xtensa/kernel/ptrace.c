@@ -35,12 +35,20 @@
 
 void user_enable_single_step(struct task_struct *child)
 {
+<<<<<<< HEAD
 	child->ptrace |= PT_SINGLESTEP;
+=======
+	set_tsk_thread_flag(child, TIF_SINGLESTEP);
+>>>>>>> origin/4.19.325
 }
 
 void user_disable_single_step(struct task_struct *child)
 {
+<<<<<<< HEAD
 	child->ptrace &= ~PT_SINGLESTEP;
+=======
+	clear_tsk_thread_flag(child, TIF_SINGLESTEP);
+>>>>>>> origin/4.19.325
 }
 
 /*

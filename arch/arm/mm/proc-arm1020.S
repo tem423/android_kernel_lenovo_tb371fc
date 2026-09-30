@@ -505,7 +505,11 @@ cpu_arm1020_name:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/4.19.325
 
 	.type	__arm1020_proc_info,#object
 __arm1020_proc_info:

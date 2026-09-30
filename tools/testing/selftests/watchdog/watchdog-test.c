@@ -152,7 +152,17 @@ int main(int argc, char *argv[])
 
 	printf("Watchdog Ticking Away!\n");
 
+<<<<<<< HEAD
 	signal(SIGINT, term);
+=======
+	/*
+	 * Register the signals
+	 */
+	signal(SIGINT, term);
+	signal(SIGTERM, term);
+	signal(SIGKILL, term);
+	signal(SIGQUIT, term);
+>>>>>>> origin/4.19.325
 
 	while (1) {
 		keep_alive();

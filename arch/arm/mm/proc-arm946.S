@@ -399,7 +399,11 @@ __arm946_setup:
 
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/4.19.325
 	.type	__arm946_proc_info,#object
 __arm946_proc_info:
 	.long	0x41009460

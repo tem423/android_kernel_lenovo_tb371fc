@@ -40,6 +40,10 @@ void pci_disable_pasid(struct pci_dev *pdev);
 void pci_restore_pasid_state(struct pci_dev *pdev);
 int pci_pasid_features(struct pci_dev *pdev);
 int pci_max_pasids(struct pci_dev *pdev);
+<<<<<<< HEAD
+=======
+int pci_prg_resp_pasid_required(struct pci_dev *pdev);
+>>>>>>> origin/4.19.325
 
 #else  /* CONFIG_PCI_PASID */
 
@@ -66,6 +70,13 @@ static inline int pci_max_pasids(struct pci_dev *pdev)
 	return -EINVAL;
 }
 
+<<<<<<< HEAD
+=======
+static inline int pci_prg_resp_pasid_required(struct pci_dev *pdev)
+{
+	return 0;
+}
+>>>>>>> origin/4.19.325
 #endif /* CONFIG_PCI_PASID */
 
 

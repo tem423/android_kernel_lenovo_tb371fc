@@ -63,7 +63,11 @@
 		_new;						\
 		struct {					\
 			_orig;					\
+<<<<<<< HEAD
 		} __UNIQUE_ID(android_kabi_hide);		\
+=======
+		};						\
+>>>>>>> origin/4.19.325
 		__ANDROID_KABI_CHECK_SIZE_ALIGN(_orig, _new);	\
 	}
 

@@ -67,6 +67,11 @@ struct legacy_pic {
 	void (*make_irq)(unsigned int irq);
 };
 
+<<<<<<< HEAD
+=======
+void legacy_pic_pcat_compat(void);
+
+>>>>>>> origin/4.19.325
 extern struct legacy_pic *legacy_pic;
 extern struct legacy_pic null_legacy_pic;
 

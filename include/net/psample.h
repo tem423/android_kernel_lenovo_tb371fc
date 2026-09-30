@@ -18,6 +18,11 @@ struct psample_group {
 struct psample_group *psample_group_get(struct net *net, u32 group_num);
 void psample_group_put(struct psample_group *group);
 
+<<<<<<< HEAD
+=======
+struct sk_buff;
+
+>>>>>>> origin/4.19.325
 #if IS_ENABLED(CONFIG_PSAMPLE)
 
 void psample_sample_packet(struct psample_group *group, struct sk_buff *skb,

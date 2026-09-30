@@ -1155,7 +1155,11 @@ static int usb_bam_disconnect_ipa_prod(
 				__func__, pipe_connect->bam_type);
 		else
 			ctx->pipes_enabled_per_bam -= 1;
+<<<<<<< HEAD
 			spin_unlock(&ctx->usb_bam_lock);
+=======
+		spin_unlock(&ctx->usb_bam_lock);
+>>>>>>> origin/4.19.325
 	}
 
 	return 0;
@@ -1276,7 +1280,11 @@ retry:
 				 __func__, pipe_connect->bam_type);
 		else
 			ctx->pipes_enabled_per_bam -= 1;
+<<<<<<< HEAD
 			spin_unlock(&ctx->usb_bam_lock);
+=======
+		spin_unlock(&ctx->usb_bam_lock);
+>>>>>>> origin/4.19.325
 	}
 
 	pipe_connect->ipa_clnt_hdl = -1;

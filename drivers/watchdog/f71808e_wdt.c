@@ -237,15 +237,27 @@ static int watchdog_set_timeout(int timeout)
 
 	mutex_lock(&watchdog.lock);
 
+<<<<<<< HEAD
 	watchdog.timeout = timeout;
 	if (timeout > 0xff) {
 		watchdog.timer_val = DIV_ROUND_UP(timeout, 60);
 		watchdog.minutes_mode = true;
+=======
+	if (timeout > 0xff) {
+		watchdog.timer_val = DIV_ROUND_UP(timeout, 60);
+		watchdog.minutes_mode = true;
+		timeout = watchdog.timer_val * 60;
+>>>>>>> origin/4.19.325
 	} else {
 		watchdog.timer_val = timeout;
 		watchdog.minutes_mode = false;
 	}
 
+<<<<<<< HEAD
+=======
+	watchdog.timeout = timeout;
+
+>>>>>>> origin/4.19.325
 	mutex_unlock(&watchdog.lock);
 
 	return 0;

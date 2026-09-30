@@ -2495,6 +2495,10 @@ out_free:
 	for (i = 0; i < mp->rxq_count; i++)
 		rxq_deinit(mp->rxq + i);
 out:
+<<<<<<< HEAD
+=======
+	napi_disable(&mp->napi);
+>>>>>>> origin/4.19.325
 	free_irq(dev->irq, dev);
 
 	return err;

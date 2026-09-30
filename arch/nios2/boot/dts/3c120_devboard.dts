@@ -118,7 +118,11 @@
 				interrupt-names = "rx_irq", "tx_irq";
 				rx-fifo-depth = <8192>;
 				tx-fifo-depth = <8192>;
+<<<<<<< HEAD
 				max-frame-size = <1518>;
+=======
+				max-frame-size = <1500>;
+>>>>>>> origin/4.19.325
 				local-mac-address = [ 00 00 00 00 00 00 ];
 				phy-mode = "rgmii-id";
 				phy-handle = <&phy0>;

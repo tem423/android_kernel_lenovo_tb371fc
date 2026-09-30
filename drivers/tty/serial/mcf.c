@@ -479,7 +479,11 @@ static const struct uart_ops mcf_uart_ops = {
 	.verify_port	= mcf_verify_port,
 };
 
+<<<<<<< HEAD
 static struct mcf_uart mcf_ports[4];
+=======
+static struct mcf_uart mcf_ports[10];
+>>>>>>> origin/4.19.325
 
 #define	MCF_MAXPORTS	ARRAY_SIZE(mcf_ports)
 

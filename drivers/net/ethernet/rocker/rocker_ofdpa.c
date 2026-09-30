@@ -1276,7 +1276,11 @@ static int ofdpa_port_ipv4_neigh(struct ofdpa_port *ofdpa_port,
 	bool removing;
 	int err = 0;
 
+<<<<<<< HEAD
 	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
+=======
+	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
+>>>>>>> origin/4.19.325
 	if (!entry)
 		return -ENOMEM;
 

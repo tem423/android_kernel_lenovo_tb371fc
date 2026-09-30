@@ -128,7 +128,11 @@ good_area:
 	 * signal first. We do not need to release the mmap_sem because it
 	 * would already be released in __lock_page_or_retry in mm/filemap.c.
 	 */
+<<<<<<< HEAD
 	if ((fault & VM_FAULT_RETRY) && fatal_signal_pending(tsk))
+=======
+	if (fault_signal_pending(fault, regs))
+>>>>>>> origin/4.19.325
 		return;
 
 	if (unlikely(fault & VM_FAULT_ERROR)) {
@@ -200,7 +204,11 @@ no_context:
 		(addr < PAGE_SIZE) ? "NULL pointer dereference" :
 		"paging request", addr);
 	die(regs, "Oops");
+<<<<<<< HEAD
 	do_exit(SIGKILL);
+=======
+	make_task_dead(SIGKILL);
+>>>>>>> origin/4.19.325
 
 	/*
 	 * We ran out of memory, call the OOM killer, and return the userspace

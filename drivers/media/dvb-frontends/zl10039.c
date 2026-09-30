@@ -304,7 +304,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(zl10039_attach);
+=======
+EXPORT_SYMBOL_GPL(zl10039_attach);
+>>>>>>> origin/4.19.325
 
 module_param(debug, int, 0644);
 MODULE_PARM_DESC(debug, "Turn on/off frontend debugging (default:off).");

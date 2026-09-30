@@ -32,6 +32,10 @@ struct gsc_asic {
 	int version;
 	int type;
 	int eim;
+<<<<<<< HEAD
+=======
+	struct gsc_irq gsc_irq;
+>>>>>>> origin/4.19.325
 	int global_irq[32];
 };
 

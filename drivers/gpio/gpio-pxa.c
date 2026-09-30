@@ -246,6 +246,10 @@ static bool pxa_gpio_has_pinctrl(void)
 	switch (gpio_type) {
 	case PXA3XX_GPIO:
 	case MMP2_GPIO:
+<<<<<<< HEAD
+=======
+	case MMP_GPIO:
+>>>>>>> origin/4.19.325
 		return false;
 
 	default:

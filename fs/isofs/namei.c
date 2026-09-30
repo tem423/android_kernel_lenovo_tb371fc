@@ -102,6 +102,10 @@ isofs_find_entry(struct inode *dir, struct dentry *dentry,
 			printk(KERN_NOTICE "iso9660: Corrupted directory entry"
 			       " in block %lu of inode %lu\n", block,
 			       dir->i_ino);
+<<<<<<< HEAD
+=======
+			brelse(bh);
+>>>>>>> origin/4.19.325
 			return 0;
 		}
 
@@ -152,8 +156,13 @@ isofs_find_entry(struct inode *dir, struct dentry *dentry,
 struct dentry *isofs_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
 	int found;
+<<<<<<< HEAD
 	unsigned long uninitialized_var(block);
 	unsigned long uninitialized_var(offset);
+=======
+	unsigned long block;
+	unsigned long offset;
+>>>>>>> origin/4.19.325
 	struct inode *inode;
 	struct page *page;
 

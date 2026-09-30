@@ -241,7 +241,11 @@ static int xhci_histb_probe(struct platform_device *pdev)
 	/* Initialize dma_mask and coherent_dma_mask to 32-bits */
 	ret = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
 	if (ret)
+<<<<<<< HEAD
 		return ret;
+=======
+		goto disable_pm;
+>>>>>>> origin/4.19.325
 
 	hcd = usb_create_hcd(driver, dev, dev_name(dev));
 	if (!hcd) {

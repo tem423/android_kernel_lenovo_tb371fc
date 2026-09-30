@@ -272,6 +272,10 @@ void delete_partition(struct gendisk *disk, int partno)
 	struct disk_part_tbl *ptbl =
 		rcu_dereference_protected(disk->part_tbl, 1);
 	struct hd_struct *part;
+<<<<<<< HEAD
+=======
+	struct block_device *bdev;
+>>>>>>> origin/4.19.325
 
 	if (partno >= ptbl->len)
 		return;
@@ -292,6 +296,15 @@ void delete_partition(struct gendisk *disk, int partno)
 	 * "in-use" until we really free the gendisk.
 	 */
 	blk_invalidate_devt(part_devt(part));
+<<<<<<< HEAD
+=======
+
+	bdev = bdget(part_devt(part));
+	if (bdev) {
+		remove_inode_hash(bdev->bd_inode);
+		bdput(bdev);
+	}
+>>>>>>> origin/4.19.325
 	hd_struct_kill(part);
 }
 

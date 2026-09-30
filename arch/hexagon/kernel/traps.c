@@ -234,7 +234,11 @@ int die(const char *str, struct pt_regs *regs, long err)
 		panic("Fatal exception");
 
 	oops_exit();
+<<<<<<< HEAD
 	do_exit(err);
+=======
+	make_task_dead(err);
+>>>>>>> origin/4.19.325
 	return 0;
 }
 

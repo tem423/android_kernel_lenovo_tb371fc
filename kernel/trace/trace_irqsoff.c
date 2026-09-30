@@ -225,7 +225,12 @@ static void irqsoff_trace_open(struct trace_iterator *iter)
 {
 	if (is_graph(iter->tr))
 		graph_trace_open(iter);
+<<<<<<< HEAD
 
+=======
+	else
+		iter->private = NULL;
+>>>>>>> origin/4.19.325
 }
 
 static void irqsoff_trace_close(struct trace_iterator *iter)

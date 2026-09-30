@@ -1090,7 +1090,11 @@ void msm_edp_ctrl_power(struct edp_ctrl *ctrl, bool on)
 int msm_edp_ctrl_init(struct msm_edp *edp)
 {
 	struct edp_ctrl *ctrl = NULL;
+<<<<<<< HEAD
 	struct device *dev = &edp->pdev->dev;
+=======
+	struct device *dev;
+>>>>>>> origin/4.19.325
 	int ret;
 
 	if (!edp) {
@@ -1098,6 +1102,10 @@ int msm_edp_ctrl_init(struct msm_edp *edp)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
+=======
+	dev = &edp->pdev->dev;
+>>>>>>> origin/4.19.325
 	ctrl = devm_kzalloc(dev, sizeof(*ctrl), GFP_KERNEL);
 	if (!ctrl)
 		return -ENOMEM;

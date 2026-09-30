@@ -63,6 +63,10 @@ static void jffs2_i_init_once(void *foo)
 	struct jffs2_inode_info *f = foo;
 
 	mutex_init(&f->sem);
+<<<<<<< HEAD
+=======
+	f->target = NULL;
+>>>>>>> origin/4.19.325
 	inode_init_once(&f->vfs_inode);
 }
 

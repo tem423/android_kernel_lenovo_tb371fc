@@ -272,13 +272,21 @@ union drm_amdgpu_vm {
 
 /* sched ioctl */
 #define AMDGPU_SCHED_OP_PROCESS_PRIORITY_OVERRIDE	1
+<<<<<<< HEAD
+=======
+#define AMDGPU_SCHED_OP_CONTEXT_PRIORITY_OVERRIDE	2
+>>>>>>> origin/4.19.325
 
 struct drm_amdgpu_sched_in {
 	/* AMDGPU_SCHED_OP_* */
 	__u32	op;
 	__u32	fd;
 	__s32	priority;
+<<<<<<< HEAD
 	__u32	flags;
+=======
+	__u32   ctx_id;
+>>>>>>> origin/4.19.325
 };
 
 union drm_amdgpu_sched {

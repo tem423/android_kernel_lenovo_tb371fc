@@ -1657,8 +1657,12 @@ static inline void set_tx_len(struct ksz_desc *desc, u32 len)
 
 #define HW_DELAY(hw, reg)			\
 	do {					\
+<<<<<<< HEAD
 		u16 dummy;			\
 		dummy = readw(hw->io + reg);	\
+=======
+		readw(hw->io + reg);		\
+>>>>>>> origin/4.19.325
 	} while (0)
 
 /**
@@ -6937,7 +6941,11 @@ static int pcidev_init(struct pci_dev *pdev, const struct pci_device_id *id)
 	char banner[sizeof(version)];
 	struct ksz_switch *sw = NULL;
 
+<<<<<<< HEAD
 	result = pci_enable_device(pdev);
+=======
+	result = pcim_enable_device(pdev);
+>>>>>>> origin/4.19.325
 	if (result)
 		return result;
 

@@ -878,7 +878,11 @@ affs_truncate(struct inode *inode)
 	if (inode->i_size > AFFS_I(inode)->mmu_private) {
 		struct address_space *mapping = inode->i_mapping;
 		struct page *page;
+<<<<<<< HEAD
 		void *fsdata;
+=======
+		void *fsdata = NULL;
+>>>>>>> origin/4.19.325
 		loff_t isize = inode->i_size;
 		int res;
 

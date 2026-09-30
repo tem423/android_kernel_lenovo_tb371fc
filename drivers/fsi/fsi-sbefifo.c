@@ -325,7 +325,12 @@ static int sbefifo_up_write(struct sbefifo *sbefifo, __be32 word)
 static int sbefifo_request_reset(struct sbefifo *sbefifo)
 {
 	struct device *dev = &sbefifo->fsi_dev->dev;
+<<<<<<< HEAD
 	u32 status, timeout;
+=======
+	unsigned long end_time;
+	u32 status;
+>>>>>>> origin/4.19.325
 	int rc;
 
 	dev_dbg(dev, "Requesting FIFO reset\n");
@@ -341,7 +346,12 @@ static int sbefifo_request_reset(struct sbefifo *sbefifo)
 	}
 
 	/* Wait for it to complete */
+<<<<<<< HEAD
 	for (timeout = 0; timeout < SBEFIFO_RESET_TIMEOUT; timeout++) {
+=======
+	end_time = jiffies + msecs_to_jiffies(SBEFIFO_RESET_TIMEOUT);
+	while (!time_after(jiffies, end_time)) {
+>>>>>>> origin/4.19.325
 		rc = sbefifo_regr(sbefifo, SBEFIFO_UP | SBEFIFO_STS, &status);
 		if (rc) {
 			dev_err(dev, "Failed to read UP fifo status during reset"
@@ -355,7 +365,11 @@ static int sbefifo_request_reset(struct sbefifo *sbefifo)
 			return 0;
 		}
 
+<<<<<<< HEAD
 		msleep(1);
+=======
+		cond_resched();
+>>>>>>> origin/4.19.325
 	}
 	dev_err(dev, "FIFO reset timed out\n");
 
@@ -400,7 +414,11 @@ static int sbefifo_cleanup_hw(struct sbefifo *sbefifo)
 	/* The FIFO already contains a reset request from the SBE ? */
 	if (down_status & SBEFIFO_STS_RESET_REQ) {
 		dev_info(dev, "Cleanup: FIFO reset request set, resetting\n");
+<<<<<<< HEAD
 		rc = sbefifo_regw(sbefifo, SBEFIFO_UP, SBEFIFO_PERFORM_RESET);
+=======
+		rc = sbefifo_regw(sbefifo, SBEFIFO_DOWN, SBEFIFO_PERFORM_RESET);
+>>>>>>> origin/4.19.325
 		if (rc) {
 			sbefifo->broken = true;
 			dev_err(dev, "Cleanup: Reset reg write failed, rc=%d\n", rc);

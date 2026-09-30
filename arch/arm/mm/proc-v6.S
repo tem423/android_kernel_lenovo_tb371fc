@@ -264,7 +264,11 @@ v6_crval:
 	string	cpu_elf_name, "v6"
 	.align
 
+<<<<<<< HEAD
 	.section ".proc.info.init", #alloc
+=======
+	.section ".proc.info.init", "a"
+>>>>>>> origin/4.19.325
 
 	/*
 	 * Match any ARMv6 processor core.

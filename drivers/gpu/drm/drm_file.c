@@ -313,7 +313,11 @@ int drm_open(struct inode *inode, struct file *filp)
 {
 	struct drm_device *dev;
 	struct drm_minor *minor;
+<<<<<<< HEAD
 	int retcode;
+=======
+	int retcode = 0;
+>>>>>>> origin/4.19.325
 	int need_setup = 0;
 
 	minor = drm_minor_acquire(iminor(inode));

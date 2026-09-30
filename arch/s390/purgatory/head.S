@@ -61,14 +61,23 @@
 	jh	10b
 .endm
 
+<<<<<<< HEAD
 .macro START_NEXT_KERNEL base
+=======
+.macro START_NEXT_KERNEL base subcode
+>>>>>>> origin/4.19.325
 	lg	%r4,kernel_entry-\base(%r13)
 	lg	%r5,load_psw_mask-\base(%r13)
 	ogr	%r4,%r5
 	stg	%r4,0(%r0)
 
 	xgr	%r0,%r0
+<<<<<<< HEAD
 	diag	%r0,%r0,0x308
+=======
+	lghi	%r1,\subcode
+	diag	%r0,%r1,0x308
+>>>>>>> origin/4.19.325
 .endm
 
 .text
@@ -123,7 +132,11 @@ ENTRY(purgatory_start)
 	je	.start_crash_kernel
 
 	/* start normal kernel */
+<<<<<<< HEAD
 	START_NEXT_KERNEL .base_crash
+=======
+	START_NEXT_KERNEL .base_crash 0
+>>>>>>> origin/4.19.325
 
 .return_old_kernel:
 	lmg	%r6,%r15,gprregs-.base_crash(%r13)
@@ -227,7 +240,11 @@ ENTRY(purgatory_start)
 	MEMCPY	%r9,%r10,%r11
 
 	/* start crash kernel */
+<<<<<<< HEAD
 	START_NEXT_KERNEL .base_dst
+=======
+	START_NEXT_KERNEL .base_dst 1
+>>>>>>> origin/4.19.325
 
 
 load_psw_mask:

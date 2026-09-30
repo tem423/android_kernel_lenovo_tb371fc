@@ -112,6 +112,10 @@ struct iomap_ops {
 struct iomap_page {
 	atomic_t		read_count;
 	atomic_t		write_count;
+<<<<<<< HEAD
+=======
+	spinlock_t		uptodate_lock;
+>>>>>>> origin/4.19.325
 	DECLARE_BITMAP(uptodate, PAGE_SIZE / 512);
 };
 

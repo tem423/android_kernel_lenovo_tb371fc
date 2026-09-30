@@ -576,11 +576,22 @@ static int mipid_spi_probe(struct spi_device *spi)
 
 	r = mipid_detect(md);
 	if (r < 0)
+<<<<<<< HEAD
 		return r;
+=======
+		goto free_md;
+>>>>>>> origin/4.19.325
 
 	omapfb_register_panel(&md->panel);
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+free_md:
+	kfree(md);
+	return r;
+>>>>>>> origin/4.19.325
 }
 
 static int mipid_spi_remove(struct spi_device *spi)

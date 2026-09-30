@@ -351,11 +351,26 @@ static int scsi_vpd_inquiry(struct scsi_device *sdev, unsigned char *buffer,
 	if (result)
 		return -EIO;
 
+<<<<<<< HEAD
 	/* Sanity check that we got the page back that we asked for */
 	if (buffer[1] != page)
 		return -EIO;
 
 	return get_unaligned_be16(&buffer[2]) + 4;
+=======
+	/*
+	 * Sanity check that we got the page back that we asked for and that
+	 * the page size is not 0.
+	 */
+	if (buffer[1] != page)
+		return -EIO;
+
+	result = get_unaligned_be16(&buffer[2]);
+	if (!result)
+		return -EIO;
+
+	return result + 4;
+>>>>>>> origin/4.19.325
 }
 
 /**
@@ -575,8 +590,15 @@ EXPORT_SYMBOL(scsi_device_get);
  */
 void scsi_device_put(struct scsi_device *sdev)
 {
+<<<<<<< HEAD
 	module_put(sdev->host->hostt->module);
 	put_device(&sdev->sdev_gendev);
+=======
+	struct module *mod = sdev->host->hostt->module;
+
+	put_device(&sdev->sdev_gendev);
+	module_put(mod);
+>>>>>>> origin/4.19.325
 }
 EXPORT_SYMBOL(scsi_device_put);
 

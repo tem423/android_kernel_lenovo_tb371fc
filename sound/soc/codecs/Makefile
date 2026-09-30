@@ -71,7 +71,10 @@ snd-soc-da732x-objs := da732x.o
 snd-soc-da9055-objs := da9055.o
 snd-soc-dmic-objs := dmic.o
 snd-soc-es7134-objs := es7134.o
+<<<<<<< HEAD
 snd-soc-es7210-objs := es7210_adc.o
+=======
+>>>>>>> origin/4.19.325
 snd-soc-es7241-objs := es7241.o
 snd-soc-es8316-objs := es8316.o
 snd-soc-es8328-objs := es8328.o
@@ -176,6 +179,13 @@ snd-soc-tas5720-objs := tas5720.o
 snd-soc-tas6424-objs := tas6424.o
 snd-soc-tda7419-objs := tda7419.o
 snd-soc-tfa9879-objs := tfa9879.o
+<<<<<<< HEAD
+=======
+snd-soc-tfa98xx-objs := tfa98xx.o
+snd-soc-tfa98xx-objs += tfa_container.o
+snd-soc-tfa98xx-objs += tfa_dsp.o
+snd-soc-tfa98xx-objs += tfa_init.o
+>>>>>>> origin/4.19.325
 snd-soc-tlv320aic23-objs := tlv320aic23.o
 snd-soc-tlv320aic23-i2c-objs := tlv320aic23-i2c.o
 snd-soc-tlv320aic23-spi-objs := tlv320aic23-spi.o
@@ -332,7 +342,10 @@ obj-$(CONFIG_SND_SOC_DA732X)	+= snd-soc-da732x.o
 obj-$(CONFIG_SND_SOC_DA9055)	+= snd-soc-da9055.o
 obj-$(CONFIG_SND_SOC_DMIC)	+= snd-soc-dmic.o
 obj-$(CONFIG_SND_SOC_ES7134)	+= snd-soc-es7134.o
+<<<<<<< HEAD
 obj-$(CONFIG_SND_SOC_ES7210)	+= snd-soc-es7210.o
+=======
+>>>>>>> origin/4.19.325
 obj-$(CONFIG_SND_SOC_ES7241)	+= snd-soc-es7241.o
 obj-$(CONFIG_SND_SOC_ES8316)    += snd-soc-es8316.o
 obj-$(CONFIG_SND_SOC_ES8328)	+= snd-soc-es8328.o
@@ -436,6 +449,10 @@ obj-$(CONFIG_SND_SOC_TAS5720)	+= snd-soc-tas5720.o
 obj-$(CONFIG_SND_SOC_TAS6424)	+= snd-soc-tas6424.o
 obj-$(CONFIG_SND_SOC_TDA7419)	+= snd-soc-tda7419.o
 obj-$(CONFIG_SND_SOC_TFA9879)	+= snd-soc-tfa9879.o
+<<<<<<< HEAD
+=======
+obj-$(CONFIG_SND_SOC_TFA98XX)	+= tfa98xx/
+>>>>>>> origin/4.19.325
 obj-$(CONFIG_SND_SOC_TLV320AIC23)	+= snd-soc-tlv320aic23.o
 obj-$(CONFIG_SND_SOC_TLV320AIC23_I2C)	+= snd-soc-tlv320aic23-i2c.o
 obj-$(CONFIG_SND_SOC_TLV320AIC23_SPI)	+= snd-soc-tlv320aic23-spi.o
@@ -516,7 +533,11 @@ obj-$(CONFIG_SND_SOC_ZX_AUD96P22) += snd-soc-zx-aud96p22.o
 obj-$(CONFIG_SND_SOC_MAX9877)	+= snd-soc-max9877.o
 obj-$(CONFIG_SND_SOC_MAX98504)	+= snd-soc-max98504.o
 obj-$(CONFIG_SND_SOC_SIMPLE_AMPLIFIER)	+= snd-soc-simple-amplifier.o
+<<<<<<< HEAD
 obj-$(CONFIG_SND_SOC_TPA6130A2)	+= snd-soc-tpa6130a2.o
 
 # SYNA
 obj-$(CONFIG_SND_SOC_AS33970)	+= as33970/
+=======
+obj-$(CONFIG_SND_SOC_TPA6130A2)	+= snd-soc-tpa6130a2.o
+>>>>>>> origin/4.19.325

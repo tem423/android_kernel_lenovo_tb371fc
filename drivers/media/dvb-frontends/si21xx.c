@@ -943,7 +943,11 @@ error:
 	kfree(state);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(si21xx_attach);
+=======
+EXPORT_SYMBOL_GPL(si21xx_attach);
+>>>>>>> origin/4.19.325
 
 module_param(debug, int, 0644);
 MODULE_PARM_DESC(debug, "Turn on/off frontend debugging (default:off).");

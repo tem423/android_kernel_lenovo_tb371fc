@@ -1692,6 +1692,11 @@ static int fs_init(struct fs_dev *dev)
 	dev->hw_base = pci_resource_start(pci_dev, 0);
 
 	dev->base = ioremap(dev->hw_base, 0x1000);
+<<<<<<< HEAD
+=======
+	if (!dev->base)
+		return 1;
+>>>>>>> origin/4.19.325
 
 	reset_chip (dev);
   

@@ -205,7 +205,11 @@ static int ovl_lookup_single(struct dentry *base, struct ovl_lookup_data *d,
 	int err;
 	bool last_element = !post[0];
 
+<<<<<<< HEAD
 	this = lookup_one_len_unlocked(name, base, namelen);
+=======
+	this = lookup_positive_unlocked(name, base, namelen);
+>>>>>>> origin/4.19.325
 	if (IS_ERR(this)) {
 		err = PTR_ERR(this);
 		this = NULL;
@@ -213,8 +217,11 @@ static int ovl_lookup_single(struct dentry *base, struct ovl_lookup_data *d,
 			goto out;
 		goto out_err;
 	}
+<<<<<<< HEAD
 	if (!this->d_inode)
 		goto put_and_out;
+=======
+>>>>>>> origin/4.19.325
 
 	if (ovl_dentry_weird(this)) {
 		/* Don't support traversing automounts and other weirdness */
@@ -656,7 +663,11 @@ struct dentry *ovl_get_index_fh(struct ovl_fs *ofs, struct ovl_fh *fh)
 	if (err)
 		return ERR_PTR(err);
 
+<<<<<<< HEAD
 	index = lookup_one_len_unlocked(name.name, ofs->indexdir, name.len);
+=======
+	index = lookup_positive_unlocked(name.name, ofs->indexdir, name.len);
+>>>>>>> origin/4.19.325
 	kfree(name.name);
 	if (IS_ERR(index)) {
 		if (PTR_ERR(index) == -ENOENT)
@@ -664,9 +675,13 @@ struct dentry *ovl_get_index_fh(struct ovl_fs *ofs, struct ovl_fh *fh)
 		return index;
 	}
 
+<<<<<<< HEAD
 	if (d_is_negative(index))
 		err = 0;
 	else if (ovl_is_whiteout(index))
+=======
+	if (ovl_is_whiteout(index))
+>>>>>>> origin/4.19.325
 		err = -ESTALE;
 	else if (ovl_dentry_weird(index))
 		err = -EIO;
@@ -690,7 +705,11 @@ struct dentry *ovl_lookup_index(struct ovl_fs *ofs, struct dentry *upper,
 	if (err)
 		return ERR_PTR(err);
 
+<<<<<<< HEAD
 	index = lookup_one_len_unlocked(name.name, ofs->indexdir, name.len);
+=======
+	index = lookup_positive_unlocked(name.name, ofs->indexdir, name.len);
+>>>>>>> origin/4.19.325
 	if (IS_ERR(index)) {
 		err = PTR_ERR(index);
 		if (err == -ENOENT) {
@@ -705,9 +724,13 @@ struct dentry *ovl_lookup_index(struct ovl_fs *ofs, struct dentry *upper,
 	}
 
 	inode = d_inode(index);
+<<<<<<< HEAD
 	if (d_is_negative(index)) {
 		goto out_dput;
 	} else if (ovl_is_whiteout(index) && !verify) {
+=======
+	if (ovl_is_whiteout(index) && !verify) {
+>>>>>>> origin/4.19.325
 		/*
 		 * When index lookup is called with !verify for decoding an
 		 * overlay file handle, a whiteout index implies that decode
@@ -1136,7 +1159,11 @@ bool ovl_lower_positive(struct dentry *dentry)
 		struct dentry *this;
 		struct dentry *lowerdir = poe->lowerstack[i].dentry;
 
+<<<<<<< HEAD
 		this = lookup_one_len_unlocked(name->name, lowerdir,
+=======
+		this = lookup_positive_unlocked(name->name, lowerdir,
+>>>>>>> origin/4.19.325
 					       name->len);
 		if (IS_ERR(this)) {
 			switch (PTR_ERR(this)) {
@@ -1153,10 +1180,15 @@ bool ovl_lower_positive(struct dentry *dentry)
 				break;
 			}
 		} else {
+<<<<<<< HEAD
 			if (this->d_inode) {
 				positive = !ovl_is_whiteout(this);
 				done = true;
 			}
+=======
+			positive = !ovl_is_whiteout(this);
+			done = true;
+>>>>>>> origin/4.19.325
 			dput(this);
 		}
 	}

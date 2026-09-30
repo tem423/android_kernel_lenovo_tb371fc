@@ -757,7 +757,12 @@ static void sierra_close(struct usb_serial_port *port)
 
 	/*
 	 * Need to take susp_lock to make sure port is not already being
+<<<<<<< HEAD
 	 * resumed, but no need to hold it due to initialized
+=======
+	 * resumed, but no need to hold it due to the tty-port initialized
+	 * flag.
+>>>>>>> origin/4.19.325
 	 */
 	spin_lock_irq(&intfdata->susp_lock);
 	if (--intfdata->open_ports == 0)

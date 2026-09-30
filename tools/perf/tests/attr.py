@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 #! /usr/bin/python
+=======
+>>>>>>> origin/4.19.325
 # SPDX-License-Identifier: GPL-2.0
 
 import os

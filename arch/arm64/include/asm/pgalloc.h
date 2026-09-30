@@ -33,12 +33,29 @@
 
 static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
 {
+<<<<<<< HEAD
 	return (pmd_t *)__get_free_page(PGALLOC_GFP);
+=======
+	struct page *page;
+
+	page = alloc_page(PGALLOC_GFP);
+	if (!page)
+		return NULL;
+	if (!pgtable_pmd_page_ctor(page)) {
+		__free_page(page);
+		return NULL;
+	}
+	return page_address(page);
+>>>>>>> origin/4.19.325
 }
 
 static inline void pmd_free(struct mm_struct *mm, pmd_t *pmdp)
 {
 	BUG_ON((unsigned long)pmdp & (PAGE_SIZE-1));
+<<<<<<< HEAD
+=======
+	pgtable_pmd_page_dtor(virt_to_page(pmdp));
+>>>>>>> origin/4.19.325
 	free_page((unsigned long)pmdp);
 }
 

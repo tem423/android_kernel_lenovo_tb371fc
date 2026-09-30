@@ -349,12 +349,20 @@ int smc_rx_recvmsg(struct smc_sock *smc, struct msghdr *msg,
 				}
 				break;
 			}
+<<<<<<< HEAD
+=======
+			if (!timeo)
+				return -EAGAIN;
+>>>>>>> origin/4.19.325
 			if (signal_pending(current)) {
 				read_done = sock_intr_errno(timeo);
 				break;
 			}
+<<<<<<< HEAD
 			if (!timeo)
 				return -EAGAIN;
+=======
+>>>>>>> origin/4.19.325
 		}
 
 		if (!smc_rx_data_available(conn)) {

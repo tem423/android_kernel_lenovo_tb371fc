@@ -129,7 +129,11 @@ void nf_send_reset(struct net *net, struct sk_buff *oldskb, int hook)
 				   ip4_dst_hoplimit(skb_dst(nskb)));
 	nf_reject_ip_tcphdr_put(nskb, oldskb, oth);
 
+<<<<<<< HEAD
 	if (ip_route_me_harder(net, nskb, RTN_UNSPEC))
+=======
+	if (ip_route_me_harder(net, nskb->sk, nskb, RTN_UNSPEC))
+>>>>>>> origin/4.19.325
 		goto free_nskb;
 
 	niph = ip_hdr(nskb);

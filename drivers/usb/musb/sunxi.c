@@ -286,8 +286,11 @@ static int sunxi_musb_exit(struct musb *musb)
 	if (test_bit(SUNXI_MUSB_FL_HAS_SRAM, &glue->flags))
 		sunxi_sram_release(musb->controller->parent);
 
+<<<<<<< HEAD
 	devm_usb_put_phy(glue->dev, glue->xceiv);
 
+=======
+>>>>>>> origin/4.19.325
 	return 0;
 }
 

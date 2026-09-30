@@ -42,6 +42,7 @@ static struct ebt_replace_kernel initial_table = {
 	.entries	= (char *)initial_chains,
 };
 
+<<<<<<< HEAD
 static int check(const struct ebt_table_info *info, unsigned int valid_hooks)
 {
 	if (valid_hooks & ~FILTER_VALID_HOOKS)
@@ -49,11 +50,16 @@ static int check(const struct ebt_table_info *info, unsigned int valid_hooks)
 	return 0;
 }
 
+=======
+>>>>>>> origin/4.19.325
 static const struct ebt_table frame_filter = {
 	.name		= "filter",
 	.table		= &initial_table,
 	.valid_hooks	= FILTER_VALID_HOOKS,
+<<<<<<< HEAD
 	.check		= check,
+=======
+>>>>>>> origin/4.19.325
 	.me		= THIS_MODULE,
 };
 

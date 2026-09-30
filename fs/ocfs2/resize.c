@@ -582,6 +582,11 @@ out_commit:
 	ocfs2_commit_trans(osb, handle);
 
 out_free_group_bh:
+<<<<<<< HEAD
+=======
+	if (ret < 0)
+		ocfs2_remove_from_cache(INODE_CACHE(inode), group_bh);
+>>>>>>> origin/4.19.325
 	brelse(group_bh);
 
 out_unlock:

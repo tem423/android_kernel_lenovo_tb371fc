@@ -633,6 +633,10 @@ static int rvin_setup(struct rvin_dev *vin)
 		vnmc = VNMC_IM_FULL | VNMC_FOC;
 		break;
 	case V4L2_FIELD_NONE:
+<<<<<<< HEAD
+=======
+	case V4L2_FIELD_ALTERNATE:
+>>>>>>> origin/4.19.325
 		vnmc = VNMC_IM_ODD_EVEN;
 		progressive = true;
 		break;

@@ -119,7 +119,10 @@ static void backlight_generate_event(struct backlight_device *bd,
 	envp[1] = NULL;
 	kobject_uevent_env(&bd->dev.kobj, KOBJ_CHANGE, envp);
 	sysfs_notify(&bd->dev.kobj, NULL, "actual_brightness");
+<<<<<<< HEAD
 	sysfs_notify(&bd->dev.kobj, NULL, "brightness");
+=======
+>>>>>>> origin/4.19.325
 }
 
 static ssize_t bl_power_show(struct device *dev, struct device_attribute *attr,
@@ -181,12 +184,15 @@ int backlight_device_set_brightness(struct backlight_device *bd,
 		if (brightness > bd->props.max_brightness)
 			rc = -EINVAL;
 		else {
+<<<<<<< HEAD
 			if ((!bd->use_count && brightness) || (bd->use_count && !brightness)) {
 				if (!bd->use_count)
 					bd->use_count++;
 				else
 					bd->use_count--;
 			}
+=======
+>>>>>>> origin/4.19.325
 			pr_debug("set brightness to %lu\n", brightness);
 			bd->props.brightness = brightness;
 			rc = backlight_update_status(bd);
@@ -212,12 +218,53 @@ static ssize_t brightness_store(struct device *dev,
 		return rc;
 
 	bd->usr_brightness_req = brightness;
+<<<<<<< HEAD
+=======
+	brightness = (brightness <= bd->thermal_brightness_limit) ?
+				bd->usr_brightness_req :
+				bd->thermal_brightness_limit;
+
+>>>>>>> origin/4.19.325
 	rc = backlight_device_set_brightness(bd, brightness);
 
 	return rc ? rc : count;
 }
 static DEVICE_ATTR_RW(brightness);
 
+<<<<<<< HEAD
+=======
+static ssize_t hbm_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct backlight_device *bd = to_backlight_device(dev);
+
+	return sprintf(buf, "%d\n", bd->props.hbm);
+}
+
+static ssize_t hbm_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	int rc;
+	struct backlight_device *bd = to_backlight_device(dev);
+	unsigned long hbm;
+
+	rc = kstrtoul(buf, 0, &hbm);
+	if (rc)
+		return rc;
+
+	mutex_lock(&bd->ops_lock);
+	if (bd->ops) {
+		bd->props.hbm = hbm;
+		rc = backlight_update_status(bd);
+	}
+	mutex_unlock(&bd->ops_lock);
+
+return rc ? rc : count;
+}
+static DEVICE_ATTR_RW(hbm);
+
+
+>>>>>>> origin/4.19.325
 static ssize_t type_show(struct device *dev, struct device_attribute *attr,
 		char *buf)
 {
@@ -300,6 +347,10 @@ static struct attribute *bl_device_attrs[] = {
 	&dev_attr_actual_brightness.attr,
 	&dev_attr_max_brightness.attr,
 	&dev_attr_type.attr,
+<<<<<<< HEAD
+=======
+    &dev_attr_hbm.attr,
+>>>>>>> origin/4.19.325
 	NULL,
 };
 ATTRIBUTE_GROUPS(bl_device);
@@ -483,6 +534,7 @@ struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
 }
 EXPORT_SYMBOL(backlight_device_get_by_type);
 
+<<<<<<< HEAD
 struct backlight_device *backlight_device_get_by_type_a(enum backlight_type type)
 {
 	bool found = false;
@@ -519,6 +571,8 @@ struct backlight_device *backlight_device_get_by_type_b(enum backlight_type type
 }
 EXPORT_SYMBOL(backlight_device_get_by_type_b);
 
+=======
+>>>>>>> origin/4.19.325
 /**
  * backlight_device_unregister - unregisters a backlight device object.
  * @bd: the backlight device object to be unregistered and freed.

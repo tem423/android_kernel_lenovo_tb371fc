@@ -51,11 +51,21 @@ static int fprintf_json(void *out, const char *fmt, ...)
 {
 	va_list ap;
 	char *s;
+<<<<<<< HEAD
 
 	va_start(ap, fmt);
 	if (vasprintf(&s, fmt, ap) < 0)
 		return -1;
 	va_end(ap);
+=======
+	int err;
+
+	va_start(ap, fmt);
+	err = vasprintf(&s, fmt, ap);
+	va_end(ap);
+	if (err < 0)
+		return -1;
+>>>>>>> origin/4.19.325
 
 	if (!oper_count) {
 		int i;

@@ -496,6 +496,10 @@ static int vpif_probe(struct platform_device *pdev)
 
 static int vpif_remove(struct platform_device *pdev)
 {
+<<<<<<< HEAD
+=======
+	pm_runtime_put(&pdev->dev);
+>>>>>>> origin/4.19.325
 	pm_runtime_disable(&pdev->dev);
 	return 0;
 }

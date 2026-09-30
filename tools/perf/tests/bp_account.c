@@ -22,7 +22,11 @@
 #include "perf.h"
 #include "cloexec.h"
 
+<<<<<<< HEAD
 volatile long the_var;
+=======
+static volatile long the_var;
+>>>>>>> origin/4.19.325
 
 static noinline int test_function(void)
 {

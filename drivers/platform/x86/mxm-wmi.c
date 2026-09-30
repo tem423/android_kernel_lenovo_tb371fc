@@ -48,13 +48,20 @@ int mxm_wmi_call_mxds(int adapter)
 		.xarg = 1,
 	};
 	struct acpi_buffer input = { (acpi_size)sizeof(args), &args };
+<<<<<<< HEAD
 	struct acpi_buffer output = { ACPI_ALLOCATE_BUFFER, NULL };
+=======
+>>>>>>> origin/4.19.325
 	acpi_status status;
 
 	printk("calling mux switch %d\n", adapter);
 
+<<<<<<< HEAD
 	status = wmi_evaluate_method(MXM_WMMX_GUID, 0x0, adapter, &input,
 				     &output);
+=======
+	status = wmi_evaluate_method(MXM_WMMX_GUID, 0x0, adapter, &input, NULL);
+>>>>>>> origin/4.19.325
 
 	if (ACPI_FAILURE(status))
 		return status;
@@ -73,13 +80,20 @@ int mxm_wmi_call_mxmx(int adapter)
 		.xarg = 1,
 	};
 	struct acpi_buffer input = { (acpi_size)sizeof(args), &args };
+<<<<<<< HEAD
 	struct acpi_buffer output = { ACPI_ALLOCATE_BUFFER, NULL };
+=======
+>>>>>>> origin/4.19.325
 	acpi_status status;
 
 	printk("calling mux switch %d\n", adapter);
 
+<<<<<<< HEAD
 	status = wmi_evaluate_method(MXM_WMMX_GUID, 0x0, adapter, &input,
 				     &output);
+=======
+	status = wmi_evaluate_method(MXM_WMMX_GUID, 0x0, adapter, &input, NULL);
+>>>>>>> origin/4.19.325
 
 	if (ACPI_FAILURE(status))
 		return status;

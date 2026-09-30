@@ -1893,6 +1893,10 @@ static int add_callchain_ip(struct thread *thread,
 
 	al.filtered = 0;
 	al.sym = NULL;
+<<<<<<< HEAD
+=======
+	al.srcline = NULL;
+>>>>>>> origin/4.19.325
 	if (!cpumode) {
 		thread__find_cpumode_addr_location(thread, ip, &al);
 	} else {

@@ -702,9 +702,12 @@ struct lan743x_adapter {
 	struct lan743x_csr      csr;
 	struct lan743x_intr     intr;
 
+<<<<<<< HEAD
 	/* lock, used to prevent concurrent access to data port */
 	struct mutex		dp_lock;
 
+=======
+>>>>>>> origin/4.19.325
 	struct lan743x_gpio	gpio;
 	struct lan743x_ptp	ptp;
 

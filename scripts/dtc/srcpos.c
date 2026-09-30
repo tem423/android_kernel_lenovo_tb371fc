@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * Copyright 2007 Jon Loeliger, Freescale Semiconductor, Inc.
  *
@@ -15,6 +16,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *                                                                   USA
+=======
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright 2007 Jon Loeliger, Freescale Semiconductor, Inc.
+>>>>>>> origin/4.19.325
  */
 
 #define _GNU_SOURCE
@@ -33,6 +39,12 @@ struct search_path {
 /* This is the list of directories that we search for source files */
 static struct search_path *search_path_head, **search_path_tail;
 
+<<<<<<< HEAD
+=======
+/* Detect infinite include recursion. */
+#define MAX_SRCFILE_DEPTH     (100)
+static int srcfile_depth; /* = 0 */
+>>>>>>> origin/4.19.325
 
 static char *get_dirname(const char *path)
 {
@@ -51,11 +63,59 @@ static char *get_dirname(const char *path)
 
 FILE *depfile; /* = NULL */
 struct srcfile_state *current_srcfile; /* = NULL */
+<<<<<<< HEAD
 
 /* Detect infinite include recursion. */
 #define MAX_SRCFILE_DEPTH     (100)
 static int srcfile_depth; /* = 0 */
 
+=======
+static char *initial_path; /* = NULL */
+static int initial_pathlen; /* = 0 */
+static bool initial_cpp = true;
+
+static void set_initial_path(char *fname)
+{
+	int i, len = strlen(fname);
+
+	xasprintf(&initial_path, "%s", fname);
+	initial_pathlen = 0;
+	for (i = 0; i != len; i++)
+		if (initial_path[i] == '/')
+			initial_pathlen++;
+}
+
+static char *shorten_to_initial_path(char *fname)
+{
+	char *p1, *p2, *prevslash1 = NULL;
+	int slashes = 0;
+
+	for (p1 = fname, p2 = initial_path; *p1 && *p2; p1++, p2++) {
+		if (*p1 != *p2)
+			break;
+		if (*p1 == '/') {
+			prevslash1 = p1;
+			slashes++;
+		}
+	}
+	p1 = prevslash1 + 1;
+	if (prevslash1) {
+		int diff = initial_pathlen - slashes, i, j;
+		int restlen = strlen(fname) - (p1 - fname);
+		char *res;
+
+		res = xmalloc((3 * diff) + restlen + 1);
+		for (i = 0, j = 0; i != diff; i++) {
+			res[j++] = '.';
+			res[j++] = '.';
+			res[j++] = '/';
+		}
+		strcpy(res + j, p1);
+		return res;
+	}
+	return NULL;
+}
+>>>>>>> origin/4.19.325
 
 /**
  * Try to open a file in a given directory.
@@ -157,6 +217,12 @@ void srcfile_push(const char *fname)
 	srcfile->colno = 1;
 
 	current_srcfile = srcfile;
+<<<<<<< HEAD
+=======
+
+	if (srcfile_depth == 1)
+		set_initial_path(srcfile->name);
+>>>>>>> origin/4.19.325
 }
 
 bool srcfile_pop(void)
@@ -197,6 +263,7 @@ void srcfile_add_search_path(const char *dirname)
 	search_path_tail = &node->next;
 }
 
+<<<<<<< HEAD
 /*
  * The empty source position.
  */
@@ -209,6 +276,8 @@ struct srcpos srcpos_empty = {
 	.file = NULL,
 };
 
+=======
+>>>>>>> origin/4.19.325
 void srcpos_update(struct srcpos *pos, const char *text, int len)
 {
 	int i;
@@ -234,6 +303,7 @@ struct srcpos *
 srcpos_copy(struct srcpos *pos)
 {
 	struct srcpos *pos_new;
+<<<<<<< HEAD
 
 	pos_new = xmalloc(sizeof(struct srcpos));
 	memcpy(pos_new, pos, sizeof(struct srcpos));
@@ -241,6 +311,37 @@ srcpos_copy(struct srcpos *pos)
 	return pos_new;
 }
 
+=======
+	struct srcfile_state *srcfile_state;
+
+	if (!pos)
+		return NULL;
+
+	pos_new = xmalloc(sizeof(struct srcpos));
+	assert(pos->next == NULL);
+	memcpy(pos_new, pos, sizeof(struct srcpos));
+
+	/* allocate without free */
+	srcfile_state = xmalloc(sizeof(struct srcfile_state));
+	memcpy(srcfile_state, pos->file, sizeof(struct srcfile_state));
+	pos_new->file = srcfile_state;
+
+	return pos_new;
+}
+
+struct srcpos *srcpos_extend(struct srcpos *pos, struct srcpos *newtail)
+{
+	struct srcpos *p;
+
+	if (!pos)
+		return newtail;
+
+	for (p = pos; p->next != NULL; p = p->next);
+	p->next = newtail;
+	return pos;
+}
+
+>>>>>>> origin/4.19.325
 char *
 srcpos_string(struct srcpos *pos)
 {
@@ -266,6 +367,71 @@ srcpos_string(struct srcpos *pos)
 	return pos_str;
 }
 
+<<<<<<< HEAD
+=======
+static char *
+srcpos_string_comment(struct srcpos *pos, bool first_line, int level)
+{
+	char *pos_str, *fname, *first, *rest;
+	bool fresh_fname = false;
+
+	if (!pos) {
+		if (level > 1) {
+			xasprintf(&pos_str, "<no-file>:<no-line>");
+			return pos_str;
+		} else {
+			return NULL;
+		}
+	}
+
+	if (!pos->file)
+		fname = "<no-file>";
+	else if (!pos->file->name)
+		fname = "<no-filename>";
+	else if (level > 1)
+		fname = pos->file->name;
+	else {
+		fname = shorten_to_initial_path(pos->file->name);
+		if (fname)
+			fresh_fname = true;
+		else
+			fname = pos->file->name;
+	}
+
+	if (level > 1)
+		xasprintf(&first, "%s:%d:%d-%d:%d", fname,
+			  pos->first_line, pos->first_column,
+			  pos->last_line, pos->last_column);
+	else
+		xasprintf(&first, "%s:%d", fname,
+			  first_line ? pos->first_line : pos->last_line);
+
+	if (fresh_fname)
+		free(fname);
+
+	if (pos->next != NULL) {
+		rest = srcpos_string_comment(pos->next, first_line, level);
+		xasprintf(&pos_str, "%s, %s", first, rest);
+		free(first);
+		free(rest);
+	} else {
+		pos_str = first;
+	}
+
+	return pos_str;
+}
+
+char *srcpos_string_first(struct srcpos *pos, int level)
+{
+	return srcpos_string_comment(pos, true, level);
+}
+
+char *srcpos_string_last(struct srcpos *pos, int level)
+{
+	return srcpos_string_comment(pos, false, level);
+}
+
+>>>>>>> origin/4.19.325
 void srcpos_verror(struct srcpos *pos, const char *prefix,
 		   const char *fmt, va_list va)
 {
@@ -294,4 +460,12 @@ void srcpos_set_line(char *f, int l)
 {
 	current_srcfile->name = f;
 	current_srcfile->lineno = l;
+<<<<<<< HEAD
+=======
+
+	if (initial_cpp) {
+		initial_cpp = false;
+		set_initial_path(f);
+	}
+>>>>>>> origin/4.19.325
 }

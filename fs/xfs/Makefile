@@ -4,8 +4,13 @@
 # All Rights Reserved.
 #
 
+<<<<<<< HEAD
 ccflags-y += -I$(src)			# needed for trace events
 ccflags-y += -I$(src)/libxfs
+=======
+ccflags-y += -I $(srctree)/$(src)		# needed for trace events
+ccflags-y += -I $(srctree)/$(src)/libxfs
+>>>>>>> origin/4.19.325
 
 ccflags-$(CONFIG_XFS_DEBUG) += -g
 

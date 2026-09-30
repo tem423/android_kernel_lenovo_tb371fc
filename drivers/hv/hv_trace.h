@@ -320,7 +320,11 @@ DEFINE_EVENT(vmbus_channel, vmbus_on_event,
 );
 
 #undef TRACE_INCLUDE_PATH
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/hv
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE hv_trace
 #endif /* _HV_TRACE_H */

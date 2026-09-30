@@ -150,6 +150,12 @@ static int mmc_decode_csd(struct mmc_card *card)
 			csd->erase_size = UNSTUFF_BITS(resp, 39, 7) + 1;
 			csd->erase_size <<= csd->write_blkbits - 9;
 		}
+<<<<<<< HEAD
+=======
+
+		if (UNSTUFF_BITS(resp, 13, 1))
+			mmc_card_set_readonly(card);
+>>>>>>> origin/4.19.325
 		break;
 	case 1:
 		/*
@@ -184,6 +190,12 @@ static int mmc_decode_csd(struct mmc_card *card)
 		csd->write_blkbits = 9;
 		csd->write_partial = 0;
 		csd->erase_size = 1;
+<<<<<<< HEAD
+=======
+
+		if (UNSTUFF_BITS(resp, 13, 1))
+			mmc_card_set_readonly(card);
+>>>>>>> origin/4.19.325
 		break;
 	default:
 		pr_err("%s: unrecognised CSD structure version %d\n",
@@ -771,7 +783,11 @@ static int mmc_sd_init_uhs_card(struct mmc_card *card)
 	}
 			
 	pr_err("%s: the new mode is 0x%08x\n",
+<<<<<<< HEAD
 							mmc_hostname(card->host),card->sd_bus_speed);
+=======
+	                          mmc_hostname(card->host),card->sd_bus_speed);
+>>>>>>> origin/4.19.325
 #endif
 // bayhub chevron.li add for degrade code at 2019/8/30 end
 
@@ -902,7 +918,11 @@ try_again:
 		ocr &= ~SD_OCR_S18R;
 		pr_warn("%s: Skipping voltage switch\n", mmc_hostname(host));
 	}
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> origin/4.19.325
 // bayhub chevron.li add for degrade code at 2019/8/30 start
 #ifdef CONFIG_MMC_SDHCI_BH201
 	/* Skip change 1.8V */
@@ -954,11 +974,22 @@ try_again:
 		return err;
 
 	/*
+<<<<<<< HEAD
 	 * In case CCS and S18A in the response is set, start Signal Voltage
 	 * Switch procedure. SPI mode doesn't support CMD11.
 	 */
 	if (!mmc_host_is_spi(host) && rocr &&
 	   ((*rocr & 0x41000000) == 0x41000000)) {
+=======
+	 * In case the S18A bit is set in the response, let's start the signal
+	 * voltage switch procedure. SPI mode doesn't support CMD11.
+	 * Note that, according to the spec, the S18A bit is not valid unless
+	 * the CCS bit is set as well. We deliberately deviate from the spec in
+	 * regards to this, which allows UHS-I to be supported for SDSC cards.
+	 */
+	if (!mmc_host_is_spi(host) && (ocr & SD_OCR_S18R) &&
+	    rocr && (*rocr & SD_ROCR_S18A)) {
+>>>>>>> origin/4.19.325
 		err = mmc_set_uhs_voltage(host, pocr);
 		if (err == -EAGAIN) {
 			retries--;
@@ -1118,7 +1149,11 @@ static int driver_send_command(struct sdhci_host *host)
 static void driver_send_command24(struct sdhci_host *host,u32 * cfg_data,int data_len)
 {
 	struct mmc_host *mmc = host->mmc;
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> origin/4.19.325
 	u8 *data1 = kzalloc(PAGE_SIZE, GFP_KERNEL);
 	struct mmc_request mrq = {0};
 	struct mmc_command cmd = { 0 };
@@ -1172,7 +1207,11 @@ void bht_update_cfg(struct mmc_host *mmc_host, struct mmc_card *card,u32 * cfg_d
 	#endif
 		mmc_sd_get_csd(mmc_host, card);
 		if (1) {
+<<<<<<< HEAD
 			ret=driver_send_command(host);// send command7
+=======
+		ret=driver_send_command(host);// send command7
+>>>>>>> origin/4.19.325
 			if(!ret)
 				pr_err("--send cmd7   error--\n");
 			driver_send_command24(host,cfg_data,data_len);// send command24
@@ -1252,7 +1291,11 @@ void bht_load(struct mmc_host *mmc_host, struct mmc_card *card)
 			bht_load_hw_inject(mmc_host,card,gg_sw_def,sizeof(gg_sw_def),0x3ff,0x77f);			
 			bht_update_cfg(mmc_host,card,gg_sw_def,sizeof(gg_sw_def));
 			set_gg_reg_cur_val((u8*)gg_sw_def);
+<<<<<<< HEAD
 		}	else {
+=======
+			}	else {
+>>>>>>> origin/4.19.325
 			if (vendor_host->ggc.selx_tuning_done_flag)
 				pr_info("%s: skip load default configuration for tuning done\n", mmc_hostname(mmc_host));			
 			if (vendor_host->ggc.tuning_cmd7_timeout_reinit_flg)
@@ -1864,7 +1907,11 @@ bool bretry =  false;
 	/*
 	 * Detect and init the card.
 	 */
+<<<<<<< HEAD
 
+=======
+	 
+>>>>>>> origin/4.19.325
 //#ifdef CONFIG_MMC_PARANOID_SD_INIT
 
 /* huaqin add for SD card bringup by liufurong at 20190201 start */
@@ -1918,7 +1965,11 @@ retry:	if (bht_target_host(mmc_priv(host))) {
 #elif defined CONFIG_MMC_PARANOID_SD_INIT
 	retries = 5;
 	while (retries) {
+<<<<<<< HEAD
 		err = mmc_sd_init_card(host, rocr, NULL);
+=======
+	err = mmc_sd_init_card(host, rocr, NULL);
+>>>>>>> origin/4.19.325
 		if (err) {
 			retries--;
 			mmc_power_off(host);
@@ -1945,7 +1996,10 @@ retry:	if (bht_target_host(mmc_priv(host))) {
 		goto err;
 #endif
 /* huaqin add for SD card bringup by liufurong at 20190201 end */
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/4.19.325
 	mmc_release_host(host);
 	err = mmc_add_card(host->card);
 	if (err)

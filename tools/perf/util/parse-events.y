@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 %pure-parser
+=======
+%define api.pure full
+>>>>>>> origin/4.19.325
 %parse-param {void *_parse_state}
 %parse-param {void *scanner}
 %lex-param {void* scanner}

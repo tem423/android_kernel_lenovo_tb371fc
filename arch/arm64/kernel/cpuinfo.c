@@ -89,6 +89,10 @@ static const char *const hwcap_str[] = {
 	"ilrcpc",
 	"flagm",
 	"ssbs",
+<<<<<<< HEAD
+=======
+	"sb",
+>>>>>>> origin/4.19.325
 	NULL
 };
 

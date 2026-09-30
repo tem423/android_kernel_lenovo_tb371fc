@@ -135,7 +135,13 @@
 #define NUM_INODE_PER_IAG	INOSPERIAG
 
 #define MINBLOCKSIZE		512
+<<<<<<< HEAD
 #define MAXBLOCKSIZE		4096
+=======
+#define L2MINBLOCKSIZE		9
+#define MAXBLOCKSIZE		4096
+#define L2MAXBLOCKSIZE		12
+>>>>>>> origin/4.19.325
 #define	MAXFILESIZE		((s64)1 << 52)
 
 #define JFS_LINK_MAX		0xffffffff
@@ -281,5 +287,9 @@
 				 * fsck() must be run to repair
 				 */
 #define	FM_EXTENDFS 0x00000008	/* file system extendfs() in progress */
+<<<<<<< HEAD
+=======
+#define	FM_STATE_MAX 0x0000000f	/* max value of s_state */
+>>>>>>> origin/4.19.325
 
 #endif				/* _H_JFS_FILSYS */

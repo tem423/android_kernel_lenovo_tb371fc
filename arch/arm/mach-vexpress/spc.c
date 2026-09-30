@@ -580,7 +580,11 @@ static int __init ve_spc_clk_init(void)
 		}
 
 		cluster = topology_physical_package_id(cpu_dev->id);
+<<<<<<< HEAD
 		if (init_opp_table[cluster])
+=======
+		if (cluster < 0 || init_opp_table[cluster])
+>>>>>>> origin/4.19.325
 			continue;
 
 		if (ve_init_opp_table(cpu_dev))

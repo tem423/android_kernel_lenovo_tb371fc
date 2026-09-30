@@ -1674,4 +1674,7 @@ int msm_pinctrl_remove(struct platform_device *pdev)
 	return 0;
 }
 EXPORT_SYMBOL(msm_pinctrl_remove);
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/4.19.325

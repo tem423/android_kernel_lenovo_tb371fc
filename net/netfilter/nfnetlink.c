@@ -452,7 +452,12 @@ ack:
 			 * processed, this avoids that the same error is
 			 * reported several times when replaying the batch.
 			 */
+<<<<<<< HEAD
 			if (nfnl_err_add(&err_list, nlh, err, &extack) < 0) {
+=======
+			if (err == -ENOMEM ||
+			    nfnl_err_add(&err_list, nlh, err, &extack) < 0) {
+>>>>>>> origin/4.19.325
 				/* We failed to enqueue an error, reset the
 				 * list of errors and send OOM to userspace
 				 * pointing to the batch header.
@@ -495,8 +500,11 @@ done:
 	} else {
 		ss->abort(net, oskb);
 	}
+<<<<<<< HEAD
 	if (ss->cleanup)
 		ss->cleanup(net);
+=======
+>>>>>>> origin/4.19.325
 
 	nfnl_err_deliver(&err_list, oskb);
 	kfree_skb(skb);

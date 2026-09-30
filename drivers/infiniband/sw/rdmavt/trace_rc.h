@@ -104,6 +104,10 @@ DEFINE_EVENT(rvt_rc_template, rvt_rc_timeout,
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
+<<<<<<< HEAD
 #define TRACE_INCLUDE_PATH ../../drivers/infiniband/sw/rdmavt
+=======
+#define TRACE_INCLUDE_PATH .
+>>>>>>> origin/4.19.325
 #define TRACE_INCLUDE_FILE trace_rc
 #include <trace/define_trace.h>

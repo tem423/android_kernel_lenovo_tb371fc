@@ -135,7 +135,11 @@ static inline unsigned long iova_pfn(struct iova_domain *iovad, dma_addr_t iova)
 	return iova >> iova_shift(iovad);
 }
 
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_IOMMU_IOVA)
+=======
+#if IS_REACHABLE(CONFIG_IOMMU_IOVA)
+>>>>>>> origin/4.19.325
 int iova_cache_get(void);
 void iova_cache_put(void);
 

@@ -44,6 +44,11 @@
 #    define SMPWMB      eieio
 #endif
 
+<<<<<<< HEAD
+=======
+/* clang defines this macro for a builtin, which will not work with runtime patching */
+#undef __lwsync
+>>>>>>> origin/4.19.325
 #define __lwsync()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
 #define dma_rmb()	__lwsync()
 #define dma_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")

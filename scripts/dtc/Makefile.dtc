@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+# SPDX-License-Identifier: GPL-2.0-or-later
+>>>>>>> origin/4.19.325
 # Makefile.dtc
 #
 # This is not a complete Makefile of itself.  Instead, it is designed to
@@ -14,5 +18,12 @@ DTC_SRCS = \
 	treesource.c \
 	util.c
 
+<<<<<<< HEAD
+=======
+ifneq ($(NO_YAML),1)
+DTC_SRCS += yamltree.c
+endif
+
+>>>>>>> origin/4.19.325
 DTC_GEN_SRCS = dtc-lexer.lex.c dtc-parser.tab.c
 DTC_OBJS = $(DTC_SRCS:%.c=%.o) $(DTC_GEN_SRCS:%.c=%.o)

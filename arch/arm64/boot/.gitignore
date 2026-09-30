@@ -2,3 +2,7 @@ Image
 Image-dtb
 Image.gz
 Image.gz-dtb
+<<<<<<< HEAD
+=======
+dtbo.img
+>>>>>>> origin/4.19.325

@@ -28,7 +28,11 @@
 #include "ehci-fsl.h"
 
 #define DRIVER_DESC "Freescale EHCI Host controller driver"
+<<<<<<< HEAD
 #define DRV_NAME "ehci-fsl"
+=======
+#define DRV_NAME "fsl-ehci"
+>>>>>>> origin/4.19.325
 
 static struct hc_driver __read_mostly fsl_ehci_hc_driver;
 

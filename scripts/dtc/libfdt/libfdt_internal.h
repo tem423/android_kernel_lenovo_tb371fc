@@ -1,8 +1,13 @@
+<<<<<<< HEAD
+=======
+/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+>>>>>>> origin/4.19.325
 #ifndef LIBFDT_INTERNAL_H
 #define LIBFDT_INTERNAL_H
 /*
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
+<<<<<<< HEAD
  *
  * libfdt is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -49,16 +54,26 @@
  *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=======
+>>>>>>> origin/4.19.325
  */
 #include <fdt.h>
 
 #define FDT_ALIGN(x, a)		(((x) + (a) - 1) & ~((a) - 1))
 #define FDT_TAGALIGN(x)		(FDT_ALIGN((x), FDT_TAGSIZE))
 
+<<<<<<< HEAD
 #define FDT_CHECK_HEADER(fdt) \
 	{ \
 		int err_; \
 		if ((err_ = fdt_check_header(fdt)) != 0) \
+=======
+int fdt_ro_probe_(const void *fdt);
+#define FDT_RO_PROBE(fdt)			\
+	{ \
+		int err_; \
+		if ((err_ = fdt_ro_probe_(fdt)) != 0)	\
+>>>>>>> origin/4.19.325
 			return err_; \
 	}
 

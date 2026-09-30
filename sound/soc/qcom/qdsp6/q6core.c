@@ -328,7 +328,11 @@ bool q6core_is_adsp_ready(void)
 	mutex_unlock(&g_core->lock);
 	return ret;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(q6core_is_adsp_ready);
+=======
+// EXPORT_SYMBOL_GPL(q6core_is_adsp_ready);
+>>>>>>> origin/4.19.325
 
 static int q6core_probe(struct apr_device *adev)
 {
