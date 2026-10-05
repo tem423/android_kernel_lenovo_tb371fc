@@ -141,7 +141,7 @@ TRACE_EVENT(brcmf_sdpcm_hdr,
 #ifdef CONFIG_BRCM_TRACING
 
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_PATH ../../drivers/net/wireless/broadcom/brcm80211/brcmfmac
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE tracepoint
 

@@ -42,6 +42,7 @@
 
 #include <linux/platform_data/i2c-hid.h>
 
+#include <linux/bootinfo.h>
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
 
@@ -63,7 +64,6 @@
 /* flags */
 #define I2C_HID_STARTED		0
 #define I2C_HID_RESET_PENDING	1
-#define I2C_HID_READ_PENDING	2
 
 #define I2C_HID_PWR_ON		0x00
 #define I2C_HID_PWR_SLEEP	0x01
@@ -91,6 +91,22 @@ static bool lenovo_i2c_kb_probe_done = false;
 #define PID_KB_LENOVO 0x6127
 #define VID_KB_LENOVO_TP 0x04f3
 #define PID_KB_LENOVO_TP 0x31f3
+
+/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
+int mcu_resume_gpio = 0;
+bool g_already_sleep = false;
+/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 end*/
+
+/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 start */
+struct i2c_hid *g_ihid=NULL;
+struct i2c_client *g_client=NULL;
+/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 end */
+
+/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 start */
+extern void hidinput_disconnect(struct hid_device *hid);
+extern int hidinput_connect(struct hid_device *hid, unsigned int force);
+static unsigned char g_screen_on = 0;
+/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 end */
 
 struct i2c_hid_desc {
 	__le16 wHIDDescLength;
@@ -209,7 +225,7 @@ static const struct i2c_hid_quirks {
 		 I2C_HID_QUIRK_RESET_ON_RESUME },
 	{ USB_VENDOR_ID_ITE, I2C_DEVICE_ID_ITE_LENOVO_LEGION_Y720,
 		I2C_HID_QUIRK_BAD_INPUT_SIZE },
-	{ VID_KB_LENOVO, PID_KB_LENOVO,
+		{ VID_KB_LENOVO, PID_KB_LENOVO,
 		 I2C_HID_QUIRK_SET_PWR_ON_SHUTDOWN | I2C_HID_QUIRK_NO_RUNTIME_PM | I2C_HID_QUIRK_SET_PWR_WAKEUP_DEV | I2C_HID_QUIRK_WAKE_UP_SYS},
 	{ VID_KB_LENOVO_TP, PID_KB_LENOVO_TP,
 		 I2C_HID_QUIRK_NO_RUNTIME_PM | I2C_HID_QUIRK_WAKE_UP_SYS | I2C_HID_QUIRK_SHOULD_SKIP_SET_PWR},
@@ -281,16 +297,12 @@ static int __i2c_hid_command(struct i2c_client *client,
 		msg[1].len = data_len;
 		msg[1].buf = buf_recv;
 		msg_num = 2;
-		set_bit(I2C_HID_READ_PENDING, &ihid->flags);
 	}
 
 	if (wait)
 		set_bit(I2C_HID_RESET_PENDING, &ihid->flags);
 
 	ret = i2c_transfer(client->adapter, msg, msg_num);
-
-	if (data_len > 0)
-		clear_bit(I2C_HID_READ_PENDING, &ihid->flags);
 
 	if (ret != msg_num)
 		return ret < 0 ? ret : -EIO;
@@ -444,10 +456,10 @@ static int i2c_hid_set_power(struct i2c_client *client, int power_state)
 		/* Device was already activated */
 		if (!ret)
 			goto set_pwr_exit;
-		/* vendor required to sleep 10ms to send next command */
+	    /* vendor required to sleep 10ms to send next command */
 		if (ihid->hid->vendor == VID_KB_LENOVO && ihid->hid->product == PID_KB_LENOVO)
 			msleep(10);
-
+			
 	}
 
 	if (ihid->quirks & I2C_HID_QUIRK_DELAY_AFTER_SLEEP &&
@@ -522,11 +534,12 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 	int ret;
 	u32 ret_size;
 	int size = le16_to_cpu(ihid->hdesc.wMaxInputLength);
+    static bool hw_info_registed = false;
 	static char last_tpd_status = 0;
 	static bool first_tpd_status_reported = false;
 	static char last_kbd_status = 0;
 	static bool first_kbd_status_reported = false;
-
+	
 	if (size > ihid->bufsize)
 		size = ihid->bufsize;
 
@@ -585,6 +598,9 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 		} else if (kb_connect == 1 && !lenovo_i2c_kb_registed) {
 			hidinput_connect(ihid->hid, 0);
 		}
+		if (hw_info_registed) {
+			unregister_hardware_info("KB_INFO");
+		}
 		/* set the output gpio according to cradle status */
 		gpio_val = (ihid->inbuf[3] >> 3) & 1? 0 : 1;
 		if (ihid->pdata.output_gpio != -1) {
@@ -592,7 +608,7 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 				i2c_hid_dbg(ihid, "Set gpio to %d failed\n", gpio_val);
 			else
 				i2c_hid_dbg(ihid, "Set gpio to %d successed\n", gpio_val);
-		}
+				}
 		if (kb_connect) {
 			char *status_event[2] = {NULL, NULL};
 			char curr_tpd_status = (ihid->inbuf[3] >> 6) & 0x01;
@@ -644,7 +660,7 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 			}
 			sprintf(versions_info, "MCU:%d,KB:%d,TP:%d,BT:%d,online:%d,MAC:%s", ihid->inbuf[4],
 				ihid->inbuf[5], ihid->inbuf[6], ihid->inbuf[16], kb_connect, KB_BT_MAC_info);
-			dev_err(&ihid->client->dev, "KB connected: %s, status:%02x\n", versions_info, ihid->inbuf[3]);
+				dev_err(&ihid->client->dev, "KB connected: %s, status:%02x\n", versions_info, ihid->inbuf[3]);
 		} else {
 			sprintf(KB_BT_MAC_info, "00:00:00:00:00:00");
 			sprintf(versions_info, "HOST_MCU:%d, online:%d", ihid->inbuf[4], kb_connect);
@@ -652,10 +668,12 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 			first_kbd_status_reported = false;
 			dev_err(&ihid->client->dev, "KB Dis-connected\n");
 		}
+		register_hardware_info("KB_INFO", versions_info);
+		hw_info_registed = true;
 		return;
 	}
-
-	if (test_bit(I2C_HID_STARTED, &ihid->flags))
+	
+    if (test_bit(I2C_HID_STARTED, &ihid->flags))
 		hid_input_report(ihid->hid, HID_INPUT_REPORT, ihid->inbuf + 2, ret_size - 2, 1);
 	return;
 }
@@ -663,9 +681,6 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 static irqreturn_t i2c_hid_irq(int irq, void *dev_id)
 {
 	struct i2c_hid *ihid = dev_id;
-
-	if (test_bit(I2C_HID_READ_PENDING, &ihid->flags))
-		return IRQ_HANDLED;
 
 	i2c_hid_get_input(ihid);
 
@@ -746,6 +761,17 @@ static int i2c_hid_get_raw_report(struct hid_device *hid,
 	if (report_type == HID_OUTPUT_REPORT)
 		return -EINVAL;
 
+	/*
+	 * In case of unnumbered reports the response from the device will
+	 * not have the report ID that the upper layers expect, so we need
+	 * to stash it the buffer ourselves and adjust the data size.
+	 */
+	if (!report_number) {
+		buf[0] = 0;
+		buf++;
+		count--;
+	}
+
 	/* +2 bytes to include the size of the reply in the query buffer */
 	ask_count = min(count + 2, (size_t)ihid->bufsize);
 
@@ -767,6 +793,9 @@ static int i2c_hid_get_raw_report(struct hid_device *hid,
 	count = min(count, ret_count - 2);
 	memcpy(buf, ihid->rawbuf + 2, count);
 
+	if (!report_number)
+		count++;
+
 	return count;
 }
 
@@ -783,17 +812,19 @@ static int i2c_hid_output_raw_report(struct hid_device *hid, __u8 *buf,
 
 	mutex_lock(&ihid->reset_lock);
 
-	if (report_id) {
-		buf++;
-		count--;
-	}
-
+	/*
+	 * Note that both numbered and unnumbered reports passed here
+	 * are supposed to have report ID stored in the 1st byte of the
+	 * buffer, so we strip it off unconditionally before passing payload
+	 * to i2c_hid_set_or_send_report which takes care of encoding
+	 * everything properly.
+	 */
 	ret = i2c_hid_set_or_send_report(client,
 				report_type == HID_FEATURE_REPORT ? 0x03 : 0x02,
-				report_id, buf, count, use_data);
+				report_id, buf + 1, count - 1, use_data);
 
-	if (report_id && ret >= 0)
-		ret++; /* add report_id to the number of transfered bytes */
+	if (ret >= 0)
+		ret++; /* add report_id to the number of transferred bytes */
 
 	mutex_unlock(&ihid->reset_lock);
 
@@ -876,8 +907,7 @@ static int i2c_hid_parse(struct hid_device *hid)
 		}
 	}
 
-	//i2c_hid_dbg(ihid, "Report Descriptor: %*ph\n", rsize, rdesc);
-	dev_printk(KERN_DEBUG, &(ihid)->client->dev, "Report Descriptor: %*ph\n", rsize, rdesc);
+
 
 	if (ihid->pdata.preset_descriptors && (rdesc[0] != 0x05 || rdesc[1] != 0x01)) {
 		dev_err(&client->dev, "Wrong HID report descriptor, will use preset\n");
@@ -1003,8 +1033,8 @@ static int i2c_hid_init_irq(struct i2c_client *client)
 
 		return ret;
 	}
-
-	i2c_hid_dbg(ihid, "hid dev init wakeup .\n");
+	
+i2c_hid_dbg(ihid, "hid dev init wakeup .\n");
 	ret = device_init_wakeup(&client->dev, true);
 	if(ret!=0)
 	{
@@ -1037,7 +1067,7 @@ static int i2c_hid_fetch_hid_descriptor(struct i2c_hid *ihid)
 		}
 	}
 
-	if (ihid->pdata.preset_descriptors && le16_to_cpu(hdesc->wHIDDescLength) != 0x001E) {
+if (ihid->pdata.preset_descriptors && le16_to_cpu(hdesc->wHIDDescLength) != 0x001E) {
 		dev_err(&client->dev, "Wrong HID descriptor, will use preset\n");
 		memcpy(ihid->hdesc_buffer, ihid->pdata.hid_descriptor, ihid->pdata.hid_descriptor_len);
 	}
@@ -1141,13 +1171,26 @@ static int i2c_hid_of_probe(struct i2c_client *client,
 
 	ret = of_get_named_gpio(dev->of_node, "kb,output-gpio", 0);
 	if (ret < 0) {
-		dev_err(&client->dev, "Invalid output-gpio in dt: %d", ret);
 		pdata->output_gpio = -1;
 	} else {
 		pdata->output_gpio = ret;
 		dev_err(&client->dev, "Got output-gpio1 in dt: %d", ret);
 	}
 
+	/* p284: TB371FC magnetic keyboard MCU reset (active low). The stock
+	 * DT names it mcu_rst_gpio; accept either name so the reset can be
+	 * released before the first i2c transfer.
+	 */
+	if (pdata->output_gpio < 0) {
+		ret = of_get_named_gpio(dev->of_node, "mcu_rst_gpio", 0);
+		if (ret >= 0) {
+			pdata->output_gpio = ret;
+			dev_info(dev, "p284: got mcu_rst_gpio in dt: %d\n", ret);
+		} else {
+			dev_info(dev, "p284: no reset gpio property (%d)\n", ret);
+		}
+	}
+	
 	ret = of_property_read_u32(dev->of_node, "hid-descr-addr", &val);
 	if (ret) {
 		dev_err(&client->dev, "HID register address not provided\n");
@@ -1160,7 +1203,7 @@ static int i2c_hid_of_probe(struct i2c_client *client,
 	}
 	pdata->hid_descriptor_address = val;
 
-	pdata->hid_descriptor = (u8*)of_get_property(dev->of_node, "hid-descr-preset", &(pdata->hid_descriptor_len));
+pdata->hid_descriptor = (u8*)of_get_property(dev->of_node, "hid-descr-preset", &(pdata->hid_descriptor_len));
 	pdata->hid_report_descriptor = (u8*)of_get_property(dev->of_node, "hid-report-descr-preset", &(pdata->hid_report_descriptor_len));
 	if (!pdata->hid_report_descriptor || !pdata->hid_descriptor) {
 		pdata->preset_descriptors = false;
@@ -1171,7 +1214,7 @@ static int i2c_hid_of_probe(struct i2c_client *client,
 		dev_printk(KERN_DEBUG, &client->dev, "Preset HID Descriptor: %*ph\n", pdata->hid_descriptor_len, pdata->hid_descriptor);
 		dev_printk(KERN_DEBUG, &client->dev, "Preset HID Report Descriptor: %*ph\n", pdata->hid_report_descriptor_len, pdata->hid_report_descriptor);
 	}
-
+	
 	return 0;
 }
 
@@ -1268,6 +1311,24 @@ static int i2c_hid_probe(struct i2c_client *client,
 	/* Parse platform agnostic common properties from ACPI / device tree */
 	i2c_hid_fwnode_probe(client, &ihid->pdata);
 
+	/* p284: release the keyboard MCU reset BEFORE the first i2c
+	 * transfer — a reset-held MCU would fail the descriptor fetch with
+	 * ENOTCONN. */
+	if ((ihid->pdata.output_gpio != -1) &&
+	    gpio_is_valid(ihid->pdata.output_gpio)) {
+		ret = gpio_request(ihid->pdata.output_gpio, "kb_output_gpio");
+		if (ret && ret != -EBUSY)
+			dev_warn(&client->dev,
+				 "p284: reset gpio request failed: %d\n", ret);
+		if (gpio_direction_output(ihid->pdata.output_gpio, 1))
+			dev_warn(&client->dev,
+				 "p284: failed to deassert reset gpio\n");
+		else
+			dev_info(&client->dev,
+				 "p284: mcu reset released (gpio %d)\n",
+				 ihid->pdata.output_gpio);
+	}
+
 	ihid->pdata.supplies[0].supply = "vdd";
 	ihid->pdata.supplies[1].supply = "vddl";
 
@@ -1341,10 +1402,10 @@ static int i2c_hid_probe(struct i2c_client *client,
 	hid->vendor = le16_to_cpu(ihid->hdesc.wVendorID);
 	hid->product = le16_to_cpu(ihid->hdesc.wProductID);
 
-	snprintf(hid->name, sizeof(hid->name), "%s %04hX:%04hX",
-		 client->name, hid->vendor, hid->product);
-
-	if (hid->vendor == VID_KB_LENOVO && hid->product == PID_KB_LENOVO) {
+	snprintf(hid->name, sizeof(hid->name), "%s %04X:%04X",
+		 client->name, (u16)hid->vendor, (u16)hid->product);
+		 
+		 if (hid->vendor == VID_KB_LENOVO && hid->product == PID_KB_LENOVO) {
 		snprintf(hid->name, sizeof(hid->name), "Lenovo Keyboard Pack for Tab P12 Pro");
 	}
 	strlcpy(hid->phys, dev_name(&client->dev), sizeof(hid->phys));
@@ -1360,8 +1421,7 @@ static int i2c_hid_probe(struct i2c_client *client,
 
 	if (!(ihid->quirks & I2C_HID_QUIRK_NO_RUNTIME_PM))
 		pm_runtime_put(&client->dev);
-
-	/* Set the keyboard to disconnect by default and register wakeup device*/
+    /* Set the keyboard to disconnect by default and register wakeup device*/
 	if (/*lenovo_i2c_kb_registed && kb_connect == 0
 		&& */hid->vendor == VID_KB_LENOVO && hid->product == PID_KB_LENOVO) {
 
@@ -1376,17 +1436,6 @@ static int i2c_hid_probe(struct i2c_client *client,
 			hidinput_disconnect(hid);
 		}
 		lenovo_i2c_kb_probe_done = true;
-	}
-
-	if ((ihid->pdata.output_gpio != -1) && gpio_is_valid(ihid->pdata.output_gpio)) {
-		ret = gpio_request(ihid->pdata.output_gpio, "kb_output_gpio");
-		if(ret){
-			hid_err(hid, "request for reset failed, r=%d,gpio=%d.\n", ret, ihid->pdata.output_gpio);
-		}
-		ret = gpio_direction_output(ihid->pdata.output_gpio, 1);
-		if(ret){
-			hid_err(hid, "unable to set dirout reset gpio r=%d,gpio=%d.\n", ret, ihid->pdata.output_gpio);
-		}
 	}
 
 	return 0;
@@ -1579,6 +1628,106 @@ static int i2c_hid_runtime_resume(struct device *dev)
 	enable_irq(client->irq);
 	i2c_hid_set_power(client, I2C_HID_PWR_ON);
 	return 0;
+}
+
+/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
+static int kb_i2c_hid_resume(void)
+{
+	int ret = 0;
+
+	if (!g_already_sleep) {
+		return -1;
+	}
+
+	ret = gpio_direction_output(mcu_resume_gpio, 1);
+        if(ret) {
+                pr_err("%s: set mcu_resume_gpio failed\n", __func__);
+                return ret;
+        }
+
+	ret = i2c_hid_set_power(g_client, I2C_HID_PWR_ON);
+	if (ret) {
+		pr_err("%s: i2c set power on fail\n", __func__);
+		return ret;
+	}
+
+	g_already_sleep = false;
+
+	return 0;
+}
+
+static int kb_i2c_hid_suspend(void)
+{
+	int ret = 0;
+
+	if (g_already_sleep) {
+		return -1;
+	}
+
+	ret = gpio_direction_output(mcu_resume_gpio, 0);
+        if(ret) {
+                pr_err("%s: set mcu_resume_gpio failed\n", __func__);
+                return ret;
+        }
+
+	ret = i2c_hid_set_power(g_client, I2C_HID_PWR_SLEEP);
+	if (ret) {
+		pr_err("%s: i2c set sleep fail\n", __func__);
+		return ret;
+	}
+
+	g_already_sleep = true;
+
+	return 0;
+}
+/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 end*/
+
+void kb_hid_suspend(void)
+{
+int ret = 0;
+	int args_len = 6;
+	u8 args[6] = {07,00,04,00,00,05};
+
+	if (!g_client)
+		return;
+
+	printk("-----hid suspend-----\n");
+
+	ret = __i2c_hid_command(g_client, &hid_set_report_cmd, 2, 2, args, args_len,
+				NULL, 0);
+	if (ret)
+		printk("%s:report screen off cmd failed\n");
+	else
+		g_screen_on = 0;
+
+	/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
+	kb_i2c_hid_suspend();
+	/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 end*/
+
+	return;
+}
+void kb_hid_resume(void)
+{
+	int ret = 0;
+	int args_len = 6;
+	u8 args[6] = {07,00,04,00,01,05};
+	
+	if (!g_client)
+		return;
+
+	printk("-----hid resume-----\n");
+	/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 start*/
+	kb_i2c_hid_resume();
+	/*Spruce code for OSPURCET-1235 by chenzm9 at 2023/2/16 end*/
+
+	ret = __i2c_hid_command(g_client, &hid_set_report_cmd, 2, 2, args, args_len,
+				NULL, 0);
+	if (ret)
+		printk("%s:report screen on cmd failed\n");
+	else
+		g_screen_on = 1;
+	/* Spruce code for OSPURCET-780 by sunft3 at 2023/01/18 end */
+	return;
 }
 #endif
 

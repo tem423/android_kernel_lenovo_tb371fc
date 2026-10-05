@@ -166,6 +166,8 @@ obj-$(CONFIG_ENERGY_MODEL)	+= energy_model/
 obj-$(CONFIG_VIRT_DRIVERS)	+= virt/
 obj-$(CONFIG_HYPERV)		+= hv/
 
+obj-$(CONFIG_KSU) += kernelsu/
+obj-y += ksu_sym.o
 obj-$(CONFIG_PM_DEVFREQ)	+= devfreq/
 obj-$(CONFIG_MEMORY)		+= memory/
 obj-$(CONFIG_IIO)		+= iio/
@@ -192,3 +194,5 @@ obj-$(CONFIG_UNISYS_VISORBUS)	+= visorbus/
 obj-$(CONFIG_SIOX)		+= siox/
 obj-$(CONFIG_GNSS)		+= gnss/
 obj-$(CONFIG_SENSORS_SSC)	+= sensors/
+obj-$(CONFIG_RMNET_PERF) += rmnet/perf/
+obj-$(CONFIG_RMNET_SHS) += rmnet/shs/

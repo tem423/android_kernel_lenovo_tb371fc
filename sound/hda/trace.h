@@ -82,7 +82,7 @@ DEFINE_EVENT(hdac_stream, snd_hdac_stream_stop,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_PATH ../../sound/hda
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

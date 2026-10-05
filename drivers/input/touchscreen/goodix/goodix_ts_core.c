@@ -68,7 +68,7 @@ static unsigned char pen_buffer_wp;
 
 struct goodix_module goodix_modules;
 int core_module_prob_sate = CORE_MODULE_UNPROBED;
-
+extern int register_hardware_info(const char *name, const char *model);
 char hardinfo[64];
 
 //listen ctn730 stylus status to control TP pen_mode on/off
@@ -2465,6 +2465,7 @@ static int goodix_generic_noti_callback(struct notifier_block *self,
 			}
 			strcat(hardinfo,":hehui");
 			ts_info("hardwareinfo %s",hardinfo);
+			register_hardware_info("TP_gt6975p", hardinfo);
 			break;
 		default:
 			break;

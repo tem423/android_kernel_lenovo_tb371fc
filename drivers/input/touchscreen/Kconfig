@@ -1363,6 +1363,7 @@ source "drivers/input/touchscreen/goodix/Kconfig"
 source "drivers/input/touchscreen/synaptics_tcm/Kconfig"
 
 source "drivers/input/touchscreen/focaltech_touch/Kconfig"
+source "drivers/input/touchscreen/nt36532/Kconfig"
 
 source "drivers/input/touchscreen/nt36xxx/Kconfig"
 

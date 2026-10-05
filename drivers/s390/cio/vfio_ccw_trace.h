@@ -47,7 +47,7 @@ TRACE_EVENT(vfio_ccw_io_fctl,
 /* This part must be outside protection */
 
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_PATH ../../drivers/s390/cio
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE vfio_ccw_trace
 

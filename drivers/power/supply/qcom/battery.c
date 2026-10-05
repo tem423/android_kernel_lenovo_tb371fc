@@ -1277,6 +1277,8 @@ static int usb_icl_vote_callback(struct votable *votable, void *data,
 	union power_supply_propval pval = {0, };
 	bool rerun_aicl = false, dc_present = false;
 
+	pr_info("battery: ICL vote client=%s icl=%d comm=%s\n",
+		client ? client : "NULL", icl_ua, current->comm);
 	if (!chip->main_psy)
 		return 0;
 

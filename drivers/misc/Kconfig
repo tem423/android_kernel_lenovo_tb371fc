@@ -648,6 +648,7 @@ source "drivers/misc/cardreader/Kconfig"
 source "drivers/misc/fpr_FingerprintCard/Kconfig"
 source "drivers/misc/ctn730/Kconfig"
 source "drivers/misc/qrc/Kconfig"
+source "drivers/misc/huaqinhardware_info/Kconfig"
 endmenu
 
 config OKL4_USER_VIPC
@@ -688,3 +689,13 @@ config HW_BOARD_ID_ROW_PRC
 	    depends on HW_BOOT_INFO
 	    help
 	      Enable Feature for HW Board with ID_ROW_PRC
+config NTSYNC
+	tristate "NT synchronization primitive emulation"
+	help
+	  This module provides kernel support for emulation of Windows NT
+	  synchronization primitives. It is not a hardware driver.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called ntsync.
+
+	  If unsure, say N.

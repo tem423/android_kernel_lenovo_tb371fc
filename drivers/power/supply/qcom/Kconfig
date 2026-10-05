@@ -181,4 +181,19 @@ config SMB1398_CHARGER
 	      wireless charger receiver and provide the input for downstream
 	      chargers.
 
+
+config SPINEL_CHARGER
+	bool "Lenovo Spinel charger extensions"
+	depends on QPNP_SMB5
+	help
+	  Enable Lenovo Spinel/TB371FC power-supply ABI and SMB5 battery
+	  maintenance/protection extensions.
+
+config MM8013C06_BATTERY
+	tristate "mm8013c06 Battery "
+	depends on MFD_I2C_PMIC
+	help
+	  battery gauge driver.
+
+
 endmenu

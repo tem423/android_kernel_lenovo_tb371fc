@@ -627,7 +627,7 @@ TRACE_EVENT(gfs2_rs,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_PATH ../../.
 #define TRACE_INCLUDE_FILE trace_gfs2
 #include <trace/define_trace.h>
 

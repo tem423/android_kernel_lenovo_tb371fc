@@ -660,8 +660,8 @@ int dmesg_restrict = IS_ENABLED(CONFIG_SECURITY_DMESG_RESTRICT);
 
 static int syslog_action_restricted(int type)
 {
-	if (dmesg_restrict)
-		return 1;
+	/* V27O: keep shell dmesg readable for diagnostics
+	 * (ZUI init otherwise sets dmesg_restrict=1 at boot). */
 	/*
 	 * Unless restricted, we allow "read all" and "get buffer size"
 	 * for everybody.
@@ -672,6 +672,8 @@ static int syslog_action_restricted(int type)
 
 static int check_syslog_permissions(int type, int source)
 {
+	/* V27O: unrestricted dmesg for peripherals diagnostics */
+	return 0;
 	/*
 	 * If this is from /proc/kmsg and we've already opened it, then we've
 	 * already done the capabilities checks at open time.
@@ -1508,7 +1510,8 @@ int do_syslog(int type, char __user *buf, int len, int source)
 		break;
 	/* Read/clear last kernel messages */
 	case SYSLOG_ACTION_READ_CLEAR:
-		clear = true;
+		/* V27O: never clear (diagnostics) */
+		break;
 		/* FALL THRU */
 	/* Read last kernel messages */
 	case SYSLOG_ACTION_READ_ALL:
@@ -1522,7 +1525,7 @@ int do_syslog(int type, char __user *buf, int len, int source)
 		break;
 	/* Clear ring buffer */
 	case SYSLOG_ACTION_CLEAR:
-		syslog_clear();
+		/* V27O: never clear (diagnostics) */
 		break;
 	/* Disable logging to console */
 	case SYSLOG_ACTION_CONSOLE_OFF:
@@ -3344,3 +3347,5 @@ void kmsg_dump_rewind(struct kmsg_dumper *dumper)
 EXPORT_SYMBOL_GPL(kmsg_dump_rewind);
 
 #endif
+
+

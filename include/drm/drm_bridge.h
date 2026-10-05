@@ -162,7 +162,7 @@ struct drm_bridge_funcs {
 	 * or &drm_encoder_helper_funcs.dpms hook.
 	 *
 	 * The bridge must assume that the display pipe (i.e. clocks and timing
-	 * singals) feeding it is no longer running when this callback is
+	 * signals) feeding it is no longer running when this callback is
 	 * called.
 	 *
 	 * The post_disable callback is optional.
@@ -294,6 +294,8 @@ struct drm_bridge {
 	const struct drm_bridge_funcs *funcs;
 	/** @driver_private: pointer to the bridge driver's internal context */
 	void *driver_private;
+	struct mutex lock;
+	bool is_dsi_drm_bridge;
 };
 
 void drm_bridge_add(struct drm_bridge *bridge);

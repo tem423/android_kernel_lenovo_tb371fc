@@ -3,6 +3,11 @@
 #include <linux/sched.h>
 #include <linux/sched/task.h>
 #include <linux/sched/signal.h>
+#include <linux/mm.h>
+#include <linux/sched/mm.h>
+#include <linux/sched/types.h>
+#include <linux/slab.h>
+#include <linux/workqueue.h>
 
 #include "cgroup-internal.h"
 
@@ -172,6 +177,95 @@ static void cgroup_freeze_task(struct task_struct *task, bool freeze)
 	unlock_task_sighand(task, &flags);
 }
 
+#ifdef CONFIG_PROCESS_RECLAIM
+static struct workqueue_struct *frozen_reclaim_wq;
+
+struct frozen_reclaim_work {
+	struct delayed_work	dwork;
+	struct task_struct	*task;
+};
+
+static void frozen_reclaim_worker(struct work_struct *work)
+{
+	struct delayed_work *dw = to_delayed_work(work);
+	struct frozen_reclaim_work *fw =
+		container_of(dw, struct frozen_reclaim_work, dwork);
+	struct task_struct *task = fw->task;
+	struct sched_param param = { .sched_priority = 0 };
+
+
+	/*
+	 * SCHED_IDLE: every UI/application thread preempts the drain; it
+	 * only soaks up cycles nothing else wants. One drain at a time via
+	 * the single-threaded frozen_reclaim_wq.
+	 */
+	sched_setscheduler_nocheck(current, SCHED_IDLE, &param);
+
+	/*
+	 * Skip if the task unfroze before the delay elapsed; reclaiming a
+	 * running task's pages would just fault back in. Exited tasks are
+	 * handled inside reclaim_task_anon() (get_task_mm() returns NULL).
+	 */
+	if (!task->frozen)
+		goto out;
+
+	reclaim_task_anon(task, INT_MAX);
+out:
+	put_task_struct(task);
+	kfree(fw);
+}
+
+/*
+ * Queue an anon-page reclaim for a task that just got frozen, so its
+ * pages reach swap (zram) without waiting for watermark pressure.
+ * css_task_iter walks threads: only the group leader carries the
+ * process mm, so queue exactly once per process.
+ */
+static void queue_frozen_reclaim(struct task_struct *task)
+{
+	struct frozen_reclaim_work *fw;
+	struct mm_struct *mm;
+	unsigned long anon, swapents;
+
+	if (!frozen_reclaim_wq)
+		return;
+	if (task != task->group_leader)
+		return;
+	if (task->flags & PF_EXITING)
+		return;
+
+	/*
+	 * Skip already-drained tasks: the freeze/unfreeze oscillation would
+	 * otherwise re-walk their (mostly swapped-out) memory forever - the
+	 * 46-passes-per-task CPU pump measured on #170.
+	 */
+	mm = get_task_mm(task);
+	if (!mm)
+		return;
+	anon = get_mm_counter(mm, MM_ANONPAGES);
+	swapents = get_mm_counter(mm, MM_SWAPENTS);
+	mmput(mm);
+	if (swapents * 2 >= anon)
+		return;
+
+	fw = kzalloc(sizeof(*fw), GFP_KERNEL);
+	if (!fw)
+		return;
+	INIT_DELAYED_WORK(&fw->dwork, frozen_reclaim_worker);
+	get_task_struct(task);
+	fw->task = task;
+	queue_delayed_work(frozen_reclaim_wq, &fw->dwork, HZ);
+}
+static int __init frozen_reclaim_wq_init(void)
+{
+	frozen_reclaim_wq = alloc_workqueue("frozen_reclaim",
+					     WQ_UNBOUND | WQ_FREEZABLE, 1);
+
+	return frozen_reclaim_wq ? 0 : -ENOMEM;
+}
+__initcall(frozen_reclaim_wq_init);
+#endif
+
 /*
  * Freeze or unfreeze all tasks in the given cgroup.
  */
@@ -198,6 +292,8 @@ static void cgroup_do_freeze(struct cgroup *cgrp, bool freeze)
 		if (task->flags & PF_KTHREAD)
 			continue;
 		cgroup_freeze_task(task, freeze);
+		if (freeze)
+			queue_frozen_reclaim(task);
 	}
 	css_task_iter_end(&it);
 

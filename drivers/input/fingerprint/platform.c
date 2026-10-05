@@ -26,19 +26,19 @@ int gf_parse_dts(struct gf_dev *gf_dev)
 	struct device *dev = &gf_dev->spi->dev;
 	struct device_node *np = dev->of_node;
 //avdd_en
-	printk("gf get vdden_gpio[%d] from dt", gf_dev->vdden_gpio);
-	gf_dev->vdden_gpio = of_get_named_gpio(np,"fp-gpio-envdd",0);
-	if(gf_dev->vdden_gpio < 0){
-	pr_err("failed to get vdden gpio!\n");
-	return gf_dev->vdden_gpio;
+	/* p122: DT (soc/goodix_fp) has no fp-gpio-envdd GPIO; the sensor is
+	 * powered through the goodix_vdd-supply PMIC rail instead. */
+	gf_dev->vdd_supply = devm_regulator_get(dev, "goodix_vdd");
+	if (IS_ERR(gf_dev->vdd_supply)) {
+		pr_err("failed to get goodix_vdd regulator!\n");
+		return PTR_ERR(gf_dev->vdd_supply);
 	}
-	printk("gf get vdden_gpio1111[%d] from dt", gf_dev->vdden_gpio);
-	rc = devm_gpio_request(dev, gf_dev->vdden_gpio, "goodix_fpenvdd");
-	if(rc){
-	pr_err("failed to request vdden gpio, rc = %d\n", rc);
-		goto err_vdden;
+	rc = regulator_enable(gf_dev->vdd_supply);
+	if (rc) {
+		pr_err("failed to enable goodix_vdd, rc = %d\n", rc);
+		return rc;
 	}
-	gpio_direction_output(gf_dev->vdden_gpio,1);
+	pr_info("p122: goodix_vdd enabled\n");
 //reset
 	gf_dev->reset_gpio = of_get_named_gpio(np, "fp-gpio-reset", 0);
 	if (gf_dev->reset_gpio < 0) {
@@ -49,7 +49,7 @@ int gf_parse_dts(struct gf_dev *gf_dev)
 	rc = devm_gpio_request(dev, gf_dev->reset_gpio, "goodix_reset");
 	if (rc) {
 		pr_err("failed to request reset gpio, rc = %d\n", rc);
-		goto err_reset;
+		goto err_irq;
 	}
 	gpio_direction_output(gf_dev->reset_gpio, 1);
 //irq
@@ -68,9 +68,6 @@ int gf_parse_dts(struct gf_dev *gf_dev)
 
 err_irq:
 	devm_gpio_free(dev, gf_dev->reset_gpio);
-err_reset:
-        devm_gpio_free(dev, gf_dev->vdden_gpio);
-err_vdden:	
 	return rc;
 }
 

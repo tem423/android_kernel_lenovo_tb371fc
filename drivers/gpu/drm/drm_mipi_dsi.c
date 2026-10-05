@@ -1055,32 +1055,16 @@ EXPORT_SYMBOL(mipi_dsi_dcs_set_tear_scanline);
  *
  * Return: 0 on success or a negative error code on failure.
  */
- #define SAMSUNG_BRIGHTNESS_MODE	0x53
 int mipi_dsi_dcs_set_display_brightness(struct mipi_dsi_device *dsi,
-					u16 brightness, u8 hbm)
+					u16 brightness)
 {
 	u8 payload[2] = { brightness & 0xff, brightness >> 8 };
-	u8 payload_hbm_on[1] = { 0xE0 };	/* HBM Mode */
-	u8 payload_hbm_off[1] = { 0x28 }; /* 0x20:Normal mode + Smooth dimming off; 0x28: Normal mode + Smooth dimming on */
-
 	ssize_t err;
 
-	if(hbm) {
-		err = mipi_dsi_dcs_write(dsi, SAMSUNG_BRIGHTNESS_MODE,
-					 payload_hbm_on, sizeof(payload_hbm_on));
-		if (err < 0)
-			return err;
-	} else {
-		err = mipi_dsi_dcs_write(dsi, SAMSUNG_BRIGHTNESS_MODE,
-					 payload_hbm_off, sizeof(payload_hbm_off));
-		if (err < 0)
-			return err;
-
-		err = mipi_dsi_dcs_write(dsi, MIPI_DCS_SET_DISPLAY_BRIGHTNESS,
-					 payload, sizeof(payload));
-		if (err < 0)
-			return err;
-	}
+	err = mipi_dsi_dcs_write(dsi, MIPI_DCS_SET_DISPLAY_BRIGHTNESS,
+				 payload, sizeof(payload));
+	if (err < 0)
+		return err;
 
 	return 0;
 }
@@ -1181,3 +1165,16 @@ postcore_initcall(mipi_dsi_bus_init);
 MODULE_AUTHOR("Andrzej Hajda <a.hajda@samsung.com>");
 MODULE_DESCRIPTION("MIPI DSI Bus");
 MODULE_LICENSE("GPL and additional rights");
+int mipi_dsi_dcs_set_display_brightness_big_endian(struct mipi_dsi_device *dsi,
+					u16 brightness)
+{
+	u8 payload[2] = { brightness >> 8, brightness & 0xff};
+	ssize_t err;
+
+	err = mipi_dsi_dcs_write(dsi, MIPI_DCS_SET_DISPLAY_BRIGHTNESS,
+				 payload, sizeof(payload));
+	if (err < 0)
+		return err;
+
+	return 0;
+}

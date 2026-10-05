@@ -418,7 +418,7 @@ TRACE_EVENT(s390_cio_stcrw,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_PATH ../../drivers/s390/cio
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace

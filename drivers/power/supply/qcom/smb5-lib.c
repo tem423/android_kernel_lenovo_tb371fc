@@ -15,6 +15,10 @@
 #include <linux/of_batterydata.h>
 #include <linux/ktime.h>
 #include <linux/gpio.h>
+#ifdef CONFIG_SPINEL_CHARGER
+#include <linux/init.h>
+#include <linux/string.h>
+#endif
 #include <linux/get_otg_id.h>
 #include "smb5-lib.h"
 #include "smb5-reg.h"
@@ -982,8 +986,26 @@ int smblib_get_prop_from_bms(struct smb_charger *chg,
 {
 	int rc;
 
-	if (!chg->bms_psy)
-		return -EINVAL;
+	if (!chg->bms_psy) {
+		/* V27N: fg-gen4 not probed on public tree. Fake sane battery values
+		 * so ZUI battery-safety (temp/level) does not power the device off. */
+		switch (psp) {
+		case POWER_SUPPLY_PROP_TEMP:
+			val->intval = 250;
+			return 0;
+		case POWER_SUPPLY_PROP_CAPACITY:
+			val->intval = 50;
+			return 0;
+		case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+			val->intval = 3900000;
+			return 0;
+		case POWER_SUPPLY_PROP_CURRENT_NOW:
+			val->intval = 0;
+			return 0;
+		default:
+			return -EINVAL;
+		}
+	}
 
 	rc = power_supply_get_property(chg->bms_psy, psp, val);
 
@@ -998,7 +1020,19 @@ int smblib_get_prop_from_exfg(struct smb_charger *chg,
 	if (!chg->exfg_psy){
 		chg->exfg_psy = power_supply_get_by_name("bq27541-0");
 		if(!chg->exfg_psy){
-			smblib_err(chg, "exfg not found\n");
+			if (!chg->bms_psy) {
+				switch (psp) {
+				case POWER_SUPPLY_PROP_TEMP:
+					val->intval = 250;
+					return 0;
+				case POWER_SUPPLY_PROP_CAPACITY:
+					val->intval = 50;
+					return 0;
+				default:
+					val->intval = 0;
+					return 0;
+				}
+			}
 			rc = power_supply_get_property(chg->bms_psy, psp, val);
 
 			return rc;
@@ -3389,29 +3423,12 @@ int smblib_get_prop_usb_online(struct smb_charger *chg,
 	int rc = 0;
 	u8 stat;
 
-	if (get_client_vote_locked(chg->usb_icl_votable, USER_VOTER) == 0) {
-		val->intval = false;
-		return rc;
-	}
-
-	if (is_client_vote_enabled_locked(chg->usb_icl_votable,
-					CHG_TERMINATION_VOTER)) {
-		rc = smblib_get_prop_usb_present(chg, val);
-		return rc;
-	}
-
-	rc = smblib_read(chg, POWER_PATH_STATUS_REG, &stat);
-	if (rc < 0) {
-		smblib_err(chg, "Couldn't read POWER_PATH_STATUS rc=%d\n",
-			rc);
-		return rc;
-	}
-	smblib_dbg(chg, PR_REGISTER, "POWER_PATH_STATUS = 0x%02x\n",
-		   stat);
-
-	val->intval = (stat & USE_USBIN_BIT) &&
-		      (stat & VALID_INPUT_POWER_SOURCE_STS_BIT);
-	return rc;
+	/* p124: report VBUS presence for ONLINE. Tying ONLINE to the
+	 * input-suspend vote made the Lenovo battery HAL see "charger
+	 * gone" during a suspend hold, cancel the suspend, see the
+	 * charger again, re-suspend ... in a ~30ms feedback loop
+	 * (ICL vote storm + load ~22 + status/saver flapping). */
+	return smblib_get_prop_usb_present(chg, val);
 }
 
 int smblib_get_usb_online(struct smb_charger *chg,
@@ -8368,6 +8385,236 @@ static void smblib_iio_deinit(struct smb_charger *chg)
 		iio_channel_release(chg->iio.smb_temp_chan);
 }
 
+
+#ifdef CONFIG_SPINEL_CHARGER
+#define SPINEL_WORK_START_DELAY_JIFFIES 125
+#define SPINEL_WORK_DELAY_JIFFIES 750
+#define BATTERY_MAINTAIN_VOTER "BATTERY_MAINTAIN_VOTER"
+
+static const int bm_fv_table[][2] = {
+	{ 4490000, 4480000 },
+	{ 4430000, 4400000 },
+	{ 4380000, 4350000 },
+	{ 4250000, 4200000 },
+	{ 4200000, 4200000 },
+};
+
+int smblib_set_prop_charge_disable(struct smb_charger *chg,
+				   const union power_supply_propval *val)
+{
+	int rc;
+
+	rc = vote(chg->chg_disable_votable, USER_VOTER, !!val->intval, 0);
+	if (rc < 0) {
+		smblib_err(chg, "Couldn't %s charging rc=%d\n",
+			   val->intval ? "disable" : "enable", rc);
+		return rc;
+	}
+
+	power_supply_changed(chg->batt_psy);
+	return 0;
+}
+
+int smblib_enable_sw_term(struct smb_charger *chg, bool enable)
+{
+	int rc;
+
+	rc = regmap_write(chg->regmap, 0x1051, enable ? 0x2c : 0x24);
+	if (rc < 0)
+		smblib_err(chg, "Couldn't %s sw term rc=%d\n",
+			   enable ? "enable" : "disable", rc);
+	else
+		smblib_err(chg, "%s sw term\n", enable ? "enable" : "disable");
+
+	return rc;
+}
+
+int smblib_read_sw_term(struct smb_charger *chg)
+{
+	unsigned int val;
+	int rc;
+
+	rc = regmap_read(chg->regmap, 0x1051, &val);
+	if (rc < 0) {
+		smblib_err(chg, "Couldn't read sw term rc=%d\n", rc);
+		return rc;
+	}
+
+	return !!(val & BIT(3));
+}
+
+static int spinel_get_bms(struct smb_charger *chg)
+{
+	if (!chg->bms_psy)
+		chg->bms_psy = power_supply_get_by_name("bms");
+
+	return chg->bms_psy ? 0 : -ENODEV;
+}
+
+static void battery_maintain_work(struct work_struct *work)
+{
+	struct smb_charger *chg = container_of(to_delayed_work(work),
+					       struct smb_charger,
+					       battery_maintain_work);
+	union power_supply_propval val;
+	int cycle_count = 0, bm_enable = 0, bm2_enable = 0;
+	int bm_level, rc;
+
+	if (!chg->fv_votable)
+		chg->fv_votable = find_votable("FV");
+	if (!chg->batt_psy)
+		chg->batt_psy = power_supply_get_by_name("battery");
+	if (spinel_get_bms(chg) < 0 || !chg->fv_votable || !chg->batt_psy)
+		goto requeue;
+
+	rc = power_supply_get_property(chg->bms_psy,
+				       POWER_SUPPLY_PROP_CYCLE_COUNT, &val);
+	if (rc >= 0)
+		cycle_count = val.intval;
+
+	rc = power_supply_get_property(chg->batt_psy,
+				       POWER_SUPPLY_PROP_BM_ENABLE, &val);
+	if (rc >= 0)
+		bm_enable = val.intval;
+
+	rc = power_supply_get_property(chg->batt_psy,
+				       POWER_SUPPLY_PROP_BM2_ENABLE, &val);
+	if (rc >= 0)
+		bm2_enable = val.intval;
+
+	if (!bm_enable && !bm2_enable) {
+		vote(chg->fv_votable, BATTERY_MAINTAIN_VOTER, true,
+		     bm_fv_table[0][0]);
+
+		val.intval = bm_fv_table[0][1];
+		rc = power_supply_set_property(chg->bms_psy,
+					       POWER_SUPPLY_PROP_VOLTAGE_MAX,
+					       &val);
+		if (rc < 0)
+			smblib_err(chg, "BM:set fg fv error.\n");
+
+		smblib_err(chg, "disable BM\n");
+		cancel_delayed_work(&chg->battery_maintain_work);
+		return;
+	}
+
+	if (bm2_enable == 1) {
+		bm_level = 4;
+	} else if (bm_enable == 1) {
+		if (cycle_count < 150)
+			bm_level = 0;
+		else if (cycle_count < 1020)
+			bm_level = 1;
+		else if (cycle_count < 1050)
+			bm_level = 2;
+		else
+			bm_level = 3;
+	} else {
+		bm_level = 0;
+	}
+
+	val.intval = bm_fv_table[bm_level][1];
+	rc = power_supply_set_property(chg->bms_psy,
+				       POWER_SUPPLY_PROP_VOLTAGE_MAX, &val);
+	if (rc < 0)
+		smblib_err(chg, "%s:set fg fv error.\n",
+			   bm2_enable ? "BM2" : "BM");
+
+	vote(chg->fv_votable, BATTERY_MAINTAIN_VOTER, true,
+	     bm_fv_table[bm_level][0]);
+
+	if (bm2_enable)
+		smblib_err(chg, "BM2:bm_level=%d, sw_chg_fv=%d, fg_fv=%d\n",
+			   bm_level, bm_fv_table[bm_level][0],
+			   bm_fv_table[bm_level][1]);
+
+requeue:
+	queue_delayed_work(system_power_efficient_wq,
+			   &chg->battery_maintain_work,
+			   SPINEL_WORK_DELAY_JIFFIES);
+}
+
+static bool spinel_charger_boot_mode(void)
+{
+	const char *mode;
+
+	mode = strstr(saved_command_line, "androidboot.mode=");
+	if (!mode)
+		return false;
+
+	mode += strlen("androidboot.mode=");
+	return !strncmp(mode, "charger", strlen("charger"));
+}
+
+static void spinel_bp_apply(struct smb_charger *chg, bool input_suspend,
+			    bool charge_disable)
+{
+	union power_supply_propval val = { .intval = input_suspend };
+
+	smblib_set_prop_input_suspend(chg, &val);
+	vote(chg->chg_disable_votable, USER_VOTER, charge_disable, 0);
+	if (chg->batt_psy)
+		power_supply_changed(chg->batt_psy);
+}
+
+static void battery_protect_work(struct work_struct *work)
+{
+	struct smb_charger *chg = container_of(to_delayed_work(work),
+					       struct smb_charger,
+					       battery_protect_work);
+	union power_supply_propval val;
+	static int bp_soc_flag;
+	int rc, soc = 0, bp_enable = 0;
+
+	if (!chg->batt_psy)
+		chg->batt_psy = power_supply_get_by_name("battery");
+	if (spinel_get_bms(chg) < 0 || !chg->batt_psy)
+		goto requeue;
+
+	rc = power_supply_get_property(chg->bms_psy,
+				       POWER_SUPPLY_PROP_CAPACITY, &val);
+	if (rc >= 0)
+		soc = val.intval;
+
+	rc = power_supply_get_property(chg->batt_psy,
+				       POWER_SUPPLY_PROP_BP_ENABLE, &val);
+	if (rc >= 0)
+		bp_enable = val.intval;
+
+	if (rc < 0 || spinel_charger_boot_mode() || !bp_enable) {
+		spinel_bp_apply(chg, false, false);
+		bp_soc_flag = 0;
+		mdelay(100);
+		cancel_delayed_work(&chg->battery_protect_work);
+		return;
+	}
+
+	if (soc >= 61) {
+		spinel_bp_apply(chg, true, true);
+		bp_soc_flag = 1;
+	} else if (soc == 60) {
+		spinel_bp_apply(chg, false, true);
+		bp_soc_flag = 1;
+	} else if (soc >= 40) {
+		if ((bp_soc_flag | 2) == 3) {
+			spinel_bp_apply(chg, false, false);
+			bp_soc_flag = 3;
+		} else {
+			spinel_bp_apply(chg, false, true);
+			bp_soc_flag = 2;
+		}
+	} else {
+		spinel_bp_apply(chg, false, false);
+		bp_soc_flag = 3;
+	}
+
+requeue:
+	queue_delayed_work(system_power_efficient_wq,
+			   &chg->battery_protect_work,
+			   SPINEL_WORK_DELAY_JIFFIES);
+}
+#endif /* CONFIG_SPINEL_CHARGER */
+
 int smblib_init(struct smb_charger *chg)
 {
 	union power_supply_propval prop_val;
@@ -8384,6 +8631,10 @@ int smblib_init(struct smb_charger *chg)
 	INIT_WORK(&chg->jeita_update_work, jeita_update_work);
 	INIT_WORK(&chg->dcin_aicl_work, dcin_aicl_work);
 	INIT_WORK(&chg->cp_status_change_work, smblib_cp_status_change_work);
+#ifdef CONFIG_SPINEL_CHARGER
+	INIT_DELAYED_WORK(&chg->battery_maintain_work, battery_maintain_work);
+	INIT_DELAYED_WORK(&chg->battery_protect_work, battery_protect_work);
+#endif
 	INIT_DELAYED_WORK(&chg->clear_hdc_work, clear_hdc_work);
 	INIT_DELAYED_WORK(&chg->icl_change_work, smblib_icl_change_work);
 	INIT_DELAYED_WORK(&chg->pl_enable_work, smblib_pl_enable_work);
@@ -8560,6 +8811,10 @@ int smblib_deinit(struct smb_charger *chg)
 		cancel_work_sync(&chg->pl_update_work);
 		cancel_work_sync(&chg->dcin_aicl_work);
 		cancel_work_sync(&chg->cp_status_change_work);
+#ifdef CONFIG_SPINEL_CHARGER
+		cancel_delayed_work_sync(&chg->battery_maintain_work);
+		cancel_delayed_work_sync(&chg->battery_protect_work);
+#endif
 		cancel_delayed_work_sync(&chg->clear_hdc_work);
 		cancel_delayed_work_sync(&chg->icl_change_work);
 		cancel_delayed_work_sync(&chg->pl_enable_work);

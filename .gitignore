@@ -140,4 +140,13 @@ kernel/configs/android-*.cfg
 arch/arm64/boot/dts/vendor/
 
 # Tech package directories
-techpack/
+# TB371FC: techpack drivers (display/audio/camera/video) are part of the
+# shipped kernel - keep their sources tracked; build artifacts (*.o/*.a/
+# *.cmd/*.d/*.order/modules.*) stay ignored via the global rules above.
+*.cmd
+*.d
+modules.builtin
+
+# Python bytecode (tb371fc helper scripts)
+__pycache__/
+*.pyc

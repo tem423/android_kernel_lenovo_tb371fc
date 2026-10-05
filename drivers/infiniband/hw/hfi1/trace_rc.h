@@ -113,6 +113,6 @@ DEFINE_EVENT(hfi1_rc_template, hfi1_rcv_error,
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE
-#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_PATH ../../drivers/infiniband/hw/hfi1
 #define TRACE_INCLUDE_FILE trace_rc
 #include <trace/define_trace.h>

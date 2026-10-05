@@ -66,6 +66,7 @@
 #define	CLASS_NAME		    "goodix_fp"
 
 #define N_SPI_MINORS		32	/* ... up to 256 */
+extern int register_hardware_info(const char *name, const char *model);
 static int SPIDEV_MAJOR;
 
 static DECLARE_BITMAP(minors, N_SPI_MINORS);
@@ -901,6 +902,7 @@ static int __init gf_init(void)
 		unregister_chrdev(SPIDEV_MAJOR, gf_driver.driver.name);
 		pr_warn("Failed to register SPI driver.\n");
 	}
+register_hardware_info("fingerprint", "GF3626:kaier");
 #ifdef GF_NETLINK_ENABLE
 	netlink_init();
 #endif

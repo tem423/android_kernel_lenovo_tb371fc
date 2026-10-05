@@ -355,7 +355,7 @@ DEFINE_EVENT(musb_cppi41, musb_cppi41_free,
 /* this part has to be here */
 
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_PATH ../../drivers/usb/musb
 
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE musb_trace

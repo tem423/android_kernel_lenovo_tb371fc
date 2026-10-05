@@ -534,7 +534,7 @@ static int handle_jeita(struct lenovo_jeita_info *chip)
 	}
 
 	power_supply_get_property(chip->usb_psy, POWER_SUPPLY_PROP_REAL_TYPE, &pval);
-	pr_err("%s : POWER_SUPPLY_PROP_REAL_TYPE : %d\n", __FUNCTION__, pval.intval);
+	pr_debug("%s : POWER_SUPPLY_PROP_REAL_TYPE : %d\n", __FUNCTION__, pval.intval);
 	if (pval.intval == POWER_SUPPLY_TYPE_USB_HVDCP_3) {
 		memcpy(chip->jeita_fcc_config->fcc_cfg, chip->jeita_fcc_config->hvdcp3_fcc_cfg, sizeof(struct range_data)*JEITA_STEP);
 	} else {
