@@ -53,17 +53,34 @@ jobs:
         run: |
           UPSTREAM_REF="upstream/${{ github.event.inputs.upstream_branch }}"
 
+          rm -f .git/index.lock
+
+          # 1) 删除结构冲突产生的 ~HEAD 备份目录
           find . -name '*~HEAD' -not -path './.git/*' -exec rm -rf {} + 2>/dev/null || true
 
-          git ls-tree -r --name-only "$UPSTREAM_REF" | while read -r f; do
-            if [ -d "$f" ]; then
-              echo "替换目录为文件: $f"
-              rm -rf "$f"
-              git checkout "$UPSTREAM_REF" -- "$f"
-            fi
-          done
+          # 2) 记录冲突路径，只处理这些
+          git diff --name-only --diff-filter=U > /tmp/conflicts.txt || true
 
+          TO_CHECKOUT=""
+          while read -r f; do
+            [ -z "$f" ] && continue
+            if [ -d "$f" ] && git cat-file -e "$UPSTREAM_REF:$f" 2>/dev/null; then
+              echo "目录->文件: $f"
+              rm -rf "$f"
+              TO_CHECKOUT="$TO_CHECKOUT $f"
+            fi
+          done < /tmp/conflicts.txt
+
+          # 3) 批量检出 upstream 文件
+          if [ -n "$TO_CHECKOUT" ]; then
+            rm -f .git/index.lock
+            git checkout "$UPSTREAM_REF" -- $TO_CHECKOUT
+          fi
+
+          # 4) 剩余 unmerged 按 ours
+          rm -f .git/index.lock
           git diff --name-only --diff-filter=U | while read -r f; do
+            [ -z "$f" ] && continue
             if [ -d "$f" ]; then
               rm -rf "$f"
               git cat-file -e "$UPSTREAM_REF:$f" 2>/dev/null && git checkout "$UPSTREAM_REF" -- "$f"
@@ -72,6 +89,7 @@ jobs:
             fi
           done
 
+          rm -f .git/index.lock
           git add -A
 
       - name: Verify no conflict markers remain
