@@ -14,7 +14,7 @@ on:
       source_branch:
         description: 'Source branch to merge from'
         required: true
-        default: 'android16-base'
+        default: '11'
 
 jobs:
   merge:
