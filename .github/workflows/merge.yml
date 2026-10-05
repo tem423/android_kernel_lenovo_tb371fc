@@ -10,11 +10,11 @@ on:
       upstream_branch:
         description: 'Upstream branch'
         required: true
-        default: 'main'
+        default: 'android16-base'
       source_branch:
         description: 'Source branch to merge from'
         required: true
-        default: '11'
+        default: 'main'
 
 jobs:
   merge:
@@ -37,16 +37,16 @@ jobs:
           git remote add upstream https://github.com/${{ github.event.inputs.upstream_repo }}.git
           git fetch upstream ${{ github.event.inputs.upstream_branch }}
 
-      - name: Create merge branch and merge (theirs on conflict)
+      - name: Create merge branch and merge (ours on conflict)
         run: |
           git checkout -b merge-android-upstream
           UPSTREAM_REF="upstream/${{ github.event.inputs.upstream_branch }}"
 
           if git merge-base HEAD "$UPSTREAM_REF" >/dev/null 2>&1; then
-            git merge "$UPSTREAM_REF" --no-edit -X theirs
+            git merge "$UPSTREAM_REF" --no-edit -X ours
           else
             echo "无共同历史，使用 --allow-unrelated-histories"
-            git merge "$UPSTREAM_REF" --no-edit --allow-unrelated-histories -X theirs
+            git merge "$UPSTREAM_REF" --no-edit --allow-unrelated-histories -X ours
           fi
 
       - name: Verify no conflict markers remain
