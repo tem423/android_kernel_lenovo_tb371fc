@@ -22,7 +22,7 @@ on:
       target_branch:
         description: '目标分支 (将合入的分支)'
         required: true
-        default: '合bpf'
+        default: 'merge-android-upstream'
       skip_commits:
         description: '要跳过的提交列表（用空格分隔，例如: c74ef2fe8516 1a6da61bf1ba）'
         required: false
