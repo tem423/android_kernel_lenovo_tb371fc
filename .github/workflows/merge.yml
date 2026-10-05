@@ -34,7 +34,7 @@ jobs:
 
       - name: Add upstream remote and fetch
         run: |
-          git remote add upstream https://github.com/${{ github.event.inputs.upstream_repo }}.git
+          git remote add upstream https://github.com/${{ github.event.inputs.upstream_repo }}.git || true
           git fetch upstream ${{ github.event.inputs.upstream_branch }}
 
       - name: Create merge branch and merge (ours on conflict)
@@ -49,18 +49,28 @@ jobs:
             git merge "$UPSTREAM_REF" --no-edit --allow-unrelated-histories -X ours || true
           fi
 
+          # merge 失败会残留 index.lock，这里清掉
+          rm -f .git/index.lock
+
       - name: Resolve file/directory conflicts (keep upstream file)
         run: |
+          set +e
           UPSTREAM_REF="upstream/${{ github.event.inputs.upstream_branch }}"
 
+          # 清掉可能残留的 git 进程与锁
+          pkill -f git || true
+          sleep 1
           rm -f .git/index.lock
 
           # 1) 删除结构冲突产生的 ~HEAD 备份目录
-          find . -name '*~HEAD' -not -path './.git/*' -exec rm -rf {} + 2>/dev/null || true
+          find . -name '*~HEAD' -not -path './.git/*' -exec rm -rf {} + 2>/dev/null
+          rm -f .git/index.lock
 
-          # 2) 记录冲突路径，只处理这些
-          git diff --name-only --diff-filter=U > /tmp/conflicts.txt || true
+          # 2) 记录冲突路径
+          git diff --name-only --diff-filter=U > /tmp/conflicts.txt 2>/dev/null
+          rm -f .git/index.lock
 
+          # 3) 找出"工作区是目录、upstream 是文件"的路径
           TO_CHECKOUT=""
           while read -r f; do
             [ -z "$f" ] && continue
@@ -71,26 +81,34 @@ jobs:
             fi
           done < /tmp/conflicts.txt
 
-          # 3) 批量检出 upstream 文件
+          # 4) 批量检出 upstream 文件
           if [ -n "$TO_CHECKOUT" ]; then
             rm -f .git/index.lock
             git checkout "$UPSTREAM_REF" -- $TO_CHECKOUT
+            rm -f .git/index.lock
           fi
 
-          # 4) 剩余 unmerged 按 ours
+          # 5) 剩余 unmerged 按 ours 收尾
+          git diff --name-only --diff-filter=U > /tmp/remaining.txt 2>/dev/null
           rm -f .git/index.lock
-          git diff --name-only --diff-filter=U | while read -r f; do
+
+          while read -r f; do
             [ -z "$f" ] && continue
             if [ -d "$f" ]; then
               rm -rf "$f"
-              git cat-file -e "$UPSTREAM_REF:$f" 2>/dev/null && git checkout "$UPSTREAM_REF" -- "$f"
+              if git cat-file -e "$UPSTREAM_REF:$f" 2>/dev/null; then
+                git checkout "$UPSTREAM_REF" -- "$f"
+              fi
             else
-              git checkout --ours -- "$f" 2>/dev/null || git add "$f"
+              git checkout --ours -- "$f" 2>/dev/null || git add "$f" 2>/dev/null
             fi
-          done
+            rm -f .git/index.lock
+          done < /tmp/remaining.txt
 
+          # 6) 全部加入 index
           rm -f .git/index.lock
           git add -A
+          rm -f .git/index.lock
 
       - name: Verify no conflict markers remain
         run: |
@@ -103,6 +121,7 @@ jobs:
 
       - name: Commit merge
         run: |
+          rm -f .git/index.lock
           git commit -m "Merge Android upstream ${{ github.event.inputs.upstream_branch }}" --allow-empty
 
       - name: Push merged branch
