@@ -43,11 +43,36 @@ jobs:
           UPSTREAM_REF="upstream/${{ github.event.inputs.upstream_branch }}"
 
           if git merge-base HEAD "$UPSTREAM_REF" >/dev/null 2>&1; then
-            git merge "$UPSTREAM_REF" --no-edit -X ours
+            git merge "$UPSTREAM_REF" --no-edit -X ours || true
           else
             echo "无共同历史，使用 --allow-unrelated-histories"
-            git merge "$UPSTREAM_REF" --no-edit --allow-unrelated-histories -X ours
+            git merge "$UPSTREAM_REF" --no-edit --allow-unrelated-histories -X ours || true
           fi
+
+      - name: Resolve file/directory conflicts (keep upstream file)
+        run: |
+          UPSTREAM_REF="upstream/${{ github.event.inputs.upstream_branch }}"
+
+          find . -name '*~HEAD' -not -path './.git/*' -exec rm -rf {} + 2>/dev/null || true
+
+          git ls-tree -r --name-only "$UPSTREAM_REF" | while read -r f; do
+            if [ -d "$f" ]; then
+              echo "替换目录为文件: $f"
+              rm -rf "$f"
+              git checkout "$UPSTREAM_REF" -- "$f"
+            fi
+          done
+
+          git diff --name-only --diff-filter=U | while read -r f; do
+            if [ -d "$f" ]; then
+              rm -rf "$f"
+              git cat-file -e "$UPSTREAM_REF:$f" 2>/dev/null && git checkout "$UPSTREAM_REF" -- "$f"
+            else
+              git checkout --ours -- "$f" 2>/dev/null || git add "$f"
+            fi
+          done
+
+          git add -A
 
       - name: Verify no conflict markers remain
         run: |
@@ -57,6 +82,10 @@ jobs:
             exit 1
           fi
           echo "✅ 无冲突标记"
+
+      - name: Commit merge
+        run: |
+          git commit -m "Merge Android upstream ${{ github.event.inputs.upstream_branch }}" --allow-empty
 
       - name: Push merged branch
         run: |
