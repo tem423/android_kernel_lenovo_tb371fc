@@ -812,14 +812,6 @@ static bool blk_mq_req_expired(struct request *rq, unsigned long *next)
 	return false;
 }
 
-void blk_mq_put_rq_ref(struct request *rq)
-{
-	if (is_flush_rq(rq))
-		rq->end_io(rq, 0);
-	else if (refcount_dec_and_test(&rq->ref))
-		__blk_mq_free_request(rq);
-}
-
 static void blk_mq_check_expired(struct blk_mq_hw_ctx *hctx,
 		struct request *rq, void *priv, bool reserved)
 {
@@ -852,9 +844,11 @@ static void blk_mq_check_expired(struct blk_mq_hw_ctx *hctx,
 	 */
 	if (blk_mq_req_expired(rq, next))
 		blk_mq_rq_timed_out(rq, reserved);
-	blk_mq_put_rq_ref(rq);
-	return;
 
+	if (is_flush_rq(rq, hctx))
+		rq->end_io(rq, 0);
+	else if (refcount_dec_and_test(&rq->ref))
+		__blk_mq_free_request(rq);
 }
 
 static void blk_mq_timeout_work(struct work_struct *work)
@@ -1071,6 +1065,22 @@ static bool blk_mq_mark_tag_wait(struct blk_mq_hw_ctx *hctx,
 	__add_wait_queue(wq, wait);
 
 	/*
+	 * Add one explicit barrier since blk_mq_get_driver_tag() may
+	 * not imply barrier in case of failure.
+	 *
+	 * Order adding us to wait queue and allocating driver tag.
+	 *
+	 * The pair is the one implied in sbitmap_queue_wake_up() which
+	 * orders clearing sbitmap tag bits and waitqueue_active() in
+	 * __sbitmap_queue_wake_up(), since waitqueue_active() is lockless
+	 *
+	 * Otherwise, re-order of adding wait queue and getting driver tag
+	 * may cause __sbitmap_queue_wake_up() to wake up nothing because
+	 * the waitqueue_active() may not observe us in wait queue.
+	 */
+	smp_mb();
+
+	/*
 	 * It's possible that a tag was freed in the window between the
 	 * allocation failure and adding the hardware queue to the wait
 	 * queue.
@@ -1123,6 +1133,23 @@ static void blk_mq_update_dispatch_busy(struct blk_mq_hw_ctx *hctx, bool busy)
 }
 
 #define BLK_MQ_RESOURCE_DELAY	3		/* ms units */
+
+static void blk_mq_handle_dev_resource(struct request *rq,
+				       struct list_head *list)
+{
+	struct request *next =
+		list_first_entry_or_null(list, struct request, queuelist);
+
+	/*
+	 * If an I/O scheduler has been configured and we got a driver tag for
+	 * the next request already, free it.
+	 */
+	if (next)
+		blk_mq_put_driver_tag(next);
+
+	list_add(&rq->queuelist, list);
+	__blk_mq_requeue_request(rq);
+}
 
 /*
  * Returns true if we did some work AND can potentially do more.
@@ -1191,17 +1218,7 @@ bool blk_mq_dispatch_rq_list(struct request_queue *q, struct list_head *list,
 
 		ret = q->mq_ops->queue_rq(hctx, &bd);
 		if (ret == BLK_STS_RESOURCE || ret == BLK_STS_DEV_RESOURCE) {
-			/*
-			 * If an I/O scheduler has been configured and we got a
-			 * driver tag for the next request already, free it
-			 * again.
-			 */
-			if (!list_empty(list)) {
-				nxt = list_first_entry(list, struct request, queuelist);
-				blk_mq_put_driver_tag(nxt);
-			}
-			list_add(&rq->queuelist, list);
-			__blk_mq_requeue_request(rq);
+			blk_mq_handle_dev_resource(rq, list);
 			break;
 		}
 
@@ -1527,6 +1544,12 @@ void blk_mq_start_stopped_hw_queue(struct blk_mq_hw_ctx *hctx, bool async)
 		return;
 
 	clear_bit(BLK_MQ_S_STOPPED, &hctx->state);
+	/*
+	 * Pairs with the smp_mb() in blk_mq_hctx_stopped() to order the
+	 * clearing of BLK_MQ_S_STOPPED above and the checking of dispatch
+	 * list in the subsequent routine.
+	 */
+	smp_mb__after_atomic();
 	blk_mq_run_hw_queue(hctx, async);
 }
 EXPORT_SYMBOL_GPL(blk_mq_start_stopped_hw_queue);
@@ -1843,6 +1866,7 @@ static void blk_mq_clear_rq_mapping(struct blk_mq_tag_set *set,
 		struct blk_mq_tags *tags, unsigned int hctx_idx)
 {
 	struct blk_mq_tags *drv_tags = set->tags[hctx_idx];
+	struct ext_blk_mq_tags *drv_etags;
 	struct page *page;
 	unsigned long flags;
 
@@ -1868,8 +1892,9 @@ static void blk_mq_clear_rq_mapping(struct blk_mq_tag_set *set,
 	 * Request reference is cleared and it is guaranteed to be observed
 	 * after the ->lock is released.
 	 */
-	spin_lock_irqsave(&drv_tags->lock, flags);
-	spin_unlock_irqrestore(&drv_tags->lock, flags);
+	drv_etags = container_of(drv_tags, struct ext_blk_mq_tags, tags);
+	spin_lock_irqsave(&drv_etags->lock, flags);
+	spin_unlock_irqrestore(&drv_etags->lock, flags);
 }
 
 static blk_qc_t blk_mq_make_request(struct request_queue *q, struct bio *bio)
@@ -2195,51 +2220,18 @@ static void blk_mq_remove_cpuhp(struct blk_mq_hw_ctx *hctx)
 					    &hctx->cpuhp_dead);
 }
 
-/*
- * Before freeing hw queue, clearing the flush request reference in
- * tags->rqs[] for avoiding potential UAF.
- */
-static void blk_mq_clear_flush_rq_mapping(struct blk_mq_tags *tags,
-		unsigned int queue_depth, struct request *flush_rq)
-{
-	int i;
-	unsigned long flags;
-
-	/* The hw queue may not be mapped yet */
-	if (!tags)
-		return;
-
-	WARN_ON_ONCE(refcount_read(&flush_rq->ref) != 0);
-
-	for (i = 0; i < queue_depth; i++)
-		 cmpxchg(&tags->rqs[i], flush_rq, NULL);
-
-	/*
-	 * Wait until all pending iteration is done.
-	 *
-	 * Request reference is cleared and it is guaranteed to be observed
-	 * after the ->lock is released.
-	 */
-	spin_lock_irqsave(&tags->lock, flags);
-	spin_unlock_irqrestore(&tags->lock, flags);
-}
-
 /* hctx->ctxs will be freed in queue's release handler */
 static void blk_mq_exit_hctx(struct request_queue *q,
 		struct blk_mq_tag_set *set,
 		struct blk_mq_hw_ctx *hctx, unsigned int hctx_idx)
 {
-	struct request *flush_rq = hctx->fq->flush_rq;
-
 	blk_mq_debugfs_unregister_hctx(hctx);
 
 	if (blk_mq_hw_queue_mapped(hctx))
 		blk_mq_tag_idle(hctx);
 
-	blk_mq_clear_flush_rq_mapping(set->tags[hctx_idx],
-			set->queue_depth, flush_rq);
 	if (set->ops->exit_request)
-		set->ops->exit_request(set, flush_rq, hctx_idx);
+		set->ops->exit_request(set, hctx->fq->flush_rq, hctx_idx);
 
 	if (set->ops->exit_hctx)
 		set->ops->exit_hctx(hctx, hctx_idx);
@@ -2392,11 +2384,6 @@ static void blk_mq_map_swqueue(struct request_queue *q)
 	struct blk_mq_ctx *ctx;
 	struct blk_mq_tag_set *set = q->tag_set;
 
-	/*
-	 * Avoid others reading imcomplete hctx->cpumask through sysfs
-	 */
-	mutex_lock(&q->sysfs_lock);
-
 	queue_for_each_hw_ctx(q, hctx, i) {
 		cpumask_clear(hctx->cpumask);
 		hctx->nr_ctx = 0;
@@ -2429,8 +2416,6 @@ static void blk_mq_map_swqueue(struct request_queue *q)
 		ctx->index_hw = hctx->nr_ctx;
 		hctx->ctxs[hctx->nr_ctx++] = ctx;
 	}
-
-	mutex_unlock(&q->sysfs_lock);
 
 	queue_for_each_hw_ctx(q, hctx, i) {
 		/*
@@ -2748,10 +2733,12 @@ EXPORT_SYMBOL(blk_mq_init_allocated_queue);
 /* tags can _not_ be used after returning from blk_mq_exit_queue */
 void blk_mq_exit_queue(struct request_queue *q)
 {
-	struct blk_mq_tag_set	*set = q->tag_set;
+	struct blk_mq_tag_set *set = q->tag_set;
 
-	blk_mq_del_queue_tag_set(q);
+	/* Checks hctx->flags & BLK_MQ_F_TAG_QUEUE_SHARED. */
 	blk_mq_exit_hw_queues(q, set, set->nr_hw_queues);
+	/* May clear BLK_MQ_F_TAG_QUEUE_SHARED in hctx->flags. */
+	blk_mq_del_queue_tag_set(q);
 }
 
 /* Basically redo blk_mq_init_queue with queue frozen */
