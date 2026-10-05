@@ -1887,7 +1887,6 @@ static int tfa98xx_append_i2c_address(struct device *dev,
 {
 	char buf[50];
 	int i;
-	int i2cbus = i2c->adapter->nr;
 	int addr = i2c->addr;
 	if (dai_drv && num_dai > 0)
 		for(i = 0; i < num_dai; i++) {
