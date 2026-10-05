@@ -1,1 +1,1 @@
-/home/smith/kernels/tb371fc/android_kernel_lenovo_tb371fc/drivers/base/regmap/internal.h
+../../../drivers/base/regmap/internal.h
