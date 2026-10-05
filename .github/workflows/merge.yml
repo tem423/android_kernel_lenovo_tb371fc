@@ -37,29 +37,28 @@ jobs:
           git remote add upstream https://github.com/${{ github.event.inputs.upstream_repo }}.git
           git fetch upstream ${{ github.event.inputs.upstream_branch }}
 
-      - name: Create merge branch and merge
+      - name: Create merge branch and merge (theirs on conflict)
         run: |
           git checkout -b merge-android-upstream
           UPSTREAM_REF="upstream/${{ github.event.inputs.upstream_branch }}"
 
           if git merge-base HEAD "$UPSTREAM_REF" >/dev/null 2>&1; then
-            git merge "$UPSTREAM_REF" --no-edit || true
+            git merge "$UPSTREAM_REF" --no-edit -X theirs
           else
             echo "无共同历史，使用 --allow-unrelated-histories"
-            git merge "$UPSTREAM_REF" --no-edit --allow-unrelated-histories || true
+            git merge "$UPSTREAM_REF" --no-edit --allow-unrelated-histories -X theirs
           fi
 
-      - name: Show conflicts
+      - name: Verify no conflict markers remain
         run: |
-          echo "=== Files with conflict markers ==="
-          grep -rl "<<<<<<< HEAD" --include="*.c" --include="*.h" . 2>/dev/null | head -50 || echo "No conflict markers"
-          echo ""
-          echo "=== Unmerged files ==="
-          git diff --name-only --diff-filter=U 2>/dev/null | head -50 || echo "None"
+          echo "=== 检查残留冲突标记 ==="
+          if grep -rl "^<<<<<<< " . --exclude-dir=.git 2>/dev/null; then
+            echo "❌ 仍有冲突标记，中止"
+            exit 1
+          fi
+          echo "✅ 无冲突标记"
 
-      - name: Commit and push
+      - name: Push merged branch
         run: |
-          git add -A
-          git commit -m "Merge Android upstream ${{ github.event.inputs.upstream_branch }}" --allow-empty
           git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
           git push origin merge-android-upstream --force
