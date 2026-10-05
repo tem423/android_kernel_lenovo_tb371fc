@@ -40,7 +40,14 @@ jobs:
       - name: Create merge branch and merge
         run: |
           git checkout -b merge-android-upstream
-          git merge upstream/${{ github.event.inputs.upstream_branch }} --no-edit || true
+          UPSTREAM_REF="upstream/${{ github.event.inputs.upstream_branch }}"
+
+          if git merge-base HEAD "$UPSTREAM_REF" >/dev/null 2>&1; then
+            git merge "$UPSTREAM_REF" --no-edit || true
+          else
+            echo "无共同历史，使用 --allow-unrelated-histories"
+            git merge "$UPSTREAM_REF" --no-edit --allow-unrelated-histories || true
+          fi
 
       - name: Show conflicts
         run: |
